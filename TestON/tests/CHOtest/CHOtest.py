@@ -35,6 +35,7 @@ class CHOtest:
         main.failSwitch = main.params['TEST']['pauseTest']
         main.emailOnStop = main.params['TEST']['email']
         main.intentCheck = int( main.params['TEST']['intentChecks'] )
+        main.linkCheck = int( main.params['TEST']['linkChecks'] )
         main.topoCheck = int( main.params['TEST']['topoChecks'] )
         main.numPings = int( main.params['TEST']['numPings'] )
         main.pingSleep = int( main.params['timers']['pingSleep'] )
@@ -697,10 +698,13 @@ class CHOtest:
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
 
     def CASE47( self, main ):
+        """
+        Verify reactive forwarding in ATT topology, use a different ping method than CASE40
+        """
         import time
-        main.log.report( "Verify Reactive forwarding" )
+        main.log.report( "Verify Reactive forwarding (ATT Topology) " )
         main.log.report( "______________________________________________" )
-        main.case( "Enable Reactive forwarding, verify pingall, and disable reactive forwarding" )
+        main.case( "Enable Reactive forwarding, verify ping, and disable reactive forwarding" )
 
         main.step( "Enable Reactive forwarding" )
         appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
@@ -709,7 +713,6 @@ class CHOtest:
                                  onfail="Failed to install fwd app" )
 
         numHosts = int( main.params['TOPO1']['numHosts'] )
-        wait = 1
 
         for i in range(numHosts):
             src = "h1"
@@ -729,10 +732,13 @@ class CHOtest:
                                  onfail="Failed to deactivate fwd app" )
 
     def CASE48( self, main ):
+        """
+        Verify reactive forwarding in Chordal topology, use a different ping method than CASE41
+        """
         import time
-        main.log.report( "Verify Reactive forwarding" )
+        main.log.report( "Verify Reactive forwarding (Chordal Topology) " )
         main.log.report( "______________________________________________" )
-        main.case( "Enable Reactive forwarding, verify pingall, and disable reactive forwarding" )
+        main.case( "Enable Reactive forwarding, verify ping, and disable reactive forwarding" )
 
         main.step( "Enable Reactive forwarding" )
         appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
@@ -741,7 +747,6 @@ class CHOtest:
                                  onfail="Failed to install fwd app" )
 
         numHosts = int( main.params['TOPO2']['numHosts'] )
-        wait = 1
 
         for i in range(numHosts):
             src = "h1"
@@ -761,10 +766,13 @@ class CHOtest:
                                  onfail="Failed to deactivate fwd app" )
 
     def CASE49( self, main ):
+        """
+        Verify reactive forwarding in Spine-leaf topology, use a different ping method than CASE42
+        """
         import time
-        main.log.report( "Verify Reactive forwarding" )
+        main.log.report( "Verify Reactive forwarding (Spine-leaf Topology) " )
         main.log.report( "______________________________________________" )
-        main.case( "Enable Reactive forwarding, verify pingall, and disable reactive forwarding" )
+        main.case( "Enable Reactive forwarding, verify ping, and disable reactive forwarding" )
 
         main.step( "Enable Reactive forwarding" )
         appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
@@ -773,11 +781,10 @@ class CHOtest:
                                  onfail="Failed to install fwd app" )
 
         numHosts = int( main.params['TOPO3']['numHosts'] )
-        wait = 1
 
-        for i in range(12, numHosts+11):
+        for i in range(11, numHosts+10):
             src = "h11"
-            dest = "h" + str(i)
+            dest = "h" + str(i+1)
             main.Mininet1.handle.sendline( src + " ping " + dest + " -c 3 -i 1 -W 1" )
             main.Mininet1.handle.expect( "mininet>" )
             main.log.info( main.Mininet1.handle.before )
@@ -974,6 +981,216 @@ class CHOtest:
         utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Reactive Mode IPv6 Pingall test PASS",
                                  onfail="Reactive Mode IPv6 Pingall test FAIL" )
+
+    def CASE147( self, main ):
+        """
+        Verify IPv6 reactive forwarding in ATT topology, use a different ping method than CASE140
+        """
+        import time
+        main.log.report( "Verify IPv6 Reactive forwarding (ATT Topology)" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable Reactive forwarding, verify ping6, and disable reactive forwarding" )
+
+        main.step( "Enable IPv4 Reactive forwarding" )
+        appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully install fwd app",
+                                 onfail="Failed to install fwd app" )
+
+        main.step( "Set IPv6 cfg parameters for Reactive forwarding" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                 onpass="Reactive mode ipv6Fowarding cfg is set to true",
+                                 onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
+
+
+        numHosts = int( main.params['TOPO1']['numHosts'] )
+
+        for i in range(numHosts):
+            src = "h1"
+            dest = "1000::" + str(i+1)
+            main.Mininet1.handle.sendline( src + " ping6 " + dest + " -c 3 -i 1 -W 1")
+            main.Mininet1.handle.expect( "mininet>" )
+            main.log.info( main.Mininet1.handle.before )
+
+        hosts = main.CLIs[0].hosts( jsonFormat=False )
+
+        main.log.info( hosts )
+
+        main.step( "Disable Reactive forwarding" )
+
+        main.log.info( "Uninstall IPv6 reactive forwarding app" )
+        appCheck = main.TRUE
+        appResults = main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        pool = []
+        for cli in main.CLIs:
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
+            t.start()
+
+        for t in pool:
+            t.join()
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
+
+        # Waiting for reative flows to be cleared.
+        time.sleep( 30 )
+
+        main.step( "Disable IPv4 Reactive forwarding" )
+        appResult =  main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully deactivated IPv4 fwd app",
+                                 onfail="Failed to deactivate IPv4 fwd app" )
+
+    def CASE148( self, main ):
+        """
+        Verify reactive forwarding in Chordal topology, use a different ping method than CASE141
+        """
+        import time
+        main.log.report( "Verify IPv6 Reactive forwarding (Chordal Topology)" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable Reactive forwarding, verify ping6, and disable reactive forwarding" )
+
+        main.step( "Enable IPv4 Reactive forwarding" )
+        appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully install fwd app",
+                                 onfail="Failed to install fwd app" )
+
+        main.step( "Set IPv6 cfg parameters for Reactive forwarding" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                 onpass="Reactive mode ipv6Fowarding cfg is set to true",
+                                 onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
+
+
+        numHosts = int( main.params['TOPO2']['numHosts'] )
+
+        for i in range(numHosts):
+            src = "h1"
+            dest = "1000::" + str(i+1)
+            main.Mininet1.handle.sendline( src + " ping6 " + dest + " -c 3 -i 1 -W 1")
+            main.Mininet1.handle.expect( "mininet>" )
+            main.log.info( main.Mininet1.handle.before )
+
+        hosts = main.CLIs[0].hosts( jsonFormat=False )
+
+        main.log.info( hosts )
+
+        main.step( "Disable Reactive forwarding" )
+
+        main.log.info( "Uninstall IPv6 reactive forwarding app" )
+        appCheck = main.TRUE
+        appResults = main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        pool = []
+        for cli in main.CLIs:
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
+            t.start()
+
+        for t in pool:
+            t.join()
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
+
+        # Waiting for reative flows to be cleared.
+        time.sleep( 30 )
+
+        main.step( "Disable IPv4 Reactive forwarding" )
+        appResult =  main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully deactivated IPv4 fwd app",
+                                 onfail="Failed to deactivate IPv4 fwd app" )
+
+    def CASE149( self, main ):
+        """
+        Verify reactive forwarding in Spine-leaf topology, use a different ping method than CASE142
+        """
+        import time
+        main.log.report( "Verify IPv6 Reactive forwarding (Spine-leaf Topology)" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable Reactive forwarding, verify ping6, and disable reactive forwarding" )
+
+        main.step( "Enable IPv4 Reactive forwarding" )
+        appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully install fwd app",
+                                 onfail="Failed to install fwd app" )
+
+        main.step( "Set IPv6 cfg parameters for Reactive forwarding" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                 onpass="Reactive mode ipv6Fowarding cfg is set to true",
+                                 onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
+
+
+        numHosts = int( main.params['TOPO3']['numHosts'] )
+
+        for i in range(11, numHosts+10):
+            src = "h11"
+            dest = "1000::" + str(i+1)
+            main.Mininet1.handle.sendline( src + " ping6 " + dest + " -c 3 -i 1 -W 1")
+            main.Mininet1.handle.expect( "mininet>" )
+            main.log.info( main.Mininet1.handle.before )
+
+        hosts = main.CLIs[0].hosts( jsonFormat=False )
+
+        main.log.info( hosts )
+
+        main.step( "Disable Reactive forwarding" )
+
+        main.log.info( "Uninstall IPv6 reactive forwarding app" )
+        appCheck = main.TRUE
+        appResults = main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        pool = []
+        for cli in main.CLIs:
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
+            t.start()
+
+        for t in pool:
+            t.join()
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
+
+        # Waiting for reative flows to be cleared.
+        time.sleep( 30 )
+
+        main.step( "Disable IPv4 Reactive forwarding" )
+        appResult =  main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully deactivated IPv4 fwd app",
+                                 onfail="Failed to deactivate IPv4 fwd app" )
 
     def CASE5( self, main ):
         """
@@ -1185,13 +1402,13 @@ class CHOtest:
 
     def CASE61( self ):
         """
-        Install 600 host intents and verify ping all for Chordal Topology
+        Install 300 host intents and verify ping all for Chordal Topology
         """
-        main.log.report( "Add 600 host intents and verify pingall (Chordal Topo)" )
+        main.log.report( "Add 300 host intents and verify pingall (Chordal Topo)" )
         main.log.report( "_______________________________________" )
         import itertools
 
-        main.case( "Install 600 host intents" )
+        main.case( "Install 300 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
         hostCombos = list( itertools.combinations( main.hostMACs, 2 ) )
@@ -1418,13 +1635,13 @@ class CHOtest:
 
     def CASE161( self ):
         """
-        Verify IPv6 ping across 600 host intents (Chordal Topology)
+        Verify IPv6 ping across 300 host intents (Chordal Topology)
         """
-        main.log.report( "Verify IPv6 ping across 600 host intents (Chordal Topology)" )
+        main.log.report( "Verify IPv6 ping across 300 host intents (Chordal Topology)" )
         main.log.report( "_________________________________________________" )
         import itertools
         import time
-        main.case( "IPv6 ping all 600 host intents" )
+        main.case( "IPv6 ping all 300 host intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -1447,8 +1664,8 @@ class CHOtest:
         utilities.assert_equals(
             expect=main.TRUE,
             actual=caseResult,
-            onpass="IPv6 Ping across 600 host intents test PASS",
-            onfail="IPv6 Ping across 600 host intents test FAIL" )
+            onpass="IPv6 Ping across 300 host intents test PASS",
+            onfail="IPv6 Ping across 300 host intents test FAIL" )
 
     def CASE162( self ):
         """
@@ -1458,7 +1675,7 @@ class CHOtest:
         main.log.report( "_________________________________________________" )
         import itertools
         import time
-        main.case( "IPv6 ping all 600 host intents" )
+        main.case( "IPv6 ping all 2278 host intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -1481,8 +1698,8 @@ class CHOtest:
         utilities.assert_equals(
             expect=main.TRUE,
             actual=caseResult,
-            onpass="IPv6 Ping across 600 host intents test PASS",
-            onfail="IPv6 Ping across 600 host intents test FAIL" )
+            onpass="IPv6 Ping across 2278 host intents test PASS",
+            onfail="IPv6 Ping across 2278 host intents test FAIL" )
 
     def CASE70( self, main ):
         """
@@ -1534,16 +1751,27 @@ class CHOtest:
                 OPTION="down" )
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkDown = main.ONOSbench.checkStatus(
+        main.step("Verify link down is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - int( switchLinksToToggle ) * 6 ) )
+            if linkDown:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
-            onpass="Link Down discovered properly",
+            onpass="Link down discovered properly",
             onfail="Link down was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -1643,17 +1871,28 @@ class CHOtest:
                 OPTION="up" )
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkUp = main.ONOSbench.checkStatus(
-            topology_output,
-            main.numMNswitches,
-            str( main.numMNlinks ) )
+        main.step("Verify link up is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkUp = main.ONOSbench.checkStatus(
+                topology_output,
+                main.numMNswitches,
+                str( main.numMNlinks ) )
+            if linkUp:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkUp,
             onpass="Link up discovered properly",
             onfail="Link up was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -1707,7 +1946,7 @@ class CHOtest:
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
         if not linkUp:
-            main.log.debug( "Link down was not discovered correctly" )
+            main.log.debug( "Link up was not discovered correctly" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
         if not intentState:
@@ -1767,16 +2006,27 @@ class CHOtest:
                 OPTION="down" )
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkDown = main.ONOSbench.checkStatus(
+        main.step("Verify link down is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - int( switchLinksToToggle ) * 6 ) )
+            if linkDown:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
-            onpass="Link Down discovered properly",
+            onpass="Link down discovered properly",
             onfail="Link down was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -1876,17 +2126,28 @@ class CHOtest:
                 OPTION="up" )
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkUp = main.ONOSbench.checkStatus(
-            topology_output,
-            main.numMNswitches,
-            str( main.numMNlinks ) )
+        main.step("Verify link up is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkUp = main.ONOSbench.checkStatus(
+                topology_output,
+                main.numMNswitches,
+                str( main.numMNlinks ) )
+            if linkUp:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkUp,
             onpass="Link up discovered properly",
             onfail="Link up was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -1940,7 +2201,7 @@ class CHOtest:
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
         if not linkUp:
-            main.log.debug( "Link down was not discovered correctly" )
+            main.log.debug( "Link up was not discovered correctly" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
         if not intentState:
@@ -1977,16 +2238,27 @@ class CHOtest:
                 OPTION="down")
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkDown = main.ONOSbench.checkStatus(
+        main.step("Verify link down is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - 5 * 2 ) )
+            if linkDown:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
-            onpass="Link Down discovered properly",
+            onpass="Link down discovered properly",
             onfail="Link down was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -2073,17 +2345,28 @@ class CHOtest:
                 OPTION="up")
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkUp = main.ONOSbench.checkStatus(
-            topology_output,
-            main.numMNswitches,
-            str( main.numMNlinks ) )
+        main.step("Verify link up is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkUp = main.ONOSbench.checkStatus(
+                topology_output,
+                main.numMNswitches,
+                str( main.numMNlinks ) )
+            if linkUp:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkUp,
             onpass="Link up discovered properly",
             onfail="Link up was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -2137,7 +2420,7 @@ class CHOtest:
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
         if not linkUp:
-            main.log.debug( "Link down was not discovered correctly" )
+            main.log.debug( "Link up was not discovered correctly" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
         if not intentState:
@@ -2174,16 +2457,27 @@ class CHOtest:
                 OPTION="down")
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkDown = main.ONOSbench.checkStatus(
+        main.step("Verify link down is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - 5 * 2 ) )
+            if linkDown:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
-            onpass="Link Down discovered properly",
+            onpass="Link down discovered properly",
             onfail="Link down was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -2270,17 +2564,28 @@ class CHOtest:
                 OPTION="up")
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkUp = main.ONOSbench.checkStatus(
-            topology_output,
-            main.numMNswitches,
-            str( main.numMNlinks ) )
+        main.step("Verify link up is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkUp = main.ONOSbench.checkStatus(
+                topology_output,
+                main.numMNswitches,
+                str( main.numMNlinks ) )
+            if linkUp:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkUp,
             onpass="Link up discovered properly",
             onfail="Link up was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -2334,7 +2639,7 @@ class CHOtest:
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
         if not linkUp:
-            main.log.debug( "Link down was not discovered correctly" )
+            main.log.debug( "Link up was not discovered correctly" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
         if not intentState:
@@ -2364,6 +2669,8 @@ class CHOtest:
         main.log.report( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
         main.log.report( "___________________________________________________________________________" )
         main.log.case( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
+
+        main.step( "Bring some core links down" )
         linkIndex = range(4)
         linkIndexS9 = random.sample(linkIndex,1)[0]
         linkIndex.remove(linkIndexS9)
@@ -2381,16 +2688,27 @@ class CHOtest:
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="down" )
         time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkDown = main.ONOSbench.checkStatus(
+        main.step("Verify link down is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - 4 ))
+            if linkDown:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
-            onpass="Link Down discovered properly",
+            onpass="Link down discovered properly",
             onfail="Link down was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -2470,6 +2788,7 @@ class CHOtest:
         main.case(
             "Host intents - Bring the core links up that are down and verify ping all" )
 
+        main.step( "Bring up the core links that are down" )
         # Work around for link state propagation delay. Added some sleep time.
         # main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="up" )
         # main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="up" )
@@ -2478,17 +2797,28 @@ class CHOtest:
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="up" )
         time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkUp = main.ONOSbench.checkStatus(
-            topology_output,
-            main.numMNswitches,
-            str( main.numMNlinks ) )
+        main.step("Verify link up is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkUp = main.ONOSbench.checkStatus(
+                topology_output,
+                main.numMNswitches,
+                str( main.numMNlinks ) )
+            if linkUp:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkUp,
             onpass="Link up discovered properly",
             onfail="Link up was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -2542,7 +2872,7 @@ class CHOtest:
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
         if not linkUp:
-            main.log.debug( "Link down was not discovered correctly" )
+            main.log.debug( "Link up was not discovered correctly" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
         if not intentState:
@@ -2573,6 +2903,8 @@ class CHOtest:
         main.log.report( "Bring some core links down and verify ping all (Point Intents-Spine Topo)" )
         main.log.report( "___________________________________________________________________________" )
         main.case( "Bring some core links down and verify ping all (Point Intents-Spine Topo)" )
+
+        main.step( "Bring some core links down" )
         linkIndex = range(4)
         linkIndexS9 = random.sample(linkIndex,1)[0]
         linkIndex.remove(linkIndexS9)
@@ -2590,16 +2922,27 @@ class CHOtest:
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="down" )
         time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkDown = main.ONOSbench.checkStatus(
+        main.step("Verify link down is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - 4 ))
+            if linkDown:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
-            onpass="Link Down discovered properly",
+            onpass="Link down discovered properly",
             onfail="Link down was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -2679,6 +3022,7 @@ class CHOtest:
         main.case(
             "Point intents - Bring the core links up that are down and verify ping all" )
 
+        main.step( "Bring up the core links that are down" )
         # Work around for link state propagation delay. Added some sleep time.
         # main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="up" )
         # main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="up" )
@@ -2687,17 +3031,28 @@ class CHOtest:
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="up" )
         time.sleep( link_sleep )
 
-        topology_output = main.ONOScli1.topology()
-        linkUp = main.ONOSbench.checkStatus(
-            topology_output,
-            main.numMNswitches,
-            str( main.numMNlinks ) )
+        main.step("Verify link up is discoverd by onos")
+        # Giving onos multiple chances to discover link events
+        for i in range( main.linkCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+                main.log.info("Giving onos some time...")
+                time.sleep( link_sleep )
+
+            topology_output = main.ONOScli1.topology()
+            linkUp = main.ONOSbench.checkStatus(
+                topology_output,
+                main.numMNswitches,
+                str( main.numMNlinks ) )
+            if linkUp:
+                break
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkUp,
             onpass="Link up discovered properly",
             onfail="Link up was not discovered in " +
-            str( link_sleep ) +
+            str( link_sleep * main.linkCheck ) +
             " seconds" )
 
         main.step("Verify intents are installed")
@@ -2751,7 +3106,7 @@ class CHOtest:
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
         if not linkUp:
-            main.log.debug( "Link down was not discovered correctly" )
+            main.log.debug( "Link up was not discovered correctly" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
         if not intentState:

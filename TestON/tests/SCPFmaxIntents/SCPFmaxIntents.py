@@ -214,10 +214,13 @@ class SCPFmaxIntents:
             Setting up null-provider
         """
         import json
-
         # Activate apps
         main.step("Activating null-provider")
-        appStatus = main.CLIs[0].activateApp('org.onosproject.null')
+        appStatus = utilities.retry( main.CLIs[0].activateApp,
+                                     main.FALSE,
+                                     ['org.onosproject.null'],
+                                     sleep=main.verifySleep,
+                                     attempts=main.verifyAttempts )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=appStatus,
                                  onpass="Successfully activated null-provider",
@@ -225,12 +228,26 @@ class SCPFmaxIntents:
 
         # Setup the null-provider
         main.step("Configuring null-provider")
-        cfgStatus = main.ONOSbench.onosCfgSet( main.ONOSip[0],
-                'org.onosproject.provider.nil.NullProviders', 'deviceCount 3' )
-        cfgStatus = cfgStatus and main.ONOSbench.onosCfgSet( main.ONOSip[0],
-                'org.onosproject.provider.nil.NullProviders', 'topoShape reroute' )
-        cfgStatus = cfgStatus and main.ONOSbench.onosCfgSet( main.ONOSip[0],
-                'org.onosproject.provider.nil.NullProviders', 'enabled true' )
+        cfgStatus = utilities.retry( main.ONOSbench.onosCfgSet,
+                                     main.FALSE,
+                                     [ main.ONOSip[0],
+                                      'org.onosproject.provider.nil.NullProviders', 'deviceCount 3'],
+                                     sleep=main.verifySleep,
+                                     attempts = main.verifyAttempts )
+        cfgStatus = cfgStatus and utilities.retry( main.ONOSbench.onosCfgSet,
+                                                   main.FALSE,
+                                                   [ main.ONOSip[0],
+                                                     'org.onosproject.provider.nil.NullProviders', 'topoShape reroute'],
+                                                   sleep=main.verifySleep,
+                                                   attempts = main.verifyAttempts )
+
+        cfgStatus = cfgStatus and utilities.retry( main.ONOSbench.onosCfgSet,
+                                                   main.FALSE,
+                                                   [ main.ONOSip[0],
+                                                     'org.onosproject.provider.nil.NullProviders', 'enabled true'],
+                                                   sleep=main.verifySleep,
+                                                   attempts = main.verifyAttempts )
+
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cfgStatus,
@@ -459,7 +476,9 @@ class SCPFmaxIntents:
                                  onpass = "Successfully pushed and verified intents",
                                  onfail = "Failed to push and verify intents" )
         currIntents = main.ONOScli1.getTotalIntentsNum()
-        currFlows = main.ONOScli1.getTotalFlowsNum()
+        currFlows = main.ONOScli1.getTotalFlowsNum( timeout = main.timeout )
+        main.log.info( "Total Intents Installed: {}".format( currIntents ) )
+        main.log.info( "Total Flows ADDED: {}".format( currFlows ) )
 
         main.log.info("Writing results to DB file")
         with open(main.dbFileName, "a") as dbFile:

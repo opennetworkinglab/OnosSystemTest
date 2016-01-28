@@ -2197,20 +2197,19 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getTotalFlowsNum( self ):
+    def getTotalFlowsNum( self, timeout=60 ):
         """
         Description:
-            Get the total number of flows, include every states.
+            Get the number of ADDED flows.
         Return:
-            The number of flows
+            The number of ADDED flows
         """
         try:
-            cmd = "summary -j"
-            response = self.sendline( cmd )
+            cmd = "flows -s|grep ADDED|wc -l"
+            response = self.sendline( cmd, timeout=timeout )
             if response == None:
                 return  -1
-            response = json.loads( response )
-            return int( response.get("flows") )
+            return int( response )
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

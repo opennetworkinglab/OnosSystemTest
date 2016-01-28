@@ -1,0 +1,99 @@
+<PARAMS>
+
+    # 0-init
+    # 1-setup
+    # 2-Install
+    # 10-null provider setup
+    # 20-pushing intents, and rerouting intents if reroute is true
+    # 0,1,2,10,20,1,2,10,20,1,2,10,20
+   <testcases>0,1,2,11,20,1,2,11,20,1,2,11,20,1,2,11,20</testcases>
+
+    <reroute>False</reroute>
+
+    <SCALE>1,3,5,7</SCALE>
+
+    <DEPENDENCY>
+        <path>/tests/SCPFscalingMaxIntents/Dependency/</path>
+        <wrapper1>startUp</wrapper1>
+        <topology>rerouteTopo.py</topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers</cellApps>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <SLEEP>
+        <startup>10</startup>
+        <install>10</install>
+        <verify>15</verify>
+        <reroute>3</reroute>
+        # timeout for pexpect
+        <timeout>300</timeout>
+    </SLEEP>
+
+    <ATTEMPTS>
+        <verify>3</verify>
+        <push>3</push>
+    </ATTEMPTS>
+
+    <DATABASE>
+        <file>/tmp/ScalingMaxIntentDB</file>
+        <nic>1gig</nic>
+        <node>baremetal</node>
+    </DATABASE>
+
+    <LINK>
+        <ingress>0000000000000001/5</ingress>
+        <egress>0000000000000007/5</egress>
+    </LINK>
+
+    # CASE10
+    <NULL>
+        # CASE20
+        <PUSH>
+            <batch_size>100</batch_size>
+            <min_intents>100</min_intents>
+            <max_intents>100000</max_intents>
+            <check_interval>100</check_interval>
+        </PUSH>
+
+        # if reroute is true
+        <REROUTE>
+            <batch_size>1000</batch_size>
+            <min_intents>10000</min_intents>
+            <max_intents>1000000</max_intents>
+            <check_interval>100000</check_interval>
+        </REROUTE>
+    </NULL>
+
+    # CASE11
+    <OVS>
+        # CASE20
+        <PUSH>
+            <batch_size>1000</batch_size>
+            <min_intents>10000</min_intents>
+            <max_intents>500000</max_intents>
+            <check_interval>10000</check_interval>
+        </PUSH>
+
+        # if reroute is true
+        <REROUTE>
+            <batch_size>1000</batch_size>
+            <min_intents>10000</min_intents>
+            <max_intents>500000</max_intents>
+            <check_interval>10000</check_interval>
+        </REROUTE>
+    </OVS>
+
+
+</PARAMS>

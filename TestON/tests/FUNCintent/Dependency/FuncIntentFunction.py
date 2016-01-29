@@ -11,18 +11,18 @@ def __init__( self ):
     self.default = ''
 
 def installHostIntent( main,
-                                name,
-                                host1,
-                                host2,
-                                onosNode=0,
-                                ethType="",
-                                bandwidth="",
-                                lambdaAlloc=False,
-                                ipProto="",
-                                ipAddresses="",
-                                tcp="",
-                                sw1="",
-                                sw2=""):
+                       name,
+                       host1,
+                       host2,
+                       onosNode=0,
+                       ethType="",
+                       bandwidth="",
+                       lambdaAlloc=False,
+                       ipProto="",
+                       ipAddresses="",
+                       tcp="",
+                       sw1="",
+                       sw2=""):
     """
     Installs a Host Intent
 
@@ -83,7 +83,7 @@ def installHostIntent( main,
                         args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
         return intentId
     else:
-        main.log.error( "Single to Multi Intent did not install correctly" )
+        main.log.error( "Host Intent did not install correctly" )
         return main.FALSE
 
 def testHostIntent( main,
@@ -149,7 +149,7 @@ def testHostIntent( main,
     tempHostsData = {}
     onosNode = int( onosNode )
 
-    main.log.info( itemName + ": Testing Single to Multi Point Intent" )
+    main.log.info( itemName + ": Testing Host Intent" )
 
     if not host1.get( "id" ):
         main.log.warn( "Id not given for host1 {0}. Loading from main.hostData".format( host1.get( "name" ) ) )
@@ -1511,8 +1511,7 @@ def checkIntentState( main, intentsId ):
         # Second check of intents since some of the intents may be in
         # INSTALLING state, they should be in INSTALLED at this time
         for i in range( main.numCtrls ):
-            tempResult = main.CLIs[ i ].checkIntentState(
-                                                        intentsId=intentsId )
+            tempResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
             results.append( tempResult )
         if all( result == main.TRUE for result in results ):
             main.log.info( itemName + ": Intents are installed correctly" )

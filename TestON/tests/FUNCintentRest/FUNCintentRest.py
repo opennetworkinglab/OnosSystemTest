@@ -1,5 +1,10 @@
 
 # Testing the basic intent functionality of ONOS
+# TODO: Replace the CLI calls with REST API equivalents as they become available.
+#           - May need to write functions in the onosrestdriver.py file to do this
+# TODO: Complete implementation of case 3000, 4000, and 6000 as REST API allows
+#           -Currently there is no support in the REST API for Multi to Single and Single to Multi point intents
+#            As such, these cases are incomplete and should not be enabled in the .params file
 
 import time
 import json
@@ -48,11 +53,12 @@ class FUNCintentRest:
             wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
             wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-            main.checkIntentSleep = int( main.params[ 'SLEEP' ]\
-                    [ 'checkintent' ] )
+            main.checkIntentSleep = int( main.params[ 'SLEEP' ][ 'checkintent' ] )
+            main.removeIntentsleeo = int( main.params[ 'SLEEP' ][ 'removeintent' ] )
             main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
             main.addIntentSleep = int( main.params[ 'SLEEP' ][ 'addIntent' ] )
+            main.checkTopoAttempts = int( main.params[ 'SLEEP' ][ 'topoAttempts' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
@@ -60,8 +66,12 @@ class FUNCintentRest:
             main.hostsData = {}
             main.CLIs = []
             main.ONOSip = []
+            main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
+            main.scapyHosts = []  # List of scapy hosts for iterating
+            main.assertReturnString = ''  # Assembled assert return string
 
             main.ONOSip = main.ONOSbench.getOnosIps()
+            print main.ONOSip
 
             # Assigning ONOS cli handles to a list
             try:
@@ -94,7 +104,7 @@ class FUNCintentRest:
             copyResult1 = main.ONOSbench.scp( main.Mininet1,
                                               main.dependencyPath +
                                               main.topology,
-                                              main.Mininet1.home,
+                                              main.Mininet1.home + "custom/",
                                               direction="to" )
             if main.CLIs:
                 stepResult = main.TRUE
@@ -154,6 +164,18 @@ class FUNCintentRest:
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
 
+        time.sleep( main.startUpSleep )
+        main.step( "Uninstalling ONOS package" )
+        onosUninstallResult = main.TRUE
+        for ip in main.ONOSip:
+            onosUninstallResult = onosUninstallResult and \
+                    main.ONOSbench.onosUninstall( nodeIp=ip )
+        stepResult = onosUninstallResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully uninstalled ONOS package",
+                                 onfail="Failed to uninstall ONOS package" )
+
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
 
@@ -184,18 +206,6 @@ class FUNCintentRest:
                                  actual=stepResult,
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = main.TRUE
-        for ip in main.ONOSip:
-            onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=ip )
-        stepResult = onosUninstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully uninstalled ONOS package",
-                                 onfail="Failed to uninstall ONOS package" )
 
         time.sleep( main.startUpSleep )
         main.step( "Installing ONOS package" )
@@ -234,12 +244,103 @@ class FUNCintentRest:
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
 
+        # Revisit adding the cli after ensuring the test works without it
+        # Start an ONOS cli to provide functionality that is not currently
+        # supported by the Rest API
+
+        # main.step( "Start ONOS cli" )
+        # cliResult = main.TRUE
+        # for i in range( main.numCtrls ):
+        #     cliResult = cliResult and \
+        #                 main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
+        # stepResult = cliResult
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=stepResult,
+        #                          onpass="Successfully start ONOS cli",
+        #                          onfail="Failed to start ONOS cli" )
+
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
 
+        main.intentFunction.report( main )
+
     def CASE8( self, main ):
+        # OLD FUNCintentRest CASE 8
+        # This remains here for archiving and reference purposes and will be
+        # removed when the new FUNCintentRest is verified to work.
+        # """
+        # Compare Topo
+        # """
+        # import json
+
+        # main.case( "Compare ONOS Topology view to Mininet topology" )
+        # main.caseExplanation = "Compare topology elements between Mininet" +\
+        #                         " and ONOS"
+
+        # main.step( "Gathering topology information" )
+        # # TODO: add a paramaterized sleep here
+        # devicesResults = main.TRUE  # Overall Boolean for device correctness
+        # linksResults = main.TRUE  # Overall Boolean for link correctness
+        # hostsResults = main.TRUE  # Overall Boolean for host correctness
+        # devices = main.topo.getAllDevices( main )
+        # hosts = main.topo.getAllHosts( main )
+        # ports = main.topo.getAllPorts( main )
+        # links = main.topo.getAllLinks( main )
+        # clusters = main.topo.getAllClusters( main )
+
+        # mnSwitches = main.Mininet1.getSwitches()
+        # mnLinks = main.Mininet1.getLinks()
+        # mnHosts = main.Mininet1.getHosts()
+
+        # main.step( "Comparing MN topology to ONOS topology" )
+        # for controller in range( main.numCtrls ):
+        #     controllerStr = str( controller + 1 )
+        #     if devices[ controller ] and ports[ controller ] and\
+        #         "Error" not in devices[ controller ] and\
+        #         "Error" not in ports[ controller ]:
+
+        #         currentDevicesResult = main.Mininet1.compareSwitches(
+        #                 mnSwitches,
+        #                 json.loads( devices[ controller ] ),
+        #                 json.loads( ports[ controller ] ) )
+        #     else:
+        #         currentDevicesResult = main.FALSE
+        #     utilities.assert_equals( expect=main.TRUE,
+        #                              actual=currentDevicesResult,
+        #                              onpass="ONOS" + controllerStr +
+        #                              " Switches view is correct",
+        #                              onfail="ONOS" + controllerStr +
+        #                              " Switches view is incorrect" )
+
+        #     if links[ controller ] and "Error" not in links[ controller ]:
+        #         currentLinksResult = main.Mininet1.compareLinks(
+        #                 mnSwitches, mnLinks,
+        #                 json.loads( links[ controller ] ) )
+        #     else:
+        #         currentLinksResult = main.FALSE
+        #     utilities.assert_equals( expect=main.TRUE,
+        #                              actual=currentLinksResult,
+        #                              onpass="ONOS" + controllerStr +
+        #                              " links view is correct",
+        #                              onfail="ONOS" + controllerStr +
+        #                              " links view is incorrect" )
+
+        #     if hosts[ controller ] or "Error" not in hosts[ controller ]:
+        #         currentHostsResult = main.Mininet1.compareHosts(
+        #                 mnHosts,
+        #                 json.loads( hosts[ controller ] ) )
+        #     else:
+        #         currentHostsResult = main.FALSE
+        #     utilities.assert_equals( expect=main.TRUE,
+        #                              actual=currentHostsResult,
+        #                              onpass="ONOS" + controllerStr +
+        #                              " hosts exist in Mininet",
+        #                              onfail="ONOS" + controllerStr +
+        #                              " hosts don't match Mininet" )
+
+        # NEW FUNCintentRest Case 8 as based off of the CASE 8 from FUNCintent
         """
-        Compare Topo
+        Compare ONOS Topology to Mininet Topology
         """
         import json
 
@@ -247,66 +348,114 @@ class FUNCintentRest:
         main.caseExplanation = "Compare topology elements between Mininet" +\
                                 " and ONOS"
 
-        main.step( "Gathering topology information" )
-        # TODO: add a paramaterized sleep here
-        devicesResults = main.TRUE
-        linksResults = main.TRUE
-        hostsResults = main.TRUE
-        devices = main.topo.getAllDevices( main )
-        hosts = main.topo.getAllHosts( main )
-        ports = main.topo.getAllPorts( main )
-        links = main.topo.getAllLinks( main )
-        clusters = main.topo.getAllClusters( main )
+        main.log.info( "Gathering topology information from Mininet" )
+        devicesResults = main.FALSE  # Overall Boolean for device correctness
+        linksResults = main.FALSE  # Overall Boolean for link correctness
+        hostsResults = main.FALSE  # Overall Boolean for host correctness
+        deviceFails = []  # Nodes where devices are incorrect
+        linkFails = []  # Nodes where links are incorrect
+        hostFails = []  # Nodes where hosts are incorrect
+        attempts = main.checkTopoAttempts  # Remaining Attempts
 
         mnSwitches = main.Mininet1.getSwitches()
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
 
-        main.step( "Comparing MN topology to ONOS topology" )
-        for controller in range( main.numCtrls ):
-            controllerStr = str( controller + 1 )
-            if devices[ controller ] and ports[ controller ] and\
-                "Error" not in devices[ controller ] and\
-                "Error" not in ports[ controller ]:
+        main.step( "Comparing Mininet topology to ONOS topology" )
 
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
-            else:
-                currentDevicesResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentDevicesResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " Switches view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " Switches view is incorrect" )
+        while ( attempts >= 0 ) and\
+            ( not devicesResults or not linksResults or not hostsResults ):
+            time.sleep( 2 )
+            if not devicesResults:
+                devices = main.topo.getAllDevices( main )
+                ports = main.topo.getAllPorts( main )
+                devicesResults = main.TRUE
+                deviceFails = []  # Reset for each failed attempt
+            if not linksResults:
+                links = main.topo.getAllLinks( main )
+                linksResults = main.TRUE
+                linkFails = []  # Reset for each failed attempt
+            if not hostsResults:
+                hosts = main.topo.getAllHosts( main )
+                hostsResults = main.TRUE
+                hostFails = []  # Reset for each failed attempt
 
-            if links[ controller ] and "Error" not in links[ controller ]:
-                currentLinksResult = main.Mininet1.compareLinks(
-                        mnSwitches, mnLinks,
-                        json.loads( links[ controller ] ) )
-            else:
-                currentLinksResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentLinksResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " links view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " links view is incorrect" )
+            #  Check for matching topology on each node
+            for controller in range( main.numCtrls ):
+                controllerStr = str( controller + 1 )  # ONOS node number
+                # Compare Devices
+                if devices[ controller ] and ports[ controller ] and\
+                    "Error" not in devices[ controller ] and\
+                    "Error" not in ports[ controller ]:
 
-            if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                currentHostsResult = main.Mininet1.compareHosts(
-                        mnHosts,
-                        json.loads( hosts[ controller ] ) )
-            else:
-                currentHostsResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentHostsResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " hosts exist in Mininet",
-                                     onfail="ONOS" + controllerStr +
-                                     " hosts don't match Mininet" )
+                    try:
+                        deviceData = json.loads( devices[ controller ] )
+                        portData = json.loads( ports[ controller ] )
+                    except (TypeError,ValueError):
+                        main.log.error( "Could not load json: {0} or {1}".format( str( devices[ controller ] ), str( ports[ controller ] ) ) )
+                        currentDevicesResult = main.FALSE
+                    else:
+                        currentDevicesResult = main.Mininet1.compareSwitches(
+                            mnSwitches,deviceData,portData )
+                else:
+                    currentDevicesResult = main.FALSE
+                if not currentDevicesResult:
+                    deviceFails.append( controllerStr )
+                devicesResults = devicesResults and currentDevicesResult
+                # Compare Links
+                if links[ controller ] and "Error" not in links[ controller ]:
+                    try:
+                        linkData = json.loads( links[ controller ] )
+                    except (TypeError,ValueError):
+                        main.log.error("Could not load json:" + str( links[ controller ] ) )
+                        currentLinksResult = main.FALSE
+                    else:
+                        currentLinksResult = main.Mininet1.compareLinks(
+                            mnSwitches, mnLinks,linkData )
+                else:
+                    currentLinksResult = main.FALSE
+                if not currentLinksResult:
+                    linkFails.append( controllerStr )
+                linksResults = linksResults and currentLinksResult
+                # Compare Hosts
+                if hosts[ controller ] and "Error" not in hosts[ controller ]:
+                    try:
+                        hostData = json.loads( hosts[ controller ] )
+                    except (TypeError,ValueError):
+                        main.log.error("Could not load json:" + str( hosts[ controller ] ) )
+                        currentHostsResult = main.FALSE
+                    else:
+                        currentHostsResult = main.Mininet1.compareHosts(
+                                mnHosts,hostData )
+                else:
+                    currentHostsResult = main.FALSE
+                if not currentHostsResult:
+                    hostFails.append( controllerStr )
+                hostsResults = hostsResults and currentHostsResult
+            # Decrement Attempts Remaining
+            attempts -= 1
+
+
+        utilities.assert_equals( expect=[],
+                                 actual=deviceFails,
+                                 onpass="ONOS correctly discovered all devices",
+                                 onfail="ONOS incorrectly discovered devices on nodes: " +
+                                 str( deviceFails ) )
+        utilities.assert_equals( expect=[],
+                                 actual=linkFails,
+                                 onpass="ONOS correctly discovered all links",
+                                 onfail="ONOS incorrectly discovered links on nodes: " +
+                                 str( linkFails ) )
+        utilities.assert_equals( expect=[],
+                                 actual=hostFails,
+                                 onpass="ONOS correctly discovered all hosts",
+                                 onfail="ONOS incorrectly discovered hosts on nodes: " +
+                                 str( hostFails ) )
+        topoResults = hostsResults and linksResults and devicesResults
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=topoResults,
+                                 onpass="ONOS correctly discovered the topology",
+                                 onfail="ONOS incorrectly discovered the topology" )
 
     def CASE9( self, main ):
         '''
@@ -413,7 +562,35 @@ class FUNCintentRest:
                                         "to controller",
                                  onfail="Failed to assign switches to " +
                                         "controller" )
-    def CASE13( self, main ):
+
+    def CASE13( self,main ):
+        """
+            Create Scapy components
+        """
+        main.case( "Create scapy components" )
+        main.step( "Create scapy components" )
+        import json
+        scapyResult = main.TRUE
+        for hostName in main.scapyHostNames:
+            main.Scapy1.createHostComponent( hostName )
+            main.scapyHosts.append( getattr( main, hostName ) )
+
+        main.step( "Start scapy components" )
+        for host in main.scapyHosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully created Scapy Components",
+                                 onfail="Failed to discover Scapy Components" )
+
+    def CASE14( self, main ):
         """
             Discover all hosts and store its data to a dictionary
         """
@@ -441,24 +618,73 @@ class FUNCintentRest:
                                  onpass="Successfully discovered hosts",
                                  onfail="Failed to discover hosts" )
 
-    def CASE14( self, main ):
+    def CASE15( self, main ):
         """
-            Stop mininet
+            Discover all hosts with scapy arp packets and store its data to a dictionary
         """
-        main.log.report( "Stop Mininet topology" )
-        main.case( "Stop Mininet topology" )
+        main.case( "Discover all hosts using scapy" )
+        main.step( "Send packets from each host to the first host and confirm onos discovery" )
+
+        import collections
+        if len( main.scapyHosts ) < 1:
+            main.log.error( "No scapy hosts have been created" )
+            main.skipCase()
+
+        # Send ARP packets from each scapy host component
+        main.intentFunction.sendDiscoveryArp( main, main.scapyHosts )
+
+        stepResult = utilities.retry( f=main.intentFunction.confirmHostDiscovery,
+                                      retValue=main.FALSE, args=[ main ],
+                                      attempts=main.checkTopoAttempts, sleep=2 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ONOS correctly discovered all hosts",
+                                 onfail="ONOS incorrectly discovered hosts" )
+
+        main.step( "Populate hostsData" )
+        stepResult = main.intentFunction.populateHostData( main )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully populated hostsData",
+                                 onfail="Failed to populate hostsData" )
+
+    def CASE16( self, main ):
+        """
+            Stop mininet and remove scapy hosts
+        """
+        main.log.report( "Stop Mininet and Scapy" )
+        main.case( "Stop Mininet and Scapy" )
         main.caseExplanation = "Stopping the current mininet topology " +\
                                 "to start up fresh"
 
+        main.step( "Stopping and Removing Scapy Host Components" )
+        scapyResult = main.TRUE
+        for host in main.scapyHosts:
+            scapyResult = scapyResult and host.stopScapy()
+            main.log.info( "Stopped Scapy Host: {0}".format( host.name ) )
+
+        for host in main.scapyHosts:
+            scapyResult = scapyResult and main.Scapy1.removeHostComponent( host.name )
+            main.log.info( "Removed Scapy Host Component: {0}".format( host.name ) )
+
+        main.scapyHosts = []
+        main.scapyHostIPs = []
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully stopped scapy and removed host components",
+                                 onfail="Failed to stop mininet and scapy" )
+
         main.step( "Stopping Mininet Topology" )
-        topoResult = main.Mininet1.stopNet( )
-        stepResult = topoResult
+        mininetResult = main.Mininet1.stopNet( )
+
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully stop mininet",
                                  onfail="Failed to stop mininet" )
         # Exit if topology did not load properly
-        if not topoResult:
+        if not (mininetResult and scapyResult ):
             main.cleanup()
             main.exit()
 
@@ -502,120 +728,182 @@ class FUNCintentRest:
                                 "etc;\nThe test will use OF " + main.OFProtocol\
                                 + " OVS running in Mininet"
 
-        main.step( "IPV4: Add host intents between h1 and h9" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
-                                              onosNode='0',
+        main.step( "IPV4: Add and test host intents between h1 and h9" )
+        main.assertReturnString = "Assertion result for IPV4 host intent with mac addresses\n"
+        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
+        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='IPV4',
-                                              host1='h1',
-                                              host2='h9',
-                                              host1Id='00:00:00:00:00:01/-1',
-                                              host2Id='00:00:00:00:00:09/-1',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2 )
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='IPV4',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink=18 )
+                                              expectedLink = 18 )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="IPV4: Host intent test successful " +
-                                        "between two IPV4 hosts",
-                                 onfail="IPV4: Host intent test failed " +
-                                        "between two IPV4 hosts")
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
-                                              name='DUALSTACK',
-                                              host1='h3',
-                                              host2='h11',
-                                              host1Id='00:00:00:00:00:03/-1',
-                                              host2Id='00:00:00:00:00:0B/-1',
+        main.assertReturnString = "Assertion Result for dualstack IPV4 with MAC addresses\n"
+        host1 = { "name":"h3", "id":"00:00:00:00:00:03/-1" }
+        host2 = { "name":"h11","id":"00:00:00:00:00:0B/-1"}
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
+                                              name='DUALSTACK1',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2 )
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='DUALSTACK1',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink=18 )
+                                              expectedLink = 18 )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="DUALSTACK: Host intent test " +
-                                        "successful between two " +
-                                        "dual stack host using IPV4",
-                                 onfail="DUALSTACK: Host intent test " +
-                                        "failed between two" +
-                                        "dual stack host using IPV4" )
-
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString)
 
         main.step( "DUALSTACK2: Add host intents between h1 and h11" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        main.assertReturnString = "Assertion Result for dualstack2 host intent\n"
+        host1 = { "name":"h1" }
+        host2 = { "name":"h11" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='DUALSTACK2',
-                                              host1='h1',
-                                              host2='h11',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2 )
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='DUALSTACK2',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink=18 )
+                                              expectedLink = 18 )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="DUALSTACK2: Host intent test " +
-                                        "successful between two " +
-                                        "dual stack host using IPV4",
-                                 onfail="DUALSTACK2: Host intent test " +
-                                        "failed between two" +
-                                        "dual stack host using IPV4" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "1HOP: Add host intents between h1 and h3" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        main.assertReturnString = "Assertion Result for 1HOP for IPV4 same switch\n"
+        host1 = { "name":"h1" }
+        host2 = { "name":"h3" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='1HOP',
-                                              host1='h1',
-                                              host2='h3' )
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2 )
 
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="1HOP: Host intent test " +
-                                        "successful between two " +
-                                        "host using IPV4 in the same switch",
-                                 onfail="1HOP: Host intent test " +
-                                        "failed between two" +
-                                        "host using IPV4 in the same switch" )
-
-        main.step( "VLAN1: Add vlan host intents between h4 and h12" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
-                                              name='VLAN1',
-                                              host1='h4',
-                                              host2='h12',
-                                              host1Id='00:00:00:00:00:04/100',
-                                              host2Id='00:00:00:00:00:0C/100',
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='1HOP',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink=18 )
+                                              expectedLink = 18 )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="VLAN1: Host intent test " +
-                                        "successful between two " +
-                                        "host using IPV4 in the same VLAN",
-                                 onfail="VLAN1: Host intent test " +
-                                        "failed between two" +
-                                        "host using IPV4 in the same VLAN" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "VLAN1: Add vlan host intents between h4 and h12" )
+        main.assertReturnString = "Assertion Result vlan IPV4\n"
+        host1 = { "name":"h4","id":"00:00:00:00:00:04/100" }
+        host2 = { "name":"h12","id":"00:00:00:00:00:0C/100" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
+                                              name='VLAN1',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2 )
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='VLAN1',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink = 18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        main.assertReturnString = "Assertion Result different VLAN negative test\n"
+        host1 = { "name":"h13" }
+        host2 = { "name":"h20" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='VLAN2',
-                                              host1='h13',
-                                              host2='h20' )
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2 )
 
-        utilities.assert_equals( expect=main.FALSE,
-                                 actual=stepResult,
-                                 onpass="VLAN2: Host intent negative test " +
-                                        "successful between two " +
-                                        "host using IPV4 in different VLAN",
-                                 onfail="VLAN2: Host intent negative test " +
-                                        "failed between two" +
-                                        "host using IPV4 in different VLAN" )
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='VLAN2',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink = 18 )
 
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        # Uncomment the following if a REST command is ever added to check leaders
+        # or if the cli is enabled
+
+        # main.step( "Confirm that ONOS leadership is unchanged")
+        # intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
+        # main.intentFunction.checkLeaderChange( intentLeadersOld,
+        #                                         intentLeadersNew )
+
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=testResult,
+        #                          onpass="ONOS Leaders Unchanged",
+        #                          onfail="ONOS Leader Mismatch")
+
+        main.intentFunction.report( main )
 
     def CASE2000( self, main ):
         """
@@ -660,128 +948,140 @@ class FUNCintentRest:
 
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.pointIntent(
+        main.assertReturnString = "Assertion Result for NOOPTION point intent\n"
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1" }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1" }
+        ]
+        testResult = main.FALSE
+        installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="NOOPTION",
-                                       host1="h1",
-                                       host2="h9",
-                                       deviceId1="of:0000000000000005/1",
-                                       deviceId2="of:0000000000000006/1",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       senders=senders,
+                                       recipients=recipients )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="NOOPTION: Point intent test " +
-                                        "successful using no match action",
-                                 onfail="NOOPTION: Point intent test " +
-                                        "failed using no match action" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
-        stepResult = main.TRUE
         main.step( "IPV4: Add point intents between h1 and h9" )
-        stepResult = main.intentFunction.pointIntent(
+        main.assertReturnString = "Assertion Result for IPV4 point intent\n"
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01" }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1","mac":"00:00:00:00:00:09" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="IPV4",
-                                       host1="h1",
-                                       host2="h9",
-                                       deviceId1="of:0000000000000005/1",
-                                       deviceId2="of:0000000000000006/1",
-                                       port1="",
-                                       port2="",
-                                       ethType="IPV4",
-                                       mac1="00:00:00:00:00:01",
-                                       mac2="00:00:00:00:00:09",
-                                       bandwidth="",
-                                       lambdaAlloc=False,
-                                       ipProto="",
-                                       ip1="",
-                                       ip2="",
-                                       tcp1="",
-                                       tcp2="",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="IPV4: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "MAC addresses",
-                                 onfail="IPV4: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "MAC addresses" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
         main.step( "IPV4_2: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.pointIntent(
+        main.assertReturnString = "Assertion Result for IPV4 no mac address point intents\n"
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1" }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="IPV4_2",
-                                       host1="h1",
-                                       host2="h9",
-                                       deviceId1="of:0000000000000005/1",
-                                       deviceId2="of:0000000000000006/1",
-                                       ipProto="",
-                                       ip1="",
-                                       ip2="",
-                                       tcp1="",
-                                       tcp2="",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4_2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="IPV4_2: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "no MAC addresses",
-                                 onfail="IPV4_2: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "no MAC addresses" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
-        mac1 = main.hostsData[ 'h1' ][ 'mac' ]
-        mac2 = main.hostsData[ 'h9' ][ 'mac' ]
-        try:
-            ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/32"
-            ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/32"
-        except KeyError:
-            main.log.debug( "Key Error getting IP addresses of h1 | h9 in" +
-                            "main.hostsData" )
-            ip1 = main.Mininet1.getIPAddress( 'h1')
-            ip2 = main.Mininet1.getIPAddress( 'h9')
-
+        main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV4 using TCP point intents\n"
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01",
+              "ip":main.h1.hostIp }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1","mac":"00:00:00:00:00:09",
+              "ip":main.h9.hostIp }
+        ]
         ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
         # Uneccessary, not including this in the selectors
-        tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
-        tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
+        tcpSrc = main.params[ 'SDNIP' ][ 'srcPort' ]
+        tcpDst = main.params[ 'SDNIP' ][ 'dstPort' ]
 
-        stepResult = main.intentFunction.pointIntent(
-                                           main,
-                                           name="SDNIP-ICMP",
-                                           host1="h1",
-                                           host2="h9",
-                                           deviceId1="of:0000000000000005/1",
-                                           deviceId2="of:0000000000000006/1",
-                                           mac1=mac1,
-                                           mac2=mac2,
-                                           ethType="IPV4",
-                                           ipProto=ipProto,
-                                           ip1=ip1,
-                                           ip2=ip2 )
+        installResult = main.intentFunction.installPointIntent(
+                                       main,
+                                       name="SDNIP-ICMP",
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4",
+                                       ipProto=ipProto,
+                                       tcpSrc=tcpSrc,
+                                       tcpDst=tcpDst )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="SDNIP_ICMP",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="SDNIP-ICMP: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "IP protocol TCP enabled",
-                                 onfail="SDNIP-ICMP: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "IP protocol TCP enabled" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion Result for SDNIP-TCP IPV4 using ICMP point intents\n"
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
         ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/32"
@@ -808,96 +1108,103 @@ class FUNCintentRest:
 
         utilities.assert_equals( expect=main.TRUE,
                              actual=stepResult,
-                                 onpass="SDNIP-TCP: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "IP protocol TCP enabled",
-                                 onfail="SDNIP-TCP: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "IP protocol TCP enabled" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
-        main.step( "DUALSTACK1: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.pointIntent(
+        main.step( "DUALSTACK1: Add point intents between h3 and h11" )
+        main.assertReturnString = "Assertion Result for Dualstack1 IPV4 with mac address point intents\n"
+        senders = [
+            { "name":"h3","device":"of:0000000000000005/3","mac":"00:00:00:00:00:03" }
+        ]
+        recipients = [
+            { "name":"h11","device":"of:0000000000000006/3","mac":"00:00:00:00:00:0B" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="DUALSTACK1",
-                                       host1="h3",
-                                       host2="h11",
-                                       deviceId1="of:0000000000000005",
-                                       deviceId2="of:0000000000000006",
-                                       port1="3",
-                                       port2="3",
-                                       ethType="IPV4",
-                                       mac1="00:00:00:00:00:03",
-                                       mac2="00:00:00:00:00:0B",
-                                       bandwidth="",
-                                       lambdaAlloc=False,
-                                       ipProto="",
-                                       ip1="",
-                                       ip2="",
-                                       tcp1="",
-                                       tcp2="",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="DUALSTACK1",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="DUALSTACK1: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "MAC addresses",
-                                 onfail="DUALSTACK1: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "MAC addresses" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN: Add point intents between h5 and h21" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.pointIntent(
+        main.assertReturnString = "Assertion Result for VLAN IPV4 with mac address point intents\n"
+        senders = [
+            { "name":"h5","device":"of:0000000000000005/5","mac":"00:00:00:00:00:05" }
+        ]
+        recipients = [
+            { "name":"h21","device":"of:0000000000000007/5","mac":"00:00:00:00:00:15" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
-                                       name="VLAN",
-                                       host1="h5",
-                                       host2="h21",
-                                       deviceId1="of:0000000000000005/5",
-                                       deviceId2="of:0000000000000007/5",
-                                       port1="",
-                                       port2="",
-                                       ethType="IPV4",
-                                       mac1="00:00:00:00:00:05",
-                                       mac2="00:00:00:00:00:15",
-                                       bandwidth="",
-                                       lambdaAlloc=False,
-                                       ipProto="",
-                                       ip1="",
-                                       ip2="",
-                                       tcp1="",
-                                       tcp2="",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       name="DUALSTACK1",
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="DUALSTACK1",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="VLAN1: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "MAC addresses",
-                                 onfail="VLAN1: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "MAC addresses" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "1HOP: Add point intents between h1 and h3" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
-                                              name='1HOP',
-                                              host1='h1',
-                                              host2='h3' )
+        main.assertReturnString = "Assertion Result for 1HOP IPV4 with no mac address point intents\n"
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01" }
+        ]
+        recipients = [
+            { "name":"h3","device":"of:0000000000000005/3","mac":"00:00:00:00:00:03" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
+                                       main,
+                                       name="1HOP IPV4",
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="1HOP IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="1HOP: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "no MAC addresses",
-                                 onfail="1HOP: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "no MAC addresses" )
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.intentFunction.report( main )
 
     def CASE3000( self, main ):
         """
@@ -1178,8 +1485,52 @@ class FUNCintentRest:
                                         " to single point intents" )
 
     def CASE5000( self, main ):
+        # """
+        # Will add description in next patch set
+        # """
+        # assert main, "There is no main"
+        # assert main.CLIs, "There is no main.CLIs"
+        # assert main.Mininet1, "Mininet handle should be named Mininet1"
+        # assert main.numSwitch, "Placed the total number of switch topology in \
+        #                         main.numSwitch"
+        # main.case( "Test host mobility with host intents " )
+        # main.step( " Testing host mobility by moving h1 from s5 to s6" )
+        # h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
+
+        # main.log.info( "Moving h1 from s5 to s6")
+
+        # main.Mininet1.moveHost( "h1","s5","s6" )
+
+        # main.intentFunction.getHostsData( main )
+        # h1PostMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
+
+        # utilities.assert_equals( expect="of:0000000000000006",
+        #                          actual=h1PostMove,
+        #                          onpass="Mobility: Successfully moved h1 to s6",
+        #                          onfail="Mobility: Failed to moved h1 to s6" +
+        #                                 " to single point intents" +
+        #                                 " with IPV4 type and MAC addresses" +
+        #                                 " in the same VLAN" )
+
+        # main.step( "IPV4: Add host intents between h1 and h9" )
+        # stepResult = main.TRUE
+        # stepResult = main.intentFunction.hostIntent( main,
+        #                                       onosNode='0',
+        #                                       name='IPV4',
+        #                                       host1='h1',
+        #                                       host2='h9',
+        #                                       host1Id='00:00:00:00:00:01/-1',
+        #                                       host2Id='00:00:00:00:00:09/-1' )
+
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=stepResult,
+        #                          onpass="IPV4: Host intent test successful " +
+        #                                 "between two IPV4 hosts",
+        #                          onfail="IPV4: Host intent test failed " +
+        #                                 "between two IPV4 hosts")
         """
-        Will add description in next patch set
+        Tests Host Mobility
+        Modifies the topology location of h1
         """
         assert main, "There is no main"
         assert main.CLIs, "There is no main.CLIs"
@@ -1187,37 +1538,58 @@ class FUNCintentRest:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
         main.case( "Test host mobility with host intents " )
-        main.step( " Testing host mobility by moving h1 from s5 to s6" )
+        main.step( "Testing host mobility by moving h1 from s5 to s6" )
         h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
         main.log.info( "Moving h1 from s5 to s6")
-
         main.Mininet1.moveHost( "h1","s5","s6" )
 
-        main.intentFunction.getHostsData( main )
+        # Send discovery ping from moved host
+        # Moving the host brings down the default interfaces and creates a new one.
+        # Scapy is restarted on this host to detect the new interface
+        main.h1.stopScapy()
+        main.h1.startScapy()
+
+        # Discover new host location in ONOS and populate host data.
+        # Host 1 IP and MAC should be unchanged
+        main.intentFunction.sendDiscoveryArp( main, [ main.h1 ] )
+        main.intentFunction.populateHostData( main )
+
         h1PostMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
         utilities.assert_equals( expect="of:0000000000000006",
                                  actual=h1PostMove,
                                  onpass="Mobility: Successfully moved h1 to s6",
-                                 onfail="Mobility: Failed to moved h1 to s6" +
+                                 onfail="Mobility: Failed to move h1 to s6" +
                                         " to single point intents" +
                                         " with IPV4 type and MAC addresses" +
                                         " in the same VLAN" )
 
         main.step( "IPV4: Add host intents between h1 and h9" )
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        main.assertReturnString = "Assert result for IPV4 host intent between h1, moved, and h9\n"
+        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
+        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+
+        installResult = main.intentFunction.installHostIntent( main,
+                                              name='IPV4 Mobility IPV4',
                                               onosNode='0',
-                                              name='IPV4',
-                                              host1='h1',
-                                              host2='h9',
-                                              host1Id='00:00:00:00:00:01/-1',
-                                              host2Id='00:00:00:00:00:09/-1' )
+                                              host1=host1,
+                                              host2=host2)
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                                  name='Host Mobility IPV4',
+                                                  intentId = installResult,
+                                                  onosNode='0',
+                                                  host1=host1,
+                                                  host2=host2,
+                                                  sw1="s6",
+                                                  sw2="s2",
+                                                  expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="IPV4: Host intent test successful " +
-                                        "between two IPV4 hosts",
-                                 onfail="IPV4: Host intent test failed " +
-                                        "between two IPV4 hosts")
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.intentFunction.report( main )
+

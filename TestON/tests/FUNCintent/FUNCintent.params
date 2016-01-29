@@ -16,7 +16,7 @@
     # 3000 - Test single to multi point intents
     # 4000 - Test multi to single point intents
     # 5000 - Test host mobility
-    # 6000 - Test multi to single end point failure
+    # 6000 - Test Multi Point intent End Point Failure
 
     <testcases>1,[2,10,12,13,15,1000,2000,3000,4000,5000,6000,16]*2,[2,11,12,13,15,1000,2000,3000,4000,5000,6000,16]*2</testcases>
 

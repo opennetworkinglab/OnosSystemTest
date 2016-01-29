@@ -538,7 +538,6 @@ class FUNCintent:
                                  onpass="Successfully populated hostsData",
                                  onfail="Failed to populate hostsData" )
 
-
     def CASE16( self, main ):
         """
             Stop mininet and remove scapy host
@@ -1496,7 +1495,7 @@ class FUNCintent:
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
         h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
-        main.log.info( "Moving h1 from s5 to s6" )
+        main.log.info( "Moving h1 from s5 to s6")
         main.Mininet1.moveHost( "h1","s5","s6" )
 
         # Send discovery ping from moved host
@@ -1530,16 +1529,16 @@ class FUNCintent:
                                               onosNode='0',
                                               host1=host1,
                                               host2=host2 )
-
-        testResult = main.intentFunction.testHostIntent( main,
-                                              name='Host Mobility IPV4',
-                                              intentId = installResult,
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2,
-                                              sw1="s6",
-                                              sw2="s2",
-                                              expectedLink=18 )
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                                  name='Host Mobility IPV4',
+                                                  intentId = installResult,
+                                                  onosNode='0',
+                                                  host1=host1,
+                                                  host2=host2,
+                                                  sw1="s6",
+                                                  sw2="s2",
+                                                  expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,

@@ -1,0 +1,171 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOScli1>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli1>
+
+        <ONOScli2>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli2>
+
+        <ONOScli3>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli3>
+
+
+        <ONOScli4>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli4>
+
+
+        <ONOScli5>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli5>
+
+
+        <ONOScli6>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli6>
+
+
+        <ONOScli7>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli7>
+
+        <ONOS1>
+            <host>OC1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>9</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS1>
+
+        <ONOS2>
+            <host>OC2</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>10</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS2>
+
+        <ONOS3>
+            <host>OC3</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>11</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS3>
+
+        <ONOS4>
+            <host>OC4</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>12</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS4>
+
+        <ONOS5>
+            <host>OC5</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>13</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS5>
+
+        <ONOS6>
+            <host>OC6</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>14</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS6>
+
+        <ONOS7>
+            <host>OC7</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>15</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS7>
+
+        <Mininet1>
+            <host>OCN</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <connect_order>16</connect_order>
+            <COMPONENTS>
+                #Specify the Option for mininet
+                <arg1> --custom ~/mininet/custom/obelisk.py </arg1>
+                <arg2> --topo obelisk </arg2>
+                <arg3> --switch ovs,protocols=OpenFlow13 </arg3>
+                <controller> none </controller>
+                <home>~/mininet/custom/</home>
+            </COMPONENTS>
+        </Mininet1>
+
+        <Mininet2>
+            <host>OCN</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>RemoteMininetDriver</type>
+            <connect_order>17</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </Mininet2>
+
+    </COMPONENT>
+</TOPOLOGY>

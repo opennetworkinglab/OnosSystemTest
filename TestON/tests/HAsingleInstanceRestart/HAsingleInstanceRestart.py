@@ -1088,6 +1088,7 @@ class HAsingleInstanceRestart:
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing clusters[0]: " +
                                 repr( clusters[ 0 ] ) )
+            numClusters = "ERROR"
         clusterResults = main.FALSE
         if numClusters == 1:
             clusterResults = main.TRUE
@@ -1109,11 +1110,10 @@ class HAsingleInstanceRestart:
             if devices[ controller ] and ports[ controller ] and\
                 "Error" not in devices[ controller ] and\
                 "Error" not in ports[ controller ]:
-
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
+                    currentDevicesResult = main.Mininet1.compareSwitches(
+                            mnSwitches,
+                            json.loads( devices[ controller ] ),
+                            json.loads( ports[ controller ] ) )
             else:
                 currentDevicesResult = main.FALSE
             utilities.assert_equals( expect=main.TRUE,
@@ -1243,6 +1243,7 @@ class HAsingleInstanceRestart:
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Running ONOS Constant State Tests" )
+
         main.step( "Check that each switch has a master" )
         # Assert that each device has a master
         rolesNotNull = main.ONOScli1.rolesNotNull()

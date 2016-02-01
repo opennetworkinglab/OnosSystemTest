@@ -1,6 +1,6 @@
 """
 Description: This test is to determine if ONOS can handle
-    a minority of it's nodes restarting
+             a full network partion
 
 List of test cases:
 CASE1: Compile ONOS and push it to the test machines
@@ -25,7 +25,7 @@ CASE17: Check for basic functionality with distributed primitives
 """
 
 
-class HAkillNodes:
+class HAfullNetPartition:
 
     def __init__( self ):
         self.default = ''
@@ -51,7 +51,7 @@ class HAkillNodes:
         import imp
         import pexpect
         import time
-        main.log.info( "ONOS HA test: Restart a minority of ONOS nodes - " +
+        main.log.info( "ONOS HA test: Partition ONOS nodes into two sub-clusters - " +
                          "initialization" )
         main.case( "Setting up test environment" )
         main.caseExplanation = "Setup the test environment including " +\
@@ -172,21 +172,14 @@ class HAkillNodes:
                                  actual=cleanInstallResult,
                                  onpass="MCI successful",
                                  onfail="MCI failed" )
-
-        main.step( "Make sure ONOS service doesn't automatically respawn" )
-        handle = main.ONOSbench.handle
-        handle.sendline( "sed -i -e 's/^respawn$/#respawn/g' tools/package/init/onos.conf" )
-        handle.expect( "\$" )  # $ from the command
-        handle.expect( "\$" )  # $ from the prompt
-
         # GRAPHS
         # NOTE: important params here:
         #       job = name of Jenkins job
         #       Plot Name = Plot-HA, only can be used if multiple plots
         #       index = The number of the graph under plot name
-        job = "HAkillNodes"
+        job = "HAfullNetPartition"
         plotName = "Plot-HA"
-        index = "1"
+        index = "0"
         graphs = '<ac:structured-macro ac:name="html">\n'
         graphs += '<ac:plain-text-body><![CDATA[\n'
         graphs += '<iframe src="https://onos-jenkins.onlab.us/job/' + job +\
@@ -300,10 +293,6 @@ class HAkillNodes:
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
-
-        main.step( "Clean up ONOS service changes" )
-        handle.sendline( "git checkout -- tools/package/init/onos.conf" )
-        handle.expect( "\$" )
 
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )
@@ -1721,12 +1710,13 @@ class HAkillNodes:
         """
         The Failure case.
         """
+        import math
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
-        main.case( "Kill minority of ONOS nodes" )
+        main.case( "Partition ONOS nodes into two distinct partitions" )
 
         main.step( "Checking ONOS Logs for errors" )
         for node in main.nodes:
@@ -1735,24 +1725,49 @@ class HAkillNodes:
 
         n = len( main.nodes )  # Number of nodes
         p = ( ( n + 1 ) / 2 ) + 1  # Number of partitions
-        main.kill = [ 0 ]  # ONOS node to kill, listed by index in main.nodes
+        main.partition = [ 0 ]  # ONOS node to partition, listed by index in main.nodes
         if n > 3:
-            main.kill.append( p - 1 )
+            main.partition.append( p - 1 )
             # NOTE: This only works for cluster sizes of 3,5, or 7.
 
-        main.step( "Kill " + str( len( main.kill ) ) + " ONOS nodes" )
-        killResults = main.TRUE
-        for i in main.kill:
-            killResults = killResults and\
-                          main.ONOSbench.onosKill( main.nodes[i].ip_address )
-            main.activeNodes.remove( i )
-        utilities.assert_equals( expect=main.TRUE, actual=killResults,
-                                 onpass="ONOS nodes killed successfully",
-                                 onfail="ONOS nodes NOT successfully killed" )
+        main.step( "Partitioning ONOS nodes" )
+        nodeList = [ str( i + 1 ) for i in main.partition ]
+        main.log.info( "Nodes to be partitioned: " + str( nodeList ) )
+        partitionResults = main.TRUE
+        for i in range( 0, n ):
+            this = main.nodes[i]
+            if i not in main.partition:
+                for j in main.partition:
+                    foe = main.nodes[j]
+                    main.log.warn( "Setting IP Tables rule from {} to {}. ".format( this.ip_address, foe.ip_address ) )
+                    #CMD HERE
+                    cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", this.ip_address, foe.ip_address )
+                    this.handle.sendline( cmdStr )
+                    this.handle.expect( "\$" )
+                    main.log.debug( this.handle.before )
+            else:
+                for j in range( 0, n ):
+                    if j not in main.partition:
+                        foe = main.nodes[j]
+                        main.log.warn( "Setting IP Tables rule from {} to {}. ".format( this.ip_address, foe.ip_address ) )
+                        #CMD HERE
+                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", this.ip_address, foe.ip_address )
+                        this.handle.sendline( cmdStr )
+                        this.handle.expect( "\$" )
+                        main.log.debug( this.handle.before )
+                main.activeNodes.remove( i )
+        # NOTE: When dynamic clustering is finished, we need to start checking
+        #       main.partion nodes still work when partitioned
+        utilities.assert_equals( expect=main.TRUE, actual=partitionResults,
+                                 onpass="Firewall rules set successfully",
+                                 onfail="Error setting firewall rules" )
+
+        main.log.step( "Sleeping 60 seconds" )
+        time.sleep( 60 )
 
     def CASE62( self, main ):
         """
-        The bring up stopped nodes
+        Healing Partition
         """
         import time
         assert main.numCtrls, "main.numCtrls not defined"
@@ -1760,41 +1775,22 @@ class HAkillNodes:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
-        assert main.kill, "main.kill not defined"
-        main.case( "Restart minority of ONOS nodes" )
+        assert main.partition, "main.partition not defined"
+        main.case( "Healing Partition" )
 
-        main.step( "Restarting " + str( len( main.kill ) ) + " ONOS nodes" )
-        startResults = main.TRUE
-        restartTime = time.time()
-        for i in main.kill:
-            startResults = startResults and\
-                           main.ONOSbench.onosStart( main.nodes[i].ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=startResults,
-                                 onpass="ONOS nodes started successfully",
-                                 onfail="ONOS nodes NOT successfully started" )
+        main.step( "Deleteing firewall rules" )
+        healResults = main.TRUE
+        for node in main.nodes:
+            cmdStr = "sudo iptables -F"
+            node.handle.sendline( cmdStr )
+            node.handle.expect( "\$" )
+            main.log.debug( node.handle.before )
+        utilities.assert_equals( expect=main.TRUE, actual=healResults,
+                                 onpass="Firewall rules removed",
+                                 onfail="Error removing firewall rules" )
 
-        main.step( "Checking if ONOS is up yet" )
-        count = 0
-        onosIsupResult = main.FALSE
-        while onosIsupResult == main.FALSE and count < 10:
-            onosIsupResult = main.TRUE
-            for i in main.kill:
-                onosIsupResult = onosIsupResult and\
-                                 main.ONOSbench.isup( main.nodes[i].ip_address )
-            count = count + 1
-        utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
-                                 onpass="ONOS restarted successfully",
-                                 onfail="ONOS restart NOT successful" )
-
-        main.step( "Restarting ONOS main.CLIs" )
-        cliResults = main.TRUE
-        for i in main.kill:
-            cliResults = cliResults and\
-                         main.CLIs[i].startOnosCli( main.nodes[i].ip_address )
-            main.activeNodes.append( i )
-        utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli restarted",
-                                 onfail="ONOS cli did not restart" )
+        for node in main.partition:
+            main.activeNodes.append( node )
         main.activeNodes.sort()
         try:
             assert list( set( main.activeNodes ) ) == main.activeNodes,\
@@ -1803,17 +1799,6 @@ class HAkillNodes:
             main.log.exception( "" )
             main.cleanup()
             main.exit()
-
-        # Grab the time of restart so we chan check how long the gossip
-        # protocol has had time to work
-        main.restartTime = time.time() - restartTime
-        main.log.debug( "Restart time: " + str( main.restartTime ) )
-        # TODO: MAke this configurable. Also, we are breaking the above timer
-        time.sleep( 60 )
-        node = main.activeNodes[0]
-        main.log.debug( main.CLIs[node].nodes( jsonFormat=False ) )
-        main.log.debug( main.CLIs[node].leaders( jsonFormat=False ) )
-        main.log.debug( main.CLIs[node].partitions( jsonFormat=False ) )
 
     def CASE7( self, main ):
         """
@@ -1826,9 +1811,9 @@ class HAkillNodes:
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
         try:
-            main.kill
+            main.partition
         except AttributeError:
-            main.kill = []
+            main.partition = []
 
         main.case( "Running ONOS Constant State Tests" )
 
@@ -1854,6 +1839,7 @@ class HAkillNodes:
 
         main.step( "Read device roles from ONOS" )
         ONOSMastership = []
+        mastershipCheck = main.FALSE
         consistentMastership = True
         rolesResults = True
         threads = []
@@ -2006,45 +1992,50 @@ class HAkillNodes:
         # NOTE: this requires case 5 to pass for intentState to be set.
         #      maybe we should stop the test if that fails?
         sameIntents = main.FALSE
-        if intentState and intentState == ONOSIntents[ 0 ]:
-            sameIntents = main.TRUE
-            main.log.info( "Intents are consistent with before failure" )
-        # TODO: possibly the states have changed? we may need to figure out
-        #       what the acceptable states are
-        elif len( intentState ) == len( ONOSIntents[ 0 ] ):
-            sameIntents = main.TRUE
-            try:
-                before = json.loads( intentState )
-                after = json.loads( ONOSIntents[ 0 ] )
-                for intent in before:
-                    if intent not in after:
-                        sameIntents = main.FALSE
-                        main.log.debug( "Intent is not currently in ONOS " +
-                                        "(at least in the same form):" )
-                        main.log.debug( json.dumps( intent ) )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Exception printing intents" )
-                main.log.debug( repr( ONOSIntents[0] ) )
-                main.log.debug( repr( intentState ) )
-        if sameIntents == main.FALSE:
-            try:
-                main.log.debug( "ONOS intents before: " )
-                main.log.debug( json.dumps( json.loads( intentState ),
-                                            sort_keys=True, indent=4,
-                                            separators=( ',', ': ' ) ) )
-                main.log.debug( "Current ONOS intents: " )
-                main.log.debug( json.dumps( json.loads( ONOSIntents[ 0 ] ),
-                                            sort_keys=True, indent=4,
-                                            separators=( ',', ': ' ) ) )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Exception printing intents" )
-                main.log.debug( repr( ONOSIntents[0] ) )
-                main.log.debug( repr( intentState ) )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=sameIntents,
-            onpass="Intents are consistent with before failure",
-            onfail="The Intents changed during failure" )
+        try:
+            intentState
+        except NameError:
+            main.log.warn( "No previous intent state was saved" )
+        else:
+            if intentState and intentState == ONOSIntents[ 0 ]:
+                sameIntents = main.TRUE
+                main.log.info( "Intents are consistent with before failure" )
+            # TODO: possibly the states have changed? we may need to figure out
+            #       what the acceptable states are
+            elif len( intentState ) == len( ONOSIntents[ 0 ] ):
+                sameIntents = main.TRUE
+                try:
+                    before = json.loads( intentState )
+                    after = json.loads( ONOSIntents[ 0 ] )
+                    for intent in before:
+                        if intent not in after:
+                            sameIntents = main.FALSE
+                            main.log.debug( "Intent is not currently in ONOS " +
+                                            "(at least in the same form):" )
+                            main.log.debug( json.dumps( intent ) )
+                except ( ValueError, TypeError ):
+                    main.log.exception( "Exception printing intents" )
+                    main.log.debug( repr( ONOSIntents[0] ) )
+                    main.log.debug( repr( intentState ) )
+            if sameIntents == main.FALSE:
+                try:
+                    main.log.debug( "ONOS intents before: " )
+                    main.log.debug( json.dumps( json.loads( intentState ),
+                                                sort_keys=True, indent=4,
+                                                separators=( ',', ': ' ) ) )
+                    main.log.debug( "Current ONOS intents: " )
+                    main.log.debug( json.dumps( json.loads( ONOSIntents[ 0 ] ),
+                                                sort_keys=True, indent=4,
+                                                separators=( ',', ': ' ) ) )
+                except ( ValueError, TypeError ):
+                    main.log.exception( "Exception printing intents" )
+                    main.log.debug( repr( ONOSIntents[0] ) )
+                    main.log.debug( repr( intentState ) )
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=sameIntents,
+                onpass="Intents are consistent with before failure",
+                onfail="The Intents changed during failure" )
         intentCheck = intentCheck and sameIntents
 
         main.step( "Get the OF Table entries and compare to before " +
@@ -2056,7 +2047,6 @@ class HAkillNodes:
             FlowTables = FlowTables and main.Mininet1.flowTableComp( flows[i], tmpFlows )
             if FlowTables == main.FALSE:
                 main.log.warn( "Differences in flow table for switch: s{}".format( i + 1 ) )
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=FlowTables,
@@ -2096,9 +2086,9 @@ class HAkillNodes:
         # Test of LeadershipElection
         leaderList = []
 
-        restarted = []
-        for i in main.kill:
-            restarted.append( main.nodes[i].ip_address )
+        partitioned = []
+        for i in main.partition:
+            partitioned.append( main.nodes[i].ip_address )
         leaderResult = main.TRUE
 
         for i in main.activeNodes:
@@ -2116,10 +2106,10 @@ class HAkillNodes:
                                  " shows no leader for the election-app was" +
                                  " elected after the old one died" )
                 leaderResult = main.FALSE
-            elif leaderN in restarted:
+            elif leaderN in partitioned:
                 main.log.error( cli.name + " shows " + str( leaderN ) +
                                  " as leader for the election-app, but it " +
-                                 "was restarted" )
+                                 "was partitioned" )
                 leaderResult = main.FALSE
         if len( set( leaderList ) ) != 1:
             leaderResult = main.FALSE
@@ -2766,8 +2756,8 @@ class HAkillNodes:
         try:
             timerLog = open( main.logdir + "/Timers.csv", 'w')
             # Overwrite with empty line and close
-            labels = "Gossip Intents, Restart"
-            data = str( gossipTime ) + ", " + str( main.restartTime )
+            labels = "Gossip Intents"
+            data = str( gossipTime )
             timerLog.write( labels + "\n" + data )
             timerLog.close()
         except NameError, e:
@@ -2902,6 +2892,7 @@ class HAkillNodes:
         if len( set( oldLeaders ) ) != 1:
             sameResult = main.FALSE
             main.log.error( "More than one leader present:" + str( oldLeaders ) )
+            # FIXME: for split brain, we will likely have 2. WHat should we do here?
             oldLeader = None
         else:
             oldLeader = oldLeaders[ 0 ]

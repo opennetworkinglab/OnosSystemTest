@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e -o pipefail
+
+if [ "$#" -lt 1 ]; then
+    ls -t ~/OnosSystemTest/TestON/logs/*/*y.txt | head -1 | xargs cat | grep -E "^|FAIL"
+    exit 1
+fi
+if [ "$1" = "-f" ]; then
+    # NOTE: This is blocking
+    ls -t ~/OnosSystemTest/TestON/logs/*/*y.txt | head -1 | xargs tail -n+1 -f
+else
+    printf "usage: $(basename $0) [options]\n\n"
+    printf "Simple command to print the latest test summary file.\n"
+    printf "\noptions:\n\t--help : Displays this message and exits\n"
+    printf "\t-f     : Tails the summary file and updates as the file is written to.\n\n"
+    exit 1
+fi

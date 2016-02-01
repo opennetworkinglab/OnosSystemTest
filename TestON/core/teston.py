@@ -342,7 +342,7 @@ class TestON:
                     stepNo = "<IndexError>"
                     main.log.warn( "Error trying to get step number. " +
                                    "It is likely between step " +
-                                   str( self.stepNumber ) + " and step" +
+                                   str( self.stepNumber ) + " and step " +
                                    str( self.stepNumber + 1 ) )
                 try:
                     stepName = self.stepResults[1][ self.stepNumber - 1 ]

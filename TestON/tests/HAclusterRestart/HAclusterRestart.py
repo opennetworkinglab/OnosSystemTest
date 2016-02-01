@@ -558,8 +558,8 @@ class HAclusterRestart:
 
         main.step( "Add host intents via cli" )
         intentIds = []
-        # TODO:  move the host numbers to params
-        #        Maybe look at all the paths we ping?
+        # TODO: move the host numbers to params
+        #       Maybe look at all the paths we ping?
         intentAddResult = True
         hostResult = main.TRUE
         for i in range( 8, 18 ):
@@ -874,7 +874,7 @@ class HAclusterRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
-        main.case( "Verify connectivity by sendind traffic across Intents" )
+        main.case( "Verify connectivity by sending traffic across Intents" )
         main.caseExplanation = "Ping across added host intents to check " +\
                                 "functionality and check the state of " +\
                                 "the intent"
@@ -1260,10 +1260,10 @@ class HAclusterRestart:
             ONOSIntents.append( t.result )
 
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
-                                 " intents" )
-                main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
+                main.log.error( "Error in getting ONOS" + node + " intents" )
+                main.log.warn( "ONOS" + node + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
                 intentsResults = False
         utilities.assert_equals(
@@ -1609,6 +1609,7 @@ class HAclusterRestart:
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing clusters[0]: " +
                                 repr( clusters[ 0 ] ) )
+            numClusters = "ERROR"
         clusterResults = main.FALSE
         if numClusters == 1:
             clusterResults = main.TRUE
@@ -1770,6 +1771,20 @@ class HAclusterRestart:
                                  onpass="ONOS cli started",
                                  onfail="ONOS clis did not restart" )
 
+        for i in range( 10 ):
+            ready = True
+            for cli in main.CLIs:
+                output = cli.summary()
+                if not output:
+                    ready = False
+            time.sleep( 30 )
+        utilities.assert_equals( expect=True, actual=ready,
+                                 onpass="ONOS summary command succeded",
+                                 onfail="ONOS summary command failed" )
+        if not ready:
+            main.cleanup()
+            main.exit()
+
         # Grab the time of restart so we chan check how long the gossip
         # protocol has had time to work
         main.restartTime = time.time() - killTime
@@ -1872,48 +1887,14 @@ class HAclusterRestart:
 
         if rolesResults and not consistentMastership:
             for i in range( main.numCtrls ):
-                main.log.warn(
-                    "ONOS" + str( i + 1 ) + " roles: ",
-                    json.dumps(
-                        json.loads( ONOSMastership[ i ] ),
-                        sort_keys=True,
-                        indent=4,
-                        separators=( ',', ': ' ) ) )
-        elif rolesResults and not consistentMastership:
+                main.log.warn( "ONOS" + str( i + 1 ) + " roles: ",
+                               json.dumps( json.loads( ONOSMastership[ i ] ),
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+        elif rolesResults and consistentMastership:
             mastershipCheck = main.TRUE
 
-        '''
-        description2 = "Compare switch roles from before failure"
-        main.step( description2 )
-        try:
-            currentJson = json.loads( ONOSMastership[0] )
-            oldJson = json.loads( mastershipState )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Something is wrong with parsing " +
-                                "ONOSMastership[0] or mastershipState" )
-            main.log.error( "ONOSMastership[0]: " + repr( ONOSMastership[0] ) )
-            main.log.error( "mastershipState" + repr( mastershipState ) )
-            main.cleanup()
-            main.exit()
-        mastershipCheck = main.TRUE
-        for i in range( 1, 29 ):
-            switchDPID = str(
-                main.Mininet1.getSwitchDPID( switch="s" + str( i ) ) )
-            current = [ switch[ 'master' ] for switch in currentJson
-                        if switchDPID in switch[ 'id' ] ]
-            old = [ switch[ 'master' ] for switch in oldJson
-                    if switchDPID in switch[ 'id' ] ]
-            if current == old:
-                mastershipCheck = mastershipCheck and main.TRUE
-            else:
-                main.log.warn( "Mastership of switch %s changed" % switchDPID )
-                mastershipCheck = main.FALSE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=mastershipCheck,
-            onpass="Mastership of Switches was not changed",
-            onfail="Mastership of some switches changed" )
-        '''
         # NOTE: we expect mastership to change on controller failure
 
         main.step( "Get the intents and compare across all nodes" )
@@ -2068,7 +2049,6 @@ class HAclusterRestart:
             FlowTables = FlowTables and main.Mininet1.flowTableComp( flows[i], tmpFlows )
             if FlowTables == main.FALSE:
                 main.log.warn( "Differences in flow table for switch: s{}".format( i + 1 ) )
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=FlowTables,
@@ -2152,6 +2132,7 @@ class HAclusterRestart:
         main.caseExplanation = "Compare topology objects between Mininet" +\
                                 " and ONOS"
         topoResult = main.FALSE
+        topoFailMsg = "ONOS topology don't match Mininet"
         elapsed = 0
         count = 0
         main.step( "Comparing ONOS topology to MN topology" )
@@ -2167,9 +2148,11 @@ class HAclusterRestart:
             devices = []
             threads = []
             for i in range( main.numCtrls ):
-                t = main.Thread( target=main.CLIs[i].devices,
+                t = main.Thread( target=utilities.retry,
                                  name="devices-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].devices, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2208,9 +2191,11 @@ class HAclusterRestart:
             ports = []
             threads = []
             for i in range( main.numCtrls ):
-                t = main.Thread( target=main.CLIs[i].ports,
+                t = main.Thread( target=utilities.retry,
                                  name="ports-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].ports, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2220,9 +2205,11 @@ class HAclusterRestart:
             links = []
             threads = []
             for i in range( main.numCtrls ):
-                t = main.Thread( target=main.CLIs[i].links,
+                t = main.Thread( target=utilities.retry,
                                  name="links-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].links, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2232,9 +2219,11 @@ class HAclusterRestart:
             clusters = []
             threads = []
             for i in range( main.numCtrls ):
-                t = main.Thread( target=main.CLIs[i].clusters,
+                t = main.Thread( target=utilities.retry,
                                  name="clusters-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].clusters, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2246,6 +2235,15 @@ class HAclusterRestart:
             cliTime = time.time() - cliStart
             print "Elapsed time: " + str( elapsed )
             print "CLI time: " + str( cliTime )
+
+            if all( e is None for e in devices ) and\
+               all( e is None for e in hosts ) and\
+               all( e is None for e in ports ) and\
+               all( e is None for e in links ) and\
+               all( e is None for e in clusters ):
+                   topoFailMsg = "Could not get topology from ONOS"
+                   main.log.error( topoFailMsg )
+                   continue  # Try again, No use trying to compare
 
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks()
@@ -2395,7 +2393,7 @@ class HAclusterRestart:
         utilities.assert_equals( expect=True,
                                  actual=topoResult,
                                  onpass="ONOS topology matches Mininet",
-                                 onfail="ONOS topology don't match Mininet" )
+                                 onfail=topoFailMsg )
         # End of While loop to pull ONOS state
 
         # Compare json objects for hosts and dataplane clusters
@@ -2455,7 +2453,6 @@ class HAclusterRestart:
                                      controllerStr +
                                      " is inconsistent with ONOS1" )
                     consistentClustersResult = main.FALSE
-
             else:
                 main.log.error( "Error in getting dataplane clusters " +
                                  "from ONOS" + controllerStr )
@@ -2725,7 +2722,7 @@ class HAclusterRestart:
             # NOTE: must end in /
             for f in logFiles:
                 for node in main.nodes:
-                    dstName =  main.logdir + "/" + node.name + "-" + f
+                    dstName = main.logdir + "/" + node.name + "-" + f
                     main.ONOSbench.secureCopy( node.user_name, node.ip_address,
                                                logFolder + f, dstName )
             # std*.log's
@@ -2735,7 +2732,7 @@ class HAclusterRestart:
             # NOTE: must end in /
             for f in logFiles:
                 for node in main.nodes:
-                    dstName =  main.logdir + "/" + node.name + "-" + f
+                    dstName = main.logdir + "/" + node.name + "-" + f
                     main.ONOSbench.secureCopy( node.user_name, node.ip_address,
                                                logFolder + f, dstName )
         else:
@@ -2802,7 +2799,7 @@ class HAclusterRestart:
         sameLeader = main.TRUE
         if len( set( leaders ) ) != 1:
             sameLeader = main.FALSE
-            main.log.error( "Results of electionTestLeader is order of CLIs:" +
+            main.log.error( "Results of electionTestLeader is order of main.CLIs:" +
                             str( leaders ) )
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2875,8 +2872,13 @@ class HAclusterRestart:
         for cli in main.CLIs:
             node = cli.specificLeaderCandidate( 'org.onosproject.election' )
             oldAllCandidates.append( node )
-            oldLeaders.append( node[ 0 ] )
+            if node:
+                oldLeaders.append( node[ 0 ] )
+            else:
+                oldLeaders.append( None )
         oldCandidates = oldAllCandidates[ 0 ]
+        if oldCandidates is None:
+            oldCandidates = [ None ]
 
         # Check that each node has the same leader. Defines oldLeader
         if len( set( oldLeaders ) ) != 1:
@@ -2889,13 +2891,14 @@ class HAclusterRestart:
         # Check that each node's candidate list is the same
         candidateDiscrepancy = False  # Boolean of candidate mismatches
         for candidates in oldAllCandidates:
+            if candidates is None:
+                main.log.warn( "Error getting candidates" )
+                candidates = [ None ]
             if set( candidates ) != set( oldCandidates ):
                 sameResult = main.FALSE
                 candidateDiscrepancy = True
-
         if candidateDiscrepancy:
             failMessage += " and candidates"
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=sameResult,
@@ -2924,7 +2927,6 @@ class HAclusterRestart:
             onfail="Node was not withdrawn from election" )
 
         main.step( "Check that a new node was elected leader" )
-
         # FIXME: use threads
         newLeaderResult = main.TRUE
         failMessage = "Nodes have different leaders"
@@ -2964,7 +2966,7 @@ class HAclusterRestart:
         # Check that the new leader is not the older leader, which was withdrawn
         if newLeader == oldLeader:
             newLeaderResult = main.FALSE
-            main.log.error( "All nodes still see old leader: " + oldLeader +
+            main.log.error( "All nodes still see old leader: " + str( oldLeader ) +
                 " as the current leader" )
 
         utilities.assert_equals(
@@ -2974,7 +2976,7 @@ class HAclusterRestart:
             onfail="Something went wrong with Leadership election" )
 
         main.step( "Check that that new leader was the candidate of old leader")
-        # candidates[ 2 ] should be come the top candidate after withdrawl
+        # candidates[ 2 ] should become the top candidate after withdrawl
         correctCandidateResult = main.TRUE
         if expectNoLeader:
             if newLeader == 'none':
@@ -2983,11 +2985,13 @@ class HAclusterRestart:
             else:
                 main.log.info( "Expected no leader, got: " + str( newLeader ) )
                 correctCandidateResult = main.FALSE
-        elif newLeader != oldCandidates[ 2 ]:
+        elif len( oldCandidates ) >= 3 and newLeader != oldCandidates[ 2 ]:
             correctCandidateResult = main.FALSE
-            main.log.error( "Candidate " + newLeader + " was elected. " +
-                oldCandidates[ 2 ] + " should have had priority." )
-
+            main.log.error( "Candidate {} was elected. {} should have had priority.".format(
+                                newLeader, oldCandidates[ 2 ] ) )
+        else:
+            main.log.warn( "Could not determine who should be the correct leader" )
+            correctCandidateResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
             actual=correctCandidateResult,
@@ -3048,7 +3052,7 @@ class HAclusterRestart:
 
         # Check that the re-elected node is last on the candidate List
         if oldLeader != newCandidates[ -1 ]:
-            main.log.error( "Old Leader ("  + oldLeader + ") not in the proper position " +
+            main.log.error( "Old Leader (" + str( oldLeader ) + ") not in the proper position " +
                 str( newCandidates ) )
             positionResult = main.FALSE
 
@@ -3507,12 +3511,13 @@ class HAclusterRestart:
 
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -3521,7 +3526,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -3548,9 +3553,10 @@ class HAclusterRestart:
 
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3608,13 +3614,13 @@ class HAclusterRestart:
             getResponses.append( t.result )
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
-                                        " has incorrect view" +
+                        main.log.error( "ONOS" + node + " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         main.log.debug( "Expected: " + str( onosSet ) )
@@ -3622,8 +3628,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
-                                    " has repeat elements in" +
+                    main.log.error( "ONOS" + node + " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
                     getResults = main.FALSE
@@ -3642,9 +3647,10 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3703,12 +3709,13 @@ class HAclusterRestart:
             getResponses.append( t.result )
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -3717,7 +3724,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -3737,9 +3744,10 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3852,12 +3860,13 @@ class HAclusterRestart:
             getResponses.append( t.result )
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -3866,7 +3875,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -3886,9 +3895,10 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3950,12 +3960,13 @@ class HAclusterRestart:
             getResponses.append( t.result )
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -3964,7 +3975,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -3984,9 +3995,10 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -4045,12 +4057,13 @@ class HAclusterRestart:
             getResponses.append( t.result )
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -4059,7 +4072,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -4079,9 +4092,10 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -4141,12 +4155,13 @@ class HAclusterRestart:
             getResponses.append( t.result )
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -4155,7 +4170,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -4175,9 +4190,10 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -4236,12 +4252,13 @@ class HAclusterRestart:
             getResponses.append( t.result )
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -4250,7 +4267,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -4270,9 +4287,10 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -4332,12 +4350,13 @@ class HAclusterRestart:
             getResponses.append( t.result )
         getResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -4346,7 +4365,7 @@ class HAclusterRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -4366,10 +4385,10 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
         for i in range( main.numCtrls ):
+            node = str( i + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
-                                " expected a size of " +
+                main.log.error( "ONOS" + node + " expected a size of " +
                                 str( size ) + " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
         retainResults = retainResults and getResults and sizeResults
@@ -4384,7 +4403,7 @@ class HAclusterRestart:
         numKeys = 100
         putResult = True
         putResponses = main.CLIs[ 0 ].transactionalMapPut( numKeys, tMapValue )
-        if len( putResponses ) == 100:
+        if putResponses and len( putResponses ) == 100:
             for i in putResponses:
                 if putResponses[ i ][ 'value' ] != tMapValue:
                     putResult = False
@@ -4406,7 +4425,7 @@ class HAclusterRestart:
             for i in range( main.numCtrls ):
                 t = main.Thread( target=main.CLIs[i].transactionalMapGet,
                                  name="TMap-get-" + str( i ),
-                                 args=[ "Key" + str ( n ) ] )
+                                 args=[ "Key" + str( n ) ] )
                 threads.append( t )
                 t.start()
             for t in threads:
@@ -4451,7 +4470,7 @@ class HAclusterRestart:
             for i in range( main.numCtrls ):
                 t = main.Thread( target=main.CLIs[i].transactionalMapGet,
                                  name="TMap-get-" + str( i ),
-                                 args=[ "Key" + str ( n ) ],
+                                 args=[ "Key" + str( n ) ],
                                  kwargs={ "inMemory": True } )
                 threads.append( t )
                 t.start()

@@ -2204,12 +2204,44 @@ class OnosCliDriver( CLI ):
         Return:
             The number of ADDED flows
         """
+
         try:
+            # get total added flows number
             cmd = "flows -s|grep ADDED|wc -l"
-            response = self.sendline( cmd, timeout=timeout )
-            if response == None:
-                return  -1
-            return int( response )
+            totalFlows = self.sendline( cmd, timeout=timeout )
+
+            if totalFlows == None:
+                # if timeout, we will get total number of all flows, and subtract other states
+                states = ["PENDING_ADD", "PENDING_REMOVE", "REMOVED", "FAILED"]
+                checkedStates = []
+                totalFlows = 0
+                statesCount = [0, 0, 0, 0]
+
+                # get total flows from summary
+                response = json.loads( self.sendline( "summary -j", timeout=timeout ) )
+                totalFlows = int( response.get("flows") )
+
+                for s in states:
+                    rawFlows = self.flows( state=s, timeout = timeout )
+                    if rawFlows == None:
+                        # if timeout, return the total flows number from summary command
+                        return totalFlows
+                    checkedStates.append( json.loads( rawFlows ) )
+
+                # Calculate ADDED flows number, equal total subtracts others
+                for i in range( len( states ) ):
+                    for c in checkedStates[i]:
+                        try:
+                            statesCount[i] += int( c.get( "flowCount" ) )
+                        except TypeError:
+                            main.log.exception( "Json object not as expected" )
+                    totalFlows = totalFlows - int( statesCount[i] )
+                    main.log.info( states[i] + " flows: " + str( statesCount[i] ) )
+
+                return totalFlows
+
+            return totalFlows
+
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

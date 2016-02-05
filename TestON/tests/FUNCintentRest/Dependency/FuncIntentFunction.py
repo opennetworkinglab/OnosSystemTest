@@ -179,7 +179,7 @@ def testHostIntent( main,
         testResult = main.FALSE
 
     # Check flows count in each node
-    if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20 ):
+    if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ):
         main.assertReturnString += 'Initial Flow State Passed\n'
     else:
         main.assertReturnString += 'Intial Flow State Failed\n'
@@ -209,14 +209,14 @@ def testHostIntent( main,
             testResult = main.FALSE
 
         # Check flows count in each node
-        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20 ):
+        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ):
             main.assertReturnString += 'Link Down Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Down Flow State Failed\n'
             testResult = main.FALSE
 
         # Check OnosTopology
-        if utilities.retry( f=checkTopology, retValue=main.FALSE, args=( main, expectedLink ) ):
+        if utilities.retry( f=checkTopology, retValue=main.FALSE, args=( main, expectedLink ), sleep=10 ):
             main.assertReturnString += 'Link Down Topology State Passed\n'
         else:
             main.assertReturnString += 'Link Down Topology State Failed\n'
@@ -247,7 +247,7 @@ def testHostIntent( main,
             testResult = main.FALSE
 
         # Check flows count in each node
-        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20 ):
+        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ):
             main.assertReturnString += 'Link Up Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Up Flow State Failed\n'
@@ -499,7 +499,7 @@ def testPointIntent( main,
         testResult = main.FALSE
 
     # Check flows count in each node
-    if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=10 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=10 ):
+    if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ):
         main.assertReturnString += 'Initial Flow State Passed\n'
     else:
         main.assertReturnString += 'Intial Flow State Failed\n'
@@ -546,14 +546,14 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Check flows count in each node
-        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=10 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=10 ):
+        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ):
             main.assertReturnString += 'Link Down Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Down Flow State Failed\n'
             testResult = main.FALSE
 
         # Check OnosTopology
-        if utilities.retry( f=checkTopology, retValue=main.FALSE, args=( main, expectedLink ) ):
+        if utilities.retry( f=checkTopology, retValue=main.FALSE, args=( main, expectedLink ), sleep=10 ):
             main.assertReturnString += 'Link Down Topology State Passed\n'
         else:
             main.assertReturnString += 'Link Down Topology State Failed\n'
@@ -584,7 +584,7 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Check flows count in each node
-        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=10 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=10 ):
+        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ):
             main.assertReturnString += 'Link Up Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Up Flow State Failed\n'

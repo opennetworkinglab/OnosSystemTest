@@ -1,6 +1,8 @@
 <PARAMS>
 
-    <testcases>101, 100, 200, 102, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12</testcases>
+    <testcases>101, 100, 200, 102, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12</testcases>
+    # case6 needs a new driver, will enable it after this new driver
+    #<testcases>101, 100, 200, 102, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12</testcases>
     #Environment variables
     <ENV>
         <cellName>sdnip_multiple_instance_VM</cellName>

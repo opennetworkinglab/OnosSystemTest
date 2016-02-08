@@ -57,7 +57,6 @@ class HAstopNodes:
         main.caseExplanation = "Setup the test environment including " +\
                                 "installing ONOS, starting Mininet and ONOS" +\
                                 "cli sessions."
-        # TODO: save all the timers and output them for plotting
 
         # load some variables from the params file
         PULLCODE = False
@@ -1622,6 +1621,7 @@ class HAstopNodes:
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing clusters[0]: " +
                                 repr( clusters[ 0 ] ) )
+            numClusters = "ERROR"
         clusterResults = main.FALSE
         if numClusters == 1:
             clusterResults = main.TRUE
@@ -1643,11 +1643,10 @@ class HAstopNodes:
             if devices[ controller ] and ports[ controller ] and\
                 "Error" not in devices[ controller ] and\
                 "Error" not in ports[ controller ]:
-
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
+                    currentDevicesResult = main.Mininet1.compareSwitches(
+                            mnSwitches,
+                            json.loads( devices[ controller ] ),
+                            json.loads( ports[ controller ] ) )
             else:
                 currentDevicesResult = main.FALSE
             utilities.assert_equals( expect=main.TRUE,
@@ -2138,6 +2137,7 @@ class HAstopNodes:
         main.caseExplanation = "Compare topology objects between Mininet" +\
                                 " and ONOS"
         topoResult = main.FALSE
+        topoFailMsg = "ONOS topology don't match Mininet"
         elapsed = 0
         count = 0
         main.step( "Comparing ONOS topology to MN topology" )
@@ -2153,9 +2153,11 @@ class HAstopNodes:
             devices = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].devices,
+                t = main.Thread( target=utilities.retry,
                                  name="devices-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].devices, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2194,9 +2196,11 @@ class HAstopNodes:
             ports = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].ports,
+                t = main.Thread( target=utilities.retry,
                                  name="ports-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].ports, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2206,9 +2210,11 @@ class HAstopNodes:
             links = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].links,
+                t = main.Thread( target=utilities.retry,
                                  name="links-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].links, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2218,9 +2224,11 @@ class HAstopNodes:
             clusters = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].clusters,
+                t = main.Thread( target=utilities.retry,
                                  name="clusters-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].clusters, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2232,6 +2240,15 @@ class HAstopNodes:
             cliTime = time.time() - cliStart
             print "Elapsed time: " + str( elapsed )
             print "CLI time: " + str( cliTime )
+
+            if all( e is None for e in devices ) and\
+               all( e is None for e in hosts ) and\
+               all( e is None for e in ports ) and\
+               all( e is None for e in links ) and\
+               all( e is None for e in clusters ):
+                   topoFailMsg = "Could not get topology from ONOS"
+                   main.log.error( topoFailMsg )
+                   continue  # Try again, No use trying to compare
 
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks()
@@ -2378,7 +2395,7 @@ class HAstopNodes:
         utilities.assert_equals( expect=True,
                                  actual=topoResult,
                                  onpass="ONOS topology matches Mininet",
-                                 onfail="ONOS topology don't match Mininet" )
+                                 onfail=topoFailMsg )
         # End of While loop to pull ONOS state
 
         # Compare json objects for hosts and dataplane clusters
@@ -2862,8 +2879,13 @@ class HAstopNodes:
             cli = main.CLIs[i]
             node = cli.specificLeaderCandidate( 'org.onosproject.election' )
             oldAllCandidates.append( node )
-            oldLeaders.append( node[ 0 ] )
+            if node:
+                oldLeaders.append( node[ 0 ] )
+            else:
+                oldLeaders.append( None )
         oldCandidates = oldAllCandidates[ 0 ]
+        if oldCandidates is None:
+            oldCandidates = [ None ]
 
         # Check that each node has the same leader. Defines oldLeader
         if len( set( oldLeaders ) ) != 1:
@@ -2876,13 +2898,14 @@ class HAstopNodes:
         # Check that each node's candidate list is the same
         candidateDiscrepancy = False  # Boolean of candidate mismatches
         for candidates in oldAllCandidates:
+            if candidates is None:
+                main.log.warn( "Error getting candidates" )
+                candidates = [ None ]
             if set( candidates ) != set( oldCandidates ):
                 sameResult = main.FALSE
                 candidateDiscrepancy = True
-
         if candidateDiscrepancy:
             failMessage += " and candidates"
-            
         utilities.assert_equals(
             expect=main.TRUE,
             actual=sameResult,
@@ -2911,7 +2934,6 @@ class HAstopNodes:
             onfail="Node was not withdrawn from election" )
 
         main.step( "Check that a new node was elected leader" )
-
         # FIXME: use threads
         newLeaderResult = main.TRUE
         failMessage = "Nodes have different leaders"
@@ -2952,7 +2974,7 @@ class HAstopNodes:
         # Check that the new leader is not the older leader, which was withdrawn
         if newLeader == oldLeader:
             newLeaderResult = main.FALSE
-            main.log.error( "All nodes still see old leader: " + oldLeader +
+            main.log.error( "All nodes still see old leader: " + str( oldLeader ) +
                 " as the current leader" )
 
         utilities.assert_equals(
@@ -2962,7 +2984,7 @@ class HAstopNodes:
             onfail="Something went wrong with Leadership election" )
 
         main.step( "Check that that new leader was the candidate of old leader")
-        # candidates[ 2 ] should be come the top candidate after withdrawl
+        # candidates[ 2 ] should become the top candidate after withdrawl
         correctCandidateResult = main.TRUE
         if expectNoLeader:
             if newLeader == 'none':
@@ -2971,11 +2993,13 @@ class HAstopNodes:
             else:
                 main.log.info( "Expected no leader, got: " + str( newLeader ) )
                 correctCandidateResult = main.FALSE
-        elif newLeader != oldCandidates[ 2 ]:
+        elif len( oldCandidates ) >= 3 and newLeader != oldCandidates[ 2 ]:
             correctCandidateResult = main.FALSE
-            main.log.error( "Candidate " + newLeader + " was elected. " +
-                oldCandidates[ 2 ] + " should have had priority." )
-
+            main.log.error( "Candidate {} was elected. {} should have had priority.".format(
+                                newLeader, oldCandidates[ 2 ] ) )
+        else:
+            main.log.warn( "Could not determine who should be the correct leader" )
+            correctCandidateResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
             actual=correctCandidateResult,
@@ -3037,7 +3061,7 @@ class HAstopNodes:
 
         # Check that the re-elected node is last on the candidate List
         if oldLeader != newCandidates[ -1 ]:
-            main.log.error( "Old Leader (" + oldLeader + ") not in the proper position " +
+            main.log.error( "Old Leader (" + str( oldLeader ) + ") not in the proper position " +
                 str( newCandidates ) )
             positionResult = main.FALSE
 
@@ -4390,7 +4414,7 @@ class HAstopNodes:
         putResult = True
         node = main.activeNodes[0]
         putResponses = main.CLIs[node].transactionalMapPut( numKeys, tMapValue )
-        if len( putResponses ) == 100:
+        if putResponses and len( putResponses ) == 100:
             for i in putResponses:
                 if putResponses[ i ][ 'value' ] != tMapValue:
                     putResult = False

@@ -1,0 +1,86 @@
+<PARAMS>
+    #List of test cases:
+    #CASE1: Compile ONOS and push it to the test machines
+    #CASE2: Assign devices to controllers
+    #CASE21: Assign mastership to controllers
+    #CASE3: Assign intents
+    #CASE4: Ping across added host intents
+    #CASE5: Reading state of ONOS
+    #CASE61: The Failure inducing case.
+    #CASE62: The Failure recovery case.
+    #CASE7: Check state after control plane failure
+    #CASE8: Compare topo
+    #CASE9: Link s3-s28 down
+    #CASE10: Link s3-s28 up
+    #CASE11: Switch down
+    #CASE12: Switch up
+    #CASE13: Clean up
+    #CASE14: start election app on all onos nodes
+    #CASE15: Check that Leadership Election is still functional
+    #CASE16: Install Distributed Primitives app
+    #CASE17: Check for basic functionality with distributed primitives
+    <testcases>1,[2,8,3,4,5,14,16,17]*1,[61,8,7,4,15,17,62],8,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
+    <imports>
+        <path> /home/admin/OnosSystemTest/TestON/tests/HAfullNetPartition/dependencies/ </path>
+    </imports>
+    <ENV>
+        <cellName>HA</cellName>
+        <appString>drivers,openflow,proxyarp,mobility</appString>
+    </ENV>
+    <Git> False </Git>
+    <branch> master </branch>
+    <num_controllers> 7 </num_controllers>
+    <tcpdump> False </tcpdump>
+
+    <CTRL>
+        <port1>6653</port1>
+        <port2>6653</port2>
+        <port3>6653</port3>
+        <port4>6653</port4>
+        <port5>6653</port5>
+        <port6>6653</port6>
+        <port7>6653</port7>
+    </CTRL>
+    <BACKUP>
+        <ENABLED> False </ENABLED>
+        <TESTONUSER>admin</TESTONUSER>
+        <TESTONIP>10.128.30.9</TESTONIP>
+    </BACKUP>
+    <PING>
+        <source1>h8</source1>
+        <source2>h9</source2>
+        <source3>h10</source3>
+        <source4>h11</source4>
+        <source5>h12</source5>
+        <source6>h13</source6>
+        <source7>h14</source7>
+        <source8>h15</source8>
+        <source9>h16</source9>
+        <source10>h17</source10>
+        <target1>10.0.0.18</target1>
+        <target2>10.0.0.19</target2>
+        <target3>10.0.0.20</target3>
+        <target4>10.0.0.21</target4>
+        <target5>10.0.0.22</target5>
+        <target6>10.0.0.23</target6>
+        <target7>10.0.0.24</target7>
+        <target8>10.0.0.25</target8>
+        <target9>10.0.0.26</target9>
+        <target10>10.0.0.27</target10>
+    </PING>
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+        <gossip>5</gossip>
+    </timers>
+    <kill>
+        <switch> s5 </switch>
+        <dpid> 0000000000005000 </dpid>
+        <links> h5 s2 s1 s6 </links>
+    </kill>
+    <MNtcpdump>
+        <intf>eth0</intf>
+        <port> </port>
+        <folder>~/packet_captures/</folder>
+    </MNtcpdump>
+</PARAMS>

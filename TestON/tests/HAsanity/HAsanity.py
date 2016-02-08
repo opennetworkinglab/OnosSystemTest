@@ -542,8 +542,8 @@ class HAsanity:
 
         main.step( "Add host intents via cli" )
         intentIds = []
-        # TODO:  move the host numbers to params
-        #        Maybe look at all the paths we ping?
+        # TODO: move the host numbers to params
+        #       Maybe look at all the paths we ping?
         intentAddResult = True
         hostResult = main.TRUE
         for i in range( 8, 18 ):
@@ -1397,7 +1397,6 @@ class HAsanity:
         if flowCheck == main.FALSE:
             for table in flows:
                 main.log.warn( table )
-
         # TODO: Compare switch flow tables with ONOS flow tables
 
         main.step( "Start continuous pings" )
@@ -1589,6 +1588,7 @@ class HAsanity:
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing clusters[0]: " +
                                 repr( clusters[ 0 ] ) )
+            numClusters = "ERROR"
         clusterResults = main.FALSE
         if numClusters == 1:
             clusterResults = main.TRUE
@@ -2757,7 +2757,6 @@ class HAsanity:
         for cli in main.CLIs:  # run test election on each node
             if cli.electionTestRun() == main.FALSE:
                 electionResult = main.FALSE
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=electionResult,
@@ -2864,7 +2863,7 @@ class HAsanity:
         # Check that the new leader is not the older leader, which was withdrawn
         if newLeader == oldLeader:
             newLeaderResult = main.FALSE
-            main.log.error( "All nodes still see old leader: " + oldLeader +
+            main.log.error( "All nodes still see old leader: " + str( oldLeader ) +
                 " as the current leader" )
 
         utilities.assert_equals(
@@ -2885,8 +2884,8 @@ class HAsanity:
                 correctCandidateResult = main.FALSE
         elif newLeader != oldCandidates[ 2 ]:
             correctCandidateResult = main.FALSE
-            main.log.error( "Candidate " + newLeader + " was elected. " +
-                oldCandidates[ 2 ] + " should have had priority." )
+            main.log.error( "Candidate {} was elected. {} should have had priority.".format(
+                                newLeader, oldCandidates[ 2 ] ) )
 
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2948,7 +2947,7 @@ class HAsanity:
 
         # Check that the re-elected node is last on the candidate List
         if oldLeader != newCandidates[ -1 ]:
-            main.log.error( "Old Leader ("  + oldLeader + ") not in the proper position " +
+            main.log.error( "Old Leader (" + str( oldLeader ) + ") not in the proper position " +
                 str( newCandidates ) )
             positionResult = main.FALSE
 

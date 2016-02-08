@@ -1866,7 +1866,6 @@ class OnosCliDriver( CLI ):
                     main.log.error( "unknown TYPE, returning all types of intents" )
                     return handle
             else:
-                main.log.error( handle )
                 return handle
         except AssertionError:
             main.log.exception( "" )
@@ -2953,7 +2952,7 @@ class OnosCliDriver( CLI ):
         Returns None if there is a type error processing the json object
         """
         try:
-            cmdStr = "onos:leaders -c -j"
+            cmdStr = "onos:leaders -j"
             rawOutput = self.sendline( cmdStr )
             assert "Command not found:" not in rawOutput, rawOutput
             output = json.loads( rawOutput )
@@ -4088,16 +4087,14 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
             assert "Command not found:" not in handle, handle
-            if re.search( "Error:", handle ):
-                main.log.error( self.name + ": summary() response: " +
-                                str( handle ) )
+            assert "Error:" not in handle, handle
             if not handle:
                 main.log.error( self.name + ": There is no output in " +
                                 "summary command" )
                 return main.FALSE
             return handle
         except AssertionError:
-            main.log.exception( "" )
+            main.log.exception( "{} Error in summary output:".format( self.name ) )
             return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

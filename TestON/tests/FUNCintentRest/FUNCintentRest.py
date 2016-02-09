@@ -65,6 +65,7 @@ class FUNCintentRest:
             main.cellData = {} # for creating cell file
             main.hostsData = {}
             main.CLIs = []
+            main.CLIs2 = []
             main.ONOSip = []
             main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
             main.scapyHosts = []  # List of scapy hosts for iterating
@@ -77,6 +78,7 @@ class FUNCintentRest:
             try:
                 for i in range( 1,  main.maxNodes + 1 ):
                     main.CLIs.append( getattr( main, 'ONOSrest' + str( i ) ) )
+                    main.CLIs2.append( getattr( main, 'ONOScli' + str( i ) ) )
             except AttributeError:
                 main.log.warn( "A " + str( main.maxNodes ) + " node cluster " +
                                "was defined in env variables, but only " +
@@ -106,7 +108,7 @@ class FUNCintentRest:
                                               main.topology,
                                               main.Mininet1.home + "custom/",
                                               direction="to" )
-            if main.CLIs:
+            if main.CLIs and main.CLIs2:
                 stepResult = main.TRUE
             else:
                 main.log.error( "Did not properly created list of ONOS CLI handle" )
@@ -244,20 +246,20 @@ class FUNCintentRest:
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
 
-        # Revisit adding the cli after ensuring the test works without it
         # Start an ONOS cli to provide functionality that is not currently
-        # supported by the Rest API
+        # supported by the Rest API remove this when Leader Checking is supported
+        # by the REST API
 
-        # main.step( "Start ONOS cli" )
-        # cliResult = main.TRUE
-        # for i in range( main.numCtrls ):
-        #     cliResult = cliResult and \
-        #                 main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
-        # stepResult = cliResult
-        # utilities.assert_equals( expect=main.TRUE,
-        #                          actual=stepResult,
-        #                          onpass="Successfully start ONOS cli",
-        #                          onfail="Failed to start ONOS cli" )
+        main.step( "Start ONOS cli" )
+        cliResult = main.TRUE
+        for i in range( main.numCtrls ):
+            cliResult = cliResult and \
+                        main.CLIs2[ i ].startOnosCli( main.ONOSip[ i ] )
+        stepResult = cliResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully start ONOS cli",
+                                 onfail="Failed to start ONOS cli" )
 
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
@@ -719,6 +721,9 @@ class FUNCintentRest:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
+        # Save leader candidates
+        intentLeadersOld = main.CLIs2[ 0 ].leaderCandidates()
+
         main.case( "Host Intents Test - " + str( main.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case tests Host intents using " +\
@@ -890,18 +895,18 @@ class FUNCintentRest:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        # Uncomment the following if a REST command is ever added to check leaders
-        # or if the cli is enabled
+        # Change the following to use the REST API when leader checking is
+        # supported by it
 
-        # main.step( "Confirm that ONOS leadership is unchanged")
-        # intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
-        # main.intentFunction.checkLeaderChange( intentLeadersOld,
-        #                                         intentLeadersNew )
+        main.step( "Confirm that ONOS leadership is unchanged")
+        intentLeadersNew = main.CLIs2[ 0 ].leaderCandidates()
+        main.intentFunction.checkLeaderChange( intentLeadersOld,
+                                                intentLeadersNew )
 
-        # utilities.assert_equals( expect=main.TRUE,
-        #                          actual=testResult,
-        #                          onpass="ONOS Leaders Unchanged",
-        #                          onfail="ONOS Leader Mismatch")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass="ONOS Leaders Unchanged",
+                                 onfail="ONOS Leader Mismatch")
 
         main.intentFunction.report( main )
 

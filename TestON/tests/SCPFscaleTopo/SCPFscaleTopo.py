@@ -47,7 +47,7 @@ class SCPFscaleTopo:
         main.nodeSleep = int( main.params[ 'SLEEP' ][ 'nodeSleep' ] )
         main.pingallSleep = int( main.params[ 'SLEEP' ][ 'pingall' ] )
         main.MNSleep = int( main.params[ 'SLEEP' ][ 'MNsleep' ] )
-        main.pingTimeout = int( main.params[ 'TIMEOUT' ][ 'pingall' ] )
+        main.pingTimeout = float( main.params[ 'TIMEOUT' ][ 'pingall' ] )
         gitPull = main.params[ 'GIT' ][ 'pull' ]
         main.homeDir = os.path.expanduser('~')
         main.cellData = {} # for creating cell file
@@ -227,7 +227,7 @@ class SCPFscaleTopo:
 
     def CASE10( self, main ):
         """
-            Starting up torus topology, pingall, and compare topo
+            Starting up torus topology
         """
         import json
 
@@ -270,28 +270,29 @@ class SCPFscaleTopo:
     def CASE11( self, main ):
         """
             Pingall, and compare topo
+            We don't care the pingall result,
+            if the topology is same, then Pass.
         """
         import json
 
         main.case( "Verifying topology: TORUS %sx%s" % (main.currScale, main.currScale) )
-        main.caseExplanation = "Pinging all hosts andcomparing topology " +\
+        main.caseExplanation = "Pinging all hosts and comparing topology " +\
                 "elements between Mininet and ONOS"
 
-        main.step( "Pinging all hosts" )
-        pingResult = utilities.retry( main.Mininet1.pingall,
-                                      main.FALSE,
-                                      [main.pingTimeout],
-                                      sleep=main.pingallSleep,
-                                      attempts=main.pingallAttempts )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=pingResult,
-                                 onpass="Pingall successfull",
-                                 onfail="Pingall failed" )
+        main.log.info( "Pinging all hosts" )
+
+        # the pingall timeout is depend on the number of total host
+        pingTimeout = int( main.pingTimeout * float( int(main.currScale) * int(main.currScale ) ) )
+        pingResult = main.Mininet1.pingall( pingTimeout )
 
         main.log.info( "Gathering topology information" )
+
+        time.sleep( main.MNSleep )
+
         devicesResults = main.TRUE
         linksResults = main.TRUE
         hostsResults = main.TRUE
+        stepResult = main.TRUE
         devices = main.topo.getAllDevices( main )
         hosts = main.topo.getAllHosts( main )
         ports = main.topo.getAllPorts( main )
@@ -314,25 +315,13 @@ class SCPFscaleTopo:
                         json.loads( ports[ controller ] ) )
             else:
                 currentDevicesResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentDevicesResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " Switches view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " Switches view is incorrect" )
-
+ 
             if links[ controller ] and "Error" not in links[ controller ]:
                 currentLinksResult = main.Mininet1.compareLinks(
                         mnSwitches, mnLinks,
                         json.loads( links[ controller ] ) )
             else:
                 currentLinksResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentLinksResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " links view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " links view is incorrect" )
 
             if hosts[ controller ] or "Error" not in hosts[ controller ]:
                 currentHostsResult = main.Mininet1.compareHosts(
@@ -340,12 +329,14 @@ class SCPFscaleTopo:
                         json.loads( hosts[ controller ] ) )
             else:
                 currentHostsResult = main.FALSE
+
+            stepResult = stepResult and currentDevicesResult and currentLinksResult and currentHostsResult
+
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=currentHostsResult,
-                                 onpass="ONOS" + controllerStr +
-                                 " hosts exist in Mininet",
+                                 actual=stepResult,
+                                 onpass=" Topology match Mininet",
                                  onfail="ONOS" + controllerStr +
-                                 " hosts don't match Mininet" )
+                                 " Topology doesn't match Mininet" )
 
 
     def CASE100( self, main ):
@@ -401,7 +392,7 @@ class SCPFscaleTopo:
 
             Balancing Masters
         '''
-
+        time.sleep(main.balanceSleep)
         main.step( "Balancing Masters" )
 
         stepResult = main.FALSE

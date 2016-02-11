@@ -41,7 +41,8 @@
     </SLEEP>
 
     <TIMEOUT>
-        <pingall>2000</pingall>
+        # pingall timeout unit: ms
+        <pingall>0.03</pingall>
     </TIMEOUT>
 
     <ATTEMPTS>
@@ -51,7 +52,7 @@
 
     <TOPOLOGY>
         <topology>torus</topology>
-        <scale>3,5,10</scale>
+        <scale>5,10,15</scale>
     </TOPOLOGY>
 
 </PARAMS>

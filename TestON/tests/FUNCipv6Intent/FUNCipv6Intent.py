@@ -236,6 +236,21 @@ class FUNCipv6Intent:
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
 
+        main.step( "Checking that ONOS is ready" )
+        for i in range( 10 ):
+            ready = True
+            for cli in main.CLIs:
+                output = cli.summary()
+                if not output:
+                    ready = False
+            time.sleep( 30 )
+        utilities.assert_equals( expect=True, actual=ready,
+                                 onpass="ONOS summary command succeded",
+                                 onfail="ONOS summary command failed" )
+        if not ready:
+            main.cleanup()
+            main.exit()
+
         main.step( "setup the ipv6NeighbourDiscovery" )
         cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.proxyarp.ProxyArp", "ipv6NeighborDiscovery", "true" )
         cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "ipv6NeighborDiscovery", "true" )

@@ -239,8 +239,8 @@ class FUNCipv6Intent:
         main.step( "Checking that ONOS is ready" )
         for i in range( 10 ):
             ready = True
-            for cli in main.CLIs:
-                output = cli.summary()
+            for i in range( int( main.scale[ 0 ] ) ):
+                output = main.CLIs[ i ].summary()
                 if not output:
                     ready = False
             time.sleep( 30 )

@@ -476,7 +476,12 @@ class SCPFmaxIntents:
                                  onpass = "Successfully pushed and verified intents",
                                  onfail = "Failed to push and verify intents" )
         currIntents = main.ONOScli1.getTotalIntentsNum()
-        currFlows = main.ONOScli1.getTotalFlowsNum( timeout = main.timeout )
+        currFlows = 0
+        # Get current flows from REST API
+        temp = json.loads( main.ONOSrest1.flows() )
+        for t in temp:
+            if t.get("state") == "ADDED":
+                currFlows = currFlows + 1
         main.log.info( "Total Intents Installed: {}".format( currIntents ) )
         main.log.info( "Total Flows ADDED: {}".format( currFlows ) )
 

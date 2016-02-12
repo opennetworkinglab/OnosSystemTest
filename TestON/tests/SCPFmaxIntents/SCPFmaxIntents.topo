@@ -21,6 +21,17 @@
             </COMPONENTS>
         </ONOScli1>
 
+        <ONOSrest1>
+            <host>OC1</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest1>
+
         <Mininet1>
             <host>localhost</host>
             <user>admin</user>

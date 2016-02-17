@@ -390,8 +390,8 @@ class SCPFscalingMaxIntents:
         offfset = 0
         # keeps track of how many intents have been installed
         currIntents = 0
-        # keeps track of how many flows have been installed
-        currFlows = main.defaultFlows
+        # keeps track of how many flows have been installed, set to 0 at start
+        currFlows = 0
         # limit for the number of intents that can be installed
         limit = main.maxIntents / main.batchSize
         # total intents installed
@@ -431,16 +431,17 @@ class SCPFscalingMaxIntents:
                 stepResult = stepResult and t.result
             offfset = offfset + main.batchSize
 
-            totalIntents = main.batchSize + totalIntents
+            totalIntents = main.batchSize * main.numCtrls + totalIntents
             if totalIntents >= main.minIntents and totalIntents % main.checkInterval == 0:
                 # if reach to minimum number and check interval, verify Intetns and flows
                 time.sleep( main.verifySleep * main.numCtrls )
 
                 main.log.info("Verify Intents states")
+                # k is a control variable for verify retry attempts
                 k = 1
                 intentVerify = main.FALSE
 
-                while k <= 3:
+                while k <= main.verifyAttempts:
                     # while loop for check intents by using REST api
                     time.sleep(5)
                     temp = 0
@@ -449,8 +450,6 @@ class SCPFscalingMaxIntents:
                         # get INSTALLED intents number
                         if f.get("state") == "INSTALLED":
                             temp = temp + 1
-
-                    totalIntents=len(intentsState)
 
                     main.log.info("Total Intents: {} INSTALLED: {}".format(totalIntents, temp))
                     if totalIntents == temp:
@@ -463,14 +462,18 @@ class SCPFscalingMaxIntents:
                     # If some intents are not installed, finished this test case
                     main.log.warn( "Some intens did not install" )
                     # We don't want to check flows if intents not installed, because onos will drop flows
+                    if currFlows == 0:
+                    # If currFlows equal 0, which means we failed to install intents at first, or we didn't get
+                    # the correct number, so we need get flows here.
+                        flowsState = json.loads( main.ONOSrest1.flows() )
                     break
 
                 main.log.info("Verify Flows states")
                 k = 1
                 flowsVerify = main.TRUE
 
-                while k <= 3:
-                    #while loop for check flows by using REST api
+                while k <= main.verifyAttempts:
+                    # while loop for check flows by using REST api
                     time.sleep(3)
                     temp = 0
                     flowsStateCount = []

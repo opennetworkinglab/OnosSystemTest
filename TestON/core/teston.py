@@ -324,6 +324,7 @@ class TestON:
                 # NOTE: This is needed to catch results of main.step()'s
                 #       called inside functions or loops
                 self.stepResults = ( [], [], [], [] )
+                self.log.demo( code[testCaseNumber][step] )  # for ONS Demo
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
                 self.parseStepResults( testCaseNumber )

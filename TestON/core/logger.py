@@ -118,6 +118,8 @@ class Logger:
         main.LogFileName = main.logdir + "/" + main.TEST + "_" +str(currentTime) + ".log"
         main.ReportFileName = main.logdir + "/" + main.TEST + "_" + str(currentTime) + ".rpt"
         main.WikiFileName = main.logdir + "/" + main.TEST + "Wiki.txt"
+        main.DemoCodeFileName = main.logdir + "/" + main.TEST + "-DemoCode.txt"
+        main.DemoSummaryFileName = main.logdir + "/" + main.TEST + "-DemoSummary.txt"
         main.SummaryFileName = main.logdir + "/" + main.TEST + "Summary.txt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
         main.TOTAL_TC_SUCCESS = 0
@@ -165,6 +167,68 @@ class Logger:
 
         main.log.wiki = wiki
 
+        def demoCode( msg ):
+            '''
+                Will append the message to the txt file for the Demo.
+            '''
+            colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
+                       'blue': '\033[94m', 'green': '\033[92m',
+                       'yellow': '\033[93m', 'red': '\033[91m',
+                       'end': '\033[0m' }
+
+            main.demoCodeFile = open( main.DemoCodeFileName, "a+" )
+            parsedMsg = ''
+            wrapped = False
+            for line in msg.splitlines():
+                if wrapped:
+                    parsedMsg += line
+                    if ')' in line:
+                        wrapped = False
+                        parsedMsg += colors['end']
+                elif "main.case(" in line:
+                    parsedMsg += colors['cyan'] + line + colors['end']
+                elif "main.step" in line:
+                    parsedMsg += colors['red'] + line + colors['end']
+                elif "utilities.assert_" in line and  "(" in line:
+                    parsedMsg += colors['purple'] + line
+                    if ')' not in line:
+                        wrapped = True
+                    else:
+                        parsedMsg += colors['end']
+                else:
+                    parsedMsg += line
+                parsedMsg += '\n'
+            main.demoCodeFile.write( parsedMsg + "\n" )
+            main.demoCodeFile.close()
+
+        main.log.demo = demoCode
+
+        def demoSummary( msg, level=None ):
+            '''
+                Will append the message to the txt file for the Demo.
+            '''
+            colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
+                       'blue': '\033[94m', 'green': '\033[92m',
+                       'yellow': '\033[93m', 'red': '\033[91m',
+                       'end': '\033[0m' }
+
+            main.demoSummaryFile = open( main.DemoSummaryFileName, "a+" )
+            parsedMsg = ''
+            if level is None:
+                parsedMsg += msg
+            elif level.lower() == "case":
+                parsedMsg += colors['cyan'] + "CASE:" + msg
+            elif level.lower() == "step":
+                parsedMsg += colors['yellow'] + "\tSTEP:"
+                parsedMsg += msg[ msg.find( ':' ) + 1 :]
+            parsedMsg += colors['end']
+            main.demoSummaryFile.write( parsedMsg + "\n" )
+            main.demoSummaryFile.close()
+
+        main.log.demoSummary = demoSummary
+
+
+
         def exact(exmsg):
             '''
                Will append the raw formatted message to the logs
@@ -190,6 +254,7 @@ class Logger:
             logfile = open(main.LogFileName,"a")
             logfile.write("\n"+ str(newmsg) +"\n")
             logfile.close()
+            main.log.demoSummary( msg, "case" )
             print newmsg
 
         main.log.case = case
@@ -204,6 +269,7 @@ class Logger:
             logfile = open(main.LogFileName,"a")
             logfile.write("\n"+ str(newmsg) +"\n")
             logfile.close()
+            main.log.demoSummary( msg, "step" )
             print newmsg
 
         main.log.step = step

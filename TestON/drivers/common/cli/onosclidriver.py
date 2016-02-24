@@ -1744,6 +1744,48 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def removeAllIntents( self, purge=False, sync=False, app='org.onosproject.cli' ):
+        """
+        Description:
+            Remove all the intents
+        Optional args:-
+            -s or --sync: Waits for the removal before returning
+            -p or --purge: Purge the intent from the store after removal
+        Returns:
+            Returns main.TRUE if all intents are removed, otherwise returns
+            main.FALSE; Returns None for exception
+        """
+        try:
+            cmdStr = "remove-intent"
+            if purge:
+                cmdStr += " -p"
+            if sync:
+                cmdStr += " -s"
+
+            cmdStr += " " + app
+            handle = self.sendline( cmdStr )
+            assert "Command not found:" not in handle, handle
+            if re.search( "Error", handle ):
+                main.log.error( "Error in removing intent" )
+                return main.FALSE
+            else:
+                return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def purgeWithdrawnIntents( self ):
         """
         Purges all WITHDRAWN Intents

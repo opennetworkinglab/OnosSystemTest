@@ -40,6 +40,7 @@ class SCPFintentEventTp:
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
         flowRuleBU = main.params[ 'TEST' ][ 'flowRuleBUEnabled' ]
+        skipRelRsrc = main.params[ 'TEST'][ 'skipReleaseResourcesOnWithdrawal']
         homeDir = os.path.expanduser('~')
 
         main.exceptions = [0]*11
@@ -157,7 +158,7 @@ class SCPFintentEventTp:
         time.sleep(20)
 
         main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled " + str(flowRuleBU))
-
+        main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal " + skipRelRsrc)
         devices = int(clusterCount)*10
 
         main.log.step("Setting up null provider")

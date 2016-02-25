@@ -59,6 +59,7 @@
         <cyclePeriod>1000</cyclePeriod>
         <neighbors>0,a</neighbors>           #a == all nodes (-1)
         <flowRuleBUEnabled>true</flowRuleBUEnabled>
+        <skipReleaseResourcesOnWithdrawal>true</skipReleaseResourcesOnWithdrawal>
     </TEST>
 
     <METRICS>

@@ -62,7 +62,7 @@
     # Intent tests params
     <SDNIP>
         <tcpProto>6</tcpProto>
-        <icmpProto>1</icmpProto>
+        <ipPrototype>6</ipPrototype>
         <srcPort>5001</srcPort>
         <dstPort>5001</dstPort>
     </SDNIP>

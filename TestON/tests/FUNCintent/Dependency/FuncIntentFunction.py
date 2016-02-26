@@ -328,7 +328,7 @@ def installPointIntent( main,
     itemName = name
     onosNode = int( onosNode )
 
-    main.log.info( itemName + ": Adding mutli to single point intents" )
+    main.log.info( itemName + ": Adding point to point intents" )
 
     for sender in senders:
         if not sender.get( "device" ):

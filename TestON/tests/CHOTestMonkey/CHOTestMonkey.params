@@ -1,0 +1,378 @@
+<PARAMS>
+    # 0. Initialize CHOTestMonkey
+    # 1. Load topology and balances all switches
+    # 2. Collect and store device and link data from ONOS
+    # 3. Collect and store host data from ONOS
+    # 10. Run all enabled checks
+    # 20. Bring down/up links and check topology and ping
+    # 21. Bring down/up a group of links and check topology and ping
+    # 30. Install host intents and check intent states and ping
+    # 31. Uninstall host intents and check intent states
+    # 32. Install point intents and check intent states and ping
+    # 33. Uninstall point intents and check intent states
+    # 40. Randomly bring down one ONOS node
+    # 41. Randomly bring up one ONOS node that is down
+    # 50. Set FlowObjective to True
+    # 51. Set FlowObjective to False
+    # 60. Rebalance devices across controllers
+    # 90. Sleep for some time
+    # 100. Do something else
+    # Sample sequence: 0,1,2,3,[10,30,21,31,10,32,21,33,50,10,30,21,31,10,32,21,33,51,40,60,10,30,21,31,10,32,21,33,50,10,30,21,31,10,32,21,33,51,41,60]*500,100
+    <testcases>
+        0,1,2,3,100,[10,40,60,10,30,21,31,41,90,60]*500,100
+    </testcases>
+
+    <TEST>
+        <topo>1</topo>
+        <IPv6>on</IPv6>
+        <numCtrl>3</numCtrl>
+        <pauseTest>off</pauseTest>
+        <caseSleep>0</caseSleep>
+        <setIPv6CfgSleep>5</setIPv6CfgSleep>
+        <loadTopoSleep>5</loadTopoSleep>
+        <ipv6Prefix>1000::</ipv6Prefix>
+        <ipv4Prefix>10.1.</ipv4Prefix>
+        <karafCliTimeout>7200000</karafCliTimeout>
+        <testDuration>86400</testDuration>
+        <package>off</package>
+        <autoPull>off</autoPull>
+        <branch>master</branch>
+    </TEST>
+
+    <EVENT>
+        <Event>
+            <status>on</status>
+            <typeIndex>0</typeIndex>
+            <typeString>NULL</typeString>
+            <CLI>null</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </Event>
+
+        <TestPause>
+            <status>on</status>
+            <typeIndex>1</typeIndex>
+            <typeString>TEST_PAUSE</typeString>
+            <CLI>pause-test</CLI>
+            <CLIParamNum>0</CLIParamNum>
+        </TestPause>
+
+        <TestResume>
+            <status>on</status>
+            <typeIndex>2</typeIndex>
+            <typeString>TEST_RESUME</typeString>
+            <CLI>resume-test</CLI>
+            <CLIParamNum>0</CLIParamNum>
+        </TestResume>
+
+        <TestSleep>
+            <status>on</status>
+            <typeIndex>3</typeIndex>
+            <typeString>TEST_SLEEP</typeString>
+            <CLI>sleep</CLI>
+            <CLIParamNum>1</CLIParamNum>
+        </TestSleep>
+
+        <IntentCheck>
+            <status>on</status>
+            <typeIndex>10</typeIndex>
+            <typeString>CHECK_INTENT</typeString>
+            <CLI>check-intent</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </IntentCheck>
+
+        <TrafficCheck>
+            <status>on</status>
+            <typeIndex>12</typeIndex>
+            <typeString>CHECK_TRAFFIC</typeString>
+            <CLI>check-traffic</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+            <pingWait>1</pingWait>
+            <pingTimeout>10</pingTimeout>
+        </TrafficCheck>
+
+        <TopoCheck>
+            <status>on</status>
+            <typeIndex>13</typeIndex>
+            <typeString>CHECK_TOPO</typeString>
+            <CLI>check-topo</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </TopoCheck>
+
+        <ONOSCheck>
+            <status>on</status>
+            <typeIndex>14</typeIndex>
+            <typeString>CHECK_ONOS</typeString>
+            <CLI>check-onos</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </ONOSCheck>
+
+        <LinkDown>
+            <status>on</status>
+            <typeIndex>20</typeIndex>
+            <typeString>NETWORK_LINK_DOWN</typeString>
+            <CLI>link-down</CLI>
+            <CLIParamNum>2</CLIParamNum>
+        </LinkDown>
+
+        <LinkUp>
+            <status>on</status>
+            <typeIndex>21</typeIndex>
+            <typeString>NETWORK_LINK_UP</typeString>
+            <CLI>link-up</CLI>
+            <CLIParamNum>2</CLIParamNum>
+        </LinkUp>
+
+        <DeviceDown>
+            <status>on</status>
+            <typeIndex>22</typeIndex>
+            <typeString>NETWORK_DEVICE_DOWN</typeString>
+            <CLI>device-down</CLI>
+            <CLIParamNum>1</CLIParamNum>
+        </DeviceDown>
+
+        <DeviceUp>
+            <status>on</status>
+            <typeIndex>23</typeIndex>
+            <typeString>NETWORK_DEVICE_UP</typeString>
+            <CLI>device-up</CLI>
+            <CLIParamNum>1</CLIParamNum>
+        </DeviceUp>
+
+        <AddHostIntent>
+            <status>on</status>
+            <typeIndex>30</typeIndex>
+            <typeString>APP_INTENT_HOST_ADD</typeString>
+            <CLI>add-host-intent</CLI>
+            <CLIParamNum>3</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </AddHostIntent>
+
+        <DelHostIntent>
+            <status>on</status>
+            <typeIndex>31</typeIndex>
+            <typeString>APP_INTENT_HOST_DEL</typeString>
+            <CLI>del-host-intent</CLI>
+            <CLIParamNum>3</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </DelHostIntent>
+
+        <AddPointIntent>
+            <status>on</status>
+            <typeIndex>32</typeIndex>
+            <typeString>APP_INTENT_POINT_ADD</typeString>
+            <CLI>add-point-intent</CLI>
+            <CLIParamNum>3</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </AddPointIntent>
+
+        <DelPointIntent>
+            <status>on</status>
+            <typeIndex>33</typeIndex>
+            <typeString>APP_INTENT_POINT_DEL</typeString>
+            <CLI>del-point-intent</CLI>
+            <CLIParamNum>3</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </DelPointIntent>
+
+        <ONOSDown>
+            <status>on</status>
+            <typeIndex>40</typeIndex>
+            <typeString>ONOS_ONOS_DOWN</typeString>
+            <CLI>onos-down</CLI>
+            <CLIParamNum>1</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </ONOSDown>
+
+        <ONOSUp>
+            <status>on</status>
+            <typeIndex>41</typeIndex>
+            <typeString>ONOS_ONOS_UP</typeString>
+            <CLI>onos-up</CLI>
+            <CLIParamNum>1</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </ONOSUp>
+
+        <SetCfg>
+            <status>on</status>
+            <typeIndex>42</typeIndex>
+            <typeString>ONOS_SET_CFG</typeString>
+            <CLI>set-cfg</CLI>
+            <CLIParamNum>3</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </SetCfg>
+
+        <SetFlowObj>
+            <status>on</status>
+            <typeIndex>43</typeIndex>
+            <typeString>ONOS_SET_FLOWOBJ</typeString>
+            <CLI>set-flowobj</CLI>
+            <CLIParamNum>1</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </SetFlowObj>
+
+        <BalanceMasters>
+            <status>on</status>
+            <typeIndex>44</typeIndex>
+            <typeString>ONOS_BALANCE_MASTERS</typeString>
+            <CLI>balance-masters</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </BalanceMasters>
+
+        <addAllChecks>
+            <status>on</status>
+            <typeIndex>110</typeIndex>
+            <typeString>CHECK_ALL</typeString>
+            <CLI>check-all</CLI>
+            <CLIParamNum>0</CLIParamNum>
+        </addAllChecks>
+
+        <randomLinkToggle>
+            <status>on</status>
+            <typeIndex>120</typeIndex>
+            <typeString>NETWORK_LINK_RANDOM_TOGGLE</typeString>
+            <CLI>link-toggle-random</CLI>
+            <CLIParamNum>1</CLIParamNum>
+            <sleepBeforeCheck>10</sleepBeforeCheck>
+        </randomLinkToggle>
+
+        <randomLinkGroupToggle>
+            <status>on</status>
+            <typeIndex>121</typeIndex>
+            <typeString>NETWORK_LINK_GROUP_RANDOM_TOGGLE</typeString>
+            <CLI>link-group-toggle-random</CLI>
+            <CLIParamNum>3</CLIParamNum>
+            <sleepBeforeCheck>10</sleepBeforeCheck>
+        </randomLinkGroupToggle>
+
+        <randomDeviceToggle>
+            <status>on</status>
+            <typeIndex>122</typeIndex>
+            <typeString>NETWORK_DEVICE_RANDOM_TOGGLE</typeString>
+            <CLI>device-toggle-random</CLI>
+            <CLIParamNum>1</CLIParamNum>
+            <sleepBeforeCheck>10</sleepBeforeCheck>
+        </randomDeviceToggle>
+
+        <randomDeviceGroupToggle>
+            <status>on</status>
+            <typeIndex>123</typeIndex>
+            <typeString>NETWORK_DEVICE_GROUP_RANDOM_TOGGLE</typeString>
+            <CLI>device-group-toggle-random</CLI>
+            <CLIParamNum>3</CLIParamNum>
+            <sleepBeforeCheck>10</sleepBeforeCheck>
+        </randomDeviceGroupToggle>
+
+        <installAllHostIntents>
+            <status>on</status>
+            <typeIndex>130</typeIndex>
+            <typeString>APP_INTENT_HOST_ADD_ALL</typeString>
+            <CLI>add-all-host-intents</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <sleepBeforeCheck>10</sleepBeforeCheck>
+        </installAllHostIntents>
+
+        <removeAllHostIntents>
+            <status>on</status>
+            <typeIndex>131</typeIndex>
+            <typeString>APP_INTENT_HOST_DEL_ALL</typeString>
+            <CLI>del-all-host-intents</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <sleepBeforeCheck>5</sleepBeforeCheck>
+        </removeAllHostIntents>
+
+        <installAllPointIntents>
+            <status>on</status>
+            <typeIndex>132</typeIndex>
+            <typeString>APP_INTENT_POINT_ADD_ALL</typeString>
+            <CLI>add-all-point-intents</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <sleepBeforeCheck>10</sleepBeforeCheck>
+        </installAllPointIntents>
+
+        <removeAllPointIntents>
+            <status>on</status>
+            <typeIndex>133</typeIndex>
+            <typeString>APP_INTENT_POINT_DEL_ALL</typeString>
+            <CLI>del-all-point-intents</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <sleepBeforeCheck>5</sleepBeforeCheck>
+        </removeAllPointIntents>
+
+        <randomONOSToggle>
+            <status>on</status>
+            <typeIndex>140</typeIndex>
+            <typeString>ONOS_ONOS_RANDOM_TOGGLE</typeString>
+            <CLI>onos-toggle-random</CLI>
+            <CLIParamNum>1</CLIParamNum>
+            <sleepBeforeCheck>10</sleepBeforeCheck>
+        </randomONOSToggle>
+    </EVENT>
+
+    <SCHEDULER>
+        <pendingEventsCapacity>1</pendingEventsCapacity>
+        <runningEventsCapacity>10</runningEventsCapacity>
+        <scheduleLoopSleep>0.1</scheduleLoopSleep>
+    </SCHEDULER>
+
+    <GENERATOR>
+        <listenerPort>6000</listenerPort>
+        <insertEventRetryInterval>1</insertEventRetryInterval>
+    </GENERATOR>
+
+    <TOPO>
+        <topo0>
+            <fileName>topoTripleIpv6.py</fileName>
+        </topo0>
+
+        <topo1>
+            <fileName>topoAttIpv6.py</fileName>
+        </topo1>
+
+        <topo2>
+            <fileName>topoChordalIpv6.py</fileName>
+        </topo2>
+
+        <topo3>
+            <fileName>topoSpineIpv6.py</fileName>
+        </topo3>
+
+        <topo4>
+            <fileName>topoRingIpv6.py</fileName>
+        </topo4>
+    </TOPO>
+
+    <CASE20>
+        <linkToggleNum>5</linkToggleNum>
+        <linkDownUpInterval>1</linkDownUpInterval>
+    </CASE20>
+
+    <CASE21>
+        <linkGroupSize>5</linkGroupSize>
+        <linkDownDownInterval>1</linkDownDownInterval>
+        <linkDownUpInterval>1</linkDownUpInterval>
+    </CASE21>
+
+    <CASE90>
+        <sleepSec>60</sleepSec>
+    </CASE90>
+</PARAMS>

@@ -936,6 +936,8 @@ class OnosDriver( CLI ):
             i = self.handle.expect( [ "Network\sis\sunreachable",
                                       "onos\sstart/running,\sprocess",
                                       "ONOS\sis\salready\sinstalled",
+                                      "already\sup-to-date",
+                                      "\$",
                                       pexpect.TIMEOUT ], timeout=60 )
             if i == 0:
                 main.log.warn( "Network is unreachable" )
@@ -953,6 +955,13 @@ class OnosDriver( CLI ):
                 self.handle.expect( "\$" )
                 return main.TRUE
             elif i == 3:
+                main.log.info( "ONOS is already installed on " + node )
+                self.handle.expect( "\$" )
+                return main.TRUE
+            elif i == 4:
+                main.log.info( "ONOS was installed on " + node )
+                return main.TRUE
+            elif i == 5:
                 main.log.info(
                     "Installation of ONOS on " +
                     node +

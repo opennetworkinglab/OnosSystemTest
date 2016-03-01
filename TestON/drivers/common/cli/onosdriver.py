@@ -1671,8 +1671,8 @@ class OnosDriver( CLI ):
             self.handle.sendline( "onos-service " + str( node ) +
                                   " status" )
             i = self.handle.expect( [
-                "start/running",
-                "stop/waiting",
+                "Running ...",
+                "Not Running ...",
                 pexpect.TIMEOUT ], timeout=120 )
 
             if i == 0:

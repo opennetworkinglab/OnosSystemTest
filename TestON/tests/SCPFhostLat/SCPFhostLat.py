@@ -322,11 +322,15 @@ class SCPFhostLat:
             HosttoRemove.append( json.loads( gethost[1:len(gethost)-1] ).get('id') )
             main.CLIs[0].removeHost(HosttoRemove)
 
+        main.log.info("Result List: {}".format(addingHostTime))
+
         # calculate average latency from each nodes
         averageResult = numpy.average(addingHostTime)
+        main.log.info("Average Latency: {}".format(averageResult))
 
         # calculate std
         stdResult = numpy.std(addingHostTime)
+        main.log.info("std: {}".format(stdResult))
 
         # write to DB file
         main.log.info("Writing results to DS file")

@@ -671,7 +671,7 @@ class OnosDriver( CLI ):
             main.exit()
 
     def createCellFile( self, benchIp, fileName, mnIpAddrs,
-                        appString, onosIpAddrs ):
+                        appString, onosIpAddrs, onosUser="sdn" ):
         """
         Creates a cell file based on arguments
         Required:
@@ -683,6 +683,8 @@ class OnosDriver( CLI ):
                   supported currently
             * ONOS IP addresses ( onosIpAddrs )
                 - Must be passed in as last arguments
+            * ONOS USER (onosUser)
+                - optional argument to set ONOS_USER environment variable
 
         NOTE: Assumes cells are located at:
             ~/<self.home>/tools/test/cells/
@@ -702,6 +704,8 @@ class OnosDriver( CLI ):
         # Note that you  may not want certain apps listed
         # on here.
         appString = "export ONOS_APPS=" + appString
+        onosGroup = "export ONOS_GROUP=" + onosUser
+        onosUser = "export ONOS_USER=" + onosUser
         mnString = "export OCN="
         if mnIpAddrs == "":
             mnString = ""
@@ -734,6 +738,8 @@ class OnosDriver( CLI ):
             cellFile.write( "export OCI=$OC1\n" )
             cellFile.write( mnString + "\"" + mnIpAddrs + "\"\n" )
             cellFile.write( appString + "\n" )
+            cellFile.write( onosGroup + "\n" )
+            cellFile.write( onosUser + "\n" )
             cellFile.close()
 
             # We use os.system to send the command to TestON cluster

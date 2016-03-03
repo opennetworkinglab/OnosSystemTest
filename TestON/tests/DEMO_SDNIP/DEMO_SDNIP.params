@@ -1,0 +1,44 @@
+<PARAMS>
+
+    <testcases>101, 100, 200, 102, 1, 2, 3, 4, 5, 6</testcases>
+    #101, 100, 200, 102, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12
+    #Environment variables
+    <ENV>
+        <cellName>Demo</cellName>
+        <appString>drivers,openflow,proxyarp,router</appString>
+        <package>FALSE</package>
+    </ENV>
+
+    <CTRL>
+        <numCtrl>3</numCtrl>
+        <ip1>OC1</ip1>
+        <ip2>OC2</ip2>
+        <ip3>OC3</ip3>
+        <port1>6653</port1>
+    </CTRL>
+
+    <DEPENDENCY>
+        <path>/DEMO_SDNIP/Dependency/</path>
+        <topology>USECASE_SdnipI2MN_Cluster.py</topology>
+        <wrapper1>Functions</wrapper1>
+        <wrapper2>USECASE_SdnipI2MN_Cluster</wrapper2>
+    </DEPENDENCY>
+
+    <config>
+        <peerNum> 3 </peerNum>
+        <switchNum> 39 </switchNum>
+        <peer64514> 10.0.14.1</peer64514>
+        <peer64515> 10.0.15.1</peer64515>
+        <peer64516> 10.0.16.1</peer64516>
+    </config>
+
+    <timers>
+        <SdnIpSetup>10</SdnIpSetup>
+        <TopoDiscovery>10</TopoDiscovery>
+        <PingTestWithRoutes>20</PingTestWithRoutes>
+        <PingTestWithoutRoutes>100</PingTestWithoutRoutes>
+        <RouteDelivery>30</RouteDelivery>
+        <PathAvailable>20</PathAvailable>
+    </timers>
+
+</PARAMS>

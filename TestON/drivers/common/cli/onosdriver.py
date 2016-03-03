@@ -991,6 +991,7 @@ class OnosDriver( CLI ):
             i = self.handle.expect( [
                 "Job\sis\salready\srunning",
                 "start/running",
+                "\$",
                 "Unknown\sinstance",
                 pexpect.TIMEOUT ], timeout=120 )
             self.handle.expect( "\$" )
@@ -998,6 +999,9 @@ class OnosDriver( CLI ):
                 main.log.info( "Service is already running" )
                 return main.TRUE
             elif i == 1:
+                main.log.info( "ONOS service started" )
+                return main.TRUE
+            elif i == 2:
                 main.log.info( "ONOS service started" )
                 return main.TRUE
             else:

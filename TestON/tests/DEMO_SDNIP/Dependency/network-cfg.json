@@ -1,5 +1,4 @@
 {
-  "hosts": {
     "ports" : {
         "of:00000000000000a8/5" : {
             "interfaces" : [

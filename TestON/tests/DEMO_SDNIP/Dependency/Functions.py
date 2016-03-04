@@ -133,11 +133,6 @@ def pingSpeakerToPeer( main, speakers = ["speaker1"],
                              onpass = "Ping test results are expected",
                              onfail = "Ping test results are Not expected" )
 
-    if result == False:
-        main.cleanup()
-        main.exit()
-
-
 def pingHostToHost( main, hosts = ["host64514", "host64515", "host64516"],
                 expectAllSuccess = True ):
     """
@@ -173,12 +168,6 @@ def pingHostToHost( main, hosts = ["host64514", "host64515", "host64516"],
     utilities.assert_equals( expect = True, actual = result,
                              onpass = "Ping test results are expected",
                              onfail = "Ping test results are Not expected" )
-
-    '''
-    if result == False:
-        main.cleanup()
-        main.exit()
-    '''
 
 
 def setupTunnel( main, srcIp, srcPort, dstIp, dstPort ):

@@ -276,7 +276,6 @@ class DEMO_SDNIP:
                        expectAllSuccess=True )
         main.stop()
 
-
     def CASE2( self, main ):
         '''
         point-to-point intents test for each BGP peer and BGP speaker pair

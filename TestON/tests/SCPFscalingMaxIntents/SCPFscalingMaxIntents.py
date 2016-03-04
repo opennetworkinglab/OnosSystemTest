@@ -432,6 +432,10 @@ class SCPFscalingMaxIntents:
             offfset = offfset + main.batchSize
 
             totalIntents = main.batchSize * main.numCtrls + totalIntents
+
+            # Contain the previous Flows
+            tempFlowsList = []
+
             if totalIntents >= main.minIntents and totalIntents % main.checkInterval == 0:
                 # if reach to minimum number and check interval, verify Intetns and flows
                 time.sleep( main.verifySleep * main.numCtrls )
@@ -457,10 +461,10 @@ class SCPFscalingMaxIntents:
                         break
                     intentVerify = main.FALSE
                     k = k+1
-
                 if not intentVerify:
-                    # If some intents are not installed, finished this test case
+                    # If some intents are not installed, grep the previous flows list, and finished this test case
                     main.log.warn( "Some intens did not install" )
+                    flowsState = tempFlowsList
                     # We don't want to check flows if intents not installed, because onos will drop flows
                     if currFlows == 0:
                     # If currFlows equal 0, which means we failed to install intents at first, or we didn't get
@@ -471,13 +475,14 @@ class SCPFscalingMaxIntents:
                 main.log.info("Verify Flows states")
                 k = 1
                 flowsVerify = main.TRUE
-
                 while k <= main.verifyAttempts:
                     # while loop for check flows by using REST api
                     time.sleep(3)
                     temp = 0
                     flowsStateCount = []
                     flowsState = json.loads( main.ONOSrest1.flows() )
+                    if ( len(flowsState) < len(tempFlowsList) ):
+                        tempFlowsList = flowsState
                     for f in flowsState:
                         # get PENDING_ADD flows
                         if f.get("state") == "PENDING_ADD":

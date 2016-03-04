@@ -210,7 +210,10 @@ class DEMO_SDNIP:
         if linkNum < 100:
             main.log.error( "Link number is wrong!" )
             time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
+            summaryResult = main.ONOScli1.summary()
+            linkNum = json.loads( summaryResult )[ "links" ]
             listResult = main.ONOScli1.links( jsonFormat=False )
+            main.log.info( linkNum )
             main.log.info( listResult )
             main.cleanup()
             main.exit()

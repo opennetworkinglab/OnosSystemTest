@@ -1,31 +1,4 @@
 {
-  "devices": {
-    "of:00000000000000a1": { "basic": { "name": "CMBR", "latitude": 42.373730, "longitude": -71.109734  }},
-    "of:00000000000000a2": { "basic": { "name": "CHCG", "latitude": 41.877461, "longitude": -87.642892  }},
-    "of:00000000000000a3": { "basic": { "name": "CLEV", "latitude": 41.498928, "longitude": -81.695217  }},
-    "of:00000000000000a4": { "basic": { "name": "RLGH", "latitude": 35.780150, "longitude": -78.644026  }},
-    "of:00000000000000a5": { "basic": { "name": "ATLN", "latitude": 33.749017, "longitude": -84.394168  }},
-    "of:00000000000000a6": { "basic": { "name": "PHLA", "latitude": 39.952906, "longitude": -75.172278  }},
-    "of:00000000000000a7": { "basic": { "name": "WASH", "latitude": 38.906696, "longitude": -77.035509  }},
-    "of:00000000000000a8": { "basic": { "name": "NSVL", "latitude": 36.166410, "longitude": -86.787305  }},
-    "of:00000000000000a9": { "basic": { "name": "STLS", "latitude": 38.626418, "longitude": -90.198143  }},
-    "of:0000000000000a10": { "basic": { "name": "NWOR", "latitude": 29.951475, "longitude": -90.078434  }},
-    "of:0000000000000a11": { "basic": { "name": "HSTN", "latitude": 29.763249, "longitude": -95.368332  }},
-    "of:0000000000000a12": { "basic": { "name": "SNAN", "latitude": 29.424331, "longitude": -98.491745  }},
-    "of:0000000000000a13": { "basic": { "name": "DLLS", "latitude": 32.777665, "longitude": -96.802064  }},
-    "of:0000000000000a14": { "basic": { "name": "ORLD", "latitude": 28.538641, "longitude": -81.381110  }},
-    "of:0000000000000a15": { "basic": { "name": "DNVR", "latitude": 39.736623, "longitude": -104.984887 }},
-    "of:0000000000000a16": { "basic": { "name": "KSCY", "latitude": 39.100725, "longitude": -94.581228  }},
-    "of:0000000000000a17": { "basic": { "name": "SNFN", "latitude": 37.779751, "longitude": -122.409791 }},
-    "of:0000000000000a18": { "basic": { "name": "SCRM", "latitude": 38.581001, "longitude": -121.497844 }},
-    "of:0000000000000a19": { "basic": { "name": "PTLD", "latitude": 45.523317, "longitude": -122.677768 }},
-    "of:0000000000000a20": { "basic": { "name": "STTL", "latitude": 47.607326, "longitude": -122.331786 }},
-    "of:0000000000000a21": { "basic": { "name": "SLKC", "latitude": 40.759577, "longitude": -111.895079 }},
-    "of:0000000000000a22": { "basic": { "name": "LA03", "latitude": 34.056346, "longitude": -118.235951 }},
-    "of:0000000000000a23": { "basic": { "name": "SNDG", "latitude": 32.714564, "longitude": -117.153528 }},
-    "of:0000000000000a24": { "basic": { "name": "PHNX", "latitude": 33.448289, "longitude": -112.076299 }},
-    "of:0000000000000a25": { "basic": { "name": "NY54", "latitude": 40.728270, "longitude": -73.994483  }}
-  },
   "hosts": {
     "ports" : {
         "of:00000000000000a8/5" : {

@@ -33,8 +33,8 @@
     </config>
 
     <timers>
-        <SdnIpSetup>10</SdnIpSetup>
-        <TopoDiscovery>10</TopoDiscovery>
+        <SdnIpSetup>20</SdnIpSetup>
+        <TopoDiscovery>30</TopoDiscovery>
         <PingTestWithRoutes>20</PingTestWithRoutes>
         <PingTestWithoutRoutes>100</PingTestWithoutRoutes>
         <RouteDelivery>30</RouteDelivery>

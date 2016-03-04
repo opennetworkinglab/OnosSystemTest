@@ -1302,6 +1302,9 @@ class MininetCliDriver( Emulator ):
             if re.search( "Unknown command", response ):
                 main.log.warn( response )
                 return main.FALSE
+            if re.search( "Permission denied", response ):
+                main.log.warn( response )
+                return main.FALSE
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": pexpect.TIMEOUT found" )
             main.cleanup()
@@ -1902,6 +1905,24 @@ class MininetCliDriver( Emulator ):
             return result.group( 1 )
         else:
             main.log.error( "Connection failed to the Mininet host" )
+
+    def checkFlows( self, sw, dumpFormat=None ):
+        if dumpFormat:
+            command = "sh ovs-ofctl -F " + \
+                dumpFormat + " dump-flows " + str( sw )
+        else:
+            command = "sh ovs-ofctl dump-flows " + str( sw )
+        try:
+            response = self.execute(
+                cmd=command,
+                prompt="mininet>",
+                timeout=10 )
+            return response
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
 
     def flowTableComp( self, flowTable1, flowTable2 ):
         # This function compares the selctors and treatments of each flow

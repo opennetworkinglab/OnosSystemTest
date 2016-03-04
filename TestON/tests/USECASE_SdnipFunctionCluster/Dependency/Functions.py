@@ -1,14 +1,20 @@
 
-def checkRouteNum( main, routeNumExpected, ONOScli = "ONOScli1" ):
+def checkRouteNum( main, routeNumExpected, ONOScli="ONOScli1" ):
+    import time
     main.step( "Check routes installed" )
+    wait = int( main.params['timers']['PathAvailable'] )
     main.log.info( "Route number expected:" )
     main.log.info( routeNumExpected )
     main.log.info( "Route number from ONOS CLI:" )
 
     if ONOScli == "ONOScli1":
-        routeNumActual = main.ONOScli1.ipv4RouteNumber()
+        cli = main.ONOScli1
     else:
-        routeNumActual = main.ONOScli2.ipv4RouteNumber()
+        cli = main.ONOScli2
+    routeNumActual = cli.ipv4RouteNumber()
+    if routeNumActual != routeNumExpected:
+        time.sleep( wait )
+        routeNumActual = cli.ipv4RouteNumber()
 
     main.log.info( routeNumActual )
     utilities.assertEquals( \
@@ -17,17 +23,24 @@ def checkRouteNum( main, routeNumExpected, ONOScli = "ONOScli1" ):
         onfail = "Route number is wrong!" )
 
 def checkM2SintentNum( main, intentNumExpected, ONOScli = "ONOScli1" ):
+    import time
     main.step( "Check M2S intents installed" )
+    wait = int( main.params['timers']['PathAvailable'] )
     main.log.info( "Intent number expected:" )
     main.log.info( intentNumExpected )
     main.log.info( "Intent number from ONOS CLI:" )
     if ONOScli == "ONOScli1":
-        jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
-                                            TYPE = "multiPointToSinglePoint" )
+        cli = main.ONOScli1
     else:
-        jsonResult = main.ONOScli2.intents( jsonFormat = True, summary = True,
-                                            TYPE = "multiPointToSinglePoint" )
+        cli = main.ONOScli2
+    jsonResult = cli.intents( jsonFormat = True, summary = True,
+                              TYPE = "multiPointToSinglePoint" )
     intentNumActual = jsonResult['installed']
+    if intentNumActual != intentNumExpected:
+        time.sleep( wait )
+        jsonResult = cli.intents( jsonFormat = True, summary = True,
+                                  TYPE = "multiPointToSinglePoint" )
+        intentNumActual = jsonResult['installed']
     main.log.info( intentNumActual )
     utilities.assertEquals( \
         expect = intentNumExpected, actual = intentNumActual,
@@ -35,17 +48,25 @@ def checkM2SintentNum( main, intentNumExpected, ONOScli = "ONOScli1" ):
         onfail = "M2S intent number is wrong!" )
 
 def checkP2PintentNum( main, intentNumExpected, ONOScli = "ONOScli1" ):
+    import time
     main.step( "Check P2P intents installed" )
+    wait = int( main.params['timers']['PathAvailable'] )
     main.log.info( "Intent number expected:" )
     main.log.info( intentNumExpected )
     main.log.info( "Intent number from ONOS CLI:" )
     if ONOScli == "ONOScli1":
-        jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
-                                            TYPE = "pointToPoint" )
+        cli = main.ONOScli1
     else:
-        jsonResult = main.ONOScli2.intents( jsonFormat = True, summary = True,
-                                            TYPE = "pointToPoint" )
+        cli = main.ONOScli2
+    jsonResult = cli.intents( jsonFormat = True, summary = True,
+                              TYPE = "pointToPoint" )
     intentNumActual = jsonResult['installed']
+
+    if intentNumActual != intentNumExpected:
+        time.sleep( wait )
+        jsonResult = cli.intents( jsonFormat = True, summary = True,
+                                  TYPE = "pointToPoint" )
+        intentNumActual = jsonResult['installed']
     main.log.info( intentNumActual )
     utilities.assertEquals( \
         expect = intentNumExpected, actual = intentNumActual,
@@ -53,11 +74,16 @@ def checkP2PintentNum( main, intentNumExpected, ONOScli = "ONOScli1" ):
         onfail = "P2P intent number is wrong!" )
 
 def checkFlowNum( main, switch, flowNumExpected ):
+    import time
     main.step( "Check flow entry number in " + switch )
+    wait = int( main.params['timers']['PathAvailable'] )
     main.log.info( "Flow number expected:" )
     main.log.info( flowNumExpected )
     main.log.info( "Flow number actual:" )
     flowNumActual = main.Mininet.getSwitchFlowCount( switch )
+    if flowNumActual != flowNumExpected :
+        time.sleep( wait )
+        flowNumActual = main.Mininet.getSwitchFlowCount( switch )
     main.log.info( flowNumActual )
     utilities.assertEquals( \
         expect = flowNumExpected, actual = flowNumActual,
@@ -121,7 +147,8 @@ def pingHostToHost( main, hosts = ["host64514", "host64515", "host64516"],
         * expectAllSuccess - boolean indicating if you expect all results
         succeed if True, otherwise expect all results fail if False
     """
-    main.step( "Check ping between each host pair" )
+    main.step( "Check ping between each host pair, expect all to succede=" +
+               str( expectAllSuccess ) )
     if len( hosts ) == 0:
         main.log.error( "Parameter hosts can not be empty." )
         main.cleanup()

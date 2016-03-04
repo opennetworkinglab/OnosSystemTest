@@ -936,6 +936,8 @@ class OnosDriver( CLI ):
             i = self.handle.expect( [ "Network\sis\sunreachable",
                                       "onos\sstart/running,\sprocess",
                                       "ONOS\sis\salready\sinstalled",
+                                      "already\sup-to-date",
+                                      "\$",
                                       pexpect.TIMEOUT ], timeout=60 )
             if i == 0:
                 main.log.warn( "Network is unreachable" )
@@ -953,6 +955,13 @@ class OnosDriver( CLI ):
                 self.handle.expect( "\$" )
                 return main.TRUE
             elif i == 3:
+                main.log.info( "ONOS is already installed on " + node )
+                self.handle.expect( "\$" )
+                return main.TRUE
+            elif i == 4:
+                main.log.info( "ONOS was installed on " + node )
+                return main.TRUE
+            elif i == 5:
                 main.log.info(
                     "Installation of ONOS on " +
                     node +
@@ -982,16 +991,22 @@ class OnosDriver( CLI ):
             i = self.handle.expect( [
                 "Job\sis\salready\srunning",
                 "start/running",
+                "\$",
                 "Unknown\sinstance",
                 pexpect.TIMEOUT ], timeout=120 )
-            self.handle.expect( "\$" )
             if i == 0:
+                self.handle.expect( "\$" )
                 main.log.info( "Service is already running" )
                 return main.TRUE
             elif i == 1:
+                self.handle.expect( "\$" )
+                main.log.info( "ONOS service started" )
+                return main.TRUE
+            elif i == 2:
                 main.log.info( "ONOS service started" )
                 return main.TRUE
             else:
+                self.handle.expect( "\$" )
                 main.log.error( "ONOS service failed to start" )
                 main.cleanup()
                 main.exit()
@@ -1662,8 +1677,8 @@ class OnosDriver( CLI ):
             self.handle.sendline( "onos-service " + str( node ) +
                                   " status" )
             i = self.handle.expect( [
-                "start/running",
-                "stop/waiting",
+                "Running ...",
+                "Not Running ...",
                 pexpect.TIMEOUT ], timeout=120 )
 
             if i == 0:

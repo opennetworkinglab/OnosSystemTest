@@ -167,6 +167,7 @@ class FUNCintentRest:
                        " before initiating environment setup" )
 
         time.sleep( main.startUpSleep )
+
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
         for ip in main.ONOSip:
@@ -177,6 +178,8 @@ class FUNCintentRest:
                                  actual=stepResult,
                                  onpass="Successfully uninstalled ONOS package",
                                  onfail="Failed to uninstall ONOS package" )
+
+        time.sleep( main.startUpSleep )
 
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
@@ -652,6 +655,21 @@ class FUNCintentRest:
                                  onfail="Failed to populate hostsData" )
 
     def CASE16( self, main ):
+        """
+            Balance Masters
+        """
+        main.case( "Balance mastership of switches" )
+        main.step( "Balancing mastership of switches" )
+
+        balanceResult = main.FALSE
+        balanceResult = utilities.retry( f=main.CLIs2[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully balanced mastership of switches",
+                                 onfail="Failed to balance mastership of switches" )
+
+    def CASE17( self, main ):
         """
             Stop mininet and remove scapy hosts
         """

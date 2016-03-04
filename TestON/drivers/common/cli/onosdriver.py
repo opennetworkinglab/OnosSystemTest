@@ -994,17 +994,19 @@ class OnosDriver( CLI ):
                 "\$",
                 "Unknown\sinstance",
                 pexpect.TIMEOUT ], timeout=120 )
-            self.handle.expect( "\$" )
             if i == 0:
+                self.handle.expect( "\$" )
                 main.log.info( "Service is already running" )
                 return main.TRUE
             elif i == 1:
+                self.handle.expect( "\$" )
                 main.log.info( "ONOS service started" )
                 return main.TRUE
             elif i == 2:
                 main.log.info( "ONOS service started" )
                 return main.TRUE
             else:
+                self.handle.expect( "\$" )
                 main.log.error( "ONOS service failed to start" )
                 main.cleanup()
                 main.exit()

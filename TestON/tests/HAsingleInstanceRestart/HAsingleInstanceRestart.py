@@ -1200,6 +1200,9 @@ class HAsingleInstanceRestart:
 
         main.step( "Killing ONOS processes" )
         killResult = main.ONOSbench.onosKill( main.nodes[0].ip_address )
+        # FIXME: Remove once ONOS-4117 is fixed
+        time.sleep(1)
+        main.ONOSbench.onosStart( main.nodes[0].ip_address )
         start = time.time()
         utilities.assert_equals( expect=main.TRUE, actual=killResult,
                                  onpass="ONOS Killed",

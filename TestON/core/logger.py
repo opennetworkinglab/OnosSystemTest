@@ -119,7 +119,7 @@ class Logger:
         main.ReportFileName = main.logdir + "/" + main.TEST + "_" + str(currentTime) + ".rpt"
         main.WikiFileName = main.logdir + "/" + main.TEST + "Wiki.txt"
         main.DemoCodeFileName = main.logdir + "/" + main.TEST + "-DemoCode.txt"
-        main.DemoSummaryFileName = main.logdir + "/" + main.TEST + "-DemoSummary.txt"
+        main.DemoSummaryFileName = "/usr/local/apr/htdocs/ONS2016/testLog"
         main.SummaryFileName = main.logdir + "/" + main.TEST + "Summary.txt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
         main.TOTAL_TC_SUCCESS = 0
@@ -213,16 +213,8 @@ class Logger:
                        'end': '\033[0m' }
 
             main.demoSummaryFile = open( main.DemoSummaryFileName, "a+" )
-            parsedMsg = ''
-            if level is None:
-                parsedMsg += msg
-            elif level.lower() == "case":
-                parsedMsg += colors['cyan'] + "CASE:" + msg
-            elif level.lower() == "step":
-                parsedMsg += colors['yellow'] + "\tSTEP:"
-                parsedMsg += msg[ msg.find( ':' ) + 1 :]
-            parsedMsg += colors['end']
-            main.demoSummaryFile.write( parsedMsg + "\n" )
+            #parsedMsg = msg[msg.find("DEMO:"):]
+            main.demoSummaryFile.write( msg + "\n" )
             main.demoSummaryFile.close()
 
         main.log.demoSummary = demoSummary
@@ -254,7 +246,6 @@ class Logger:
             logfile = open(main.LogFileName,"a")
             logfile.write("\n"+ str(newmsg) +"\n")
             logfile.close()
-            main.log.demoSummary( msg, "case" )
             print newmsg
 
         main.log.case = case
@@ -269,7 +260,6 @@ class Logger:
             logfile = open(main.LogFileName,"a")
             logfile.write("\n"+ str(newmsg) +"\n")
             logfile.close()
-            main.log.demoSummary( msg, "step" )
             print newmsg
 
         main.log.step = step

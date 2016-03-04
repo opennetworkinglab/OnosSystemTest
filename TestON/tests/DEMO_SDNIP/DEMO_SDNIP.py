@@ -11,7 +11,7 @@ class DEMO_SDNIP:
         """
         import imp
         main.case( "Setup the Mininet testbed" )
-        main.log.info( "DEMO:Mininet: Setup the Mininet testbed" )
+        main.log.demoSummary( "DEMO:Mininet: Setup the Mininet testbed" )
         main.dependencyPath = main.testDir + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
@@ -28,7 +28,7 @@ class DEMO_SDNIP:
             main.cleanup()
             main.exit()
         main.step( "Connect switches to controllers" )
-        main.log.info( "DEMO:Mininet: Connecting switches to controllers" )
+        main.log.demoSummary( "DEMO:Mininet: Connecting switches to controllers" )
 
         # connect all switches to controllers
         swResult = main.TRUE
@@ -136,13 +136,13 @@ class DEMO_SDNIP:
                                      onfail="Package ONOS failed" )
 
         main.step( "Installing ONOS package" )
-        main.log.info( "DEMO:ONOS1: Installing ONOS" )
+        main.log.demoSummary( "DEMO:ONOS1: Installing ONOS" )
         onos1InstallResult = main.ONOSbench.onosInstall( options="-f",
                                                          node=ONOS1Ip )
-        main.log.info( "DEMO:ONOS2: Installing ONOS" )
+        main.log.demoSummary( "DEMO:ONOS2: Installing ONOS" )
         onos2InstallResult = main.ONOSbench.onosInstall( options="-f",
                                                          node=ONOS2Ip )
-        main.log.info( "DEMO:ONOS3: Installing ONOS" )
+        main.log.demoSummary( "DEMO:ONOS3: Installing ONOS" )
         onos3InstallResult = main.ONOSbench.onosInstall( options="-f",
                                                          node=ONOS3Ip )
         onosInstallResult = onos1InstallResult and onos2InstallResult \
@@ -216,7 +216,7 @@ class DEMO_SDNIP:
             main.exit()
 
         main.step( "Activate sdn-ip application" )
-        main.log.info( "DEMO:ONOS1: Activate sdn-ip application" )
+        main.log.demoSummary( "DEMO:ONOS1: Activate sdn-ip application" )
         activeSDNIPresult = main.ONOScli1.activateApp( "org.onosproject.sdnip" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=activeSDNIPresult,
@@ -242,7 +242,7 @@ class DEMO_SDNIP:
                                           wrapperFile1 +
                                           ".py" )
         # Create tunnels
-        main.log.info( "DEMO:Mininet: Creating tunnels between bgp speakers" )
+        main.log.demoSummary( "DEMO:Mininet: Creating tunnels between bgp speakers" )
         # ONOS1
         main.Functions.setupTunnel( main, '1.1.1.2', 2000, ONOS1Ip, 2000 )
         # ONOS2
@@ -264,7 +264,7 @@ class DEMO_SDNIP:
         '''
 
         main.case( "Ping between BGP peers and speakers" )
-        main.log.info( "DEMO:Mininet: Ping between bgp peers and speakers" )
+        main.log.demoSummary( "DEMO:Mininet: Ping between bgp peers and speakers" )
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
                        peers=["peer64514", "peer64515", "peer64516"],
                        expectAllSuccess=True )
@@ -280,7 +280,7 @@ class DEMO_SDNIP:
         '''
         import time
         main.case( "Check point-to-point intents" )
-        main.log.info( "DEMO:ONOS1: Verify Point-to-Point intents" )
+        main.log.demoSummary( "DEMO:ONOS1: Verify Point-to-Point intents" )
         main.log.info( "There are %s BGP peers in total "
                        % main.params[ 'config' ][ 'peerNum' ] )
         main.step( "Check P2P intents number from ONOS CLI" )
@@ -310,7 +310,7 @@ class DEMO_SDNIP:
         '''
         import time
         main.case( "Check routes and M2S intents to all BGP peers" )
-        main.log.info( "DEMO:ONOS1: Check BGP routes and Multi-point intents" )
+        main.log.demoSummary( "DEMO:ONOS1: Check BGP routes and Multi-point intents" )
 
         allRoutesExpected = []
         allRoutesExpected.append( "4.0.0.0/24" + "/" + "10.0.4.1" )
@@ -375,7 +375,7 @@ class DEMO_SDNIP:
         Ping test in data plane for each route
         '''
         main.case( "Ping test for each route, all hosts behind BGP peers" )
-        main.log.info( "DEMO:Mininet: Pinging across BGP routes" )
+        main.log.demoSummary( "DEMO:Mininet: Pinging across BGP routes" )
         main.Functions.pingHostToHost( main,
                         hosts=["host64514", "host64515", "host64516"],
                         expectAllSuccess=True )
@@ -387,7 +387,7 @@ class DEMO_SDNIP:
         '''
         import time
         main.case( "Bring down links and check routes/intents" )
-        main.log.info( "DEMO:Mininet: Bringing down links between Quagga and the network" )
+        main.log.demoSummary( "DEMO:Mininet: Bringing down links between Quagga and the network" )
         main.step( "Bring down the link between sw32 and peer64514" )
         linkResult1 = main.Mininet.link( END1="sw32", END2="peer64514",
                                          OPTION="down" )
@@ -450,7 +450,7 @@ class DEMO_SDNIP:
             onfail="Flow status is wrong!" )
 
         # Ping test
-        main.log.info( "DEMO:Mininet: Verify lost connectivity across routes" )
+        main.log.demoSummary( "DEMO:Mininet: Verify lost connectivity across routes" )
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
                        peers=["peer64514", "peer64515", "peer64516"],
                        expectAllSuccess=False )
@@ -466,7 +466,7 @@ class DEMO_SDNIP:
         import time
         main.case( "Bring up links and check routes/intents" )
         main.step( "Bring up the link between sw32 and peer64514" )
-        main.log.info( "DEMO:Mininet: Bring back up links between Quagga and the network" )
+        main.log.demoSummary( "DEMO:Mininet: Bring back up links between Quagga and the network" )
         linkResult1 = main.Mininet.link( END1="sw32", END2="peer64514",
                                          OPTION="up" )
         utilities.assertEquals( expect=main.TRUE,
@@ -526,7 +526,7 @@ class DEMO_SDNIP:
             onfail="Flow status is wrong!" )
 
         # Ping test
-        main.log.info( "DEMO:Mininet: Verify connectivity is restored across routes" )
+        main.log.demoSummary( "DEMO:Mininet: Verify connectivity is restored across routes" )
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
                        peers=["peer64514", "peer64515", "peer64516"],
                        expectAllSuccess=True )

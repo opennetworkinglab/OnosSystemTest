@@ -181,7 +181,7 @@ class MininetCliDriver( Emulator ):
                     main.log.info(
                         "Starting Mininet from topo file " +
                         topoFile )
-                    cmdString += topoFile + " "
+                    cmdString +=  "-E python " + topoFile + " "
                     if args is None:
                         args = ''
                         # TODO: allow use of args from .topo file?

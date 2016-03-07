@@ -402,6 +402,8 @@ class SCPFscalingMaxIntents:
         offtmp = 0
         main.step( "Pushing intents" )
         stepResult = main.TRUE
+        # temp variable to contain the number of flows
+        flowsNum = 0
 
         for i in range(limit):
 
@@ -432,10 +434,6 @@ class SCPFscalingMaxIntents:
             offfset = offfset + main.batchSize
 
             totalIntents = main.batchSize * main.numCtrls + totalIntents
-
-            # Contain the previous Flows
-            tempFlowsList = []
-
             if totalIntents >= main.minIntents and totalIntents % main.checkInterval == 0:
                 # if reach to minimum number and check interval, verify Intetns and flows
                 time.sleep( main.verifySleep * main.numCtrls )
@@ -481,8 +479,10 @@ class SCPFscalingMaxIntents:
                     temp = 0
                     flowsStateCount = []
                     flowsState = json.loads( main.ONOSrest1.flows() )
-                    if ( len(flowsState) < len(tempFlowsList) ):
-                        tempFlowsList = flowsState
+                    main.log.info("Total flows now: {}".format(len(flowsState)))
+                    if ( flowsNum < len(flowsState) ):
+                        flowsNum = len(flowsState)
+                    print(flowsNum)
                     for f in flowsState:
                         # get PENDING_ADD flows
                         if f.get("state") == "PENDING_ADD":
@@ -536,7 +536,7 @@ class SCPFscalingMaxIntents:
 
         # we need the total intents before crash
         totalIntents = len(intentsState)
-        totalFlows = len(flowsState)
+        totalFlows = flowsNum
 
         main.log.info( "Total Intents Installed before crash: {}".format( totalIntents ) )
         main.log.info( "Total Flows ADDED before crash: {}".format( totalFlows ) )

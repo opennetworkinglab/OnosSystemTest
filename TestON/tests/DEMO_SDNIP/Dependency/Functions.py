@@ -120,8 +120,12 @@ def pingSpeakerToPeer( main, speakers = ["speaker1"],
     if expectAllSuccess:
         for speaker in speakers:
             for peer in peers:
-                tmpResult = main.Mininet.pingHost( src = speaker,
-                                                   target = peer )
+                tmpResult = utilities.retry( main.Mininet.pingHost,
+                                             main.FALSE,
+                                             kwargs={ 'src': speaker,
+                                                      'target': peer },
+                                             sleep=10,
+                                             attempts=5 )
                 result = result and ( tmpResult == main.TRUE )
     else:
         for speaker in speakers:

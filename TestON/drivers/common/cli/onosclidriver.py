@@ -4162,6 +4162,7 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmdStr )
             assert "Command not found:" not in handle, handle
             assert "Error:" not in handle, handle
+            assert "Exception" not in handle, handle
             if not handle:
                 main.log.error( self.name + ": There is no output in " +
                                 "summary command" )

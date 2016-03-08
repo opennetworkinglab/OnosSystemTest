@@ -36,7 +36,6 @@ class DEMO_SDNIP:
             sw = "sw%s" % ( i )
             swResult = swResult and main.Mininet.assignSwController( sw,
                                                  [ONOS1Ip, ONOS2Ip, ONOS3Ip] )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=swResult,
                                  onpass="Successfully connect all switches to ONOS",
@@ -79,13 +78,12 @@ class DEMO_SDNIP:
         peer64515 = main.params['config']['peer64515']
         peer64516 = main.params['config']['peer64516']
 
-        main.step( "Create cell file" )
+        main.step( "Applying cell variable to environment" )
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        main.Mininet.ip_address,
                                        cellAppString, ipList )
 
-        main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cellResult,
@@ -98,71 +96,15 @@ class DEMO_SDNIP:
                                  onpass="Verify cell succeeded",
                                  onfail="Verify cell failed" )
 
-        branchName = main.ONOSbench.getBranchName()
-        main.log.report( "ONOS is on branch: " + branchName )
+        main.log.demoSummary( "DEMO: ONOS: Connecting to ONOS" )
+        '''
+        p = main.ONOSbench.handle
+        p.sendline( "stc setup" )
+        p.expect( "\$", timeout=180 )
+        # TODO: add assert here after converting to a function
+        '''
 
-        main.log.step( "Stop ONOS" )
-        stopResult = main.ONOSbench.onosDie( ONOS1Ip ) \
-                          and main.ONOSbench.onosDie( ONOS2Ip ) \
-                          and main.ONOSbench.onosDie( ONOS3Ip )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stopResult,
-                                 onpass="Stop ONOS nodes succeeded",
-                                 onfail="Stop ONOS nodes failed" )
-
-        main.log.step( "Uninstalling ONOS" )
-        uninstallResult = main.ONOSbench.onosUninstall( ONOS1Ip ) \
-                          and main.ONOSbench.onosUninstall( ONOS2Ip ) \
-                          and main.ONOSbench.onosUninstall( ONOS3Ip )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=uninstallResult,
-                                 onpass="Uninstall ONOS from nodes succeeded",
-                                 onfail="Uninstall ONOS form nodes failed" )
-
-        main.ONOSbench.getVersion( report=True )
-
-        main.step( "Copying ONOS config file" )
-        # TODO: clean this up
-        main.ONOSbench.handle.sendline( "cp ~/TestON/tests/DEMO_SDNIP/Dependency/network-cfg.json ~/onos/tools/package/config/network-cfg.json" )
-        main.ONOSbench.handle.expect( "\$" )
-        main.log.debug( main.ONOSbench.handle.before )
-
-        main.step( "Creating ONOS package" )
-        if main.params[ 'ENV' ][ 'package' ] == "True":
-            packageResult = main.ONOSbench.onosPackage( opTimeout=500 )
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=packageResult,
-                                     onpass="Package ONOS succeeded",
-                                     onfail="Package ONOS failed" )
-
-        main.step( "Installing ONOS package" )
-        main.log.demoSummary( "DEMO:ONOS1: Installing ONOS" )
-        onos1InstallResult = main.ONOSbench.onosInstall( options="-f",
-                                                         node=ONOS1Ip )
-        main.log.demoSummary( "DEMO:ONOS2: Installing ONOS" )
-        onos2InstallResult = main.ONOSbench.onosInstall( options="-f",
-                                                         node=ONOS2Ip )
-        main.log.demoSummary( "DEMO:ONOS3: Installing ONOS" )
-        onos3InstallResult = main.ONOSbench.onosInstall( options="-f",
-                                                         node=ONOS3Ip )
-        onosInstallResult = onos1InstallResult and onos2InstallResult \
-                            and onos3InstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=onosInstallResult,
-                                 onpass="Install ONOS to nodes succeeded",
-                                 onfail="Install ONOS to nodes failed" )
-
-        main.step( "Checking if ONOS is up yet" )
-        onos1UpResult = main.ONOSbench.isup( ONOS1Ip, timeout=420 )
-        onos2UpResult = main.ONOSbench.isup( ONOS2Ip, timeout=420 )
-        onos3UpResult = main.ONOSbench.isup( ONOS3Ip, timeout=420 )
-        onosUpResult = onos1UpResult and onos2UpResult and onos3UpResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=onosUpResult,
-                                 onpass="ONOS nodes are up",
-                                 onfail="ONOS nodes are NOT up" )
-
-        main.step( "Checking if ONOS CLI is ready" )
+        main.step( "Checking if ONOS CLI is ready to start" )
         main.CLIs = []
         cliResult1 = main.ONOScli1.startOnosCli( ONOS1Ip,
                 commandlineTimeout=100, onosStartTimeout=600 )
@@ -179,6 +121,8 @@ class DEMO_SDNIP:
                                  onpass="ONOS CLI is ready",
                                  onfail="ONOS CLI is not ready" )
 
+        main.step( "Checking if ONOS CLI is ready for issuing commands" )
+        main.log.demoSummary( "DEMO: ONOS: Checking CLI" )
         for i in range( 10 ):
             ready = True
             for cli in main.CLIs:
@@ -196,27 +140,34 @@ class DEMO_SDNIP:
             main.log.error( "ONOS startup failed!" )
             main.cleanup()
             main.exit()
+        time.sleep( int( main.params['timers']['Readability'] ) )
 
-    def CASE200( self, main ):
-        main.case( "Activate sdn-ip application" )
-        main.log.info( "waiting link discovery......" )
+    def CASE199( self, main ):
+        main.case( "Verify topology discovery" )
+        main.log.info( "Waiting for link discovery......" )
         time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
 
         main.log.info( "Get links in the network" )
         summaryResult = main.ONOScli1.summary()
         linkNum = json.loads( summaryResult )[ "links" ]
-        listResult = main.ONOScli1.links( jsonFormat=False )
-        main.log.info( listResult )
+        main.log.info( "Expected 100 links, actual number is: {}".format( linkNum ) )
         if linkNum < 100:
-            main.log.error( "Link number is wrong!" )
+            main.log.error( "Link number is wrong! Retrying..." )
             time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
             summaryResult = main.ONOScli1.summary()
             linkNum = json.loads( summaryResult )[ "links" ]
-            listResult = main.ONOScli1.links( jsonFormat=False )
-            main.log.info( linkNum )
-            main.log.info( listResult )
+        main.log.info( "Expected 100 links, actual number is: {}".format( linkNum ) )
+        utilities.assert_equals( expect=100,
+                                 actual=linkNum,
+                                 onpass="ONOS correctly discovered all links",
+                                 onfail="ONOS Failed to discover all links" )
+        if linkNum < 100:
             main.cleanup()
             main.exit()
+        time.sleep( int( main.params['timers']['Readability'] ) )
+
+    def CASE200( self, main ):
+        main.case( "Activate sdn-ip application" )
 
         main.step( "Activate sdn-ip application" )
         main.log.demoSummary( "DEMO:ONOS1: Activate sdn-ip application" )
@@ -229,6 +180,7 @@ class DEMO_SDNIP:
             main.log.info( "Activate SDN-IP failed!" )
             main.cleanup()
             main.exit()
+        time.sleep( int( main.params['timers']['Readability'] ) )
 
 
     def CASE102( self, main ):
@@ -237,7 +189,7 @@ class DEMO_SDNIP:
         tunnels from mininet host to onos nodes.
         '''
         import time
-        main.case( "Load methods from other Python file and create tunnels" )
+        main.case( "Create tunnels between Quagga and SDNIP Application" )
         # load the methods from other file
         wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
         main.Functions = imp.load_source( wrapperFile1,
@@ -253,13 +205,8 @@ class DEMO_SDNIP:
         # ONOS3
         main.Functions.setupTunnel( main, '1.1.1.6', 2000, ONOS3Ip, 2000 )
 
-        main.log.info( "Wait SDN-IP to finish installing connectivity intents \
-        and the BGP paths in data plane are ready..." )
         time.sleep( int( main.params[ 'timers' ][ 'SdnIpSetup' ] ) )
 
-        main.log.info( "Wait Quagga to finish delivery all routes to each \
-        other and to sdn-ip, plus finish installing all intents..." )
-        time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
 
     def CASE1( self, main ):
         '''
@@ -274,7 +221,7 @@ class DEMO_SDNIP:
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker2"],
                        peers=[peer64514, peer64515, peer64516],
                        expectAllSuccess=True )
-        main.stop()
+        time.sleep( int( main.params['timers']['Readability'] ) )
 
     def CASE2( self, main ):
         '''
@@ -290,7 +237,7 @@ class DEMO_SDNIP:
         getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
         bgpIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
-        bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * 6 * 3
+        bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * 6 * 2
         if bgpIntentsActualNum != bgpIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
             bgpIntentsActualNum = \
@@ -299,11 +246,12 @@ class DEMO_SDNIP:
         main.log.info( bgpIntentsExpectedNum )
         main.log.info( "bgpIntentsActual num is:" )
         main.log.info( bgpIntentsActualNum )
-        utilities.assertEquals( \
-            expect=True,
-            actual=eq( bgpIntentsExpectedNum, bgpIntentsActualNum ),
+        utilities.assert_equals( \
+            expect=bgpIntentsExpectedNum,
+            actual=bgpIntentsActualNum,
             onpass="PointToPointIntent Intent Num is correct!",
             onfail="PointToPointIntent Intent Num is wrong!" )
+        time.sleep( int( main.params['timers']['Readability'] ) )
 
 
     def CASE3( self, main ):
@@ -335,10 +283,11 @@ class DEMO_SDNIP:
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=allRoutesStrExpected, actual=allRoutesStrActual,
             onpass="Routes are correct!",
             onfail="Routes are wrong!" )
+        time.sleep( int( main.params['timers']['Readability'] ) )
 
         main.step( "Check M2S intents installed" )
         getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
@@ -354,22 +303,24 @@ class DEMO_SDNIP:
         main.log.info( routeIntentsExpectedNum )
         main.log.info( "MultiPointToSinglePoint Intent NUM Actual is:" )
         main.log.info( routeIntentsActualNum )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=routeIntentsExpectedNum,
             actual=routeIntentsActualNum,
             onpass="MultiPointToSinglePoint Intent Num is correct!",
             onfail="MultiPointToSinglePoint Intent Num is wrong!" )
+        time.sleep( int( main.params['timers']['Readability'] ) )
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
             onfail="Flow status is wrong!" )
+        time.sleep( int( main.params['timers']['Readability'] ) )
 
 
     def CASE4( self, main ):
@@ -381,7 +332,8 @@ class DEMO_SDNIP:
         main.Functions.pingHostToHost( main,
                         hosts=["host64514", "host64515", "host64516"],
                         expectAllSuccess=True )
-
+        time.sleep( int( main.params['timers']['Readability'] ) )
+        #main.log.demoSummary( "DEMO: STOP" )  #FIXME For testing
 
     def CASE5( self, main ):
         '''
@@ -393,7 +345,7 @@ class DEMO_SDNIP:
         main.step( "Bring down the link between sw32 and peer64514" )
         linkResult1 = main.Mininet.link( END1="sw32", END2="peer64514",
                                          OPTION="down" )
-        utilities.assertEquals( expect=main.TRUE,
+        utilities.assert_equals( expect=main.TRUE,
                                 actual=linkResult1,
                                 onpass="Bring down link succeeded!",
                                 onfail="Bring down link failed!" )
@@ -411,7 +363,7 @@ class DEMO_SDNIP:
         main.step( "Bring down the link between sw8 and peer64515" )
         linkResult2 = main.Mininet.link( END1="sw8", END2="peer64515",
                                          OPTION="down" )
-        utilities.assertEquals( expect=main.TRUE,
+        utilities.assert_equals( expect=main.TRUE,
                                 actual=linkResult2,
                                 onpass="Bring down link succeeded!",
                                 onfail="Bring down link failed!" )
@@ -427,7 +379,7 @@ class DEMO_SDNIP:
         main.step( "Bring down the link between sw28 and peer64516" )
         linkResult3 = main.Mininet.link( END1="sw28", END2="peer64516",
                                          OPTION="down" )
-        utilities.assertEquals( expect=main.TRUE,
+        utilities.assert_equals( expect=main.TRUE,
                                 actual=linkResult3,
                                 onpass="Bring down link succeeded!",
                                 onfail="Bring down link failed!" )
@@ -445,7 +397,7 @@ class DEMO_SDNIP:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -471,7 +423,7 @@ class DEMO_SDNIP:
         main.log.demoSummary( "DEMO:Mininet: Bring back up links between Quagga and the network" )
         linkResult1 = main.Mininet.link( END1="sw32", END2="peer64514",
                                          OPTION="up" )
-        utilities.assertEquals( expect=main.TRUE,
+        utilities.assert_equals( expect=main.TRUE,
                                 actual=linkResult1,
                                 onpass="Bring up link succeeded!",
                                 onfail="Bring up link failed!" )
@@ -487,7 +439,7 @@ class DEMO_SDNIP:
         main.step( "Bring up the link between sw8 and peer64515" )
         linkResult2 = main.Mininet.link( END1="sw8", END2="peer64515",
                                          OPTION="up" )
-        utilities.assertEquals( expect=main.TRUE,
+        utilities.assert_equals( expect=main.TRUE,
                                 actual=linkResult2,
                                 onpass="Bring up link succeeded!",
                                 onfail="Bring up link failed!" )
@@ -503,7 +455,7 @@ class DEMO_SDNIP:
         main.step( "Bring up the link between sw28 and peer64516" )
         linkResult3 = main.Mininet.link( END1="sw28", END2="peer64516",
                                          OPTION="up" )
-        utilities.assertEquals( expect=main.TRUE,
+        utilities.assert_equals( expect=main.TRUE,
                                 actual=linkResult3,
                                 onpass="Bring up link succeeded!",
                                 onfail="Bring up link failed!" )
@@ -521,7 +473,7 @@ class DEMO_SDNIP:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -545,7 +497,7 @@ class DEMO_SDNIP:
         main.case( "Stop edge sw32,check P-2-P and M-2-S intents, ping test" )
         main.step( "Stop sw32" )
         result = main.Mininet.switch( SW="sw32", OPTION="stop" )
-        utilities.assertEquals( expect=main.TRUE, actual=result,
+        utilities.assert_equals( expect=main.TRUE, actual=result,
                                 onpass="Stopping switch succeeded!",
                                 onfail="Stopping switch failed!" )
 
@@ -610,7 +562,7 @@ class DEMO_SDNIP:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -626,14 +578,14 @@ class DEMO_SDNIP:
         main.case( "Start the edge sw32, check P-2-P and M-2-S intents, ping test" )
         main.step( "Start sw32" )
         result1 = main.Mininet.switch( SW="sw32", OPTION="start" )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=result1,
             onpass="Starting switch succeeded!",
             onfail="Starting switch failed!" )
 
         result2 = main.Mininet.assignSwController( "sw32", ONOS1Ip )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=result2,
             onpass="Connect switch to ONOS succeeded!",
@@ -654,7 +606,7 @@ class DEMO_SDNIP:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -687,7 +639,7 @@ class DEMO_SDNIP:
 
         main.step( "Stop sw11" )
         result = main.Mininet.switch( SW="sw11", OPTION="stop" )
-        utilities.assertEquals( expect=main.TRUE, actual=result,
+        utilities.assert_equals( expect=main.TRUE, actual=result,
                                 onpass="Stopping switch succeeded!",
                                 onfail="Stopping switch failed!" )
         if result:
@@ -706,7 +658,7 @@ class DEMO_SDNIP:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -737,11 +689,11 @@ class DEMO_SDNIP:
 
         main.step( "Start sw11" )
         result1 = main.Mininet.switch( SW="sw11", OPTION="start" )
-        utilities.assertEquals( expect=main.TRUE, actual=result1,
+        utilities.assert_equals( expect=main.TRUE, actual=result1,
                                 onpass="Starting switch succeeded!",
                                 onfail="Starting switch failed!" )
         result2 = main.Mininet.assignSwController( "sw11", ONOS1Ip )
-        utilities.assertEquals( expect=main.TRUE, actual=result2,
+        utilities.assert_equals( expect=main.TRUE, actual=result2,
                                 onpass="Connect switch to ONOS succeeded!",
                                 onfail="Connect switch to ONOS failed!" )
         if result1 and result2:
@@ -760,7 +712,7 @@ class DEMO_SDNIP:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -790,7 +742,7 @@ class DEMO_SDNIP:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -841,7 +793,7 @@ class DEMO_SDNIP:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assert_equals( \
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -902,7 +854,7 @@ class DEMO_SDNIP:
                                          main.FALSE,
                                          kwargs={'isPENDING':False},
                                          attempts=10 )
-            utilities.assertEquals( \
+            utilities.assert_equals( \
                 expect=main.TRUE,
                 actual=flowCheck,
                 onpass="Flow status is correct!",
@@ -917,7 +869,7 @@ class DEMO_SDNIP:
                                          main.FALSE,
                                          kwargs={'isPENDING':False},
                                          attempts=10 )
-            utilities.assertEquals( \
+            utilities.assert_equals( \
                 expect=main.TRUE,
                 actual=flowCheck,
                 onpass="Flow status is correct!",

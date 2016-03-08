@@ -186,9 +186,9 @@ class Logger:
                         wrapped = False
                         parsedMsg += colors['end']
                 elif "main.case(" in line:
-                    parsedMsg += colors['cyan'] + line + colors['end']
+                    parsedMsg += colors['blue'] + line + colors['end']
                 elif "main.step" in line:
-                    parsedMsg += colors['red'] + line + colors['end']
+                    parsedMsg += colors['cyan'] + line + colors['end']
                 elif "utilities.assert_" in line and  "(" in line:
                     parsedMsg += colors['purple'] + line
                     if ')' not in line:

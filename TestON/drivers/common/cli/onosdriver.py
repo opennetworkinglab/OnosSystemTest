@@ -707,7 +707,6 @@ class OnosDriver( CLI ):
             mnString = ""
         onosString = "export OC"
         tempCount = 1
-
         # Create ONOSNIC ip address prefix
         tempOnosIp = str( onosIpAddrs[ 0 ] )
         tempList = []
@@ -717,11 +716,9 @@ class OnosDriver( CLI ):
         # Structure the nic string ip
         nicAddr = ".".join( tempList ) + ".*"
         onosNicString = "export ONOS_NIC=" + nicAddr
-
         try:
             # Start writing to file
             cellFile.write( onosNicString + "\n" )
-
             for arg in onosIpAddrs:
                 # For each argument in onosIpAddrs, write to file
                 # Output should look like the following:
@@ -730,12 +727,10 @@ class OnosDriver( CLI ):
                 cellFile.write( onosString + str( tempCount ) +
                                 "=\"" + arg + "\"\n" )
                 tempCount = tempCount + 1
-
             cellFile.write( "export OCI=$OC1\n" )
             cellFile.write( mnString + "\"" + mnIpAddrs + "\"\n" )
             cellFile.write( appString + "\n" )
             cellFile.close()
-
             # We use os.system to send the command to TestON cluster
             # to account for the case in which TestON is not located
             # on the same cluster as the ONOS bench
@@ -744,9 +739,7 @@ class OnosDriver( CLI ):
             # between TestON and ONOS bench in order to automate the test.
             os.system( "scp " + tempDirectory + fileName + " " +
                        self.user_name + "@" + self.ip_address + ":" + cellDirectory )
-
             return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -780,7 +773,6 @@ class OnosDriver( CLI ):
                 handleMore = self.handle.before
 
                 cell_result = handleBefore + handleAfter + handleMore
-                print cell_result
                 if( re.search( "No such cell", cell_result ) ):
                     main.log.error( "Cell call returned: " + handleBefore +
                                handleAfter + handleMore )
@@ -811,8 +803,6 @@ class OnosDriver( CLI ):
             self.handle.expect( "\$" )
             handleBefore = self.handle.before
             handleAfter = self.handle.after
-            main.log.info( "Verify cell returned: " + handleBefore +
-                           handleAfter )
             return main.TRUE
         except pexpect.ExceptionPexpect as e:
             main.log.exception( self.name + ": Pexpect exception found: " )

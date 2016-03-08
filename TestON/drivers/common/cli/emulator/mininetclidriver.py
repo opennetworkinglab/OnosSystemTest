@@ -1295,10 +1295,10 @@ class MininetCliDriver( Emulator ):
         Example: main.Mininet.node( nodeName="h1", commandStr="ls" )
         """
         command = str( nodeName ) + " " + str( commandStr )
-        main.log.info( command )
-
         try:
             response = self.execute( cmd = command, prompt = "mininet>" )
+            #self.handle.sendline( command )
+            #response = self.handle.expect(  "mininet>" )
             if re.search( "Unknown command", response ):
                 main.log.warn( response )
                 return main.FALSE
@@ -1314,8 +1314,6 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        main.log.info( " response is :" )
-        main.log.info( response )
         return response
 
     def yank( self, **yankargs ):
@@ -1530,7 +1528,9 @@ class MininetCliDriver( Emulator ):
 
             for cmd in commandList:
                 try:
-                    self.execute( cmd=cmd, prompt="mininet>", timeout=5 )
+                    self.handle.sendline( cmd )
+                    self.handle.expect( "mininet>" )
+                    #self.execute( cmd=cmd, prompt="mininet>", timeout=5 )
                 except pexpect.TIMEOUT:
                     main.log.error( self.name + ": pexpect.TIMEOUT found" )
                     return main.FALSE

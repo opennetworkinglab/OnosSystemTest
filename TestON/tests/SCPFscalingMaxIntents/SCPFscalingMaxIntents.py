@@ -462,7 +462,6 @@ class SCPFscalingMaxIntents:
                 if not intentVerify:
                     # If some intents are not installed, grep the previous flows list, and finished this test case
                     main.log.warn( "Some intens did not install" )
-                    flowsState = tempFlowsList
                     # We don't want to check flows if intents not installed, because onos will drop flows
                     if currFlows == 0:
                     # If currFlows equal 0, which means we failed to install intents at first, or we didn't get

@@ -119,12 +119,13 @@ class USECASE_SegmentRouting:
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[i] )
 
+        onosUser = main.params[ 'ENV' ][ 'cellUser' ]
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp",
                                        main.Mininet1.ip_address,
                                        main.apps,
                                        tempOnosIp,
-                                       main.ONOSbench.user_name)
+                                       onosUser)
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )

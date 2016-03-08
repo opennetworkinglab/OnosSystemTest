@@ -138,7 +138,7 @@ class USECASE_SegmentRouting:
                                  onfail="Failed to apply cell to environment " )
 
         main.step( "Creating ONOS package" )
-        main.ONOSbench.handle.sendline( "cp ~/TestON/tests/USECASE_SegmentRouting/2x2.json ~/onos/tools/package/config/network-cfg.json")
+        main.ONOSbench.handle.sendline( "cp ~/OnosSystemTest/TestON/tests/USECASE_SegmentRouting/2x2.json ~/onos/tools/package/config/network-cfg.json")
         packageResult = main.ONOSbench.onosPackage()
         stepResult = packageResult
         utilities.assert_equals( expect=main.TRUE,

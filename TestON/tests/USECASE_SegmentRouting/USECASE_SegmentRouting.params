@@ -16,7 +16,7 @@
     <ENV>
         <cellName>productionCell</cellName>
         <cellApps>drivers,openflow-base,netcfghostprovider,netcfglinksprovider,segmentrouting,vrouter,hostprovider</cellApps>
-        <cellUser>sdn<cellUser>
+        <cellUser>sdn</cellUser>
     </ENV>
 
     <GIT>

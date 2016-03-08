@@ -1739,10 +1739,6 @@ class HAclusterRestart:
         utilities.assert_equals( expect=main.TRUE, actual=killResults,
                                  onpass="ONOS nodes killed",
                                  onfail="ONOS kill unsuccessful" )
-        # FIXME: Remove once ONOS-4117 is fixed
-        time.sleep(1)
-        for node in main.nodes:
-            main.ONOSbench.onosStart( node.ip_address )
 
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):

@@ -1683,14 +1683,16 @@ class OnosDriver( CLI ):
             self.handle.sendline( "onos-service " + str( node ) +
                                   " status" )
             i = self.handle.expect( [
+                "start/running",
                 "Running ...",
+                "stop/waiting",
                 "Not Running ...",
                 pexpect.TIMEOUT ], timeout=120 )
 
-            if i == 0:
+            if i == 0 or i == 1:
                 main.log.info( "ONOS is running" )
                 return main.TRUE
-            elif i == 1:
+            elif i == 2 or i == 3:
                 main.log.info( "ONOS is stopped" )
                 main.log.error( "ONOS service failed to check the status" )
                 main.cleanup()

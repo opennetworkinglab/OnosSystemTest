@@ -115,14 +115,19 @@ class Logger:
 
         os.mkdir(main.logdir)
 
-        main.LogFileName = main.logdir + "/" + main.TEST + "_" +str(currentTime) + ".log"
+        main.LogFileName = "/home/admin/ONS16/Demo.log"
         main.ReportFileName = main.logdir + "/" + main.TEST + "_" + str(currentTime) + ".rpt"
         main.WikiFileName = main.logdir + "/" + main.TEST + "Wiki.txt"
-        main.DemoCodeFileName = main.logdir + "/" + main.TEST + "-DemoCode.txt"
+        #main.DemoCodeFileName = main.logdir + "/" + main.TEST + "-DemoCode.txt"
+        main.DemoCodeFileName = "/home/admin/ONS16/DemoCode.txt"
         main.DemoSummaryFileName = "/usr/local/apr/htdocs/ONS2016/testLog"
         main.SummaryFileName = main.logdir + "/" + main.TEST + "Summary.txt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
         main.TOTAL_TC_SUCCESS = 0
+        demoFile = open(main.DemoCodeFileName,"w+")
+        demoFile.close()
+        logfile = open(main.LogFileName,"w+")
+        logfile.close()
 
         #### Add log-level - Report
         logging.addLevelName(9, "REPORT")
@@ -190,7 +195,7 @@ class Logger:
                 elif "main.step" in line:
                     parsedMsg += colors['cyan'] + line + colors['end']
                 elif "utilities.assert_" in line and  "(" in line:
-                    parsedMsg += colors['purple'] + line
+                    parsedMsg += colors['green'] + line
                     if ')' not in line:
                         wrapped = True
                     else:

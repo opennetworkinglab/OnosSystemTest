@@ -13,5 +13,5 @@ else
     printf "\t-f     : Tails the summary file and updates as the file is written to.\n\n"
     exit 1
 fi
-ls -t ~/OnosSystemTest/TestON/logs/*/*${file}.txt | head -1 | xargs tail -n+1 -f
+tail -F /home/admin/ONS16/DemoCode.txt
 exit 0

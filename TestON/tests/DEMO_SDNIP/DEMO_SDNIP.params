@@ -36,7 +36,7 @@
         <TopoDiscovery>10</TopoDiscovery>
         <PingTestWithRoutes>20</PingTestWithRoutes>
         <PingTestWithoutRoutes>100</PingTestWithoutRoutes>
-        <RouteDelivery>10</RouteDelivery>
+        <RouteDelivery>15</RouteDelivery>
         <PathAvailable>10</PathAvailable>
         <Readability>5</Readability>
     </timers>

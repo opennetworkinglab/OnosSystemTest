@@ -748,6 +748,12 @@ class TestON:
                     # threads as well
                     print str( thread.getName() ) +\
                           ' could not be terminated'
+        demoFile = open(main.DemoCodeFileName,"w+")
+        demoFile.write( "\n" * 60 )
+        demoFile.close()
+        logfile = open(main.LogFileName,"w+")
+        logfile.write( "\n" * 60 )
+        logfile.close()
         sys.exit()
 
     def stop( self, email=False ):

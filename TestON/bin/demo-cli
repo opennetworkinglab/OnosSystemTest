@@ -1,0 +1,39 @@
+#!/bin/bash
+#-------------------------------------------------------------------------------
+# Test utility to spawn an iTerm window for testing against current cell.
+#-------------------------------------------------------------------------------
+
+osascript -e "
+tell application \"iTerm\"
+
+  set nodeIP to \"$OCN\"
+
+  set theTerm to (make new terminal)
+
+  tell theTerm
+    launch session \"DemoLeft\"
+    tell the current session
+      set name to \"TestON Log\"
+      write text \"export TERM=vt100\"
+      write text \"ssh admin@\" & nodeIP
+      set name to \"TestON Log\"
+      write text \"cd ~/OnosSystemTest/TestON/bin\"
+      write text \"tail -F /home/admin/ONS16/Demo.log\"
+
+      tell application \"System Events\" to keystroke \"d\" using command down
+      set name to \"TestON Testcase Code \"
+      write text \"export TERM=vt100\"
+      write text \"ssh admin@\" & nodeIP
+      write text \"cd ~/OnosSystemTest/TestON/bin\"
+      write text \"tail -F /home/admin/ONS16/DemoCode.txt\"
+      set foreground color to \"white\"
+      set background color to \"black\"
+    end tell
+
+  end tell
+end tell
+"
+    #set number of columns to 292
+    #set number of rows to 24
+    # set newSession to (split horizontally with profile \"DemoRight\" )
+    # set background color to \"gray\"

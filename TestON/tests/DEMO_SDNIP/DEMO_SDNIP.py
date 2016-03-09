@@ -61,6 +61,7 @@ class DEMO_SDNIP:
         from operator import eq
 
         main.case( "Setting up ONOS environment" )
+        main.log.demoSummary( "DEMO: TestStation: Setting up ONOS environment" )
 
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         global ONOS1Ip
@@ -106,12 +107,15 @@ class DEMO_SDNIP:
 
         main.step( "Checking if ONOS CLI is ready to start" )
         main.CLIs = []
+        main.log.demoSummary( "DEMO: ONOS1: Connecting to ONOS1" )
         cliResult1 = main.ONOScli1.startOnosCli( ONOS1Ip,
                 commandlineTimeout=100, onosStartTimeout=600 )
         main.CLIs.append( main.ONOScli1 )
+        main.log.demoSummary( "DEMO: ONOS2: Connecting to ONOS2" )
         cliResult2 = main.ONOScli2.startOnosCli( ONOS2Ip,
                 commandlineTimeout=100, onosStartTimeout=600 )
         main.CLIs.append( main.ONOScli2 )
+        main.log.demoSummary( "DEMO: ONOS3: Connecting to ONOS3" )
         cliResult3 = main.ONOScli3.startOnosCli( ONOS3Ip,
                 commandlineTimeout=100, onosStartTimeout=600 )
         main.CLIs.append( main.ONOScli3 )
@@ -147,7 +151,7 @@ class DEMO_SDNIP:
         main.log.info( "Waiting for link discovery......" )
         time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
 
-        main.log.info( "Get links in the network" )
+        main.step( "Get links in the network" )
         summaryResult = main.ONOScli1.summary()
         linkNum = json.loads( summaryResult )[ "links" ]
         main.log.info( "Expected 100 links, actual number is: {}".format( linkNum ) )
@@ -240,6 +244,7 @@ class DEMO_SDNIP:
         bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * 6 * 2
         if bgpIntentsActualNum != bgpIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
             bgpIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         main.log.info( "bgpIntentsExpected num is:" )
@@ -253,20 +258,20 @@ class DEMO_SDNIP:
             onfail="PointToPointIntent Intent Num is wrong!" )
         time.sleep( int( main.params['timers']['Readability'] ) )
 
-
     def CASE3( self, main ):
         '''
         routes and intents check to all BGP peers
         '''
         import time
         main.case( "Check routes and M2S intents to all BGP peers" )
-        main.log.demoSummary( "DEMO:ONOS1: Check BGP routes and Multi-point intents" )
 
+        main.step( "Check routes installed" )
         allRoutesExpected = []
         allRoutesExpected.append( "4.0.0.0/24" + "/" + "10.0.4.1" )
         allRoutesExpected.append( "5.0.0.0/24" + "/" + "10.0.5.1" )
         allRoutesExpected.append( "6.0.0.0/24" + "/" + "10.0.6.1" )
 
+        main.log.demoSummary( "DEMO:Quagga: Check BGP routes" )
         getRoutesResult = main.ONOScli1.routes( jsonFormat=True )
         allRoutesActual = \
             main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
@@ -278,7 +283,6 @@ class DEMO_SDNIP:
                 main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
             allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
 
-        main.step( "Check routes installed" )
         main.log.info( "Routes expected:" )
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
@@ -290,12 +294,14 @@ class DEMO_SDNIP:
         time.sleep( int( main.params['timers']['Readability'] ) )
 
         main.step( "Check M2S intents installed" )
+        main.log.demoSummary( "DEMO:ONOS1: Check Multi-point intents" )
         getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
         routeIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
         routeIntentsExpectedNum = 3
         if routeIntentsActualNum != routeIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
             routeIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
 
@@ -310,6 +316,7 @@ class DEMO_SDNIP:
             onfail="MultiPointToSinglePoint Intent Num is wrong!" )
         time.sleep( int( main.params['timers']['Readability'] ) )
 
+        main.log.demoSummary( "DEMO:ONOS1: Check flows" )
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
                                      main.FALSE,

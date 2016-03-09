@@ -1040,17 +1040,23 @@ class OnosDriver( CLI ):
                 "stop/waiting",
                 "Could not resolve hostname",
                 "Unknown\sinstance",
+                "\$",
                 pexpect.TIMEOUT ], timeout=60 )
-            self.handle.expect( "\$" )
             if i == 0:
+                self.handle.expect( "\$" )
                 main.log.info( "ONOS service stopped" )
                 return main.TRUE
             elif i == 1:
+                self.handle.expect( "\$" )
                 main.log.info( "onosStop() Unknown ONOS instance specified: " +
                                str( nodeIp ) )
                 return main.FALSE
             elif i == 2:
+                self.handle.expect( "\$" )
                 main.log.warn( "ONOS wasn't running" )
+                return main.TRUE
+            elif i == 3:
+                main.log.info( "ONOS service stopped" )
                 return main.TRUE
             else:
                 main.log.error( "ONOS service failed to stop" )

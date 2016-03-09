@@ -341,7 +341,7 @@ class SCPFscaleTopo:
 
     def CASE100( self, main ):
         '''
-            Balance masters, ping and bring third ONOS node down
+           Bring Down node 3 
         '''
 
         main.case("Balancing Masters and bring ONOS node 3 down: TORUS %sx%s" % (main.currScale, main.currScale))
@@ -360,7 +360,10 @@ class SCPFscaleTopo:
         main.log.info( "Removing dead node from list of active nodes" )
         main.activeNodes.pop( main.deadNode )
 
-
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully bring down node 3",
+                                 onfail="Failed to bring down node 3" )
 
     def CASE200( self, main ):
         '''

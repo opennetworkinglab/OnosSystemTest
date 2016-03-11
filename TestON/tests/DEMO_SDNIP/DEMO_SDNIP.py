@@ -891,3 +891,27 @@ class DEMO_SDNIP:
         main.Functions.pingHostToHost( main,
                         hosts=["host64514", "host64515", "host64516"],
                         expectAllSuccess=True )
+
+    def CASE1001( self, main):
+        '''
+        Check onos node log for ERROR
+        '''
+        import time
+
+        main.case( "Checking onos logs for ERRORs...")
+        main.step( "Checking onos logs for ERRORs ...")
+        main.log.demoSummary( "DEMO:ONOS: Check onos logs for ERRORs")
+
+        onosErrors={}
+        result =  True
+        for node in  [ ONOS1Ip, ONOS2Ip, ONOS3Ip ]:
+            onosErrors[ node ] = main.ONOSbench.logReport(node, ["ERROR", "WARNING", "EXCEPT"] )
+            result  = onosErrors[ node ]  & result
+
+        utilities.assert_equals( \
+            expect=main.TRUE,
+            actual=result,
+            onpass="No onos WARNINGs/ERRORs/Exceptions at the end of the test!",
+            onfail="onos has WARNINGs/ERRORs/Exceptions at the end of the test!" )
+
+        time.sleep( int( main.params['timers']['Readability'] ) )

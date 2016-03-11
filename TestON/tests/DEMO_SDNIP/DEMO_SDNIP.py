@@ -906,7 +906,7 @@ class DEMO_SDNIP:
         result =  True
         for node in  [ ONOS1Ip, ONOS2Ip, ONOS3Ip ]:
             onosErrors[ node ] = main.ONOSbench.logReport(node, ["ERROR", "WARNING", "EXCEPT"] )
-            result  = onosErrors[ node ]  & result
+            result  = (not onosErrors[ node ])  & result
 
         utilities.assert_equals( \
             expect=main.TRUE,

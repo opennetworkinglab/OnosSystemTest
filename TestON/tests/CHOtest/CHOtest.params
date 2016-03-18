@@ -1,5 +1,5 @@
 <PARAMS>
-    # 1,20,3,47,147,[5,60,160,70,170,80,180,10,5,90,190,71,171,81,181,10]*20,200,21,3,48,148,[5,61,161,72,172,82,182,10,5,91,191,73,173,83,183,10]*20,200,22,3,49,149,[5,62,162,74,174,84,184,10,5,92,192,75,175,85,185,10]*20
+    # 1,20,3,47,147,[5,60,160,70,170,80,180,10,5,90,190,71,171,81,181,10]*10,200,21,3,48,148,[5,61,161,72,172,82,182,10,5,91,191,73,173,83,183,10]*10,200,22,3,49,149,[5,62,162,74,174,84,184,10,5,92,192,75,175,85,185,10]*10
     # 1. Starts ONOS cluster with 5 nodes
     # 20. Starts Att Topology
     # 21. Starts Chordal Topology
@@ -17,9 +17,14 @@
     # 9X. Point,Multi-single,Single-Multi Intents
     # 19X. IPv6 ping across Point,Multi-single,Single-Multi Intents
 
-<testcases>
-1,20,3,47,147,[5,60,160,70,170,80,180,10,5,90,190,71,171,81,181,10]*10,200,21,3,48,148,[5,61,161,72,172,82,182,10,5,91,191,73,173,83,183,10]*10,200,22,3,49,149,[5,62,162,74,174,84,184,10,5,92,192,75,175,85,185,10]*10
-</testcases>
+    <testcases>
+    1,21,3,48,148,[5,61,161,72,172,82,182,10,5,91,191,73,173,83,183,10]*20,200,20,3,47,147,[5,60,160,70,170,80,180,10,5,90,190,71,171,81,181,10]*20,200,22,3,49,149,[5,62,162,74,174,84,184,10,5,92,192,75,175,85,185,10]*20
+    </testcases>
+
+    <DEPENDENCY>
+        <path>/tests/CHOtest/Dependencies/</path>
+        <wrapper>CHOtestFunctions</wrapper>
+    </DEPENDENCY>
 
     <GIT>
         #autoPull 'on' or 'off'
@@ -87,24 +92,25 @@
     </SPINECORELINKS>
 
     <timers>
-        <LinkDiscovery>15</LinkDiscovery>
+        <LinkDiscovery>10</LinkDiscovery>
         <SwitchDiscovery>10</SwitchDiscovery>
         <IntentPurgeDelay>15</IntentPurgeDelay>
         <CheckIntentDelay>15</CheckIntentDelay>
         <topoCheckDelay>15</topoCheckDelay>
-        <pingSleep>3</pingSleep>
-        <pingTimeout>300</pingTimeout>
-        <remHostDelay>5</remHostDelay>
-        <remDevDelay>10</remDevDelay>
+        <pingSleep>15</pingSleep>
+        <pingTimeoutSmallTopo>180</pingTimeoutSmallTopo>
+        <pingTimeoutLargeTopo>300</pingTimeoutLargeTopo>
+        <remHostDelay>60</remHostDelay>
+        <remDevDelay>60</remDevDelay>
     </timers>
 
     <TEST>
         <pauseTest>off</pauseTest>
         <email>off</email>
-        <intentChecks>8</intentChecks>
+        <intentChecks>10</intentChecks>
         <linkChecks>3</linkChecks>
         <topoChecks>3</topoChecks>
-        <numPings>5</numPings>
+        <numPings>3</numPings>
     </TEST>
 
 </PARAMS>

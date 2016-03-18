@@ -62,6 +62,7 @@ class DEMO_SDNIP:
 
         main.case( "Setting up ONOS environment" )
         main.log.demoSummary( "DEMO: TestStation: Setting up ONOS environment" )
+        #main.stop()
 
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         global ONOS1Ip
@@ -906,7 +907,7 @@ class DEMO_SDNIP:
         result =  True
         for node in  [ ONOS1Ip, ONOS2Ip, ONOS3Ip ]:
             onosErrors[ node ] = main.ONOSbench.logReport(node, ["ERROR", "WARNING", "EXCEPT"] )
-            result  = (not onosErrors[ node ])  & result
+            result  = (not bool(onosErrors[ node ]))  & result
 
         utilities.assert_equals( \
             expect=main.TRUE,

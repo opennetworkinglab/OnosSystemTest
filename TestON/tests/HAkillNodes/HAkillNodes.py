@@ -186,7 +186,7 @@ class HAkillNodes:
         #       index = The number of the graph under plot name
         job = "HAkillNodes"
         plotName = "Plot-HA"
-        index = "1"
+        index = "2"
         graphs = '<ac:structured-macro ac:name="html">\n'
         graphs += '<ac:plain-text-body><![CDATA[\n'
         graphs += '<iframe src="https://onos-jenkins.onlab.us/job/' + job +\

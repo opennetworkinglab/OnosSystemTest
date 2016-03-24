@@ -1,0 +1,29 @@
+INTENT REROUTE LATENCY
+
+Summary: This is a performance test designed to benchmark the
+    intent reroute speed of ONOS at various controller cluster sizes.
+
+Pre-requisites: To run out-of-the box this test requires 7 NODES.
+    OC1->OC7 must be set before initiating the test. Passwordless login
+    must be set from TestStation "admin" root user.
+
+***If you wish to run this test with less than 7 nodes the
+    following alterations must be made:
+
+NOTE: Only scale sizes 1,3,5 and 7 will be functional
+
+Modifying .params file:
+-- Remove any values in the comma separated list in
+    the <scale> tag that are above your desired cluster size.
+
+-- Remove one instance of “1,2” from the <testcases> tag for
+    each value you removed from <scale> (case1 and 2 are each
+    called once for each scale value)
+
+-- Change the value in the <max> tag to your desired scale size (1,3,5)
+
+Modifying .topo file:
+-- Change the <ONOSbench/COMPONENTS/nodes> tag to
+    your desired scale size
+
+-- Remove all unneeded <ONOS#cli> tags and their contents

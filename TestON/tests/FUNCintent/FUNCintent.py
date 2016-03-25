@@ -57,6 +57,7 @@ class FUNCintent:
             main.CLIs = []
             main.ONOSip = []
             main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
+            main.flowCompiler = "Flow Rules"
             main.scapyHosts = []  # List of scapy hosts for iterating
             main.assertReturnString = ''  # Assembled assert return string
 
@@ -548,11 +549,30 @@ class FUNCintent:
         balanceResult = utilities.retry( f=main.CLIs[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=balanceResult,
                                  onpass="Successfully balanced mastership of switches",
                                  onfail="Failed to balance mastership of switches" )
 
     def CASE17( self, main ):
+        """
+            Use Flow Objectives
+        """
+        main.case( "Enable intent compilation using Flow Objectives" )
+        main.step( "Enabling Flow Objectives" )
+
+        main.flowCompiler = "Flow Objectives"
+
+        cmd = "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator"
+
+        stepResult = main.CLIs[ 0 ].setCfg( component=cmd,
+                                            propName="useFlowObjectives", value="true" )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully activated Flow Objectives",
+                                 onfail="Failed to activate Flow Objectives" )
+
+    def CASE18( self, main ):
         """
             Stop mininet and remove scapy host
         """
@@ -626,13 +646,14 @@ class FUNCintent:
 
         main.testName = "Host Intents"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
-                   " NODE(S) - OF " + main.OFProtocol )
+                   " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case tests Host intents using " +\
                                 str( main.numCtrls ) + " node(s) cluster;\n" +\
                                 "Different type of hosts will be tested in " +\
                                 "each step such as IPV4, Dual stack, VLAN " +\
                                 "etc;\nThe test will use OF " + main.OFProtocol\
-                                + " OVS running in Mininet"
+                                + " OVS running in Mininet and compile intents" +\
+                               " using " + main.flowCompiler
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 host intent with mac addresses\n"
@@ -856,14 +877,15 @@ class FUNCintent:
 
         main.testName = "Point Intents"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
-                   " NODE(S) - OF " + main.OFProtocol )
+                   " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test point to point" +\
                                " intents using " + str( main.numCtrls ) +\
                                " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
-                               " OVS running in Mininet"
+                               " OVS running in Mininet and compile intents" +\
+                               " using " + main.flowCompiler
 
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9" )
@@ -1177,14 +1199,15 @@ class FUNCintent:
 
         main.testName = "Single to Multi Point Intents"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
-                   " NODE(S) - OF " + main.OFProtocol )
+                   " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
                                str( main.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
-                               " OVS running in Mininet"
+                               " OVS running in Mininet and compile intents" +\
+                               " using " + main.flowCompiler
 
         main.step( "NOOPTION: Install and test single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent with no options set\n"
@@ -1382,14 +1405,15 @@ class FUNCintent:
 
         main.testName = "Multi To Single Point Intents"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
-                   " NODE(S) - OF " + main.OFProtocol )
+                   " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
                                str( main.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
-                               " OVS running in Mininet"
+                               " OVS running in Mininet and compile intents" +\
+                               " using " + main.flowCompiler
 
         main.step( "NOOPTION: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for NOOPTION multi to single point intent\n"

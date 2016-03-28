@@ -29,6 +29,5 @@ if [ "$1" = "-f" ]; then
         echo "Restoring iptables rules on ${i}"
         ssh sdn@$i "sudo iptables -F"
         ssh sdn@$i "sudo iptables-restore < /etc/iptables/rules.v4"
-        exit 0
     done
 fi

@@ -2508,7 +2508,7 @@ class OnosCliDriver( CLI ):
             nodesStr = self.nodes( jsonFormat=True )
             idList = []
             # Sample nodesStr output
-            # id=local, address=127.0.0.1:9876, state=ACTIVE *
+            # id=local, address=127.0.0.1:9876, state=READY *
             if not nodesStr:
                 main.log.info( "There are no nodes to get id from" )
                 return idList
@@ -3283,7 +3283,6 @@ class OnosCliDriver( CLI ):
                 response = self.app( appName, "activate" )
                 if check and response == main.TRUE:
                     for i in range(10):  # try 10 times then give up
-                        # TODO: Check with Thomas about this delay
                         status = self.appStatus( appName )
                         if status == "ACTIVE":
                             return main.TRUE

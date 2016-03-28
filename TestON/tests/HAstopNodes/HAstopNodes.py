@@ -2536,7 +2536,7 @@ class HAstopNodes:
                 activeIps = []
                 currentResult = main.FALSE
                 for node in current:
-                    if node['state'] == 'ACTIVE':
+                    if node['state'] == 'READY':
                         activeIps.append( node['ip'] )
                 activeIps.sort()
                 if ips == activeIps:

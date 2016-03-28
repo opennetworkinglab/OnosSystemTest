@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,2,11,9</testcases>
+    <testcases>1,2,11,9, 2,11,9</testcases>
 
     <SCALE>
         <size>1</size>
@@ -15,7 +15,8 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow-base,netcfghostprovider,netcfglinksprovider,segmentrouting,vrouter,hostprovider</cellApps>
+        <cellApps>drivers,segmentrouting</cellApps>
+        <diffApps>openflow-base,netcfghostprovider,netcfglinksprovider;openflow</diffApps>
         <cellUser>sdn</cellUser>
     </ENV>
 
@@ -29,7 +30,7 @@
     </CTRL>
 
     <SLEEP>
-        <startup>15</startup>
+        <startup>10</startup>
     </SLEEP>
 
 </PARAMS>

@@ -39,7 +39,7 @@ class LeafAndSpine(Topo):
         for s in range(spine):
             spines[s] = self.addSwitch('spine10%s' % (s + 1), dpid="00000000010%s" % (s + 1))
         # Set link speeds to 100Mb/s
-        linkopts = dict(bw=10)
+        linkopts = dict(bw=100)
 
         # Add Leaf switches
         for ls in range(leaf):

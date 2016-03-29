@@ -651,8 +651,8 @@ class FUNCintent:
                                 str( main.numCtrls ) + " node(s) cluster;\n" +\
                                 "Different type of hosts will be tested in " +\
                                 "each step such as IPV4, Dual stack, VLAN " +\
-                                "etc;\nThe test will use OF " + main.OFProtocol\
-                                + " OVS running in Mininet and compile intents" +\
+                                "etc;\nThe test will use OF " + main.OFProtocol +\
+                                " OVS running in Mininet and compile intents" +\
                                " using " + main.flowCompiler
 
         main.step( "IPV4: Add host intents between h1 and h9" )

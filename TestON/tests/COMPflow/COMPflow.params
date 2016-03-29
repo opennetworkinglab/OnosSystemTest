@@ -44,8 +44,8 @@
     </CASE10>
 
     <CASE1000>
-        <batchSize>20</batchSize>
-        <batches>10</batches>
+        <batchSize>200</batchSize>
+        <batches>500</batches>
     </CASE1000>
 
     <SLEEP>

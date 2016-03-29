@@ -239,18 +239,22 @@ class COMPflow:
         main.step("Creating a full list of batches")
         for index in range(1, int(main.params['CASE1000']['batches']) + 1):
             if startSw <= main.numSw:
-                main.log.info("Creating batch: " + str(index))
-                flowJsonBatch = main.ONOSrest.createFlowBatch( numSw = main.numSw,
-                                                           swIndex = startSw,
+                ind = startSw
+            else:
+                startSw = 1
+                ind = startSw
+
+            main.log.info("Creating batch: " + str(index))
+            flowJsonBatch = main.ONOSrest.createFlowBatch( numSw = main.numSw,
+                                                           swIndex = ind,
                                                            batchSize = main.batchSize,
                                                            batchIndex = index,
                                                            ingressPort = 2,
                                                            egressPort = 3)
-                main.flowJsonBatchList.append(flowJsonBatch)
+            main.flowJsonBatchList.append(flowJsonBatch)
 
-                startSw += 1
-            else:
-                startSw = 1
+            startSw += 1
+
 
 
         main.step("Using REST API /flows/{} to post flow batch")

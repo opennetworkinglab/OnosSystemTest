@@ -1586,6 +1586,7 @@ class OnosRestDriver( Controller ):
                 deviceId = deviceIdpreFix + "{0:0{1}x}".format(dev,16)
                 #print deviceId
                 flowJson['deviceId'] = deviceId
+                dev += 1
 
                 # ethSrc starts with "0"; ethDst starts with "1"
                 # 3 Hex digit of device number; 4 digits of batch index number; 4 digits of batch size

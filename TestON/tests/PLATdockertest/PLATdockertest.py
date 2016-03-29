@@ -167,7 +167,7 @@ class PLATdockertest:
         main.log.debug("Rest call response: " + str(status) + " - " + response)
         if status == 200:
             jrsp = json.loads(response)
-            clusterIP = [item["ip"]for item in jrsp["nodes"] if item["status"]== "ACTIVE"]
+            clusterIP = [item["ip"]for item in jrsp["nodes"] if item["status"]== "READY"]
             main.log.debug(" IPlist is:" + ",".join(IPlist))
             main.log.debug("cluster IP is" + ",".join(clusterIP) )
             if set(IPlist) == set(clusterIP): stepResult = main.TRUE

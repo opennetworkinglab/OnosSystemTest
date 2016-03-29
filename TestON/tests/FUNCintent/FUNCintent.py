@@ -57,7 +57,6 @@ class FUNCintent:
             main.CLIs = []
             main.ONOSip = []
             main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
-            main.flowCompiler = "Flow Rules"
             main.scapyHosts = []  # List of scapy hosts for iterating
             main.assertReturnString = ''  # Assembled assert return string
 
@@ -135,6 +134,7 @@ class FUNCintent:
 
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
+        main.flowCompiler = "Flow Rules"
 
         main.case( "Starting up " + str( main.numCtrls ) +
                    " node(s) ONOS cluster" )

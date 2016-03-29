@@ -1,0 +1,79 @@
+<PARAMS>
+
+    <testcases>1,2,1,2,1,2,1,2</testcases>
+
+    <SCALE>1,3,5,7</SCALE>
+    <max>7</max>
+
+    <ENV>
+        <cellName>intentRerouteCell</cellName>
+        <cellApps>drivers,null,intentperf,metrics</cellApps>
+    </ENV>
+
+    <TEST>
+        <skipCleanInstall>yes</skipCleanInstall>
+        <warmUp>5</warmUp>
+        <sampleSize>20</sampleSize>
+        <wait></wait>
+        <intents>1,100,1000</intents>                       #list format, will be split on ','
+        <debug>True</debug>
+
+        <s1>1,1,1,1,1,1,1,1</s1>
+        <s3>2,2,1,1,3,3,3,1</s3>
+        <s5>2,2,1,1,3,4,5,3</s5>
+        <s7>2,3,1,1,5,6,7,4</s7>
+
+    </TEST>
+
+    <METRICS>
+        <Submitted>0</Submitted>
+        <Installed>1</Installed>
+        <Failed>0</Failed>
+        <Withdraw>0</Withdraw>
+        <Withdrawn>0</Withdrawn>
+    </METRICS>
+
+    <GIT>
+        <autopull>off</autopull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <CTRL>
+        <USER>admin</USER>
+
+        <ip1>OC1</ip1>
+        <port1>6653</port1>
+
+        <ip2>OC2</ip2>
+        <port2>6653</port2>
+
+        <ip3>OC3</ip3>
+        <port3>6653</port3>
+
+        <ip4>OC4</ip4>
+        <port4>6653</port4>
+
+        <ip5>OC5</ip5>
+        <port5>6653</port5>
+
+        <ip6>OC6</ip6>
+        <port6>6653</port6>
+
+        <ip7>OC7</ip7>
+        <port7>6653</port7>
+
+    </CTRL>
+
+    <MN>
+        <ip1>localhost</ip1>
+    </MN>
+
+    <BENCH>
+        <user>admin</user>
+        <ip1>localhost</ip1>
+    </BENCH>
+
+    <JSON>
+    </JSON>
+
+</PARAMS>

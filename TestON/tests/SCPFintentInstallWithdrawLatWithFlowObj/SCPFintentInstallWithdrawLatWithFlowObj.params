@@ -1,0 +1,66 @@
+<PARAMS>
+
+    <testcases>1,2,1,2,1,2,1,2</testcases>
+
+    <SCALE>1,3,5,7</SCALE>
+    <max>7</max>
+
+    <ENV>
+        <cellName>IntentInstallWithdrawCell</cellName>
+        <cellApps>drivers,null</cellApps>
+    </ENV>
+
+    <TEST>
+        <skipCleanInstall>yes</skipCleanInstall>
+        <switchCount>7</switchCount>
+        <warmUp>5</warmUp>
+        <sampleSize>20</sampleSize>
+        <wait></wait>
+        <intents>1,100,1000</intents>                       #list format, will be split on ','
+        <debug>True</debug>                                        #"True" for true
+    </TEST>
+
+    <GIT>
+        <autopull>off</autopull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <CTRL>
+        <USER>admin</USER>
+
+        <ip1>OC1</ip1>
+        <port1>6653</port1>
+
+        <ip2>OC2</ip2>
+        <port2>6653</port2>
+
+        <ip3>OC3</ip3>
+        <port3>6653</port3>
+
+        <ip4>OC4</ip4>
+        <port4>6653</port4>
+
+        <ip5>OC5</ip5>
+        <port5>6653</port5>
+
+        <ip6>OC6</ip6>
+        <port6>6653</port6>
+
+        <ip7>OC7</ip7>
+        <port7>6653</port7>
+
+    </CTRL>
+
+    <MN>
+        <ip1>localhost</ip1>
+    </MN>
+
+    <BENCH>
+        <user>admin</user>
+        <ip1>localhost</ip1>
+    </BENCH>
+
+    <JSON>
+    </JSON>
+
+</PARAMS>

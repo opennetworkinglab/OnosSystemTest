@@ -1,0 +1,147 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <home>~/onos</home>
+                <nodes>7</nodes> 
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOS1cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS1cli>
+
+        <ONOS2cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS2cli>
+
+        <ONOS3cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS3cli>
+
+        <ONOS4cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS4cli>
+
+        <ONOS5cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS5cli>
+
+        <ONOS6cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS6cli>
+
+        <ONOS7cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS7cli>
+
+        <ONOS1>
+            <host>OC1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>9</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS1>
+
+        <ONOS2>
+            <host>OC2</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>10</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS2>
+
+        <ONOS3>
+            <host>OC3</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>11</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS3>
+
+        <ONOS4>
+            <host>OC4</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>12</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS4>
+
+    
+        <ONOS5>
+            <host>OC5</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>13</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS5>
+
+        <ONOS6>
+            <host>OC6</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>14</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS6>
+
+        <ONOS7>
+            <host>OC7</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>15</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS7>
+
+    </COMPONENT>
+
+</TOPOLOGY>
+ 

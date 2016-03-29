@@ -22,7 +22,7 @@ class USECASE_SegmentRouting:
             - Build ONOS package
         """
 
-        main.case( "Constructing test variables and building ONOS package" )
+        main.case( "Constructing test variables and building ONOS" )
         main.step( "Constructing test variables" )
         stepResult = main.FALSE
 
@@ -30,10 +30,15 @@ class USECASE_SegmentRouting:
         main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
         main.cellName = main.params[ 'ENV' ][ 'cellName' ]
         main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+        main.diff = ( main.params[ 'ENV' ][ 'diffApps' ] ).split(";")
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         main.dependencyPath = main.testOnDirectory + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+        #main.json = ["4x4"]
+        main.json = ["2x2", "2x2"]
+        main.args = [" ", " "]
+        #main.args = [" --spine 4 --leaf 4 "]
         main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
         main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
         main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
@@ -86,7 +91,7 @@ class USECASE_SegmentRouting:
         else:
             main.log.warn( "Did not pull new code so skipping mvn " +
                            "clean install" )
-
+         
     def CASE2( self, main ):
         """
         - Set up cell
@@ -103,8 +108,7 @@ class USECASE_SegmentRouting:
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
 
-        main.case( "Starting up " + str( main.numCtrls ) +
-                   " node(s) ONOS cluster" )
+        main.case( "Package and start ONOS")
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
@@ -118,14 +122,17 @@ class USECASE_SegmentRouting:
         tempOnosIp = []
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[i] )
-
+        apps=main.apps
+        if main.diff:
+            apps = main.apps+","+main.diff.pop(0)
+        else: main.log.error( "App list is empty" )
         onosUser = main.params[ 'ENV' ][ 'cellUser' ]
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp",
                                        main.Mininet1.ip_address,
-                                       main.apps,
+                                       apps,
                                        tempOnosIp,
-                                       onosUser)
+                                       main.ONOSbench.user_name)
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )
@@ -138,7 +145,7 @@ class USECASE_SegmentRouting:
                                  onfail="Failed to apply cell to environment " )
 
         main.step( "Creating ONOS package" )
-        main.ONOSbench.handle.sendline( "cp ~/OnosSystemTest/TestON/tests/USECASE_SegmentRouting/2x2.json ~/onos/tools/package/config/network-cfg.json")
+        main.ONOSbench.handle.sendline( "cp ~/OnosSystemTest/TestON/tests/USECASE_SegmentRouting/"+main.json.pop(0)+".json ~/onos/tools/package/config/network-cfg.json")
         packageResult = main.ONOSbench.onosPackage()
         stepResult = packageResult
         utilities.assert_equals( expect=main.TRUE,
@@ -147,6 +154,7 @@ class USECASE_SegmentRouting:
                                  onfail="Failed to create ONOS package" )
 
         time.sleep( main.startUpSleep )
+
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
         for i in range( main.numCtrls ):
@@ -181,12 +189,13 @@ class USECASE_SegmentRouting:
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
-        time.sleep( main.startUpSleep )
+        time.sleep( 2*main.startUpSleep )
 
     def CASE9( self, main ):
         '''
             Report errors/warnings/exceptions
         '''
+        main.log.case( "Logging test" )
         #main.ONOSbench.logReport( main.ONOSip[ 0 ],
         #                          [ "INFO" ],
         #                          "a" )
@@ -200,16 +209,23 @@ class USECASE_SegmentRouting:
                                     "Except" ],
                                   "s" )
 
-
     def CASE11( self, main ):
         """
             Start mininet
         """
+        main.log.case( "Start Leaf-Spine 2x2 Mininet Topology" )
         main.log.report( "Start Mininet topology" )
-        main.log.case( "Start Mininet topology" )
 
         main.step( "Starting Mininet Topology" )
-        topoResult = main.Mininet1.startNet( topoFile= main.dependencyPath + main.topology, args="--onos 1" )
+        args,topo=" "," "
+        #if main.topology:
+        #    topo = main.topology.pop(0)
+        #else: main.log.error( "Topo list is empty" )
+        if main.args:
+            args = "--onos 1 " + main.args.pop(0)
+        else: main.log.error( "Argument list is empty" )
+
+        topoResult = main.Mininet1.startNet( topoFile= main.dependencyPath + main.topology, args=args )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -220,16 +236,14 @@ class USECASE_SegmentRouting:
             main.cleanup()
             main.exit()
         main.step("Waiting for switch initialization and configuration")
-        time.sleep( main.startUpSleep )
+        time.sleep( 3*main.startUpSleep)
         pa = main.Mininet1.pingall()
         utilities.assert_equals( expect=main.TRUE, actual=pa,
                                  onpass="Full connectivity successfully tested",
                                  onfail="Full connectivity failed" )
         # cleanup mininet
-        main.CLIs[0].logout()
         main.ONOSbench.onosStop( main.ONOSip[0] )
         main.Mininet1.stopNet()
-        main.Mininet1.disconnect()
 
 
 

@@ -1193,6 +1193,7 @@ class OnosRestDriver( Controller ):
             The ip and port option are for the requests input's ip and port
             of the ONOS node
         """
+
         try:
             flowJson = { "priority":100,
                            "isPermanent":"true",
@@ -1323,14 +1324,420 @@ class OnosRestDriver( Controller ):
         try:
             tempFlows = json.loads( self.flows( ip=ip, port=port ) )
             returnValue = main.TRUE
+            numPending = 0
             for flow in tempFlows:
                 if flow.get( 'state' ) != 'ADDED':
-                    main.log.info( self.name + ": flow Id: " +
-                                   str( flow.get( 'groupId' ) ) +
+                    '''
+                    main.log.debug( self.name + ": flow Id: " +
+                                   str( flow.get( 'id' ) ) +
                                    " | state:" +
                                    str( flow.get( 'state' ) ) )
+                    '''
                     returnValue = main.FALSE
+                    numPending += 1
+            main.log.info("Number of non-ADDED flows are: " + str(numPending))
             return returnValue
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def addFlow( self,
+                 deviceId,
+                 appId=0,
+                 ingressPort="",
+                 egressPort="",
+                 ethType="",
+                 ethSrc="",
+                 ethDst="",
+                 vlan="",
+                 ipProto="",
+                 ipSrc=(),
+                 ipDst=(),
+                 tcpSrc="",
+                 tcpDst="",
+                 udpDst="",
+                 udpSrc="",
+                 mpls="",
+                 ip="DEFAULT",
+                 port="DEFAULT",
+                 debug=False ):
+
+        """
+        Description:
+            Creates a single flow in the specified device
+        Required:
+            * deviceId: id of the device
+        Optional:
+            * ingressPort: port ingress device
+            * egressPort: port  of egress device
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc ( i.e. src mac addr )
+            * ethDst: specify ethDst ( i.e. dst mac addr )
+            * ipProto: specify ip protocol
+            * ipSrc: specify ip source address with mask eg. ip#/24
+                as a tuple (type, ip#)
+            * ipDst: specify ip destination address eg. ip#/24
+                as a tuple (type, ip#)
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        try:
+            flowJson = { "priority":100,
+                           "isPermanent":"true",
+                           "timeout":0,
+                           "deviceId":deviceId,
+                           "treatment":{"instructions":[]},
+                           "selector": {"criteria":[]}}
+            if appId:
+                flowJson[ "appId" ] = appId
+            if egressPort:
+                flowJson[ 'treatment' ][ 'instructions' ].append( {
+                                                        "type":"OUTPUT",
+                                                        "port":egressPort } )
+            if ingressPort:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"IN_PORT",
+                                                        "port":ingressPort } )
+            if ethType:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_TYPE",
+                                                        "ethType":ethType } )
+            if ethSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_SRC",
+                                                        "mac":ethSrc } )
+            if ethDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_DST",
+                                                        "mac":ethDst } )
+            if vlan:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"VLAN_VID",
+                                                        "vlanId":vlan } )
+            if mpls:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"MPLS_LABEL",
+                                                        "label":mpls } )
+            if ipSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":ipSrc[0],
+                                                        "ip":ipSrc[1] } )
+            if ipDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":ipDst[0],
+                                                        "ip":ipDst[1] } )
+            if tcpSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"TCP_SRC",
+                                                        "tcpPort": tcpSrc } )
+            if tcpDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"TCP_DST",
+                                                        "tcpPort": tcpDst } )
+            if udpSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"UDP_SRC",
+                                                        "udpPort": udpSrc } )
+            if udpDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"UDP_DST",
+                                                        "udpPort": udpDst } )
+            if ipProto:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"IP_PROTO",
+                                                        "protocol": ipProto } )
+
+            return self.sendFlow( deviceId=deviceId, flowJson=flowJson, debug=debug )
+
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def removeFlow( self, deviceId, flowId,
+                       ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Remove specific device flow
+        Required:
+            str deviceId - id of the device
+            str flowId - id of the flow
+        Return:
+            Returns main.TRUE if successfully deletes flows, otherwise
+            Returns main.FALSE, Returns None on error
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            # NOTE: REST url requires the intent id to be in decimal form
+            query = "/" + str( deviceId ) + "/" + str( int( flowId ) )
+            response = self.send( ip,
+                                  port,
+                                  method="DELETE",
+                                  url="/flows" + query )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def createFlowBatch( self,
+                      numSw = 1,
+                      batchSizePerSw = 1,
+                      batchIndex = 1,
+                      deviceIdpreFix = "of:",
+                      appId=0,
+                      deviceID="",
+                      ingressPort="",
+                      egressPort="",
+                      ethType="",
+                      ethSrc="",
+                      ethDst="",
+                      vlan="",
+                      ipProto="",
+                      ipSrc=(),
+                      ipDst=(),
+                      tcpSrc="",
+                      tcpDst="",
+                      udpDst="",
+                      udpSrc="",
+                      mpls="",
+                      ip="DEFAULT",
+                      port="DEFAULT",
+                      debug=False ):
+        """
+        Description:
+            Creates a single flow in the specified device
+        Required:
+            * deviceId: id of the device
+        Optional:
+            * ingressPort: port ingress device
+            * egressPort: port  of egress device
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc ( i.e. src mac addr )
+            * ethDst: specify ethDst ( i.e. dst mac addr )
+            * ipProto: specify ip protocol
+            * ipSrc: specify ip source address with mask eg. ip#/24
+                as a tuple (type, ip#)
+            * ipDst: specify ip destination address eg. ip#/24
+                as a tuple (type, ip#)
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        from pprint import pprint
+
+        flowJsonList = []
+        flowJsonBatch = {"flows":flowJsonList}
+
+        for dev in range(1, numSw + 1):
+            for size in range(1, batchSizePerSw +1):
+
+                flowJson = { "priority":100,
+                           "deviceId":"",
+                           "isPermanent":"true",
+                           "timeout":0,
+                           "treatment":{"instructions":[]},
+                           "selector": {"criteria":[]}}
+
+                deviceId = deviceIdpreFix + "{0:0{1}x}".format(dev,16)
+                #print deviceId
+                flowJson['deviceId'] = deviceId
+
+                # ethSrc starts with "0"; ethDst starts with "1"
+                # 3 Hex digit of device number; 4 digits of batch index number; 4 digits of batch size
+                ethS = "{0:0{1}x}".format(dev,4) + "{0:0{1}x}".format(batchIndex,4) + "{0:0{1}x}".format(size,4)
+                ethSrc = ':'.join(ethS[i:i+2] for i in range(0,len(ethS),2))
+                ethD = "1" + "{0:0{1}x}".format(dev,3) + "{0:0{1}x}".format(batchIndex,4) + "{0:0{1}x}".format(size,4)
+                ethDst = ':'.join(ethD[i:i+2] for i in range(0,len(ethD),2))
+
+                if appId:
+                    flowJson[ "appId" ] = appId
+
+                if egressPort:
+                    flowJson[ 'treatment' ][ 'instructions' ].append( {
+                                                        "type":"OUTPUT",
+                                                        "port":egressPort } )
+                if ingressPort:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"IN_PORT",
+                                                        "port":ingressPort } )
+                if ethType:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_TYPE",
+                                                        "ethType":ethType } )
+                if ethSrc:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_SRC",
+                                                        "mac":ethSrc } )
+                if ethDst:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_DST",
+                                                        "mac":ethDst } )
+                if vlan:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"VLAN_VID",
+                                                        "vlanId":vlan } )
+                if mpls:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"MPLS_LABEL",
+                                                        "label":mpls } )
+                if ipSrc:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":ipSrc[0],
+                                                        "ip":ipSrc[1] } )
+                if ipDst:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":ipDst[0],
+                                                        "ip":ipDst[1] } )
+                if tcpSrc:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"TCP_SRC",
+                                                        "tcpPort": tcpSrc } )
+                if tcpDst:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"TCP_DST",
+                                                        "tcpPort": tcpDst } )
+                if udpSrc:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"UDP_SRC",
+                                                        "udpPort": udpSrc } )
+                if udpDst:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"UDP_DST",
+                                                        "udpPort": udpDst } )
+                if ipProto:
+                    flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"IP_PROTO",
+                                                        "protocol": ipProto } )
+                #pprint(flowJson)
+                flowJsonList.append(flowJson)
+
+        flowJsonBatch['flows'] = flowJsonList
+        #pprint(flowJsonBatch)
+
+        return flowJsonBatch
+
+    def sendFlowBatch( self, batch={}, ip="DEFAULT", port="DEFAULT", debug=False ):
+        """
+        Description:
+            Sends a single flow to the specified device. This function exists
+            so you can bypass the addFLow driver and send your own custom flow.
+        Required:
+            * The flow in json
+            * the device id to add the flow to
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        import time
+
+        try:
+            if debug: main.log.debug( "Adding flow: " + self.pprint( batch ) )
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/flows/"
+            response = self.send( ip,
+                                  port,
+                                  method="POST",
+                                  url=url,
+                                  data=json.dumps( batch ) )
+            #main.log.info("Post response is: ", str(response[0]))
+            if response[0] == 200:
+                main.log.info( self.name + ": Successfully POST flow" )
+                return main.TRUE
+            else:
+                main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                return main.FALSE
+        except NotImplementedError as e:
+            raise e  # Inform the caller
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def removeFlowBatch( self, batch={},
+                       ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Remove a batch of flows
+        Required:
+            flow batch
+        Return:
+            Returns main.TRUE if successfully deletes flows, otherwise
+            Returns main.FALSE, Returns None on error
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            # NOTE: REST url requires the intent id to be in decimal form
+
+            response = self.send( ip,
+                                  port,
+                                  method="DELETE",
+                                  url="/flows/" + batch )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
             return None

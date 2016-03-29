@@ -1512,7 +1512,8 @@ class OnosRestDriver( Controller ):
 
     def createFlowBatch( self,
                       numSw = 1,
-                      batchSizePerSw = 1,
+                      swIndex = 1,
+                      batchSize = 1,
                       batchIndex = 1,
                       deviceIdpreFix = "of:",
                       appId=0,
@@ -1564,92 +1565,100 @@ class OnosRestDriver( Controller ):
 
         flowJsonList = []
         flowJsonBatch = {"flows":flowJsonList}
+        dev = swIndex
 
-        for dev in range(1, numSw + 1):
-            for size in range(1, batchSizePerSw +1):
-
-                flowJson = { "priority":100,
+        for fl in range(1, batchSize + 1):
+            flowJson = { "priority":100,
                            "deviceId":"",
                            "isPermanent":"true",
                            "timeout":0,
                            "treatment":{"instructions":[]},
                            "selector": {"criteria":[]}}
 
+            main.log.info("fl: " + str(fl))
+            if dev <= numSw:
+                deviceId = deviceIdpreFix + "{0:0{1}x}".format(dev,16)
+                #print deviceId
+                flowJson['deviceId'] = deviceId
+                dev += 1
+            else:
+                dev = 1
                 deviceId = deviceIdpreFix + "{0:0{1}x}".format(dev,16)
                 #print deviceId
                 flowJson['deviceId'] = deviceId
 
                 # ethSrc starts with "0"; ethDst starts with "1"
                 # 3 Hex digit of device number; 4 digits of batch index number; 4 digits of batch size
-                ethS = "{0:0{1}x}".format(dev,4) + "{0:0{1}x}".format(batchIndex,4) + "{0:0{1}x}".format(size,4)
-                ethSrc = ':'.join(ethS[i:i+2] for i in range(0,len(ethS),2))
-                ethD = "1" + "{0:0{1}x}".format(dev,3) + "{0:0{1}x}".format(batchIndex,4) + "{0:0{1}x}".format(size,4)
-                ethDst = ':'.join(ethD[i:i+2] for i in range(0,len(ethD),2))
+            ethS = "{0:0{1}x}".format(dev,4) + "{0:0{1}x}".format(batchIndex,4) + "{0:0{1}x}".format(fl,4)
+            ethSrc = ':'.join(ethS[i:i+2] for i in range(0,len(ethS),2))
+            ethD = "1" + "{0:0{1}x}".format(dev,3) + "{0:0{1}x}".format(batchIndex,4) + "{0:0{1}x}".format(fl,4)
+            ethDst = ':'.join(ethD[i:i+2] for i in range(0,len(ethD),2))
 
-                if appId:
-                    flowJson[ "appId" ] = appId
+            if appId:
+                flowJson[ "appId" ] = appId
 
-                if egressPort:
-                    flowJson[ 'treatment' ][ 'instructions' ].append( {
+            if egressPort:
+                flowJson[ 'treatment' ][ 'instructions' ].append( {
                                                         "type":"OUTPUT",
                                                         "port":egressPort } )
-                if ingressPort:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if ingressPort:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"IN_PORT",
                                                         "port":ingressPort } )
-                if ethType:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if ethType:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"ETH_TYPE",
                                                         "ethType":ethType } )
-                if ethSrc:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if ethSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"ETH_SRC",
                                                         "mac":ethSrc } )
-                if ethDst:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if ethDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"ETH_DST",
                                                         "mac":ethDst } )
-                if vlan:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if vlan:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"VLAN_VID",
                                                         "vlanId":vlan } )
-                if mpls:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if mpls:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"MPLS_LABEL",
                                                         "label":mpls } )
-                if ipSrc:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if ipSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":ipSrc[0],
                                                         "ip":ipSrc[1] } )
-                if ipDst:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if ipDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":ipDst[0],
                                                         "ip":ipDst[1] } )
-                if tcpSrc:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if tcpSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"TCP_SRC",
                                                         "tcpPort": tcpSrc } )
-                if tcpDst:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if tcpDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"TCP_DST",
                                                         "tcpPort": tcpDst } )
-                if udpSrc:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if udpSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"UDP_SRC",
                                                         "udpPort": udpSrc } )
-                if udpDst:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if udpDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"UDP_DST",
                                                         "udpPort": udpDst } )
-                if ipProto:
-                    flowJson[ 'selector' ][ 'criteria' ].append( {
+            if ipProto:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"IP_PROTO",
                                                         "protocol": ipProto } )
-                #pprint(flowJson)
-                flowJsonList.append(flowJson)
+            #pprint(flowJson)
+            flowJsonList.append(flowJson)
 
+        main.log.info("Number of flows in batch: " + str( len(flowJsonList) ) )
         flowJsonBatch['flows'] = flowJsonList
-        #pprint(flowJsonBatch)
+        pprint(flowJsonBatch)
 
         return flowJsonBatch
 

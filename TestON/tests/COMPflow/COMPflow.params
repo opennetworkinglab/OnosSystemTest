@@ -44,14 +44,9 @@
     </CASE10>
 
     <CASE1000>
-        <flowsPerSw>14</flowsPerSw>
-        <batches>500</batches>
+        <batchSize>20</batchSize>
+        <batches>10</batches>
     </CASE1000>
-
-    <TEST>
-        <batchSize>200</batchSize>
-        <numThrd>1</numThrd>
-    </TEST>
 
     <SLEEP>
         <startup>15</startup>

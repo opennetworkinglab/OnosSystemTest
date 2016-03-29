@@ -229,20 +229,29 @@ class COMPflow:
         main.case( "Create a json object for the batched flows" )
 
         main.step( "Parse batch information" )
-        main.flowsPerSw = int(main.params['CASE1000']['flowsPerSw'])
-        main.log.info("Number of flows in a batch is:" + str(main.flowsPerSw * main.numSw))
+        main.batchSize = int(main.params['CASE1000']['batchSize'])
+        main.log.info("Number of flows in a batch is:" + str(main.batchSize))
 
         main.flowJsonBatchList = []
         postTimes = []
+        startSw = 1
 
         main.step("Creating a full list of batches")
         for index in range(1, int(main.params['CASE1000']['batches']) + 1):
-            flowJsonBatch = main.ONOSrest.createFlowBatch( numSw = main.numSw,
-                                                           batchSizePerSw = main.flowsPerSw,
+            if startSw <= main.numSw:
+                main.log.info("Creating batch: " + str(index))
+                flowJsonBatch = main.ONOSrest.createFlowBatch( numSw = main.numSw,
+                                                           swIndex = startSw,
+                                                           batchSize = main.batchSize,
                                                            batchIndex = index,
                                                            ingressPort = 2,
                                                            egressPort = 3)
-            main.flowJsonBatchList.append(flowJsonBatch)
+                main.flowJsonBatchList.append(flowJsonBatch)
+
+                startSw += 1
+            else:
+                startSw = 1
+
 
         main.step("Using REST API /flows/{} to post flow batch")
         tStartPost = time.time()
@@ -263,8 +272,7 @@ class COMPflow:
         tAllAdded = time.time()
 
         numFlows = int(main.params['CASE1000']['batches']) *\
-                                                    int(main.params['CASE1000']['flowsPerSw']) *\
-                                                    int(main.params['CASE10']['numSw'])
+                                                    int(main.params['CASE1000']['batchSize'])
         main.log.info("Total number of flows: " + str (numFlows) )
         main.log.info("Sum of each POST elapse time: " + str(numpy.sum(postTimes)) )
         main.log.info("Total POST elapse time: " + str(tLastPostEnd-tStartPost))
@@ -300,7 +308,7 @@ class COMPflow:
         tAllRemoved = time.time()
 
         main.log.info("Total number of flows: " + str (int(main.params['CASE1000']['batches']) *\
-                                                    int(main.params['CASE1000']['flowsPerSw']) *\
+                                                    int(main.params['CASE1000']['batchSize']) *\
                                                     int(main.params['CASE10']['numSw'])) )
         main.log.info("Sum of each DELETE elapse time: " + str(numpy.sum(rmTimes)) )
         main.log.info("Total POST elapse time: " + str(tLastRemoveEnd-tStartRemove))

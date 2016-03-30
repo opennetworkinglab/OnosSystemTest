@@ -299,7 +299,7 @@ class COMPflow:
 
         tLastRemoveEnd = time.time()
 
-        main.step("Check to ensure all flows are in added state.")
+        main.step("Check to ensure all flows are not in PENDING state.")
         resp = main.FALSE
         while resp != main.TRUE:
             resp = main.ONOSrest.checkFlowsState()
@@ -311,12 +311,12 @@ class COMPflow:
                                                     int(main.params['CASE10']['numSw'])) )
         main.log.info("Sum of each DELETE elapse time: " + str(numpy.sum(rmTimes)) )
         main.log.info("Total DELETE elapse time: " + str(tLastRemoveEnd-tStartRemove))
-        main.log.info("Rate of ADD Controller response: " + str(main.numFlows / (tLastRemoveEnd - tStartRemove)))
+        main.log.info("Rate of DELETE Controller response: " + str(main.numFlows / (tLastRemoveEnd - tStartRemove)))
 
         duration = tAllRemoved - tLastRemoveEnd
-        main.log.info("Elapse time from end of last REST POST to Flows in ADDED state: " +\
+        main.log.info("Elapse time from end of last REST DELETE to Flows in REMOVED state: " +\
                       str(duration))
-        main.log.info("Rate of Batch Flow add is (flows/sec): " + str( main.numFlows / duration))
+        main.log.info("Rate of Batch Flow DELETE is (flows/sec): " + str( main.numFlows / duration))
 
     def CASE100(self,main):
         from pprint import pprint

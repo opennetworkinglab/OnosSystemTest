@@ -1575,7 +1575,7 @@ class OnosRestDriver( Controller ):
                            "treatment":{"instructions":[]},
                            "selector": {"criteria":[]}}
 
-            main.log.info("fl: " + str(fl))
+            #main.log.info("fl: " + str(fl))
             if dev <= numSw:
                 deviceId = deviceIdpreFix + "{0:0{1}x}".format(dev,16)
                 #print deviceId

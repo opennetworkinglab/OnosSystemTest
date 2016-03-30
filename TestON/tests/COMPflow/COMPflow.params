@@ -9,7 +9,8 @@
     # 10 - Start mininet and verify topology
 
 
-    <testcases>1,10,100,1000,100,2000,100,110</testcases>
+    # <!-- <testcases>1,10,100,1000,100,2000,100,110</testcases> -->
+    <testcases>1,2,10,100,1000,100,2000,100,110</testcases>
 
     <SCALE>
         <max>1</max>
@@ -17,16 +18,10 @@
 
     <DEBUG>on</DEBUG>
 
-    <DEPENDENCY>
-        <path>/tests/COMPflow/Dependency/</path>
-        <wrapper1>startUp</wrapper1>
-        <wrapper2>topo</wrapper2>
-        <topology>topo-flow.py</topology>
-    </DEPENDENCY>
 
     <ENV>
-        <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow-base</cellApps>
+        <cellName>temp</cellName>
+        <cellApps>drivers</cellApps>
     </ENV>
 
     <GIT>
@@ -39,9 +34,15 @@
     </CTRL>
 
     <CASE10>
-        <numSw>15</numSw>
-        <mnArgs> --topo linear,15 --switch ovsk,protocols=OpenFlow13 --controller remote</mnArgs>
+        <numSw>63</numSw>
+        <mnArgs> --topo linear,63 --switch ovsk,protocols=OpenFlow13 --controller remote</mnArgs>
     </CASE10>
+
+    <CASE11>
+        <numSw>63</numSw>
+        <nullTopo>linear</nullTopo>
+        <nullStart>true</nullStart>
+    </CASE11>
 
     <CASE1000>
         <batchSize>200</batchSize>
@@ -50,9 +51,10 @@
 
     <SLEEP>
         <startup>15</startup>
-        <startMN>5</startMN>
+        <startMN>15</startMN>
         <addFlow>10</addFlow>
         <delFlow>10</delFlow>
+        <chkFlow>1</chkFlow>
     </SLEEP>
 
 </PARAMS>

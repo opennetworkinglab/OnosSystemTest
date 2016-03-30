@@ -104,6 +104,7 @@ class COMPflow:
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[i] )
 
+        main.log.info("Apps in cell file: " + main.apps)
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "temp", main.Mininet1.ip_address, main.apps, tempOnosIp )
 
         main.step( "Apply cell to environment" )
@@ -117,7 +118,7 @@ class COMPflow:
                                  onfail="Failed to apply cell to environment " )
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage(opTimeout=120)
+        packageResult = main.ONOSbench.onosPackage(opTimeout=240)
         stepResult = packageResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -178,12 +179,18 @@ class COMPflow:
         '''
             Start Mininet
         '''
-        import json
+        import time
 
         main.numSw = int(main.params['CASE10']['numSw'])
-        main.case( "Setup mininet and compare ONOS topology view to Mininet topology" )
+        main.case( "Enable openflow-base on onos and start Mininet." )
         main.caseExplanation = "Start mininet with custom topology and compare topology " +\
                 "elements between Mininet and ONOS"
+
+        main.step("Activate openflow-base App")
+        stepResult = main.ONOSbench.onosCli( ONOSIp = main.ONOSip[0],  cmdstr = "app activate org.onosproject.openflow-base" )
+        time.sleep(10)
+        print stepResult
+        time.sleep(5)
 
         main.step( "Setup Mininet Linear Topology with " + str(main.numSw) + " switches" )
         stepResult = main.Mininet1.startNet( args = main.params['CASE10']['mnArgs'] )
@@ -193,6 +200,7 @@ class COMPflow:
                                  onpass="Successfully loaded topology",
                                  onfail="Failed to load topology" )
 
+        time.sleep(int(main.params['SLEEP']['startMN']))
         main.step( "Assign switches to controller" )
         for i in range(1, main.numSw + 1):
             main.Mininet1.assignSwController( "s" + str(i), main.ONOSip[0] )
@@ -202,8 +210,39 @@ class COMPflow:
                                  onpass="Successfully assigned switch to controller",
                                  onfail="Failed to assign switch to controller" )
 
+        main.deviceIdPrefix = "of:"
+
         time.sleep( main.startMNSleep )
 
+    def CASE11( self, main ):
+        '''
+            Start Null Provider
+        '''
+        import time
+
+        main.numSw = int(main.params['CASE11']['numSw'])
+
+        main.case("Activate Null Provider App")
+        stepResult = main.ONOSbench.onosCli( ONOSIp = main.ONOSip[0],  cmdstr = "app activate org.onosproject.null" )
+        time.sleep(10)
+        print stepResult
+        time.sleep(5)
+
+        main.case( "Setup Null Provider for linear Topology" )
+        main.step( "Setup Null Provider Linear Topology with " + str(main.numSw) + " devices." )
+        main.ONOSbench.onosCfgSet( main.ONOSip[0], "org.onosproject.provider.nil.NullProviders", "deviceCount " + str(main.numSw))
+        main.ONOSbench.onosCfgSet( main.ONOSip[0], "org.onosproject.provider.nil.NullProviders", "topoShape " + main.params['CASE11']['nullTopo'] )
+        main.ONOSbench.onosCfgSet( main.ONOSip[0], "org.onosproject.provider.nil.NullProviders", "enabled " + main.params['CASE11']['nullStart'])
+        time.sleep(5)
+
+        main.log.info("Check to make sure null providers are configured correctly.")
+        main.ONOSbench.handle.sendline("onos $OC1 summary")
+        stepResult = main.ONOSbench.handle.expect(":~")
+        main.log.info("ONOS Summary: " + main.ONOSbench.handle.before)
+
+        main.deviceIdPrefix = "null:"
+
+        time.sleep( main.startMNSleep )
 
 
 
@@ -239,6 +278,7 @@ class COMPflow:
                                                            swIndex = ind,
                                                            batchSize = main.batchSize,
                                                            batchIndex = index,
+                                                           deviceIdpreFix=main.deviceIdPrefix,
                                                            ingressPort = 2,
                                                            egressPort = 3)
             main.flowJsonBatchList.append(flowJsonBatch)
@@ -260,11 +300,11 @@ class COMPflow:
         tLastPostEnd = time.time()
 
         main.step("Check to ensure all flows are in added state.")
-        pprint(main.addedBatchList)
+        #pprint(main.addedBatchList)
         resp = main.FALSE
         while resp != main.TRUE:
             resp = main.ONOSrest.checkFlowsState()
-            time.sleep(0.5)
+            time.sleep( float(main.params['SLEEP']['chkFlow']) )
         tAllAdded = time.time()
 
         main.numFlows = int(main.params['CASE1000']['batches']) *\
@@ -277,7 +317,7 @@ class COMPflow:
         duration = tAllAdded - tLastPostEnd
         main.log.info("Elapse time from end of last REST POST to Flows in ADDED state: " +\
                       str(duration))
-        main.log.info("Rate of Batch Flow add is (flows/sec): " + str( main.numFlows / duration))
+        main.log.info("Rate of Confirmed Batch Flow ADD is (flows/sec): " + str( main.numFlows / duration))
 
     def CASE2000(self, main):
         import time
@@ -307,16 +347,15 @@ class COMPflow:
         tAllRemoved = time.time()
 
         main.log.info("Total number of flows: " + str (int(main.params['CASE1000']['batches']) *\
-                                                    int(main.params['CASE1000']['batchSize']) *\
-                                                    int(main.params['CASE10']['numSw'])) )
+                                                    int(main.params['CASE1000']['batchSize']) ))
         main.log.info("Sum of each DELETE elapse time: " + str(numpy.sum(rmTimes)) )
         main.log.info("Total DELETE elapse time: " + str(tLastRemoveEnd-tStartRemove))
-        main.log.info("Rate of DELETE Controller response: " + str(main.numFlows / (tLastRemoveEnd - tStartRemove)))
+        main.log.info("Rate of DELETE Controller response (flows/sec): " + str(main.numFlows / (tLastRemoveEnd - tStartRemove)))
 
         duration = tAllRemoved - tLastRemoveEnd
         main.log.info("Elapse time from end of last REST DELETE to Flows in REMOVED state: " +\
                       str(duration))
-        main.log.info("Rate of Batch Flow DELETE is (flows/sec): " + str( main.numFlows / duration))
+        main.log.info("Rate of Confirmed Batch Flow DELETE is (flows/sec): " + str( main.numFlows / duration))
 
     def CASE100(self,main):
         from pprint import pprint

@@ -126,6 +126,7 @@ class FUNCoptical:
 
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
+        main.flowCompiler = "Flow Rules"
 
         main.case( "Starting up " + str( main.numCtrls ) +
                    " node(s) ONOS cluster" )
@@ -261,7 +262,7 @@ class FUNCoptical:
             main.cleanup()
             main.exit()
 
-    
+
 
 
     def CASE14( self, main ):
@@ -283,6 +284,25 @@ class FUNCoptical:
         if not topoResult:
             main.cleanup()
             main.exit()
+
+    def CASE17( self, main ):
+        """
+            Use Flow Objectives
+        """
+        main.case( "Enable intent compilation using Flow Objectives" )
+        main.step( "Enabling Flow Objectives" )
+
+        main.flowCompiler = "Flow Objectives"
+
+        cmd = "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator"
+
+        stepResult = main.CLIs[ 0 ].setCfg( component=cmd,
+                                            propName="useFlowObjectives", value="true" )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully activated Flow Objectives",
+                                 onfail="Failed to activate Flow Objectives" )
 
     def CASE21( self,main ):
         """
@@ -383,7 +403,7 @@ class FUNCoptical:
                             currentDevicesResult = main.TRUE
                         else:
                             currentDevicesResult = main.FALSE
-                            main.log.error( "Node {} only sees {} device(s) but {} exist".format( 
+                            main.log.error( "Node {} only sees {} device(s) but {} exist".format(
                                 controllerStr,len( deviceData ),mnSwitches ) )
                 else:
                     currentDevicesResult = main.FALSE
@@ -402,7 +422,7 @@ class FUNCoptical:
                             currentLinksResult = main.TRUE
                         else:
                             currentLinksResult = main.FALSE
-                            main.log.error( "Node {} only sees {} link(s) but {} exist".format( 
+                            main.log.error( "Node {} only sees {} link(s) but {} exist".format(
                                 controllerStr,len( linkData ),mnLinks ) )
                 else:
                     currentLinksResult = main.FALSE
@@ -421,7 +441,7 @@ class FUNCoptical:
                             currentHostsResult = main.TRUE
                         else:
                             currentHostsResult = main.FALSE
-                            main.log.error( "Node {} only sees {} host(s) but {} exist".format( 
+                            main.log.error( "Node {} only sees {} host(s) but {} exist".format(
                                 controllerStr,len( hostData ),mnHosts ) )
                 else:
                     currentHostsResult = main.FALSE
@@ -494,7 +514,7 @@ class FUNCoptical:
         main.log.info( "Checking intents state one more time")
         checkStateResult = main.CLIs[ 0 ].checkIntentState(
                                                   intentsId = main.pIntentsId )
-        
+
         if checkStateResult and checkFlowResult:
             addIntentsResult = main.TRUE
         else:
@@ -547,7 +567,7 @@ class FUNCoptical:
         main.log.info( "Checking intents state" )
         intentResult = main.CLIs[ 0 ].checkIntentState( intentsId = intentsId )
         # Check intent state again if intents are not in installed state
-        
+
 
         # If intent state is wrong, wait 3 sec and try again
         if not intentResult:
@@ -557,7 +577,7 @@ class FUNCoptical:
         # If intent state is still wrong, display intent states
         if not intentResult:
             main.log.error( main.CLIs[ 0 ].intents() )
-        
+
         utilities.assert_equals( expect=main.TRUE,
                                  actual=intentResult,
                                  onpass="All intents are in INSTALLED state ",
@@ -572,7 +592,7 @@ class FUNCoptical:
             pingResult = main.TRUE
             pingResult = main.LincOE.pingHostOptical( src="h1", target="h2" ) \
                 and main.LincOE.pingHostOptical( src="h2",target="h1" )
-            
+
             utilities.assert_equals( expect=main.TRUE,
                                      actual=pingResult,
                                      onpass="Pinged successfully between h1 and h2",
@@ -585,16 +605,24 @@ class FUNCoptical:
         intentsJson = json.loads( main.CLIs[ 0 ].intents() )
         main.CLIs[ 0 ].removeIntent( intentId=intent1, purge=True )
         #main.CLIs[ 0 ].removeIntent( intentId=intent2, purge=True )
+        main.log.debug(intentsJson)
         for intents in intentsJson:
-            main.CLIs[ 0 ].removeIntent( intentId=intents.get( 'id' ),
-                                     app='org.onosproject.optical',
-                                     purge=True )
-        # Check if any intents could not be removed
-        if len( json.loads( main.CLIs[ 0 ].intents() ) ):
-            print json.loads( main.CLIs[ 0 ].intents() )
-            removeResult = main.FALSE
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=removeResult,
-                                 onpass="Successfully removed host intents",
-                                 onfail="Failed to remove host intents" )
+            try:
+                main.CLIs[ 0 ].removeIntent( intentId=intents.get( 'id' ),
+                                             app='org.onosproject.optical',
+                                             purge=True )
+            except TypeError:
+                main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +\
+                                ".  Removing all intents.")
+                main.CLIs[ 0 ].removeAllIntents( purge=True )
+                main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.optical')
 
+        # Check if any intents could not be removed
+        for i in range( main.numCtrls ):
+            if len( json.loads( main.CLIs[ i ].intents() ) ):
+                print json.loads( main.CLIs[ i ].intents() )
+                removeResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=removeResult,
+                                     onpass="Successfully removed host intents",
+                                     onfail="Failed to remove host intents" )

@@ -1106,7 +1106,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            cmdStr = "onos-kill " + str( nodeIp )
+            cmdStr = "onos-die " + str( nodeIp )
             self.handle.sendline( cmdStr )
             i = self.handle.expect( [
                 "Killing\sONOS",

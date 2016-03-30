@@ -331,7 +331,7 @@ class COMPflow:
         tStartRemove = time.time()
         for item in main.addedBatchList:
             ts = time.time()
-            print(item)
+            #print(item)
             resp = main.ONOSrest.removeFlowBatch(batch = json.loads(item) )
             teBatch = time.time() - ts
             rmTimes.append(teBatch)

@@ -1335,7 +1335,7 @@ class OnosRestDriver( Controller ):
                     '''
                     returnValue = main.FALSE
                     numPending += 1
-            main.log.info("Number of non-ADDED flows are: " + str(numPending))
+            main.log.info("Number of PENDING flows are: " + str(numPending))
             return returnValue
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )

@@ -9,7 +9,7 @@
     # 10 - Start mininet and verify topology
 
 
-    <testcases>1,10,100,1000,100,110</testcases>
+    <testcases>1,10,100,1000,100,2000,100,110</testcases>
 
     <SCALE>
         <max>1</max>

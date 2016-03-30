@@ -1659,7 +1659,7 @@ class OnosRestDriver( Controller ):
 
         main.log.info("Number of flows in batch: " + str( len(flowJsonList) ) )
         flowJsonBatch['flows'] = flowJsonList
-        pprint(flowJsonBatch)
+        #pprint(flowJsonBatch)
 
         return flowJsonBatch
 
@@ -1700,7 +1700,7 @@ class OnosRestDriver( Controller ):
             #main.log.info("Post response is: ", str(response[0]))
             if response[0] == 200:
                 main.log.info( self.name + ": Successfully POST flow" )
-                return main.TRUE
+                return main.TRUE, response
             else:
                 main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
@@ -1740,7 +1740,8 @@ class OnosRestDriver( Controller ):
             response = self.send( ip,
                                   port,
                                   method="DELETE",
-                                  url="/flows/" + batch )
+                                  url="/flows/",
+                                  data = json.dumps(batch) )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     return main.TRUE

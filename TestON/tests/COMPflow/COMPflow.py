@@ -97,8 +97,6 @@ class COMPflow:
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
 
-        for i in range( main.maxNodes ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
 
         print "NODE COUNT = ", main.numCtrls
 
@@ -119,7 +117,7 @@ class COMPflow:
                                  onfail="Failed to apply cell to environment " )
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage(opTimeout=30)
+        packageResult = main.ONOSbench.onosPackage(opTimeout=120)
         stepResult = packageResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -175,16 +173,6 @@ class COMPflow:
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
 
-        main.step( "Start ONOS cli" )
-        cliResult = main.TRUE
-        for i in range( main.numCtrls ):
-            cliResult = cliResult and \
-                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ], onosStartTimeout=30 )
-        stepResult = cliResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully start ONOS cli",
-                                 onfail="Failed to start ONOS cli" )
 
     def CASE10( self, main ):
         '''
@@ -225,6 +213,7 @@ class COMPflow:
         '''
         import numpy
         import time
+        from pprint import pprint
 
         main.case( "Create a json object for the batched flows" )
 
@@ -233,6 +222,7 @@ class COMPflow:
         main.log.info("Number of flows in a batch is:" + str(main.batchSize))
 
         main.flowJsonBatchList = []
+        main.addedBatchList = []
         postTimes = []
         startSw = 1
 
@@ -261,14 +251,16 @@ class COMPflow:
         tStartPost = time.time()
         for item in main.flowJsonBatchList:
             ts = time.time()
-            resp = main.ONOSrest.sendFlowBatch(batch = item )
+            status, response = main.ONOSrest.sendFlowBatch(batch = item )
             teBatch = time.time() - ts
             postTimes.append(teBatch)
             main.log.info("Batch Rest Post Elapse time is: " + str(teBatch))
+            main.addedBatchList.append(response[1])
 
         tLastPostEnd = time.time()
 
         main.step("Check to ensure all flows are in added state.")
+        pprint(main.addedBatchList)
         resp = main.FALSE
         while resp != main.TRUE:
             resp = main.ONOSrest.checkFlowsState()
@@ -289,15 +281,17 @@ class COMPflow:
     def CASE2000(self, main):
         import time
         import numpy
+        import json
 
         rmTimes = []
 
         main.case("Remove flow timing")
 
         tStartRemove = time.time()
-        for item in main.flowJsonBatchList:
+        for item in main.addedBatchList:
             ts = time.time()
-            resp = main.ONOSrest.removeFlowBatch(batch = item )
+            print(item)
+            resp = main.ONOSrest.removeFlowBatch(batch = json.loads(item) )
             teBatch = time.time() - ts
             rmTimes.append(teBatch)
             main.log.info("Batch Rest Remove Elapse time is: " + str(teBatch))
@@ -315,9 +309,9 @@ class COMPflow:
                                                     int(main.params['CASE1000']['batchSize']) *\
                                                     int(main.params['CASE10']['numSw'])) )
         main.log.info("Sum of each DELETE elapse time: " + str(numpy.sum(rmTimes)) )
-        main.log.info("Total POST elapse time: " + str(tLastRemoveEnd-tStartRemove))
+        main.log.info("Total DELETE elapse time: " + str(tLastRemoveEnd-tStartRemove))
 
-        main.log.info("Elapse time from end of last REST POST to Flows in ADDED state: " +\
+        main.log.info("Elapse time from end of last REST POST to Flows in DELETED state: " +\
                       str(tAllRemoved - tLastRemoveEnd))
 
     def CASE100(self,main):

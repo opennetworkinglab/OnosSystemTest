@@ -306,7 +306,7 @@ class SCPFintentEventTpWithFlowObj:
             main.ONOSbench.handle.sendline(cmd)
             main.ONOSbench.handle.expect(":~")
             main.log.info("Stopping intentperf" )
-            
+
             with open("/tmp/IntentEventTPflowObjDB", "a") as resultsDB:
                 for node in groupResult:
                     resultString = "'" + commit + "',"
@@ -318,8 +318,18 @@ class SCPFintentEventTpWithFlowObj:
                     resultString += str(0) + "\n" #no stddev
                     resultsDB.write(resultString)
             resultsDB.close()
-            resultsDB.close()
             main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
+
     def CASE3( self, main ):
-        main.log.info("Set Intent Compiler use Flow Object")
-        stepResult = main.ONOSbench.onosCfgSet( ONOSIp[0],"org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator", "useFlowObjectives true")
+        main.step("Set Intent Compiler use Flow Object")
+        stepResult = utilities.retry( main.ONOSbench.onosCfgSet,
+                                      main.FALSE,
+                                      args=[ "10.128.174.1",
+                                        "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                        "useFlowObjectives true" ],
+                                      sleep=3,
+                                      attempts=3 )
+        utilities.assert_equals( expect = main.TRUE,
+                                  actual = stepResult,
+                                  onpass = "Successfully set Intent compiler use Flow object",
+                                  onfail = "Failed to set up" )

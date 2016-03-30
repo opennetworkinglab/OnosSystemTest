@@ -267,16 +267,17 @@ class COMPflow:
             time.sleep(0.5)
         tAllAdded = time.time()
 
-        numFlows = int(main.params['CASE1000']['batches']) *\
+        main.numFlows = int(main.params['CASE1000']['batches']) *\
                                                     int(main.params['CASE1000']['batchSize'])
-        main.log.info("Total number of flows: " + str (numFlows) )
+        main.log.info("Total number of flows: " + str (main.numFlows) )
         main.log.info("Sum of each POST elapse time: " + str(numpy.sum(postTimes)) )
         main.log.info("Total POST elapse time: " + str(tLastPostEnd-tStartPost))
+        main.log.info("Rate of ADD Controller response: " + str(main.numFlows / (tLastPostEnd - tStartPost)))
 
         duration = tAllAdded - tLastPostEnd
         main.log.info("Elapse time from end of last REST POST to Flows in ADDED state: " +\
                       str(duration))
-        main.log.info("Rate of Batch Flow add is (flows/sec): " + str( numFlows / duration))
+        main.log.info("Rate of Batch Flow add is (flows/sec): " + str( main.numFlows / duration))
 
     def CASE2000(self, main):
         import time
@@ -310,9 +311,12 @@ class COMPflow:
                                                     int(main.params['CASE10']['numSw'])) )
         main.log.info("Sum of each DELETE elapse time: " + str(numpy.sum(rmTimes)) )
         main.log.info("Total DELETE elapse time: " + str(tLastRemoveEnd-tStartRemove))
+        main.log.info("Rate of ADD Controller response: " + str(main.numFlows / (tLastRemoveEnd - tStartRemove)))
 
-        main.log.info("Elapse time from end of last REST POST to Flows in DELETED state: " +\
-                      str(tAllRemoved - tLastRemoveEnd))
+        duration = tAllRemoved - tLastRemoveEnd
+        main.log.info("Elapse time from end of last REST POST to Flows in ADDED state: " +\
+                      str(duration))
+        main.log.info("Rate of Batch Flow add is (flows/sec): " + str( main.numFlows / duration))
 
     def CASE100(self,main):
         from pprint import pprint
@@ -320,7 +324,7 @@ class COMPflow:
         main.case( "Check to ensure onos flows." )
 
         resp = main.ONOSrest.checkFlowsState()
-        pprint(resp)
+        #pprint(resp)
 
 
     def CASE110( self, main ):

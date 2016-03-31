@@ -134,7 +134,7 @@ class SCPFintentRerouteLatWithFlowObj:
             main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "deviceCount 8")
             main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "topoShape reroute")
             main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "enabled true")
-            main.ONOS1cli.setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator", "useFlowObjectives", "true")
+            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator", "useFlowObjectives true" )
             time.sleep(5)
             main.ONOSbench.handle.sendline("onos $OC1 summary")
             main.ONOSbench.handle.expect(":~")

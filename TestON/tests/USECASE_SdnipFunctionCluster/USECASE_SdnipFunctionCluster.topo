@@ -26,6 +26,14 @@
             <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOScli2>
+        <ONOScli3>
+            <host>127.0.0.1</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli3>
 
         <QuaggaCliSpeaker1>
             <host>127.0.0.1</host>
@@ -49,4 +57,3 @@
 
     </COMPONENT>
 </TOPOLOGY>
-

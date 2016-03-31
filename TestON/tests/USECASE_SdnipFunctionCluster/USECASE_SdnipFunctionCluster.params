@@ -8,7 +8,7 @@
     </ENV>
 
     <CTRL>
-        <numCtrl>1</numCtrl>
+        <numCtrl>3</numCtrl>
         <ip1>OC1</ip1>
         <ip2>OC2</ip2>
         <ip3>OC3</ip3>

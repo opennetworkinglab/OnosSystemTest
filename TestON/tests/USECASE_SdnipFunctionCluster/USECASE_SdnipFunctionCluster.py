@@ -10,7 +10,7 @@ class USECASE_SdnipFunctionCluster:
             Start mininet
         """
         import imp
-        main.log.case( "Setup the Mininet testbed" )
+        main.case( "Setup the Mininet testbed" )
         main.dependencyPath = main.testDir + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
@@ -34,7 +34,6 @@ class USECASE_SdnipFunctionCluster:
             sw = "sw%s" % ( i )
             swResult = swResult and main.Mininet.assignSwController( sw,
                                                  [ONOS1Ip, ONOS2Ip, ONOS3Ip] )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=swResult,
                                  onpass="Successfully connect all switches to ONOS",
@@ -158,6 +157,7 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="ONOS CLIs are ready",
                                  onfail="ONOS CLIs are not ready" )
 
+        main.step( "Checking if ONOS CLI is ready for issuing commands" )
         for i in range( 10 ):
             ready = True
             for cli in main.CLIs:
@@ -181,16 +181,21 @@ class USECASE_SdnipFunctionCluster:
         main.log.info( "waiting link discovery......" )
         time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
 
-        main.log.info( "Get links in the network" )
+        main.step( "Get links in the network" )
         summaryResult = main.ONOScli1.summary()
         linkNum = json.loads( summaryResult )[ "links" ]
-        listResult = main.ONOScli1.links( jsonFormat=False )
-        main.log.info( listResult )
+        main.log.info( "Expected 100 links, actual number is: {}".format( linkNum ) )
         if linkNum < 100:
-            main.log.error( "Link number is wrong!" )
+            main.log.error( "Link number is wrong! Retrying..." )
             time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
-            listResult = main.ONOScli1.links( jsonFormat=False )
-            main.log.info( listResult )
+            summaryResult = main.ONOScli1.summary()
+            linkNum = json.loads( summaryResult )[ "links" ]
+        main.log.info( "Expected 100 links, actual number is: {}".format( linkNum ) )
+        utilities.assert_equals( expect=100,
+                                 actual=linkNum,
+                                 onpass="ONOS correctly discovered all links",
+                                 onfail="ONOS Failed to discover all links" )
+        if linkNum < 100:
             main.cleanup()
             main.exit()
 
@@ -237,7 +242,7 @@ class USECASE_SdnipFunctionCluster:
         ping test from 3 bgp peers to BGP speaker
         '''
 
-        main.case( "Ping tests between BGP peers and speakers" )
+        main.case( "Ping between BGP peers and speakers" )
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
                        peers=["peer64514", "peer64515", "peer64516"],
                        expectAllSuccess=True )
@@ -261,18 +266,17 @@ class USECASE_SdnipFunctionCluster:
         bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * 6 * 2
         if bgpIntentsActualNum != bgpIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
             bgpIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         main.log.info( "bgpIntentsExpected num is:" )
         main.log.info( bgpIntentsExpectedNum )
         main.log.info( "bgpIntentsActual num is:" )
         main.log.info( bgpIntentsActualNum )
-        utilities.assertEquals( \
-            expect=True,
-            actual=eq( bgpIntentsExpectedNum, bgpIntentsActualNum ),
-            onpass="PointToPointIntent Intent Num is correct!",
-            onfail="PointToPointIntent Intent Num is wrong!" )
-
+        utilities.assert_equals( expect=bgpIntentsExpectedNum,
+                                 actual=bgpIntentsActualNum,
+                                 onpass="PointToPointIntent Intent Num is correct!",
+                                 onfail="PointToPointIntent Intent Num is wrong!" )
 
     def CASE3( self, main ):
         '''
@@ -281,6 +285,7 @@ class USECASE_SdnipFunctionCluster:
         import time
         main.case( "Check routes and M2S intents to all BGP peers" )
 
+        main.step( "Check routes installed" )
         allRoutesExpected = []
         allRoutesExpected.append( "4.0.0.0/24" + "/" + "10.0.4.1" )
         allRoutesExpected.append( "5.0.0.0/24" + "/" + "10.0.5.1" )
@@ -297,15 +302,14 @@ class USECASE_SdnipFunctionCluster:
                 main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
             allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
 
-        main.step( "Check routes installed" )
         main.log.info( "Routes expected:" )
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals( \
-            expect=allRoutesStrExpected, actual=allRoutesStrActual,
-            onpass="Routes are correct!",
-            onfail="Routes are wrong!" )
+        utilities.assert_equals( expect=allRoutesStrExpected,
+                                 actual=allRoutesStrActual,
+                                 onpass="Routes are correct!",
+                                 onfail="Routes are wrong!" )
 
         main.step( "Check M2S intents installed" )
         getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
@@ -314,6 +318,7 @@ class USECASE_SdnipFunctionCluster:
         routeIntentsExpectedNum = 3
         if routeIntentsActualNum != routeIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
             routeIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
 
@@ -321,22 +326,20 @@ class USECASE_SdnipFunctionCluster:
         main.log.info( routeIntentsExpectedNum )
         main.log.info( "MultiPointToSinglePoint Intent NUM Actual is:" )
         main.log.info( routeIntentsActualNum )
-        utilities.assertEquals( \
-            expect=routeIntentsExpectedNum,
-            actual=routeIntentsActualNum,
-            onpass="MultiPointToSinglePoint Intent Num is correct!",
-            onfail="MultiPointToSinglePoint Intent Num is wrong!" )
+        utilities.assert_equals( expect=routeIntentsExpectedNum,
+                                 actual=routeIntentsActualNum,
+                                 onpass="MultiPointToSinglePoint Intent Num is correct!",
+                                 onfail="MultiPointToSinglePoint Intent Num is wrong!" )
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
 
 
     def CASE4( self, main ):
@@ -358,10 +361,10 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Bring down the link between sw32 and peer64514" )
         linkResult1 = main.Mininet.link( END1="sw32", END2="peer64514",
                                          OPTION="down" )
-        utilities.assertEquals( expect=main.TRUE,
-                                actual=linkResult1,
-                                onpass="Bring down link succeeded!",
-                                onfail="Bring down link failed!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=linkResult1,
+                                 onpass="Bring down link succeeded!",
+                                 onfail="Bring down link failed!" )
 
         if linkResult1 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -375,10 +378,10 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Bring down the link between sw8 and peer64515" )
         linkResult2 = main.Mininet.link( END1="sw8", END2="peer64515",
                                          OPTION="down" )
-        utilities.assertEquals( expect=main.TRUE,
-                                actual=linkResult2,
-                                onpass="Bring down link succeeded!",
-                                onfail="Bring down link failed!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=linkResult2,
+                                 onpass="Bring down link succeeded!",
+                                 onfail="Bring down link failed!" )
         if linkResult2 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 1 )
@@ -391,10 +394,10 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Bring down the link between sw28 and peer64516" )
         linkResult3 = main.Mininet.link( END1="sw28", END2="peer64516",
                                          OPTION="down" )
-        utilities.assertEquals( expect=main.TRUE,
-                                actual=linkResult3,
-                                onpass="Bring down link succeeded!",
-                                onfail="Bring down link failed!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=linkResult3,
+                                 onpass="Bring down link succeeded!",
+                                 onfail="Bring down link failed!" )
         if linkResult3 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 0 )
@@ -409,11 +412,10 @@ class USECASE_SdnipFunctionCluster:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
@@ -422,7 +424,6 @@ class USECASE_SdnipFunctionCluster:
         main.Functions.pingHostToHost( main,
                         hosts=["host64514", "host64515", "host64516"],
                         expectAllSuccess=False )
-
 
     def CASE6( self, main ):
         '''
@@ -433,10 +434,10 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Bring up the link between sw32 and peer64514" )
         linkResult1 = main.Mininet.link( END1="sw32", END2="peer64514",
                                          OPTION="up" )
-        utilities.assertEquals( expect=main.TRUE,
-                                actual=linkResult1,
-                                onpass="Bring up link succeeded!",
-                                onfail="Bring up link failed!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=linkResult1,
+                                 onpass="Bring up link succeeded!",
+                                 onfail="Bring up link failed!" )
         if linkResult1 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 1 )
@@ -449,10 +450,10 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Bring up the link between sw8 and peer64515" )
         linkResult2 = main.Mininet.link( END1="sw8", END2="peer64515",
                                          OPTION="up" )
-        utilities.assertEquals( expect=main.TRUE,
-                                actual=linkResult2,
-                                onpass="Bring up link succeeded!",
-                                onfail="Bring up link failed!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=linkResult2,
+                                 onpass="Bring up link succeeded!",
+                                 onfail="Bring up link failed!" )
         if linkResult2 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 2 )
@@ -465,10 +466,10 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Bring up the link between sw28 and peer64516" )
         linkResult3 = main.Mininet.link( END1="sw28", END2="peer64516",
                                          OPTION="up" )
-        utilities.assertEquals( expect=main.TRUE,
-                                actual=linkResult3,
-                                onpass="Bring up link succeeded!",
-                                onfail="Bring up link failed!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=linkResult3,
+                                 onpass="Bring up link succeeded!",
+                                 onfail="Bring up link failed!" )
         if linkResult3 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )
@@ -483,11 +484,10 @@ class USECASE_SdnipFunctionCluster:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
@@ -497,7 +497,6 @@ class USECASE_SdnipFunctionCluster:
                         hosts=["host64514", "host64515", "host64516"],
                         expectAllSuccess=True )
 
-
     def CASE7( self, main ):
         '''
         Shut down a edge switch, check P-2-P and M-2-S intents, ping test
@@ -506,9 +505,9 @@ class USECASE_SdnipFunctionCluster:
         main.case( "Stop edge sw32,check P-2-P and M-2-S intents, ping test" )
         main.step( "Stop sw32" )
         result = main.Mininet.switch( SW="sw32", OPTION="stop" )
-        utilities.assertEquals( expect=main.TRUE, actual=result,
-                                onpass="Stopping switch succeeded!",
-                                onfail="Stopping switch failed!" )
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="Stopping switch succeeded!",
+                                 onfail="Stopping switch failed!" )
 
         if result == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -571,12 +570,10 @@ class USECASE_SdnipFunctionCluster:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
-
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
 
     def CASE8( self, main ):
         '''
@@ -587,18 +584,16 @@ class USECASE_SdnipFunctionCluster:
         main.case( "Start the edge sw32, check P-2-P and M-2-S intents, ping test" )
         main.step( "Start sw32" )
         result1 = main.Mininet.switch( SW="sw32", OPTION="start" )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=result1,
-            onpass="Starting switch succeeded!",
-            onfail="Starting switch failed!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=result1,
+                                 onpass="Starting switch succeeded!",
+                                 onfail="Starting switch failed!" )
 
         result2 = main.Mininet.assignSwController( "sw32", ONOS1Ip )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=result2,
-            onpass="Connect switch to ONOS succeeded!",
-            onfail="Connect switch to ONOS failed!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=result2,
+                                 onpass="Connect switch to ONOS succeeded!",
+                                 onfail="Connect switch to ONOS failed!" )
 
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -615,11 +610,10 @@ class USECASE_SdnipFunctionCluster:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
@@ -631,7 +625,6 @@ class USECASE_SdnipFunctionCluster:
         main.Functions.pingHostToHost( main,
                         hosts=["host64514", "host64515", "host64516"],
                         expectAllSuccess=True )
-
 
     def CASE9( self, main ):
         '''
@@ -651,9 +644,9 @@ class USECASE_SdnipFunctionCluster:
 
         main.step( "Stop sw11" )
         result = main.Mininet.switch( SW="sw11", OPTION="stop" )
-        utilities.assertEquals( expect=main.TRUE, actual=result,
-                                onpass="Stopping switch succeeded!",
-                                onfail="Stopping switch failed!" )
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="Stopping switch succeeded!",
+                                 onfail="Stopping switch failed!" )
         if result:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -670,11 +663,10 @@ class USECASE_SdnipFunctionCluster:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
                        peers=["peer64514", "peer64515", "peer64516"],
@@ -703,13 +695,13 @@ class USECASE_SdnipFunctionCluster:
 
         main.step( "Start sw11" )
         result1 = main.Mininet.switch( SW="sw11", OPTION="start" )
-        utilities.assertEquals( expect=main.TRUE, actual=result1,
-                                onpass="Starting switch succeeded!",
-                                onfail="Starting switch failed!" )
+        utilities.assert_equals( expect=main.TRUE, actual=result1,
+                                 onpass="Starting switch succeeded!",
+                                 onfail="Starting switch failed!" )
         result2 = main.Mininet.assignSwController( "sw11", ONOS1Ip )
-        utilities.assertEquals( expect=main.TRUE, actual=result2,
-                                onpass="Connect switch to ONOS succeeded!",
-                                onfail="Connect switch to ONOS failed!" )
+        utilities.assert_equals( expect=main.TRUE, actual=result2,
+                                 onpass="Connect switch to ONOS succeeded!",
+                                 onfail="Connect switch to ONOS failed!" )
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )
@@ -729,11 +721,10 @@ class USECASE_SdnipFunctionCluster:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
                        peers=["peer64514", "peer64515", "peer64516"],
@@ -759,11 +750,10 @@ class USECASE_SdnipFunctionCluster:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
 
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
                        peers=["peer64514", "peer64515", "peer64516"],
@@ -810,11 +800,10 @@ class USECASE_SdnipFunctionCluster:
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
-        utilities.assertEquals( \
-            expect=main.TRUE,
-            actual=flowCheck,
-            onpass="Flow status is correct!",
-            onfail="Flow status is wrong!" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowCheck,
+                                 onpass="Flow status is correct!",
+                                 onfail="Flow status is wrong!" )
 
         '''
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
@@ -871,11 +860,10 @@ class USECASE_SdnipFunctionCluster:
                                          main.FALSE,
                                          kwargs={'isPENDING':False},
                                          attempts=10 )
-            utilities.assertEquals( \
-                expect=main.TRUE,
-                actual=flowCheck,
-                onpass="Flow status is correct!",
-                onfail="Flow status is wrong!" )
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=flowCheck,
+                                     onpass="Flow status is correct!",
+                                     onfail="Flow status is wrong!" )
         else:
             main.Functions.checkRouteNum( main, 3 )
             main.Functions.checkM2SintentNum( main, 3 )
@@ -886,11 +874,10 @@ class USECASE_SdnipFunctionCluster:
                                          main.FALSE,
                                          kwargs={'isPENDING':False},
                                          attempts=10 )
-            utilities.assertEquals( \
-                expect=main.TRUE,
-                actual=flowCheck,
-                onpass="Flow status is correct!",
-                onfail="Flow status is wrong!" )
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=flowCheck,
+                                     onpass="Flow status is correct!",
+                                     onfail="Flow status is wrong!" )
 
         main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
                        peers=["peer64514", "peer64515", "peer64516"],

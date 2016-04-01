@@ -996,13 +996,13 @@ class FUNCintent:
         main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV4 using TCP point intents\n"
         senders = [
             { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01",
-              "ip":main.h1.hostIp }
+              "ip":( main.h1.hostIp + "/24" ) }
         ]
         recipients = [
             { "name":"h9","device":"of:0000000000000006/1","mac":"00:00:00:00:00:09",
-              "ip":main.h9.hostIp }
+              "ip":( main.h9.hostIp + "/24" ) }
         ]
-        ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
+        ipProto = main.params[ 'SDNIP' ][ 'ipPrototype' ]
         # Uneccessary, not including this in the selectors
         tcpSrc = main.params[ 'SDNIP' ][ 'srcPort' ]
         tcpDst = main.params[ 'SDNIP' ][ 'dstPort' ]
@@ -1063,7 +1063,7 @@ class FUNCintent:
                                            tcp2=tcp2 )
 
         utilities.assert_equals( expect=main.TRUE,
-                             actual=stepResult,
+                                 actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 

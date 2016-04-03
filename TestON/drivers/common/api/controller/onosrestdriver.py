@@ -21,6 +21,7 @@ import os
 import requests
 import types
 import sys
+from Queue import Queue
 
 from drivers.common.api.controllerdriver import Controller
 
@@ -1714,6 +1715,12 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def sendFlowBatchQueue(self, q=Queue(), ip="DEFAULT", port="DEFAULT", debug=False):
+        while True:
+            item = q.get()
+            self.sendFlowBatch(batch = item)
+            q.task_done()
 
     def removeFlowBatch( self, batch={},
                        ip="DEFAULT", port="DEFAULT" ):

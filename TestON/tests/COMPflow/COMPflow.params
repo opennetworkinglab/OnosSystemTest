@@ -10,14 +10,13 @@
 
 
     # <!-- <testcases>1,10,100,1000,100,2000,100,110</testcases> -->
-    <testcases>1,2,10,100,1000,100,2000,100,110</testcases>
+    <testcases>1,2,11,1000,2100,100,3100,100,110</testcases>
 
     <SCALE>
         <max>1</max>
     </SCALE>
 
     <DEBUG>on</DEBUG>
-
 
     <ENV>
         <cellName>temp</cellName>
@@ -39,7 +38,7 @@
     </CASE10>
 
     <CASE11>
-        <numSw>63</numSw>
+        <numSw>15</numSw>
         <nullTopo>linear</nullTopo>
         <nullStart>true</nullStart>
     </CASE11>
@@ -48,6 +47,15 @@
         <batchSize>200</batchSize>
         <batches>500</batches>
     </CASE1000>
+
+    <CASE2100>
+        <numThreads>16</numThreads>
+        <chkFlowTO>200</chkFlowTO>
+    </CASE2100>
+
+    <CASE3100>
+        <chkFlowTO>200</chkFlowTO>
+    </CASE3100>
 
     <SLEEP>
         <startup>15</startup>

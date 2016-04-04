@@ -104,6 +104,7 @@ class COMPflow:
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[i] )
 
+
         main.log.info("Apps in cell file: " + main.apps)
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "temp", main.Mininet1.ip_address, main.apps, tempOnosIp )
 
@@ -117,10 +118,11 @@ class COMPflow:
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
 
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage(opTimeout=240)
-        stepResult = packageResult
-        utilities.assert_equals( expect=main.TRUE,
+        if main.params['CASE2']['incPackaging'] == main.TRUE:
+            main.step( "Creating ONOS package" )
+            packageResult = main.ONOSbench.onosPackage(opTimeout=240)
+            stepResult = packageResult
+            utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
@@ -173,6 +175,19 @@ class COMPflow:
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
+
+        main.step( "Start ONOS cli" )
+        cliResult = main.TRUE
+        for i in range( i, main.numCtrls ):
+            cliResult = cliResult and \
+                        main.CLIs[ i ].startOnosCli( ONOSIp=main.ONOSip[ i ] )
+            main.log.info("ONOSip is: " + main.ONOSip[i])
+        stepResult = cliResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully start ONOS cli",
+                                 onfail="Failed to start ONOS cli" )
+
 
 
     def CASE10( self, main ):
@@ -285,50 +300,6 @@ class COMPflow:
             startSw += 1
         main.log.info( "Number of items created in the batch list is: " + str(len(main.flowJsonBatchList)))
 
-
-    def CASE2000(self, main):
-        '''
-        Args:
-            main:
-
-        Returns:
-
-        '''
-        main.case("Using REST API /flows/{} to post flow batch")
-        main.step("Using REST API /flows/{} to post flow batch")
-
-        main.addedBatchList = []
-        tStartPost = time.time()
-        for item in main.flowJsonBatchList:
-            ts = time.time()
-            status, response = main.ONOSrest.sendFlowBatch(batch = item )
-            teBatch = time.time() - ts
-            postTimes.append(teBatch)
-            main.log.info("Batch Rest Post Elapse time is: " + str(teBatch))
-            main.addedBatchList.append(response[1])
-
-        tLastPostEnd = time.time()
-
-        main.step("Check to ensure all flows are in added state.")
-        #pprint(main.addedBatchList)
-        resp = main.FALSE
-        while resp != main.TRUE:
-            resp = main.ONOSrest.checkFlowsState()
-            time.sleep( float(main.params['SLEEP']['chkFlow']) )
-        tAllAdded = time.time()
-
-        main.numFlows = int(main.params['CASE1000']['batches']) *\
-                                                    int(main.params['CASE1000']['batchSize'])
-        main.log.info("Total number of flows: " + str (main.numFlows) )
-        main.log.info("Sum of each POST elapse time: " + str(numpy.sum(postTimes)) )
-        main.log.info("Total POST elapse time: " + str(tLastPostEnd-tStartPost))
-        main.log.info("Rate of ADD Controller response: " + str(main.numFlows / (tLastPostEnd - tStartPost)))
-
-        duration = tAllAdded - tLastPostEnd
-        main.log.info("Elapse time from end of last REST POST to Flows in ADDED state: " +\
-                      str(duration))
-        main.log.info("Rate of Confirmed Batch Flow ADD is (flows/sec): " + str( main.numFlows / duration))
-
     def CASE2100(self, main):
         '''
             Posting flow batches using threads
@@ -370,7 +341,14 @@ class COMPflow:
         #pprint(main.addedBatchList)
         resp = main.FALSE
         while resp != main.TRUE and ( tAllAdded - tLastPostEnd < int (main.params['CASE2100']['chkFlowTO']) ):
-            resp = main.ONOSrest.checkFlowsState()
+            if main.params['CASE2100']['RESTchkFlow'] == main.TRUE:
+                resp = main.ONOSrest.checkFlowsState()
+            else:
+                handle = main.CLIs[0].flows(state = " |grep PEND|wc -l", jsonFormat=False)
+                main.log.info("handle returns PENDING flows: " + handle)
+                if handle == "0":
+                    resp = main.TRUE
+
             time.sleep( float(main.params['SLEEP']['chkFlow']) )
             tAllAdded = time.time()
 
@@ -380,7 +358,7 @@ class COMPflow:
         main.numFlows = int(main.params['CASE1000']['batches']) *\
                                                     int(main.params['CASE1000']['batchSize'])
         main.log.info("Total number of flows: " + str (main.numFlows) )
-        main.log.info("Sum of each POST elapse time: " + str(numpy.sum(postTimes)) )
+        #main.log.info("Sum of each POST elapse time: " + str(numpy.sum(postTimes)) )
         main.log.info("Total POST elapse time: " + str(tLastPostEnd-tStartPost))
         main.log.info("Rate of ADD Controller response: " + str(main.numFlows / (tLastPostEnd - tStartPost)))
 
@@ -389,7 +367,6 @@ class COMPflow:
                       str(duration))
         main.log.info("Rate of Confirmed Batch Flow ADD is (flows/sec): " + str( main.numFlows / duration))
         main.log.info("Number of flow Batches in the addedBatchList is: " + str( len(main.addedBatchList)))
-
 
     def CASE3100(self, main):
         '''
@@ -433,17 +410,23 @@ class COMPflow:
         #pprint(main.addedBatchList)
         resp = main.FALSE
         while resp != main.TRUE and ( tAllRemoved - tLastDeleteEnd < int (main.params['CASE3100']['chkFlowTO']) ):
-            resp = main.ONOSrest.checkFlowsState()
+            if main.params['CASE3100']['RESTchkFlow'] == main.TRUE:
+                resp = main.ONOSrest.checkFlowsState()
+            else:
+                handle = main.CLIs[0].flows(state = " |grep PEND|wc -l", jsonFormat=False)
+                main.log.info("handle returns PENDING flows: " + handle)
+                if handle == "0":
+                    resp = main.TRUE
             time.sleep( float(main.params['SLEEP']['chkFlow']) )
             tAllRemoved = time.time()
 
         if tLastDeleteEnd - tLastDeleteEnd >= int (main.params['CASE2100']['chkFlowTO']):
-            main.log.warn("ONOS Flows still in pending state after: {} seconds.".format(tAllAdded - tLastPostEnd))
+            main.log.warn("ONOS Flows still in pending state after: {} seconds.".format(tAllRemoved - tLastDeleteEnd))
 
         main.numFlows = int(main.params['CASE1000']['batches']) *\
                                                     int(main.params['CASE1000']['batchSize'])
         main.log.info("Total number of flows: " + str (main.numFlows) )
-        main.log.info("Sum of each DELETE elapse time: " + str(numpy.sum(postTimes)) )
+        #main.log.info("Sum of each DELETE elapse time: " + str(numpy.sum(postTimes)) )
         main.log.info("Total DELETE elapse time: " + str(tLastDeleteEnd-tStartDelete))
         main.log.info("Rate of DELETE Controller response: " + str(main.numFlows / (tLastDeleteEnd-tStartDelete)))
 
@@ -451,45 +434,6 @@ class COMPflow:
         main.log.info("Elapse time from end of last REST DELETE to Flows in REMOVED state: " +\
                       str(duration))
         main.log.info("Rate of Confirmed Batch Flow REMOVED is (flows/sec): " + str( main.numFlows / duration))
-
-
-    def CASE3000(self, main):
-        import time
-        import numpy
-        import json
-
-        rmTimes = []
-
-        main.case("Remove flow timing")
-
-        tStartRemove = time.time()
-        for item in main.addedBatchList:
-            ts = time.time()
-            #print(item)
-            resp = main.ONOSrest.removeFlowBatch(batch = json.loads(item) )
-            teBatch = time.time() - ts
-            rmTimes.append(teBatch)
-            main.log.info("Batch Rest Remove Elapse time is: " + str(teBatch))
-
-        tLastRemoveEnd = time.time()
-
-        main.step("Check to ensure all flows are not in PENDING state.")
-        resp = main.FALSE
-        while resp != main.TRUE:
-            resp = main.ONOSrest.checkFlowsState()
-            time.sleep(0.5)
-        tAllRemoved = time.time()
-
-        main.log.info("Total number of flows: " + str (int(main.params['CASE1000']['batches']) *\
-                                                    int(main.params['CASE1000']['batchSize']) ))
-        main.log.info("Sum of each DELETE elapse time: " + str(numpy.sum(rmTimes)) )
-        main.log.info("Total DELETE elapse time: " + str(tLastRemoveEnd-tStartRemove))
-        main.log.info("Rate of DELETE Controller response (flows/sec): " + str(main.numFlows / (tLastRemoveEnd - tStartRemove)))
-
-        duration = tAllRemoved - tLastRemoveEnd
-        main.log.info("Elapse time from end of last REST DELETE to Flows in REMOVED state: " +\
-                      str(duration))
-        main.log.info("Rate of Confirmed Batch Flow DELETE is (flows/sec): " + str( main.numFlows / duration))
 
     def CASE100(self,main):
         from pprint import pprint

@@ -13,9 +13,9 @@
         </ONOSbench>
 
         <ONOScli1>
-            <host>OC1</host>
-            <user>sdn</user>
-            <password>rocks</password>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>

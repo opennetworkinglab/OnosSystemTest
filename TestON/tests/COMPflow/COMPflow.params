@@ -1,16 +1,19 @@
 
 <PARAMS>
+    <!--
     # CASE - Descritpion
     # 1,2,10,1000,1100,2000,1200,2000,100
     # 1 - Variable initialization and optional pull and build ONOS package
-    # 2 - install ONOS
-    # 8 - Compare topology
-    # 9 - Report logs
+    # 2 - install ONOS, start cli
     # 10 - Start mininet and verify topology
+    # 110 - check log for errors
+    # 1000 - build flow batches
+    # 2100 - REST POST flow batches in multiple threads and check till all ADDED
+    # 3100 - REST DELETE flow batches in multiple threads and check till all REMOVED
+    -->
 
-
-    # <!-- <testcases>1,10,100,1000,100,2000,100,110</testcases> -->
-    <testcases>1,2,11,1000,2100,100,3100,100,110</testcases>
+    <!-- <testcases>1,10,100,1000,100,2000,100,110</testcases> -->
+    <testcases>1,2,10,100,1000,2100,100,3100,100,110</testcases>
 
     <SCALE>
         <max>1</max>
@@ -32,9 +35,13 @@
         <port>6653</port>
     </CTRL>
 
+    <CASE2>
+        <incPackaging>main.FALSE</incPackaging>
+    </CASE2>
+
     <CASE10>
         <numSw>63</numSw>
-        <mnArgs> --topo linear,63 --switch ovsk,protocols=OpenFlow13 --controller remote</mnArgs>
+        <mnArgs> --topo linear,63 --switch ovsk,protocols=OpenFlow13 --controller remote,port=6653</mnArgs>
     </CASE10>
 
     <CASE11>
@@ -49,11 +56,13 @@
     </CASE1000>
 
     <CASE2100>
-        <numThreads>16</numThreads>
+        <numThreads>8</numThreads>
+        <RESTchkFlow>main.FALSE</RESTchkFlow>
         <chkFlowTO>200</chkFlowTO>
     </CASE2100>
 
     <CASE3100>
+        <RESTchkFlow>main.FALSE</RESTchkFlow>
         <chkFlowTO>200</chkFlowTO>
     </CASE3100>
 
@@ -62,7 +71,7 @@
         <startMN>15</startMN>
         <addFlow>10</addFlow>
         <delFlow>10</delFlow>
-        <chkFlow>1</chkFlow>
+        <chkFlow>0.5</chkFlow>
     </SLEEP>
 
 </PARAMS>

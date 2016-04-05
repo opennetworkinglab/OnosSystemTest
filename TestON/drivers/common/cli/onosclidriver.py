@@ -142,8 +142,21 @@ class OnosCliDriver( CLI ):
                                         timeout=10 )
                 if i == 0:  # In ONOS CLI
                     self.handle.sendline( "logout" )
-                    self.handle.expect( "\$" )
-                    return main.TRUE
+                    j = self.handle.expect( [ "\$",
+                                              "Command not found:",
+                                              pexpect.TIMEOUT ] )
+                    if j == 0:  # Successfully logged out
+                        return main.TRUE
+                    elif j == 1 or j == 2:
+                        # ONOS didn't fully load, and logout command isn't working
+                        # or the command timed out
+                        self.handle.send( "\x04" )  # send ctrl-d
+                        self.handle.expect( "\$" )
+                        return main.TRUE
+                    else: # some other output
+                        main.log.warn( "Unknown repsonse to logout command: '{}'",
+                                       repr( self.handle.before ) )
+                        return main.FALSE
                 elif i == 1:  # not in CLI
                     return main.TRUE
                 elif i == 3:  # Timeout

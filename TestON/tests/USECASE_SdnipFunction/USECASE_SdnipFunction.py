@@ -328,7 +328,7 @@ class USECASE_SdnipFunction:
             onfail="MultiPointToSinglePoint Intent Num is wrong!" )
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.ONOScli.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -405,7 +405,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.ONOScli.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -479,7 +479,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.ONOScli.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -551,7 +551,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.ONOScli.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -595,7 +595,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.ONOScli.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -647,7 +647,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.ONOScli.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -703,7 +703,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.ONOScli.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )

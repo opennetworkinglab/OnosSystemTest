@@ -1,0 +1,53 @@
+<PARAMS>
+    # CASE - Description
+    # 1 - Variable initialization and optional pull and build ONOS package
+    # 2 - Install ONOS
+    # 100 - Ensure netconf app is running
+    # 200 - Create or modify a configuration file
+    # 300 - Push a configuration file to bring up a device
+    # 400 - Bring down a device (not yet possible)
+
+    <testcases>1,[2,100,200,300]*2</testcases>
+
+    <SCALE>
+        <size>1,3</size>
+    </SCALE>
+
+    <DEPENDENCY>
+        <path> /tests/FUNCnetconf/Dependency/</path>
+        <wrapper1>startUp</wrapper1>
+        <wrapper2>netconf</wrapper2>
+        <wrapper3>topo</wrapper3>
+        <topology></topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellApps>drivers,openflow,proxyarp,mobility,netconf</cellApps>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <SLEEP>
+        <startup>20</startup>
+        <upSwitch>10</upSwitch>
+        <topoAttempts>3</topoAttempts>
+    </SLEEP>
+
+    <MININET>
+        <switch>0</switch>
+        <links></links>
+    </MININET>
+
+    <CONFIGURE>
+        <cfgDevicePort>830</cfgDevicePort>
+        <cfgDriver>ovs-netconf</cfgDriver>
+        <cfgApps>org.onosproject.netconf</cfgApps>
+        <cfgName>"sdn"</cfgName>
+        <cfgPass>"rocks"</cfgPass>
+        <cfgAppPort>830</cfgAppPort>
+    </CONFIGURE>
+
+</PARAMS>

@@ -1,0 +1,21 @@
+{
+    "apps": {
+        "org.onosproject.netconf": {
+            "devices": [
+                {
+                    "ip": "10.128.50.10",
+                    "name": "sdn",
+                    "password": "rocks",
+                    "port": 830
+                }
+            ]
+        }
+    },
+    "devices": {
+        "netconf:10.128.50.10:830": {
+            "basic": {
+                "driver": "ovs-netconf"
+            }
+        }
+    }
+}

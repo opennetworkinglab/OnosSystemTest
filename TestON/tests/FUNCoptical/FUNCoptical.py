@@ -602,27 +602,27 @@ class FUNCoptical:
         main.step( "Removing host intents" )
         removeResult = main.TRUE
         # Check remaining intents
-        intentsJson = json.loads( main.CLIs[ 0 ].intents() )
-        main.CLIs[ 0 ].removeIntent( intentId=intent1, purge=True )
-        #main.CLIs[ 0 ].removeIntent( intentId=intent2, purge=True )
-        main.log.debug(intentsJson)
-        for intents in intentsJson:
-            try:
+        try:
+            intentsJson = json.loads( main.CLIs[ 0 ].intents() )
+            main.CLIs[ 0 ].removeIntent( intentId=intent1, purge=True )
+            #main.CLIs[ 0 ].removeIntent( intentId=intent2, purge=True )
+            main.log.debug(intentsJson)
+            for intents in intentsJson:
                 main.CLIs[ 0 ].removeIntent( intentId=intents.get( 'id' ),
                                              app='org.onosproject.optical',
                                              purge=True )
-            except TypeError:
-                main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +\
-                                ".  Removing all intents.")
-                main.CLIs[ 0 ].removeAllIntents( purge=True )
-                main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.optical')
 
-        # Check if any intents could not be removed
-        for i in range( main.numCtrls ):
-            if len( json.loads( main.CLIs[ i ].intents() ) ):
-                print json.loads( main.CLIs[ i ].intents() )
-                removeResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=removeResult,
-                                     onpass="Successfully removed host intents",
-                                     onfail="Failed to remove host intents" )
+            for i in range( main.numCtrls ):
+                if len( json.loads( main.CLIs[ i ].intents() ) ):
+                    print json.loads( main.CLIs[ i ].intents() )
+                    removeResult = main.FALSE
+        except ( TypeError, ValueError ):
+            main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +\
+                            ".  Removing all intents.")
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.optical')
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=removeResult,
+                                 onpass="Successfully removed host intents",
+                                 onfail="Failed to remove host intents" )

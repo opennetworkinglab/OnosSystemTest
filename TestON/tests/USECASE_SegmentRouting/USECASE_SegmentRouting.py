@@ -131,8 +131,7 @@ class USECASE_SegmentRouting:
                                        "temp",
                                        main.Mininet1.ip_address,
                                        apps,
-                                       tempOnosIp,
-                                       main.ONOSbench.user_name)
+                                       tempOnosIp )
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )

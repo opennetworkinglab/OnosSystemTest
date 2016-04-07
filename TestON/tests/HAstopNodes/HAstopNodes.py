@@ -51,6 +51,7 @@ class HAstopNodes:
         import imp
         import pexpect
         import time
+        import json
         main.log.info( "ONOS HA test: Stop a minority of ONOS nodes - " +
                          "initialization" )
         main.case( "Setting up test environment" )
@@ -77,6 +78,11 @@ class HAstopNodes:
         global ONOS5Port
         global ONOS6Port
         global ONOS7Port
+        # These are for csv plotting in jenkins
+        global labels
+        global data
+        labels = []
+        data = []
 
         # FIXME: just get controller port from params?
         # TODO: do we really need all these?
@@ -89,11 +95,8 @@ class HAstopNodes:
         ONOS7Port = main.params[ 'CTRL' ][ 'port7' ]
 
         try:
-            fileName = "Counters"
-            # TODO: Maybe make a library folder somewhere?
-            path = main.params[ 'imports' ][ 'path' ]
-            main.Counters = imp.load_source( fileName,
-                                             path + fileName + ".py" )
+            from tests.HAsanity.dependencies.Counters import Counters
+            main.Counters = Counters()
         except Exception as e:
             main.log.exception( e )
             main.cleanup()
@@ -273,7 +276,6 @@ class HAstopNodes:
                 port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
         main.step( "App Ids check" )
-        time.sleep(60)
         appCheck = main.TRUE
         threads = []
         for i in main.activeNodes:
@@ -293,6 +295,48 @@ class HAstopNodes:
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
+
+        main.step( "Checking ONOS nodes" )
+        nodesOutput = []
+        nodeResults = main.TRUE
+        threads = []
+        for i in main.activeNodes:
+            t = main.Thread( target=main.CLIs[i].nodes,
+                             name="nodes-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            nodesOutput.append( t.result )
+        ips = [ main.nodes[node].ip_address for node in main.activeNodes ]
+        ips.sort()
+        for i in nodesOutput:
+            try:
+                current = json.loads( i )
+                activeIps = []
+                currentResult = main.FALSE
+                for node in current:
+                    if node['state'] == 'READY':
+                        activeIps.append( node['ip'] )
+                activeIps.sort()
+                if ips == activeIps:
+                    currentResult = main.TRUE
+            except ( ValueError, TypeError ):
+                main.log.error( "Error parsing nodes output" )
+                main.log.warn( repr( i ) )
+                currentResult = main.FALSE
+            nodeResults = nodeResults and currentResult
+        utilities.assert_equals( expect=main.TRUE, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+        if not nodeResults:
+            for cli in main.CLIs:
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    cli.name,
+                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
 
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )
@@ -1309,20 +1353,26 @@ class HAstopNodes:
             main.log.warn( title )
             # get all intent keys in the cluster
             keys = []
-            for nodeStr in ONOSIntents:
-                node = json.loads( nodeStr )
-                for intent in node:
-                    keys.append( intent.get( 'id' ) )
-            keys = set( keys )
-            for key in keys:
-                row = "%-13s" % key
+            try:
+                # Get the set of all intent keys
                 for nodeStr in ONOSIntents:
                     node = json.loads( nodeStr )
                     for intent in node:
-                        if intent.get( 'id', "Error" ) == key:
-                            row += "%-15s" % intent.get( 'state' )
-                main.log.warn( row )
-            # End table view
+                        keys.append( intent.get( 'id' ) )
+                keys = set( keys )
+                # For each intent key, print the state on each node
+                for key in keys:
+                    row = "%-13s" % key
+                    for nodeStr in ONOSIntents:
+                        node = json.loads( nodeStr )
+                        for intent in node:
+                            if intent.get( 'id', "Error" ) == key:
+                                row += "%-15s" % intent.get( 'state' )
+                    main.log.warn( row )
+                # End of intent state table
+            except ValueError as e:
+                main.log.exception( e )
+                main.log.debug( "nodeStr was: " + repr( nodeStr ) )
 
         if intentsResults and not consistentIntents:
             # print the json objects
@@ -1804,6 +1854,15 @@ class HAstopNodes:
         main.log.debug( main.CLIs[node].leaders( jsonFormat=False ) )
         main.log.debug( main.CLIs[node].partitions( jsonFormat=False ) )
 
+        main.step( "Rerun for election on the node(s) that were killed" )
+        runResults = main.TRUE
+        for i in main.kill:
+            runResults = runResults and\
+                         main.CLIs[i].electionTestRun()
+        utilities.assert_equals( expect=main.TRUE, actual=runResults,
+                                 onpass="ONOS nodes reran for election topic",
+                                 onfail="Errror rerunning for election" )
+
     def CASE7( self, main ):
         """
         Check state after ONOS failure
@@ -1843,6 +1902,7 @@ class HAstopNodes:
 
         main.step( "Read device roles from ONOS" )
         ONOSMastership = []
+        mastershipCheck = main.FALSE
         consistentMastership = True
         rolesResults = True
         threads = []
@@ -1995,45 +2055,50 @@ class HAstopNodes:
         # NOTE: this requires case 5 to pass for intentState to be set.
         #      maybe we should stop the test if that fails?
         sameIntents = main.FALSE
-        if intentState and intentState == ONOSIntents[ 0 ]:
-            sameIntents = main.TRUE
-            main.log.info( "Intents are consistent with before failure" )
-        # TODO: possibly the states have changed? we may need to figure out
-        #       what the acceptable states are
-        elif len( intentState ) == len( ONOSIntents[ 0 ] ):
-            sameIntents = main.TRUE
-            try:
-                before = json.loads( intentState )
-                after = json.loads( ONOSIntents[ 0 ] )
-                for intent in before:
-                    if intent not in after:
-                        sameIntents = main.FALSE
-                        main.log.debug( "Intent is not currently in ONOS " +
-                                        "(at least in the same form):" )
-                        main.log.debug( json.dumps( intent ) )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Exception printing intents" )
-                main.log.debug( repr( ONOSIntents[0] ) )
-                main.log.debug( repr( intentState ) )
-        if sameIntents == main.FALSE:
-            try:
-                main.log.debug( "ONOS intents before: " )
-                main.log.debug( json.dumps( json.loads( intentState ),
-                                            sort_keys=True, indent=4,
-                                            separators=( ',', ': ' ) ) )
-                main.log.debug( "Current ONOS intents: " )
-                main.log.debug( json.dumps( json.loads( ONOSIntents[ 0 ] ),
-                                            sort_keys=True, indent=4,
-                                            separators=( ',', ': ' ) ) )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Exception printing intents" )
-                main.log.debug( repr( ONOSIntents[0] ) )
-                main.log.debug( repr( intentState ) )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=sameIntents,
-            onpass="Intents are consistent with before failure",
-            onfail="The Intents changed during failure" )
+        try:
+            intentState
+        except NameError:
+            main.log.warn( "No previous intent state was saved" )
+        else:
+            if intentState and intentState == ONOSIntents[ 0 ]:
+                sameIntents = main.TRUE
+                main.log.info( "Intents are consistent with before failure" )
+            # TODO: possibly the states have changed? we may need to figure out
+            #       what the acceptable states are
+            elif len( intentState ) == len( ONOSIntents[ 0 ] ):
+                sameIntents = main.TRUE
+                try:
+                    before = json.loads( intentState )
+                    after = json.loads( ONOSIntents[ 0 ] )
+                    for intent in before:
+                        if intent not in after:
+                            sameIntents = main.FALSE
+                            main.log.debug( "Intent is not currently in ONOS " +
+                                            "(at least in the same form):" )
+                            main.log.debug( json.dumps( intent ) )
+                except ( ValueError, TypeError ):
+                    main.log.exception( "Exception printing intents" )
+                    main.log.debug( repr( ONOSIntents[0] ) )
+                    main.log.debug( repr( intentState ) )
+            if sameIntents == main.FALSE:
+                try:
+                    main.log.debug( "ONOS intents before: " )
+                    main.log.debug( json.dumps( json.loads( intentState ),
+                                                sort_keys=True, indent=4,
+                                                separators=( ',', ': ' ) ) )
+                    main.log.debug( "Current ONOS intents: " )
+                    main.log.debug( json.dumps( json.loads( ONOSIntents[ 0 ] ),
+                                                sort_keys=True, indent=4,
+                                                separators=( ',', ': ' ) ) )
+                except ( ValueError, TypeError ):
+                    main.log.exception( "Exception printing intents" )
+                    main.log.debug( repr( ONOSIntents[0] ) )
+                    main.log.debug( repr( intentState ) )
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=sameIntents,
+                onpass="Intents are consistent with before failure",
+                onfail="The Intents changed during failure" )
         intentCheck = intentCheck and sameIntents
 
         main.step( "Get the OF Table entries and compare to before " +
@@ -2045,7 +2110,6 @@ class HAstopNodes:
             FlowTables = FlowTables and main.Mininet1.flowTableComp( flows[i], tmpFlows )
             if FlowTables == main.FALSE:
                 main.log.warn( "Differences in flow table for switch: s{}".format( i + 1 ) )
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=FlowTables,
@@ -2390,8 +2454,9 @@ class HAstopNodes:
                 hostsResults = hostsResults and currentHostsResult
                 hostAttachmentResults = hostAttachmentResults and\
                                         hostAttachment
-            topoResult = devicesResults and linksResults and\
-                         hostsResults and hostAttachmentResults
+                topoResult = ( devicesResults and linksResults
+                               and hostsResults and ipResult and
+                               hostAttachmentResults )
         utilities.assert_equals( expect=True,
                                  actual=topoResult,
                                  onpass="ONOS topology matches Mininet",
@@ -2455,7 +2520,6 @@ class HAstopNodes:
                                      controllerStr +
                                      " is inconsistent with ONOS1" )
                     consistentClustersResult = main.FALSE
-
             else:
                 main.log.error( "Error in getting dataplane clusters " +
                                  "from ONOS" + controllerStr )
@@ -2476,6 +2540,7 @@ class HAstopNodes:
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing clusters[0]: " +
                                 repr( clusters[0] ) )
+            numClusters = "ERROR"
         clusterResults = main.FALSE
         if numClusters == 1:
             clusterResults = main.TRUE
@@ -2513,6 +2578,13 @@ class HAstopNodes:
             onpass="Link are correct",
             onfail="Links are incorrect" )
 
+        main.step( "Hosts are correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=hostsResults,
+            onpass="Hosts are correct",
+            onfail="Hosts are incorrect" )
+
         # FIXME: move this to an ONOS state case
         main.step( "Checking ONOS nodes" )
         nodesOutput = []
@@ -2549,6 +2621,11 @@ class HAstopNodes:
         utilities.assert_equals( expect=main.TRUE, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
+        if not nodeResults:
+            for cli in main.CLIs:
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    cli.name,
+                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
 
     def CASE9( self, main ):
         """
@@ -2838,16 +2915,10 @@ class HAstopNodes:
 
         description = "Check that Leadership Election is still functional"
         main.case( description )
-        # NOTE: Need to re-run since being a canidate is not persistant
-        # TODO: add check for "Command not found:" in the driver, this
-        #       means the election test app isn't loaded
+        # NOTE: Need to re-run after restarts since being a canidate is not persistant
 
-        oldLeaders = []  # leaders by node before withdrawl from candidates
-        newLeaders = []  # leaders by node after withdrawl from candidates
-        oldAllCandidates = []  # list of lists of each nodes' candidates before
-        newAllCandidates = []  # list of lists of each nodes' candidates after
-        oldCandidates = []  # list of candidates from node 0 before withdrawl
-        newCandidates = []  # list of candidates from node 0 after withdrawl
+        oldLeaders = []  # list of lists of each nodes' candidates before
+        newLeaders = []  # list of lists of each nodes' candidates after
         oldLeader = ''  # the old leader from oldLeaders, None if not same
         newLeader = ''  # the new leaders fron newLoeaders, None if not same
         oldLeaderCLI = None  # the CLI of the old leader used for re-electing
@@ -2873,43 +2944,36 @@ class HAstopNodes:
             main.skipCase()
 
         main.step( "Check that each node shows the same leader and candidates" )
-        sameResult = main.TRUE
-        failMessage = "Nodes have different leaders"
-        for i in main.activeNodes:
-            cli = main.CLIs[i]
-            node = cli.specificLeaderCandidate( 'org.onosproject.election' )
-            oldAllCandidates.append( node )
-            if node:
-                oldLeaders.append( node[ 0 ] )
-            else:
-                oldLeaders.append( None )
-        oldCandidates = oldAllCandidates[ 0 ]
-        if oldCandidates is None:
-            oldCandidates = [ None ]
-
-        # Check that each node has the same leader. Defines oldLeader
-        if len( set( oldLeaders ) ) != 1:
-            sameResult = main.FALSE
-            main.log.error( "More than one leader present:" + str( oldLeaders ) )
-            oldLeader = None
+        failMessage = "Nodes have different leaderboards"
+        def consistentLeaderboards( nodes ):
+            TOPIC = 'org.onosproject.election'
+            # FIXME: use threads
+            #FIXME: should we retry outside the function?
+            for n in range( 5 ):  # Retry in case election is still happening
+                leaderList = []
+                # Get all leaderboards
+                for cli in nodes:
+                    leaderList.append( cli.specificLeaderCandidate( TOPIC ) )
+                # Compare leaderboards
+                result = all( i == leaderList[0] for i in leaderList ) and\
+                         leaderList is not None
+                main.log.debug( leaderList )
+                main.log.warn( result )
+                if result:
+                    return ( result, leaderList )
+                time.sleep(5)  #TODO: paramerterize
+            main.log.error( "Inconsistent leaderboards:" + str( leaderList ) )
+        activeCLIs = [ main.CLIs[i] for i in main.activeNodes ]
+        sameResult, oldLeaders = consistentLeaderboards( activeCLIs )
+        if sameResult:
+            oldLeader = oldLeaders[ 0 ][ 0 ]
+            main.log.warn( oldLeader )
         else:
-            oldLeader = oldLeaders[ 0 ]
-
-        # Check that each node's candidate list is the same
-        candidateDiscrepancy = False  # Boolean of candidate mismatches
-        for candidates in oldAllCandidates:
-            if candidates is None:
-                main.log.warn( "Error getting candidates" )
-                candidates = [ None ]
-            if set( candidates ) != set( oldCandidates ):
-                sameResult = main.FALSE
-                candidateDiscrepancy = True
-        if candidateDiscrepancy:
-            failMessage += " and candidates"
+            oldLeader = None
         utilities.assert_equals(
-            expect=main.TRUE,
+            expect=True,
             actual=sameResult,
-            onpass="Leadership is consistent for the election topic",
+            onpass="Leaderboards are consistent for the election topic",
             onfail=failMessage )
 
         main.step( "Find current leader and withdraw" )
@@ -2934,56 +2998,30 @@ class HAstopNodes:
             onfail="Node was not withdrawn from election" )
 
         main.step( "Check that a new node was elected leader" )
-        # FIXME: use threads
-        newLeaderResult = main.TRUE
         failMessage = "Nodes have different leaders"
-
         # Get new leaders and candidates
-        for i in main.activeNodes:
-            cli = main.CLIs[i]
-            node = cli.specificLeaderCandidate( 'org.onosproject.election' )
-            # elections might no have finished yet
-            if node[ 0 ] == 'none' and not expectNoLeader:
-                main.log.info( "Node has no leader, waiting 5 seconds to be " +
-                    "sure elections are complete." )
-                time.sleep(5)
-                node = cli.specificLeaderCandidate( 'org.onosproject.election' )
-                # election still isn't done or there is a problem
-                if node[ 0 ] == 'none':
-                    main.log.error( "No leader was elected on at least 1 node" )
-                    newLeaderResult = main.FALSE
-            newAllCandidates.append( node )
-            newLeaders.append( node[ 0 ] )
-        newCandidates = newAllCandidates[ 0 ]
-
-        # Check that each node has the same leader. Defines newLeader
-        if len( set( newLeaders ) ) != 1:
-            newLeaderResult = main.FALSE
-            main.log.error( "Nodes have different leaders: " +
-                            str( newLeaders ) )
-            newLeader = None
+        newLeaderResult, newLeaders = consistentLeaderboards( activeCLIs )
+        if newLeaders[ 0 ][ 0 ] == 'none':
+            main.log.error( "No leader was elected on at least 1 node" )
+            if not expectNoLeader:
+                newLeaderResult = False
+        if newLeaderResult:
+            newLeader = newLeaders[ 0 ][ 0 ]
         else:
-            newLeader = newLeaders[ 0 ]
-
-        # Check that each node's candidate list is the same
-        for candidates in newAllCandidates:
-            if set( candidates ) != set( newCandidates ):
-                newLeaderResult = main.FALSE
-                main.log.error( "Discrepancy in candidate lists detected" )
+            newLeader = None
 
         # Check that the new leader is not the older leader, which was withdrawn
         if newLeader == oldLeader:
-            newLeaderResult = main.FALSE
+            newLeaderResult = False
             main.log.error( "All nodes still see old leader: " + str( oldLeader ) +
                 " as the current leader" )
-
         utilities.assert_equals(
-            expect=main.TRUE,
+            expect=True,
             actual=newLeaderResult,
             onpass="Leadership election passed",
             onfail="Something went wrong with Leadership election" )
 
-        main.step( "Check that that new leader was the candidate of old leader")
+        main.step( "Check that that new leader was the candidate of old leader" )
         # candidates[ 2 ] should become the top candidate after withdrawl
         correctCandidateResult = main.TRUE
         if expectNoLeader:
@@ -2993,12 +3031,17 @@ class HAstopNodes:
             else:
                 main.log.info( "Expected no leader, got: " + str( newLeader ) )
                 correctCandidateResult = main.FALSE
-        elif len( oldCandidates ) >= 3 and newLeader != oldCandidates[ 2 ]:
-            correctCandidateResult = main.FALSE
-            main.log.error( "Candidate {} was elected. {} should have had priority.".format(
-                                newLeader, oldCandidates[ 2 ] ) )
+        elif len( oldLeaders[0] ) >= 3:
+            if newLeader == oldLeaders[ 0 ][ 2 ]:
+                # correct leader was elected
+                correctCandidateResult = main.TRUE
+            else:
+                correctCandidateResult = main.FALSE
+                main.log.error( "Candidate {} was elected. {} should have had priority.".format(
+                                    newLeader, oldLeaders[ 0 ][ 2 ] ) )
         else:
             main.log.warn( "Could not determine who should be the correct leader" )
+            main.log.debug( oldLeaders[ 0 ] )
             correctCandidateResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
@@ -3018,55 +3061,23 @@ class HAstopNodes:
             actual=runResult,
             onpass="App re-ran for election",
             onfail="App failed to run for election" )
+
         main.step(
             "Check that oldLeader is a candidate, and leader if only 1 node" )
         # verify leader didn't just change
-        positionResult = main.TRUE
-        # Get new leaders and candidates, wait if oldLeader is not a candidate yet
-
-        # Reset and reuse the new candidate and leaders lists
-        newAllCandidates = []
-        newCandidates = []
-        newLeaders = []
-        for i in main.activeNodes:
-            cli = main.CLIs[i]
-            node = cli.specificLeaderCandidate( 'org.onosproject.election' )
-            if oldLeader not in node:  # election might no have finished yet
-                main.log.info( "Old Leader not elected, waiting 5 seconds to " +
-                    "be sure elections are complete" )
-                time.sleep(5)
-                node = cli.specificLeaderCandidate( 'org.onosproject.election' )
-            if oldLeader not in node:  # election still isn't done, errors
-                main.log.error(
-                    "Old leader was not elected on at least one node" )
-                positionResult = main.FALSE
-            newAllCandidates.append( node )
-            newLeaders.append( node[ 0 ] )
-        newCandidates = newAllCandidates[ 0 ]
-
-        # Check that each node has the same leader. Defines newLeader
-        if len( set( newLeaders ) ) != 1:
-            positionResult = main.FALSE
-            main.log.error( "Nodes have different leaders: " +
-                            str( newLeaders ) )
-            newLeader = None
-        else:
-            newLeader = newLeaders[ 0 ]
-
-        # Check that each node's candidate list is the same
-        for candidates in newAllCandidates:
-            if set( candidates ) != set( newCandidates ):
-                newLeaderResult = main.FALSE
-                main.log.error( "Discrepancy in candidate lists detected" )
+        # Get new leaders and candidates
+        reRunLeaders = []
+        time.sleep( 5 ) # Paremterize
+        positionResult, reRunLeaders = consistentLeaderboards( activeCLIs )
 
         # Check that the re-elected node is last on the candidate List
-        if oldLeader != newCandidates[ -1 ]:
-            main.log.error( "Old Leader (" + str( oldLeader ) + ") not in the proper position " +
-                str( newCandidates ) )
+        if oldLeader != reRunLeaders[ 0 ][ -1 ]:
+            main.log.error( "Old Leader ({}) not in the proper position: {} ".format( str( oldLeader),
+                                                                                      str( reRunLeaders[ 0 ] ) ) )
             positionResult = main.FALSE
 
         utilities.assert_equals(
-            expect=main.TRUE,
+            expect=True,
             actual=positionResult,
             onpass="Old leader successfully re-ran for election",
             onfail="Something went wrong with Leadership election after " +
@@ -3085,15 +3096,11 @@ class HAstopNodes:
 
         # Variables for the distributed primitives tests
         global pCounterName
-        global iCounterName
         global pCounterValue
-        global iCounterValue
         global onosSet
         global onosSetName
         pCounterName = "TestON-Partitions"
-        iCounterName = "TestON-inMemory"
         pCounterValue = 0
-        iCounterValue = 0
         onosSet = set([])
         onosSetName = "TestON-set"
 
@@ -3120,7 +3127,6 @@ class HAstopNodes:
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
         assert pCounterName, "pCounterName not defined"
-        assert iCounterName, "iCounterName not defined"
         assert onosSetName, "onosSetName not defined"
         # NOTE: assert fails if value is 0/None/Empty/False
         try:
@@ -3128,11 +3134,6 @@ class HAstopNodes:
         except NameError:
             main.log.error( "pCounterValue not defined, setting to 0" )
             pCounterValue = 0
-        try:
-            iCounterValue
-        except NameError:
-            main.log.error( "iCounterValue not defined, setting to 0" )
-            iCounterValue = 0
         try:
             onosSet
         except NameError:
@@ -3317,193 +3318,6 @@ class HAstopNodes:
                                  onpass="Added counters are correct",
                                  onfail="Added counters are incorrect" )
 
-        # In-Memory counters
-        main.step( "Increment and get an in-memory counter on each node" )
-        iCounters = []
-        addedIValues = []
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
-                             name="icounterIncrement-" + str( i ),
-                             args=[ iCounterName ],
-                             kwargs={ "inMemory": True } )
-            iCounterValue += 1
-            addedIValues.append( iCounterValue )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            iCounters.append( t.result )
-        # Check that counter incremented numController times
-        iCounterResults = True
-        for i in addedIValues:
-            tmpResult = i in iCounters
-            iCounterResults = iCounterResults and tmpResult
-            if not tmpResult:
-                main.log.error( str( i ) + " is not in the in-memory "
-                                "counter incremented results" )
-        utilities.assert_equals( expect=True,
-                                 actual=iCounterResults,
-                                 onpass="In-memory counter incremented",
-                                 onfail="Error incrementing in-memory" +
-                                        " counter" )
-
-        main.step( "Get then Increment a in-memory counter on each node" )
-        iCounters = []
-        threads = []
-        addedIValues = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
-                             name="counterGetAndAdd-" + str( i ),
-                             args=[ iCounterName ],
-                             kwargs={ "inMemory": True } )
-            addedIValues.append( iCounterValue )
-            iCounterValue += 1
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            iCounters.append( t.result )
-        # Check that counter incremented numController times
-        iCounterResults = True
-        for i in addedIValues:
-            tmpResult = i in iCounters
-            iCounterResults = iCounterResults and tmpResult
-            if not tmpResult:
-                main.log.error( str( i ) + " is not in in-memory "
-                                "counter incremented results" )
-        utilities.assert_equals( expect=True,
-                                 actual=iCounterResults,
-                                 onpass="In-memory counter incremented",
-                                 onfail="Error incrementing in-memory" +
-                                        " counter" )
-
-        main.step( "Counters we added have the correct values" )
-        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=incrementCheck,
-                                 onpass="Added counters are correct",
-                                 onfail="Added counters are incorrect" )
-
-        main.step( "Add -8 to then get a in-memory counter on each node" )
-        iCounters = []
-        threads = []
-        addedIValues = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
-                             name="counterIncrement-" + str( i ),
-                             args=[ iCounterName ],
-                             kwargs={ "delta": -8, "inMemory": True  } )
-            iCounterValue += -8
-            addedIValues.append( iCounterValue )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            iCounters.append( t.result )
-        # Check that counter incremented numController times
-        iCounterResults = True
-        for i in addedIValues:
-            tmpResult = i in iCounters
-            iCounterResults = iCounterResults and tmpResult
-            if not tmpResult:
-                main.log.error( str( i ) + " is not in in-memory "
-                                "counter incremented results" )
-        utilities.assert_equals( expect=True,
-                                 actual=pCounterResults,
-                                 onpass="In-memory counter incremented",
-                                 onfail="Error incrementing in-memory" +
-                                        " counter" )
-
-        main.step( "Add 5 to then get a in-memory counter on each node" )
-        iCounters = []
-        threads = []
-        addedIValues = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
-                             name="counterIncrement-" + str( i ),
-                             args=[ iCounterName ],
-                             kwargs={ "delta": 5, "inMemory": True  } )
-            iCounterValue += 5
-            addedIValues.append( iCounterValue )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            iCounters.append( t.result )
-        # Check that counter incremented numController times
-        iCounterResults = True
-        for i in addedIValues:
-            tmpResult = i in iCounters
-            iCounterResults = iCounterResults and tmpResult
-            if not tmpResult:
-                main.log.error( str( i ) + " is not in in-memory "
-                                "counter incremented results" )
-        utilities.assert_equals( expect=True,
-                                 actual=pCounterResults,
-                                 onpass="In-memory counter incremented",
-                                 onfail="Error incrementing in-memory" +
-                                        " counter" )
-
-        main.step( "Get then add 5 to a in-memory counter on each node" )
-        iCounters = []
-        threads = []
-        addedIValues = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
-                             name="counterIncrement-" + str( i ),
-                             args=[ iCounterName ],
-                             kwargs={ "delta": 5, "inMemory": True  } )
-            addedIValues.append( iCounterValue )
-            iCounterValue += 5
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            iCounters.append( t.result )
-        # Check that counter incremented numController times
-        iCounterResults = True
-        for i in addedIValues:
-            tmpResult = i in iCounters
-            iCounterResults = iCounterResults and tmpResult
-            if not tmpResult:
-                main.log.error( str( i ) + " is not in in-memory "
-                                "counter incremented results" )
-        utilities.assert_equals( expect=True,
-                                 actual=iCounterResults,
-                                 onpass="In-memory counter incremented",
-                                 onfail="Error incrementing in-memory" +
-                                        " counter" )
-
-        main.step( "Counters we added have the correct values" )
-        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=incrementCheck,
-                                 onpass="Added counters are correct",
-                                 onfail="Added counters are incorrect" )
-
-        main.step( "Check counters are consistant across nodes" )
-        onosCounters, consistentCounterResults = main.Counters.consistentCheck()
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=consistentCounterResults,
-                                 onpass="ONOS counters are consistent " +
-                                        "across nodes",
-                                 onfail="ONOS Counters are inconsistent " +
-                                        "across nodes" )
-
-        main.step( "Counters we added have the correct values" )
-        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
-        incrementCheck = incrementCheck and \
-                         main.Counters.counterCheck( iCounterName, iCounterValue )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=incrementCheck,
-                                 onpass="Added counters are correct",
-                                 onfail="Added counters are incorrect" )
         # DISTRIBUTED SETS
         main.step( "Distributed Set get" )
         size = len( onosSet )
@@ -4453,50 +4267,3 @@ class HAstopNodes:
                                  actual=getCheck,
                                  onpass="Partitioned Transactional Map get values were correct",
                                  onfail="Partitioned Transactional Map values incorrect" )
-
-        main.step( "In-memory Transactional maps put" )
-        tMapValue = "Testing"
-        numKeys = 100
-        putResult = True
-        node = main.activeNodes[0]
-        putResponses = main.CLIs[node].transactionalMapPut( numKeys, tMapValue, inMemory=True )
-        if len( putResponses ) == 100:
-            for i in putResponses:
-                if putResponses[ i ][ 'value' ] != tMapValue:
-                    putResult = False
-        else:
-            putResult = False
-        if not putResult:
-            main.log.debug( "Put response values: " + str( putResponses ) )
-        utilities.assert_equals( expect=True,
-                                 actual=putResult,
-                                 onpass="In-Memory Transactional Map put successful",
-                                 onfail="In-Memory Transactional Map put values are incorrect" )
-
-        main.step( "In-Memory Transactional maps get" )
-        getCheck = True
-        for n in range( 1, numKeys + 1 ):
-            getResponses = []
-            threads = []
-            valueCheck = True
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].transactionalMapGet,
-                                 name="TMap-get-" + str( i ),
-                                 args=[ "Key" + str( n ) ],
-                                 kwargs={ "inMemory": True } )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
-            for node in getResponses:
-                if node != tMapValue:
-                    valueCheck = False
-            if not valueCheck:
-                main.log.warn( "Values for key 'Key" + str( n ) + "' do not match:" )
-                main.log.warn( getResponses )
-            getCheck = getCheck and valueCheck
-        utilities.assert_equals( expect=True,
-                                 actual=getCheck,
-                                 onpass="In-Memory Transactional Map get values were correct",
-                                 onfail="In-Memory Transactional Map values incorrect" )

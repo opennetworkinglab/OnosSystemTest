@@ -56,7 +56,8 @@
     </CASE1000>
 
     <CASE2100>
-        <numThreads>8</numThreads>
+        <adaptiveFlowenabled>false</adaptiveFlowenabled>
+        <numThreads>4</numThreads>
         <RESTchkFlow>main.FALSE</RESTchkFlow>
         <chkFlowTO>200</chkFlowTO>
     </CASE2100>

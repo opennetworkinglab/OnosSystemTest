@@ -308,6 +308,49 @@ class HAsingleInstanceRestart:
             main.cleanup()
             main.exit()
 
+        main.step( "Activate apps defined in the params file" )
+        # get data from the params
+        apps = main.params.get( 'apps' )
+        if apps:
+            apps = apps.split(',')
+            main.log.warn( apps )
+            activateResult = True
+            for app in apps:
+                main.CLIs[ 0 ].app( app, "Activate" )
+            # TODO: check this worked
+            time.sleep( 10 )  # wait for apps to activate
+            for app in apps:
+                state = main.CLIs[ 0 ].appStatus( app )
+                if state == "ACTIVE":
+                    activateResult = activeResult and True
+                else:
+                    main.log.error( "{} is in {} state".format( app, state ) )
+                    activeResult = False
+            utilities.assert_equals( expect=True,
+                                     actual=activateResult,
+                                     onpass="Successfully activated apps",
+                                     onfail="Failed to activate apps" )
+        else:
+            main.log.warn( "No apps were specified to be loaded after startup" )
+
+        main.step( "Set ONOS configurations" )
+        config = main.params.get( 'ONOS_Configuration' )
+        if config:
+            main.log.debug( config )
+            checkResult = main.TRUE
+            for component in config:
+                for setting in config[component]:
+                    value = config[component][setting]
+                    check = main.CLIs[ 0 ].setCfg( component, setting, value )
+                    main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
+                    checkResult = check and checkResult
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=checkResult,
+                                     onpass="Successfully set config",
+                                     onfail="Failed to set config" )
+        else:
+            main.log.warn( "No configurations were specified to be changed after startup" )
+
     def CASE2( self, main ):
         """
         Assign devices to controllers

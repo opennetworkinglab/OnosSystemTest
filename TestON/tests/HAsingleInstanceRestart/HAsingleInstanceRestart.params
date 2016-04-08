@@ -16,6 +16,12 @@
     #CASE15: Check that Leadership Election is still functional
     <testcases>1,2,8,3,4,5,14,15,16,17,[6],8,3,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
 
+    <apps></apps>
+    <ONOS_Configuration>
+        <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
+            <useFlowObjectives>false</useFlowObjectives>
+        </org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
+    </ONOS_Configuration>
     <ENV>
         <cellName>HA</cellName>
         <appString>drivers,openflow,proxyarp,mobility</appString>

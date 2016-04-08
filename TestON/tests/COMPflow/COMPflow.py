@@ -117,7 +117,7 @@ class COMPflow:
                                  onpass="Successfully applied cell to " + \
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
-
+        '''
         if main.params['CASE2']['incPackaging'] == main.TRUE:
             main.step( "Creating ONOS package" )
             packageResult = main.ONOSbench.onosPackage(opTimeout=240)
@@ -126,6 +126,7 @@ class COMPflow:
                                  actual=stepResult,
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
+        '''
 
         time.sleep( main.startUpSleep )
         main.step( "Uninstalling ONOS package" )
@@ -205,7 +206,7 @@ class COMPflow:
         stepResult = main.ONOSbench.onosCli( ONOSIp = main.ONOSip[0],  cmdstr = "app activate org.onosproject.openflow-base" )
         time.sleep(10)
         print stepResult
-        time.sleep(5
+        time.sleep(5)
 
         main.step( "Setup Mininet Linear Topology with " + str(main.numSw) + " switches" )
         stepResult = main.Mininet1.startNet( args = main.params['CASE10']['mnArgs'] )
@@ -320,7 +321,7 @@ class COMPflow:
         main.step( "Disable AdaptiveFlowSampling ")
         main.ONOSbench.onosCfgSet( main.ONOSip[0], "org.onosproject.provider.of.flow.impl.OpenFlowRuleProvider",
                                    "adaptiveFlowSampling " + main.params['CASE2100']['adaptiveFlowenabled'])
-
+        time.sleep(5)
 
         def postWorker(id):
             while True:

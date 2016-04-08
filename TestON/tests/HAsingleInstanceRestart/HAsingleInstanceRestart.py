@@ -240,27 +240,6 @@ class HAsingleInstanceRestart:
                 intf=main.params[ 'MNtcpdump' ][ 'intf' ],
                 port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
-        main.step( "App Ids check" )
-        appCheck = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            appCheck = appCheck and t.result
-        if appCheck != main.TRUE:
-            node = main.activeNodes[0]
-            main.log.warn( main.CLIs[node].apps() )
-            main.log.warn( main.CLIs[node].appIDs() )
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
-                                 onpass="App Ids seem to be correct",
-                                 onfail="Something is wrong with app Ids" )
-
         main.step( "Checking ONOS nodes" )
         nodesOutput = []
         nodeResults = main.TRUE
@@ -350,6 +329,27 @@ class HAsingleInstanceRestart:
                                      onfail="Failed to set config" )
         else:
             main.log.warn( "No configurations were specified to be changed after startup" )
+
+        main.step( "App Ids check" )
+        appCheck = main.TRUE
+        threads = []
+        for i in main.activeNodes:
+            t = main.Thread( target=main.CLIs[i].appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            appCheck = appCheck and t.result
+        if appCheck != main.TRUE:
+            node = main.activeNodes[0]
+            main.log.warn( main.CLIs[node].apps() )
+            main.log.warn( main.CLIs[node].appIDs() )
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
 
     def CASE2( self, main ):
         """
@@ -918,6 +918,35 @@ class HAsingleInstanceRestart:
         main.caseExplanation = "Ping across added host intents to check " +\
                                 "functionality and check the state of " +\
                                 "the intent"
+
+        main.step( "Check Intent state" )
+        installedCheck = True
+        # Print the intent states
+        intents = main.ONOScli1.intents()
+        intentStates = []
+        main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+        count = 0
+        # Iter through intents of a node
+        try:
+            for intent in json.loads( intents ):
+                state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
+                intentId = intent.get( 'id', None )
+                intentStates.append( ( intentId, state ) )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing intents." )
+        # Print states
+        intentStates.sort()
+        for i, s in intentStates:
+            count += 1
+            main.log.info( "%-6s%-15s%-15s" %
+                           ( str( count ), str( i ), str( s ) ) )
+        utilities.assert_equals( expect=True, actual=installedCheck,
+                                 onpass="Intents are all INSTALLED",
+                                 onfail="Intents are not all in " +
+                                        "INSTALLED state" )
+
         main.step( "Ping across added host intents" )
         onosCli = main.CLIs[ main.activeNodes[0] ]
         PingResult = main.TRUE
@@ -949,34 +978,6 @@ class HAsingleInstanceRestart:
             actual=PingResult,
             onpass="Intents have been installed correctly and pings work",
             onfail="Intents have not been installed correctly, pings failed." )
-
-        main.step( "Check Intent state" )
-        installedCheck = True
-        # Print the intent states
-        intents = main.ONOScli1.intents()
-        intentStates = []
-        main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
-        count = 0
-        # Iter through intents of a node
-        try:
-            for intent in json.loads( intents ):
-                state = intent.get( 'state', None )
-                if "INSTALLED" not in state:
-                    installedCheck = False
-                intentId = intent.get( 'id', None )
-                intentStates.append( ( intentId, state ) )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing intents." )
-        # Print states
-        intentStates.sort()
-        for i, s in intentStates:
-            count += 1
-            main.log.info( "%-6s%-15s%-15s" %
-                           ( str( count ), str( i ), str( s ) ) )
-        utilities.assert_equals( expect=True, actual=installedCheck,
-                                 onpass="Intents are all INSTALLED",
-                                 onfail="Intents are not all in " +
-                                        "INSTALLED state" )
 
         main.step( "Check leadership of topics" )
         leaders = onosCli.leaders()

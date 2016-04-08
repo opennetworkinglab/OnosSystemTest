@@ -275,27 +275,6 @@ class HAfullNetPartition:
                 intf=main.params[ 'MNtcpdump' ][ 'intf' ],
                 port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
-        main.step( "App Ids check" )
-        appCheck = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            appCheck = appCheck and t.result
-        if appCheck != main.TRUE:
-            node = main.activeNodes[0]
-            main.log.warn( main.CLIs[node].apps() )
-            main.log.warn( main.CLIs[node].appIDs() )
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
-                                 onpass="App Ids seem to be correct",
-                                 onfail="Something is wrong with app Ids" )
-
         main.step( "Checking ONOS nodes" )
         nodesOutput = []
         nodeResults = main.TRUE
@@ -385,6 +364,27 @@ class HAfullNetPartition:
                                      onfail="Failed to set config" )
         else:
             main.log.warn( "No configurations were specified to be changed after startup" )
+
+        main.step( "App Ids check" )
+        appCheck = main.TRUE
+        threads = []
+        for i in main.activeNodes:
+            t = main.Thread( target=main.CLIs[i].appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            appCheck = appCheck and t.result
+        if appCheck != main.TRUE:
+            node = main.activeNodes[0]
+            main.log.warn( main.CLIs[node].apps() )
+            main.log.warn( main.CLIs[node].appIDs() )
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
 
     def CASE2( self, main ):
         """
@@ -972,37 +972,6 @@ class HAfullNetPartition:
         main.caseExplanation = "Ping across added host intents to check " +\
                                 "functionality and check the state of " +\
                                 "the intent"
-        main.step( "Ping across added host intents" )
-        onosCli = main.CLIs[ main.activeNodes[0] ]
-        PingResult = main.TRUE
-        for i in range( 8, 18 ):
-            ping = main.Mininet1.pingHost( src="h" + str( i ),
-                                           target="h" + str( i + 10 ) )
-            PingResult = PingResult and ping
-            if ping == main.FALSE:
-                main.log.warn( "Ping failed between h" + str( i ) +
-                               " and h" + str( i + 10 ) )
-            elif ping == main.TRUE:
-                main.log.info( "Ping test passed!" )
-                # Don't set PingResult or you'd override failures
-        if PingResult == main.FALSE:
-            main.log.error(
-                "Intents have not been installed correctly, pings failed." )
-            # TODO: pretty print
-            main.log.warn( "ONOS1 intents: " )
-            try:
-                tmpIntents = onosCli.intents()
-                main.log.warn( json.dumps( json.loads( tmpIntents ),
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
-            except ( ValueError, TypeError ):
-                main.log.warn( repr( tmpIntents ) )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=PingResult,
-            onpass="Intents have been installed correctly and pings work",
-            onfail="Intents have not been installed correctly, pings failed." )
 
         main.step( "Check Intent state" )
         installedCheck = False
@@ -1037,6 +1006,38 @@ class HAfullNetPartition:
                                  onpass="Intents are all INSTALLED",
                                  onfail="Intents are not all in " +
                                         "INSTALLED state" )
+
+        main.step( "Ping across added host intents" )
+        onosCli = main.CLIs[ main.activeNodes[0] ]
+        PingResult = main.TRUE
+        for i in range( 8, 18 ):
+            ping = main.Mininet1.pingHost( src="h" + str( i ),
+                                           target="h" + str( i + 10 ) )
+            PingResult = PingResult and ping
+            if ping == main.FALSE:
+                main.log.warn( "Ping failed between h" + str( i ) +
+                               " and h" + str( i + 10 ) )
+            elif ping == main.TRUE:
+                main.log.info( "Ping test passed!" )
+                # Don't set PingResult or you'd override failures
+        if PingResult == main.FALSE:
+            main.log.error(
+                "Intents have not been installed correctly, pings failed." )
+            # TODO: pretty print
+            main.log.warn( "ONOS1 intents: " )
+            try:
+                tmpIntents = onosCli.intents()
+                main.log.warn( json.dumps( json.loads( tmpIntents ),
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
+                main.log.warn( repr( tmpIntents ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=PingResult,
+            onpass="Intents have been installed correctly and pings work",
+            onfail="Intents have not been installed correctly, pings failed." )
 
         main.step( "Check leadership of topics" )
         leaders = onosCli.leaders()

@@ -208,6 +208,12 @@ class COMPflow:
         print stepResult
         time.sleep(5)
 
+
+        main.step( "Disable AdaptiveFlowSampling ")
+        main.ONOSbench.onosCfgSet( main.ONOSip[0], "org.onosproject.provider.of.flow.impl.OpenFlowRuleProvider",
+                                   "adaptiveFlowSampling " + main.params['CASE10']['adaptiveFlowenabled'])
+        time.sleep(5)
+
         main.step( "Setup Mininet Linear Topology with " + str(main.numSw) + " switches" )
         stepResult = main.Mininet1.startNet( args = main.params['CASE10']['mnArgs'] )
 
@@ -316,12 +322,6 @@ class COMPflow:
         main.addedBatchList = []
         q = Queue()
         tAllAdded = 0
-
-
-        main.step( "Disable AdaptiveFlowSampling ")
-        main.ONOSbench.onosCfgSet( main.ONOSip[0], "org.onosproject.provider.of.flow.impl.OpenFlowRuleProvider",
-                                   "adaptiveFlowSampling " + main.params['CASE2100']['adaptiveFlowenabled'])
-        time.sleep(5)
 
         def postWorker(id):
             while True:

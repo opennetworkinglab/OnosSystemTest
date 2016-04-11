@@ -324,7 +324,7 @@ class SCPFintentEventTpWithFlowObj:
         main.step("Set Intent Compiler use Flow Object")
         stepResult = utilities.retry( main.ONOSbench.onosCfgSet,
                                       main.FALSE,
-                                      args=[ "10.128.174.1",
+                                      args=[ ONOSIp[0],
                                         "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                         "useFlowObjectives true" ],
                                       sleep=3,

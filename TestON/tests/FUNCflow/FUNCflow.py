@@ -150,15 +150,14 @@ class FUNCflow:
         time.sleep( main.startUpSleep )
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
-        for i in range( main.numCtrls ):
+        for ip in main.ONOSip:
             onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
+                    main.ONOSbench.onosUninstall( nodeIp=ip )
         stepResult = onosUninstallResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully uninstalled ONOS package",
                                  onfail="Failed to uninstall ONOS package" )
-
         time.sleep( main.startUpSleep )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
@@ -415,14 +414,22 @@ class FUNCflow:
         main.step( "Check flows are in the ADDED state" )
 
         main.log.info( "Get the flows from ONOS" )
-        flows = json.loads( main.ONOSrest.flows() )
+        try:
+            flows = json.loads( main.ONOSrest.flows() )
 
-        stepResult = main.TRUE
-        for f in flows:
-            if "rest" in f.get("appId"):
-                if "ADDED" not in f.get("state"):
-                    stepResult = main.FALSE
-                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+            stepResult = main.TRUE
+            for f in flows:
+                if "rest" in f.get("appId"):
+                    if "ADDED" not in f.get("state"):
+                        stepResult = main.FALSE
+                        main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+        except TypeError:
+            main.log.error( "No Flows found by the REST API" )
+            stepResult = main.FALSE
+        except ValueError:
+            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -531,14 +538,22 @@ class FUNCflow:
         main.step( "Check flow is in the ADDED state" )
 
         main.log.info( "Get the flows from ONOS" )
-        flows = json.loads( main.ONOSrest.flows() )
+        try:
+            flows = json.loads( main.ONOSrest.flows() )
 
-        stepResult = main.TRUE
-        for f in flows:
-            if "rest" in f.get("appId"):
-                if "ADDED" not in f.get("state"):
-                    stepResult = main.FALSE
-                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+            stepResult = main.TRUE
+            for f in flows:
+                if "rest" in f.get("appId"):
+                    if "ADDED" not in f.get("state"):
+                        stepResult = main.FALSE
+                        main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+        except TypeError:
+            main.log.error( "No Flows found by the REST API" )
+            stepResult = main.FALSE
+        except ValueError:
+            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -647,14 +662,22 @@ class FUNCflow:
         main.step( "Check flows  are in the ADDED state" )
 
         main.log.info( "Get the flows from ONOS" )
-        flows = json.loads( main.ONOSrest.flows() )
+        try:
+            flows = json.loads( main.ONOSrest.flows() )
 
-        stepResult = main.TRUE
-        for f in flows:
-            if "rest" in f.get("appId"):
-                if "ADDED" not in f.get("state"):
-                    stepResult = main.FALSE
-                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+            stepResult = main.TRUE
+            for f in flows:
+                if "rest" in f.get("appId"):
+                    if "ADDED" not in f.get("state"):
+                        stepResult = main.FALSE
+                        main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+        except TypeError:
+            main.log.error( "No Flows found by the REST API" )
+            stepResult = main.FALSE
+        except ValueError:
+            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -761,14 +784,22 @@ class FUNCflow:
         main.step( "Check flow is in the ADDED state" )
 
         main.log.info( "Get the flows from ONOS" )
-        flows = json.loads( main.ONOSrest.flows() )
+        try:
+            flows = json.loads( main.ONOSrest.flows() )
 
-        stepResult = main.TRUE
-        for f in flows:
-            if "rest" in f.get("appId"):
-                if "ADDED" not in f.get("state"):
-                    stepResult = main.FALSE
-                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+            stepResult = main.TRUE
+            for f in flows:
+                if "rest" in f.get("appId"):
+                    if "ADDED" not in f.get("state"):
+                        stepResult = main.FALSE
+                        main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+        except TypeError:
+            main.log.error( "No Flows found by the REST API" )
+            stepResult = main.FALSE
+        except ValueError:
+            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -871,14 +902,22 @@ class FUNCflow:
         main.step( "Check flow is in the ADDED state" )
 
         main.log.info( "Get the flows from ONOS" )
-        flows = json.loads( main.ONOSrest.flows() )
+        try:
+            flows = json.loads( main.ONOSrest.flows() )
 
-        stepResult = main.TRUE
-        for f in flows:
-            if "rest" in f.get("appId"):
-                if "ADDED" not in f.get("state"):
-                    stepResult = main.FALSE
-                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+            stepResult = main.TRUE
+            for f in flows:
+                if "rest" in f.get("appId"):
+                    if "ADDED" not in f.get("state"):
+                        stepResult = main.FALSE
+                        main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+        except TypeError:
+            main.log.error( "No Flows found by the REST API" )
+            stepResult = main.FALSE
+        except ValueError:
+            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -987,14 +1026,22 @@ class FUNCflow:
         main.step( "Check flow is in the ADDED state" )
 
         main.log.info( "Get the flows from ONOS" )
-        flows = json.loads( main.ONOSrest.flows() )
+        try:
+            flows = json.loads( main.ONOSrest.flows() )
 
-        stepResult = main.TRUE
-        for f in flows:
-            if "rest" in f.get("appId"):
-                if "ADDED" not in f.get("state"):
-                    stepResult = main.FALSE
-                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+            stepResult = main.TRUE
+            for f in flows:
+                if "rest" in f.get("appId"):
+                    if "ADDED" not in f.get("state"):
+                        stepResult = main.FALSE
+                        main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+        except TypeError:
+            main.log.error( "No Flows found by the REST API" )
+            stepResult = main.FALSE
+        except ValueError:
+            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1057,13 +1104,21 @@ class FUNCflow:
         main.step("Deleting flows")
 
         main.log.info( "Getting flows" )
-        flows = json.loads( main.ONOSrest.flows() )
+        try:
+            flows = json.loads( main.ONOSrest.flows() )
 
-        stepResult = main.TRUE
-        for f in flows:
-            if "rest" in f.get("appId"):
-                if main.debug: main.log.debug( "Flow to be deleted:\n{}".format( main.ONOSrest.pprint(f) ) )
-                stepResult = stepResult and main.ONOSrest.removeFlow( f.get("deviceId"), f.get("id") )
+            stepResult = main.TRUE
+            for f in flows:
+                if "rest" in f.get("appId"):
+                    if main.debug: main.log.debug( "Flow to be deleted:\n{}".format( main.ONOSrest.pprint(f) ) )
+                    stepResult = stepResult and main.ONOSrest.removeFlow( f.get("deviceId"), f.get("id") )
+        except TypeError:
+            main.log.error( "No Flows found by the REST API" )
+            stepResult = main.FALSE
+        except ValueError:
+            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

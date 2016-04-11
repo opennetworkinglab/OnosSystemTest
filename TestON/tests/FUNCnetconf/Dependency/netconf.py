@@ -63,9 +63,13 @@ def createConfig( main ):
                     main.configPort + '} ] } } }'
     try:
         file = open( "/home/admin/OnosSystemTest/TestON/tests/FUNCnetconf/Dependency/netconfConfig.json", 'w' )
-        main.cfgJson = json.loads( main.cfgJson )
-        main.cfgJson = json.dumps( main.cfgJson, sort_keys=True,
-                               indent=4, separators=(',', ': '))
+        # These lines can cause errors during the configuration process because
+        # they cause the json string to turn into an unordered dictionary before
+        # sorting it alphabetically which can cause the driver type to not be
+        # configured.
+        # main.cfgJson = json.loads( main.cfgJson )
+        # main.cfgJson = json.dumps( main.cfgJson, sort_keys=True,
+        #                        indent=4, separators=(',', ': '))
         print main.cfgJson
         file.write( main.cfgJson )
         if file:

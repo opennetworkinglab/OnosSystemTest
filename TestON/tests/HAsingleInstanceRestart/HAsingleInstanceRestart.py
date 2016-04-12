@@ -2179,14 +2179,14 @@ class HAsingleInstanceRestart:
         failMessage = "Nodes have different leaders"
         # Get new leaders and candidates
         newLeaderResult, newLeaders = main.HA.consistentLeaderboards( activeCLIs )
-        if newLeaders[ 0 ][ 0 ] == 'none':
-            main.log.error( "No leader was elected on at least 1 node" )
-            if not expectNoLeader:
-                newLeaderResult = False
+        newLeader = None
         if newLeaderResult:
-            newLeader = newLeaders[ 0 ][ 0 ]
-        else:
-            newLeader = None
+            if newLeaders[ 0 ][ 0 ] == 'none':
+                main.log.error( "No leader was elected on at least 1 node" )
+                if not expectNoLeader:
+                    newLeaderResult = False
+            else:
+                newLeader = newLeaders[ 0 ][ 0 ]
 
         # Check that the new leader is not the older leader, which was withdrawn
         if newLeader == oldLeader:
@@ -2249,11 +2249,12 @@ class HAsingleInstanceRestart:
         positionResult, reRunLeaders = main.HA.consistentLeaderboards( activeCLIs )
 
         # Check that the re-elected node is last on the candidate List
-        if oldLeader != reRunLeaders[ 0 ][ -1 ]:
+        if not reRunLeaders[0]:
+            positionResult = main.FALSE
+        elif oldLeader != reRunLeaders[ 0 ][ -1 ]:
             main.log.error( "Old Leader ({}) not in the proper position: {} ".format( str( oldLeader),
                                                                                       str( reRunLeaders[ 0 ] ) ) )
             positionResult = main.FALSE
-
         utilities.assert_equals(
             expect=True,
             actual=positionResult,

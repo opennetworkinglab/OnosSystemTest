@@ -23,7 +23,7 @@
     <apps></apps>
     <ONOS_Configuration>
         <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
-            <useFlowObjectives>false</useFlowObjectives>
+            <useFlowObjectives>true</useFlowObjectives>
         </org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
     </ONOS_Configuration>
     <ENV>

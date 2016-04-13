@@ -1927,28 +1927,28 @@ class MininetCliDriver( Emulator ):
     def flowTableComp( self, flowTable1, flowTable2 ):
         # This function compares the selctors and treatments of each flow
         try:
+            returnValue = main.TRUE
             if len(flowTable1) != len(flowTable2):
                 main.log.warn( "Flow table lengths do not match" )
-                return main.FALSE
+                returnValue = main.FALSE
             dFields = ["n_bytes", "cookie", "n_packets", "duration"]
             for flow1, flow2 in zip(flowTable1, flowTable2):
                 for field in dFields:
                     try:
                         flow1.pop( field )
-                    except KeyError as e:
-                        main.log.warn( e )
-                        main.log.debug( flow1 )
+                    except KeyError:
+                        pass
                     try:
                         flow2.pop( field )
-                    except KeyError as e:
-                        main.log.warn( e )
-                        main.log.debug( flow2 )
+                    except KeyError:
+                        pass
             for i in range( len(flowTable1) ):
                 if flowTable1[i] not in flowTable2:
                     main.log.warn( "Flow tables do not match:" )
                     main.log.warn( "Old flow:\n{}\n not in new flow table".format( flowTable1[i] ) )
-                    return main.FALSE
-            return main.TRUE
+                    returnValue = main.FALSE
+                    break
+            return returnValue
         except Exception:
             main.log.exception( "Uncaught exception!" )
             main.cleanup()

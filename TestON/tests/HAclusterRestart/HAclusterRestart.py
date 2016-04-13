@@ -93,8 +93,8 @@ class HAclusterRestart:
         ONOS7Port = main.params[ 'CTRL' ][ 'port7' ]
 
         try:
-            from tests.HAsanity.dependencies.Counters import Counters
-            main.Counters = Counters()
+            from tests.HAsanity.dependencies.HA import HA
+            main.HA = HA()
         except Exception as e:
             main.log.exception( e )
             main.cleanup()
@@ -251,38 +251,12 @@ class HAclusterRestart:
                 port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
         main.step( "Checking ONOS nodes" )
-        nodesOutput = []
-        nodeResults = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].nodes,
-                             name="nodes-" + str( i ),
-                             args=[ ] )
-            threads.append( t )
-            t.start()
+        nodeResults = utilities.retry( main.HA.nodesCheck,
+                                       False,
+                                       args=[main.activeNodes],
+                                       attempts=5 )
 
-        for t in threads:
-            t.join()
-            nodesOutput.append( t.result )
-        ips = [ main.nodes[node].ip_address for node in main.activeNodes ]
-        ips.sort()
-        for i in nodesOutput:
-            try:
-                current = json.loads( i )
-                activeIps = []
-                currentResult = main.FALSE
-                for node in current:
-                    if node['state'] == 'READY':
-                        activeIps.append( node['ip'] )
-                activeIps.sort()
-                if ips == activeIps:
-                    currentResult = main.TRUE
-            except ( ValueError, TypeError ):
-                main.log.error( "Error parsing nodes output" )
-                main.log.warn( repr( i ) )
-                currentResult = main.FALSE
-            nodeResults = nodeResults and currentResult
-        utilities.assert_equals( expect=main.TRUE, actual=nodeResults,
+        utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
 
@@ -971,6 +945,7 @@ class HAclusterRestart:
                                 "functionality and check the state of " +\
                                 "the intent"
 
+        onosCli = main.CLIs[ main.activeNodes[0] ]
         main.step( "Check Intent state" )
         installedCheck = False
         loopCount = 0
@@ -1006,7 +981,6 @@ class HAclusterRestart:
                                         "INSTALLED state" )
 
         main.step( "Ping across added host intents" )
-        onosCli = main.CLIs[ main.activeNodes[0] ]
         PingResult = main.TRUE
         for i in range( 8, 18 ):
             ping = main.Mininet1.pingHost( src="h" + str( i ),
@@ -2158,8 +2132,9 @@ class HAclusterRestart:
         for i in range( 28 ):
             main.log.info( "Checking flow table on s" + str( i + 1 ) )
             tmpFlows = main.Mininet1.getFlowTable( "s" + str( i + 1 ), version="1.3", debug=False )
-            FlowTables = FlowTables and main.Mininet1.flowTableComp( flows[i], tmpFlows )
-            if FlowTables == main.FALSE:
+            curSwitch = main.Mininet1.flowTableComp( flows[i], tmpFlows )
+            FlowTables = FlowTables and curSwitch
+            if curSwitch == main.FALSE:
                 main.log.warn( "Differences in flow table for switch: s{}".format( i + 1 ) )
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2634,45 +2609,19 @@ class HAclusterRestart:
 
         # FIXME: move this to an ONOS state case
         main.step( "Checking ONOS nodes" )
-        nodesOutput = []
-        nodeResults = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].nodes,
-                             name="nodes-" + str( i ),
-                             args=[ ] )
-            threads.append( t )
-            t.start()
+        nodeResults = utilities.retry( main.HA.nodesCheck,
+                                       False,
+                                       args=[main.activeNodes],
+                                       attempts=5 )
 
-        for t in threads:
-            t.join()
-            nodesOutput.append( t.result )
-        ips = [ main.nodes[node].ip_address for node in main.activeNodes ]
-        ips.sort()
-        for i in nodesOutput:
-            try:
-                current = json.loads( i )
-                activeIps = []
-                currentResult = main.FALSE
-                for node in current:
-                    if node['state'] == 'READY':
-                        activeIps.append( node['ip'] )
-                activeIps.sort()
-                if ips == activeIps:
-                    currentResult = main.TRUE
-            except ( ValueError, TypeError ):
-                main.log.error( "Error parsing nodes output" )
-                main.log.warn( repr( i ) )
-                currentResult = main.FALSE
-            nodeResults = nodeResults and currentResult
-        utilities.assert_equals( expect=main.TRUE, actual=nodeResults,
+        utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
         if not nodeResults:
-            for cli in main.CLIs:
+            for i in main.activeNodes:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    cli.name,
-                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    main.CLIs[i].name,
+                    main.CLIs[i].sendline( "scr:list | grep -v ACTIVE" ) ) )
 
     def CASE9( self, main ):
         """
@@ -2990,26 +2939,8 @@ class HAclusterRestart:
 
         main.step( "Check that each node shows the same leader and candidates" )
         failMessage = "Nodes have different leaderboards"
-        def consistentLeaderboards( nodes ):
-            TOPIC = 'org.onosproject.election'
-            # FIXME: use threads
-            #FIXME: should we retry outside the function?
-            for n in range( 5 ):  # Retry in case election is still happening
-                leaderList = []
-                # Get all leaderboards
-                for cli in nodes:
-                    leaderList.append( cli.specificLeaderCandidate( TOPIC ) )
-                # Compare leaderboards
-                result = all( i == leaderList[0] for i in leaderList ) and\
-                         leaderList is not None
-                main.log.debug( leaderList )
-                main.log.warn( result )
-                if result:
-                    return ( result, leaderList )
-                time.sleep(5)  #TODO: paramerterize
-            main.log.error( "Inconsistent leaderboards:" + str( leaderList ) )
         activeCLIs = [ main.CLIs[i] for i in main.activeNodes ]
-        sameResult, oldLeaders = consistentLeaderboards( activeCLIs )
+        sameResult, oldLeaders = main.HA.consistentLeaderboards( activeCLIs )
         if sameResult:
             oldLeader = oldLeaders[ 0 ][ 0 ]
             main.log.warn( oldLeader )
@@ -3045,7 +2976,7 @@ class HAclusterRestart:
         main.step( "Check that a new node was elected leader" )
         failMessage = "Nodes have different leaders"
         # Get new leaders and candidates
-        newLeaderResult, newLeaders = consistentLeaderboards( activeCLIs )
+        newLeaderResult, newLeaders = main.HA.consistentLeaderboards( activeCLIs )
         if newLeaders[ 0 ][ 0 ] == 'none':
             main.log.error( "No leader was elected on at least 1 node" )
             if not expectNoLeader:
@@ -3113,7 +3044,7 @@ class HAclusterRestart:
         # Get new leaders and candidates
         reRunLeaders = []
         time.sleep( 5 ) # Paremterize
-        positionResult, reRunLeaders = consistentLeaderboards( activeCLIs )
+        positionResult, reRunLeaders = main.HA.consistentLeaderboards( activeCLIs )
 
         # Check that the re-elected node is last on the candidate List
         if oldLeader != reRunLeaders[ 0 ][ -1 ]:
@@ -3257,7 +3188,7 @@ class HAclusterRestart:
                                         " counter" )
 
         main.step( "Counters we added have the correct values" )
-        incrementCheck = main.Counters.counterCheck( pCounterName, pCounterValue )
+        incrementCheck = main.HA.counterCheck( pCounterName, pCounterValue )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=incrementCheck,
                                  onpass="Added counters are correct",
@@ -3357,7 +3288,7 @@ class HAclusterRestart:
                                         " counter" )
 
         main.step( "Counters we added have the correct values" )
-        incrementCheck = main.Counters.counterCheck( pCounterName, pCounterValue )
+        incrementCheck = main.HA.counterCheck( pCounterName, pCounterValue )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=incrementCheck,
                                  onpass="Added counters are correct",

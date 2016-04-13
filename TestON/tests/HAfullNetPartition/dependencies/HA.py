@@ -1,6 +1,7 @@
 import json
+import time
 
-class Counters():
+class HA():
 
     def __init__( self ):
         self.default = ''
@@ -10,12 +11,12 @@ class Counters():
         Checks that TestON counters are consistent across all nodes.
 
         Returns the tuple (onosCounters, consistent)
-        - onosCounters is the parsed json output of the counters command on all nodes
-        - consistent is main.TRUE if all "TestON" counters are consitent across all
-            nodes or main.FALSE
+        - onosCounters is the parsed json output of the counters command on
+          all nodes
+        - consistent is main.TRUE if all "TestON" counters are consitent across
+          all nodes or main.FALSE
         """
         try:
-            correctResults = main.TRUE
             # Get onos counters results
             onosCountersRaw = []
             threads = []
@@ -42,8 +43,8 @@ class Counters():
 
             testCounters = {}
             # make a list of all the "TestON-*" counters in ONOS
-            # lookes like a dict whose keys are the name of the ONOS node and values
-            # are a list of the counters. I.E.
+            # lookes like a dict whose keys are the name of the ONOS node and
+            # values are a list of the counters. I.E.
             # { "ONOS1": [ { "name":"TestON-Partitions","value":56} ]
             # }
             # NOTE: There is an assumtion that all nodes are active
@@ -86,20 +87,75 @@ class Counters():
                 onosValue = None
                 try:
                     onosValue = current.get( counterName )
-                except AttributeError, e:
+                except AttributeError:
                     node = str( main.activeNodes[i] + 1 )
-                    main.log.error( "ONOS" + node + " counters result " +
-                                    "is not as expected" )
+                    main.log.exception( "ONOS" + node + " counters result " +
+                                        "is not as expected" )
                     correctResults = main.FALSE
                 if onosValue == counterValue:
                     main.log.info( counterName + " counter value is correct" )
                 else:
-                    main.log.error( counterName + " counter value is incorrect," +
-                                    " expected value: " + str( counterValue )
-                                    + " current value: " + str( onosValue ) )
+                    main.log.error( counterName +
+                                    " counter value is incorrect," +
+                                    " expected value: " + str( counterValue ) +
+                                    " current value: " + str( onosValue ) )
                     correctResults = main.FALSE
             return consistent and correctResults
         except Exception:
             main.log.exception( "" )
             main.cleanup()
             main.exit()
+
+    def consistentLeaderboards( self, nodes ):
+        TOPIC = 'org.onosproject.election'
+        # FIXME: use threads
+        #FIXME: should we retry outside the function?
+        for n in range( 5 ):  # Retry in case election is still happening
+            leaderList = []
+            # Get all leaderboards
+            for cli in nodes:
+                leaderList.append( cli.specificLeaderCandidate( TOPIC ) )
+            # Compare leaderboards
+            result = all( i == leaderList[0] for i in leaderList ) and\
+                     leaderList is not None
+            main.log.debug( leaderList )
+            main.log.warn( result )
+            if result:
+                return ( result, leaderList )
+            time.sleep(5)  # TODO: paramerterize
+        main.log.error( "Inconsistent leaderboards:" + str( leaderList ) )
+        return ( result, leaderList )
+
+    def nodesCheck( self, nodes ):
+        nodesOutput = []
+        results = True
+        threads = []
+        for i in nodes:
+            t = main.Thread( target=main.CLIs[i].nodes,
+                             name="nodes-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            nodesOutput.append( t.result )
+        ips = [ main.nodes[node].ip_address for node in nodes ]
+        ips.sort()
+        for i in nodesOutput:
+            try:
+                current = json.loads( i )
+                activeIps = []
+                currentResult = False
+                for node in current:
+                    if node['state'] == 'READY':
+                        activeIps.append( node['ip'] )
+                activeIps.sort()
+                if ips == activeIps:
+                    currentResult = True
+            except ( ValueError, TypeError ):
+                main.log.error( "Error parsing nodes output" )
+                main.log.warn( repr( i ) )
+                currentResult = False
+            results = results and currentResult
+        return results

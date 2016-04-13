@@ -1,0 +1,60 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOScli1>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli1>
+
+        <ONOS1>
+            <host>OC1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS1>
+
+        <ONOSrest>
+            <host>OC1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOSrest>
+
+        <OVSDB1>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OvsdbDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </OVSDB1>
+
+        <OVSDB2>
+            <host>OC1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OvsdbDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </OVSDB2>
+
+    </COMPONENT>
+</TOPOLOGY>

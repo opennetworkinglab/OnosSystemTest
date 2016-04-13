@@ -290,6 +290,8 @@ class CLI( Component ):
                                 "100%",
                                 refused,
                                 "No such file or directory",
+                                "Permission denied",
+                                "\$",
                                 pexpect.EOF,
                                 pexpect.TIMEOUT ],
                                 120 )
@@ -311,11 +313,16 @@ class CLI( Component ):
             elif i == 4:  # File Not found
                 main.log.error( "No such file found" )
                 returnVal = main.FALSE
-            elif i == 5:  # EOF
+            elif i == 5:  # Permission denied
+                main.log.error( "Permission denied. Check folder permissions" )
+                returnVal = main.FALSE
+            elif i == 6:  # prompt returned
+               return returnVal
+            elif i == 7:  # EOF
                 main.log.error( "Pexpect.EOF found!!!" )
                 main.cleanup()
                 main.exit()
-            elif i == 6:  # timeout
+            elif i == 8:  # timeout
                 main.log.error(
                     "No route to the Host " +
                     userName +

@@ -1,0 +1,52 @@
+<PARAMS>
+    <testcases>0,1,2,11,20,1,2,11,20,1,2,11,20,1,2,11,20</testcases>
+
+    <SCALE>1,3,5,7</SCALE>
+
+    <ENV>
+        <cellName>topo_perf_test</cellName>
+        <cellApps>drivers,metrics,openflow</cellApps>
+    </ENV>
+
+    <DEPENDENCY>
+        <path>/tests/SCPFhostLat/dependencies/</path>
+        <topology>topo-perf-1h1s.py</topology>
+    </DEPENDENCY>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <SLEEP>
+        <startup>10</startup>
+        <install>10</install>
+        <measurement>5</measurement>
+        <timeout>10</timeout>
+    </SLEEP>
+
+    <TSHARK>
+        <tsharkPath>/tmp/hostLatTshark</tsharkPath>
+        <tsharkPacketIn>OF 1.3 150 of_packet_in</tsharkPacketIn>
+    </TSHARK>
+
+    <TEST>
+        # Number of times to iterate each case
+        <numIter>25</numIter>
+        # Number of iterations to ignore initially( warm up )
+        <iterIgnore>5</iterIgnore>
+        <singleSwThreshold>0,1000</singleSwThreshold>
+        <hostTimestamp>topologyHostEventTimestamp</hostTimestamp>
+    </TEST>
+
+    <DATABASE>
+        <file>/tmp/HostAddLatency</file>
+        <nic>1gig</nic>
+        <node>baremetal</node>
+    </DATABASE>
+
+</PARAMS>

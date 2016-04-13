@@ -1,0 +1,58 @@
+<PARAMS>
+
+    # 1 - optional pull and build ONOS package
+    # 2 - set cell and install ONOS
+    # 10 - start mininet
+    # 11 - pingall and verify topo
+    # 100 - balance master and bring onos node down
+    # 200 - bring onos node up and balance masters
+    # 1000 - report logs
+
+    <testcases>1,2,[10,300,11,100,300,11,200,300,11,1000]*3</testcases>
+
+    <DEPENDENCY>
+        <path>/tests/SCPFscaleTopo/dependencies/</path>
+        <wrapper1>startUp</wrapper1>
+        <wrapper2>scaleTopoFunction</wrapper2>
+        <wrapper3>topo</wrapper3>
+        <multiovs>multiovs.py</multiovs>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellApps>drivers,openflow,fwd</cellApps>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+        <numCtrls>3</numCtrls>
+    </CTRL>
+
+    <SLEEP>
+        <startup>15</startup>
+        <balance>10</balance>
+        <nodeSleep>10</nodeSleep>
+        <pingall>15</pingall>
+        <MNsleep>5</MNsleep>
+    </SLEEP>
+
+    <TIMEOUT>
+        # pingall timeout unit: ms
+        <pingall>0.03</pingall>
+    </TIMEOUT>
+
+    <ATTEMPTS>
+        <topoCmp>1</topoCmp>
+        <pingall>3</pingall>
+    </ATTEMPTS>
+
+    <TOPOLOGY>
+        <topology>torus</topology>
+        <scale>5,10,15</scale>
+    </TOPOLOGY>
+
+</PARAMS>

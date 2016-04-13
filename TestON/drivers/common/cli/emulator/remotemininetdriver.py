@@ -295,7 +295,7 @@ class RemoteMininetDriver( Emulator ):
             filename,
             intf="eth0",
             port="port 6653",
-            user="admin" ):
+            user="sdn" ):
         """
         Runs tcpdump on an interface and saves the file
         intf can be specified, or the default eth0 is used

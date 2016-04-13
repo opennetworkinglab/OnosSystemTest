@@ -219,8 +219,7 @@ class TestON:
         self.CASERESULT = self.NORESULT
 
         import testparser
-        testFile = self.tests_path + "/" + self.TEST + "/" + self.TEST + ".py"
-        test = testparser.TestParser( testFile )
+        test = testparser.TestParser( main.testFile )
         self.testscript = test.testscript
         self.code = test.getStepCode()
         repeat = int( self.params.get( 'repeat', 1 ) )
@@ -622,8 +621,7 @@ class TestON:
         This method will parse the test script to find required test
         information.
         '''
-        testFile = self.tests_path + "/" + self.TEST + "/" + self.TEST + ".py"
-        testFileHandler = open( testFile, 'r' )
+        testFileHandler = open( main.testFile, 'r' )
         testFileList = testFileHandler.readlines()
         testFileHandler.close()
         counter = 0
@@ -887,12 +885,25 @@ def verifyTestScript( options ):
     Verifyies test script.
     '''
     main.openspeak = openspeak.OpenSpeak()
-    openspeakfile = main.testDir + "/" + main.TEST + "/" + main.TEST + ".ospk"
-    testfile = main.testDir + "/" + main.TEST + "/" + main.TEST + ".py"
+    directory = main.testDir + "/" + main.TEST
+    if os.path.exists( directory ):
+        pass
+    else:
+        directory = ""
+        for root, dirs, files in os.walk( main.testDir, topdown=True):
+            if not directory:
+                for name in dirs:
+                    if name == main.TEST:
+                        directory = ( os.path.join( root, name ) )
+                        index = directory.find( "/tests/" ) + 1
+                        main.classPath = directory[index:].replace( '/', '.' ) + "." + main.TEST
+                        break
+    openspeakfile = directory + "/" + main.TEST + ".ospk"
+    main.testFile = directory + "/" + main.TEST + ".py"
     if os.path.exists( openspeakfile ):
         # Openspeak file found, compiling to python
         main.openspeak.compiler( openspeakfile=openspeakfile, writetofile=1 )
-    elif os.path.exists( testfile ):
+    elif os.path.exists( main.testFile ):
         # No openspeak found, using python file instead
         pass
     else:

@@ -1,0 +1,94 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOSrest1>
+            <host>OC1</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest1>
+
+        <ONOSrest2>
+            <host>OC2</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest2>
+
+        <ONOSrest3>
+            <host>OC3</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest3>
+
+        <ONOScli1>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli1>
+
+        <ONOScli2>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli2>
+
+         <ONOScli3>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli3>
+
+        <Mininet1>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>MininetCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+                <home>~/mininet/</home>
+            </COMPONENTS>
+        </Mininet1>
+
+        <Scapy1>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>ScapyCliDriver</type>
+            <connect_order>6</connect_order>
+        </Scapy1>
+
+    </COMPONENT>
+</TOPOLOGY>

@@ -974,6 +974,7 @@ class OnosDriver( CLI ):
                     node +
                     " timed out" )
                 self.handle.expect( "\$" )
+                main.log.warn( self.handle.before )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1116,9 +1117,13 @@ class OnosDriver( CLI ):
             if i == 0:
                 main.log.info( "ONOS instance " + str( nodeIp ) +
                                " was killed and stopped" )
+                self.handle.sendline( "" )
+                self.handle.expect( "\$" )
                 return main.TRUE
             elif i == 1:
                 main.log.info( "ONOS process was not running" )
+                self.handle.sendline( "" )
+                self.handle.expect( "\$" )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

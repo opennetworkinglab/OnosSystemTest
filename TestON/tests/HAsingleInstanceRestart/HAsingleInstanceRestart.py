@@ -2068,24 +2068,29 @@ class HAsingleInstanceRestart:
             onfail="Something went wrong with installing Leadership election" )
 
         main.step( "Run for election on each node" )
-        leaderResult = main.TRUE
-        leaders = []
         for i in main.activeNodes:
             main.CLIs[i].electionTestRun()
-        for i in main.activeNodes:
-            cli = main.CLIs[i]
-            leader = cli.electionTestLeader()
-            if leader is None or leader == main.FALSE:
-                main.log.error( cli.name + ": Leader for the election app " +
-                                 "should be an ONOS node, instead got '" +
-                                 str( leader ) + "'" )
-                leaderResult = main.FALSE
-            leaders.append( leader )
+        time.sleep(5)
+        activeCLIs = [ main.CLIs[i] for i in main.activeNodes ]
+        sameResult, leaders = main.HA.consistentLeaderboards( activeCLIs )
         utilities.assert_equals(
-            expect=main.TRUE,
-            actual=leaderResult,
-            onpass="Successfully ran for leadership",
-            onfail="Failed to run for leadership" )
+            expect=True,
+            actual=sameResult,
+            onpass="All nodes see the same leaderboards",
+            onfail="Inconsistent leaderboards" )
+
+        if sameResult:
+            leader = leaders[ 0 ][ 0 ]
+            if main.nodes[main.activeNodes[0]].ip_address in leader:
+                correctLeader = True
+            else:
+                correctLeader = False
+            main.step( "First node was elected leader" )
+            utilities.assert_equals(
+                expect=True,
+                actual=correctLeader,
+                onpass="Correct leader was elected",
+                onfail="Incorrect leader" )
 
     def CASE15( self, main ):
         """
@@ -2185,8 +2190,7 @@ class HAsingleInstanceRestart:
                 main.log.error( "No leader was elected on at least 1 node" )
                 if not expectNoLeader:
                     newLeaderResult = False
-            else:
-                newLeader = newLeaders[ 0 ][ 0 ]
+            newLeader = newLeaders[ 0 ][ 0 ]
 
         # Check that the new leader is not the older leader, which was withdrawn
         if newLeader == oldLeader:

@@ -135,6 +135,7 @@ class FUNCintent:
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
         main.flowCompiler = "Flow Rules"
+        main.initialized = main.TRUE
 
         main.case( "Starting up " + str( main.numCtrls ) +
                    " node(s) ONOS cluster" )
@@ -208,24 +209,21 @@ class FUNCintent:
         onosIsUp = main.TRUE
 
         for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
+            onosIsUp = main.ONOSbench.isup( main.ONOSip[ i ] )
+            if onosIsUp == main.TRUE:
+                main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
+            else:
+                main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +
+                                 "start ONOS again " )
+                stopResult = stopResult and main.ONOSbench.onosStop( main.ONOSip[ i ] )
+                startResult = startResult and main.ONOSbench.onosStart( main.ONOSip[ i ] )
+                if not startResult or stopResult:
+                    main.log.report( "ONOS instance {0} did not start correctly.".format( i + 1) )
         stepResult = onosIsUp and stopResult and startResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
+                                 onpass="ONOS service is ready on all nodes",
+                                 onfail="ONOS service did not start properly on all nodes" )
 
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE
@@ -237,6 +235,8 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
+        if not stepResult:
+            main.initialized = main.FALSE
 
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
@@ -366,6 +366,9 @@ class FUNCintent:
         """
             Start Mininet topology with OF 1.0 switches
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         main.OFProtocol = "1.0"
         main.log.report( "Start Mininet topology with OF 1.0 switches" )
         main.case( "Start Mininet topology with OF 1.0 switches" )
@@ -383,15 +386,19 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully loaded topology",
                                  onfail="Failed to load topology" )
-        # Exit if topology did not load properly
+
+        # Set flag to test cases if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.initialized = main.FALSE
+            main.skipCase()
 
     def CASE11( self, main ):
         """
             Start Mininet topology with OF 1.3 switches
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         main.OFProtocol = "1.3"
         main.log.report( "Start Mininet topology with OF 1.3 switches" )
         main.case( "Start Mininet topology with OF 1.3 switches" )
@@ -409,10 +416,9 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully loaded topology",
                                  onfail="Failed to load topology" )
-        # Exit if topology did not load properly
+        # Set flag to skip test cases if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.initialized = main.FALSE
 
     def CASE12( self, main ):
         """
@@ -420,6 +426,9 @@ class FUNCintent:
         """
         import re
 
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         main.case( "Assign switches to controllers" )
         main.step( "Assigning switches to controllers" )
         main.caseExplanation = "Assign OF " + main.OFProtocol +\
@@ -440,8 +449,9 @@ class FUNCintent:
                                                          ip=tempONOSip,
                                                          port='6653' )
         if not assignResult:
-            main.cleanup()
-            main.exit()
+            main.log.error( "Problem assigning mastership of switches" )
+            main.initialized = main.FALSE
+            main.skipCase()
 
         for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
@@ -457,11 +467,16 @@ class FUNCintent:
                                         "to controller",
                                  onfail="Failed to assign switches to " +
                                         "controller" )
+        if not stepResult:
+            main.initialized = main.FALSE
 
     def CASE13( self,main ):
         """
             Create Scapy components
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         main.case( "Create scapy components" )
         main.step( "Create scapy components" )
         import json
@@ -484,11 +499,16 @@ class FUNCintent:
                                  actual=scapyResult,
                                  onpass="Successfully created Scapy Components",
                                  onfail="Failed to discover Scapy Components" )
+        if not scapyResult:
+            main.initialized = main.FALSE
 
     def CASE14( self, main ):
         """
             Discover all hosts with fwd and pingall and store its data in a dictionary
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         main.case( "Discover all hosts" )
         main.step( "Pingall hosts and confirm ONOS discovery" )
         utilities.retry( f=main.intentFunction.fwdPingall, retValue=main.FALSE, args=[ main ] )
@@ -499,6 +519,9 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully discovered hosts",
                                  onfail="Failed to discover hosts" )
+        if not stepResult:
+            main.initialized = main.FALSE
+            main.skipCase()
 
         main.step( "Populate hostsData" )
         stepResult = main.intentFunction.populateHostData( main )
@@ -506,17 +529,23 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully populated hostsData",
                                  onfail="Failed to populate hostsData" )
+        if not stepResult:
+            main.initialized = main.FALSE
 
     def CASE15( self, main ):
         """
             Discover all hosts with scapy arp packets and store its data to a dictionary
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         main.case( "Discover all hosts using scapy" )
         main.step( "Send packets from each host to the first host and confirm onos discovery" )
 
         import collections
         if len( main.scapyHosts ) < 1:
             main.log.error( "No scapy hosts have been created" )
+            main.initialized = main.FALSE
             main.skipCase()
 
         # Send ARP packets from each scapy host component
@@ -530,6 +559,9 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="ONOS correctly discovered all hosts",
                                  onfail="ONOS incorrectly discovered hosts" )
+        if not stepResult:
+            main.initialized = main.FALSE
+            main.skipCase()
 
         main.step( "Populate hostsData" )
         stepResult = main.intentFunction.populateHostData( main )
@@ -537,11 +569,16 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully populated hostsData",
                                  onfail="Failed to populate hostsData" )
+        if not stepResult:
+            main.initialized = main.FALSE
 
     def CASE16( self, main ):
         """
             Balance Masters
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         main.case( "Balance mastership of switches" )
         main.step( "Balancing mastership of switches" )
 
@@ -552,11 +589,16 @@ class FUNCintent:
                                  actual=balanceResult,
                                  onpass="Successfully balanced mastership of switches",
                                  onfail="Failed to balance mastership of switches" )
+        if not balanceResult:
+            main.initialized = main.FALSE
 
     def CASE17( self, main ):
         """
             Use Flow Objectives
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         main.case( "Enable intent compilation using Flow Objectives" )
         main.step( "Enabling Flow Objectives" )
 
@@ -571,6 +613,8 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully activated Flow Objectives",
                                  onfail="Failed to activate Flow Objectives" )
+        if not balanceResult:
+            main.initialized = main.FALSE
 
     def CASE18( self, main ):
         """
@@ -632,14 +676,31 @@ class FUNCintent:
         import time
         import json
         import re
-
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
-        assert main.Mininet1, "Mininet handle should be named Mininet1"
-        assert main.numSwitch, "Placed the total number of switch topology in \
-                                main.numSwitch"
+        try:
+            assert main.CLIs
+        except AssertionError:
+            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.Mininet1
+        except AssertionError:
+            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.numSwitch
+        except AssertionError:
+            main.log.error( "Place the total number of switch topology in \
+                             main.numSwitch" )
+            main.initialized = main.FALSE
+            main.skipCase()
 
         # Save leader candidates
         intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
@@ -866,14 +927,31 @@ class FUNCintent:
         import time
         import json
         import re
-
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
-        assert main.Mininet1, "Mininet handle should be named Mininet1"
-        assert main.numSwitch, "Placed the total number of switch topology in \
-                                main.numSwitch"
+        try:
+            assert main.CLIs
+        except AssertionError:
+            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.Mininet1
+        except AssertionError:
+            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.numSwitch
+        except AssertionError:
+            main.log.error( "Place the total number of switch topology in \
+                             main.numSwitch" )
+            main.initialized = main.FALSE
+            main.skipCase()
 
         main.testName = "Point Intents"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
@@ -1191,11 +1269,29 @@ class FUNCintent:
                     - Ping hosts
                 - Remove intents
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
-        assert main.Mininet1, "Mininet handle should be named Mininet1"
-        assert main.numSwitch, "Placed the total number of switch topology in \
-                                main.numSwitch"
+        try:
+            assert main.CLIs
+        except AssertionError:
+            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.Mininet1
+        except AssertionError:
+            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.numSwitch
+        except AssertionError:
+            main.log.error( "Place the total number of switch topology in \
+                             main.numSwitch" )
+            main.initialized = main.FALSE
+            main.skipCase()
 
         main.testName = "Single to Multi Point Intents"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
@@ -1397,11 +1493,29 @@ class FUNCintent:
                     - Ping hosts
              - Remove intents
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
-        assert main.Mininet1, "Mininet handle should be named Mininet1"
-        assert main.numSwitch, "Placed the total number of switch topology in \
-                                main.numSwitch"
+        try:
+            assert main.CLIs
+        except AssertionError:
+            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.Mininet1
+        except AssertionError:
+            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.numSwitch
+        except AssertionError:
+            main.log.error( "Place the total number of switch topology in \
+                             main.numSwitch" )
+            main.initialized = main.FALSE
+            main.skipCase()
 
         main.testName = "Multi To Single Point Intents"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
@@ -1589,11 +1703,29 @@ class FUNCintent:
         Tests Host Mobility
         Modifies the topology location of h1
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
-        assert main.Mininet1, "Mininet handle should be named Mininet1"
-        assert main.numSwitch, "Placed the total number of switch topology in \
-                                main.numSwitch"
+        try:
+            assert main.CLIs
+        except AssertionError:
+            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.Mininet1
+        except AssertionError:
+            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.numSwitch
+        except AssertionError:
+            main.log.error( "Place the total number of switch topology in \
+                             main.numSwitch" )
+            main.initialized = main.FALSE
+            main.skipCase()
         main.case( "Test host mobility with host intents " )
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
         h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
@@ -1657,11 +1789,29 @@ class FUNCintent:
         """
         Tests Multi to Single Point Intent and Single to Multi Point Intent End Point Failure
         """
+        if main.initialized == main.FALSE:
+            main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.skipCase()
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
-        assert main.Mininet1, "Mininet handle should be named Mininet1"
-        assert main.numSwitch, "Placed the total number of switch topology in \
-                                main.numSwitch"
+        try:
+            assert main.CLIs
+        except AssertionError:
+            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.Mininet1
+        except AssertionError:
+            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
+            main.initialized = main.FALSE
+            main.skipCase()
+        try:
+            assert main.numSwitch
+        except AssertionError:
+            main.log.error( "Place the total number of switch topology in \
+                             main.numSwitch" )
+            main.initialized = main.FALSE
+            main.skipCase()
         main.case( "Test Multi to Single End Point Failure" )
         main.step( "Installing Multi to Single Point intents" )
 

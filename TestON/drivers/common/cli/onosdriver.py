@@ -783,6 +783,7 @@ class OnosDriver( CLI ):
                 handleAfter = self.handle.after
                 # Get the rest of the handle
                 self.handle.expect( "\$" )
+                time.sleep(10)
                 handleMore = self.handle.before
 
                 cell_result = handleBefore + handleAfter + handleMore

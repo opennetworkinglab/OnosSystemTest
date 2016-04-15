@@ -19,14 +19,12 @@ class FUNCipv6Intent:
             - Install ONOS package
             - Build ONOS package
         """
-
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
         main.caseExplanation = "This test case is mainly for loading " +\
                                "from params file, and pull and build the " +\
                                " latest ONOS package"
         stepResult = main.FALSE
-
         # Test variables
         try:
             main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
@@ -166,7 +164,7 @@ class FUNCipv6Intent:
                                  onpass="Successfully applied cell to " + \
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
- 
+
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()
         stepResult = packageResult
@@ -407,10 +405,9 @@ class FUNCipv6Intent:
                                " intents using " + str( main.numCtrls ) +\
                                " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
-                               "each step such as IPV4, Dual stack, VLAN etc" +\
+                               "each step such as IPV6, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
                                " OVS running in Mininet"
-
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9, ipv6 hosts" )
         main.assertReturnString = "Assertion Result for NOOPTION point intent\n"
@@ -427,7 +424,6 @@ class FUNCipv6Intent:
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
-        """
         stepResult = main.TRUE
         main.step( "IPV6: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV6 point intent\n"
@@ -450,13 +446,13 @@ class FUNCipv6Intent:
                                        ip2="",
                                        tcp1="",
                                        tcp2="",
+                                       sw1="s5",
+                                       sw2="s2",
                                        expectedLink=18 )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
-
         main.step( "IPV6_2: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV6 no mac address point intents\n"
         stepResult = main.intentFunction.pointIntent(
@@ -471,34 +467,19 @@ class FUNCipv6Intent:
                                        ip2="",
                                        tcp1="",
                                        tcp2="",
-                                       expectedLink=18 )
-
+                                       expectedLink="")
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
-        
         main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV6 using ICMP point intents\n"
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
         main.log.debug(mac2)
-
-        # TODO : Fix is IPv6 arg format
-        # when we install the intent "add-point-intent --ethType IPV6 --ethSrc 00:00:00:00:00:01 
-        # --ethDst 00:00:00:00:00:09 --ipProto 1 --ipSrc 10:1::1/128 --ipDst 10:1::5/128 
-        # of:0000000000000005/1 of:0000000000000006/1" controller reports following error :
-        # Malformed IP prefix string: 10:1::1. Address must take form "x.x.x.x/y" or "xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/y"
-        #ip1 = main.Mininet1.getIPAddress( 'h1', proto='IPV6' )
-        #ip2 = main.Mininet1.getIPAddress( 'h9', proto='IPV6')
-
         ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
-        # Uneccessary, not including this in the selectors
-        #tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
-        #tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
         ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/128"
         ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/128"
-
         stepResult = main.intentFunction.pointIntent(
                                            main,
                                            name="SDNIP-ICMP",
@@ -512,43 +493,41 @@ class FUNCipv6Intent:
                                            ipProto=ipProto,
                                            ip1=ip1,
                                            ip2=ip2 )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
-        """
         main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for SDNIP-TCP IPV6 using TCP point intents\n"
-        mac1 = main.hostsData[ 'h3' ][ 'mac' ]
-        mac2 = main.hostsData[ 'h11' ][ 'mac' ]
-        ip1 = str( main.hostsData[ 'h3' ][ 'ipAddresses' ][ 0 ] ) + "/128"
-        ip2 = str( main.hostsData[ 'h11' ][ 'ipAddresses' ][ 0 ] ) + "/128"
+        mac1 = main.hostsData[ 'h1' ][ 'mac' ]
+        mac2 = main.hostsData[ 'h9' ][ 'mac' ]
+        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/128"
+        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/128"
         ipProto = main.params[ 'SDNIP' ][ 'tcpProto' ]
         tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
         tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
-
         stepResult = main.intentFunction.pointIntentTcp(
                                            main,
                                            name="SDNIP-TCP",
-                                           host1="h3",
-                                           host2="h11",
-                                           deviceId1="of:0000000000000005/3",
-                                           deviceId2="of:0000000000000006/3",
+                                           host1="h1",
+                                           host2="h9",
+                                           deviceId1="of:0000000000000005/1",
+                                           deviceId2="of:0000000000000006/1",
                                            mac1=mac1,
                                            mac2=mac2,
-                                           ethType="IPV4",
+                                           ethType="IPV6",
                                            ipProto=ipProto,
                                            ip1=ip1,
                                            ip2=ip2,
                                            tcp1=tcp1,
-                                           tcp2=tcp2 )
-
+                                           tcp2=tcp2,
+                                           sw1="",
+                                           sw2="",
+                                           expectedLink="" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
-        """
         main.step( "DUALSTACK1: Add point intents between h3 and h11" )
         main.assertReturnString = "Assertion Result for Dualstack1 IPV6 with mac address point intents\n"
         stepResult = main.intentFunction.pointIntent(
@@ -570,15 +549,13 @@ class FUNCipv6Intent:
                                        ip2="",
                                        tcp1="",
                                        tcp2="",
-                                       sw1="",
-                                       sw2="",
+                                       sw1="s5",
+                                       sw2="s2",
                                        expectedLink=18 )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
-
         main.step( "VLAN: Add point intents between h5 and h24" )
         main.assertReturnString = "Assertion Result for VLAN IPV6 with mac address point intents\n"
         stepResult = main.intentFunction.pointIntent(
@@ -600,19 +577,282 @@ class FUNCipv6Intent:
                                        ip2="",
                                        tcp1="",
                                        tcp2="",
-                                       sw1="",
-                                       sw2="",
+                                       sw1="s5",
+                                       sw2="s2",
                                        expectedLink=18 )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
-        
         main.step( "1HOP: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for 1HOP IPV6 with no mac address point intents\n"
         stepResult = main.intentFunction.hostIntent( main,
                                               name='1HOP',
+                                              host1='h1',
+                                              host2='h9',
+                                              host1Id='00:00:00:00:00:01/-1',
+                                              host2Id='00:00:00:00:00:09/-1')
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        main.intentFunction.report( main )
+
+    def CASE3000( self, main ):
+        """
+            Add single point to multi point intents
+                - Get device ids
+                - Add single point to multi point intents
+                - Check intents
+                - Verify flows
+                - Ping hosts
+                - Reroute
+                    - Link down
+                    - Verify flows
+                    - Check topology
+                    - Ping hosts
+                    - Link up
+                    - Verify flows
+                    - Check topology
+                    - Ping hosts
+                - Remove intents
+        """
+        import time
+        import json
+        import re
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                        main.numSwitch"
+        main.testName = "Single to Multi Point Intents"
+        main.case( main.testName + " Test - " + str( main.numCtrls ) + " NODE(S) - OF " + main.OFProtocol )
+        main.caseExplanation = "This test case will test single point to" +\
+                               " multi point intents using " +\
+                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               "Different type of hosts will be tested in " +\
+                               "each step such as IPV6, Dual stack, VLAN etc" +\
+                               ";\nThe test will use OF " + main.OFProtocol +\
+                               " OVS running in Mininet "
+        main.step( "NOOPTION: Add single point to multi point intents" )
+        hostNames = [ 'h1', 'h9', 'h17' ]
+        devices = [ 'of:0000000000000005/1','of:0000000000000006/1', 'of:0000000000000007/1' ]
+        main.assertReturnString = "Assertion results for IPV6 single to multi point intent with no options set\n"
+        stepResult = main.TRUE
+        stepResult = main.intentFunction.singleToMultiIntent(
+                                         main,
+                                         name="NOOPTION",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        main.step( "IPV6: Add single point to multi point intents" )
+        main.assertReturnString = "Assertion results for IPV6 single to multi point intent with IPV6 type and MAC addresses\n"
+        hostNames = [ 'h1', 'h9', 'h17' ]
+        devices = [ 'of:0000000000000005/1', 'of:0000000000000006/1', 'of:0000000000000007/1' ]
+        macs = [ '00:00:00:00:00:01','00:00:00:00:00:09' ,'00:00:00:00:00:11' ]
+        stepResult = main.TRUE
+        stepResult = main.intentFunction.singleToMultiIntent(
+                                         main,
+                                         name="IPV6",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         macs=macs,
+                                         ethType="IPV6",
+                                         sw1="",
+                                         sw2="")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        main.step( "IPV6_2: Add single point to multi point intents" )
+        main.assertReturnString = "Assertion results for IPV6 single to multi point intent with IPV6 type and no MAC addresses\n"
+        hostNames = [ 'h1', 'h9', 'h17' ]
+        devices = [ 'of:0000000000000005/1', 'of:0000000000000006/1', 'of:0000000000000007/1' ]
+        stepResult = main.TRUE
+        stepResult = main.intentFunction.singleToMultiIntent(
+                                         main,
+                                         name="IPV6_2",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         ethType="IPV6",
+                                         sw1="",
+                                         sw2="")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        main.step( "VLAN: Add single point to multi point intents" )
+        main.assertReturnString = "Assertion results for IPV6 single to multi point intent with IPV6 type and MAC addresses in the same VLAN\n"
+        hostNames = [ 'h5', 'h24' ]
+        devices = [ 'of:0000000000000005/5', 'of:0000000000000007/8' ]
+        macs = [ '00:00:00:00:00:05','00:00:00:00:00:18' ]
+        stepResult = main.TRUE
+        stepResult = main.intentFunction.singleToMultiIntent(
+                                         main,
+                                         name="IPV6",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         macs=macs,
+                                         ethType="IPV6",
+                                         sw1="",
+                                         sw2="")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        main.intentFunction.report( main )
+      
+    def CASE4000( self, main ):
+        """
+            Add multi point to single point intents
+                - Get device ids
+                - Add multi point to single point intents
+                - Check intents
+                - Verify flows
+                - Ping hosts
+                - Reroute
+                    - Link down
+                    - Verify flows
+                    - Check topology
+                    - Ping hosts
+                    - Link up
+                    - Verify flows
+                    - Check topology
+                    - Ping hosts
+             - Remove intents
+        """
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                                main.numSwitch"
+
+        main.testName = "Multi To Single Point Intents"
+        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+                   " NODE(S) - OF " + main.OFProtocol )
+        main.caseExplanation = "This test case will test single point to" +\
+                               " multi point intents using " +\
+                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               "Different type of hosts will be tested in " +\
+                               "each step such as IPV6, Dual stack, VLAN etc" +\
+                               ";\nThe test will use OF " + main.OFProtocol +\
+                               " OVS running in Mininet"
+
+        main.step( "NOOPTION: Add multi point to single point intents" )
+        main.assertReturnString = "Assertion results for NOOPTION multi to single point intent\n"
+        stepResult = main.TRUE
+        hostNames = [ 'h17', 'h9' ]
+        devices = ['of:0000000000000007/1', 'of:0000000000000006/1' ]
+        stepResult = main.intentFunction.multiToSingleIntent(
+                                         main,
+                                         name="NOOPTION",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         sw1="s6",
+                                         sw2="s2",
+                                         expectedLink=18 )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        main.step( "IPV6: Add multi point to single point intents" )
+        main.assertReturnString = "Assertion results for IPV6 multi to single point intent with IPV6 type and MAC addresses\n"
+        hostNames = [ 'h1', 'h9', 'h17' ]
+        devices = [ 'of:0000000000000005/1', 'of:0000000000000006/1', 'of:0000000000000007/1' ]
+        macs = [ '00:00:00:00:00:01','00:00:00:00:00:09' ,'00:00:00:00:00:11' ]
+        stepResult = main.TRUE
+        installResult = main.intentFunction.multiToSingleIntent(
+                                         main,
+                                         name="IPV6",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         macs=macs,
+                                         ethType="IPV6",
+                                         sw1="",
+                                         sw2="",
+                                         expectedLink="" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        main.step( "IPV6_2: Add multi point to single point intents" )
+        main.assertReturnString = "Assertion results for IPV6 multi to single point intent with IPV6 type and no MAC addresses\n"
+        hostNames = [ 'h1', 'h9' ]
+        devices = [ 'of:0000000000000005/1', 'of:0000000000000006/1' ]
+        stepResult = main.TRUE
+        stepResult = main.intentFunction.multiToSingleIntent(
+                                         main,
+                                         name="IPV6_2",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         ethType="IPV6",
+                                         sw1="",
+                                         sw2="",
+                                         expectedLink="")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "VLAN: Add multi point to single point intents" )
+        main.assertReturnString = "Assertion results for IPV6 multi to single point intent with IPV6 type and no MAC addresses in the same VLAN\n"
+        hostNames = [ 'h5', 'h24' ]
+        devices = [ 'of:0000000000000005/5', 'of:0000000000000007/8' ]
+        macs = [ '00:00:00:00:00:05','00:00:00:00:00:18' ]
+        stepResult = main.TRUE
+        stepResult = main.intentFunction.multiToSingleIntent(
+                                         main,
+                                         name="VLAN",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         macs=macs,
+                                         ethType="IPV6",
+                                         sw1="",
+                                         sw2="",
+                                         expectedLink="")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        main.intentFunction.report( main )
+
+    def CASE5000( self, main ):
+        """
+        Tests Host Mobility
+        Modifies the topology location of h1
+        """
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                                main.numSwitch"
+        main.case( "Test host mobility with host intents " )
+        main.step( "Testing host mobility by moving h1 from s5 to s6" )
+        h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
+
+        main.log.info( "Moving h1 from s5 to s6")
+        main.Mininet1.moveHostv6( "h1","s5","s6" )
+        main.intentFunction.getHostsData( main )
+        h1PostMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
+
+        utilities.assert_equals( expect="of:0000000000000006",
+                                 actual=h1PostMove,
+                                 onpass="Mobility: Successfully moved h1 to s6",
+                                 onfail="Mobility: Failed to move h1 to s6" +
+                                        " to single point intents" +
+                                        " with IPV6 type and MAC addresses" +
+                                        " in the same VLAN" )
+        main.step( "IPV6: Add host intents between h1 and h9" )
+        main.assertReturnString = "Assert result for IPV6 host intent between h1, moved, and h9\n"
+        stepResult = main.TRUE
+        stepResult = main.intentFunction.hostIntent( main,
+                                              name='IPV6 Mobility IPV6',
                                               host1='h1',
                                               host2='h9',
                                               host1Id='00:00:00:00:00:01/-1',
@@ -622,5 +862,4 @@ class FUNCipv6Intent:
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
-        """
         main.intentFunction.report( main )

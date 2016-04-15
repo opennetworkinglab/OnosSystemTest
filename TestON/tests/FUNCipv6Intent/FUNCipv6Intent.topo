@@ -1,6 +1,5 @@
 <TOPOLOGY>
     <COMPONENT>
-
         <ONOSbench>
             <host>localhost</host>
             <user>cnlabs</user>
@@ -8,7 +7,7 @@
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
-                <nodes>3</nodes>
+                <nodes>5</nodes>
             </COMPONENTS>
         </ONOSbench>
 
@@ -56,7 +55,6 @@
             <connect_order>6</connect_order>
             <COMPONENTS>
                 <home>~/mininet/custom/</home>
-                <controller> remote </controller>
             </COMPONENTS>
         </Mininet1>
 

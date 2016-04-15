@@ -2,11 +2,15 @@
     # CASE - Description
     # 1 - Variable initialization and optional pull and build ONOS package
     # 2 - Install ONOS
-    # 11 - Start Mininet with Openflow 1.3
+    # 11 - Start Mininet with Openflow 1.3 (OpenvSwitch --version more than 2.3.1)
     # 12 - Assign switch to controller
     # 14 - Stop Mininet
+    # 2000 - Test Point Intent
+    # 3000 - Test Single To Multi Point Intent
+    # 4000 - Test multi to single point intents
+    # 5000 - Test host mobility
 
-    <testcases>1,2,11,12,13,2000,14</testcases>
+    <testcases>1,2,11,12,13,2000,3000,4000,5000,14</testcases>
 
     <SCALE>
         <size>1</size>

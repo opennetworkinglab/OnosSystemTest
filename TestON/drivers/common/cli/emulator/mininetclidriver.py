@@ -494,7 +494,7 @@ class MininetCliDriver( Emulator ):
 
                 for temp in pingList:
                     # Current host pings all other hosts specified
-                    pingCmd = str( host ) + cmd + prefix + str( temp[1:] )
+                    pingCmd = str( host ) + cmd + str( self.getIPAddress(temp,proto='IPv6') )
                     self.handle.sendline( pingCmd )
                     self.handle.expect( "mininet>", timeout=wait + 1 )
                     response = self.handle.before
@@ -679,7 +679,7 @@ class MininetCliDriver( Emulator ):
         else:
             return main.TRUE
 
-    def moveHost( self, host, oldSw, newSw, ):
+    def moveHostv6( self, host, oldSw, newSw, ):
         """
            Moves a host from one switch to another on the fly
            Note: The intf between host and oldSw when detached
@@ -690,6 +690,7 @@ class MininetCliDriver( Emulator ):
         """
         if self.handle:
             try:
+                IP = str( self.getIPAddress( host, proto='IPV6' ) ) + "/64"
                 # Bring link between oldSw-host down
                 cmd = "py net.configLinkStatus('" + oldSw + "'," + "'" + host +\
                       "'," + "'down')"
@@ -706,7 +707,7 @@ class MininetCliDriver( Emulator ):
                 self.handle.expect( "mininet>" )
 
                 # Determine ip and mac address of the host-oldSw interface
-                cmd = "px ipaddr = hintf.IP()"
+                cmd = "px ipaddr = " + str(IP)
                 print "cmd3= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -737,31 +738,44 @@ class MininetCliDriver( Emulator ):
 
                 # Attach interface between newSw-host
                 cmd = "px " + newSw + ".attach( sintf )"
-                print "cmd3= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Set ipaddress of the host-newSw interface
-                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf)"
-                print "cmd7 = ", cmd
+                print "cmd6= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
 
                 # Set macaddress of the host-newSw interface
                 cmd = "px " + host + ".setMAC( mac = macaddr, intf = hintf)"
+                print "cmd7 = ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
+                # Set ipaddress of the host-newSw interface
+                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf)"
                 print "cmd8 = ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
 
+                cmd = host + " ifconfig"
+                print "cmd9 =",cmd
+                response = self.execute( cmd = cmd, prompt="mininet>" ,timeout=10 )
+                print response
+                pattern = "h\d-eth([\w])"
+                ipAddressSearch = re.search( pattern, response )                
+                print ipAddressSearch.group(1)
+                intf= host + "-eth" + str(ipAddressSearch.group(1))
+                cmd = host + " ip -6 addr add %s dev %s" % ( IP, intf )
+                print "cmd10 = ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
                 cmd = "net"
-                print "cmd9 = ", cmd
+                print "cmd11 = ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
                 print "output = ", self.handle.before
 
                 # Determine ipaddress of the host-newSw interface
                 cmd = host + " ifconfig"
-                print "cmd10= ", cmd
+                print "cmd12= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
                 print "ifconfig o/p = ", self.handle.before
@@ -935,7 +949,7 @@ class MininetCliDriver( Emulator ):
             if proto == 'IPV4':
                 pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)"
             else:
-                pattern = "inet6\saddr:\s([\w,:]*)/"
+                pattern = "inet6\saddr:\s([\w,:]*)/\d+\sScope:Global"
             ipAddressSearch = re.search( pattern, response )
             main.log.info(
                 self.name +
@@ -1133,6 +1147,39 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+
+    def iperftcpipv6(self, host1="h1", host2="h2", timeout=50):
+        main.log.info( self.name + ": Simple iperf TCP test between two hosts" )
+        try:
+            IP1 = self.getIPAddress( host1, proto='IPV6' )
+            cmd1 = host1 +' iperf -V -sD -B '+ str(IP1)
+            self.handle.sendline( cmd1 )
+            outcome1 = self.handle.expect( "mininet>")
+            cmd2 = host2 +' iperf -V -c '+ str(IP1) +' -t 5'
+            self.handle.sendline( cmd2 )
+            outcome2 = self.handle.expect( "mininet>")
+            response1 = self.handle.before
+            response2 = self.handle.after
+            print response1,response2
+            pattern = "connected with "+ str(IP1)
+            if pattern in response1:
+                main.log.report(self.name + ": iperf test completed")
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": iperf test failed" )
+                return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + " response: " + repr( self.handle.before ) )
+            self.handle.sendline( "\x03" )
+            self.handle.expect( "Interrupt" )
+            self.handle.expect( "mininet>" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ": " + self.handle.before )
             main.cleanup()
             main.exit()
 

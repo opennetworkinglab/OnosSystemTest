@@ -116,12 +116,6 @@ def hostIntent( main,
         main.log.error( itemName + ": Key error Exception" )
         return main.FALSE
 
-    # Discover hosts using arping incase pingall discovery failed
-    #main.log.info( itemName + ": Discover host using pingall" )
-    #main.Mininet1.pingall( protocol='IPv6' )
-    #host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
-    #host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
-
     # Check flows count in each node
     checkFlowsCount( main )
 
@@ -146,19 +140,18 @@ def hostIntent( main,
     checkFlowsState( main )
 
     # Ping hosts
-    #firstPingResult = ping6allHosts( main, hostNames )
     firstPingResult = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ])
     if not firstPingResult:
         main.log.debug( "First ping failed, there must be" +
                        " something wrong with ONOS performance" )
 
     # Ping hosts again...
-    pingTemp = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ])
+    pingTemp = ping6allHosts( main, hostNames )
     pingResult = pingResult and pingTemp
     if pingTemp:
-        main.assertReturnString += 'Initial Pingall Passed\n'
+        main.assertReturnString += 'Initial Ping6all Passed\n'
     else:
-        main.assertReturnString += 'Initial Pingall Failed\n'
+        main.assertReturnString += 'Initial Ping6all Failed\n'
 
     # Test rerouting if these variables exist
     if sw1 and sw2 and expectedLink:
@@ -183,13 +176,13 @@ def hostIntent( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Ping hosts
-        pingTemp = pingallHosts( main, hostNames )
+        pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
 
         if pingTemp:
-            main.assertReturnString += 'Link Down Pingall Passed\n'
+            main.assertReturnString += 'Link Down Ping6all Passed\n'
         else:
-            main.assertReturnString += 'Link Down Pingall Failed\n'
+            main.assertReturnString += 'Link Down Ping6all Failed\n'
 
         # Check intent states
         intentTemp = checkIntentState( main, intentsId )
@@ -228,13 +221,13 @@ def hostIntent( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Ping hosts
-        pingTemp = pingallHosts( main, hostNames )
+        pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
 
         if pingTemp:
-            main.assertReturnString += 'Link Up Pingall Passed\n'
+            main.assertReturnString += 'Link Up Ping6all Passed\n'
         else:
-            main.assertReturnString += 'Link Up Pingall Failed\n'
+            main.assertReturnString += 'Link Up Ping6all Failed\n'
 
         intentTemp = checkIntentState( main, intentsId )
         intentResult = intentResult and intentTemp
@@ -405,12 +398,12 @@ def pointIntent( main,
     checkFlowsState( main )
 
     # Ping hosts
-    pingTemp = main.Mininet1.ping6pair(SRC=host1, TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ])
+    pingTemp = ping6allHosts( main, hostNames )
     pingResult = pingResult and pingTemp
     if pingTemp:
-        main.assertReturnString += 'Initial Ping6 pair Passed\n'
+        main.assertReturnString += 'Initial Ping6all Passed\n'
     else:
-        main.assertReturnString += 'Initial Ping6 pair Failed\n'
+        main.assertReturnString += 'Initial Ping6all Failed\n'
 
     # Test rerouting if these variables exist
     if sw1 and sw2 and expectedLink:
@@ -438,9 +431,9 @@ def pointIntent( main,
         pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
         if pingTemp:
-            main.assertReturnString += 'Link Down Pingall Passed\n'
+            main.assertReturnString += 'Link Down Ping6all Passed\n'
         else:
-            main.assertReturnString += 'Link Down Pingall Failed\n'
+            main.assertReturnString += 'Link Down Ping6all Failed\n'
 
         # Check intent state
         intentTemp = checkIntentState( main, intentsId )
@@ -478,13 +471,12 @@ def pointIntent( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Ping hosts
-        pingTemp = pingallHosts( main, hostNames )
+        pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
-
         if pingTemp:
-            main.assertReturnString += 'Link Up Pingall Passed\n'
+            main.assertReturnString += 'Link Up Ping6all Passed\n'
         else:
-            main.assertReturnString += 'Link Up Pingall Failed\n'
+            main.assertReturnString += 'Link Up Ping6all Failed\n'
 
         intentTemp = checkIntentState( main, intentsId )
         intentResult = intentResult and intentTemp
@@ -687,12 +679,12 @@ def pointIntentTcp( main,
     checkFlowsState( main )
 
     # Run iperf to both host
-    iperfTemp = main.Mininet1.iperftcp( host1,host2,timeout=10 )
+    iperfTemp = main.Mininet1.iperftcpipv6( host1,host2 )
     iperfResult = iperfResult and iperfTemp
     if iperfTemp:
-        main.assertReturnString += 'Initial Iperf Passed\n'
+        main.assertReturnString += 'Initial Iperf6 Passed\n'
     else:
-        main.assertReturnString += 'Initial Iperf Failed\n'
+        main.assertReturnString += 'Initial Iperf6 Failed\n'
 
     # Test rerouting if these variables exist
     if sw1 and sw2 and expectedLink:
@@ -717,12 +709,12 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcp( host1,host2,timeout=10 )
+        iperfTemp = main.Mininet1.iperftcpipv6( host1,host2 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
-            main.assertReturnString += 'Link Down Iperf Passed\n'
+            main.assertReturnString += 'Link Down Iperf6 Passed\n'
         else:
-            main.assertReturnString += 'Link Down Iperf Failed\n'
+            main.assertReturnString += 'Link Down Iperf6 Failed\n'
 
         # Check intent state
         intentTemp = checkIntentState( main, intentsId )
@@ -740,7 +732,7 @@ def pointIntentTcp( main,
 
         # link up
         linkUpResult = link( main, sw1, sw2, "up" )
-        if linkUpTemp:
+        if linkUpResult:
             main.assertReturnString += 'Link Up Passed\n'
         else:
             main.assertReturnString += 'Link Up Failed\n'
@@ -761,12 +753,12 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcp( host1,host2,timeout=10 )
+        iperfTemp = main.Mininet1.iperftcpipv6( host1,host2,timeout=10 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
-            main.assertReturnString += 'Link Up Iperf Passed\n'
+            main.assertReturnString += 'Link Up Iperf6 Passed\n'
         else:
-            main.assertReturnString += 'Link Up Iperf Failed\n'
+            main.assertReturnString += 'Link Up Iperf6 Failed\n'
 
         # Check intent state
         intentTemp = checkIntentState( main, intentsId )
@@ -796,12 +788,12 @@ def pointIntentTcp( main,
 
 def singleToMultiIntent( main,
                          name,
-                         hostNames,
+                         hostNames="",
                          onosNode=0,
                          devices="",
-                         ports=None,
+                         ports="",
                          ethType="",
-                         macs=None,
+                         macs="",
                          bandwidth="",
                          lambdaAlloc=False,
                          ipProto="",
@@ -880,15 +872,11 @@ def singleToMultiIntent( main,
     if hostNames and devices:
         if len( hostNames ) != len( devices ):
             main.log.debug( "hosts and devices does not have the same length" )
-            #print "len hostNames = ", len( hostNames )
-            #print "len devices = ", len( devices )
             return main.FALSE
         if ports:
             if len( ports ) != len( devices ):
                 main.log.error( "Ports and devices does " +
                                 "not have the same length" )
-                #print "len devices = ", len( devices )
-                #print "len ports = ", len( ports )
                 return main.FALSE
         else:
             main.log.info( "Device Ports are not specified" )
@@ -905,12 +893,7 @@ def singleToMultiIntent( main,
                            main.hostsData.get( host ).get( 'mac' )
                ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
                            main.hostsData.get( host ).get( 'ipAddresses' )
-        #print main.hostsData
-
-    #print 'host names = ', hostNames
-    #print 'devices = ', devices
-    #print "macsDict = ", macsDict
-
+    
     pingResult = main.TRUE
     intentResult = main.TRUE
     removeIntentResult = main.TRUE
@@ -963,9 +946,7 @@ def singleToMultiIntent( main,
                                             tcpSrc="",
                                             tcpDst="" ) )
 
-    # Wait some time for the flow to go through when using multi instance
-    pingTemp = pingallHosts( main, hostNames )
-
+    
     # Check intents state
     time.sleep( main.checkIntentSleep )
     intentResult = checkIntentState( main, intentsId )
@@ -979,12 +960,18 @@ def singleToMultiIntent( main,
     # Verify flows
     checkFlowsState( main )
 
-    pingTemp = pingallHosts( main, hostNames )
+    firstPingResult = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ hostNames[1] ][ 'ipAddresses' ][0])
+    if not firstPingResult:
+        main.log.debug( "First ping failed, there must be" +
+                       " something wrong with ONOS performance" )
+
+    # Ping hosts again...
+    pingTemp = ping6allHosts( main, hostNames )
     pingResult = pingResult and pingTemp
     if pingTemp:
-        main.assertReturnString += 'Initial Pingall Passed\n'
+        main.assertReturnString += 'Initial Ping6all Passed\n'
     else:
-        main.assertReturnString += 'Initial Pingall Failed\n'
+        main.assertReturnString += 'Initial Ping6all Failed\n'
 
     # Test rerouting if these variables exist
     if sw1 and sw2 and expectedLink:
@@ -1009,12 +996,12 @@ def singleToMultiIntent( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Ping hosts
-        pingTemp = pingallHosts( main, hostNames )
+        pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
         if pingTemp:
-            main.assertReturnString += 'Link Down Pingall Passed\n'
+            main.assertReturnString += 'Link Down Ping6all Passed\n'
         else:
-            main.assertReturnString += 'Link Down Pingall Failed\n'
+            main.assertReturnString += 'Link Down Ping6all Failed\n'
 
         # Check intent state
         intentTemp = checkIntentState( main, intentsId )
@@ -1052,12 +1039,12 @@ def singleToMultiIntent( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Ping hosts
-        pingTemp = pingallHosts( main, hostNames )
+        pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
         if pingTemp:
-            main.assertReturnString += 'Link Up Pingall Passed\n'
+            main.assertReturnString += 'Link Up Ping6all Passed\n'
         else:
-            main.assertReturnString += 'Link Up Pingall Failed\n'
+            main.assertReturnString += 'Link Up Ping6all Failed\n'
 
         # Check Intents
         intentTemp = checkIntentState( main, intentsId )
@@ -1087,12 +1074,12 @@ def singleToMultiIntent( main,
 
 def multiToSingleIntent( main,
                          name,
-                         hostNames,
+                         hostNames="",
                          onosNode=0,
                          devices="",
-                         ports=None,
+                         ports="",
                          ethType="",
-                         macs=None,
+                         macs="",
                          bandwidth="",
                          lambdaAlloc=False,
                          ipProto="",
@@ -1170,15 +1157,11 @@ def multiToSingleIntent( main,
     if hostNames and devices:
         if len( hostNames ) != len( devices ):
             main.log.debug( "hosts and devices does not have the same length" )
-            #print "len hostNames = ", len( hostNames )
-            #print "len devices = ", len( devices )
             return main.FALSE
         if ports:
             if len( ports ) != len( devices ):
                 main.log.error( "Ports and devices does " +
                                 "not have the same length" )
-                #print "len devices = ", len( devices )
-                #print "len ports = ", len( ports )
                 return main.FALSE
         else:
             main.log.info( "Device Ports are not specified" )
@@ -1194,11 +1177,6 @@ def multiToSingleIntent( main,
                            main.hostsData.get( host ).get( 'mac' )
                ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
                            main.hostsData.get( host ).get( 'ipAddresses' )
-        #print main.hostsData
-
-    #print 'host names = ', hostNames
-    #print 'devices = ', devices
-    #print "macsDict = ", macsDict
 
     pingResult = main.TRUE
     intentResult = main.TRUE
@@ -1251,9 +1229,6 @@ def multiToSingleIntent( main,
                                             ipDst="",
                                             tcpSrc="",
                                             tcpDst="" ) )
-
-    pingTemp = pingallHosts( main, hostNames )
-
     # Check intents state
     time.sleep( main.checkIntentSleep )
     intentResult = checkIntentState( main, intentsId )
@@ -1267,16 +1242,13 @@ def multiToSingleIntent( main,
     # Verify flows
     checkFlowsState( main )
 
-    # Ping hosts
-    pingTemp = pingallHosts( main, hostNames )
-
-    # Ping hosts again...
-    pingTemp = pingallHosts( main, hostNames )
+    # Ping hosts...
+    pingTemp = ping6allHosts( main, hostNames )
     pingResult = pingResult and pingTemp
     if pingTemp:
-        main.assertReturnString += 'Initial Pingall Passed\n'
+        main.assertReturnString += 'Initial Ping6all Passed\n'
     else:
-        main.assertReturnString += 'Initial Pingall Failed\n'
+        main.assertReturnString += 'Initial Ping6all Failed\n'
 
     # Test rerouting if these variables exist
     if sw1 and sw2 and expectedLink:
@@ -1301,12 +1273,12 @@ def multiToSingleIntent( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Ping hosts
-        pingTemp = pingallHosts( main, hostNames )
+        pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
         if pingTemp:
-            main.assertReturnString += 'Link Down Pingall Passed\n'
+            main.assertReturnString += 'Link Down Ping6all Passed\n'
         else:
-            main.assertReturnString += 'Link Down Pingall Failed\n'
+            main.assertReturnString += 'Link Down Ping6all Failed\n'
 
         # Check intent state
         intentTemp = checkIntentState( main, intentsId )
@@ -1344,12 +1316,12 @@ def multiToSingleIntent( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Ping hosts
-        pingTemp = pingallHosts( main, hostNames )
+        pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
         if pingTemp:
-            main.assertReturnString += 'Link Up Pingall Passed\n'
+            main.assertReturnString += 'Link Up Ping6all Passed\n'
         else:
-            main.assertReturnString += 'Link Up Pingall Failed\n'
+            main.assertReturnString += 'Link Up Ping6all Failed\n'
 
         # Check Intents
         intentTemp = checkIntentState( main, intentsId )
@@ -1392,8 +1364,8 @@ def getHostsData( main ):
     getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
     activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
-    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true")
-    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true")
+    main.CLIs[ 0 ].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "ipv6NeighborDiscovery", "true")
+    main.CLIs[ 0 ].setCfg( "org.onosproject.proxyarp.ProxyArp", "ipv6NeighborDiscovery", "true")
     main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true")
     main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true")
     time.sleep( main.fwdSleep )
@@ -1407,7 +1379,6 @@ def getHostsData( main ):
     pingResult = main.Mininet1.pingall( protocol="IPv6", timeout = 600 )
     hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
     hosts = main.Mininet1.getHosts().keys()
-    # TODO: Make better use of new getHosts function
     for host in hosts:
         main.hostsData[ host ] = {}
         main.hostsData[ host ][ 'mac' ] =  \
@@ -1430,8 +1401,11 @@ def getHostsData( main ):
         main.log.info( "Failed to use fwd app to discover hosts " )
         getDataResult = main.FALSE
 
+    main.log.info( "Removing the automatically configured ipv6 link-local addresses in hostsData to avoid unnecessary ping with these addresses during initial ping test - link-local starts with 'fe' " )
+    for host in main.hostsData.keys():
+     if main.hostsData[ host ].get( 'ipAddresses' ) != None:
+      main.hostsData[ host ][ 'ipAddresses' ] = [ v for v in main.hostsData[ host ][ 'ipAddresses' ] if not v.startswith('fe') ]
     print main.hostsData
-
     return getDataResult
 
 def checkTopology( main, expectedLink ):

@@ -66,24 +66,31 @@ def installHostIntent( main,
 
     main.log.info( itemName + ": Adding single point to multi point intents" )
 
-    if not host1.get( "id" ):
-        main.log.warn( "ID not given for host1 {0}. Loading from main.hostData".format( host1.get( "name" ) ) )
-        main.log.debug( main.hostsData.get( host1.get( "name" ) ) )
-        host1[ "id" ] = main.hostsData.get( host1.get( "name" ) ).get( "id" )
+    try:
+        if not host1.get( "id" ):
+            main.log.warn( "ID not given for host1 {0}. Loading from main.hostData".format( host1.get( "name" ) ) )
+            main.log.debug( main.hostsData.get( host1.get( "name" ) ) )
+            host1[ "id" ] = main.hostsData.get( host1.get( "name" ) ).get( "id" )
 
-    if not host2.get( "id" ):
-        main.log.warn( "ID not given for host2 {0}. Loading from main.hostData".format( host2.get( "name" ) ) )
-        host2[ "id" ] = main.hostsData.get( host2.get( "name" ) ).get( "id" )
+        if not host2.get( "id" ):
+            main.log.warn( "ID not given for host2 {0}. Loading from main.hostData".format( host2.get( "name" ) ) )
+            host2[ "id" ] = main.hostsData.get( host2.get( "name" ) ).get( "id" )
 
-    # Adding host intents
-    main.log.info( itemName + ": Adding host intents" )
+        # Adding host intents
+        main.log.info( itemName + ": Adding host intents" )
 
-    intent1 = main.CLIs[ onosNode ].addHostIntent( hostIdOne=host1.get( "id" ),
-                                                   hostIdTwo=host2.get( "id" ) )
+        intent1 = main.CLIs[ onosNode ].addHostIntent( hostIdOne=host1.get( "id" ),
+                                                       hostIdTwo=host2.get( "id" ) )
 
-    # Get all intents ID in the system, time delay right after intents are added
-    time.sleep( main.addIntentSleep )
-    intentsId = main.CLIs[ 0 ].getIntentsId()
+        # Get all intents ID in the system, time delay right after intents are added
+        time.sleep( main.addIntentSleep )
+        intentsId = main.CLIs[ 0 ].getIntentsId()
+    except (KeyError, TypeError):
+        errorMsg = "There was a problem loading the hosts data."
+        if intentsId:
+            errorMsg += "  There was a problem installing host to host intent."
+        main.log.error( errorMsg )
+        return main.FALSE
 
     if utilities.retry ( f=checkIntentState, retValue=main.FALSE,
                          args = (main, intentsId ), sleep=main.checkIntentSleep ):
@@ -157,16 +164,20 @@ def testHostIntent( main,
 
     main.log.info( itemName + ": Testing Host Intent" )
 
-    if not host1.get( "id" ):
-        main.log.warn( "Id not given for host1 {0}. Loading from main.hostData".format( host1.get( "name" ) ) )
-        host1[ "id" ] = main.hostsData.get( host1.get( "name" ) ).get( "location" )
+    try:
+        if not host1.get( "id" ):
+            main.log.warn( "Id not given for host1 {0}. Loading from main.hostData".format( host1.get( "name" ) ) )
+            host1[ "id" ] = main.hostsData.get( host1.get( "name" ) ).get( "location" )
 
-    if not host2.get( "id" ):
-        main.log.warn( "Id not given for host2 {0}. Loading from main.hostData".format( host2.get( "name" ) ) )
-        host2[ "id" ] = main.hostsData.get( host2.get( "name" ) ).get( "location" )
+        if not host2.get( "id" ):
+            main.log.warn( "Id not given for host2 {0}. Loading from main.hostData".format( host2.get( "name" ) ) )
+            host2[ "id" ] = main.hostsData.get( host2.get( "name" ) ).get( "location" )
 
-    senderNames = [ host1.get( "name" ), host2.get( "name" ) ]
-    recipientNames = [ host1.get( "name" ), host2.get( "name" ) ]
+        senderNames = [ host1.get( "name" ), host2.get( "name" ) ]
+        recipientNames = [ host1.get( "name" ), host2.get( "name" ) ]
+    except ( KeyError, TypeError ):
+        main.log.error( "There was a problem loading the hosts data." )
+        return main.FALSE
 
     testResult = main.TRUE
     main.log.info( itemName + ": Adding single point to multi point intents" )
@@ -336,62 +347,63 @@ def installPointIntent( main,
 
     main.log.info( itemName + ": Adding single to single point intents" )
 
-    for sender in senders:
-        if not sender.get( "device" ):
-            main.log.warn( "Device not given for sender {0}. Loading from main.hostData".format( sender.get( "name" ) ) )
-            sender[ "device" ] = main.hostsData.get( sender.get( "name" ) ).get( "location" )
+    try:
+        for sender in senders:
+            if not sender.get( "device" ):
+                main.log.warn( "Device not given for sender {0}. Loading from main.hostData".format( sender.get( "name" ) ) )
+                sender[ "device" ] = main.hostsData.get( sender.get( "name" ) ).get( "location" )
 
-    for recipient in recipients:
-        if not recipient.get( "device" ):
-            main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
-            recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
+        for recipient in recipients:
+            if not recipient.get( "device" ):
+                main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
+                recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
 
 
-    ingressDevice = senders[ 0 ].get( "device" )
-    egressDevice = recipients[ 0 ].get( "device" )
+        ingressDevice = senders[ 0 ].get( "device" )
+        egressDevice = recipients[ 0 ].get( "device" )
 
-    portIngress = senders[ 0 ].get( "port", "" )
-    portEgress = recipients[ 0 ].get( "port", "" )
-    main.log.debug( ingressDevice )
-    main.log.debug( egressDevice )
+        portIngress = senders[ 0 ].get( "port", "" )
+        portEgress = recipients[ 0 ].get( "port", "" )
+        main.log.debug( ingressDevice )
+        main.log.debug( egressDevice )
 
-    srcMac = senders[ 0 ].get( "mac" )
-    dstMac = recipients[ 0 ].get( "mac" )
+        srcMac = senders[ 0 ].get( "mac" )
+        dstMac = recipients[ 0 ].get( "mac" )
 
-    ipSrc = senders[ 0 ].get( "ip" )
-    ipDst = recipients[ 0 ].get( "ip" )
+        ipSrc = senders[ 0 ].get( "ip" )
+        ipDst = recipients[ 0 ].get( "ip" )
 
-    intent1 = main.CLIs[ onosNode ].addPointIntent(
-                                        ingressDevice=ingressDevice,
-                                        egressDevice=egressDevice,
-                                        ingressPort=portIngress,
-                                        egressPort=portEgress,
-                                        ethType=ethType,
-                                        ethSrc=srcMac,
-                                        ethDst=dstMac,
-                                        bandwidth=bandwidth,
-                                        lambdaAlloc=lambdaAlloc,
-                                        ipProto=ipProto,
-                                        ipSrc=ipSrc,
-                                        ipDst=ipDst,
-                                        tcpSrc=tcpSrc,
-                                        tcpDst=tcpDst )
+        intent1 = main.CLIs[ onosNode ].addPointIntent(
+                                            ingressDevice=ingressDevice,
+                                            egressDevice=egressDevice,
+                                            ingressPort=portIngress,
+                                            egressPort=portEgress,
+                                            ethType=ethType,
+                                            ethSrc=srcMac,
+                                            ethDst=dstMac,
+                                            bandwidth=bandwidth,
+                                            lambdaAlloc=lambdaAlloc,
+                                            ipProto=ipProto,
+                                            ipSrc=ipSrc,
+                                            ipDst=ipDst,
+                                            tcpSrc=tcpSrc,
+                                            tcpDst=tcpDst )
 
-    time.sleep( main.addIntentSleep )
-    intentsId = main.CLIs[ 0 ].getIntentsId()
+        time.sleep( main.addIntentSleep )
+        intentsId = main.CLIs[ 0 ].getIntentsId()
+    except (KeyError, TypeError):
+        errorMsg = "There was a problem loading the hosts data."
+        if intentId:
+            errorMsg += "  There was a problem installing Point to Point intent."
+        main.log.error( errorMsg )
+        return main.FALSE
 
+    # Check intent state
     if utilities.retry ( f=checkIntentState, retValue=main.FALSE,
                          args = (main, intentsId ), sleep=main.checkIntentSleep ):
         return intentsId
     else:
         main.log.error( "Single to Single point intent did not install correctly" )
-        return main.FALSE
-
-    # Check intents state
-    if utilities.retry( f=checkIntentState, retValue=main.FALSE, args=( main, intentsId ), sleep=main.checkIntentSleep ):
-        return intentsId
-    else:
-        main.log.error( "Point Intent did not install correctly" )
         return main.FALSE
 
 def testPointIntent( main,
@@ -472,21 +484,25 @@ def testPointIntent( main,
 
     main.log.info( itemName + ": Testing Point Intent" )
 
-    # Names for scapy
-    senderNames = [ x.get( "name" ) for x in senders ]
-    recipientNames = [ x.get( "name" ) for x in recipients ]
-    badSenderNames = [ x.get( "name" ) for x in badSenders ]
-    badRecipientNames = [ x.get( "name" ) for x in badRecipients ]
+    try:
+        # Names for scapy
+        senderNames = [ x.get( "name" ) for x in senders ]
+        recipientNames = [ x.get( "name" ) for x in recipients ]
+        badSenderNames = [ x.get( "name" ) for x in badSenders ]
+        badRecipientNames = [ x.get( "name" ) for x in badRecipients ]
 
-    for sender in senders:
-        if not sender.get( "device" ):
-            main.log.warn( "Device not given for sender {0}. Loading from main.hostData".format( sender.get( "name" ) ) )
-            sender[ "device" ] = main.hostsData.get( sender.get( "name" ) ).get( "location" )
+        for sender in senders:
+            if not sender.get( "device" ):
+                main.log.warn( "Device not given for sender {0}. Loading from main.hostData".format( sender.get( "name" ) ) )
+                sender[ "device" ] = main.hostsData.get( sender.get( "name" ) ).get( "location" )
 
-    for recipient in recipients:
-        if not recipient.get( "device" ):
-            main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
-            recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
+        for recipient in recipients:
+            if not recipient.get( "device" ):
+                main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
+                recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
+    except (KeyError, TypeError):
+        main.log.error( "There was a problem loading the hosts data." )
+        return main.FALSE
 
     testResult = main.TRUE
     main.log.info( itemName + ": Testing point intents" )
@@ -1534,22 +1550,30 @@ def confirmHostDiscovery( main ):
         controllerStr = str( controller + 1 )  # ONOS node number
         # Compare Hosts
         # Load hosts data for controller node
-        if hosts[ controller ] and "Error" not in hosts[ controller ]:
-            try:
-                hostData = json.loads( hosts[ controller ] )
-            except ( TypeError, ValueError ):
-                main.log.error( "Could not load json:" + str( hosts[ controller ] ) )
-                hostFails.append( controllerStr )
+        try:
+            if hosts[ controller ]:
+                main.log.info( "Hosts discovered" )
             else:
-                onosHostIPs = [ x.get( "ipAddresses" )[ 0 ]
-                                for x in hostData
-                                if len( x.get( "ipAddresses" ) ) > 0 ]
-                if not set( collections.Counter( scapyHostIPs ) ).issubset( set ( collections.Counter( onosHostIPs ) ) ):
-                    main.log.warn( "Controller {0} only sees nodes with {1} IPs. It should see all of the following: {2}".format( controllerStr, onosHostIPs, scapyHostIPs ) )
+                main.log.error( "Problem discovering hosts" )
+            if hosts[ controller ] and "Error" not in hosts[ controller ]:
+                try:
+                    hostData = json.loads( hosts[ controller ] )
+                except ( TypeError, ValueError ):
+                    main.log.error( "Could not load json:" + str( hosts[ controller ] ) )
                     hostFails.append( controllerStr )
-        else:
-            main.log.error( "Hosts returned nothing or an error." )
-            hostFails.append( controllerStr )
+                else:
+                    onosHostIPs = [ x.get( "ipAddresses" )[ 0 ]
+                                    for x in hostData
+                                    if len( x.get( "ipAddresses" ) ) > 0 ]
+                    if not set( collections.Counter( scapyHostIPs ) ).issubset( set ( collections.Counter( onosHostIPs ) ) ):
+                        main.log.warn( "Controller {0} only sees nodes with {1} IPs. It should see all of the following: {2}".format( controllerStr, onosHostIPs, scapyHostIPs ) )
+                        hostFails.append( controllerStr )
+            else:
+                main.log.error( "Hosts returned nothing or an error." )
+                hostFails.append( controllerStr )
+        except IndexError:
+            main.log.error( "Hosts returned nothing, Failed to discover hosts." )
+            return main.FALSE
 
     if hostFails:
         main.log.error( "List of failed ONOS Nodes:" + ', '.join(map(str, hostFails )) )
@@ -1579,8 +1603,17 @@ def populateHostData( main ):
                                 hostj[ 'location' ][ 'port' ]
                     main.hostsData[ host ][ 'ipAddresses' ] = hostj[ 'ipAddresses' ]
         return main.TRUE
+    except ValueError:
+        main.log.error( "ValueError while populating hostsData" )
+        return main.FALSE
     except KeyError:
         main.log.error( "KeyError while populating hostsData")
+        return main.FALSE
+    except IndexError:
+        main.log.error( "IndexError while populating hostsData" )
+        return main.FALSE
+    except TypeError:
+        main.log.error( "TypeError while populating hostsData" )
         return main.FALSE
 
 def scapyCheckConnection( main, senders, recipients, packet=None, packetFilter=None, expectFailure=False ):

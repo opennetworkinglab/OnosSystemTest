@@ -14,15 +14,9 @@
     </SCALE>
 
     <CASE110>
-        <clustercmdpath>../tests/PLATdockertest/dependencies</clustercmdpath>
+        <clustercmdpath>../tests/PLAT/PLATdockertest/dependencies</clustercmdpath>
         <apps>org.onosproject.proxyarp,org.onosproject.fwd</apps>
     </CASE110>
-
-    <DEPENDENCY>
-        <path>/tests/SAMPstartTemplate/dependencies/</path>
-        <wrapper1>startUp</wrapper1>
-        <topology>newFuncTopo.py</topology>
-    </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>

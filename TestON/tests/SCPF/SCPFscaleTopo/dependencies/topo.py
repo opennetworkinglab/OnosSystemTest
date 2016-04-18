@@ -97,4 +97,19 @@ def getAllClusters( main ):
         clusters.append( t.result )
     return clusters
 
-
+def sendArpPackage( main, hostList ):
+    import json
+    """
+        send arping package from host
+        return the total hosts number from Onos
+    """
+    main.log.info("Sending Arping package...")
+    if isinstance(hostList, list):
+        threads = []
+        for h in hostList:
+            main.Mininet1.arping( srcHost=h, dstHost="10.0.0.1", output=main.FALSE )
+    else:
+        main.Mininet1.arping(srcHost=hostList)
+    summaryStr = json.loads( main.CLIs[0].summary().encode() )
+    hostNum = summaryStr.get('hosts')
+    return hostNum

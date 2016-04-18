@@ -64,17 +64,14 @@ class SCPFscaleTopo:
                                         main.dependencyPath +
                                         wrapperFile1 +
                                         ".py" )
-
         main.scaleTopoFunction = imp.load_source( wrapperFile2,
                                                   main.dependencyPath +
                                                   wrapperFile2 +
                                                   ".py" )
-
         main.topo = imp.load_source( wrapperFile3,
                                      main.dependencyPath +
                                      wrapperFile3 +
                                      ".py" )
-
         main.ONOSbench.scp( main.Mininet1,
                             main.dependencyPath +
                             main.multiovs,
@@ -247,6 +244,13 @@ class SCPFscaleTopo:
             main.currScale = main.topoScale.pop(0)
         else: main.log.error( "topology scale is empty" )
 
+        # remove device before setup topology
+        devices = main.topo.getAllDevices( main )
+        if( devices[0] != '[]' ): # because devices is a list witch contain 3 string, not contain list!
+            temp = json.loads( devices[0] )
+            devicesIdList = []
+            for d in temp:
+                main.CLIs[0].deviceRemove( d.get('id').encode() )
 
         main.step( "Starting up TORUS %sx%s topology" % (main.currScale, main.currScale) )
 
@@ -279,58 +283,74 @@ class SCPFscaleTopo:
         main.caseExplanation = "Pinging all hosts and comparing topology " +\
                 "elements between Mininet and ONOS"
 
-        main.log.info( "Pinging all hosts" )
-
-        # the pingall timeout is depend on the number of total host
-        pingTimeout = int( main.pingTimeout * float( int(main.currScale) * int(main.currScale ) ) )
-        pingResult = main.Mininet1.pingall( pingTimeout )
-
         main.log.info( "Gathering topology information" )
-
         time.sleep( main.MNSleep )
 
         devicesResults = main.TRUE
         linksResults = main.TRUE
         hostsResults = main.TRUE
         stepResult = main.TRUE
-        devices = main.topo.getAllDevices( main )
-        hosts = main.topo.getAllHosts( main )
-        ports = main.topo.getAllPorts( main )
-        links = main.topo.getAllLinks( main )
-        clusters = main.topo.getAllClusters( main )
-        mnSwitches = main.Mininet1.getSwitches()
-        mnLinks = main.Mininet1.getLinks()
-        mnHosts = main.Mininet1.getHosts()
-
         main.step( "Comparing MN topology to ONOS topology" )
-        for controller in range(len(main.activeNodes)):
-            controllerStr = str( main.activeNodes[controller] + 1 )
-            if devices[ controller ] and ports[ controller ] and\
-                "Error" not in devices[ controller ] and\
-                "Error" not in ports[ controller ]:
 
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
-            else:
-                currentDevicesResult = main.FALSE
- 
-            if links[ controller ] and "Error" not in links[ controller ]:
-                currentLinksResult = main.Mininet1.compareLinks(
-                        mnSwitches, mnLinks,
-                        json.loads( links[ controller ] ) )
-            else:
-                currentLinksResult = main.FALSE
+        compareRetry=0
+        while compareRetry <3:
+            #While loop for retry
+            devices = main.topo.getAllDevices( main )
+            hosts = main.topo.getAllHosts( main )
+            ports = main.topo.getAllPorts( main )
+            links = main.topo.getAllLinks( main)
+            clusters = main.topo.getAllClusters( main )
+            mnSwitches = main.Mininet1.getSwitches()
+            mnLinks = main.Mininet1.getLinks(timeout=180)
+            mnHosts = main.Mininet1.getHosts()
 
-            if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                currentHostsResult = main.Mininet1.compareHosts(
-                        mnHosts,
-                        json.loads( hosts[ controller ] ) )
-            else:
-                currentHostsResult = main.FALSE
+            for controller in range(len(main.activeNodes)):
+                controllerStr = str( main.activeNodes[controller] + 1 )
+                if devices[ controller ] and ports[ controller ] and\
+                    "Error" not in devices[ controller ] and\
+                    "Error" not in ports[ controller ]:
 
-            stepResult = stepResult and currentDevicesResult and currentLinksResult and currentHostsResult
+                    currentDevicesResult = main.Mininet1.compareSwitches(
+                            mnSwitches,
+                            json.loads( devices[ controller ] ),
+                            json.loads( ports[ controller ] ) )
+                else:
+                    currentDevicesResult = main.FALSE
+
+                if links[ controller ] and "Error" not in links[ controller ]:
+                    currentLinksResult = main.Mininet1.compareLinks(
+                            mnSwitches, mnLinks,
+                            json.loads( links[ controller ] ) )
+                else:
+                    currentLinksResult = main.FALSE
+
+                if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                    currentHostsResult = main.Mininet1.compareHosts(
+                            mnHosts,
+                            json.loads( hosts[ controller ] ) )
+                else:
+                    currentHostsResult = main.FALSE
+
+                stepResult = currentDevicesResult and currentLinksResult and currentHostsResult
+            if stepResult:
+                break
+            compareRetry += 1
+
+        # host discover
+        hostList=[]
+        for i in range( 1, int(main.currScale)+1 ):
+            for j in range( 1, int(main.currScale)+1 ):
+                hoststr = "h" + str(i)+ "x" + str(j)
+                hostList.append(hoststr)
+        totalNum = main.topo.sendArpPackage(main, hostList)
+        # check host number
+        main.log.info("{} hosts has been discovered".format( totalNum ))
+        if int(totalNum) == ( int(main.currScale) * int(main.currScale) ):
+            main.log.info("All hosts has been discovered")
+            stepResult = stepResult and main.TRUE
+        else:
+            main.log.warn("Hosts number is not correct!")
+            stepResult = stepResult and main.FALSE
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -341,7 +361,7 @@ class SCPFscaleTopo:
 
     def CASE100( self, main ):
         '''
-           Bring Down node 3 
+           Bring Down node 3
         '''
 
         main.case("Balancing Masters and bring ONOS node 3 down: TORUS %sx%s" % (main.currScale, main.currScale))

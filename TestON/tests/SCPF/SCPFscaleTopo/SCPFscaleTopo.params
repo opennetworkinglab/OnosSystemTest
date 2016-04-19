@@ -11,7 +11,7 @@
     <testcases>1,2,[10,300,11,100,300,11,200,300,11,1000]*3</testcases>
 
     <DEPENDENCY>
-        <path>/tests/SCPFscaleTopo/dependencies/</path>
+        <path>/tests/SCPF/SCPFscaleTopo/dependencies/</path>
         <wrapper1>startUp</wrapper1>
         <wrapper2>scaleTopoFunction</wrapper2>
         <wrapper3>topo</wrapper3>
@@ -37,7 +37,7 @@
         <balance>10</balance>
         <nodeSleep>10</nodeSleep>
         <pingall>15</pingall>
-        <MNsleep>5</MNsleep>
+        <MNsleep>120</MNsleep>
     </SLEEP>
 
     <TIMEOUT>
@@ -52,7 +52,7 @@
 
     <TOPOLOGY>
         <topology>torus</topology>
-        <scale>5,10,15</scale>
+        <scale>15,20,25</scale>
     </TOPOLOGY>
 
 </PARAMS>

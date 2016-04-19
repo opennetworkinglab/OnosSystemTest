@@ -1159,11 +1159,11 @@ class MininetCliDriver( Emulator ):
             main.exit()
         return response
 
-    def links( self ):
+    def links( self, timeout=20 ):
         main.log.info( self.name + ": List network links" )
         try:
             response = self.execute( cmd='links', prompt='mininet>',
-                                     timeout=20 )
+                                     timeout=timeout )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -1984,7 +1984,7 @@ class MininetCliDriver( Emulator ):
             response = main.FALSE
         return response
 
-    def arping( self, srcHost="", dstHost="10.128.20.211", ethDevice="" ):
+    def arping( self, srcHost="", dstHost="10.128.20.211", ethDevice="", output=main.TRUE ):
         """
         Description:
             Sends arp message from mininet host for hosts discovery
@@ -1998,7 +1998,8 @@ class MininetCliDriver( Emulator ):
             ethDevice = '-I ' + ethDevice + ' '
         cmd = srcHost + " arping -c1 " + ethDevice + dstHost
         try:
-            main.log.info( "Sending: " + cmd )
+            if output:
+                main.log.info( "Sending: " + cmd )
             self.handle.sendline( cmd )
             i = self.handle.expect( [ "mininet>", "arping: " ] )
             if i == 0:
@@ -2507,7 +2508,7 @@ class MininetCliDriver( Emulator ):
                 hosts[ name ] = { "interfaces": interfaces }
         return hosts
 
-    def getLinks( self ):
+    def getLinks( self, timeout=20 ):
         """
         Gathers information about current Mininet links. These links may not
         be up if one of the ports is down.
@@ -2524,7 +2525,7 @@ class MininetCliDriver( Emulator ):
               hosts, this is just the eth#.
         """
         self.update()
-        response = self.links().split( '\n' )
+        response = self.links(timeout=timeout).split( '\n' )
 
         # Examples:
         # s1-eth3<->s2-eth1 (OK OK)

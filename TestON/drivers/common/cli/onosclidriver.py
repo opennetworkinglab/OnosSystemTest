@@ -4028,14 +4028,13 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def counterTestAddAndGet( self, counter, delta=1, inMemory=False ):
+    def counterTestAddAndGet( self, counter, delta=1 ):
         """
         CLI command to add a delta to then get a distributed counter.
         Required arguments:
             counter - The name of the counter to increment.
         Optional arguments:
             delta - The long to add to the counter
-            inMemory - use in memory map for the counter
         returns:
             integer value of the counter or
             None on Error
@@ -4044,8 +4043,6 @@ class OnosCliDriver( CLI ):
             counter = str( counter )
             delta = int( delta )
             cmdStr = "counter-test-increment "
-            if inMemory:
-                cmdStr += "-i "
             cmdStr += counter
             if delta != 1:
                 cmdStr += " " + str( delta )
@@ -4093,14 +4090,13 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def counterTestGetAndAdd( self, counter, delta=1, inMemory=False ):
+    def counterTestGetAndAdd( self, counter, delta=1 ):
         """
         CLI command to get a distributed counter then add a delta to it.
         Required arguments:
             counter - The name of the counter to increment.
         Optional arguments:
             delta - The long to add to the counter
-            inMemory - use in memory map for the counter
         returns:
             integer value of the counter or
             None on Error
@@ -4109,8 +4105,6 @@ class OnosCliDriver( CLI ):
             counter = str( counter )
             delta = int( delta )
             cmdStr = "counter-test-increment -g "
-            if inMemory:
-                cmdStr += "-i "
             cmdStr += counter
             if delta != 1:
                 cmdStr += " " + str( delta )
@@ -4193,15 +4187,13 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def transactionalMapGet( self, keyName, inMemory=False ):
+    def transactionalMapGet( self, keyName ):
         """
         CLI command to get the value of a key in a consistent map using
         transactions. This a test function and can only get keys from the
         test map hard coded into the cli command
         Required arguments:
             keyName - The name of the key to get
-        Optional arguments:
-            inMemory - use in memory map for the counter
         returns:
             The string value of the key or
             None on Error
@@ -4209,8 +4201,6 @@ class OnosCliDriver( CLI ):
         try:
             keyName = str( keyName )
             cmdStr = "transactional-map-test-get "
-            if inMemory:
-                cmdStr += "-i "
             cmdStr += keyName
             output = self.sendline( cmdStr )
             assert "Command not found:" not in output, output
@@ -4253,7 +4243,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def transactionalMapPut( self, numKeys, value, inMemory=False ):
+    def transactionalMapPut( self, numKeys, value ):
         """
         CLI command to put a value into 'numKeys' number of keys in a
         consistent map using transactions. This a test function and can only
@@ -4261,8 +4251,6 @@ class OnosCliDriver( CLI ):
         Required arguments:
             numKeys - Number of keys to add the value to
             value - The string value to put into the keys
-        Optional arguments:
-            inMemory - use in memory map for the counter
         returns:
             A dictionary whose keys are the name of the keys put into the map
             and the values of the keys are dictionaries whose key-values are
@@ -4278,8 +4266,6 @@ class OnosCliDriver( CLI ):
             numKeys = str( numKeys )
             value = str( value )
             cmdStr = "transactional-map-test-put "
-            if inMemory:
-                cmdStr += "-i "
             cmdStr += numKeys + " " + value
             output = self.sendline( cmdStr )
             assert "Command not found:" not in output, output

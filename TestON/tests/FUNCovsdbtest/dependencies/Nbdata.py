@@ -11,7 +11,7 @@ class NetworkData:
         self.state = 'ACTIVE'
         self.name = 'onosfw-1'
         self.physicalNetwork = 'none'
-        self.admin_state_up = True
+        self.sdn_state_up = True
         self.tenant_id = ''
         self.routerExternal = False
         self.type ='LOCAL'
@@ -32,8 +32,8 @@ class NetworkData:
             Dicdata['name'] = self.name
         if self.physicalNetwork !='':
             Dicdata['provider:physical_network'] = self.physicalNetwork
-        if self.admin_state_up !='':
-            Dicdata['admin_state_up'] = self.admin_state_up
+        if self.sdn_state_up !='':
+            Dicdata['sdn_state_up'] = self.admin_state_up
         if self.tenant_id !='':
             Dicdata['tenant_id'] = self.tenant_id
         if self.routerExternal !='':
@@ -154,7 +154,7 @@ class VirtualPortData(NetworkData):
         self.deviceOwner = 'none'
         self.fixedIp = []
         self.securityGroups = [{'securityGroup':'asd'}]
-        self.adminStateUp = True
+        self.sdnStateUp = True
         self.network_id = ''
         self.tenant_id = ''
         self.subnet_id = ''
@@ -187,8 +187,8 @@ class VirtualPortData(NetworkData):
             Dicdata['device_owner'] = self.deviceOwner
         if self.securityGroups != '':
             Dicdata['security_groups'] = self.securityGroups
-        if self.adminStateUp != '':
-            Dicdata['admin_state_up'] = self.adminStateUp
+        if self.sdnStateUp != '':
+            Dicdata['sdn_state_up'] = self.adminStateUp
         if self.network_id != '':
             Dicdata['network_id'] = self.network_id
         if self.tenant_id != '':

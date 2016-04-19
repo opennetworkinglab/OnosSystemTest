@@ -5,7 +5,7 @@ Summary: This is a performance test designed to benchmark the
 
 Pre-requisites: To run out-of-the box this test requires 7 NODES.
     OC1->OC7 must be set before initiating the test. Passwordless login
-    must be set from TestStation "admin" root user.
+    must be set from TestStation "sdn" root user.
 
 ***If you wish to run this test with less than 7 nodes the
     following alterations must be made:

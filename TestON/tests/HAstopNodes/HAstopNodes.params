@@ -21,7 +21,7 @@
     #CASE17: Check for basic functionality with distributed primitives
     <testcases>1,2,8,3,4,5,14,16,17,[61,8,7,4,15,17,62],8,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
     <imports>
-        <path> /home/admin/OnosSystemTest/TestON/tests/HAstopNodes/dependencies/ </path>
+        <path> /home/sdn/OnosSystemTest/TestON/tests/HAstopNodes/dependencies/ </path>
     </imports>
     <ENV>
         <cellName>HA</cellName>
@@ -43,7 +43,7 @@
     </CTRL>
     <BACKUP>
         <ENABLED> False </ENABLED>
-        <TESTONUSER>admin</TESTONUSER>
+        <TESTONUSER>sdn</TESTONUSER>
         <TESTONIP>10.128.30.9</TESTONIP>
     </BACKUP>
     <PING>

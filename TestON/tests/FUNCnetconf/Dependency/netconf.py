@@ -62,7 +62,7 @@ def createConfig( main ):
                     ', "ip":"' + main.configDeviceIp + '", "port":' +\
                     main.configPort + '} ] } } }'
     try:
-        file = open( "/home/admin/OnosSystemTest/TestON/tests/FUNCnetconf/Dependency/netconfConfig.json", 'w' )
+        file = open( "/home/sdn/OnosSystemTest/TestON/tests/FUNCnetconf/Dependency/netconfConfig.json", 'w' )
         # These lines can cause errors during the configuration process because
         # they cause the json string to turn into an unordered dictionary before
         # sorting it alphabetically which can cause the driver type to not be

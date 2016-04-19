@@ -101,7 +101,7 @@ class SDNIPfunction:
         main.case( "This case is to testing the functionality of SDN-IP with \
         single ONOS instance" )
         SDNIPJSONFILEPATH = \
-            "/home/admin/ONOS/tools/package/config/sdnip.json"
+            "/home/sdn/ONOS/tools/package/config/sdnip.json"
         # all expected routes for all BGP peers
         allRoutesExpected = []
         main.step( "Start to generate routes for all BGP peers" )

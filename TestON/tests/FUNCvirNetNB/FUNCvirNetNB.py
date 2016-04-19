@@ -1037,8 +1037,8 @@ class FUNCvirNetNB:
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
-        #The network.admin_state_up should be True or False,when the admin_state_up is 'tttttttttt',the Json can't post.
-        network.admin_state_up = 'tttttttttt'
+        #The network.sdn_state_up should be True or False,when the admin_state_up is 'tttttttttt',the Json can't post.
+        network.sdn_state_up = 'tttttttttt'
         #The network.routerExternal should be True or False,when the routerExternal is 'ffffffffffff',the Json can't post.
         network.routerExternal = 'ffffffffffff'
         #The network.shared should be True or False,when the shared is 'ffffffffffffff',the Json can't post.
@@ -1151,8 +1151,8 @@ class FUNCvirNetNB:
         port.subnet_id = subnet.id
         port.tenant_id = network.tenant_id
         port.network_id = network.id
-        #The port.adminStateUp should be True or False,when the adminStateUp is 'tttttttttttt',the Json can't post.
-        port.adminStateUp = 'tttttttttttt'
+        #The port.sdnStateUp should be True or False,when the adminStateUp is 'tttttttttttt',the Json can't post.
+        port.sdnStateUp = 'tttttttttttt'
 
         networkpostdata = network.DictoJson()
         subnetpostdata = subnet.DictoJson()

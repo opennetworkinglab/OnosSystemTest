@@ -3,7 +3,7 @@
 
         <ONOSbench>
             <host>OCN</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password></password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
@@ -13,7 +13,7 @@
 
         <ONOScli1>
             <host>OCN</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password></password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
@@ -40,7 +40,7 @@
 
         <OVSDB1>
             <host>OCN</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password></password>
             <type>OvsdbDriver</type>
             <connect_order>5</connect_order>

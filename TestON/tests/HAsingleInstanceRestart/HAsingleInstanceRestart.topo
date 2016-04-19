@@ -3,7 +3,7 @@
 
         <ONOSbench>
             <host>localhost</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
@@ -13,7 +13,7 @@
 
         <ONOScli1>
             <host>localhost</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
@@ -22,7 +22,7 @@
 
         <ONOScli2>
             <host>localhost</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>3</connect_order>
@@ -31,7 +31,7 @@
 
         <ONOScli3>
             <host>localhost</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>4</connect_order>
@@ -41,7 +41,7 @@
 
         <ONOScli4>
             <host>localhost</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>5</connect_order>
@@ -51,7 +51,7 @@
 
         <ONOScli5>
             <host>localhost</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>6</connect_order>
@@ -61,7 +61,7 @@
 
         <ONOScli6>
             <host>localhost</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>7</connect_order>
@@ -71,7 +71,7 @@
 
         <ONOScli7>
             <host>localhost</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>8</connect_order>
@@ -143,7 +143,7 @@
 
         <Mininet1>
             <host>OCN</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
             <connect_order>16</connect_order>
@@ -159,7 +159,7 @@
 
         <Mininet2>
             <host>OCN</host>
-            <user>admin</user>
+            <user>sdn</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>
             <connect_order>17</connect_order>

@@ -311,7 +311,7 @@ def sdn1net():
     '''
 
     '''startquagga(host1, 100, 'quagga-sdn.conf')'''
-    host1.cmd( "/home/admin/bird-1.5.0/bird" )
+    host1.cmd( "/home/sdn/bird-1.5.0/bird" )
     hosts = [ host1, host2, host3, host4, host5, as2host ];
     # sshdHosts = sshdHosts + hosts
     startsshds( hosts )

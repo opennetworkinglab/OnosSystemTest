@@ -26,7 +26,7 @@
     </GIT>
 
     <CTRL>
-        <USER>admin</USER>
+        <USER>sdn</USER>
 
         <ip1>OC1</ip1>
         <port1>6653</port1>
@@ -56,7 +56,7 @@
     </MN>
 
     <BENCH>
-        <user>admin</user>
+        <user>sdn</user>
         <ip1>localhost</ip1>
     </BENCH>
 

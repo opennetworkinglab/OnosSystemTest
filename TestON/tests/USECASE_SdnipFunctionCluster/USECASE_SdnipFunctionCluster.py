@@ -77,6 +77,15 @@ class USECASE_SdnipFunctionCluster:
         peer64515 = main.params['config']['peer64515']
         peer64516 = main.params['config']['peer64516']
 
+        main.step( "Copying config files" )
+        src = os.path.dirname( main.testFile ) + "/network-cfg.json"
+        dst = main.ONOSbench.home + "/tools/package/config/network-cfg.json"
+        status = main.ONOSbench.scp( main.ONOSbench, src, dst, direction="to" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=status,
+                                 onpass="Copy config file succeeded",
+                                 onfail="Copy config file failed" )
+
         main.step( "Create cell file" )
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
@@ -90,6 +99,7 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="Set cell succeeded",
                                  onfail="Set cell failed" )
 
+        main.step( "Verify cell connectivity" )
         verifyResult = main.ONOSbench.verifyCell()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=verifyResult,

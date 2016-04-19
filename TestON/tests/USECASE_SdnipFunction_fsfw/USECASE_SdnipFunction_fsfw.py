@@ -11,7 +11,7 @@ class USECASE_SdnipFunction_fsfw:
         """
         import os
         import imp
-        main.log.case( "Setup the Mininet testbed" )
+        main.case( "Setup the Mininet testbed" )
         main.dependencyPath = main.testDir + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
@@ -83,12 +83,21 @@ class USECASE_SdnipFunction_fsfw:
         import os
         from operator import eq
 
-        main.case( "Setting up test environment" )
+        main.case( "Setting up ONOS environment" )
 
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         global ONOS1Ip
         ONOS1Ip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         ipList = [ ONOS1Ip ]
+
+        main.step( "Copying config files" )
+        src = os.path.dirname( main.testFile ) + "/network-cfg.json"
+        dst = main.ONOSbench.home + "/tools/package/config/network-cfg.json"
+        status = main.ONOSbench.scp( main.ONOSbench, src, dst, direction="to" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=status,
+                                 onpass="Copy config file succeeded",
+                                 onfail="Copy config file failed" )
 
         main.step( "Create cell file" )
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
@@ -103,6 +112,7 @@ class USECASE_SdnipFunction_fsfw:
                                  onpass="Set cell succeeded",
                                  onfail="Set cell failed" )
 
+        main.step( "Verify cell connectivity" )
         verifyResult = main.ONOSbench.verifyCell()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=verifyResult,

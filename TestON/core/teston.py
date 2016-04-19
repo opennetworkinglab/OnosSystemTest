@@ -350,7 +350,7 @@ class TestON:
                 self.log.error( "\nException in the following section of" +
                                 " code: " + str( testCaseNumber ) + "." +
                                 str( stepNo ) + ": " + stepName )
-                self.log.error( e )
+                self.log.error( str( e.__class__ ) + str( e.message ) )
                 self.stepCount = self.stepCount + 1
                 self.logger.updateCaseResults( self )
                 # WIKI results

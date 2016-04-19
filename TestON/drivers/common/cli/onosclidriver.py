@@ -928,20 +928,19 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
-            assert "Command not found:" not in handle, handle
-            try:
+            if handle:
+                assert "Command not found:" not in handle, handle
                 # TODO: Maybe make this less hardcoded
                 # ConsistentMap Exceptions
                 assert "org.onosproject.store.service" not in handle
                 # Node not leader
                 assert "java.lang.IllegalStateException" not in handle
-            except AssertionError:
                 main.log.error( "Error in processing '" + cmdStr + "' " +
                                 "command: " + str( handle ) )
-                return None
             return handle
         except AssertionError:
-            main.log.exception( "" )
+            main.log.exception( "Error in processing '" + cmdStr + "' " +
+                            "command: " + str( handle ) )
             return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -3198,7 +3197,6 @@ class OnosCliDriver( CLI ):
                 return state
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, output ) )
-            main.stop()
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

@@ -852,7 +852,7 @@ class MininetCliDriver( Emulator ):
                 response = self.execute( cmd = cmd, prompt="mininet>" ,timeout=10 )
                 print response
                 pattern = "h\d-eth([\w])"
-                ipAddressSearch = re.search( pattern, response )                
+                ipAddressSearch = re.search( pattern, response )
                 print ipAddressSearch.group(1)
                 intf= host + "-eth" + str(ipAddressSearch.group(1))
                 cmd = host + " ip -6 addr add %s dev %s" % ( IP, intf )
@@ -1951,15 +1951,14 @@ class MininetCliDriver( Emulator ):
                                         timeout )
                 if i == 0:
                     main.log.info( "Exiting mininet..." )
-                response = self.execute(
-                    cmd="exit",
-                    prompt="(.*)",
-                    timeout=120 )
-                main.log.info( self.name + ": Stopped" )
-                self.handle.sendline( "sudo mn -c" )
-                response = main.TRUE
+                    response = self.execute( cmd="exit",
+                                             prompt="(.*)",
+                                             timeout=120 )
+                    main.log.info( self.name + ": Stopped" )
+                    self.handle.sendline( "sudo mn -c" )
+                    response = main.TRUE
 
-                if i == 1:
+                elif i == 1:
                     main.log.info( " Mininet trying to exit while not " +
                                    "in the mininet prompt" )
                 elif i == 2:

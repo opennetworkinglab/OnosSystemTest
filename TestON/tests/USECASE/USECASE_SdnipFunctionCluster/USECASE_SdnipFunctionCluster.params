@@ -16,7 +16,7 @@
     </CTRL>
 
     <DEPENDENCY>
-        <path>/USECASE_SdnipFunctionCluster/dependencies/</path>
+        <path>/USECASE/USECASE_SdnipFunctionCluster/dependencies/</path>
         <topology>USECASE_SdnipI2MN_Cluster.py</topology>
         <wrapper1>Functions</wrapper1>
         <wrapper2>USECASE_SdnipI2MN_Cluster</wrapper2>

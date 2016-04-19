@@ -19,7 +19,7 @@
     </CTRL>
 
     <DEPENDENCY>
-        <path>/USECASE_SdnipFunction_fsfw/dependencies/</path>
+        <path>/USECASE/USECASE_SdnipFunction_fsfw/dependencies/</path>
         <topology>USECASE_SdnipI2MN.py</topology>
         <wrapper1>Functions</wrapper1>
     </DEPENDENCY>

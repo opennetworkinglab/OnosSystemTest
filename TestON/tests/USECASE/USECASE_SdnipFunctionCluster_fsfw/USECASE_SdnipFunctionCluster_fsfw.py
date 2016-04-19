@@ -10,7 +10,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
             Start mininet
         """
         import imp
-        main.log.case( "Setup the Mininet testbed" )
+        main.case( "Setup the Mininet testbed" )
         main.dependencyPath = main.testDir + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
@@ -81,6 +81,15 @@ class USECASE_SdnipFunctionCluster_fsfw:
         fsfwIp = main.params[ 'CTRL' ][ 'fsfwIp' ]
         fsfwPort = main.params[ 'CTRL' ][ 'fsfwPort' ]
 
+        main.step( "Copying config files" )
+        src = os.path.dirname( main.testFile ) + "/network-cfg.json"
+        dst = main.ONOSbench.home + "/tools/package/config/network-cfg.json"
+        status = main.ONOSbench.scp( main.ONOSbench, src, dst, direction="to" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=status,
+                                 onpass="Copy config file succeeded",
+                                 onfail="Copy config file failed" )
+
         main.step( "Create cell file" )
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
@@ -94,6 +103,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
                                  onpass="Set cell succeeded",
                                  onfail="Set cell failed" )
 
+        main.step( "Verify cell connectivity" )
         verifyResult = main.ONOSbench.verifyCell()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=verifyResult,

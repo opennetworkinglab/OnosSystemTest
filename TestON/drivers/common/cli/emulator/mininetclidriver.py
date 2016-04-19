@@ -1961,6 +1961,7 @@ class MininetCliDriver( Emulator ):
                 elif i == 1:
                     main.log.info( " Mininet trying to exit while not " +
                                    "in the mininet prompt" )
+                    response = main.TRUE
                 elif i == 2:
                     main.log.error( "Something went wrong exiting mininet" )
                 elif i == 3:  # timeout

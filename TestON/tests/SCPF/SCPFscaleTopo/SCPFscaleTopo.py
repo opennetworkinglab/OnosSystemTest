@@ -296,7 +296,6 @@ class SCPFscaleTopo:
         while compareRetry <3:
             #While loop for retry
             devices = main.topo.getAllDevices( main )
-            hosts = main.topo.getAllHosts( main )
             ports = main.topo.getAllPorts( main )
             links = main.topo.getAllLinks( main)
             clusters = main.topo.getAllClusters( main )
@@ -324,14 +323,7 @@ class SCPFscaleTopo:
                 else:
                     currentLinksResult = main.FALSE
 
-                if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                    currentHostsResult = main.Mininet1.compareHosts(
-                            mnHosts,
-                            json.loads( hosts[ controller ] ) )
-                else:
-                    currentHostsResult = main.FALSE
-
-                stepResult = currentDevicesResult and currentLinksResult and currentHostsResult
+                stepResult = currentDevicesResult and currentLinksResult
             if stepResult:
                 break
             compareRetry += 1

@@ -133,11 +133,23 @@ def hostIntent( main,
     # Check intents state again if first check fails...
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
+        if intentResult:
+            main.assertReturnString += 'Initial Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Initial Intent State Failed\n'
 
     # Check flows count in each node
-    checkFlowsCount( main )
+    FlowResult = checkFlowsCount( main )
+    if FlowResult:
+        main.assertReturnString += 'Initial Flow Count Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow Count Failed\n'
     # Verify flows
-    checkFlowsState( main )
+    StateResult = checkFlowsState( main )
+    if StateResult:
+        main.assertReturnString += 'Initial Flow State Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow State Failed\n'
 
     # Ping hosts
     firstPingResult = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ])
@@ -391,11 +403,23 @@ def pointIntent( main,
     # Check intents state again if first check fails...
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
+        if intentResult:
+            main.assertReturnString += 'Initial Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Initial Intent State Failed\n'
 
     # Check flows count in each node
-    checkFlowsCount( main )
+    FlowResult = checkFlowsCount( main )
+    if FlowResult:
+        main.assertReturnString += 'Initial Flow Count Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow Count Failed\n'
     # Verify flows
-    checkFlowsState( main )
+    StateResult = checkFlowsState( main )
+    if StateResult:
+        main.assertReturnString += 'Initial Flow State Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow State Failed\n'
 
     # Ping hosts
     pingTemp = ping6allHosts( main, hostNames )
@@ -671,14 +695,25 @@ def pointIntentTcp( main,
     # Check intents state again if first check fails...
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
+        if intentResult:
+            main.assertReturnString += 'Initial Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Initial Intent State Failed\n'
 
     # Check flows count in each node
-    checkFlowsCount( main )
-
+    FlowResult = checkFlowsCount( main )
+    if FlowResult:
+        main.assertReturnString += 'Initial Flow Count Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow Count Failed\n'
     # Verify flows
-    checkFlowsState( main )
+    StateResult = checkFlowsState( main )
+    if StateResult:
+        main.assertReturnString += 'Initial Flow State Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow State Failed\n'
 
-    # Run iperf to both host
+        # Run iperf to both host
     iperfTemp = main.Mininet1.iperftcpipv6( host1,host2 )
     iperfResult = iperfResult and iperfTemp
     if iperfTemp:
@@ -893,7 +928,7 @@ def singleToMultiIntent( main,
                            main.hostsData.get( host ).get( 'mac' )
                ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
                            main.hostsData.get( host ).get( 'ipAddresses' )
-    
+
     pingResult = main.TRUE
     intentResult = main.TRUE
     removeIntentResult = main.TRUE
@@ -946,7 +981,7 @@ def singleToMultiIntent( main,
                                             tcpSrc="",
                                             tcpDst="" ) )
 
-    
+
     # Check intents state
     time.sleep( main.checkIntentSleep )
     intentResult = checkIntentState( main, intentsId )
@@ -954,11 +989,23 @@ def singleToMultiIntent( main,
     # Check intents state again if first check fails...
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
+        if intentResult:
+            main.assertReturnString += 'Initial Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Initial Intent State Failed\n'
 
     # Check flows count in each node
-    checkFlowsCount( main )
+    FlowResult = checkFlowsCount( main )
+    if FlowResult:
+        main.assertReturnString += 'Initial Flow Count Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow Count Failed\n'
     # Verify flows
-    checkFlowsState( main )
+    StateResult = checkFlowsState( main )
+    if StateResult:
+        main.assertReturnString += 'Initial Flow State Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow State Failed\n'
 
     firstPingResult = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ hostNames[1] ][ 'ipAddresses' ][0])
     if not firstPingResult:
@@ -1140,6 +1187,7 @@ def multiToSingleIntent( main,
         expectedLink - Expected link when the switches are down, it should
                        be two links lower than the links before the two
                        switches are down
+        Note - Don't use more than 2 hosts for MultiToSingle Intent with no mac address option.
     """
 
     assert main, "There is no main variable"
@@ -1236,11 +1284,23 @@ def multiToSingleIntent( main,
     # Check intents state again if first check fails...
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
+        if intentResult:
+            main.assertReturnString += 'Initial Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Initial Intent State Failed\n'
 
     # Check flows count in each node
-    checkFlowsCount( main )
+    FlowResult = checkFlowsCount( main )
+    if FlowResult:
+        main.assertReturnString += 'Initial Flow Count Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow Count Failed\n'
     # Verify flows
-    checkFlowsState( main )
+    StateResult = checkFlowsState( main )
+    if StateResult:
+        main.assertReturnString += 'Initial Flow State Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow State Failed\n'
 
     # Ping hosts...
     pingTemp = ping6allHosts( main, hostNames )
@@ -1348,6 +1408,376 @@ def multiToSingleIntent( main,
                  and intentResult and removeIntentResult
 
     return stepResult
+
+def testEndPointFail( main,
+                      name,
+                      test="",
+                      hostNames="",
+                      devices="",
+                      macs="",
+                      ports="",
+                      onosNode=0,
+                      ethType="",
+                      bandwidth="",
+                      lambdaAlloc=False,
+                      ipProto="",
+                      ipAddresses="",
+                      tcp="",
+                      sw1="",
+                      sw2="",
+                      sw3="",
+                      sw4="",
+                      sw5="",
+                      expectedLink1=0,
+                      expectedLink2=0 ):
+    """
+    Test Multipoint Topology for Endpoint failures
+    """
+
+    assert main, "There is no main variable"
+    assert hostNames, "You must specify hosts"
+    assert devices or main.hostsData, "You must specify devices"
+
+    global itemName
+    itemName = name
+    tempHostsData = {}
+    intentsId = []
+    onosNode = int( onosNode )
+
+    macsDict = {}
+    ipDict = {}
+    if hostNames and devices:
+        if len( hostNames ) != len( devices ):
+            main.log.debug( "hosts and devices does not have the same length" )
+            return main.FALSE
+        if ports:
+            if len( ports ) != len( devices ):
+                main.log.error( "Ports and devices does " +
+                                "not have the same length" )
+                return main.FALSE
+        else:
+            main.log.info( "Device Ports are not specified" )
+        if macs:
+            for i in range( len( devices ) ):
+                macsDict[ devices[ i ] ] = macs[ i ]
+    elif hostNames and not devices and main.hostsData:
+        devices = []
+        main.log.info( "multiIntent function is using main.hostsData" )
+        for host in hostNames:
+               devices.append( main.hostsData.get( host ).get( 'location' ) )
+               macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                           main.hostsData.get( host ).get( 'mac' )
+               ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                           main.hostsData.get( host ).get( 'ipAddresses' )
+
+    pingResult = main.TRUE
+    intentResult = main.TRUE
+    removeIntentResult = main.TRUE
+    flowResult = main.TRUE
+    topoResult = main.TRUE
+    linkDownResult = main.TRUE
+    linkUpResult = main.TRUE
+
+    devicesCopy = copy.copy( devices )
+    if ports:
+        portsCopy = copy.copy( ports )
+    main.log.info( itemName + ": Adding intents" )
+
+    # Check flows count in each node
+    checkFlowsCount( main )
+
+    if test=="MultipletoSingle":
+        for i in range( len( devices ) ):
+            egressDevice = devicesCopy[ i ]
+            ingressDeviceList = copy.copy( devicesCopy )
+            ingressDeviceList.remove( egressDevice )
+            if ports:
+                portEgress = portsCopy[ i ]
+                portIngressList = copy.copy( portsCopy )
+                del portIngressList[ i ]
+            else:
+                portEgress = ""
+                portIngressList = None
+            if not macsDict:
+                dstMac = ""
+            else:
+                dstMac = macsDict[ egressDevice ]
+                if dstMac == None:
+                    main.log.debug( "There is no MAC in device - " + egressDevice )
+                    dstMac = ""
+
+            intentsId.append(
+                            main.CLIs[ onosNode ].addMultipointToSinglepointIntent(
+                                                ingressDeviceList=ingressDeviceList,
+                                                egressDevice=egressDevice,
+                                                portIngressList=portIngressList,
+                                                portEgress=portEgress,
+                                                ethType=ethType,
+                                                ethDst=dstMac,
+                                                bandwidth=bandwidth,
+                                                lambdaAlloc=lambdaAlloc,
+                                                ipProto=ipProto,
+                                                ipSrc="",
+                                                ipDst="",
+                                                tcpSrc="",
+                                                tcpDst="" ) )
+
+
+    elif test=="SingletoMultiple":
+        for i in range( len( devices ) ):
+            ingressDevice = devicesCopy[ i ]
+            egressDeviceList = copy.copy( devicesCopy )
+            egressDeviceList.remove( ingressDevice )
+            if ports:
+                portIngress = portsCopy[ i ]
+                portEgressList = copy.copy( portsCopy )
+                del portEgressList[ i ]
+            else:
+                portIngress = ""
+                portEgressList = None
+            if not macsDict:
+                srcMac = ""
+            else:
+                srcMac = macsDict[ ingressDevice ]
+                if srcMac == None:
+                    main.log.debug( "There is no MAC in device - " + ingressDevice )
+                    srcMac = ""
+
+            intentsId.append(
+                            main.CLIs[ onosNode ].addSinglepointToMultipointIntent(
+                                                ingressDevice=ingressDevice,
+                                                egressDeviceList=egressDeviceList,
+                                                portIngress=portIngress,
+                                                portEgressList=portEgressList,
+                                                ethType=ethType,
+                                                ethSrc=srcMac,
+                                                bandwidth=bandwidth,
+                                                lambdaAlloc=lambdaAlloc,
+                                                ipProto=ipProto,
+                                                ipSrc="",
+                                                ipDst="",
+                                                tcpSrc="",
+                                                tcpDst="" ) )
+
+    else:
+        main.log.info("Invalid test Name - Type either SingletoMultiple or MultipletoSingle")
+        return main.FALSE
+
+    # Check intents state
+    time.sleep( main.checkIntentSleep )
+    intentResult = checkIntentState( main, intentsId )
+
+    # Check intents state again if first check fails...
+    if not intentResult:
+        intentResult = checkIntentState( main, intentsId )
+        if intentResult:
+            main.assertReturnString += 'Initial Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Initial Intent State Failed\n'
+
+    # Check flows count in each node
+    FlowResult = checkFlowsCount( main )
+    if FlowResult:
+        main.assertReturnString += 'Initial Flow Count Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow Count Failed\n'
+    # Verify flows
+    StateResult = checkFlowsState( main )
+    if StateResult:
+        main.assertReturnString += 'Initial Flow State Passed\n'
+    else:
+        main.assertReturnString += 'Initial Flow State Failed\n'
+
+    # Ping hosts...
+    pingTemp = ping6allHosts( main, hostNames )
+    pingResult = pingResult and pingTemp
+    if pingTemp:
+        main.assertReturnString += 'Initial Pingall Passed\n'
+    else:
+        main.assertReturnString += 'Initial Pingall Failed\n'
+
+    # Test rerouting if these variables exist
+    if sw1 and sw2 and sw3 and sw4 and sw5 and expectedLink1 and expectedLink2:
+    # Take two links down
+        # Take first link down
+        linkDownResult1 = link( main, sw1, sw2, "down" )
+        if linkDownResult1:
+            main.assertReturnString += 'First Link Down Passed\n'
+        else:
+            main.assertReturnString += 'First Link Down Failed\n'
+
+        # Take second link down
+        linkDownResult2 = link( main, sw3, sw4, "down" )
+        if linkDownResult2:
+            main.assertReturnString += 'Second Link Down Passed\n'
+        else:
+            main.assertReturnString += 'Second Link Down Failed\n'
+
+        # Check flows count in each node
+        FlowResult = checkFlowsCount( main )
+        if FlowResult:
+            main.assertReturnString += 'Link Down Flow Count Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Flow Count Failed\n'
+        # Verify flows
+        StateResult = checkFlowsState( main )
+        if StateResult:
+            main.assertReturnString += 'Link Down Flow State Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Flow State Failed\n'
+
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink1 )
+        if topoResult:
+            main.assertReturnString += 'Link Down Topology State Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Topology State Failed\n'
+
+        # Ping hosts
+        pingTemp = ping6allHosts( main, hostNames )
+        pingResult = pingResult and pingTemp
+        if pingTemp:
+            main.assertReturnString += 'Link Down Ping6all Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Ping6all Failed\n'
+
+        # Check intent state
+        intentTemp = checkIntentState( main, intentsId )
+        intentResult = intentResult and intentTemp
+        if intentTemp:
+            main.assertReturnString += 'Link Down Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Intent State Failed\n'
+
+        # Take third link down to isolate the node
+        linkDownResult3 = link( main, sw3, sw5, "down" )
+        if linkDownResult3:
+            main.assertReturnString += 'Isolation Third Link Down Passed\n'
+        else:
+            main.assertReturnString += 'Isolation Third Link Down Failed\n'
+
+        # Check flows count in each node
+        FlowResult = checkFlowsCount( main )
+        if FlowResult:
+            main.assertReturnString += 'Isolation Link Down Flow Count Passed\n'
+        else:
+            main.assertReturnString += 'Isolation Link Down Flow Count Failed\n'
+
+        # Verify flows
+        StateResult = checkFlowsState( main )
+        if StateResult:
+            main.assertReturnString += 'Isolation Link Down Flow State Passed\n'
+        else:
+            main.assertReturnString += 'Isolation Link Down Flow State Failed\n'
+
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink2 )
+        if topoResult:
+            main.assertReturnString += 'Isolation Link Down Topology State Passed\n'
+        else:
+            main.assertReturnString += 'Isolation Link Down Topology State Failed\n'
+
+        # Ping hosts after isolation
+        main.log.info("Ping will fail if the node is isolated correctly.It will ping only after bringing up the isolation link")
+        pingIsolation = ping6allHosts( main, hostNames )
+        if pingIsolation:
+            main.assertReturnString += 'Isolation Link Down Ping6all Passed\n'
+        else:
+            main.assertReturnString += 'Isolation Link Down Ping6all Failed\n'
+
+        # Check intent state after isolation
+        main.log.info("Intent will be in FAILED state if the node is isolated correctly.It will be in INSTALLED state only after bringing up isolation link")
+        intentIsolation = checkIntentState( main, intentsId )
+        if intentIsolation:
+            main.assertReturnString += 'Isolation Link Down Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Isolation Link Down Intent State Failed\n'
+
+        linkDownResult = linkDownResult1 and linkDownResult2 and linkDownResult3
+
+        # Checks ONOS state in link down
+        if linkDownResult and topoResult and pingResult and intentResult:
+            main.log.info( itemName + ": Successfully brought link down" )
+        else:
+            main.log.error( itemName + ": Failed to bring link down" )
+
+        # Bring the links back up
+        # Bring first link up
+        linkUpResult1 = link( main, sw1, sw2, "up" )
+        if linkUpResult1:
+            main.assertReturnString += 'First Link Up Passed\n'
+        else:
+            main.assertReturnString += 'First Link Up Failed\n'
+
+        # Bring second link up
+        linkUpResult2 = link( main, sw3, sw4, "up" )
+        if linkUpResult2:
+            main.assertReturnString += 'Second Link Up Passed\n'
+        else:
+            main.assertReturnString += 'Second Link Up Failed\n'
+        # Bring third link up
+        linkUpResult3 = link( main, sw3, sw5, "up" )
+        if linkUpResult3:
+            main.assertReturnString += 'Third Link Up Passed\n'
+        else:
+            main.assertReturnString += 'Third Link Up Failed\n'
+
+        linkUpResult = linkUpResult1 and linkUpResult2 and linkUpResult3
+        time.sleep( main.rerouteSleep )
+
+        # Check flows count in each node
+        FlowResult = checkFlowsCount( main )
+        if FlowResult:
+            main.assertReturnString += 'Link Up Flow Count Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Flow Count Failed\n'
+        # Verify flows
+        StateResult = checkFlowsState( main )
+        if StateResult:
+            main.assertReturnString += 'Link Up Flow State Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Flow State Failed\n'
+
+        # Check OnosTopology
+        topoResult = checkTopology( main, main.numLinks )
+        if topoResult:
+            main.assertReturnString += 'Link Up Topology State Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Topology State Failed\n'
+
+        # Ping hosts
+        pingTemp = ping6allHosts( main, hostNames )
+        pingResult = pingResult and pingTemp
+        if pingTemp:
+            main.assertReturnString += 'Link Up Pingall Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Pingall Failed\n'
+
+        # Check Intents
+        intentTemp = checkIntentState( main, intentsId )
+        intentResult = intentResult and intentTemp
+        if intentTemp:
+            main.assertReturnString += 'Link Up Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Intent State Failed\n'
+
+        # Checks ONOS state in link up
+        if linkUpResult and topoResult and pingResult and intentResult:
+            main.log.info( itemName + ": Successfully brought link back up" )
+        else:
+            main.log.error( itemName + ": Failed to bring link back up" )
+
+    # Remove all intents
+    removeIntentResult = removeAllIntents( main, intentsId )
+    if removeIntentResult:
+        main.assertReturnString += 'Remove Intents Passed'
+    else:
+        main.assertReturnString += 'Remove Intents Failed'
+
+    testResult = pingResult and linkDownResult and linkUpResult \
+                 and intentResult and removeIntentResult
+
+    return testResult
 
 def ping6allHosts( main, hostList ):
     # Ping all host in the hosts list variable

@@ -31,7 +31,8 @@ class USECASE_SegmentRouting:
         main.apps = main.params[ 'ENV' ][ 'cellApps' ]
         main.diff = ( main.params[ 'ENV' ][ 'diffApps' ] ).split(";")
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        main.dependencyPath = os.path.dirname( main.testFile ) + "/dependencies/"
+        main.path = os.path.dirname( main.testFile )
+        main.dependencyPath = main.path + "/dependencies/"
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
         #main.json = ["4x4"]
         main.json = ["2x2", "2x2"]
@@ -105,8 +106,11 @@ class USECASE_SegmentRouting:
 
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
-
-        main.case( "Package and start ONOS")
+        apps=main.apps
+        if main.diff:
+            apps = main.apps+","+main.diff.pop(0)
+        else: main.log.error( "App list is empty" )
+        main.case( "Package and start ONOS using apps:" + apps)
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
@@ -120,16 +124,14 @@ class USECASE_SegmentRouting:
         tempOnosIp = []
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[i] )
-        apps=main.apps
-        if main.diff:
-            apps = main.apps+","+main.diff.pop(0)
-        else: main.log.error( "App list is empty" )
         onosUser = main.params[ 'ENV' ][ 'cellUser' ]
+        main.step("Creating cell file")
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp",
                                        main.Mininet1.ip_address,
                                        apps,
-                                       tempOnosIp )
+                                       tempOnosIp,
+                                       onosUser )
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )
@@ -142,7 +144,8 @@ class USECASE_SegmentRouting:
                                  onfail="Failed to apply cell to environment " )
 
         main.step( "Creating ONOS package" )
-        main.ONOSbench.handle.sendline( "cp ~/OnosSystemTest/TestON/tests/USECASE_SegmentRouting/"+main.json.pop(0)+".json ~/onos/tools/package/config/network-cfg.json")
+        main.jsonFile=main.json.pop(0)
+        main.ONOSbench.handle.sendline( "cp "+main.path+"/"+main.jsonFile+".json ~/onos/tools/package/config/network-cfg.json")
         packageResult = main.ONOSbench.onosPackage()
         stepResult = packageResult
         utilities.assert_equals( expect=main.TRUE,
@@ -192,7 +195,10 @@ class USECASE_SegmentRouting:
         '''
             Report errors/warnings/exceptions
         '''
-        main.log.case( "Logging test" )
+        main.case( "Logging test for " + main.jsonFile )
+        if len(main.json) > 0 :
+            main.ONOSbench.cpLogsToDir("/opt/onos/log/karaf.log",main.logdir, 
+                           copyFileName="karaf.log."+main.jsonFile+str(len(main.json)))
         #main.ONOSbench.logReport( main.ONOSip[ 0 ],
         #                          [ "INFO" ],
         #                          "a" )
@@ -210,7 +216,7 @@ class USECASE_SegmentRouting:
         """
             Start mininet
         """
-        main.log.case( "Start Leaf-Spine 2x2 Mininet Topology" )
+        main.case( "Start Leaf-Spine "+main.jsonFile+" Mininet Topology" )
         main.log.report( "Start Mininet topology" )
 
         main.step( "Starting Mininet Topology" )

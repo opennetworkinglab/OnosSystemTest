@@ -275,6 +275,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
         bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * 6 * 2
         if bgpIntentsActualNum != bgpIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
             bgpIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         main.log.info( "bgpIntentsExpected num is:" )
@@ -307,6 +308,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
         if allRoutesStrActual != allRoutesStrExpected:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            getRoutesResult = main.ONOScli1.routes( jsonFormat=True )
             allRoutesActual = \
                 main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
             allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -328,6 +330,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
         routeIntentsExpectedNum = 3
         if routeIntentsActualNum != routeIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
             routeIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
 

@@ -25,7 +25,7 @@ from subprocess import Popen, STDOUT, PIPE
 
 QUAGGA_DIR = '/usr/lib/quagga'
 QUAGGA_RUN_DIR = '/usr/local/var/run/quagga'
-QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE_SdnipFunctionCluster_fsfw/dependencies/'
+QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE/USECASE_SdnipFunctionCluster_fsfw/dependencies/'
 numSw = 39
 vlanId = 8
 

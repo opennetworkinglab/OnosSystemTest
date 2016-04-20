@@ -308,6 +308,7 @@ class USECASE_SdnipFunctionCluster:
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
         if allRoutesStrActual != allRoutesStrExpected:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            getRoutesResult = main.ONOScli1.routes( jsonFormat=True )
             allRoutesActual = \
                 main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
             allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )

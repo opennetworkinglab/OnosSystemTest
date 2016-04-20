@@ -52,7 +52,7 @@
 
     <TOPOLOGY>
         <topology>torus</topology>
-        <scale>15,20,25</scale>
+        <scale>10,15,20</scale>
     </TOPOLOGY>
 
 </PARAMS>

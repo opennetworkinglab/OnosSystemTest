@@ -935,12 +935,10 @@ class OnosCliDriver( CLI ):
                 assert "org.onosproject.store.service" not in handle
                 # Node not leader
                 assert "java.lang.IllegalStateException" not in handle
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( handle ) )
             return handle
         except AssertionError:
             main.log.exception( "Error in processing '" + cmdStr + "' " +
-                            "command: " + str( handle ) )
+                                "command: " + str( handle ) )
             return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

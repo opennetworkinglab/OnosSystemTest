@@ -1001,7 +1001,7 @@ class OnosDriver( CLI ):
                 "start/running",
                 "\$",
                 "Unknown\sinstance",
-                pexpect.TIMEOUT ], timeout=120 )
+                pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
                 self.handle.expect( "\$" )
                 main.log.info( "Service is already running" )
@@ -1043,7 +1043,7 @@ class OnosDriver( CLI ):
                 "Could not resolve hostname",
                 "Unknown\sinstance",
                 "\$",
-                pexpect.TIMEOUT ], timeout=60 )
+                pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
                 self.handle.expect( "\$" )
                 main.log.info( "ONOS service stopped" )
@@ -1081,9 +1081,9 @@ class OnosDriver( CLI ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$", timeout=60 )
+            self.handle.expect( "\$", timeout=180 )
             self.handle.sendline( "onos-uninstall " + str( nodeIp ) )
-            self.handle.expect( "\$", timeout=60 )
+            self.handle.expect( "\$", timeout=180 )
             main.log.info( "ONOS " + nodeIp + " was uninstalled" )
             # onos-uninstall command does not return any text
             return main.TRUE
@@ -1113,7 +1113,7 @@ class OnosDriver( CLI ):
             i = self.handle.expect( [
                 "Killing\sONOS",
                 "ONOS\sprocess\sis\snot\srunning",
-                pexpect.TIMEOUT ], timeout=20 )
+                pexpect.TIMEOUT ], timeout=60 )
             if i == 0:
                 main.log.info( "ONOS instance " + str( nodeIp ) +
                                " was killed and stopped" )
@@ -1149,7 +1149,7 @@ class OnosDriver( CLI ):
                 "\$",
                 "No\sroute\sto\shost",
                 "password:",
-                pexpect.TIMEOUT ], timeout=20 )
+                pexpect.TIMEOUT ], timeout=60 )
 
             if i == 0:
                 main.log.info(
@@ -1248,7 +1248,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def isup( self, node="", timeout=120 ):
+    def isup( self, node="", timeout=240 ):
         """
         Run's onos-wait-for-start which only returns once ONOS is at run
         level 100(ready for use)

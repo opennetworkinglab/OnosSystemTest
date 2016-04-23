@@ -1,0 +1,200 @@
+{
+    "ports" : {
+    "of:0000000000000001/5" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.1.254/24" ]
+        }
+        ]
+    },
+    "of:0000000000000001/6" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.1.254/24" ]
+        }
+        ]
+    },
+    "of:0000000000000002/5" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.2.254/24" ]
+        }
+        ]
+    },
+    "of:0000000000000002/6" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.2.254/24" ]
+        }
+        ]
+    },
+    "of:0000000000000003/5" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.3.254/24" ]
+        }
+        ]
+    },
+    "of:0000000000000003/6" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.3.254/24" ]
+        }
+        ]
+    },
+    "of:0000000000000004/5" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.4.254/24" ]
+        }
+        ]
+    },
+    "of:0000000000000004/6" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.4.254/24"]
+        }
+        ]
+    }
+    },
+    "devices" : {
+        "of:0000000000000001" : {
+            "basic":{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Leaf-R1",
+                "nodeSid" : 1,
+                "routerIp" : "192.168.0.1",
+                "routerMac" : "00:00:00:00:00:01",
+                "isEdgeRouter" : true,
+                "adjacencySids" : []
+            }
+        },
+        "of:0000000000000002" : {
+            "basic":{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Leaf-R2",
+                "nodeSid" : 2,
+                "routerIp" : "192.168.0.2",
+                "routerMac" : "00:00:00:00:00:02",
+                "isEdgeRouter" : true,
+                "adjacencySids" : []
+            }
+        },
+        "of:0000000000000003" : {
+            "basic" :{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Leaf-R3",
+                "nodeSid" : 3,
+                "routerIp" : "192.168.0.3",
+                "routerMac" : "00:00:00:00:00:03",
+                "isEdgeRouter" : true,
+                "adjacencySids" : []
+            }
+        },
+        "of:0000000000000004" : {
+            "basic":{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Leaf-R4",
+                "nodeSid" : 4,
+                "routerIp" : "192.168.0.4",
+                "routerMac" : "00:00:00:00:00:04",
+                "isEdgeRouter" : true,
+                "adjacencySids" : []
+            }
+        },
+        "of:0000000000000101" : {
+            "basic":{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Spine-R1",
+                "nodeSid" : 101,
+                "routerIp" : "192.168.0.101",
+                "routerMac" : "00:00:00:00:01:01",
+                "isEdgeRouter" : false,
+                "adjacencySids" : []
+            }
+        },
+        "of:0000000000000102" : {
+            "basic":{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Spine-R2",
+                "nodeSid" : 102,
+                "routerIp" : "192.168.0.102",
+                "routerMac" : "00:00:00:00:01:02",
+                "isEdgeRouter" : false,
+                "adjacencySids" : []
+            }
+        },
+        "of:0000000000000103" : {
+            "basic":{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Spine-R3",
+                "nodeSid" : 103,
+                "routerIp" : "192.168.0.103",
+                "routerMac" : "00:00:00:00:01:03",
+                "isEdgeRouter" : false,
+                "adjacencySids" : []
+            }
+        },
+        "of:0000000000000104" : {
+            "basic":{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Spine-R4",
+                "nodeSid" : 104,
+                "routerIp" : "192.168.0.104",
+                "routerMac" : "00:00:00:00:01:04",
+                "isEdgeRouter" : false,
+                "adjacencySids" : []
+            }
+        }
+    },
+    "hosts" : {
+        "00:00:00:00:00:01/-1" : {
+            "basic": {
+                "ips": ["10.0.1.1"],
+                "location": "of:0000000000000001/5"
+            }
+        },
+        "00:00:00:00:00:02/-1" : {
+            "basic": {
+                "ips": ["10.0.1.2"],
+                "location": "of:0000000000000001/6"
+            }
+        },
+        "00:00:00:00:00:03/-1" : {
+            "basic": {
+                "ips": ["10.0.2.1"],
+                "location": "of:0000000000000002/5"
+            }
+        },
+        "00:00:00:00:00:04/-1" : {
+            "basic": {
+                "ips": ["10.0.2.2"],
+                "location": "of:0000000000000002/6"
+            }
+        },
+        "00:00:00:00:00:05/-1" : {
+            "basic": {
+                "ips": ["10.0.3.1"],
+                "location": "of:0000000000000003/5"
+            }
+        },
+        "00:00:00:00:00:06/-1" : {
+            "basic": {
+                "ips": ["10.0.3.2"],
+                "location": "of:0000000000000003/6"
+            }
+        },
+        "00:00:00:00:00:07/-1" : {
+            "basic": {
+                "ips": ["10.0.4.1"],
+                "location": "of:0000000000000004/5"
+            }
+        },
+        "00:00:00:00:00:08/-1" : {
+            "basic": {
+                "ips": ["10.0.4.2"],
+                "location": "of:0000000000000004/6"
+            }
+        }
+    }
+}

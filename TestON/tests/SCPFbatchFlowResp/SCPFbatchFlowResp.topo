@@ -1,0 +1,46 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <home>~/Projects/onos</home>
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOScli1>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOScli1>
+
+        <Mininet1>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </Mininet1>
+
+        <ONOSrest>
+            <host>OC1</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest>
+
+    </COMPONENT>
+</TOPOLOGY>

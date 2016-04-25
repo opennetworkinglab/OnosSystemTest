@@ -1,0 +1,72 @@
+
+<PARAMS>
+    <!--
+    # CASE - Descritpion
+    # 1,2,10,1000,1100,2000,1200,2000,100
+    # 1 - Variable initialization and optional pull and build ONOS package
+    # 2 - package onos, clean by uninstalling onos, install ONOS, start cli
+    # 10 - Start mininet and verify topology
+    # 11 - Start Null Provider linear topology
+    # 110 - check log for errors
+    # 1000 - build flow batches
+    # 2100 - REST POST flow batches in multiple threads and check till all ADDED
+    # 3100 - REST DELETE flow batches in multiple threads and check till all REMOVED
+    -->
+
+    <!-- <testcases>1,10,100,1000,100,2000,100,110</testcases> -->
+    <testcases>1,2,10,100,1000,2100,100,3100,100,110,210</testcases>
+
+    <GLOBAL>
+        <maxNodes>1</maxNodes> # currently only runs in single node onos
+        <numSw>63</numSw> # Number of devices used in topology
+        <numThreads>4</numThreads> #Number of Threads to use for POST and DELETE
+        <cluster>BM</cluster>
+        <SLEEP>
+            <startup>15</startup>
+            <startMN>15</startMN>
+            <addFlow>10</addFlow>
+            <delFlow>10</delFlow>
+            <chkFlow>0.5</chkFlow>
+            <cfg>5</cfg>
+        </SLEEP>
+    </GLOBAL>
+
+    <CASE1>
+        <cellName>temp</cellName>
+        <cellApps>drivers</cellApps>
+        <gitPull>False</gitPull>
+        <gitBranch>master</gitBranch>
+    </CASE1>
+
+    <CASE2>
+        <incPackaging>true</incPackaging>
+    </CASE2>
+
+    <CASE10>
+        <app>org.onosproject.openflow-base</app>
+        <adaptiveFlowenabled>false</adaptiveFlowenabled>
+        <mnArgs> --topo linear,{} --switch ovsk,protocols=OpenFlow13 --controller remote,port=6653</mnArgs>
+    </CASE10>
+
+    <CASE11>
+        <nullTopo>linear</nullTopo>
+        <nullStart>true</nullStart>
+    </CASE11>
+
+    <CASE1000>
+        <batchSize>200</batchSize>
+        <batches>500</batches>
+    </CASE1000>
+
+    <CASE2100>
+        <numThreads>4</numThreads>
+        <RESTchkFlow>main.FALSE</RESTchkFlow>
+        <chkFlowTO>200</chkFlowTO>
+    </CASE2100>
+
+    <CASE3100>
+        <RESTchkFlow>main.FALSE</RESTchkFlow>
+        <chkFlowTO>200</chkFlowTO>
+    </CASE3100>
+
+</PARAMS>

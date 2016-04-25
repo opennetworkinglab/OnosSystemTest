@@ -1480,3 +1480,254 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def createFlowBatch( self,
+                      numSw = 1,
+                      swIndex = 1,
+                      batchSize = 1,
+                      batchIndex = 1,
+                      deviceIdpreFix = "of:",
+                      appId=0,
+                      deviceID="",
+                      ingressPort="",
+                      egressPort="",
+                      ethType="",
+                      ethSrc="",
+                      ethDst="",
+                      vlan="",
+                      ipProto="",
+                      ipSrc=(),
+                      ipDst=(),
+                      tcpSrc="",
+                      tcpDst="",
+                      udpDst="",
+                      udpSrc="",
+                      mpls="",
+                      ip="DEFAULT",
+                      port="DEFAULT",
+                      debug=False ):
+        """
+        Description:
+            Creates batches of MAC-rule flows for POST.
+            Predefined MAC: 2 MS Hex digit for iterating devices
+                        Next 5 Hex digit for iterating batch numbers
+                        Next 5 Hex digit for iterating flows within a batch
+        Required:
+            * deviceId: id of the device
+        Optional:
+            * ingressPort: port ingress device
+            * egressPort: port  of egress device
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc ( i.e. src mac addr )
+            * ethDst: specify ethDst ( i.e. dst mac addr )
+            * ipProto: specify ip protocol
+            * ipSrc: specify ip source address with mask eg. ip#/24
+                as a tuple (type, ip#)
+            * ipDst: specify ip destination address eg. ip#/24
+                as a tuple (type, ip#)
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        #from pprint import pprint
+
+        flowJsonList = []
+        flowJsonBatch = {"flows":flowJsonList}
+        dev = swIndex
+
+        for fl in range(1, batchSize + 1):
+            flowJson = { "priority":100,
+                           "deviceId":"",
+                           "isPermanent":"true",
+                           "timeout":0,
+                           "treatment":{"instructions":[]},
+                           "selector": {"criteria":[]}}
+
+            #main.log.info("fl: " + str(fl))
+            if dev <= numSw:
+                deviceId = deviceIdpreFix + "{0:0{1}x}".format(dev,16)
+                #print deviceId
+                flowJson['deviceId'] = deviceId
+                dev += 1
+            else:
+                dev = 1
+                deviceId = deviceIdpreFix + "{0:0{1}x}".format(dev,16)
+                #print deviceId
+                flowJson['deviceId'] = deviceId
+                dev += 1
+
+                # ethSrc starts with "0"; ethDst starts with "1"
+                # 2 Hex digit of device number; 5 digits of batch index number; 5 digits of batch size
+            ethS = "%02X" %int( "0" + "{0:0{1}b}".format(dev,7), 2 ) + \
+                   "{0:0{1}x}".format(batchIndex,5) + "{0:0{1}x}".format(fl,5)
+            ethSrc = ':'.join(ethS[i:i+2] for i in range(0,len(ethS),2))
+            ethD = "%02X" %int( "1" + "{0:0{1}b}".format(dev,7), 2 ) + \
+                   "{0:0{1}x}".format(batchIndex,5) + "{0:0{1}x}".format(fl,5)
+            ethDst = ':'.join(ethD[i:i+2] for i in range(0,len(ethD),2))
+
+            if appId:
+                flowJson[ "appId" ] = appId
+
+            if egressPort:
+                flowJson[ 'treatment' ][ 'instructions' ].append( {
+                                                        "type":"OUTPUT",
+                                                        "port":egressPort } )
+            if ingressPort:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"IN_PORT",
+                                                        "port":ingressPort } )
+            if ethType:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_TYPE",
+                                                        "ethType":ethType } )
+            if ethSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_SRC",
+                                                        "mac":ethSrc } )
+            if ethDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_DST",
+                                                        "mac":ethDst } )
+            if vlan:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"VLAN_VID",
+                                                        "vlanId":vlan } )
+            if mpls:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"MPLS_LABEL",
+                                                        "label":mpls } )
+            if ipSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":ipSrc[0],
+                                                        "ip":ipSrc[1] } )
+            if ipDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":ipDst[0],
+                                                        "ip":ipDst[1] } )
+            if tcpSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"TCP_SRC",
+                                                        "tcpPort": tcpSrc } )
+            if tcpDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"TCP_DST",
+                                                        "tcpPort": tcpDst } )
+            if udpSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"UDP_SRC",
+                                                        "udpPort": udpSrc } )
+            if udpDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"UDP_DST",
+                                                        "udpPort": udpDst } )
+            if ipProto:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"IP_PROTO",
+                                                        "protocol": ipProto } )
+            #pprint(flowJson)
+            flowJsonList.append(flowJson)
+
+        main.log.info("Number of flows in batch: " + str( len(flowJsonList) ) )
+        flowJsonBatch['flows'] = flowJsonList
+        #pprint(flowJsonBatch)
+
+        return flowJsonBatch
+
+
+    def sendFlowBatch( self, batch={}, ip="DEFAULT", port="DEFAULT", debug=False ):
+        """
+        Description:
+            Sends a single flow batch through /flows REST API.
+        Required:
+            * The batch of flows
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        import time
+
+        try:
+            if debug: main.log.debug( "Adding flow: " + self.pprint( batch ) )
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/flows/"
+            response = self.send( ip,
+                                  port,
+                                  method="POST",
+                                  url=url,
+                                  data=json.dumps( batch ) )
+            #main.log.info("Post response is: ", str(response[0]))
+            if response[0] == 200:
+                main.log.info( self.name + ": Successfully POST flow batch" )
+                return main.TRUE, response
+            else:
+                main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                return main.FALSE
+        except NotImplementedError as e:
+            raise e  # Inform the caller
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def removeFlowBatch( self, batch={},
+                       ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Remove a batch of flows
+        Required:
+            flow batch
+        Return:
+            Returns main.TRUE if successfully deletes flows, otherwise
+            Returns main.FALSE, Returns None on error
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            # NOTE: REST url requires the intent id to be in decimal form
+
+            response = self.send( ip,
+                                  port,
+                                  method="DELETE",
+                                  url="/flows/",
+                                  data = json.dumps(batch) )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

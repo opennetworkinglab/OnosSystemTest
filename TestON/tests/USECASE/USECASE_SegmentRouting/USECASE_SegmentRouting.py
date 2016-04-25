@@ -29,14 +29,16 @@ class USECASE_SegmentRouting:
         # Test variables
         main.cellName = main.params[ 'ENV' ][ 'cellName' ]
         main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-        main.diff = ( main.params[ 'ENV' ][ 'diffApps' ] ).split(";")
+        main.diff = []
+        main.diff.extend(( main.params[ 'ENV' ][ 'diffApps' ] ).split(";"))
+        main.diff.extend(( main.params[ 'ENV' ][ 'diffApps' ] ).split(";"))
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         main.path = os.path.dirname( main.testFile )
         main.dependencyPath = main.path + "/dependencies/"
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
         #main.json = ["4x4"]
-        main.json = ["2x2", "2x2"]
-        main.args = [" ", " "]
+        main.json = ["2x2", "2x2","4x4","4x4"]
+        main.args = [" ", " ", " --spine 4 --leaf 4 ", " --spine 4 --leaf 4 "]
         #main.args = [" --spine 4 --leaf 4 "]
         main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
         main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
@@ -147,11 +149,11 @@ class USECASE_SegmentRouting:
         main.jsonFile=main.json.pop(0)
         main.ONOSbench.handle.sendline( "cp "+main.path+"/"+main.jsonFile+".json ~/onos/tools/package/config/network-cfg.json")
         packageResult = main.ONOSbench.onosPackage()
-        stepResult = packageResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully created ONOS package",
-                                 onfail="Failed to create ONOS package" )
+        #stepResult = packageResult
+        #utilities.assert_equals( expect=main.TRUE,
+        #                         actual=stepResult,
+        #                         onpass="Successfully created ONOS package",
+        #                         onfail="Failed to create ONOS package" )
 
         time.sleep( main.startUpSleep )
 
@@ -196,8 +198,8 @@ class USECASE_SegmentRouting:
             Report errors/warnings/exceptions
         '''
         main.case( "Logging test for " + main.jsonFile )
-        if len(main.json) > 0 :
-            main.ONOSbench.cpLogsToDir("/opt/onos/log/karaf.log",main.logdir, 
+        #if len(main.json) > 0 :
+        main.ONOSbench.cpLogsToDir("/opt/onos/log/karaf.log",main.logdir, 
                            copyFileName="karaf.log."+main.jsonFile+str(len(main.json)))
         #main.ONOSbench.logReport( main.ONOSip[ 0 ],
         #                          [ "INFO" ],

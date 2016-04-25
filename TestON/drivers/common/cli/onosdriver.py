@@ -20,7 +20,8 @@ import time
 import types
 import pexpect
 import os
-import os.path
+import re
+import subprocess
 from requests.models import Response
 from drivers.common.clidriver import CLI
 
@@ -34,6 +35,7 @@ class OnosDriver( CLI ):
         self.name = None
         self.home = None
         self.handle = None
+        self.nicAddr = None
         super( CLI, self ).__init__()
 
     def connect( self, **connectargs ):
@@ -183,7 +185,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onosPackage( self, opTimeout=120 ):
+    def onosPackage( self, opTimeout=180 ):
         """
         Produce a self-contained tar.gz file that can be deployed
         and executed on any platform with Java 8 JRE.
@@ -720,6 +722,7 @@ class OnosDriver( CLI ):
         tempList = tempList[ :-1 ]
         # Structure the nic string ip
         nicAddr = ".".join( tempList ) + ".*"
+        self.nicAddr = nicAddr
         onosNicString = "export ONOS_NIC=" + nicAddr
 
         try:
@@ -945,7 +948,7 @@ class OnosDriver( CLI ):
                                       "ONOS\sis\salready\sinstalled",
                                       "already\sup-to-date",
                                       "\$",
-                                      pexpect.TIMEOUT ], timeout=60 )
+                                      pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
                 main.log.warn( "Network is unreachable" )
                 self.handle.expect( "\$" )
@@ -2219,26 +2222,26 @@ class OnosDriver( CLI ):
         serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
         serviceConfig.close()
 
-    def createDBFile(self, testData):
+    def createDBFile( self, testData ):
 
         filename = main.TEST + "DB"
         DBString = ""
 
         for item in testData:
-            if type(item) is string:
+            if type( item ) is string:
                 item = "'" + item + "'"
-            if testData.index(item) < len(testData-1):
+            if testData.index( item ) < len( testData - 1 ):
                 item += ","
-            DBString += str(item)
+            DBString += str( item )
 
-        DBFile = open(filename, "a")
-        DBFile.write(DBString)
+        DBFile = open( filename, "a" )
+        DBFile.write( DBString )
         DBFile.close()
 
-    def verifySummary(self, ONOSIp,*deviceCount):
+    def verifySummary( self, ONOSIp, *deviceCount ):
 
-        self.handle.sendline("onos " + ONOSIp  + " summary")
-        self.handle.expect(":~")
+        self.handle.sendline( "onos " + ONOSIp  + " summary" )
+        self.handle.expect( ":~" )
 
         summaryStr = self.handle.before
         print "\nSummary\n==============\n" + summaryStr + "\n\n"
@@ -2250,18 +2253,65 @@ class OnosDriver( CLI ):
         passed = False
         if "SCC(s)=1," in summaryStr:
             passed = True
-            print("Summary is verifed")
+            print "Summary is verifed"
         else:
-            print("Summary failed")
+            print "Summary failed"
 
         if deviceCount:
             print" ============================="
-            checkStr = "devices=" + str(deviceCount[0]) + ","
+            checkStr = "devices=" + str( deviceCount[0] ) + ","
             print "Checkstr: " + checkStr
             if checkStr not in summaryStr:
                 passed = False
-                print("Device count failed")
+                print "Device count failed"
             else:
                 print "device count verified"
 
         return passed
+
+    def getIpAddr( self ):
+        """
+        Update self.ip_address with numerical ip address. If multiple IP's are
+        located on the device, will attempt to use self.nicAddr to choose the
+        right one. Defaults to 127.0.0.1 if no other address is found or cannot
+        determine the correct address.
+
+        ONLY WORKS WITH IPV4 ADDRESSES
+        """
+        try:
+            localhost = "127.0.0.1"
+            ipPat = "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+            pattern = re.compile( ipPat )
+            match = re.search( pattern, self.ip_address )
+            if self.nicAddr:
+                nicPat = self.nicAddr.replace( ".", "\." ).replace( "\*", r"\d{1,3}" )
+                nicPat = re.compile( nicPat )
+            else:
+                nicPat = None
+            # IF self.ip_address is an ip address and matches
+            #    self.nicAddr: return self.ip_address
+            if match:
+                curIp = match.group(0)
+                if nicPat:
+                    nicMatch = re.search( nicPat, curIp )
+                    if nicMatch:
+                        return self.ip_address
+            # ELSE: attempt to get correct address.
+            raw = subprocess.check_output( "ifconfig")
+            ifPat = re.compile( "inet addr:({})".format( ipPat ) )
+            ips = re.findall( ifPat, raw )
+            if nicPat:
+                for ip in ips:
+                    curMatch = re.search( nicPat, ip )
+                    if curMatch:
+                        self.ip_address = ip
+                        return ip
+            else:
+                tmpList = [ ip for ip in ips if ip is not localhost ]
+                if len(tmpList) == 1:
+                    curIp = tmpList[0]
+                    self.ip_address = curIp
+                    return curIp
+            return localhost
+        except Exception:
+            main.log.exception( "Uncaught exception" )

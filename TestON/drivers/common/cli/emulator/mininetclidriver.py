@@ -1985,7 +1985,7 @@ class MininetCliDriver( Emulator ):
             response = main.FALSE
         return response
 
-    def arping( self, srcHost="", dstHost="10.128.20.211", ethDevice="", output=main.TRUE ):
+    def arping( self, srcHost="", dstHost="10.128.20.211", ethDevice="", output=True, noResult=False ):
         """
         Description:
             Sends arp message from mininet host for hosts discovery
@@ -1997,7 +1997,10 @@ class MininetCliDriver( Emulator ):
         """
         if ethDevice:
             ethDevice = '-I ' + ethDevice + ' '
-        cmd = srcHost + " arping -c1 " + ethDevice + dstHost
+        cmd = srcHost + " arping -c1 "
+        if noResult:
+            cmd += "-w10 " # If we don't want the actural arping result, set -w10, arping will exit after 10 ms.
+        cmd += ethDevice + dstHost
         try:
             if output:
                 main.log.info( "Sending: " + cmd )

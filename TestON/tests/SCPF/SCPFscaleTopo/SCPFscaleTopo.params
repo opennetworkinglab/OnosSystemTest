@@ -37,7 +37,7 @@
         <balance>10</balance>
         <nodeSleep>10</nodeSleep>
         <pingall>15</pingall>
-        <MNsleep>120</MNsleep>
+        <MNsleep>60</MNsleep>
     </SLEEP>
 
     <TIMEOUT>

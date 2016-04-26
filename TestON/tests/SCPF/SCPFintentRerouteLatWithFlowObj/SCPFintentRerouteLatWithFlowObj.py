@@ -127,7 +127,7 @@ class SCPFintentRerouteLatWithFlowObj:
         deviceMastership = (main.params[ 'TEST' ][ "s" + str(clusterCount) ]).split(",")
         print("Device mastership list: " + str(deviceMastership))
 
-        main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled false")
+        main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupEnabled false")
 
         main.log.step("Setting up null provider")
         for i in range(3):

@@ -158,7 +158,7 @@ class SCPFintentEventTpWithFlowObj:
 
         time.sleep(20)
 
-        main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled " + str(flowRuleBU))
+        main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupEnabled " + str(flowRuleBU))
         main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal " + skipRelRsrc)
         devices = int(clusterCount)*10
 

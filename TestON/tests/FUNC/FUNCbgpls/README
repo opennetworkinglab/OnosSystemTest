@@ -1,0 +1,42 @@
+
+ONOS BGPLS Feature Scripts
+***************************
+
+Brief :
+*******
+        BGPLS as a southbound plug-in in ONOS controller to collect the
+        topology information of the network. This network topology can be
+        used by some applications like PCE would benefit from visibility
+        outside one area or Autonomous System (AS) in order to make better
+        decisions for path computation.
+
+
+Prerequisites:
+**************
+
+1] Scapy should be installed and running in OCN.
+2] The Scapy version should be 2.3.1 and above.
+3] Then  git clone https://github.com/secdev/scapy.git
+4] cd to scapy folder and run --- > sudo python setup.py install
+5] Test TOPO :  OCN --- OCI
+6] OnosSystemTest folder should be under ~/
+
+
+Things to know :
+****************
+
+1] We use Scapy tool, to send the BGPLS packet to ONOS.
+2] The packets are already pre-captured.
+3] ONOS reads those packet and displays the topology.
+4] We query the devices information in ONOS to check the devices/links are learn
+
+
+Steps :
+*******
+
+  1] run FUNCbgpls
+
+
+***************************************************************END************************************************************************
+
+

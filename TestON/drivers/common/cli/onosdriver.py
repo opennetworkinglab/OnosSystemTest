@@ -1609,6 +1609,30 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def dumpFlows(self,ONOSIp, destDir, filename="flows" ):
+        """
+        Dump Flow Tables to a desired directory.
+        For debugging purposes, you may want to use
+        this function to capture flows at a given point in time.
+        Localtime will be attached to the filename
+
+        Required:
+            * ONOSIp: the IP of the target ONOS instance
+            * destDir: specify directory to copy to.
+              ex ) /tmp/
+        Optional:
+            * fileName: Name of the file
+        """
+
+        localtime = time.strftime( '%x %X' )
+        localtime = localtime.replace( "/", "" )
+        localtime = localtime.replace( " ", "_" )
+        localtime = localtime.replace( ":", "" )
+        if destDir[ -1: ] != "/":
+            destDir += "/"
+        cmd="flows > "+ str( destDir ) + str( filename ) + localtime
+        return self.onosCli(ONOSIp,cmd)
+
     def cpLogsToDir( self, logToCopy,
                      destDir, copyFileName="" ):
         """

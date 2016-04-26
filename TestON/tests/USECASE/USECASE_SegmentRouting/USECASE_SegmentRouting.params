@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,2,11,9,2,11,9,2,11,9,2,11,9</testcases>
+    <testcases>1,[2,3,4,10]*4</testcases>
 
     <SCALE>
         <size>1</size>

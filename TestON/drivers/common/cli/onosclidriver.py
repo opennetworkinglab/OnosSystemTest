@@ -2139,6 +2139,9 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def checkFlowCount(self, min=0, timeout=60 ):
+        count = int(self.getTotalFlowsNum( timeout=timeout ))
+        return count if (count > min) else False
 
     def checkFlowsState( self, isPENDING=True, timeout=60 ):
         """
@@ -2291,7 +2294,7 @@ class OnosCliDriver( CLI ):
 
                 return totalFlows
 
-            return totalFlows
+            return int(totalFlows)
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

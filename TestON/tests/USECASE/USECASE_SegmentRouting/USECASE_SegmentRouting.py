@@ -127,7 +127,7 @@ class USECASE_SegmentRouting:
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[i] )
         onosUser = main.params[ 'ENV' ][ 'cellUser' ]
-        main.step("Creating cell file")
+        main.step("Create and Apply cell file")
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp",
                                        main.Mininet1.ip_address,
@@ -135,7 +135,6 @@ class USECASE_SegmentRouting:
                                        tempOnosIp,
                                        onosUser )
 
-        main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )
         verifyResult = main.ONOSbench.verifyCell()
         stepResult = cellResult and verifyResult
@@ -145,7 +144,7 @@ class USECASE_SegmentRouting:
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
 
-        main.step( "Creating ONOS package" )
+        main.step( "Create and Install ONOS package" )
         main.jsonFile=main.json.pop(0)
         main.ONOSbench.handle.sendline( "cp "+main.path+"/"+main.jsonFile+".json ~/onos/tools/package/config/network-cfg.json")
         packageResult = main.ONOSbench.onosPackage()
@@ -155,9 +154,8 @@ class USECASE_SegmentRouting:
         #                         onpass="Successfully created ONOS package",
         #                         onfail="Failed to create ONOS package" )
 
-        time.sleep( main.startUpSleep )
+        #time.sleep( main.startUpSleep )
 
-        main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
         for i in range( main.numCtrls ):
             onosInstallResult = onosInstallResult and \
@@ -187,13 +185,38 @@ class USECASE_SegmentRouting:
                 startResult = startResult and \
                         main.ONOSbench.onosStart( main.ONOSip[ i ] )
         stepResult = onosIsUp and stopResult and startResult
+
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
-        time.sleep( 2*main.startUpSleep )
+        #time.sleep( 2*main.startUpSleep )
+        main.ONOSbench.handle.sendline( "onos-secure-ssh")
+        main.step( "Checking if ONOS CLI is ready" )
+        cliResult = main.CLIs[0].startOnosCli( main.ONOSip[ 0 ],
+                                           commandlineTimeout=100, onosStartTimeout=600 )
+        utilities.assert_equals( expect=main.TRUE,
+                             actual=cliResult,
+                             onpass="ONOS CLI is ready",
+                             onfail="ONOS CLI is not ready" )
+        for i in range( 10 ):
+            ready = True
+            output = main.CLIs[0].summary()
+            if not output:
+                ready = False
+            if ready:
+                break
+            time.sleep( 10 )
+        utilities.assert_equals( expect=True, actual=ready,
+                                 onpass="ONOS summary command succeded",
+                                 onfail="ONOS summary command failed" )
 
-    def CASE9( self, main ):
+        if not ready:
+            main.log.error( "ONOS startup failed!" )
+            main.cleanup()
+            main.exit()
+
+    def CASE10( self, main ):
         '''
             Report errors/warnings/exceptions
         '''
@@ -214,7 +237,7 @@ class USECASE_SegmentRouting:
                                     "Except" ],
                                   "s" )
 
-    def CASE11( self, main ):
+    def CASE3( self, main ):
         """
             Start mininet
         """
@@ -240,13 +263,44 @@ class USECASE_SegmentRouting:
         if not topoResult:
             main.cleanup()
             main.exit()
-        main.step("Waiting for switch initialization and configuration")
-        time.sleep( 3*main.startUpSleep)
+        #main.step("Waiting for switch initialization and configuration")
+        main.step(" Check whether the flow count is bigger than 80" )
+        count =  utilities.retry( main.CLIs[0].checkFlowCount,
+                                 main.FALSE,
+                                 kwargs={'min':80},
+                                 attempts=10 )
+        utilities.assertEquals( \
+            expect=True,
+            actual=(count>0),
+            onpass="Flow count looks correct: "+str(count),
+            onfail="Flow count looks wrong: "+str(count) )
+
+        main.step( "Check whether all flow status are ADDED" )
+        flowCheck = utilities.retry( main.CLIs[0].checkFlowsState,
+                                 main.FALSE,
+                                 kwargs={'isPENDING':False},
+                                 attempts=10 )
+        utilities.assertEquals( \
+            expect=main.TRUE,
+            actual=flowCheck,
+            onpass="Flow status is correct!",
+            onfail="Flow status is wrong!" )
+        main.ONOSbench.dumpFlows( main.ONOSip[0],
+                 main.logdir, "flows" + main.jsonFile)
+        #time.sleep( 3*main.startUpSleep)
+
+    def CASE4( self, main ):
+        main.case( "Check full connectivity" )
+        main.log.report( "Check full connectivity" )
+
+        main.step("Check full connectivity")
         pa = main.Mininet1.pingall()
         utilities.assert_equals( expect=main.TRUE, actual=pa,
                                  onpass="Full connectivity successfully tested",
                                  onfail="Full connectivity failed" )
         # cleanup mininet
+        main.ONOSbench.dumpFlows( main.ONOSip[0],
+                 main.logdir, "flows" + main.jsonFile)
         main.ONOSbench.onosStop( main.ONOSip[0] )
         main.Mininet1.stopNet()
 

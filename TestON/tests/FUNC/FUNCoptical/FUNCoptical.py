@@ -203,24 +203,22 @@ class FUNCoptical:
         onosIsUp = main.TRUE
 
         for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
+            isUp = main.ONOSbench.isup( main.ONOSip[ i ] )
+            onosIsUp = onosIsUp and isUp
+            if isUp == main.TRUE:
+                main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
+            else:
+                main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +
+                                 "start ONOS again " )
+                stopResult = stopResult and main.ONOSbench.onosStop( main.ONOSip[ i ] )
+                startResult = startResult and main.ONOSbench.onosStart( main.ONOSip[ i ] )
+                if not startResult or stopResult:
+                    main.log.report( "ONOS instance {0} did not start correctly.".format( i + 1) )
         stepResult = onosIsUp and stopResult and startResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
+                                 onpass="ONOS service is ready on all nodes",
+                                 onfail="ONOS service did not start properly on all nodes" )
 
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE
@@ -311,7 +309,7 @@ class FUNCoptical:
         main.case( "Running Pingall" )
         main.caseExplanation = "Use pingall to discover all hosts. Pingall is expected to fail."
         main.step( "Discover Hosts through Pingall" )
-        pingResult = main.LincOE.pingall( timeout = 600 )
+        pingResult = main.LincOE.pingall( timeout = 120 )
 
         utilities.assert_equals( expect=main.FALSE,
                                  actual=pingResult,

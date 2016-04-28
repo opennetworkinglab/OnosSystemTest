@@ -209,8 +209,9 @@ class FUNCintent:
         onosIsUp = main.TRUE
 
         for i in range( main.numCtrls ):
-            onosIsUp = main.ONOSbench.isup( main.ONOSip[ i ] )
-            if onosIsUp == main.TRUE:
+            isUp = main.ONOSbench.isup( main.ONOSip[ i ] )
+            onosIsUp = onosIsUp and isUp
+            if isUp == main.TRUE:
                 main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
             else:
                 main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +

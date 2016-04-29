@@ -109,7 +109,7 @@ def sendArpPackage( main, hostList ):
         threads = []
         for h in hostList:
             main.Mininet1.arping( srcHost=h, dstHost="10.0.0.1", output=main.FALSE, noResult=True )
-            time.sleep(1)
+            time.sleep(0.5)
     else:
         main.Mininet1.arping(srcHost=hostList)
     summaryStr = json.loads( main.CLIs[0].summary().encode() )

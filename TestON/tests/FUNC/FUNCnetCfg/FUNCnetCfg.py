@@ -194,19 +194,18 @@ class FUNCnetCfg:
         onosIsUp = main.TRUE
 
         for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-            for i in range( main.numCtrls ):
+            isUp = main.ONOSbench.isup( main.ONOSip[ i ] )
+            onosIsUp = onosIsUp and isUp
+            if isUp == main.TRUE:
+                main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
+            else:
+                main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +
+                                 "start ONOS again " )
                 stopResult = stopResult and \
                         main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
                 startResult = startResult and \
                         main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
+            stepResult = onosIsUp and stopResult and startResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
@@ -488,10 +487,13 @@ class FUNCnetCfg:
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4 ] ]
         print allowedDevices
         onosDevices = []
-        for sw in json.loads( devices ):
-            onosDevices.append( str( sw['id'] ) )
-        onosDevices.sort()
-        print onosDevices
+        try:
+            for sw in json.loads( devices ):
+                onosDevices.append( str( sw['id'] ) )
+            onosDevices.sort()
+            print onosDevices
+        except( TypeError, ValueError ):
+            main.log.error( "Problem loading devices" )
         utilities.assert_equals( expect=allowedDevices,
                                  actual=onosDevices,
                                  onpass="Only allowed devices are in ONOS",
@@ -500,15 +502,19 @@ class FUNCnetCfg:
 
         main.step( "Check device annotations" )
         keys = [ 'name', 'owner', 'rackAddress' ]
-        for sw in json.loads( devices ):
-            if "of:0000000000000001" in sw['id']:
-                s1Correct = True
-                for k in keys:
-                    if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[k] ):
-                        s1Correct = False
-                        main.log.debug( "{} is wrong on s1".format( k ) )
-                if not s1Correct:
-                    main.log.error( "Annotations for s1 are incorrect: {}".format( sw ) )
+        try:
+            for sw in json.loads( devices ):
+                if "of:0000000000000001" in sw['id']:
+                    s1Correct = True
+                    for k in keys:
+                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[k] ):
+                            s1Correct = False
+                            main.log.debug( "{} is wrong on s1".format( k ) )
+                    if not s1Correct:
+                        main.log.error( "Annotations for s1 are incorrect: {}".format( sw ) )
+        except( TypeError, ValueError ):
+            main.log.error( "Problem loading devices" )
+            s1Correct = False
         try:
             stepResult = s1Correct
         except NameError:
@@ -611,12 +617,15 @@ class FUNCnetCfg:
         main.log.debug( main.ONOSrest1.pprint( devices ) )
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2 ] ]
         onosDevices = []
-        for sw in json.loads( devices ):
-            onosDevices.append( str( sw.get( 'id' ) ) )
-        onosDevices.sort()
-        failMsg = "ONOS devices doesn't match the list of allowed devices.\n"
-        failMsg += "Expected devices: {}\nActual devices: {}".format( allowedDevices,
-                                                                      onosDevices )
+        try:
+            for sw in json.loads( devices ):
+                onosDevices.append( str( sw.get( 'id' ) ) )
+            onosDevices.sort()
+            failMsg = "ONOS devices doesn't match the list of allowed devices.\n"
+            failMsg += "Expected devices: {}\nActual devices: {}".format( allowedDevices,
+                                                                          onosDevices )
+        except( TypeError, ValueError ):
+            main.log.error( "Problem loading devices" )
         utilities.assert_equals( expect=allowedDevices,
                                  actual=onosDevices,
                                  onpass="Only allowed devices are in ONOS",
@@ -624,23 +633,27 @@ class FUNCnetCfg:
 
         main.step( "Check device annotations" )
         keys = [ 'name', 'owner', 'rackAddress' ]
-        for sw in json.loads( devices ):
-            if "of:0000000000000001" in sw.get( 'id' ):
-                s1Correct = True
-                for k in keys:
-                    if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[k] ):
-                        s1Correct = False
-                        main.log.debug( "{} is wrong on s1".format( k ) )
-                if not s1Correct:
-                    main.log.error( "Annotations for s1 are incorrect: {}".format( sw ) )
-            elif "of:0000000000000002" in sw['id']:
-                s2Correct = True
-                for k in keys:
-                    if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s2Json[k] ):
-                        s2Correct = False
-                        main.log.debug( "{} is wrong on s2".format( k ) )
-                if not s2Correct:
-                    main.log.error( "Annotations for s2 are incorrect: {}".format( sw ) )
+        try:
+            for sw in json.loads( devices ):
+                if "of:0000000000000001" in sw.get( 'id' ):
+                    s1Correct = True
+                    for k in keys:
+                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[k] ):
+                            s1Correct = False
+                            main.log.debug( "{} is wrong on s1".format( k ) )
+                    if not s1Correct:
+                        main.log.error( "Annotations for s1 are incorrect: {}".format( sw ) )
+                elif "of:0000000000000002" in sw['id']:
+                    s2Correct = True
+                    for k in keys:
+                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s2Json[k] ):
+                            s2Correct = False
+                            main.log.debug( "{} is wrong on s2".format( k ) )
+                    if not s2Correct:
+                        main.log.error( "Annotations for s2 are incorrect: {}".format( sw ) )
+        except( TypeError, ValueError ):
+            main.log.error( "Problem loading devices" )
+            stepResult = False
         try:
             stepResult = s1Correct and s2Correct
         except NameError:

@@ -1,0 +1,6 @@
+Please ask Pingping(pingping@onlab.us) for topology figure.
+
+The default route 0.0.0.0 will have a flow entry look like blow inside the internal switch, which connects host inside SDN network.
+ cookie=0x17000048f91093, duration=3134.048s, table=0, n_packets=1978, n_bytes=193613, idle_age=0, priority=100,ip,in_port=3 actions=mod_dl_dst:00:00:00:00:00:04,output:1
+
+00:00:00:00:00:04 is the next hop peer MAC address.

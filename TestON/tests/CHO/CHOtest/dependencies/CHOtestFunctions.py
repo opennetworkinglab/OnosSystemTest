@@ -140,7 +140,7 @@ def checkLinkEvents( linkEvent, linkNum ):
         for e in range( int( main.numCtrls ) ):
             main.log.info( "Checking link number on ONOS%s" % (e+1) )
             topology_output = main.CLIs[e].topology()
-            linkResultIndividual = main.ONOSbench.checkStatus( topology_output,
+            linkResultIndividual = main.ONOScli1.checkStatus( topology_output,
                                                                main.numMNswitches,
                                                                str( linkNum ) )
             if not linkResultIndividual:

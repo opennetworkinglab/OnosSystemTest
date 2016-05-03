@@ -1530,7 +1530,7 @@ def checkTopology( main, expectedLink ):
 
     for i in range( main.numCtrls ):
         topologyResult = main.CLIs[ i ].topology()
-        statusResult = main.ONOSbench.checkStatus( topologyResult,
+        statusResult = main.CLIs[ i ].checkStatus( topologyResult,
                                                    main.numSwitch,
                                                    expectedLink )\
                        and statusResult

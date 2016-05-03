@@ -2572,27 +2572,52 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkStatus( self, ip, numoswitch, numolink, logLevel="info" ):
+    def getTopology( self, topologyOutput ):
+        """
+        Definition:
+            Loads a json topology output
+        Return:
+            topology = current ONOS topology
+        """
+        import json
+        try:
+            # either onos:topology or 'topology' will work in CLI
+            topology = json.loads(topologyOutput)
+            print topology
+            return topology
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def checkStatus(
+            self,
+            topologyResult,
+            numoswitch,
+            numolink,
+            logLevel="info" ):
         """
         Checks the number of switches & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
-        log level can be specified.
+        log level can be specific.
 
-        Params: ip = ip used for the onos cli
+        Params: topologyResult = the output of topology command
                 numoswitch = expected number of switches
                 numolink = expected number of links
-                logLevel = level to log to. Currently accepts
-                'info', 'warn' and 'report'
-
-
-        logLevel can
+                logLevel = level to log to.
+                Currently accepts 'info', 'warn' and 'report'
 
         Returns: main.TRUE if the number of switches and links are correct,
                  main.FALSE if the number of switches and links is incorrect,
                  and main.ERROR otherwise
         """
         try:
-            topology = self.getTopology( ip )
+            topology = self.getTopology( topologyResult )
             if topology == {}:
                 return main.ERROR
             output = ""
@@ -2604,29 +2629,27 @@ class OnosCliDriver( CLI ):
             switchCheck = ( int( devices ) == int( numoswitch ) )
             # Is the number of links is what we expected
             linkCheck = ( int( links ) == int( numolink ) )
-            if ( switchCheck and linkCheck ):
+            if switchCheck and linkCheck:
                 # We expected the correct numbers
-                output += "The number of links and switches match " +\
-                          "what was expected"
+                output = output + "The number of links and switches match "\
+                    + "what was expected"
                 result = main.TRUE
             else:
-                output += "The number of links and switches does not match " +\
-                          "what was expected"
+                output = output + \
+                    "The number of links and switches does not match " + \
+                    "what was expected"
                 result = main.FALSE
-            output = output + "\n ONOS sees %i devices (%i expected) \
-                    and %i links (%i expected)" % (
-                int( devices ), int( numoswitch ), int( links ),
-                int( numolink ) )
+            output = output + "\n ONOS sees %i devices" % int( devices )
+            output = output + " (%i expected) " % int( numoswitch )
+            output = output + "and %i links " % int( links )
+            output = output + "(%i expected)" % int( numolink )
             if logLevel == "report":
                 main.log.report( output )
             elif logLevel == "warn":
                 main.log.warn( output )
             else:
-                main.log.info( self.name + ": " + output )
+                main.log.info( output )
             return result
-        except TypeError:
-            main.log.exception( self.name + ": Object not as expected" )
-            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

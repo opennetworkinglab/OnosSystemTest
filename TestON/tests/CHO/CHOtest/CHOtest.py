@@ -243,7 +243,7 @@ class CHOtest:
         time.sleep( 5 )
 
         topology_output = main.ONOScli1.topology()
-        topology_result = main.ONOSbench.getTopology( topology_output )
+        topology_result = main.ONOScli1.getTopology( topology_output )
         case2Result = ( switch_mastership and startStatus )
         utilities.assert_equals(
             expect=main.TRUE,
@@ -396,7 +396,7 @@ class CHOtest:
         main.case( "Collect and Store Topology Details from ONOS" )
         main.step( "Collect and store current number of switches and links" )
         topology_output = main.ONOScli1.topology()
-        topology_result = main.ONOSbench.getTopology( topology_output )
+        topology_result = main.ONOScli1.getTopology( topology_output )
         numOnosDevices = topology_result[ 'devices' ]
         numOnosLinks = topology_result[ 'links' ]
         topoResult = main.TRUE

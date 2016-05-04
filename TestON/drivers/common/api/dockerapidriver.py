@@ -242,14 +242,16 @@ class DockerApiDriver( API ):
             main.cleanup()
             main.exit()
 
-    def onosFormCluster( self, onosIPs, cmdPath="~/OnosSystemTest/TestON/tests/PLATdockertest/Dependency", user="karaf", passwd="karaf" ):
+    def onosFormCluster( self, onosIPs, cmdPath, user="karaf", passwd="karaf" ):
         """
             From ONOS cluster for IP addresses in onosIPs list
         """
         try:
             onosIPs = " ".join(onosIPs)
-            command = cmdPath + "/onos-form-cluster -u " + user + " -p " + passwd + \
-                    " " + onosIPs
+            command = "{}/onos-form-cluster -u {} -p {} {}".format( cmdPath,
+                                                                    user,
+                                                                    passwd,
+                                                                    onosIps )
             result = subprocess.call( command, shell=True )
             if result == 0:
                 return main.TRUE

@@ -194,28 +194,33 @@ class OnosDriver( CLI ):
             ret = main.TRUE
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
-            i = self.handle.expect( [ "Downloading",
-                                      "tar.gz",
-                                      "\$",
-                                      "Unknown options" ],
-                                    opTimeout )
-            handle = str( self.handle.before + self.handle.after )
-            if i == 0:
-                # Give more time to download the file
-                self.handle.expect( "\$", opTimeout * 2 )
-                handle += str( self.handle.before )
-            elif i == 1:
-                self.handle.expect( "\$" )
-                handle += str( self.handle.before )
-            elif i == 2:
-                # This seems to be harmless, but may be a problem
-                main.log.warn( "onos-package output not as expected" )
-            elif i == 3:
-                # Incorrect usage
-                main.log.error( "onos-package does not recognize the given options" )
-                self.handle.expect( "\$" )
-                handle += str( self.handle.before )
-                ret = main.FALSE
+            while True:
+                i = self.handle.expect( [ "Downloading",
+                                          "Unknown options",
+                                          "No such file or directory",
+                                          "tar.gz",
+                                          "\$" ],
+                                        opTimeout )
+                handle = str( self.handle.before + self.handle.after )
+                if i == 0:
+                    # Give more time to download the file
+                    continue  # expect again
+                elif i == 1:
+                    # Incorrect usage
+                    main.log.error( "onos-package does not recognize the given options" )
+                    ret = main.FALSE
+                    continue  # expect again
+                elif i == 2:
+                    # File(s) not found
+                    main.log.error( "onos-package could not find a file or directory" )
+                    ret = main.FALSE
+                    continue  # expect again
+                elif i == 3:
+                    # tar.gz
+                    continue  # expect again
+                elif i == 4:
+                    # Prompt returned
+                    break
             main.log.info( "onos-package command returned: " + handle )
             # As long as the sendline does not time out,
             # return true. However, be careful to interpret

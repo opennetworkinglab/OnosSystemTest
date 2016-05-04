@@ -1731,3 +1731,91 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def getTopology( self, topologyOutput ):
+        """
+        Definition:
+            Loads a json topology output
+        Return:
+            topology = current ONOS topology
+        """
+        import json
+        try:
+            # either onos:topology or 'topology' will work in CLI
+            topology = json.loads(topologyOutput)
+            main.log.debug( topology )
+            return topology
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def checkStatus(
+            self,
+            topologyResult,
+            numoswitch,
+            numolink,
+            logLevel="info" ):
+        """
+        Checks the number of switches & links that ONOS sees against the
+        supplied values. By default this will report to main.log, but the
+        log level can be specific.
+
+        Params: topologyResult = the output of topology command
+                numoswitch = expected number of switches
+                numolink = expected number of links
+                logLevel = level to log to.
+                Currently accepts 'info', 'warn' and 'report'
+
+        Returns: main.TRUE if the number of switches and links are correct,
+                 main.FALSE if the number of switches and links is incorrect,
+                 and main.ERROR otherwise
+        """
+        try:
+            topology = self.getTopology( topologyResult )
+            if topology == {}:
+                return main.ERROR
+            output = ""
+            # Is the number of switches is what we expected
+            devices = topology.get( 'devices', False )
+            links = topology.get( 'links', False )
+            if devices is False or links is False:
+                return main.ERROR
+            switchCheck = ( int( devices ) == int( numoswitch ) )
+            # Is the number of links is what we expected
+            linkCheck = ( int( links ) == int( numolink ) )
+            if switchCheck and linkCheck:
+                # We expected the correct numbers
+                output = output + "The number of links and switches match "\
+                    + "what was expected"
+                result = main.TRUE
+            else:
+                output = output + \
+                    "The number of links and switches does not match " + \
+                    "what was expected"
+                result = main.FALSE
+            output = output + "\n ONOS sees %i devices" % int( devices )
+            output = output + " (%i expected) " % int( numoswitch )
+            output = output + "and %i links " % int( links )
+            output = output + "(%i expected)" % int( numolink )
+            if logLevel == "report":
+                main.log.report( output )
+            elif logLevel == "warn":
+                main.log.warn( output )
+            else:
+                main.log.info( output )
+            return result
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

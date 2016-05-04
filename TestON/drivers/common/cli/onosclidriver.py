@@ -2583,7 +2583,7 @@ class OnosCliDriver( CLI ):
         try:
             # either onos:topology or 'topology' will work in CLI
             topology = json.loads(topologyOutput)
-            print topology
+            main.log.debug( topology )
             return topology
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

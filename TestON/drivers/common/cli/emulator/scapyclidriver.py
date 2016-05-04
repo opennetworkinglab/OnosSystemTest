@@ -700,6 +700,7 @@ class ScapyCliDriver( Emulator ):
             sendCmd += ', timeout=' + str( timeout ) + ')'
             self.handle.sendline( sendCmd )
             self.handle.expect( self.scapyPrompt )
+            # main.log.warn( "Send packet response: {}".format( self.handle.before ) )
             if "Traceback" in self.handle.before:
                 # KeyError, SyntaxError, ...
                 main.log.error( "Error in sending command: " + self.handle.before )
@@ -739,7 +740,7 @@ class ScapyCliDriver( Emulator ):
             self.handle.expect( self.scapyPrompt )
             cmd = 'pkt = sniff(count = ' + str( sniffCount ) +\
                   ', filter = "' + str( pktFilter ) + '")'
-            print self.name + ' > ' + cmd
+            main.log.info( "Filter on " + self.name + ' > ' + cmd )
             self.handle.sendline( cmd )
             self.handle.expect( '"\)\r\n' )
             # TODO: parse this?

@@ -4,10 +4,9 @@
     # 1,2,10,1000,1100,2000,1200,2000,100
     # 1 - Variable initialization and optional pull and build ONOS package
     # 2 - install ONOS
-    # 8 - Compare topology
-    # 9 - Report logs
     # 10 - Start mininet and verify topology
     # 66 - Testing Scapy
+    # 100 - Check logs for Errors and Warnings
     # 1000 - Add flows with MAC selector
     # 1100 - Add flows with IPv4 selector
     # 1200 - Add flows with VLAN selector

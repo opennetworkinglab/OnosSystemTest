@@ -305,8 +305,8 @@ class FUNCflow:
         '''
         main.case( "Testing scapy" )
         main.step( "Creating Host1 component" )
-        main.Mininet1.createHostComponent( "h1" )
-        main.Mininet1.createHostComponent( "h2" )
+        main.Scapy.createHostComponent( "h1" )
+        main.Scapy.createHostComponent( "h2" )
         hosts = [main.h1, main.h2]
         for host in hosts:
             host.startHostCli()
@@ -317,10 +317,15 @@ class FUNCflow:
             main.log.debug( host.hostMac )
 
         main.step( "Sending/Receiving Test packet - Filter doesn't match" )
+        main.log.info( "Starting Filter..." )
         main.h2.startFilter()
+        main.log.info( "Building Ether frame..." )
         main.h1.buildEther( dst=main.h2.hostMac )
+        main.log.info( "Sending Packet..." )
         main.h1.sendPacket( )
+        main.log.info( "Checking Filter..." )
         finished = main.h2.checkFilter()
+        main.log.debug( finished )
         i = ""
         if finished:
             a = main.h2.readPackets()
@@ -382,8 +387,8 @@ class FUNCflow:
         main.step( "Add flows with MAC addresses as the only selectors" )
 
         main.log.info( "Creating host components" )
-        main.Mininet1.createHostComponent( "h1" )
-        main.Mininet1.createHostComponent( "h2" )
+        main.Scapy.createHostComponent( "h1" )
+        main.Scapy.createHostComponent( "h2" )
         hosts = [main.h1, main.h2]
         stepResult = main.TRUE
         for host in hosts:
@@ -504,8 +509,8 @@ class FUNCflow:
         main.step( "Add flows with IPv4 addresses as the only selectors" )
 
         main.log.info( "Creating host components" )
-        main.Mininet1.createHostComponent( "h1" )
-        main.Mininet1.createHostComponent( "h2" )
+        main.Scapy.createHostComponent( "h1" )
+        main.Scapy.createHostComponent( "h2" )
         hosts = [main.h1, main.h2]
         stepResult = main.TRUE
         for host in hosts:
@@ -625,8 +630,8 @@ class FUNCflow:
 
         # We do this here to utilize the hosts information
         main.log.info( "Creating host components" )
-        main.Mininet1.createHostComponent( "h3" )
-        main.Mininet1.createHostComponent( "h4" )
+        main.Scapy.createHostComponent( "h3" )
+        main.Scapy.createHostComponent( "h4" )
         hosts = [main.h3, main.h4]
         stepResult = main.TRUE
         for host in hosts:
@@ -751,8 +756,8 @@ class FUNCflow:
         main.step( "Add a flow with a MPLS selector" )
 
         main.log.info( "Creating host components" )
-        main.Mininet1.createHostComponent( "h1" )
-        main.Mininet1.createHostComponent( "h2" )
+        main.Scapy.createHostComponent( "h1" )
+        main.Scapy.createHostComponent( "h2" )
         hosts = [main.h1, main.h2]
         stepResult = main.TRUE
         for host in hosts:
@@ -867,8 +872,8 @@ class FUNCflow:
         main.step( "Add a flow with a TCP selector" )
 
         main.log.info( "Creating host components" )
-        main.Mininet1.createHostComponent( "h1" )
-        main.Mininet1.createHostComponent( "h2" )
+        main.Scapy.createHostComponent( "h1" )
+        main.Scapy.createHostComponent( "h2" )
         hosts = [main.h1, main.h2]
         stepResult = main.TRUE
         for host in hosts:
@@ -991,8 +996,8 @@ class FUNCflow:
         main.step( "Add a flow with a UDP selector" )
 
         main.log.info( "Creating host components" )
-        main.Mininet1.createHostComponent( "h1" )
-        main.Mininet1.createHostComponent( "h2" )
+        main.Scapy.createHostComponent( "h1" )
+        main.Scapy.createHostComponent( "h2" )
         hosts = [main.h1, main.h2]
         stepResult = main.TRUE
         for host in hosts:

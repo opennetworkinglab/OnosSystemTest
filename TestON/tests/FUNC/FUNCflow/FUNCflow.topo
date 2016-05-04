@@ -23,7 +23,7 @@
         </ONOScli1>
 
         <Mininet1>
-            <host>localhost</host>
+            <host>OCN</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>MininetCliDriver</type>
@@ -41,6 +41,14 @@
             <COMPONENTS>
             </COMPONENTS>
         </ONOSrest>
+
+        <Scapy>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>ScapyCliDriver</type>
+            <connect_order>7</connect_order>
+        </Scapy>
 
     </COMPONENT>
 </TOPOLOGY>

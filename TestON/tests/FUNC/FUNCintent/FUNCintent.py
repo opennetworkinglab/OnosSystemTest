@@ -836,8 +836,8 @@ class FUNCintent:
 
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
         main.assertReturnString = "Assertion Result vlan IPV4\n"
-        host1 = { "name":"h4","id":"00:00:00:00:00:04/100" }
-        host2 = { "name":"h12","id":"00:00:00:00:00:0C/100 "}
+        host1 = { "name":"h4","id":"00:00:00:00:00:04/100", "vlan":"100" }
+        host2 = { "name":"h12","id":"00:00:00:00:00:0C/100", "vlan":"100" }
         testResult = main.FALSE
         installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
@@ -849,36 +849,6 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name='VLAN1',
-                                              intentId = installResult,
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink = 18)
-        else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
-
-        main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
-        main.assertReturnString = "Assertion Result different VLAN negative test\n"
-        host1 = { "name":"h13" }
-        host2 = { "name":"h20" }
-        testResult = main.FALSE
-        installResult = main.FALSE
-        installResult = main.intentFunction.installHostIntent( main,
-                                              name='VLAN2',
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2)
-
-        if installResult:
-            testResult = main.intentFunction.testHostIntent( main,
-                                              name='VLAN2',
                                               intentId = installResult,
                                               onosNode='0',
                                               host1=host1,
@@ -1184,25 +1154,24 @@ class FUNCintent:
         main.step( "VLAN: Add point intents between h5 and h21" )
         main.assertReturnString = "Assertion Result for VLAN IPV4 with mac address point intents\n"
         senders = [
-            { "name":"h5","device":"of:0000000000000005/5","mac":"00:00:00:00:00:05" }
+            { "name":"h5","device":"of:0000000000000005/5","mac":"00:00:00:00:00:05", "vlan":"200" }
         ]
         recipients = [
-            { "name":"h21","device":"of:0000000000000007/5","mac":"00:00:00:00:00:15" }
+            { "name":"h21","device":"of:0000000000000007/5","mac":"00:00:00:00:00:15", "vlan":"200" }
         ]
         testResult = main.FALSE
         installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
-                                       name="DUALSTACK1",
+                                       name="VLAN",
                                        senders=senders,
-                                       recipients=recipients,
-                                       ethType="IPV4" )
+                                       recipients=recipients)
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
                                          main,
                                          intentId=installResult,
-                                         name="DUALSTACK1",
+                                         name="VLAN",
                                          senders=senders,
                                          recipients=recipients,
                                          sw1="s5",
@@ -1434,11 +1403,11 @@ class FUNCintent:
         main.step( "VLAN: Add single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and MAC addresses in the same VLAN\n"
         senders = [
-            { "name":"h4", "device":"of:0000000000000005/4", "mac":"00:00:00:00:00:04" }
+            { "name":"h4", "device":"of:0000000000000005/4", "mac":"00:00:00:00:00:04", "vlan":"100" }
         ]
         recipients = [
-            { "name":"h12", "device":"of:0000000000000006/4", "mac":"00:00:00:00:00:0C" },
-            { "name":"h20", "device":"of:0000000000000007/4", "mac":"00:00:00:00:00:14" }
+            { "name":"h12", "device":"of:0000000000000006/4", "mac":"00:00:00:00:00:0C", "vlan":"100" },
+            { "name":"h20", "device":"of:0000000000000007/4", "mac":"00:00:00:00:00:14", "vlan":"100" }
         ]
         badSenders=[ { "name":"h13" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h21" } ]  # Recipients that are not in the intent
@@ -1446,10 +1415,9 @@ class FUNCintent:
         installResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
-                                         name="IPV4",
+                                         name="VLAN`",
                                          senders=senders,
                                          recipients=recipients,
-                                         ethType="IPV4",
                                          sw1="s5",
                                          sw2="s2")
 
@@ -1457,7 +1425,7 @@ class FUNCintent:
             testResult = main.intentFunction.testPointIntent(
                                          main,
                                          intentId=installResult,
-                                         name="IPV4",
+                                         name="VLAN",
                                          senders=senders,
                                          recipients=recipients,
                                          badSenders=badSenders,
@@ -1658,11 +1626,11 @@ class FUNCintent:
         main.step( "VLAN: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and no MAC addresses in the same VLAN\n"
         senders = [
-            { "name":"h13", "device":"of:0000000000000006/5" },
-            { "name":"h21", "device":"of:0000000000000007/5" }
+            { "name":"h13", "device":"of:0000000000000006/5", "vlan":"200" },
+            { "name":"h21", "device":"of:0000000000000007/5", "vlan":"200" }
         ]
         recipients = [
-            { "name":"h5", "device":"of:0000000000000005/5" }
+            { "name":"h5", "device":"of:0000000000000005/5", "vlan":"200" }
         ]
         badSenders=[ { "name":"h12" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h20" } ]  # Recipients that are not in the intent
@@ -1673,7 +1641,6 @@ class FUNCintent:
                                          name="VLAN",
                                          senders=senders,
                                          recipients=recipients,
-                                         ethType="IPV4",
                                          sw1="s5",
                                          sw2="s2")
 
@@ -1863,156 +1830,8 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        main.step( "IPV4: Add multi point to single point intents" )
-        main.assertReturnString = "Assertion results for IPV4 multi to single \
-                                  point intent end point failure with IPV4 type and MAC addresses\n"
-        senders = [
-            { "name":"h16", "device":"of:0000000000000006/8", "mac":"00:00:00:00:00:10" },
-            { "name":"h24", "device":"of:0000000000000007/8", "mac":"00:00:00:00:00:18" }
-        ]
-        recipients = [
-            { "name":"h8", "device":"of:0000000000000005/8", "mac":"00:00:00:00:00:08" }
-        ]
-        isolatedSenders = [
-            { "name":"h24"}
-        ]
-        isolatedRecipients = []
-        testResult = main.FALSE
-        installResult = main.FALSE
-        installResult = main.intentFunction.installMultiToSingleIntent(
-                                         main,
-                                         name="IPV4",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         ethType="IPV4",
-                                         sw1="s5",
-                                         sw2="s2")
-
-        if installResult:
-            testResult = main.intentFunction.testEndPointFail(
-                                         main,
-                                         intentId=installResult,
-                                         name="IPV4",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         isolatedSenders=isolatedSenders,
-                                         isolatedRecipients=isolatedRecipients,
-                                         sw1="s6",
-                                         sw2="s2",
-                                         sw3="s4",
-                                         sw4="s1",
-                                         sw5="s3",
-                                         expectedLink1=16,
-                                         expectedLink2=14 )
-        else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
-
-        main.step( "IPV4_2: Add multi point to single point intents" )
-        main.assertReturnString = "Assertion results for IPV4 multi to single \
-                                  point intent end point failure with IPV4 type and no MAC addresses\n"
-        senders = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
-        ]
-        recipients = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
-        ]
-        isolatedSenders = [
-            { "name":"h24"}
-        ]
-        isolatedRecipients = []
-        testResult = main.FALSE
-        installResult = main.FALSE
-        installResult = main.intentFunction.installMultiToSingleIntent(
-                                         main,
-                                         name="IPV4_2",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         ethType="IPV4",
-                                         sw1="s5",
-                                         sw2="s2")
-
-        if installResult:
-            testResult = main.intentFunction.testEndPointFail(
-                                         main,
-                                         intentId=installResult,
-                                         name="IPV4_2",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         isolatedSenders=isolatedSenders,
-                                         isolatedRecipients=isolatedRecipients,
-                                         sw1="s6",
-                                         sw2="s2",
-                                         sw3="s4",
-                                         sw4="s1",
-                                         sw5="s3",
-                                         expectedLink1=16,
-                                         expectedLink2=14 )
-        else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
-
-        main.step( "VLAN: Add multi point to single point intents" )
-        main.assertReturnString = "Assertion results for IPV4 multi to single \
-                                  point intent end point failure with IPV4 type and no MAC addresses in the same VLAN\n"
-        senders = [
-            { "name":"h13", "device":"of:0000000000000006/5" },
-            { "name":"h21", "device":"of:0000000000000007/5" }
-        ]
-        recipients = [
-            { "name":"h5", "device":"of:0000000000000005/5" }
-        ]
-        isolatedSenders = [
-            { "name":"h21"}
-        ]
-        isolatedRecipients = []
-        testResult = main.FALSE
-        installResult = main.FALSE
-        installResult = main.intentFunction.installMultiToSingleIntent(
-                                         main,
-                                         name="VLAN",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         ethType="IPV4",
-                                         sw1="s5",
-                                         sw2="s2")
-
-        if installResult:
-            testResult = main.intentFunction.testEndPointFail(
-                                         main,
-                                         intentId=installResult,
-                                         name="VLAN",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         isolatedSenders=isolatedSenders,
-                                         isolatedRecipients=isolatedRecipients,
-                                         sw1="s6",
-                                         sw2="s2",
-                                         sw3="s4",
-                                         sw4="s1",
-                                         sw5="s3",
-                                         expectedLink1=16,
-                                         expectedLink2=14 )
-        else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
-
         main.step( "NOOPTION: Install and test single point to multi point intents" )
-        main.assertReturnString = "Assertion results for IPV4 single to multi \
-                                  point intent end point failure with no options set\n"
+        main.assertReturnString = "Assertion results for IPV4 single to multi point intent with no options set\n"
         senders = [
             { "name":"h8", "device":"of:0000000000000005/8" }
         ]
@@ -2020,9 +1839,8 @@ class FUNCintent:
             { "name":"h16", "device":"of:0000000000000006/8" },
             { "name":"h24", "device":"of:0000000000000007/8" }
         ]
-        isolatedSenders = []
-        isolatedRecipients = [
-            { "name":"h24" }
+        isolatedSenders = [
+            { "name":"h24"}
         ]
         testResult = main.FALSE
         installResult = main.FALSE
@@ -2039,153 +1857,6 @@ class FUNCintent:
                                          main,
                                          intentId=installResult,
                                          name="NOOPTION",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         isolatedSenders=isolatedSenders,
-                                         isolatedRecipients=isolatedRecipients,
-                                         sw1="s6",
-                                         sw2="s2",
-                                         sw3="s4",
-                                         sw4="s1",
-                                         sw5="s3",
-                                         expectedLink1=16,
-                                         expectedLink2=14 )
-        else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
-
-        main.step( "IPV4: Install and test single point to multi point intents" )
-        main.assertReturnString = "Assertion results for IPV4 single to multi \
-                                  point intent end point failure with IPV4 type and no MAC addresses\n"
-        senders = [
-            { "name":"h8", "device":"of:0000000000000005/8","mac":"00:00:00:00:00:08" }
-        ]
-        recipients = [
-            { "name":"h16", "device":"of:0000000000000006/8", "mac":"00:00:00:00:00:10" },
-            { "name":"h24", "device":"of:0000000000000007/8", "mac":"00:00:00:00:00:18" }
-        ]
-        isolatedSenders = []
-        isolatedRecipients = [
-            { "name":"h24" }
-        ]
-        testResult = main.FALSE
-        installResult = main.FALSE
-        installResult = main.intentFunction.installSingleToMultiIntent(
-                                         main,
-                                         name="IPV4",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         ethType="IPV4",
-                                         sw1="s5",
-                                         sw2="s2")
-
-        if installResult:
-            testResult = main.intentFunction.testEndPointFail(
-                                         main,
-                                         intentId=installResult,
-                                         name="IPV4",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         isolatedSenders=isolatedSenders,
-                                         isolatedRecipients=isolatedRecipients,
-                                         sw1="s6",
-                                         sw2="s2",
-                                         sw3="s4",
-                                         sw4="s1",
-                                         sw5="s3",
-                                         expectedLink1=16,
-                                         expectedLink2=14 )
-        else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
-
-        main.step( "IPV4_2: Add single point to multi point intents" )
-        main.assertReturnString = "Assertion results for IPV4 single to multi\
-                                  point intent endpoint failure with IPV4 type and no MAC addresses\n"
-        senders = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
-        ]
-        recipients = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
-        ]
-        isolatedSenders = []
-        isolatedRecipients = [
-            { "name":"h24" }
-        ]
-        testResult = main.FALSE
-        installResult = main.FALSE
-        installResult = main.intentFunction.installSingleToMultiIntent(
-                                         main,
-                                         name="IPV4_2",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         ethType="IPV4",
-                                         sw1="s5",
-                                         sw2="s2")
-
-        if installResult:
-            testResult = main.intentFunction.testEndPointFail(
-                                         main,
-                                         intentId=installResult,
-                                         name="IPV4_2",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         isolatedSenders=isolatedSenders,
-                                         isolatedRecipients=isolatedRecipients,
-                                         sw1="s6",
-                                         sw2="s2",
-                                         sw3="s4",
-                                         sw4="s1",
-                                         sw5="s3",
-                                         expectedLink1=16,
-                                         expectedLink2=14 )
-        else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
-
-        main.step( "VLAN: Add single point to multi point intents" )
-        main.assertReturnString = "Assertion results for IPV4 single to multi point\
-                                  intent endpoint failure with IPV4 type and MAC addresses in the same VLAN\n"
-        senders = [
-            { "name":"h4", "device":"of:0000000000000005/4", "mac":"00:00:00:00:00:04" }
-        ]
-        recipients = [
-            { "name":"h12", "device":"of:0000000000000006/4", "mac":"00:00:00:00:00:0C" },
-            { "name":"h20", "device":"of:0000000000000007/4", "mac":"00:00:00:00:00:14" }
-        ]
-        isolatedSenders = []
-        isolatedRecipients = [
-            { "name":"h20" }
-        ]
-        testResult = main.FALSE
-        installResult = main.FALSE
-        installResult = main.intentFunction.installSingleToMultiIntent(
-                                         main,
-                                         name="IPV4",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         ethType="IPV4",
-                                         sw1="s5",
-                                         sw2="s2")
-
-        if installResult:
-            testResult = main.intentFunction.testEndPointFail(
-                                         main,
-                                         intentId=installResult,
-                                         name="IPV4",
                                          senders=senders,
                                          recipients=recipients,
                                          isolatedSenders=isolatedSenders,

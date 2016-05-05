@@ -1032,11 +1032,13 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def addHostIntent( self, hostIdOne, hostIdTwo ):
+    def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="" ):
         """
         Required:
             * hostIdOne: ONOS host id for host1
             * hostIdTwo: ONOS host id for host2
+        Optional:
+            * vlanId: specify a VLAN id for the intent
         Description:
             Adds a host-to-host intent ( bidirectional ) by
             specifying the two hosts.
@@ -1044,8 +1046,10 @@ class OnosCliDriver( CLI ):
             A string of the intent id or None on Error
         """
         try:
-            cmdStr = "add-host-intent " + str( hostIdOne ) +\
-                " " + str( hostIdTwo )
+            cmdStr = "add-host-intent "
+            if vlanId:
+                cmdStr += "-v " + str( vlanId ) + " "
+            cmdStr += str( hostIdOne ) + " " + str( hostIdTwo )
             handle = self.sendline( cmdStr )
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
@@ -1141,7 +1145,8 @@ class OnosCliDriver( CLI ):
             ipSrc="",
             ipDst="",
             tcpSrc="",
-            tcpDst="" ):
+            tcpDst="",
+            vlanId="" ):
         """
         Required:
             * ingressDevice: device id of ingress device
@@ -1158,6 +1163,7 @@ class OnosCliDriver( CLI ):
             * ipDst: specify ip destination address
             * tcpSrc: specify tcp source port
             * tcpDst: specify tcp destination port
+            * vlanId: specify vlan ID
         Description:
             Adds a point-to-point intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1199,6 +1205,8 @@ class OnosCliDriver( CLI ):
                     cmd += " --tcpSrc " + str( tcpSrc )
                 if tcpDst:
                     cmd += " --tcpDst " + str( tcpDst )
+                if vlanId:
+                    cmd += " -v " + str( vlanId )
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -1277,7 +1285,8 @@ class OnosCliDriver( CLI ):
             tcpSrc="",
             tcpDst="",
             setEthSrc="",
-            setEthDst="" ):
+            setEthDst="",
+            vlanId="" ):
         """
         Note:
             This function assumes the format of all ingress devices
@@ -1302,6 +1311,7 @@ class OnosCliDriver( CLI ):
             * tcpDst: specify tcp destination port
             * setEthSrc: action to Rewrite Source MAC Address
             * setEthDst: action to Rewrite Destination MAC Address
+            * vlanId: specify vlan Id
         Description:
             Adds a multipoint-to-singlepoint intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1348,6 +1358,8 @@ class OnosCliDriver( CLI ):
                     cmd += " --setEthSrc " + str( setEthSrc )
                 if setEthDst:
                     cmd += " --setEthDst " + str( setEthDst )
+                if vlanId:
+                    cmd += " -v " + str( vlanId )
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -1430,7 +1442,8 @@ class OnosCliDriver( CLI ):
             tcpSrc="",
             tcpDst="",
             setEthSrc="",
-            setEthDst="" ):
+            setEthDst="",
+            vlanId="" ):
         """
         Note:
             This function assumes the format of all egress devices
@@ -1455,6 +1468,7 @@ class OnosCliDriver( CLI ):
             * tcpDst: specify tcp destination port
             * setEthSrc: action to Rewrite Source MAC Address
             * setEthDst: action to Rewrite Destination MAC Address
+            * vlanId: specify vlan Id
         Description:
             Adds a singlepoint-to-multipoint intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1501,6 +1515,8 @@ class OnosCliDriver( CLI ):
                     cmd += " --setEthSrc " + str( setEthSrc )
                 if setEthDst:
                     cmd += " --setEthDst " + str( setEthDst )
+                if vlanId:
+                    cmd += " -v " + str( vlanId )
 
             # Check whether the user appended the port
             # or provided it as an input

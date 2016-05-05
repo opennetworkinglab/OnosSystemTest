@@ -261,7 +261,8 @@ class HAclusterRestart:
                                  onfail="Nodes check NOT successful" )
 
         if not nodeResults:
-            for cli in main.CLIs:
+            for i in main.activeNodes:
+                cli = main.CLIs[i]
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     cli.name,
                     cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
@@ -1853,7 +1854,8 @@ class HAclusterRestart:
 
         for i in range( 10 ):
             ready = True
-            for cli in main.CLIs:
+            for i in main.activeNodes:
+                cli = main.CLIs[i]
                 output = cli.summary()
                 if not output:
                     ready = False
@@ -1874,7 +1876,8 @@ class HAclusterRestart:
 
         # Rerun for election on restarted nodes
         runResults = main.TRUE
-        for cli in main.CLIs:
+        for i in main.activeNodes:
+            cli = main.CLIs[i]
             run = cli.electionTestRun()
             if run != main.TRUE:
                 main.log.error( "Error running for election on " + cli.name )

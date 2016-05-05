@@ -286,7 +286,8 @@ class HAstopNodes:
                                  onfail="Nodes check NOT successful" )
 
         if not nodeResults:
-            for cli in main.CLIs:
+            for i in main.activeNodes:
+                cli = main.CLIs[i]
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     cli.name,
                     cli.sendline( "scr:list | grep -v ACTIVE" ) ) )

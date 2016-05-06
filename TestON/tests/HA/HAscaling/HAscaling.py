@@ -130,7 +130,7 @@ class HAscaling:
             killResults = killResults and killed
 
         main.step( "Setup server for cluster metadata file" )
-        port = 8000
+        port = main.params['serverPort']
         rootDir = os.path.dirname( main.testFile ) + "/dependencies"
         main.log.debug( "Root dir: {}".format( rootDir ) )
         status = main.Server.start( main.ONOSbench,

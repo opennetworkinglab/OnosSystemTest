@@ -2075,6 +2075,8 @@ class MininetCliDriver( Emulator ):
     def flowTableComp( self, flowTable1, flowTable2 ):
         # This function compares the selctors and treatments of each flow
         try:
+            assert flowTable1, "flowTable1 is empty or None"
+            assert flowTable2, "flowTable2 is empty or None"
             returnValue = main.TRUE
             if len(flowTable1) != len(flowTable2):
                 main.log.warn( "Flow table lengths do not match" )
@@ -2097,6 +2099,9 @@ class MininetCliDriver( Emulator ):
                     returnValue = main.FALSE
                     break
             return returnValue
+        except AssertionError:
+            main.log.exception( "Nothing to compare" )
+            return main.FALSE
         except Exception:
             main.log.exception( "Uncaught exception!" )
             main.cleanup()

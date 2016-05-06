@@ -795,7 +795,7 @@ class OnosDriver( CLI ):
                 handleMore = self.handle.before
 
                 cell_result = handleBefore + handleAfter + handleMore
-                print cell_result
+                #print cell_result
                 if( re.search( "No such cell", cell_result ) ):
                     main.log.error( "Cell call returned: " + handleBefore +
                                handleAfter + handleMore )
@@ -2253,3 +2253,39 @@ class OnosDriver( CLI ):
             return localhost
         except Exception:
             main.log.exception( "Uncaught exception" )
+
+    def startBasicONOS(self, nodeList, opSleep = 60, onosStartupSleep = 60):
+
+        '''
+        Start onos cluster with defined nodes, but only with drivers app
+
+        '''
+        import time
+
+        self.createCellFile( self.ip_address,
+                                       "temp",
+                                       self.ip_address,
+                                       "drivers",
+                                       nodeList )
+
+        main.log.info( self.name + ": Apply cell to environment" )
+        cellResult = self.setCell( "temp" )
+        verifyResult = self.verifyCell()
+
+        main.log.info( self.name + ": Creating ONOS package" )
+        packageResult = self.onosPackage( opTimeout=opSleep )
+
+        main.log.info( self.name + ": Installing ONOS package" )
+        for nd in nodeList:
+                    self.onosInstall( node=nd )
+
+        main.log.info( self.name + ": Starting ONOS service" )
+        time.sleep( onosStartupSleep )
+
+        onosStatus = True
+        for nd in nodeList:
+            onosStatus = onosStatus & self.isup( node = nd )
+            #print "onosStatus is: " + str( onosStatus )
+
+        return main.TRUE if onosStatus else main.FALSE
+

@@ -191,7 +191,7 @@ class USECASE_SegmentRouting:
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
         #time.sleep( 2*main.startUpSleep )
-        main.ONOSbench.handle.sendline( "onos-secure-ssh")
+        #main.ONOSbench.handle.sendline( "onos-secure-ssh")
         main.step( "Checking if ONOS CLI is ready" )
         cliResult = main.CLIs[0].startOnosCli( main.ONOSip[ 0 ],
                                            commandlineTimeout=100, onosStartTimeout=600 )

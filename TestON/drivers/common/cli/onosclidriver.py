@@ -301,6 +301,87 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def startCellCli( self, karafTimeout="",
+                      commandlineTimeout=10, onosStartTimeout=60 ):
+        """
+        Start CLI on onos ecll handle.
+
+        karafTimeout is an optional argument. karafTimeout value passed
+        by user would be used to set the current karaf shell idle timeout.
+        Note that when ever this property is modified the shell will exit and
+        the subsequent login would reflect new idle timeout.
+        Below is an example to start a session with 60 seconds idle timeout
+        ( input value is in milliseconds ):
+
+        tValue = "60000"
+
+        Note: karafTimeout is left as str so that this could be read
+        and passed to startOnosCli from PARAMS file as str.
+        """
+
+        try:
+            self.handle.sendline( "" )
+            x = self.handle.expect( [
+                "\$", "onos>" ], commandlineTimeout)
+
+            if x == 1:
+                main.log.info( "ONOS cli is already running" )
+                return main.TRUE
+
+            # Wait for onos start ( -w ) and enter onos cli
+            self.handle.sendline( "/opt/onos/bin/onos" )
+            i = self.handle.expect( [
+                "onos>",
+                pexpect.TIMEOUT ], onosStartTimeout )
+
+            if i == 0:
+                main.log.info( self.name + " CLI Started successfully" )
+                if karafTimeout:
+                    self.handle.sendline(
+                        "config:property-set -p org.apache.karaf.shell\
+                                 sshIdleTimeout " +
+                        karafTimeout )
+                    self.handle.expect( "\$" )
+                    self.handle.sendline( "/opt/onos/bin/onos" )
+                    self.handle.expect( "onos>" )
+                return main.TRUE
+            else:
+                # If failed, send ctrl+c to process and try again
+                main.log.info( "Starting CLI failed. Retrying..." )
+                self.handle.send( "\x03" )
+                self.handle.sendline( "/opt/onos/bin/onos" )
+                i = self.handle.expect( [ "onos>", pexpect.TIMEOUT ],
+                                        timeout=30 )
+                if i == 0:
+                    main.log.info( self.name + " CLI Started " +
+                                   "successfully after retry attempt" )
+                    if karafTimeout:
+                        self.handle.sendline(
+                            "config:property-set -p org.apache.karaf.shell\
+                                    sshIdleTimeout " +
+                            karafTimeout )
+                        self.handle.expect( "\$" )
+                        self.handle.sendline( "/opt/onos/bin/onos" )
+                        self.handle.expect( "onos>" )
+                    return main.TRUE
+                else:
+                    main.log.error( "Connection to CLI " +
+                                    self.name + " timeout" )
+                    return main.FALSE
+
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def log( self, cmdStr, level="" ):
         """
             log  the commands in the onos CLI.

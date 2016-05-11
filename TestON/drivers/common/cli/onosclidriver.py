@@ -4323,6 +4323,7 @@ class OnosCliDriver( CLI ):
                 return None
             pattern = "Key-value pair \(" + keyName + ", (?P<value>.+)\) found."
             if "Key " + keyName + " not found." in output:
+                main.log.warn( output )
                 return None
             else:
                 match = re.search( pattern, output )

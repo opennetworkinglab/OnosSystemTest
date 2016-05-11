@@ -302,8 +302,6 @@ class HAkillNodes:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     cli.name,
                     cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
-
-        if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
@@ -4235,6 +4233,9 @@ class HAkillNodes:
                                  onfail="Partitioned Transactional Map put values are incorrect" )
 
         main.step( "Partitioned Transactional maps get" )
+        # FIXME: is this sleep needed?
+        time.sleep( 5 )
+
         getCheck = True
         for n in range( 1, numKeys + 1 ):
             getResponses = []

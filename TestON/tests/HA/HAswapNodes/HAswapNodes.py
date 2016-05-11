@@ -1,6 +1,6 @@
 """
 Description: This test is to determine if ONOS can handle
-             dynamic scaling of the cluster size.
+             dynamic swapping of cluster nodes.
 
 List of test cases:
 CASE1: Compile ONOS and push it to the test machines
@@ -9,7 +9,7 @@ CASE21: Assign mastership to controllers
 CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
-CASE6: The scaling case.
+CASE6: Swap nodes
 CASE7: Check state after control plane failure
 CASE8: Compare topo
 CASE9: Link s3-s28 down
@@ -24,7 +24,7 @@ CASE17: Check for basic functionality with distributed primitives
 """
 
 
-class HAscaling:
+class HAswapNodes:
 
     def __init__( self ):
         self.default = ''
@@ -78,7 +78,7 @@ class HAscaling:
         try:
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-            from tests.HA.HAscaling.dependencies.Server import Server
+            from tests.HA.HAswapNodes.dependencies.Server import Server
             main.Server = Server()
         except Exception as e:
             main.log.exception( e )
@@ -142,17 +142,11 @@ class HAscaling:
                                  onfail="Failled to start SimpleHTTPServer" )
 
         main.step( "Generate initial metadata file" )
-        main.scaling = main.params['scaling'].split( "," )
-        main.log.debug( main.scaling )
-        scale = main.scaling.pop(0)
-        main.log.debug( scale)
-        if "e" in scale:
-            equal = True
+        if main.numCtrls >= 5:
+            main.numCtrls -= 2
         else:
-            equal = False
-        main.log.debug( equal)
-        main.numCtrls = int( re.search( "\d+", scale ).group(0) )
-        genResult = main.Server.generateFile( main.numCtrls, equal=equal )
+            main.log.error( "Not enough ONOS nodes to run this test. Requires 5 or more" )
+        genResult = main.Server.generateFile( main.numCtrls )
         utilities.assert_equals( expect=main.TRUE, actual=genResult,
                                  onpass="New cluster metadata file generated",
                                  onfail="Failled to generate new metadata file" )
@@ -200,7 +194,7 @@ class HAscaling:
         #       job = name of Jenkins job
         #       Plot Name = Plot-HA, only can be used if multiple plots
         #       index = The number of the graph under plot name
-        job = "HAscaling"
+        job = "HAswapNodes"
         plotName = "Plot-HA"
         index = "0"
         graphs = '<ac:structured-macro ac:name="html">\n'
@@ -1835,7 +1829,7 @@ class HAscaling:
             global data
             data = []
 
-        main.case( "Scale the number of nodes in the ONOS cluster" )
+        main.case( "Swap some of the ONOS nodes" )
 
         main.step( "Checking ONOS Logs for errors" )
         for i in main.activeNodes:
@@ -1843,36 +1837,30 @@ class HAscaling:
             main.log.debug( "Checking logs for errors on " + node.name + ":" )
             main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
 
-        """
-        pop # of nodes from a list, might look like 1,3b,3,5b,5,7b,7,7b,5,5b,3...
-        modify cluster.json file appropriately
-        install/deactivate node as needed
-        """
+        main.step( "Generate new metadata file" )
+        old = [ main.activeNodes[0],  main.activeNodes[-1] ]
+        new = range( main.ONOSbench.maxNodes )[-2:]
+        assert len( old ) == len( new ), "Length of nodes to swap don't match"
+        handle = main.ONOSbench.handle
+        for x, y in zip( old, new ):
+            handle.sendline( "export OC{}=$OC{}".format( x + 1, y + 1 ) )
+            handle.expect( "\$" )  # from the variable
+            ret = handle.before
+            handle.expect( "\$" )  # From the prompt
+            ret += handle.before
+            main.log.debug( ret )
+            main.activeNodes.remove( x )
+            main.activeNodes.append( y )
 
-        try:
-            prevNodes = main.activeNodes
-            scale = main.scaling.pop(0)
-            if "e" in scale:
-                equal = True
-            else:
-                equal = False
-            main.numCtrls = int( re.search( "\d+", scale ).group(0) )
-            main.log.info( "Scaling to {} nodes".format( main.numCtrls ) )
-            genResult = main.Server.generateFile( main.numCtrls, equal=equal )
-            utilities.assert_equals( expect=main.TRUE, actual=genResult,
-                                     onpass="New cluster metadata file generated",
-                                     onfail="Failled to generate new metadata file" )
-            time.sleep( 5 )  # Give time for nodes to read new file
-        except IndexError:
-            main.cleanup()
-            main.exit()
-
-        main.activeNodes = [ i for i in range( 0, main.numCtrls ) ]
-        newNodes = [ x for x in main.activeNodes if x not in prevNodes ]
+        genResult = main.Server.generateFile( main.numCtrls )
+        utilities.assert_equals( expect=main.TRUE, actual=genResult,
+                                 onpass="New cluster metadata file generated",
+                                 onfail="Failled to generate new metadata file" )
+        time.sleep( 5 )  # Give time for nodes to read new file
 
         main.step( "Start new nodes" )  # OR stop old nodes?
         started = main.TRUE
-        for i in newNodes:
+        for i in new:
             started = main.ONOSbench.onosStart( main.nodes[i].ip_address ) and main.TRUE
         utilities.assert_equals( expect=main.TRUE, actual=started,
                                  onpass="ONOS started",
@@ -1948,14 +1936,19 @@ class HAscaling:
                                  onpass="Reran for election",
                                  onfail="Failed to rerun for election" )
 
-        # TODO: Make this configurable
-        time.sleep( 60 )
         for node in main.activeNodes:
             main.log.warn( "\n****************** {} **************".format( main.nodes[node].ip_address ) )
             main.log.debug( main.CLIs[node].nodes( jsonFormat=False ) )
             main.log.debug( main.CLIs[node].leaders( jsonFormat=False ) )
             main.log.debug( main.CLIs[node].partitions( jsonFormat=False ) )
             main.log.debug( main.CLIs[node].apps( jsonFormat=False ) )
+
+        main.step( "Reapplying cell variable to environment" )
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        cellResult = main.ONOSbench.setCell( cellName )
+        utilities.assert_equals( expect=main.TRUE, actual=cellResult,
+                                 onpass="Set cell successfull",
+                                 onfail="Failled to set cell" )
 
     def CASE7( self, main ):
         """
@@ -2617,6 +2610,9 @@ class HAscaling:
             onfail="ONOS nodes have different views of clusters" )
         if not consistentClustersResult:
             main.log.debug( clusters )
+            for x in links:
+                main.log.warn( "{}: {}".format( len( x ), x ) )
+
 
         main.step( "There is only one SCC" )
         # there should always only be one cluster
@@ -4265,9 +4261,6 @@ class HAscaling:
                                  onfail="Partitioned Transactional Map put values are incorrect" )
 
         main.step( "Partitioned Transactional maps get" )
-        # FIXME: is this sleep needed?
-        time.sleep( 5 )
-
         getCheck = True
         for n in range( 1, numKeys + 1 ):
             getResponses = []

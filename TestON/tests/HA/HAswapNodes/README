@@ -1,0 +1,20 @@
+This test is designed to verify that an ONOS cluster behaves correctly when
+nodes are added or removed from a cluster dynamically via modifying a remote
+cluster metadata file.
+
+
+The gerneral structure for the test:
+- Startup
+- Assign switches
+- Verify ONOS state and functionality
+    - Device mastership
+    - Intents
+    - Leadership election
+    - Distributed Primitives
+- Scale ONOS cluster size from 1 to 7 to 1 by increments of 2
+    - Modify cluster metadata file
+    - Start or stop ONOS nodes
+    - Verify ONOS state and functionality
+    - Dataplane failures
+        - link down and up
+        - switch down and up

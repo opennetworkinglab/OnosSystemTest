@@ -1680,8 +1680,9 @@ class HAstopNodes:
             actual=consistentClustersResult,
             onpass="Clusters view is consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of clusters" )
-        if consistentClustersResult != main.TRUE:
+        if not consistentClustersResult:
             main.log.debug( clusters )
+
         # there should always only be one cluster
         main.step( "Cluster view correct across ONOS nodes" )
         try:
@@ -2551,6 +2552,8 @@ class HAstopNodes:
             actual=consistentClustersResult,
             onpass="Clusters view is consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of clusters" )
+        if not consistentClustersResult:
+            main.log.debug( clusters )
 
         main.step( "There is only one SCC" )
         # there should always only be one cluster

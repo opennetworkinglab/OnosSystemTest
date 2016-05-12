@@ -75,7 +75,7 @@ class OnosRestDriver( Controller ):
             main.log.exception( "Error parsing jsonObject" )
             return None
 
-    def send( self, url, base="/onos/v1", method="GET",
+    def send( self, url, ip = "DEFAULT", port = "DEFAULT", base="/onos/v1", method="GET",
               query=None, data=None, debug=False ):
         """
         Arguments:
@@ -94,8 +94,13 @@ class OnosRestDriver( Controller ):
         # TODO: should we maybe just pass kwargs straight to response?
         # TODO: Do we need to allow for other protocols besides http?
         # ANSWER: Not yet, but potentially https with certificates
-        ip = self.ip_address
-        port = self.port
+        if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+        if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
 
         try:
             path = "http://" + str( ip ) + ":" + str( port ) + base + url
@@ -140,7 +145,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            response = self.send( url="/intents" )
+            response = self.send( url="/intents", ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -188,7 +193,7 @@ class OnosRestDriver( Controller ):
                 port = self.port
             # NOTE: REST url requires the intent id to be in decimal form
             query = "/" + str( appId ) + "/" + str( intentId )
-            response = self.send( url="/intents" + query )
+            response = self.send( url="/intents" + query, ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -251,7 +256,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            response = self.send( url="/applications" )
+            response = self.send( url="/applications", ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -295,7 +300,8 @@ class OnosRestDriver( Controller ):
                 port = self.port
             query = "/" + str( appName ) + "/active"
             response = self.send( method="POST",
-                                  url="/applications" + query )
+                                  url="/applications" + query,
+                                  ip = ip, port = port)
             if response:
                 output = response[ 1 ]
                 app = json.loads( output )
@@ -351,7 +357,8 @@ class OnosRestDriver( Controller ):
                 port = self.port
             query = "/" + str( appName ) + "/active"
             response = self.send( method="DELETE",
-                                  url="/applications" + query )
+                                  url="/applications" + query,
+                                  ip = ip, port = port )
             if response:
                 output = response[ 1 ]
                 app = json.loads( output )
@@ -404,7 +411,8 @@ class OnosRestDriver( Controller ):
                                "from topo file" )
                 port = self.port
             query = "/" + project + str( appName )
-            response = self.send( url="/applications" + query )
+            response = self.send( url="/applications" + query,
+                                  ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -455,7 +463,7 @@ class OnosRestDriver( Controller ):
                                "from topo file" )
                 port = self.port
             response = self.send( method="POST",
-                                  url="/intents",
+                                  url="/intents", ip = ip, port = port,
                                   data=json.dumps( intentJson ) )
             if response:
                 if 201:
@@ -605,7 +613,7 @@ class OnosRestDriver( Controller ):
                                "from topo file" )
                 port = self.port
             response = self.send( method="POST",
-                                  url="/intents",
+                                  url="/intents", ip = ip, port = port,
                                   data=json.dumps( intentJson ) )
             if response:
                 if 201:
@@ -644,7 +652,7 @@ class OnosRestDriver( Controller ):
             # NOTE: REST url requires the intent id to be in decimal form
             query = "/" + str( appId ) + "/" + str( int( intentId, 16 ) )
             response = self.send( method="DELETE",
-                                  url="/intents" + query )
+                                  url="/intents" + query, ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     return main.TRUE
@@ -744,7 +752,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            response = self.send( url="/hosts" )
+            response = self.send( url="/hosts", ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -790,7 +798,7 @@ class OnosRestDriver( Controller ):
                                "from topo file" )
                 port = self.port
             query = "/" + mac + "/" + vlan
-            response = self.send( url="/hosts" + query )
+            response = self.send( url="/hosts" + query, ip = ip, port = port )
             if response:
             # NOTE: What if the person wants other values? would it be better
             # to have a function that gets a key and return a value instead?
@@ -829,7 +837,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            response = self.send( url="/topology" )
+            response = self.send( url="/topology", ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -866,7 +874,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            response = self.send( url="/devices" )
+            response = self.send( url="/devices", ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -1029,7 +1037,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            response = self.send( url="/flows" )
+            response = self.send( url="/flows", ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -1072,7 +1080,7 @@ class OnosRestDriver( Controller ):
             if flowId:
                 url += "/" + str( int( flowId ) )
             print url
-            response = self.send( url=url )
+            response = self.send( url=url, ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -1121,7 +1129,7 @@ class OnosRestDriver( Controller ):
                 port = self.port
             url = "/flows/" + deviceId
             response = self.send( method="POST",
-                                  url=url,
+                                  url=url, ip = ip, port = port,
                                   data=json.dumps( flowJson ) )
             if response:
                 if 201:
@@ -1288,7 +1296,7 @@ class OnosRestDriver( Controller ):
             # NOTE: REST url requires the intent id to be in decimal form
             query = "/" + str( deviceId ) + "/" + str( int( flowId ) )
             response = self.send( method="DELETE",
-                                  url="/flows" + query )
+                                  url="/flows" + query, ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     return main.TRUE
@@ -1358,7 +1366,7 @@ class OnosRestDriver( Controller ):
                     url += "/" + subjectKey
                     if configKey:
                         url += "/" + configKey
-            response = self.send( url=url )
+            response = self.send( url=url, ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
@@ -1409,7 +1417,7 @@ class OnosRestDriver( Controller ):
                     if configKey:
                         url += "/" + configKey
             response = self.send( method="POST",
-                                  url=url,
+                                  url=url, ip = ip, port = port,
                                   data=json.dumps( cfgJson ) )
             if response:
                 if 200 <= response[ 0 ] <= 299:
@@ -1455,7 +1463,7 @@ class OnosRestDriver( Controller ):
                     if configKey:
                         url += "/" + configKey
             response = self.send( method="DELETE",
-                                  url=url )
+                                  url=url, ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     main.log.info( self.name + ": Successfully delete cfg" )
@@ -1659,7 +1667,7 @@ class OnosRestDriver( Controller ):
                 port = self.port
             url = "/flows/"
             response = self.send( method="POST",
-                                  url=url,
+                                  url=url, ip = ip, port = port,
                                   data=json.dumps( batch ) )
             #main.log.info("Post response is: ", str(response[0]))
             if response[0] == 200:
@@ -1702,7 +1710,7 @@ class OnosRestDriver( Controller ):
             # NOTE: REST url requires the intent id to be in decimal form
 
             response = self.send( method="DELETE",
-                                  url="/flows/",
+                                  url="/flows/", ip = ip, port = port,
                                   data = json.dumps(batch) )
             if response:
                 if 200 <= response[ 0 ] <= 299:

@@ -163,7 +163,7 @@ class PLATdockertest:
         main.ONOSbenchDocker.onosFormCluster(cmdPath = clcmdpath, onosIPs=IPlist, user=dkruser, passwd = dkrpasswd)
         main.log.info("Wait for cluster to form with sleep time of " + str(startupSleep))
         time.sleep(startupSleep)
-        status, response = main.ONOSbenchRest.send(ip=IPlist[0],port=8181, url="/cluster")
+        status, response = main.ONOSbenchRest.send(ip=IPlist[0], port=8181, url="/cluster")
         main.log.debug("Rest call response: " + str(status) + " - " + response)
         if status == 200:
             jrsp = json.loads(response)

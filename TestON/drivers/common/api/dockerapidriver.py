@@ -251,7 +251,7 @@ class DockerApiDriver( API ):
             command = "{}/onos-form-cluster -u {} -p {} {}".format( cmdPath,
                                                                     user,
                                                                     passwd,
-                                                                    onosIps )
+                                                                    onosIPs )
             result = subprocess.call( command, shell=True )
             if result == 0:
                 return main.TRUE

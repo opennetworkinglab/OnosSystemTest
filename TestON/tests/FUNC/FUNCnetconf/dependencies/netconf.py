@@ -89,13 +89,11 @@ def sendConfig( main ):
         This function prepares the command needed to upload the configuration
         file to the REST API
     """
-    ip = main.ONOSip[0]
-    port = 8181
     url = "/network/configuration"
     method = "POST"
     data = main.cfgJson
     configResult = main.FALSE
-    sendResult = main.CLIs[ 0 ].send( ip=ip, port=port, url=url, method=method, data=data )
+    sendResult = main.CLIs[ 0 ].send( url=url, method=method, data=data )
     main.log.info( "Device configuration request response code: " + str( sendResult[ 0 ] ) )
     if ( 200 <= sendResult[ 0 ] <= 299):
         configResult = main.TRUE

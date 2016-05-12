@@ -1,0 +1,33 @@
+CHO TEST MONKEY
+
+Summary:
+        This is a long-term regression test that is aimed to run for weeks
+        at a time. It's goal is to find memory leaks or bugs that otherwise
+        cannot be easily seen with short-term tests.
+        CHOTestMonkey is the 2016 version of CHOtest. The suffix "Monkey"
+        implies both the Chaos Monkey style testing and the year of the
+        Monkey 2016.
+
+Topology:
+        Att topology - 25 switches and 25 hosts and its structure is
+                       designed to simulate a real world configuration.
+        Chordal topology - 25 swithces and 25 hosts and because of its
+                           chordal graph structure, it's particulary useful
+                           in testing the rerouting capability of ONOS.
+        Leaf-spine topology - 78 switches and 68 hosts and designed to
+                              simulate modern data centers.
+
+Pre-requisites:
+        To run out-of-the box this test requires 3 NODES. The cell file
+        must be passed through the startup test command, e.g.,
+
+            ./cli.py run CHOTestMonkey onoscell <cell name>.
+
+        Passwordless login must be set from TestStation "sdn" root user.
+        This test relies on the topology files to start Mininet located in
+        the dependencies/topologies folder. Be sure to check that each
+        topology file can be loaded properly by Mininet by using this
+        command:
+
+            sudo ~/dependencies/topologies/<topology name>
+

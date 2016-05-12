@@ -617,6 +617,60 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
+    def pingHostSetAlternative( self, dstIPList, wait=1, IPv6=False ):
+        """
+        Description:
+            Ping a set of destination host from host CLI.
+            Logging into a Mininet host CLI is required before calling this funtion.
+        Params:
+            dstIPList is a list of destination ip addresses
+        Returns:
+            main.TRUE if the destination host is reachable
+            main.FALSE otherwise
+        """
+        isReachable = main.TRUE
+        wait = int( wait )
+        cmd = "ping"
+        if IPv6:
+            cmd = cmd + "6"
+        cmd = cmd + " -c 1 -i 1 -W " + str( wait )
+        try:
+            for dstIP in dstIPList:
+                pingCmd = cmd + " " + dstIP
+                self.handle.sendline( pingCmd )
+                i = self.handle.expect( [ self.hostPrompt,
+                                          '\*\*\* Unknown command: ' + pingCmd,
+                                          pexpect.TIMEOUT ],
+                                        timeout=wait + 1 )
+                if i == 0:
+                    response = self.handle.before
+                    if not re.search( ',\s0\%\spacket\sloss', response ):
+                        main.log.debug( "Ping failed between %s and %s" % ( self.name, dstIP ) )
+                        isReachable = main.FALSE
+                elif i == 1:
+                    main.log.error( self.name + ": function should be called from host CLI instead of Mininet CLI" )
+                    main.cleanup()
+                    main.exit()
+                elif i == 2:
+                    main.log.error( self.name + ": timeout when waiting for response" )
+                    isReachable = main.FALSE
+                else:
+                    main.log.error( self.name + ": unknown response: " + self.handle.before )
+                    isReachable = main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception" )
+            isReachable = main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+        return isReachable
+
     def checkIP( self, host ):
         """
            Verifies the host's ip configured or not."""

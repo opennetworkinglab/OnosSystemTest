@@ -3,7 +3,7 @@ import json
 import time
 import os
 '''
-SCPFscalingMaxIntentsWithFlowObj
+SCPFscalingMaxIntents
 Push test Intents to onos
 CASE10: set up Null Provider
 CASE11: set up Open Flows
@@ -54,10 +54,6 @@ class SCPFscalingMaxIntentsWithFlowObj:
             main.reroute = False
 
         main.CLIs = []
-        main.ONOSip = []
-        main.maxNumBatch = 0
-        main.ONOSip = main.ONOSbench.getOnosIps()
-        main.log.info(main.ONOSip)
         main.setupSkipped = False
 
         wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
@@ -82,6 +78,13 @@ class SCPFscalingMaxIntentsWithFlowObj:
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.CLIs = []
         main.numCtrls = int( main.scale[ 0 ] )
+        main.ONOSip = []
+        main.maxNumBatch = 0
+        main.AllONOSip = main.ONOSbench.getOnosIps()
+        for i in range(main.numCtrls):
+            main.ONOSip.append(main.AllONOSip[i])
+        main.log.info(main.ONOSip)
+
         main.log.info( "Creating list of ONOS cli handles" )
         for i in range(main.numCtrls):
             main.CLIs.append( getattr( main, 'ONOScli%s' % (i+1) ) )
@@ -301,25 +304,16 @@ class SCPFscalingMaxIntentsWithFlowObj:
             Setting up mininet
         '''
         import json
-        import time
+        import time 
+        devices = []
+        devices = main.CLIs[0].getAllDevicesId()
+        for d in devices:
+            main.CLIs[0].deviceRemove( d )
 
-        time.sleep(main.startUpSleep)
-
-        main.step("Activating openflow")
-        appStatus = utilities.retry( main.ONOSrest1.activateApp,
-                                     main.FALSE,
-                                     ['org.onosproject.openflow'],
-                                     sleep=3,
-                                     attempts=3 )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=appStatus,
-                                 onpass="Successfully activated openflow",
-                                 onfail="Failed activate openflow" )
-
-        time.sleep(main.startUpSleep)
         main.log.info("Set Intent Compiler use Flow Object")
-        main.CLIs[0].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator", "useFlowObjectives", "true" )
-
+        main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+        "useFlowObjectives", "true")
+        time.sleep(main.startUpSleep)
         main.step('Starting mininet topology')
         mnStatus = main.Mininet1.startNet(topoFile='~/mininet/custom/rerouteTopo.py')
         utilities.assert_equals( expect=main.TRUE,
@@ -336,13 +330,26 @@ class SCPFscalingMaxIntentsWithFlowObj:
                                  onfail="Failed assign switches to masters" )
 
         time.sleep(main.startUpSleep)
+        # Balancing Masters
+        main.step( "Balancing Masters" )
+        stepResult = main.FALSE
+        stepResult = utilities.retry( main.CLIs[0].balanceMasters,
+                                      main.FALSE,
+                                      [],
+                                      sleep=3,
+                                      attempts=3 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                       actual=stepResult,
+                                       onpass="Balance masters was successfull",
+                                       onfail="Failed to balance masters" )
 
         main.log.info("Getting default flows")
         jsonSum = json.loads(main.CLIs[0].summary())
         main.defaultFlows = jsonSum["flows"]
 
         main.step("Check status of Mininet setup")
-        caseResult = appStatus and mnStatus and swStatus
+        caseResult = mnStatus and swStatus
         utilities.assert_equals( expect=main.TRUE,
                                  actual=caseResult,
                                  onpass="Successfully setup Mininet",
@@ -396,6 +403,7 @@ class SCPFscalingMaxIntentsWithFlowObj:
         # keeps track of how many flows have been installed, set to 0 at start
         currFlows = 0
         # limit for the number of intents that can be installed
+        main.batchSize = int( int(main.batchSize)/int(main.numCtrls))
         limit = main.maxIntents / main.batchSize
         # total intents installed
         totalIntents = 0
@@ -407,7 +415,12 @@ class SCPFscalingMaxIntentsWithFlowObj:
         stepResult = main.TRUE
         # temp variable to contain the number of flows
         flowsNum = 0
+        if main.numCtrls > 1:
+            # if more than one onos nodes, we should check more frequently
+            main.checkInterval = main.checkInterval/4
 
+        # make sure the checkInterval divisible batchSize
+        main.checkInterval = int( int( main.checkInterval / main.batchSize ) * main.batchSize )
         for i in range(limit):
 
             # Threads pool
@@ -427,7 +440,8 @@ class SCPFscalingMaxIntentsWithFlowObj:
                                  kwargs={ "offset": offtmp,
                                           "options": "-i",
                                           "timeout": main.timeout,
-                                          "background":False } )
+                                          "background":False,
+                                          "noExit":True} )
                 pool.append(t)
                 t.start()
                 main.threadID = main.threadID + 1
@@ -444,108 +458,45 @@ class SCPFscalingMaxIntentsWithFlowObj:
                 main.log.info("Verify Intents states")
                 # k is a control variable for verify retry attempts
                 k = 1
-                intentVerify = main.FALSE
 
                 while k <= main.verifyAttempts:
                     # while loop for check intents by using REST api
                     time.sleep(5)
                     temp = 0
-                    intentsState = json.loads( main.ONOSrest1.intents() )
-                    for f in intentsState:
-                        # get INSTALLED intents number
-                        if f.get("state") == "INSTALLED":
-                            temp = temp + 1
-
-                    main.log.info("Total Intents: {} INSTALLED: {}".format(totalIntents, temp))
-                    if totalIntents == temp:
-                        intentVerify = main.TRUE
+                    intentsState = main.CLIs[0].checkIntentSummary(timeout=600)
+                    if intentsState:
+                        totalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600)
+                        if temp < totalIntents:
+                            temp = totalIntents
+                        else:
+                            totalIntents = temp
                         break
-                    intentVerify = main.FALSE
+                        main.log.info("Total Intents: {}".format( totalIntents) )
                     k = k+1
-                if not intentVerify:
+                
+                if not intentsState:
                     # If some intents are not installed, grep the previous flows list, and finished this test case
                     main.log.warn( "Some intens did not install" )
-                    # We don't want to check flows if intents not installed, because onos will drop flows
-                    if currFlows == 0:
-                    # If currFlows equal 0, which means we failed to install intents at first, or we didn't get
-                    # the correct number, so we need get flows here.
-                        flowsState = json.loads( main.ONOSrest1.flows() )
+                    main.log.info("Total Intents: {}".format( totalIntents) )
                     break
-
-                main.log.info("Verify Flows states")
-                k = 1
-                flowsVerify = main.TRUE
-                while k <= main.verifyAttempts:
-                    # while loop for check flows by using REST api
-                    time.sleep(3)
-                    temp = 0
-                    flowsStateCount = []
-                    flowsState = json.loads( main.ONOSrest1.flows() )
-                    main.log.info("Total flows now: {}".format(len(flowsState)))
-                    if ( flowsNum < len(flowsState) ):
-                        flowsNum = len(flowsState)
-                    print(flowsNum)
-                    for f in flowsState:
-                        # get PENDING_ADD flows
-                        if f.get("state") == "PENDING_ADD":
-                            temp = temp + 1
-
-                    flowsStateCount.append(temp)
-                    temp = 0
-
-                    for f in flowsState:
-                        # get PENDING_REMOVE flows
-                        if f.get("state") == "PENDING_REMOVE":
-                            temp = temp + 1
-
-                    flowsStateCount.append(temp)
-                    temp = 0
-
-                    for f in flowsState:
-                        # get REMOVED flows
-                        if f.get("state") == "REMOVED":
-                            temp = temp + 1
-
-                    flowsStateCount.append(temp)
-                    temp = 0
-
-                    for f in flowsState:
-                        # get FAILED flwos
-                        if f.get("state") == "FAILED":
-                            temp = temp + 1
-
-                    flowsStateCount.append(temp)
-                    temp = 0
-                    k = k + 1
-                    for c in flowsStateCount:
-                        if int(c) > 0:
-                            flowsVerify = main.FALSE
-
-                    main.log.info( "Check flows States:" )
-                    main.log.info( "PENDING_ADD: {}".format( flowsStateCount[0]) )
-                    main.log.info( "PENDING_REMOVE: {}".format( flowsStateCount[1]) )
-                    main.log.info( "REMOVED: {}".format( flowsStateCount[2]) )
-                    main.log.info( "FAILED: {}".format( flowsStateCount[3]) )
-
-                    if flowsVerify == main.TRUE:
-                        break
-
+                    # We don't want to check flows if intents not installed, because onos will drop flows
+                temp = 0
+                totalFlows = 0
+                if temp < totalFlows:
+                    temp = totalFlows
+                else:
+                    totalFlows = main.CLIs[0].getTotalFlowsNum(timeout=600, noExit=True)
         del main.scale[0]
         utilities.assert_equals( expect = main.TRUE,
-                                 actual = intentVerify,
+                                 actual = intentsState,
                                  onpass = "Successfully pushed and verified intents",
                                  onfail = "Failed to push and verify intents" )
-
-        # we need the total intents before crash
-        totalIntents = len(intentsState)
-        totalFlows = flowsNum
 
         main.log.info( "Total Intents Installed before crash: {}".format( totalIntents ) )
         main.log.info( "Total Flows ADDED before crash: {}".format( totalFlows ) )
 
         main.step('clean up Mininet')
         main.Mininet1.stopNet()
-
         main.log.info("Writing results to DS file")
         with open(main.dbFileName, "a") as dbFile:
             # Scale number

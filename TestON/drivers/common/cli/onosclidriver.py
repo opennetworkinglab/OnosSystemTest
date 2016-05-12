@@ -382,11 +382,12 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def log( self, cmdStr, level="" ):
+    def log( self, cmdStr, level="",noExit=False):
         """
             log  the commands in the onos CLI.
             returns main.TRUE on success
             returns main.FALSE if Error occurred
+            if noExit is True, TestON will not exit, but clean up
             Available level: DEBUG, TRACE, INFO, WARN, ERROR
             Level defaults to INFO
         """
@@ -424,23 +425,37 @@ class OnosCliDriver( CLI ):
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                main.cleanup()
+                return None
+            else:
+                main.cleanup()
+                main.exit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                main.cleanup()
+                return None
+            else:
+                main.cleanup()
+                main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                main.cleanup()
+                return None
+            else:
+                main.cleanup()
+                main.exit()
 
-    def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10 ):
+    def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False ):
         """
         Send a completely user specified string to
         the onos> prompt. Use this function if you have
         a very specific command to send.
+
+        if noExit is True, TestON will not exit, but clean up
 
         Warning: There are no sanity checking to commands
         sent using this method.
@@ -450,7 +465,7 @@ class OnosCliDriver( CLI ):
             if debug:
                 # NOTE: This adds and average of .4 seconds per call
                 logStr = "\"Sending CLI command: '" + cmdStr + "'\""
-                self.log( logStr )
+                self.log( logStr,noExit=noExit )
             self.handle.sendline( cmdStr )
             i = self.handle.expect( ["onos>", "\$"], timeout )
             response = self.handle.before
@@ -505,12 +520,20 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                main.cleanup()
+                return None
+            else:
+                main.cleanup()
+                main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                main.cleanup()
+                return None
+            else:
+                main.cleanup()
+                main.exit()
 
     # IMPORTANT NOTE:
     # For all cli commands, naming convention should match
@@ -2200,8 +2223,11 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": ONOS timeout" )
+            return None
 
-    def flows( self, state="", jsonFormat=True, timeout=60 ):
+    def flows( self, state="", jsonFormat=True, timeout=60, noExit=False ):
         """
         Optional:
             * jsonFormat: enable output formatting in json
@@ -2213,7 +2239,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j "
             cmdStr += state
-            handle = self.sendline( cmdStr, timeout=timeout )
+            handle = self.sendline( cmdStr, timeout=timeout, noExit=noExit )
             assert "Command not found:" not in handle, handle
             if re.search( "Error:", handle ):
                 main.log.error( self.name + ": flows() response: " +
@@ -2242,7 +2268,7 @@ class OnosCliDriver( CLI ):
         count = int(self.getTotalFlowsNum( timeout=timeout ))
         return count if (count > min) else False
 
-    def checkFlowsState( self, isPENDING=True, timeout=60 ):
+    def checkFlowsState( self, isPENDING=True, timeout=60,noExit=False ):
         """
         Description:
             Check the if all the current flows are in ADDED state
@@ -2291,9 +2317,13 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": ONOS timeout" )
+            return None
+
 
     def pushTestIntents( self, ingress, egress, batchSize, offset="",
-                         options="", timeout=10, background = False ):
+                         options="", timeout=10, background = False, noExit=False ):
         """
         Description:
             Push a number of intents in a batch format to
@@ -2322,7 +2352,7 @@ class OnosCliDriver( CLI ):
                                                                 batchSize,
                                                                 offset,
                                                                 back )
-            response = self.sendline( cmd, timeout=timeout )
+            response = self.sendline( cmd, timeout=timeout, noExit=noExit )
             assert "Command not found:" not in response, response
             main.log.info( response )
             if response == None:
@@ -2350,7 +2380,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getTotalFlowsNum( self, timeout=60 ):
+    def getTotalFlowsNum( self, timeout=60, noExit=False ):
         """
         Description:
             Get the number of ADDED flows.
@@ -2361,7 +2391,7 @@ class OnosCliDriver( CLI ):
         try:
             # get total added flows number
             cmd = "flows -s|grep ADDED|wc -l"
-            totalFlows = self.sendline( cmd, timeout=timeout )
+            totalFlows = self.sendline( cmd, timeout=timeout, noExit=noExit )
 
             if totalFlows == None:
                 # if timeout, we will get total number of all flows, and subtract other states
@@ -2371,7 +2401,7 @@ class OnosCliDriver( CLI ):
                 statesCount = [0, 0, 0, 0]
 
                 # get total flows from summary
-                response = json.loads( self.sendline( "summary -j", timeout=timeout ) )
+                response = json.loads( self.sendline( "summary -j", timeout=timeout, noExit=noExit ) )
                 totalFlows = int( response.get("flows") )
 
                 for s in states:
@@ -2407,8 +2437,11 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": ONOS timeout" )
+            return None
 
-    def getTotalIntentsNum( self ):
+    def getTotalIntentsNum( self, timeout=60 ):
         """
         Description:
             Get the total number of intents, include every states.
@@ -2417,7 +2450,7 @@ class OnosCliDriver( CLI ):
         """
         try:
             cmd = "summary -j"
-            response = self.sendline( cmd )
+            response = self.sendline( cmd, timeout=timeout )
             if response == None:
                 return  -1
             response = json.loads( response )

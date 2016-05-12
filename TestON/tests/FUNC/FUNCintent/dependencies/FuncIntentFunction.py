@@ -22,7 +22,7 @@ def installHostIntent( main,
                        ipAddresses="",
                        tcp="",
                        sw1="",
-                       sw2=""):
+                       sw2="" ):
     """
     Installs a Host Intent
 
@@ -75,8 +75,10 @@ def installHostIntent( main,
             host2[ "id" ] = main.hostsData.get( host2.get( "name" ) ).get( "id" )
 
         # Adding point intent
+        vlanId = host1.get( "vlan" )
         intentId = main.CLIs[ onosNode ].addHostIntent( hostIdOne=host1.get( "id" ),
-                                                        hostIdTwo=host2.get( "id" ) )
+                                                        hostIdTwo=host2.get( "id" ),
+                                                        vlanId=vlanId )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -168,6 +170,7 @@ def testHostIntent( main,
 
         senderNames = [ host1.get( "name" ), host2.get( "name" ) ]
         recipientNames = [ host1.get( "name" ), host2.get( "name" ) ]
+        vlanId = host1.get( "vlan" )
 
         testResult = main.TRUE
     except (KeyError, TypeError):
@@ -191,7 +194,7 @@ def testHostIntent( main,
         testResult = main.FALSE
 
     # Check Connectivity
-    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames ) ):
+    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ) ):
         main.assertReturnString += 'Initial Ping Passed\n'
     else:
         main.assertReturnString += 'Initial Ping Failed\n'
@@ -228,7 +231,7 @@ def testHostIntent( main,
             testResult = main.FALSE
 
         # Check Connection
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames ) ):
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ) ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -266,7 +269,7 @@ def testHostIntent( main,
             testResult = main.FALSE
 
         # Check Connection
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames ) ):
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ) ):
             main.assertReturnString += 'Link Up Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Up Pingall Failed\n'
@@ -364,6 +367,8 @@ def installPointIntent( main,
         ipSrc = senders[ 0 ].get( "ip" )
         ipDst = recipients[ 0 ].get( "ip" )
 
+        vlanId = senders[ 0 ].get( "vlan" )
+
         # Adding point intent
         intentId = main.CLIs[ onosNode ].addPointIntent(
                                             ingressDevice=ingressDevice,
@@ -378,7 +383,8 @@ def installPointIntent( main,
                                             ipSrc=ipSrc,
                                             ipDst=ipDst,
                                             tcpSrc=tcpSrc,
-                                            tcpDst=tcpDst )
+                                            tcpDst=tcpDst,
+                                            vlanId=vlanId )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -758,6 +764,7 @@ def installSingleToMultiIntent( main,
             portEgressList = None
 
         srcMac = senders[ 0 ].get( "mac" )
+        vlanId = senders[ 0 ].get( "vlan" )
 
         # Adding point intent
         intentId = main.CLIs[ onosNode ].addSinglepointToMultipointIntent(
@@ -773,7 +780,8 @@ def installSingleToMultiIntent( main,
                                             ipSrc="",
                                             ipDst="",
                                             tcpSrc="",
-                                            tcpDst="" )
+                                            tcpDst="",
+                                            vlanId=vlanId )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -869,6 +877,7 @@ def installMultiToSingleIntent( main,
             portIngressList = None
 
         dstMac = recipients[ 0 ].get( "mac" )
+        vlanId = senders[ 0 ].get( "vlan" )
 
         # Adding point intent
         intentId = main.CLIs[ onosNode ].addMultipointToSinglepointIntent(
@@ -884,7 +893,8 @@ def installMultiToSingleIntent( main,
                                             ipSrc="",
                                             ipDst="",
                                             tcpSrc="",
-                                            tcpDst="" )
+                                            tcpDst="",
+                                            vlanId=vlanId )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -993,6 +1003,7 @@ def testPointIntent( main,
             if not recipient.get( "device" ):
                 main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
                 recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
+        vlanId = senders[ 0 ].get( "vlan" )
     except (KeyError, TypeError):
         main.log.error( "There was a problem loading the hosts data." )
         return main.FALSE
@@ -1015,7 +1026,7 @@ def testPointIntent( main,
         testResult = main.FALSE
 
     # Check Connectivity
-    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames ), attempts=3, sleep=5 ):
+    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ), attempts=3, sleep=5 ):
         main.assertReturnString += 'Initial Ping Passed\n'
     else:
         main.assertReturnString += 'Initial Ping Failed\n'
@@ -1069,7 +1080,7 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Check Connection
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames ) ):
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ) ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -1107,7 +1118,7 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Check Connection
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames ) ):
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ) ):
             main.assertReturnString += 'Link Up Scapy Packet Received Passed\n'
         else:
             main.assertReturnString += 'Link Up Scapy Packet Recieved Failed\n'
@@ -1292,7 +1303,7 @@ def testEndPointFail( main,
     # Check Connectivity
     # First check connectivity of any isolated senders to recipients
     if isolatedSenderNames:
-        if scapyCheckConnection( main, isolatedSenderNames, recipientNames, None, None, main.TRUE ):
+        if scapyCheckConnection( main, isolatedSenderNames, recipientNames, None, None, None, main.TRUE ):
             main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
         else:
             main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
@@ -1300,7 +1311,7 @@ def testEndPointFail( main,
 
     # Next check connectivity of senders to any isolated recipients
     if isolatedRecipientNames:
-        if scapyCheckConnection( main, senderNames, isolatedRecipientNames, None, None, main.TRUE ):
+        if scapyCheckConnection( main, senderNames, isolatedRecipientNames, None, None, None, main.TRUE ):
             main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
         else:
             main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
@@ -1592,7 +1603,7 @@ def link( main, sw1, sw2, option):
     linkResult = main.Mininet1.link( end1=sw1, end2=sw2, option=option )
     return linkResult
 
-def scapyCheckConnection( main, senders, recipients, packet=None, packetFilter=None, expectFailure=False ):
+def scapyCheckConnection( main, senders, recipients, vlanId=None, packet=None, packetFilter=None, expectFailure=False ):
     """
         Checks the connectivity between all given sender hosts and all given recipient hosts
         Packet may be specified. Defaults to Ether/IP packet
@@ -1631,17 +1642,31 @@ def scapyCheckConnection( main, senders, recipients, packet=None, packetFilter=N
                 connectionsFunctional = main.FALSE
                 continue
 
-            recipientComp.startFilter( pktFilter = packetFilter.format( senderComp.hostMac ) )
+            if vlanId:
+                recipientComp.startFilter( pktFilter = ( "vlan {}".format( vlanId ) + " && " + packetFilter.format( senderComp.hostMac ) ) )
+            else:
+                recipientComp.startFilter( pktFilter = packetFilter.format( senderComp.hostMac ) )
 
             if not packet:
-                pkt = 'Ether( src="{0}", dst="{2}" )/IP( src="{1}", dst="{3}" )'.format(
-                    senderComp.hostMac,
-                    senderComp.hostIp,
-                    recipientComp.hostMac,
-                    recipientComp.hostIp )
+                if vlanId:
+                    pkt = 'Ether( src="{0}", dst="{2}" )/Dot1Q(vlan={4})/IP( src="{1}", dst="{3}" )'.format(
+                        senderComp.hostMac,
+                        senderComp.hostIp,
+                        recipientComp.hostMac,
+                        recipientComp.hostIp,
+                        vlanId )
+                else:
+                    pkt = 'Ether( src="{0}", dst="{2}" )/IP( src="{1}", dst="{3}" )'.format(
+                        senderComp.hostMac,
+                        senderComp.hostIp,
+                        recipientComp.hostMac,
+                        recipientComp.hostIp )
             else:
                 pkt = packet
-            senderComp.sendPacket( packet = pkt )
+            if vlanId:
+                senderComp.sendPacket( iface=( "{0}-eth0.{1}".format( sender, vlanId ) ), packet = pkt )
+            else:
+                senderComp.sendPacket( packet = pkt )
 
             if recipientComp.checkFilter( timeout ):
                 if expectFailure:

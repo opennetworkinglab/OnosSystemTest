@@ -421,6 +421,9 @@ class SCPFscalingMaxIntentsWithFlowObj:
 
         # make sure the checkInterval divisible batchSize
         main.checkInterval = int( int( main.checkInterval / main.batchSize ) * main.batchSize )
+        flowTemp=0
+        totalFlows=0
+        verifyTotalIntents=0
         for i in range(limit):
 
             # Threads pool
@@ -465,22 +468,27 @@ class SCPFscalingMaxIntentsWithFlowObj:
                     temp = 0
                     intentsState = main.CLIs[0].checkIntentSummary(timeout=600)
                     if intentsState:
-                        totalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600)
-                        if temp < totalIntents:
-                            temp = totalIntents
+                        verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600)
+                        if temp < verifyTotalIntents:
+                            temp = verifyTotalIntents
                         else:
-                            totalIntents = temp
+                            verifyTotalIntents = temp
                         break
                         main.log.info("Total Intents: {}".format( totalIntents) )
                     k = k+1
-                
+
+                totalFlows = main.CLIs[0].getTotalFlowsNum( timeout=600, noExit=True )
+                if flowTemp<totalFlows:
+                    flowTemp = totalFlows
+                else:
+                    totalFlows = flowTemp
+
                 if not intentsState:
                     # If some intents are not installed, grep the previous flows list, and finished this test case
                     main.log.warn( "Some intens did not install" )
                     main.log.info("Total Intents: {}".format( totalIntents) )
                     break
 
-        totalFlows = main.CLIs[0].getTotalFlowsNum(timeout=600, noExit=True)
         del main.scale[0]
         utilities.assert_equals( expect = main.TRUE,
                                  actual = intentsState,

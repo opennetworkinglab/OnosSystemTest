@@ -419,6 +419,8 @@ class SCPFscalingMaxIntents:
 
         # make sure the checkInterval divisible batchSize
         main.checkInterval = int( int( main.checkInterval / main.batchSize ) * main.batchSize )
+        flowTemp=0
+        totalFlows=0
         for i in range(limit):
 
             # Threads pool
@@ -463,22 +465,27 @@ class SCPFscalingMaxIntents:
                     temp = 0
                     intentsState = main.CLIs[0].checkIntentSummary(timeout=600)
                     if intentsState:
-                        totalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600)
-                        if temp < totalIntents:
-                            temp = totalIntents
+                        verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600)
+                        if temp < verifyTotalIntents:
+                            temp = verifyTotalIntents 
                         else:
-                            totalIntents = temp
+                            verifytotalIntents = temp
+                        main.log.info("Total Intents: {}".format( verifyTotalIntents ) )
                         break
-                        main.log.info("Total Intents: {}".format( totalIntents) )
                     k = k+1
-                
+
+                totalFlows = main.CLIs[0].getTotalFlowsNum( timeout=600, noExit=True )
+                if flowTemp < totalFlows:
+                    flowTemp = totalFlows
+                else:
+                    totalFlows = flowTemp 
+
                 if not intentsState:
                     # If some intents are not installed, grep the previous flows list, and finished this test case
                     main.log.warn( "Some intens did not install" )
-                    main.log.info("Total Intents: {}".format( totalIntents) )
+                    main.log.info("Total Intents: {}".format( verifyTotalIntents) )
                     break
 
-        totalFlows = main.CLIs[0].getTotalFlowsNum(timeout=600, noExit=True)
         del main.scale[0]
         utilities.assert_equals( expect = main.TRUE,
                                  actual = intentsState,
@@ -496,7 +503,7 @@ class SCPFscalingMaxIntents:
             temp = str(main.numCtrls)
             temp += ",'" + "baremetal1" + "'"
             # how many intents we installed before crash
-            temp += "," + str(totalIntents)
+            temp += "," + str(verifyTotalIntents)
             # how many flows we installed before crash
             temp += "," + str(totalFlows)
             # other columns in database, but we didn't use in this test

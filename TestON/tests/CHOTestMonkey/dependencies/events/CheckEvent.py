@@ -141,10 +141,10 @@ class ONOSCheck( CheckEvent ):
                         dpidToMaster[ dpid ] = device[ 'master' ]
                     elif dpidToMaster[ dpid ] != device[ 'master' ]:
                         checkResult = EventStates().FAIL
-                        main.log.warn( "ONOS Check - Mastership of %s on ONOS%s is inconsistent with that on ONOS1" % ( device.name, controller.index ) )
+                        main.log.warn( "ONOS Check - Mastership of %s on ONOS%s is inconsistent with that on ONOS1" % ( dpid, controller.index ) )
                     if dpidToAvailability[ dpid ] and device[ 'master' ] == "none":
                         checkResult = EventStates().FAIL
-                        main.log.warn( "ONOS Check - Device %s has no master on ONOS%s" % ( device.name, controller.index ) )
+                        main.log.warn( "ONOS Check - Device %s has no master on ONOS%s" % ( dpid, controller.index ) )
                 # Check leaders
                 with controller.CLILock:
                     leaders = controller.CLI.leaders()

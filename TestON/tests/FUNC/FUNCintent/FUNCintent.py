@@ -864,6 +864,36 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString)
 
+        main.step( "VLAN2: Add vlan host intents between h4 and h13" )
+        main.assertReturnString = "Assertion Result vlan IPV4\n"
+        host1 = { "name":"h5", "vlan":"200" }
+        host2 = { "name":"h12", "vlan":"100" }
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
+                                              name='VLAN2',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2)
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='VLAN2',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink = 18)
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString)
+
         main.step( "Confirm that ONOS leadership is unchanged")
         intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
         main.intentFunction.checkLeaderChange( intentLeadersOld,
@@ -1183,6 +1213,39 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
+        main.step( "VLAN: Add point intents between h5 and h21" )
+        main.assertReturnString = "Assertion Result for VLAN IPV4 point intents with VLAN treatment\n"
+        senders = [
+            { "name":"h4", "vlan":"100" }
+        ]
+        recipients = [
+            { "name":"h21", "vlan":"200" }
+        ]
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installPointIntent(
+                                       main,
+                                       name="VLAN2",
+                                       senders=senders,
+                                       recipients=recipients,
+                                       setVlan=200)
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="VLAN2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
         main.step( "1HOP: Add point intents between h1 and h3" )
         main.assertReturnString = "Assertion Result for 1HOP IPV4 with no mac address point intents\n"
         senders = [
@@ -1441,6 +1504,48 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
+        main.step( "VLAN: Add single point to multi point intents" )
+        main.assertReturnString = "Assertion results for single to multi point intent with VLAN treatment\n"
+        senders = [
+            { "name":"h5", "vlan":"200" }
+        ]
+        recipients = [
+            { "name":"h12", "device":"of:0000000000000006/4", "mac":"00:00:00:00:00:0C", "vlan":"100" },
+            { "name":"h20", "device":"of:0000000000000007/4", "mac":"00:00:00:00:00:14", "vlan":"100" }
+        ]
+        badSenders=[ { "name":"h13" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h21" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installSingleToMultiIntent(
+                                         main,
+                                         name="VLAN2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         setVlan=100)
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="VLAN2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
         main.intentFunction.report( main )
 
     def CASE4000( self, main ):
@@ -1649,6 +1754,49 @@ class FUNCintent:
                                          main,
                                          intentId=installResult,
                                          name="VLAN",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        # Right now this fails because of this bug: https://jira.onosproject.org/browse/ONOS-4383
+        main.step( "VLAN: Add multi point to single point intents" )
+        main.assertReturnString = "Assertion results for multi to single point intent with VLAN ID treatment\n"
+        senders = [
+            { "name":"h13", "device":"of:0000000000000006/5", "vlan":"200" },
+            { "name":"h21", "device":"of:0000000000000007/5", "vlan":"200" }
+        ]
+        recipients = [
+            { "name":"h4", "vlan":"100" }
+        ]
+        badSenders=[ { "name":"h12" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h20" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installMultiToSingleIntent(
+                                         main,
+                                         name="VLAN2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         setVlan=100)
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="VLAN2",
                                          senders=senders,
                                          recipients=recipients,
                                          badSenders=badSenders,

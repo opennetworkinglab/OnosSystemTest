@@ -22,7 +22,8 @@ def installHostIntent( main,
                        ipAddresses="",
                        tcp="",
                        sw1="",
-                       sw2="" ):
+                       sw2="",
+                       setVlan="" ):
     """
     Installs a Host Intent
 
@@ -78,7 +79,8 @@ def installHostIntent( main,
         vlanId = host1.get( "vlan" )
         intentId = main.CLIs[ onosNode ].addHostIntent( hostIdOne=host1.get( "id" ),
                                                         hostIdTwo=host2.get( "id" ),
-                                                        vlanId=vlanId )
+                                                        vlanId=vlanId,
+                                                        setVlan=setVlan )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -296,7 +298,8 @@ def installPointIntent( main,
                         ipSrc="",
                         ipDst="",
                         tcpSrc="",
-                        tcpDst=""):
+                        tcpDst="",
+                        setVlan=""):
     """
     Installs a Single to Single Point Intent
 
@@ -384,7 +387,8 @@ def installPointIntent( main,
                                             ipDst=ipDst,
                                             tcpSrc=tcpSrc,
                                             tcpDst=tcpDst,
-                                            vlanId=vlanId )
+                                            vlanId=vlanId,
+                                            setVlan=setVlan )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -694,7 +698,8 @@ def installSingleToMultiIntent( main,
                                 ipAddresses="",
                                 tcp="",
                                 sw1="",
-                                sw2=""):
+                                sw2="",
+                                setVlan=""):
     """
     Installs a Single to Multi Point Intent
 
@@ -781,7 +786,8 @@ def installSingleToMultiIntent( main,
                                             ipDst="",
                                             tcpSrc="",
                                             tcpDst="",
-                                            vlanId=vlanId )
+                                            vlanId=vlanId,
+                                            setVlan=setVlan )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -808,7 +814,8 @@ def installMultiToSingleIntent( main,
                                 ipAddresses="",
                                 tcp="",
                                 sw1="",
-                                sw2=""):
+                                sw2="",
+                                setVlan=""):
     """
     Installs a Multi to Single Point Intent
 
@@ -894,7 +901,8 @@ def installMultiToSingleIntent( main,
                                             ipDst="",
                                             tcpSrc="",
                                             tcpDst="",
-                                            vlanId=vlanId )
+                                            vlanId=vlanId,
+                                            setVlan=setVlan )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -1592,7 +1600,7 @@ def checkIntentState( main, intentsId ):
 def checkFlowsState( main ):
 
     main.log.info( itemName + ": Check flows state" )
-    checkFlowsResult = main.CLIs[ 0 ].checkFlowsState()
+    checkFlowsResult = main.CLIs[ 0 ].checkFlowsState( isPENDING=False )
     return checkFlowsResult
 
 def link( main, sw1, sw2, option):

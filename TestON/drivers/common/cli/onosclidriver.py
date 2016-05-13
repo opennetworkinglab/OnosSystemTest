@@ -151,7 +151,10 @@ class OnosCliDriver( CLI ):
                         # ONOS didn't fully load, and logout command isn't working
                         # or the command timed out
                         self.handle.send( "\x04" )  # send ctrl-d
-                        self.handle.expect( "\$" )
+                        try:
+                            self.handle.expect( "\$" )
+                        except pexpect.TIMEOUT:
+                            main.log.error( "ONOS did not respond to 'logout' or CTRL-d" )
                         return main.TRUE
                     else: # some other output
                         main.log.warn( "Unknown repsonse to logout command: '{}'",

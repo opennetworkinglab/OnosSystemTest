@@ -25,21 +25,15 @@ class IntentCheck( CheckEvent ):
 
     def startCheckEvent( self, args=None ):
         checkResult = EventStates().PASS
-        intentIDs = []
+        # TODO: check intents that are expected in "FAILED" state?
+        installedIntentIDs = []
         for intent in main.intents:
-            if intent.isHostIntent():
-                deviceA = intent.hostA.device
-                deviceB = intent.hostB.device
-            elif intent.isPointIntent():
-                deviceA = intent.deviceA
-                deviceB = intent.deviceB
-            # Exclude the intents that are to or from removed devices/hosts
-            if not deviceA.isRemoved() and not deviceB.isRemoved():
-                intentIDs.append( intent.id )
+            if intent.isInstalled():
+                installedIntentIDs.append( intent.id )
         for controller in main.controllers:
             if controller.isUp():
                 with controller.CLILock:
-                    intentState = controller.CLI.checkIntentState( intentsId=intentIDs )
+                    intentState = controller.CLI.checkIntentState( intentsId=installedIntentIDs )
                 if not intentState:
                     main.log.warn( "Intent Check - Not all intents are in INSTALLED state on ONOS%s" % ( controller.index ) )
                     checkResult = EventStates().FAIL

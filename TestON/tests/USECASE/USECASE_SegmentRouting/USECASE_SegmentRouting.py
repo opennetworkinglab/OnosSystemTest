@@ -286,21 +286,31 @@ class USECASE_SegmentRouting:
             onpass="Flow status is correct!",
             onfail="Flow status is wrong!" )
         main.ONOSbench.dumpFlows( main.ONOSip[0],
-                 main.logdir, "flows" + main.jsonFile)
+                 main.logdir, "flowsBefore" + main.jsonFile)
         #time.sleep( 3*main.startUpSleep)
 
     def CASE4( self, main ):
         main.case( "Check full connectivity" )
         main.log.report( "Check full connectivity" )
 
-        main.step("Check full connectivity")
+        main.step("1st Check full connectivity")
         pa = main.Mininet1.pingall()
         utilities.assert_equals( expect=main.TRUE, actual=pa,
                                  onpass="Full connectivity successfully tested",
                                  onfail="Full connectivity failed" )
         # cleanup mininet
         main.ONOSbench.dumpFlows( main.ONOSip[0],
-                 main.logdir, "flows" + main.jsonFile)
+                 main.logdir, "flowsAfter" + main.jsonFile)
+
+        main.step("2nd Check full connectivity")
+        pa = main.Mininet1.pingall()
+        utilities.assert_equals( expect=main.TRUE, actual=pa,
+                                 onpass="Full connectivity successfully tested",
+                                 onfail="Full connectivity failed" )
+
+        main.ONOSbench.dumpFlows( main.ONOSip[0],
+                 main.logdir, "flowsAfter2nd" + main.jsonFile)
+
         main.ONOSbench.onosStop( main.ONOSip[0] )
         main.Mininet1.stopNet()
 

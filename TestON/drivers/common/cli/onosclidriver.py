@@ -2062,19 +2062,18 @@ class OnosCliDriver( CLI ):
 
     def getIntentState(self, intentsId, intentsJson=None):
         """
-            Check intent state.
-            Accepts a single intent ID (string type) or a list of intent IDs.
-            Returns the state(string type) of the id if a single intent ID is
-            accepted.
-            Returns a dictionary with intent IDs as the key and its
-            corresponding states as the values
-            Parameters:
-            intentId: intent ID (string type)
+        Description:
+            Gets intent state. Accepts a single intent ID (string type) or a
+            list of intent IDs.
+        Parameters:
+            intentsId: intent ID, both string type and list type are acceptable
             intentsJson: parsed json object from the onos:intents api
-            Returns:
-            state = An intent's state- INSTALL,WITHDRAWN etc.
-            stateDict = Dictionary of intent's state. intent ID as the keys and
-            state as the values.
+        Returns:
+            Returns the state (string type) of the ID if a single intent ID is
+            accepted.
+            Returns a list of dictionaries if a list of intent IDs is accepted,
+            and each dictionary maps 'id' to the Intent ID and 'state' to
+            corresponding intent state.
         """
         try:
             state = "State is Undefined"

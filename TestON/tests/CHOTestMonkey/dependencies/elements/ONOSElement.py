@@ -33,6 +33,7 @@ class Intent:
         self.default = ''
         self.type = 'INTENT'
         self.id = id
+        self.expectedState = 'INSTALLED'
 
     def isHostIntent( self ):
         return self.type == 'INTENT_HOST'
@@ -40,12 +41,26 @@ class Intent:
     def isPointIntent( self ):
         return self.type == 'INTENT_POINT'
 
+    def isFailed( self ):
+        return self.expectedState == 'FAILED'
+
+    def isInstalled( self ):
+        return self.expectedState == 'INSTALLED'
+
+    def setFailed( self ):
+        self.expectedState = 'FAILED'
+
+    def setInstalled( self ):
+        self.expectedState = 'INSTALLED'
+
 class HostIntent( Intent ):
     def __init__( self, id, hostA, hostB ):
         Intent.__init__( self, id )
         self.type = 'INTENT_HOST'
         self.hostA = hostA
         self.hostB = hostB
+        self.deviceA = hostA.device
+        self.deviceB = hostB.device
 
     def __str__( self ):
         return "ID: " + self.id

@@ -208,6 +208,9 @@ class DeviceDown( DeviceEvent ):
                 link.backwardLink.setRemoved()
             for host in self.device.hosts:
                 host.setRemoved()
+            for intent in main.intents:
+                if intent.deviceA == self.device or intent.deviceB == self.device:
+                    intent.setFailed()
         return EventStates().PASS
 
 class DeviceUp( DeviceEvent ):
@@ -256,6 +259,11 @@ class DeviceUp( DeviceEvent ):
             with main.variableLock:
                 link.bringUp()
                 link.backwardLink.bringUp()
+                for intent in main.intents:
+                    if intent.isFailed():
+                        if intent.deviceA == self.device and intent.deviceB.isUp() or\
+                        intent.deviceB == self.device and intent.deviceA.isUp():
+                            intent.setInstalled()
         # Re-assign mastership for the device
         with main.mininetLock:
             main.Mininet1.assignSwController( sw=self.device.name, ip=main.onosIPs )

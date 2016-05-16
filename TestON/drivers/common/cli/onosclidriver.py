@@ -2428,8 +2428,8 @@ class OnosCliDriver( CLI ):
 
             return int(totalFlows)
 
-        except TypeError:
-            main.log.exception( self.name + ": Object not as expected" )
+        except ( TypeError, ValueError ):
+            main.log.exception( "{}: Object not as expected: {!r}".format( self.name, rawFlows ) )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -2458,8 +2458,8 @@ class OnosCliDriver( CLI ):
                 return  -1
             response = json.loads( response )
             return int( response.get("intents") )
-        except TypeError:
-            main.log.exception( self.name + ": Object not as expected" )
+        except ( TypeError, ValueError ):
+            main.log.exception( "{}: Object not as expected: {!r}".format( self.name, response ) )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -2720,6 +2720,9 @@ class OnosCliDriver( CLI ):
             topology = json.loads(topologyOutput)
             main.log.debug( topology )
             return topology
+        except ( TypeError, ValueError ):
+            main.log.exception( "{}: Object not as expected: {!r}".format( self.name, topologyOutput ) )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

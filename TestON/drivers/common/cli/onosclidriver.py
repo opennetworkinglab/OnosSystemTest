@@ -2185,6 +2185,52 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def compareIntent( self, intentDict ):
+        """
+        Description:
+            Compare the intent ids and states provided in the argument with all intents in ONOS
+        Return:
+            Returns main.TRUE if the two sets of intents match exactly, otherwise main.FALSE
+        Arguments:
+            intentDict: a dictionary which maps intent ids to intent states
+        """
+        try:
+            intentsRaw = self.intents()
+            intentsJson = json.loads( intentsRaw )
+            intentDictONOS = {}
+            for intent in intentsJson:
+                intentDictONOS[ intent[ 'id' ] ] = intent[ 'state' ]
+            if len( intentDict ) != len( intentDictONOS ):
+                main.log.info( self.name + ": expected intent count does not match that in ONOS, " +
+                               str( len( intentDict ) ) + " expected and " +
+                               str( len( intentDictONOS ) ) + " actual" )
+                return main.FALSE
+            returnValue = main.TRUE
+            for intentID in intentDict.keys():
+                if not intentID in intentDictONOS.keys():
+                    main.log.debug( self.name + ": intent ID - " + intentID + " is not in ONOS" )
+                    returnValue = main.FALSE
+                elif intentDict[ intentID ] != intentDictONOS[ intentID ]:
+                    main.log.debug( self.name + ": intent ID - " + intentID +
+                                    " expected state is " + intentDict[ intentID ] +
+                                    " but actual state is " + intentDictONOS[ intentID ] )
+                    returnValue = main.FALSE
+            if returnValue == main.TRUE:
+                main.log.info( self.name + ": all intent IDs and states match that in ONOS" )
+            return returnValue
+        except ( TypeError, ValueError ):
+            main.log.exception( "{}: Object not as expected: {!r}".format( self.name, intentsRaw ) )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def checkIntentSummary( self, timeout=60 ):
         """
         Description:

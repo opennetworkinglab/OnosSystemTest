@@ -431,7 +431,7 @@ class OnosRestDriver( Controller ):
             main.exit()
 
     def addHostIntent( self, hostIdOne, hostIdTwo, appId='org.onosproject.cli',
-                       ip="DEFAULT", port="DEFAULT" ):
+                       ip="DEFAULT", port="DEFAULT", vlanId="" ):
         """
         Description:
             Adds a host-to-host intent ( bidirectional ) by
@@ -454,6 +454,9 @@ class OnosRestDriver( Controller ):
                           "constraints": [{"type": "LinkTypeConstraint",
                                            "types": ["OPTICAL"],
                                            "inclusive": 'false' }]}
+            if vlanId:
+                intentJson[ 'selector' ][ 'criteria' ].append( { "type":"VLAN_VID",
+                                                                 "vlanId":vlanId } )
             output = None
             if ip == "DEFAULT":
                 main.log.warn( "No ip given, reverting to ip from topo file" )
@@ -501,7 +504,8 @@ class OnosRestDriver( Controller ):
                         tcpSrc="",
                         tcpDst="",
                         ip="DEFAULT",
-                        port="DEFAULT" ):
+                        port="DEFAULT",
+                        vlanId="" ):
         """
         Description:
             Adds a point-to-point intent ( uni-directional ) by
@@ -599,6 +603,10 @@ class OnosRestDriver( Controller ):
                 intentJson[ 'selector' ][ 'criteria' ].append(
                                                        { "type":"IP_PROTO",
                                                          "protocol": ipProto } )
+            if vlanId:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                                                       { "type":"VLAN_VID",
+                                                         "vlanId": vlanId } )
 
             # TODO: Bandwidth and Lambda will be implemented if needed
 

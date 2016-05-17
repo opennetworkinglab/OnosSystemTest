@@ -941,8 +941,8 @@ class FUNCintentRest:
 
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
         main.assertReturnString = "Assertion Result vlan IPV4\n"
-        host1 = { "name":"h4","id":"00:00:00:00:00:04/100" }
-        host2 = { "name":"h12","id":"00:00:00:00:00:0C/100" }
+        host1 = { "name":"h4","id":"00:00:00:00:00:04/100", "vlanId":"100" }
+        host2 = { "name":"h12","id":"00:00:00:00:00:0C/100", "vlanId":"100" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name='VLAN1',
@@ -966,32 +966,33 @@ class FUNCintentRest:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
-        main.assertReturnString = "Assertion Result different VLAN negative test\n"
-        host1 = { "name":"h13" }
-        host2 = { "name":"h20" }
-        testResult = main.FALSE
-        installResult = main.intentFunction.installHostIntent( main,
-                                              name='VLAN2',
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2 )
+        # This step isn't currently possible to perform in the REST API
+        # main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
+        # main.assertReturnString = "Assertion Result different VLAN negative test\n"
+        # host1 = { "name":"h13" }
+        # host2 = { "name":"h20" }
+        # testResult = main.FALSE
+        # installResult = main.intentFunction.installHostIntent( main,
+        #                                       name='VLAN2',
+        #                                       onosNode='0',
+        #                                       host1=host1,
+        #                                       host2=host2 )
 
-        if installResult:
-            testResult = main.intentFunction.testHostIntent( main,
-                                              name='VLAN2',
-                                              intentId = installResult,
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink = 18 )
+        # if installResult:
+        #     testResult = main.intentFunction.testHostIntent( main,
+        #                                       name='VLAN2',
+        #                                       intentId = installResult,
+        #                                       onosNode='0',
+        #                                       host1=host1,
+        #                                       host2=host2,
+        #                                       sw1='s5',
+        #                                       sw2='s2',
+        #                                       expectedLink = 18 )
 
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=testResult,
+        #                          onpass=main.assertReturnString,
+        #                          onfail=main.assertReturnString )
 
         # Change the following to use the REST API when leader checking is
         # supported by it
@@ -1194,7 +1195,8 @@ class FUNCintentRest:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18,
+                                         useTCP=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1266,23 +1268,22 @@ class FUNCintentRest:
         main.step( "VLAN: Add point intents between h5 and h21" )
         main.assertReturnString = "Assertion Result for VLAN IPV4 with mac address point intents\n"
         senders = [
-            { "name":"h5","device":"of:0000000000000005/5","mac":"00:00:00:00:00:05" }
+            { "name":"h5","device":"of:0000000000000005/5","mac":"00:00:00:00:00:05", "vlanId":"200" }
         ]
         recipients = [
-            { "name":"h21","device":"of:0000000000000007/5","mac":"00:00:00:00:00:15" }
+            { "name":"h21","device":"of:0000000000000007/5","mac":"00:00:00:00:00:15", "vlanId":"200" }
         ]
         installResult = main.intentFunction.installPointIntent(
                                        main,
-                                       name="DUALSTACK1",
+                                       name="VLAN",
                                        senders=senders,
-                                       recipients=recipients,
-                                       ethType="IPV4" )
+                                       recipients=recipients )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
                                          main,
                                          intentId=installResult,
-                                         name="DUALSTACK1",
+                                         name="VLAN",
                                          senders=senders,
                                          recipients=recipients,
                                          sw1="s5",
@@ -1293,6 +1294,8 @@ class FUNCintentRest:
                                  actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
+
+        # TODO: implement VLAN selector REST API intent test once supported
 
         main.step( "1HOP: Add point intents between h1 and h3" )
         main.assertReturnString = "Assertion Result for 1HOP IPV4 with no mac address point intents\n"

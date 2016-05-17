@@ -1141,13 +1141,14 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="" ):
+    def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="", setVlan="" ):
         """
         Required:
             * hostIdOne: ONOS host id for host1
             * hostIdTwo: ONOS host id for host2
         Optional:
             * vlanId: specify a VLAN id for the intent
+            * setVlan: specify a VLAN id treatment
         Description:
             Adds a host-to-host intent ( bidirectional ) by
             specifying the two hosts.
@@ -1158,6 +1159,8 @@ class OnosCliDriver( CLI ):
             cmdStr = "add-host-intent "
             if vlanId:
                 cmdStr += "-v " + str( vlanId ) + " "
+            if setVlan:
+                cmdStr += "--setVlan " + str( vlanId ) + " "
             cmdStr += str( hostIdOne ) + " " + str( hostIdTwo )
             handle = self.sendline( cmdStr )
             assert "Command not found:" not in handle, handle
@@ -1255,7 +1258,8 @@ class OnosCliDriver( CLI ):
             ipDst="",
             tcpSrc="",
             tcpDst="",
-            vlanId="" ):
+            vlanId="",
+            setVlan="" ):
         """
         Required:
             * ingressDevice: device id of ingress device
@@ -1273,6 +1277,7 @@ class OnosCliDriver( CLI ):
             * tcpSrc: specify tcp source port
             * tcpDst: specify tcp destination port
             * vlanId: specify vlan ID
+            * setVlan: specify a VLAN id treatment
         Description:
             Adds a point-to-point intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1284,38 +1289,32 @@ class OnosCliDriver( CLI ):
               intent via cli
         """
         try:
-            # If there are no optional arguments
-            if not ethType and not ethSrc and not ethDst\
-                    and not bandwidth and not lambdaAlloc \
-                    and not ipProto and not ipSrc and not ipDst \
-                    and not tcpSrc and not tcpDst:
-                cmd = "add-point-intent"
+            cmd = "add-point-intent"
 
-            else:
-                cmd = "add-point-intent"
-
-                if ethType:
-                    cmd += " --ethType " + str( ethType )
-                if ethSrc:
-                    cmd += " --ethSrc " + str( ethSrc )
-                if ethDst:
-                    cmd += " --ethDst " + str( ethDst )
-                if bandwidth:
-                    cmd += " --bandwidth " + str( bandwidth )
-                if lambdaAlloc:
-                    cmd += " --lambda "
-                if ipProto:
-                    cmd += " --ipProto " + str( ipProto )
-                if ipSrc:
-                    cmd += " --ipSrc " + str( ipSrc )
-                if ipDst:
-                    cmd += " --ipDst " + str( ipDst )
-                if tcpSrc:
-                    cmd += " --tcpSrc " + str( tcpSrc )
-                if tcpDst:
-                    cmd += " --tcpDst " + str( tcpDst )
-                if vlanId:
-                    cmd += " -v " + str( vlanId )
+            if ethType:
+                cmd += " --ethType " + str( ethType )
+            if ethSrc:
+                cmd += " --ethSrc " + str( ethSrc )
+            if ethDst:
+                cmd += " --ethDst " + str( ethDst )
+            if bandwidth:
+                cmd += " --bandwidth " + str( bandwidth )
+            if lambdaAlloc:
+                cmd += " --lambda "
+            if ipProto:
+                cmd += " --ipProto " + str( ipProto )
+            if ipSrc:
+                cmd += " --ipSrc " + str( ipSrc )
+            if ipDst:
+                cmd += " --ipDst " + str( ipDst )
+            if tcpSrc:
+                cmd += " --tcpSrc " + str( tcpSrc )
+            if tcpDst:
+                cmd += " --tcpDst " + str( tcpDst )
+            if vlanId:
+                cmd += " -v " + str( vlanId )
+            if setVlan:
+                cmd += " --setVlan " + str( setVlan )
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -1395,7 +1394,8 @@ class OnosCliDriver( CLI ):
             tcpDst="",
             setEthSrc="",
             setEthDst="",
-            vlanId="" ):
+            vlanId="",
+            setVlan="" ):
         """
         Note:
             This function assumes the format of all ingress devices
@@ -1421,6 +1421,7 @@ class OnosCliDriver( CLI ):
             * setEthSrc: action to Rewrite Source MAC Address
             * setEthDst: action to Rewrite Destination MAC Address
             * vlanId: specify vlan Id
+            * setVlan: specify VLAN Id treatment
         Description:
             Adds a multipoint-to-singlepoint intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1432,43 +1433,36 @@ class OnosCliDriver( CLI ):
               intent via cli
         """
         try:
-            # If there are no optional arguments
-            if not ethType and not ethSrc and not ethDst\
-                    and not bandwidth and not lambdaAlloc\
-                    and not ipProto and not ipSrc and not ipDst\
-                    and not tcpSrc and not tcpDst and not setEthSrc\
-                    and not setEthDst:
-                cmd = "add-multi-to-single-intent"
+            cmd = "add-multi-to-single-intent"
 
-            else:
-                cmd = "add-multi-to-single-intent"
-
-                if ethType:
-                    cmd += " --ethType " + str( ethType )
-                if ethSrc:
-                    cmd += " --ethSrc " + str( ethSrc )
-                if ethDst:
-                    cmd += " --ethDst " + str( ethDst )
-                if bandwidth:
-                    cmd += " --bandwidth " + str( bandwidth )
-                if lambdaAlloc:
-                    cmd += " --lambda "
-                if ipProto:
-                    cmd += " --ipProto " + str( ipProto )
-                if ipSrc:
-                    cmd += " --ipSrc " + str( ipSrc )
-                if ipDst:
-                    cmd += " --ipDst " + str( ipDst )
-                if tcpSrc:
-                    cmd += " --tcpSrc " + str( tcpSrc )
-                if tcpDst:
-                    cmd += " --tcpDst " + str( tcpDst )
-                if setEthSrc:
-                    cmd += " --setEthSrc " + str( setEthSrc )
-                if setEthDst:
-                    cmd += " --setEthDst " + str( setEthDst )
-                if vlanId:
-                    cmd += " -v " + str( vlanId )
+            if ethType:
+                cmd += " --ethType " + str( ethType )
+            if ethSrc:
+                cmd += " --ethSrc " + str( ethSrc )
+            if ethDst:
+                cmd += " --ethDst " + str( ethDst )
+            if bandwidth:
+                cmd += " --bandwidth " + str( bandwidth )
+            if lambdaAlloc:
+                cmd += " --lambda "
+            if ipProto:
+                cmd += " --ipProto " + str( ipProto )
+            if ipSrc:
+                cmd += " --ipSrc " + str( ipSrc )
+            if ipDst:
+                cmd += " --ipDst " + str( ipDst )
+            if tcpSrc:
+                cmd += " --tcpSrc " + str( tcpSrc )
+            if tcpDst:
+                cmd += " --tcpDst " + str( tcpDst )
+            if setEthSrc:
+                cmd += " --setEthSrc " + str( setEthSrc )
+            if setEthDst:
+                cmd += " --setEthDst " + str( setEthDst )
+            if vlanId:
+                cmd += " -v " + str( vlanId )
+            if setVlan:
+                cmd += " --setVlan " + str( setVlan )
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -1552,7 +1546,8 @@ class OnosCliDriver( CLI ):
             tcpDst="",
             setEthSrc="",
             setEthDst="",
-            vlanId="" ):
+            vlanId="",
+            setVlan="" ):
         """
         Note:
             This function assumes the format of all egress devices
@@ -1578,6 +1573,7 @@ class OnosCliDriver( CLI ):
             * setEthSrc: action to Rewrite Source MAC Address
             * setEthDst: action to Rewrite Destination MAC Address
             * vlanId: specify vlan Id
+            * setVlan: specify VLAN ID treatment
         Description:
             Adds a singlepoint-to-multipoint intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1589,43 +1585,36 @@ class OnosCliDriver( CLI ):
               intent via cli
         """
         try:
-            # If there are no optional arguments
-            if not ethType and not ethSrc and not ethDst\
-                    and not bandwidth and not lambdaAlloc\
-                    and not ipProto and not ipSrc and not ipDst\
-                    and not tcpSrc and not tcpDst and not setEthSrc\
-                    and not setEthDst:
-                cmd = "add-single-to-multi-intent"
+            cmd = "add-single-to-multi-intent"
 
-            else:
-                cmd = "add-single-to-multi-intent"
-
-                if ethType:
-                    cmd += " --ethType " + str( ethType )
-                if ethSrc:
-                    cmd += " --ethSrc " + str( ethSrc )
-                if ethDst:
-                    cmd += " --ethDst " + str( ethDst )
-                if bandwidth:
-                    cmd += " --bandwidth " + str( bandwidth )
-                if lambdaAlloc:
-                    cmd += " --lambda "
-                if ipProto:
-                    cmd += " --ipProto " + str( ipProto )
-                if ipSrc:
-                    cmd += " --ipSrc " + str( ipSrc )
-                if ipDst:
-                    cmd += " --ipDst " + str( ipDst )
-                if tcpSrc:
-                    cmd += " --tcpSrc " + str( tcpSrc )
-                if tcpDst:
-                    cmd += " --tcpDst " + str( tcpDst )
-                if setEthSrc:
-                    cmd += " --setEthSrc " + str( setEthSrc )
-                if setEthDst:
-                    cmd += " --setEthDst " + str( setEthDst )
-                if vlanId:
-                    cmd += " -v " + str( vlanId )
+            if ethType:
+                cmd += " --ethType " + str( ethType )
+            if ethSrc:
+                cmd += " --ethSrc " + str( ethSrc )
+            if ethDst:
+                cmd += " --ethDst " + str( ethDst )
+            if bandwidth:
+                cmd += " --bandwidth " + str( bandwidth )
+            if lambdaAlloc:
+                cmd += " --lambda "
+            if ipProto:
+                cmd += " --ipProto " + str( ipProto )
+            if ipSrc:
+                cmd += " --ipSrc " + str( ipSrc )
+            if ipDst:
+                cmd += " --ipDst " + str( ipDst )
+            if tcpSrc:
+                cmd += " --tcpSrc " + str( tcpSrc )
+            if tcpDst:
+                cmd += " --tcpDst " + str( tcpDst )
+            if setEthSrc:
+                cmd += " --setEthSrc " + str( setEthSrc )
+            if setEthDst:
+                cmd += " --setEthDst " + str( setEthDst )
+            if vlanId:
+                cmd += " -v " + str( vlanId )
+            if setVlan:
+                cmd += " --setVlan " + str( setVlan )
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -1740,43 +1729,34 @@ class OnosCliDriver( CLI ):
               intent via cli
         """
         try:
-            # If there are no optional arguments
-            if not ethType and not ethSrc and not ethDst\
-                    and not bandwidth and not lambdaAlloc \
-                    and not ipProto and not ipSrc and not ipDst \
-                    and not tcpSrc and not tcpDst and not ingressLabel \
-                    and not egressLabel:
-                cmd = "add-mpls-intent"
+            cmd = "add-mpls-intent"
 
-            else:
-                cmd = "add-mpls-intent"
-
-                if ethType:
-                    cmd += " --ethType " + str( ethType )
-                if ethSrc:
-                    cmd += " --ethSrc " + str( ethSrc )
-                if ethDst:
-                    cmd += " --ethDst " + str( ethDst )
-                if bandwidth:
-                    cmd += " --bandwidth " + str( bandwidth )
-                if lambdaAlloc:
-                    cmd += " --lambda "
-                if ipProto:
-                    cmd += " --ipProto " + str( ipProto )
-                if ipSrc:
-                    cmd += " --ipSrc " + str( ipSrc )
-                if ipDst:
-                    cmd += " --ipDst " + str( ipDst )
-                if tcpSrc:
-                    cmd += " --tcpSrc " + str( tcpSrc )
-                if tcpDst:
-                    cmd += " --tcpDst " + str( tcpDst )
-                if ingressLabel:
-                    cmd += " --ingressLabel " + str( ingressLabel )
-                if egressLabel:
-                    cmd += " --egressLabel " + str( egressLabel )
-                if priority:
-                    cmd += " --priority " + str( priority )
+            if ethType:
+                cmd += " --ethType " + str( ethType )
+            if ethSrc:
+                cmd += " --ethSrc " + str( ethSrc )
+            if ethDst:
+                cmd += " --ethDst " + str( ethDst )
+            if bandwidth:
+                cmd += " --bandwidth " + str( bandwidth )
+            if lambdaAlloc:
+                cmd += " --lambda "
+            if ipProto:
+                cmd += " --ipProto " + str( ipProto )
+            if ipSrc:
+                cmd += " --ipSrc " + str( ipSrc )
+            if ipDst:
+                cmd += " --ipDst " + str( ipDst )
+            if tcpSrc:
+                cmd += " --tcpSrc " + str( tcpSrc )
+            if tcpDst:
+                cmd += " --tcpDst " + str( tcpDst )
+            if ingressLabel:
+                cmd += " --ingressLabel " + str( ingressLabel )
+            if egressLabel:
+                cmd += " --egressLabel " + str( egressLabel )
+            if priority:
+                cmd += " --priority " + str( priority )
 
             # Check whether the user appended the port
             # or provided it as an input

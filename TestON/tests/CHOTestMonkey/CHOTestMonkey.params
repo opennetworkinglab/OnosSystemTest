@@ -19,14 +19,14 @@
     # 100. Do something else
     # Sample sequence: 0,1,2,3,[10,30,21,31,10,32,21,33,50,10,30,21,31,10,32,21,33,51,40,60,10,30,21,31,10,32,21,33,50,10,30,21,31,10,32,21,33,51,41,60]*500,100
     <testcases>
-        0,1,2,3,100,[10,40,60,10,30,21,31,41,90,60]*500,100
+        0,1,2,3,10,[30,21,31,32,21,33,50,30,21,31,32,21,33,51]*500,100
     </testcases>
 
     <TEST>
         <topo>1</topo>
         <IPv6>on</IPv6>
         <numCtrl>3</numCtrl>
-        <pauseTest>off</pauseTest>
+        <pauseTest>on</pauseTest>
         <caseSleep>0</caseSleep>
         <setIPv6CfgSleep>5</setIPv6CfgSleep>
         <loadTopoSleep>5</loadTopoSleep>
@@ -83,6 +83,16 @@
             <rerunInterval>5</rerunInterval>
             <maxRerunNum>5</maxRerunNum>
         </IntentCheck>
+
+        <FlowCheck>
+            <status>on</status>
+            <typeIndex>11</typeIndex>
+            <typeString>CHECK_FLOW</typeString>
+            <CLI>check-flow</CLI>
+            <CLIParamNum>0</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </FlowCheck>
 
         <TrafficCheck>
             <status>on</status>

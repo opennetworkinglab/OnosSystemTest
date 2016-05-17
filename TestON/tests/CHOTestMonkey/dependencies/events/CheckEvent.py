@@ -25,19 +25,55 @@ class IntentCheck( CheckEvent ):
 
     def startCheckEvent( self, args=None ):
         checkResult = EventStates().PASS
-        # TODO: check intents that are expected in "FAILED" state?
-        installedIntentIDs = []
+        intentDict = {}
         for intent in main.intents:
-            if intent.isInstalled():
-                installedIntentIDs.append( intent.id )
+            intentDict[ intent.id ] = intent.expectedState
         for controller in main.controllers:
             if controller.isUp():
                 with controller.CLILock:
-                    intentState = controller.CLI.checkIntentState( intentsId=installedIntentIDs )
+                    intentState = controller.CLI.compareIntent( intentDict )
                 if not intentState:
-                    main.log.warn( "Intent Check - Not all intents are in INSTALLED state on ONOS%s" % ( controller.index ) )
+                    main.log.warn( "Intent Check - not all intent ids and states match that on ONOS%s" % ( controller.index ) )
                     checkResult = EventStates().FAIL
-        #TODO: check flows?
+        return checkResult
+
+class FlowCheck( CheckEvent ):
+    def __init__( self ):
+        CheckEvent.__init__( self )
+        self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+
+    def startCheckEvent( self, args=None ):
+        import json
+        checkResult = EventStates().PASS
+        for controller in main.controllers:
+            if controller.isUp():
+                with controller.CLILock:
+                    flows = controller.CLI.flows()
+                    try:
+                        flows = json.loads( flows )
+                    except ( TypeError, ValueError ):
+                        main.log.exception( "Flow Check - Object not as expected: {!r}".format( flows ) )
+                        return EventStates().FAIL
+                    # Compare flow IDs in ONOS and Mininet
+                    flowIDList = []
+                    for item in flows:
+                        for flow in item[ "flows" ]:
+                            flowIDList.append( hex( int( flow[ 'id' ] ) ) )
+                    main.log.info( "Flow Check - current flow number on ONOS%s: %s" % ( controller.index, len( flowIDList ) ) )
+                    switchList = []
+                    for device in main.devices:
+                        switchList.append( device.name )
+                    with main.mininetLock:
+                        flowCompareResult = main.Mininet1.checkFlowId( switchList, flowIDList, debug=False )
+                    if not flowCompareResult:
+                        main.log.warn( "Flow Check - flows on ONOS%s do not match that in Mininet" % ( controller.index ) )
+                        checkResult = EventStates().FAIL
+                    # Check flow state
+                    flowState = controller.CLI.checkFlowsState( isPENDING=False )
+                    if not flowState:
+                        main.log.warn( "Flow Check - not all flows are in ADDED state on ONOS%s" % ( controller.index ) )
+                        checkResult = EventStates().FAIL
         return checkResult
 
 class TopoCheck( CheckEvent ):
@@ -72,33 +108,37 @@ class TopoCheck( CheckEvent ):
                     #    main.log.warn( "Topo Check - link or device number discoverd by ONOS%s is incorrect" % ( controller.index ) )
                     #    checkResult = EventStates().FAIL
                     # Check links
-                    links = controller.CLI.links()
-                    links = json.loads( links )
-                    if not len( links ) == upLinkNum:
-                        checkResult = EventStates().FAIL
-                        main.log.warn( "Topo Check - link number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, upLinkNum, len( links ) ) )
-                    # Check devices
-                    devices = controller.CLI.devices()
-                    devices = json.loads( devices )
-                    availableDeviceNum = 0
-                    for device in devices:
-                        if device[ 'available' ] == True:
-                            availableDeviceNum += 1
-                    if not availableDeviceNum == upDeviceNum:
-                        checkResult = EventStates().FAIL
-                        main.log.warn( "Topo Check - device number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, upDeviceNum, availableDeviceNum ) )
-                    # Check hosts
-                    hosts = controller.CLI.hosts()
-                    hosts = json.loads( hosts )
-                    if not len( hosts ) == upHostNum:
-                        checkResult = EventStates().FAIL
-                        main.log.warn( "Topo Check - host number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, upHostNum, len( hosts ) ) )
-                    # Check clusters
-                    clusters = controller.CLI.clusters()
-                    clusters = json.loads( clusters )
-                    if not len( clusters ) == clusterNum:
-                        checkResult = EventStates().FAIL
-                        main.log.warn( "Topo Check - cluster number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, clusterNum, len( clusters ) ) )
+                    try:
+                        links = controller.CLI.links()
+                        links = json.loads( links )
+                        if not len( links ) == upLinkNum:
+                            checkResult = EventStates().FAIL
+                            main.log.warn( "Topo Check - link number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, upLinkNum, len( links ) ) )
+                        # Check devices
+                        devices = controller.CLI.devices()
+                        devices = json.loads( devices )
+                        availableDeviceNum = 0
+                        for device in devices:
+                            if device[ 'available' ] == True:
+                                availableDeviceNum += 1
+                        if not availableDeviceNum == upDeviceNum:
+                            checkResult = EventStates().FAIL
+                            main.log.warn( "Topo Check - device number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, upDeviceNum, availableDeviceNum ) )
+                        # Check hosts
+                        hosts = controller.CLI.hosts()
+                        hosts = json.loads( hosts )
+                        if not len( hosts ) == upHostNum:
+                            checkResult = EventStates().FAIL
+                            main.log.warn( "Topo Check - host number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, upHostNum, len( hosts ) ) )
+                        # Check clusters
+                        clusters = controller.CLI.clusters()
+                        clusters = json.loads( clusters )
+                        if not len( clusters ) == clusterNum:
+                            checkResult = EventStates().FAIL
+                            main.log.warn( "Topo Check - cluster number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, clusterNum, len( clusters ) ) )
+                    except ( TypeError, ValueError ):
+                        main.log.exception( "Flow Check - Object not as expected" )
+                        return EventStates().FAIL
         return checkResult
 
 class ONOSCheck( CheckEvent ):
@@ -126,44 +166,48 @@ class ONOSCheck( CheckEvent ):
         for controller in main.controllers:
             if controller.isUp():
                 # Check mastership
-                with controller.CLILock:
-                    roles = controller.CLI.roles()
-                roles = json.loads( roles )
-                for device in roles:
-                    dpid = device[ 'id' ]
-                    if dpidToMaster[ dpid ] == 'unknown':
-                        dpidToMaster[ dpid ] = device[ 'master' ]
-                    elif dpidToMaster[ dpid ] != device[ 'master' ]:
-                        checkResult = EventStates().FAIL
-                        main.log.warn( "ONOS Check - Mastership of %s on ONOS%s is inconsistent with that on ONOS1" % ( dpid, controller.index ) )
-                    if dpidToAvailability[ dpid ] and device[ 'master' ] == "none":
-                        checkResult = EventStates().FAIL
-                        main.log.warn( "ONOS Check - Device %s has no master on ONOS%s" % ( dpid, controller.index ) )
-                # Check leaders
-                with controller.CLILock:
-                    leaders = controller.CLI.leaders()
-                leaders = json.loads( leaders )
-                ONOSTopics = [ j['topic'] for j in leaders ]
-                for topic in topics:
-                    if topic not in ONOSTopics:
-                        checkResult = EventStates().FAIL
-                        main.log.warn( "ONOS Check - Topic %s not in leaders on ONOS%s" % ( topic, controller.index ) )
-                # Check node state
-                with controller.CLILock:
-                    nodes = controller.CLI.nodes()
-                nodes = json.loads( nodes )
-                ipToState = {}
-                for node in nodes:
-                    ipToState[ node[ 'ip' ] ] = node[ 'state' ]
-                for c in main.controllers:
-                    if c.isUp() and ipToState[ c.ip ] == 'READY':
-                        pass
-                    elif not c.isUp() and ipToState[ c.ip ] == 'INACTIVE':
-                        pass
-                    else:
-                        checkResult = EventStates().FAIL
-                        main.log.warn( "ONOS Check - ONOS%s shows wrong node state: ONOS%s is %s but state is %s" % ( controller.index, c.index, c.status, ipToState[ c.ip ] ) )
-                # TODO: check partitions?
+                try:
+                    with controller.CLILock:
+                        roles = controller.CLI.roles()
+                    roles = json.loads( roles )
+                    for device in roles:
+                        dpid = device[ 'id' ]
+                        if dpidToMaster[ dpid ] == 'unknown':
+                            dpidToMaster[ dpid ] = device[ 'master' ]
+                        elif dpidToMaster[ dpid ] != device[ 'master' ]:
+                            checkResult = EventStates().FAIL
+                            main.log.warn( "ONOS Check - Mastership of %s on ONOS%s is inconsistent with that on ONOS1" % ( dpid, controller.index ) )
+                        if dpidToAvailability[ dpid ] and device[ 'master' ] == "none":
+                            checkResult = EventStates().FAIL
+                            main.log.warn( "ONOS Check - Device %s has no master on ONOS%s" % ( dpid, controller.index ) )
+                    # Check leaders
+                    with controller.CLILock:
+                        leaders = controller.CLI.leaders()
+                    leaders = json.loads( leaders )
+                    ONOSTopics = [ j['topic'] for j in leaders ]
+                    for topic in topics:
+                        if topic not in ONOSTopics:
+                            checkResult = EventStates().FAIL
+                            main.log.warn( "ONOS Check - Topic %s not in leaders on ONOS%s" % ( topic, controller.index ) )
+                    # Check node state
+                    with controller.CLILock:
+                        nodes = controller.CLI.nodes()
+                    nodes = json.loads( nodes )
+                    ipToState = {}
+                    for node in nodes:
+                        ipToState[ node[ 'ip' ] ] = node[ 'state' ]
+                    for c in main.controllers:
+                        if c.isUp() and ipToState[ c.ip ] == 'READY':
+                            pass
+                        elif not c.isUp() and ipToState[ c.ip ] == 'INACTIVE':
+                            pass
+                        else:
+                            checkResult = EventStates().FAIL
+                            main.log.warn( "ONOS Check - ONOS%s shows wrong node state: ONOS%s is %s but state is %s" % ( controller.index, c.index, c.status, ipToState[ c.ip ] ) )
+                    # TODO: check partitions?
+                except ( TypeError, ValueError ):
+                    main.log.exception( "ONOS Check - Object not as expected" )
+                    return EventStates().FAIL
         return checkResult
 
 class TrafficCheck( CheckEvent ):

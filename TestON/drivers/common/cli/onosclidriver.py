@@ -2323,7 +2323,12 @@ class OnosCliDriver( CLI ):
             statesCount = [0, 0, 0, 0]
             for s in states:
                 rawFlows = self.flows( state=s, timeout = timeout )
-                checkedStates.append( json.loads( rawFlows ) )
+                if rawFlows:
+                    # if we didn't get flows or flows function return None, we should return
+                    # main.Flase
+                    checkedStates.append( json.loads( rawFlows ) )
+                else:
+                    return main.FALSE
             for i in range( len( states ) ):
                 for c in checkedStates[i]:
                     try:
@@ -2342,6 +2347,10 @@ class OnosCliDriver( CLI ):
             return main.TRUE
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, rawFlows ) )
+            return None
+        
+        except AssertionError:
+            main.log.exception( "" )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

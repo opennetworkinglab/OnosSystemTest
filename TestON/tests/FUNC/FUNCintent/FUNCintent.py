@@ -1106,7 +1106,8 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18,
+                                         useTCP=True)
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 

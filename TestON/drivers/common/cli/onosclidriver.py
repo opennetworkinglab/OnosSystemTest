@@ -399,25 +399,6 @@ class OnosCliDriver( CLI ):
             if level:
                 lvlStr = "--level=" + level
 
-            self.handle.sendline( "" )
-            i = self.handle.expect( [ "onos>", "\$", pexpect.TIMEOUT ] )
-            if i == 1:
-                main.log.error( self.name + ": onos cli session closed. ")
-                if self.onosIp:
-                    main.log.warn( "Trying to reconnect " + self.onosIp )
-                    reconnectResult = self.startOnosCli( self.onosIp )
-                    if reconnectResult:
-                        main.log.info( self.name + ": onos cli session reconnected." )
-                    else:
-                        main.log.error( self.name + ": reconnection failed." )
-                        main.cleanup()
-                        main.exit()
-                else:
-                    main.cleanup()
-                    main.exit()
-            if i == 2:
-                self.handle.sendline( "" )
-                self.handle.expect( "onos>" )
             self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
             self.handle.expect( "log:log" )
             self.handle.expect( "onos>" )
@@ -465,6 +446,27 @@ class OnosCliDriver( CLI ):
 
         """
         try:
+            # Try to reconnect if disconnected from cli
+            self.handle.sendline( "" )
+            i = self.handle.expect( [ "onos>", "\$", pexpect.TIMEOUT ] )
+            if i == 1:
+                main.log.error( self.name + ": onos cli session closed. ")
+                if self.onosIp:
+                    main.log.warn( "Trying to reconnect " + self.onosIp )
+                    reconnectResult = self.startOnosCli( self.onosIp )
+                    if reconnectResult:
+                        main.log.info( self.name + ": onos cli session reconnected." )
+                    else:
+                        main.log.error( self.name + ": reconnection failed." )
+                        main.cleanup()
+                        main.exit()
+                else:
+                    main.cleanup()
+                    main.exit()
+            if i == 2:
+                self.handle.sendline( "" )
+                self.handle.expect( "onos>" )
+
             if debug:
                 # NOTE: This adds and average of .4 seconds per call
                 logStr = "\"Sending CLI command: '" + cmdStr + "'\""
@@ -516,6 +518,7 @@ class OnosCliDriver( CLI ):
             return None
         except IndexError:
             main.log.exception( self.name + ": Object not as expected" )
+            main.log.debug( "response: {}".format( repr( response ) ) )
             return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -558,6 +561,7 @@ class OnosCliDriver( CLI ):
             cmdStr = "add-node " + str( nodeId ) + " " +\
                 str( ONOSIp ) + " " + str( tcpPort )
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in adding node" )
@@ -593,6 +597,7 @@ class OnosCliDriver( CLI ):
 
             cmdStr = "remove-node " + str( nodeId )
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing node" )
@@ -628,6 +633,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             return output
         except AssertionError:
@@ -779,6 +785,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             return output
         except AssertionError:
@@ -3073,12 +3080,12 @@ class OnosCliDriver( CLI ):
             dpid = str( dpid )
             cmdStr = "onos:ports -e " + dpid + " | wc -l"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             if re.search( "No such device", output ):
                 main.log.error( "Error in getting ports" )
                 return ( output, "Error" )
-            else:
-                return output
+            return output
         except AssertionError:
             main.log.exception( "" )
             return None
@@ -3103,12 +3110,12 @@ class OnosCliDriver( CLI ):
             dpid = str( dpid )
             cmdStr = "onos:links " + dpid + " | grep ACTIVE | wc -l"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             if re.search( "No such device", output ):
                 main.log.error( "Error in getting ports " )
                 return ( output, "Error " )
-            else:
-                return output
+            return output
         except AssertionError:
             main.log.exception( "" )
             return None
@@ -3132,12 +3139,12 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "onos:intents | grep id="
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             if re.search( "Error", output ):
                 main.log.error( "Error in getting ports" )
                 return ( output, "Error" )
-            else:
-                return output
+            return output
         except AssertionError:
             main.log.exception( "" )
             return None
@@ -3190,6 +3197,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             return output
         except AssertionError:
@@ -3219,6 +3227,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             return output
         except AssertionError:
@@ -3247,6 +3256,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "onos:leaders -j"
             rawOutput = self.sendline( cmdStr )
+            assert rawOutput is not None, "Error in sendline"
             assert "Command not found:" not in rawOutput, rawOutput
             output = json.loads( rawOutput )
             results = []
@@ -3282,6 +3292,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             return output
         except AssertionError:
@@ -3320,6 +3331,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             return output
         except AssertionError:
@@ -3353,6 +3365,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             return output
@@ -3659,6 +3672,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             return output
@@ -3796,6 +3810,7 @@ class OnosCliDriver( CLI ):
             elif short:
                 baseStr += " -s"
             output = self.sendline( baseStr + cmdStr + componentStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             return output
@@ -3837,6 +3852,7 @@ class OnosCliDriver( CLI ):
             if value is not None:
                 cmdStr += " " + str( value )
             output = self.sendline( baseStr + cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             if value and check:
@@ -3888,6 +3904,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "set-test-add " + str( setName ) + " " + str( values )
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             try:
                 # TODO: Maybe make this less hardcoded
@@ -3903,6 +3920,7 @@ class OnosCliDriver( CLI ):
                                "seconds before retrying." )
                 time.sleep( retryTime )  # Due to change in mastership
                 output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Error executing command" not in output
             positiveMatch = "\[(.*)\] was added to the set " + str( setName )
             negativeMatch = "\[(.*)\] was already in set " + str( setName )
@@ -3957,6 +3975,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += str( setName ) + " " + str( values )
             output = self.sendline( cmdStr )
             try:
+                assert output is not None, "Error in sendline"
                 # TODO: Maybe make this less hardcoded
                 # ConsistentMap Exceptions
                 assert "org.onosproject.store.service" not in output
@@ -3970,6 +3989,7 @@ class OnosCliDriver( CLI ):
                                "seconds before retrying." )
                 time.sleep( retryTime )  # Due to change in mastership
                 output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             main.log.info( self.name + ": " + output )
@@ -4056,6 +4076,7 @@ class OnosCliDriver( CLI ):
             cmdStr += setName + " " + values
             output = self.sendline( cmdStr )
             try:
+                assert output is not None, "Error in sendline"
                 # TODO: Maybe make this less hardcoded
                 # ConsistentMap Exceptions
                 assert "org.onosproject.store.service" not in output
@@ -4069,6 +4090,7 @@ class OnosCliDriver( CLI ):
                                "seconds before retrying." )
                 time.sleep( retryTime )  # Due to change in mastership
                 output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             main.log.info( self.name + ": " + output )
@@ -4149,6 +4171,7 @@ class OnosCliDriver( CLI ):
             cmdStr += setName
             output = self.sendline( cmdStr )
             try:
+                assert output is not None, "Error in sendline"
                 # TODO: Maybe make this less hardcoded
                 # ConsistentMap Exceptions
                 assert "org.onosproject.store.service" not in output
@@ -4162,6 +4185,7 @@ class OnosCliDriver( CLI ):
                                "seconds before retrying." )
                 time.sleep( retryTime )  # Due to change in mastership
                 output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             main.log.info( self.name + ": " + output )
@@ -4215,6 +4239,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             main.log.info( self.name + ": " + output )
@@ -4255,6 +4280,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += " " + str( delta )
             output = self.sendline( cmdStr )
             try:
+                assert output is not None, "Error in sendline"
                 # TODO: Maybe make this less hardcoded
                 # ConsistentMap Exceptions
                 assert "org.onosproject.store.service" not in output
@@ -4268,6 +4294,7 @@ class OnosCliDriver( CLI ):
                                "seconds before retrying." )
                 time.sleep( retryTime )  # Due to change in mastership
                 output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             main.log.info( self.name + ": " + output )
@@ -4317,6 +4344,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += " " + str( delta )
             output = self.sendline( cmdStr )
             try:
+                assert output is not None, "Error in sendline"
                 # TODO: Maybe make this less hardcoded
                 # ConsistentMap Exceptions
                 assert "org.onosproject.store.service" not in output
@@ -4330,6 +4358,7 @@ class OnosCliDriver( CLI ):
                                "seconds before retrying." )
                 time.sleep( retryTime )  # Due to change in mastership
                 output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             main.log.info( self.name + ": " + output )
@@ -4371,6 +4400,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             assert "Error:" not in handle, handle
             if not handle:
@@ -4410,6 +4440,7 @@ class OnosCliDriver( CLI ):
             cmdStr = "transactional-map-test-get "
             cmdStr += keyName
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             try:
                 # TODO: Maybe make this less hardcoded
@@ -4476,6 +4507,7 @@ class OnosCliDriver( CLI ):
             cmdStr = "transactional-map-test-put "
             cmdStr += numKeys + " " + value
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             try:
                 # TODO: Maybe make this less hardcoded
@@ -4533,6 +4565,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -4560,6 +4593,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmd += "-j "
             response = self.sendline( cmd + uri )
+            assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
             return response
         except AssertionError:
@@ -4622,6 +4656,7 @@ class OnosCliDriver( CLI ):
                 else:
                     cmd += " {}:{}:{}".format( proto, item, port )
             response = self.sendline( cmd )
+            assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
             if "Error" in response:
                 main.log.error( response )
@@ -4662,6 +4697,7 @@ class OnosCliDriver( CLI ):
             for d in device:
                 time.sleep( 1 )
                 response = self.sendline( "device-remove {}".format( d ) )
+                assert response is not None, "Error in sendline"
                 assert "Command not found:" not in response, response
                 if "Error" in response:
                     main.log.warn( "Error for device: {}\nResponse: {}".format( d, response ) )
@@ -4702,6 +4738,7 @@ class OnosCliDriver( CLI ):
             for h in host:
                 time.sleep( 1 )
                 response = self.sendline( "host-remove {}".format( h ) )
+                assert response is not None, "Error in sendline"
                 assert "Command not found:" not in response, response
                 if "Error" in response:
                     main.log.warn( "Error for host: {}\nResponse: {}".format( h, response ) )
@@ -4737,6 +4774,7 @@ class OnosCliDriver( CLI ):
         try:
             cmd =  "null-link null:{} null:{} {}".format( begin, end, state )
             response = self.sendline( cmd, showResponse=True )
+            assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
             if "Error" in response or "Failure" in response:
                 main.log.error( response )

@@ -933,7 +933,8 @@ def testPointIntent( main,
                      tcp="",
                      sw1="s5",
                      sw2="s2",
-                     expectedLink=0):
+                     expectedLink=0,
+                     useTCP=False):
     """
     Test a Point Intent
 
@@ -1034,7 +1035,7 @@ def testPointIntent( main,
         testResult = main.FALSE
 
     # Check Connectivity
-    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ), attempts=3, sleep=5 ):
+    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId, useTCP ), attempts=3, sleep=5 ):
         main.assertReturnString += 'Initial Ping Passed\n'
     else:
         main.assertReturnString += 'Initial Ping Failed\n'
@@ -1088,7 +1089,7 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Check Connection
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ) ):
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId, useTCP ) ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -1126,7 +1127,7 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Check Connection
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ) ):
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId, useTCP ) ):
             main.assertReturnString += 'Link Up Scapy Packet Received Passed\n'
         else:
             main.assertReturnString += 'Link Up Scapy Packet Recieved Failed\n'
@@ -1311,7 +1312,7 @@ def testEndPointFail( main,
     # Check Connectivity
     # First check connectivity of any isolated senders to recipients
     if isolatedSenderNames:
-        if scapyCheckConnection( main, isolatedSenderNames, recipientNames, None, None, None, main.TRUE ):
+        if scapyCheckConnection( main, isolatedSenderNames, recipientNames, None, None, None, None, main.TRUE ):
             main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
         else:
             main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
@@ -1319,7 +1320,7 @@ def testEndPointFail( main,
 
     # Next check connectivity of senders to any isolated recipients
     if isolatedRecipientNames:
-        if scapyCheckConnection( main, senderNames, isolatedRecipientNames, None, None, None, main.TRUE ):
+        if scapyCheckConnection( main, senderNames, isolatedRecipientNames, None, None, None, None, main.TRUE ):
             main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
         else:
             main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
@@ -1611,7 +1612,7 @@ def link( main, sw1, sw2, option):
     linkResult = main.Mininet1.link( end1=sw1, end2=sw2, option=option )
     return linkResult
 
-def scapyCheckConnection( main, senders, recipients, vlanId=None, packet=None, packetFilter=None, expectFailure=False ):
+def scapyCheckConnection( main, senders, recipients, vlanId=None, useTCP=False, packet=None, packetFilter=None, expectFailure=False ):
     """
         Checks the connectivity between all given sender hosts and all given recipient hosts
         Packet may be specified. Defaults to Ether/IP packet
@@ -1625,7 +1626,8 @@ def scapyCheckConnection( main, senders, recipients, vlanId=None, packet=None, p
 
     if not packetFilter:
         packetFilter = 'ether host {}'
-
+    if useTCP:
+        packetFilter += ' ip proto \\tcp tcp port {}'.format(main.params[ 'SDNIP' ][ 'dstPort' ])
     if expectFailure:
         timeout = 1
     else:

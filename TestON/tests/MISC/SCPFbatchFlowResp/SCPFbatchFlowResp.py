@@ -184,8 +184,8 @@ class SCPFbatchFlowResp:
         cliResult = main.TRUE
         for i in range( i, main.numCtrls ):
             cliResult = cliResult and \
-                        main.CLIs[ i ].startOnosCli( ONOSIp=main.ONOSip[ i ] )
-            main.log.info("ONOSip is: " + main.ONOSip[i])
+                        main.ONOScli1.startCellCli( )
+            main.log.info("ONOSip is: " + main.ONOScli1.ip_address)
         stepResult = cliResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -204,8 +204,7 @@ class SCPFbatchFlowResp:
 
         main.step("Activate openflow-base App")
         app = main.params['CASE10']['app']
-        stepResult = main.ONOSbench.onosCli( ONOSIp = main.ONOSip[0],
-                                             cmdstr = "app activate " + app )
+        stepResult = main.ONOScli1.activateApp( app )
         time.sleep(main.cfgSleep)
         main.log.info(stepResult)
         utilities.assert_equals( expect=main.TRUE,
@@ -216,9 +215,9 @@ class SCPFbatchFlowResp:
         time.sleep(main.cfgSleep)
 
 
-        main.step( "Disable AdaptiveFlowSampling ")
-        stepResult = main.ONOSbench.onosCfgSet( main.ONOSip[0], "org.onosproject.provider.of.flow.impl.OpenFlowRuleProvider",
-                                   "adaptiveFlowSampling " + main.params['CASE10']['adaptiveFlowenabled'])
+        main.step( "Configure AdaptiveFlowSampling ")
+        stepResult = main.ONOScli1.setCfg( component = "org.onosproject.provider.of.flow.impl.OpenFlowRuleProvider",
+                                   propName = "adaptiveFlowSampling ",  value = main.params['CASE10']['adaptiveFlowenabled'])
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="App Configuration Succeeded! ",

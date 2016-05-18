@@ -25,7 +25,6 @@ import subprocess
 from requests.models import Response
 from drivers.common.clidriver import CLI
 
-
 class OnosDriver( CLI ):
 
     def __init__( self ):
@@ -1545,6 +1544,30 @@ class OnosDriver( CLI ):
         if destDir[ -1: ] != "/":
             destDir += "/"
         cmd="flows > "+ str( destDir ) + str( filename ) + localtime
+        return self.onosCli(ONOSIp,cmd)
+
+    def dumpGroups(self,ONOSIp, destDir, filename="groups" ):
+        """
+        Dump Group Tables to a desired directory.
+        For debugging purposes, you may want to use
+        this function to capture groups at a given point in time.
+        Localtime will be attached to the filename
+
+        Required:
+            * ONOSIp: the IP of the target ONOS instance
+            * destDir: specify directory to copy to.
+              ex ) /tmp/
+        Optional:
+            * fileName: Name of the file
+        """
+
+        localtime = time.strftime( '%x %X' )
+        localtime = localtime.replace( "/", "" )
+        localtime = localtime.replace( " ", "_" )
+        localtime = localtime.replace( ":", "" )
+        if destDir[ -1: ] != "/":
+            destDir += "/"
+        cmd="groups > "+ str( destDir ) + str( filename ) + localtime
         return self.onosCli(ONOSIp,cmd)
 
     def cpLogsToDir( self, logToCopy,

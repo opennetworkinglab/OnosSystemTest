@@ -2207,7 +2207,7 @@ class OnosCliDriver( CLI ):
             return returnValue
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, intentsRaw ) )
-            return None
+            return main.ERROR
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -2797,7 +2797,7 @@ class OnosCliDriver( CLI ):
         """
         try:
             topology = self.getTopology( topologyResult )
-            if topology == {}:
+            if topology == {} or topology == None:
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected

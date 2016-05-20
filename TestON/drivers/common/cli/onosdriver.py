@@ -2273,6 +2273,7 @@ class OnosDriver( CLI ):
                     curIp = tmpList[0]
                     self.ip_address = curIp
                     return curIp
+            main.log.warn( "getIpAddr failed to find a public IP address" )
             return localhost
         except Exception:
             main.log.exception( "Uncaught exception" )

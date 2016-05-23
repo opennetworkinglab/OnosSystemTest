@@ -2288,7 +2288,7 @@ class OnosDriver( CLI ):
             # Either no non-localhost IPs, or more than 1
             main.log.warn( "getIpAddr failed to find a public IP address" )
             return LOCALHOST
-        except CalledProcessError:
+        except subprocess.CalledProcessError:
             main.log.exception( "Error executing ifconfig" )
         except IndexError:
             main.log.exception( "Error getting IP Address" )

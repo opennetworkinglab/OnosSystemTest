@@ -10,7 +10,7 @@
             <COMPONENTS> </COMPONENTS>
         </ONOSbench>
 
-        <ONOScli>
+        <ONOScli1>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>

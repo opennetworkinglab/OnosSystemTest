@@ -154,7 +154,7 @@ class USECASE_SdnipFunction_fsfw:
                                  onfail="ONOS is NOT up" )
 
         main.step( "Checking if ONOS CLI is ready" )
-        cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
+        cliResult = main.ONOScli1.startOnosCli( ONOS1Ip,
                                                commandlineTimeout=100,
                                                onosStartTimeout=600 )
         utilities.assert_equals( expect=main.TRUE,
@@ -164,7 +164,7 @@ class USECASE_SdnipFunction_fsfw:
 
         for i in range( 10 ):
             ready = True
-            output = main.ONOScli.summary()
+            output = main.ONOScli1.summary()
             if not output:
                 ready = False
             if ready:
@@ -181,20 +181,20 @@ class USECASE_SdnipFunction_fsfw:
 
         main.log.info( "Get links in the network" )
         time.sleep( int ( main.params['timers']['TopoDiscovery'] ) )
-        summaryResult = main.ONOScli.summary()
+        summaryResult = main.ONOScli1.summary()
         linkNum = json.loads( summaryResult )[ "links" ]
-        listResult = main.ONOScli.links( jsonFormat=False )
+        listResult = main.ONOScli1.links( jsonFormat=False )
         main.log.info( listResult )
         if linkNum < 100:
             main.log.error( "Link number is wrong!" )
             time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
-            listResult = main.ONOScli.links( jsonFormat=False )
+            listResult = main.ONOScli1.links( jsonFormat=False )
             main.log.info( listResult )
             main.cleanup()
             main.exit()
 
         main.step( "Activate sdn-ip application" )
-        activeSDNIPresult = main.ONOScli.activateApp( "org.onosproject.sdnip" )
+        activeSDNIPresult = main.ONOScli1.activateApp( "org.onosproject.sdnip" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=activeSDNIPresult,
                                  onpass="Activate SDN-IP succeeded",
@@ -248,13 +248,13 @@ class USECASE_SdnipFunction_fsfw:
                        % main.params[ 'config' ][ 'peerNum' ] )
         main.step( "Check P2P intents number from ONOS CLI" )
 
-        getIntentsResult = main.ONOScli.intents( jsonFormat=True )
+        getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
         bgpIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * 6
         if bgpIntentsActualNum != bgpIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
-            getIntentsResult = main.ONOScli.intents( jsonFormat=True )
+            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
             bgpIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         main.log.info( "bgpIntentsExpected num is:" )
@@ -280,14 +280,14 @@ class USECASE_SdnipFunction_fsfw:
         allRoutesExpected.append( "5.0.0.0/24" + "/" + "10.0.5.1" )
         allRoutesExpected.append( "6.0.0.0/24" + "/" + "10.0.6.1" )
 
-        getRoutesResult = main.ONOScli.routes( jsonFormat=True )
+        getRoutesResult = main.ONOScli1.routes( jsonFormat=True )
         allRoutesActual = \
             main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
         if allRoutesStrActual != allRoutesStrExpected:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
-            getRoutesResult = main.ONOScli.routes( jsonFormat=True )
+            getRoutesResult = main.ONOScli1.routes( jsonFormat=True )
             allRoutesActual = \
                 main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
             allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -303,13 +303,13 @@ class USECASE_SdnipFunction_fsfw:
             onfail="Routes are wrong!" )
 
         main.step( "Check M2S intents installed" )
-        getIntentsResult = main.ONOScli.intents( jsonFormat=True )
+        getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
         routeIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
         routeIntentsExpectedNum = 3
         if routeIntentsActualNum != routeIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
-            getIntentsResult = main.ONOScli.intents( jsonFormat=True )
+            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
             routeIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
 

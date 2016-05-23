@@ -20,7 +20,10 @@
     <testcases>1,[2,8,21,3,8,4,5,14,16,17]*1,[6,8,3,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4]*13,13</testcases>
 
     <scaling>1,3b,3,5b,5,7b,7,7b,5,5b,3,3b,1</scaling>
-    <serverPort>8000</serverPort>
+    <server>
+        <port>8000</port>
+        <interface>eth0</interface>
+    </server>
     <apps></apps>
     <ONOS_Configuration>
         <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>

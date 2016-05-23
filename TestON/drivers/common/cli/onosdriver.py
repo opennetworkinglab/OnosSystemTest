@@ -2230,7 +2230,7 @@ class OnosDriver( CLI ):
 
         return passed
 
-    def getIpAddr( self ):
+    def getIpAddr( self, iface=None ):
         """
         Update self.ip_address with numerical ip address. If multiple IP's are
         located on the device, will attempt to use self.nicAddr to choose the
@@ -2240,7 +2240,7 @@ class OnosDriver( CLI ):
         ONLY WORKS WITH IPV4 ADDRESSES
         """
         try:
-            localhost = "127.0.0.1"
+            LOCALHOST = "127.0.0.1"
             ipPat = "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
             pattern = re.compile( ipPat )
             match = re.search( pattern, self.ip_address )
@@ -2257,24 +2257,41 @@ class OnosDriver( CLI ):
                     nicMatch = re.search( nicPat, curIp )
                     if nicMatch:
                         return self.ip_address
-            # ELSE: attempt to get correct address.
-            raw = subprocess.check_output( "ifconfig")
+            # ELSE: IF iface, return ip of interface
+            cmd = "ifconfig"
+            ifPat = re.compile( "inet addr:({})".format( ipPat ) )
+            if iface:
+                cmd += " " + str( iface )
+            raw = subprocess.check_output( cmd.split() )
             ifPat = re.compile( "inet addr:({})".format( ipPat ) )
             ips = re.findall( ifPat, raw )
+            if iface:
+                if ips:
+                    ip = ips[0]
+                    self.ip_address = ip
+                    return ip
+                else:
+                    main.log.error( "Error finding ip, ifconfig output:".format( raw ) )
+            # ELSE: attempt to get address matching nicPat.
             if nicPat:
                 for ip in ips:
                     curMatch = re.search( nicPat, ip )
                     if curMatch:
                         self.ip_address = ip
                         return ip
-            else:
-                tmpList = [ ip for ip in ips if ip is not localhost ]
+            else:  # If only one non-localhost ip, return that
+                tmpList = [ ip for ip in ips if ip is not LOCALHOST ]
                 if len(tmpList) == 1:
                     curIp = tmpList[0]
                     self.ip_address = curIp
                     return curIp
+            # Either no non-localhost IPs, or more than 1
             main.log.warn( "getIpAddr failed to find a public IP address" )
-            return localhost
+            return LOCALHOST
+        except CalledProcessError:
+            main.log.exception( "Error executing ifconfig" )
+        except IndexError:
+            main.log.exception( "Error getting IP Address" )
         except Exception:
             main.log.exception( "Uncaught exception" )
 

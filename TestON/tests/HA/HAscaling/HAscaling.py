@@ -130,7 +130,7 @@ class HAscaling:
             killResults = killResults and killed
 
         main.step( "Setup server for cluster metadata file" )
-        port = main.params['serverPort']
+        port = main.params['server']['port']
         rootDir = os.path.dirname( main.testFile ) + "/dependencies"
         main.log.debug( "Root dir: {}".format( rootDir ) )
         status = main.Server.start( main.ONOSbench,
@@ -227,7 +227,8 @@ class HAscaling:
                                  onfail="Copy backup config file failed" )
         # we need to modify the onos-service file to use remote metadata file
         # url for cluster metadata file
-        ip = main.ONOSbench.getIpAddr()
+        iface = main.params['server'].get( 'interface' )
+        ip = main.ONOSbench.getIpAddr( iface=iface )
         metaFile = "cluster.json"
         javaArgs = r"-Donos.cluster.metadata.uri=http:\/\/{}:{}\/{}".format( ip, port, metaFile )
         main.log.warn( javaArgs )

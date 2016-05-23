@@ -51,7 +51,7 @@
     </CASE10>
 
     <CASE11>
-        <path>~/OnosSystemTest/TestON/tests/SAMP/SAMPstartTemplate2/Dependency/</path>
+        <path>~/OnosSystemTest/TestON/tests/SAMP/SAMPstartTemplate2_3node/Dependency/</path>
         <topo>newFuncTopo.py</topo>
     </CASE11>
 

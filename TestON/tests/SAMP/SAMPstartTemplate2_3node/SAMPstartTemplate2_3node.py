@@ -2,7 +2,7 @@
 # This is a sample template that starts up ONOS cluster, this template
 # can be use as a base script for ONOS System Testing.
 
-class SAMPstartTemplate2:
+class SAMPstartTemplate2_3node:
 
     def __init__( self ):
         self.default = ''

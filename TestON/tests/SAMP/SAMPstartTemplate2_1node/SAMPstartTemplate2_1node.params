@@ -1,0 +1,64 @@
+<PARAMS>
+    <!--
+        CASE0: pull onos code - this case should be skipped on Jenkins-driven prod test
+    -->
+    <!--
+        CASE1: setup and clean test env
+    -->
+    <!--
+        CASE2: get onos warnings, errors from log
+    -->
+    <!--
+        CASE10: start a 1-node ONOS
+    -->
+    <!--
+        CASE11: Start Mininet and assign controllers
+    -->
+    <!--
+        CASE12: Sample case of using onos cli
+    -->
+    <!--
+        CASE22: Sample case of using onos rest
+    -->
+
+    <testcases>0,1,10,11,12,22,2</testcases>
+
+    <CASE0>
+        <gitPull>False</gitPull> # False or True
+        <gitBranch>master</gitBranch>
+    </CASE0>
+
+    <CASE1>
+        <NodeList>OC1,OC2,OC3</NodeList>
+        <SleepTimers>
+            <onosStartup>60</onosStartup>
+            <onosCfg>5</onosCfg>
+            <mnStartup>15</mnStartup>
+            <mnCfg>10</mnCfg>
+        </SleepTimers>
+    </CASE1>
+
+    <CASE10>
+        <numNodes>1</numNodes>
+        <Apps>
+            org.onosproject.openflow,org.onosproject.fwd
+        </Apps>
+        <ONOS_Configuration>
+        <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
+            <useFlowObjectives>true</useFlowObjectives>
+        </org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
+        </ONOS_Configuration>
+    </CASE10>
+
+    <CASE11>
+        <path>~/OnosSystemTest/TestON/tests/SAMP/SAMPstartTemplate2/Dependency/</path>
+        <topo>newFuncTopo.py</topo>
+    </CASE11>
+
+    <CASE12>
+    </CASE12>
+
+    <CASE22>
+    </CASE22>
+
+</PARAMS>

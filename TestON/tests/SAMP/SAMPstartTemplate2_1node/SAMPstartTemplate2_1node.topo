@@ -1,6 +1,10 @@
 <TOPOLOGY>
     <COMPONENT>
-
+    <!--
+        This is a list of all components and their handles in the test setup.
+        Even with some handles not used in test cases, we want to define
+        all onos cells here, for cases to set up onos cluster.
+    -->
         <ONOSbench>
             <host>localhost</host>
             <user>sdn</user>
@@ -8,11 +12,12 @@
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
+                <home></home> #defines where onos home is
             </COMPONENTS>
         </ONOSbench>
 
         <ONOScli1>
-            <host>localhost</host>
+            <host>OC1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
@@ -21,28 +26,8 @@
             </COMPONENTS>
         </ONOScli1>
 
-        <ONOScli2>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>3</connect_order>
-            <COMPONENTS>
-            </COMPONENTS>
-        </ONOScli2>
-
-         <ONOScli3>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>4</connect_order>
-            <COMPONENTS>
-            </COMPONENTS>
-        </ONOScli3>
-
         <Mininet1>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>MininetCliDriver</type>
@@ -51,6 +36,17 @@
                 <home>~/mininet/custom/</home>
             </COMPONENTS>
         </Mininet1>
+
+        <ONOSrest1>
+            <host>OC1</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest1>
 
     </COMPONENT>
 </TOPOLOGY>

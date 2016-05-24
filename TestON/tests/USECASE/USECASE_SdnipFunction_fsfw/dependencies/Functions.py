@@ -7,10 +7,10 @@ def checkRouteNum( main, routeNumExpected ):
     main.log.info( routeNumExpected )
     main.log.info( "Route number from ONOS CLI:" )
 
-    routeNumActual = main.ONOScli.ipv4RouteNumber()
+    routeNumActual = main.ONOScli1.ipv4RouteNumber()
     if routeNumActual != routeNumExpected:
         time.sleep( wait )
-        routeNumActual = main.ONOScli.ipv4RouteNumber()
+        routeNumActual = main.ONOScli1.ipv4RouteNumber()
     main.log.info( routeNumActual )
     utilities.assertEquals( \
         expect = routeNumExpected, actual = routeNumActual,
@@ -24,12 +24,12 @@ def checkM2SintentNum( main, intentNumExpected ):
     main.log.info( "Intent number expected:" )
     main.log.info( intentNumExpected )
     main.log.info( "Intent number from ONOS CLI:" )
-    jsonResult = main.ONOScli.intents( jsonFormat = True, summary = True,
+    jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
                                        TYPE = "multiPointToSinglePoint" )
     intentNumActual = jsonResult['installed']
     if intentNumActual != intentNumExpected:
         time.sleep( wait )
-        jsonResult = main.ONOScli.intents( jsonFormat = True, summary = True,
+        jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
                                            TYPE = "multiPointToSinglePoint" )
         intentNumActual = jsonResult['installed']
     main.log.info( intentNumActual )
@@ -45,13 +45,13 @@ def checkP2PintentNum( main, intentNumExpected ):
     main.log.info( "Intent number expected:" )
     main.log.info( intentNumExpected )
     main.log.info( "Intent number from ONOS CLI:" )
-    jsonResult = main.ONOScli.intents( jsonFormat = True, summary = True,
+    jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
                                        TYPE = "pointToPoint" )
     intentNumActual = jsonResult['installed']
 
     if intentNumActual != intentNumExpected:
         time.sleep( wait )
-        jsonResult = main.ONOScli.intents( jsonFormat = True, summary = True,
+        jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
                                            TYPE = "pointToPoint" )
         intentNumActual = jsonResult['installed']
     main.log.info( intentNumActual )

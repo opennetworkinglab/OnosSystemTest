@@ -17,7 +17,7 @@
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOScli>
+        </ONOScli1>
 
         <ONOS1>
             <host>OC1</host>

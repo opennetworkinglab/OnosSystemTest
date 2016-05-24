@@ -620,9 +620,9 @@ class USECASE_SdnipFunction_fsfw:
         check route number, P2P intent number, M2S intent number, ping test" )
 
         main.log.info( "Check the flow number correctness before stopping sw11" )
-        main.Functions.checkFlowNum( main, "sw11", 13 )
-        main.Functions.checkFlowNum( main, "sw1", 3 )
-        main.Functions.checkFlowNum( main, "sw7", 3 )
+        main.Functions.checkFlowNum( main, "sw11", 19 )
+        main.Functions.checkFlowNum( main, "sw1", 9 )
+        main.Functions.checkFlowNum( main, "sw7", 6 )
         main.log.debug( main.Mininet.checkFlows( "sw11" ) )
         main.log.debug( main.Mininet.checkFlows( "sw1" ) )
         main.log.debug( main.Mininet.checkFlows( "sw7" ) )
@@ -671,8 +671,8 @@ class USECASE_SdnipFunction_fsfw:
         check route number, P2P intent number, M2S intent number, ping test" )
 
         main.log.info( "Check the flow status before starting sw11" )
-        main.Functions.checkFlowNum( main, "sw1", 11 )
-        main.Functions.checkFlowNum( main, "sw7", 5 )
+        main.Functions.checkFlowNum( main, "sw1", 17 )
+        main.Functions.checkFlowNum( main, "sw7", 8 )
         main.log.debug( main.Mininet.checkFlows( "sw1" ) )
         main.log.debug( main.Mininet.checkFlows( "sw7" ) )
 

@@ -64,7 +64,7 @@
                 "name" : "Leaf-R1",
                 "nodeSid" : 1,
                 "routerIp" : "192.168.0.1",
-                "routerMac" : "00:00:00:00:00:01",
+                "routerMac" : "10:00:00:00:00:01",
                 "isEdgeRouter" : true,
                 "adjacencySids" : []
             }
@@ -75,7 +75,7 @@
                 "name" : "Leaf-R2",
                 "nodeSid" : 2,
                 "routerIp" : "192.168.0.2",
-                "routerMac" : "00:00:00:00:00:02",
+                "routerMac" : "10:00:00:00:00:02",
                 "isEdgeRouter" : true,
                 "adjacencySids" : []
             }
@@ -86,7 +86,7 @@
                 "name" : "Leaf-R3",
                 "nodeSid" : 3,
                 "routerIp" : "192.168.0.3",
-                "routerMac" : "00:00:00:00:00:03",
+                "routerMac" : "10:00:00:00:00:03",
                 "isEdgeRouter" : true,
                 "adjacencySids" : []
             }
@@ -97,7 +97,7 @@
                 "name" : "Leaf-R4",
                 "nodeSid" : 4,
                 "routerIp" : "192.168.0.4",
-                "routerMac" : "00:00:00:00:00:04",
+                "routerMac" : "10:00:00:00:00:04",
                 "isEdgeRouter" : true,
                 "adjacencySids" : []
             }
@@ -108,7 +108,7 @@
                 "name" : "Spine-R1",
                 "nodeSid" : 101,
                 "routerIp" : "192.168.0.101",
-                "routerMac" : "00:00:00:00:01:01",
+                "routerMac" : "10:00:00:00:01:01",
                 "isEdgeRouter" : false,
                 "adjacencySids" : []
             }
@@ -119,7 +119,7 @@
                 "name" : "Spine-R2",
                 "nodeSid" : 102,
                 "routerIp" : "192.168.0.102",
-                "routerMac" : "00:00:00:00:01:02",
+                "routerMac" : "10:00:00:00:01:02",
                 "isEdgeRouter" : false,
                 "adjacencySids" : []
             }
@@ -130,7 +130,7 @@
                 "name" : "Spine-R3",
                 "nodeSid" : 103,
                 "routerIp" : "192.168.0.103",
-                "routerMac" : "00:00:00:00:01:03",
+                "routerMac" : "10:00:00:00:01:03",
                 "isEdgeRouter" : false,
                 "adjacencySids" : []
             }
@@ -141,7 +141,7 @@
                 "name" : "Spine-R4",
                 "nodeSid" : 104,
                 "routerIp" : "192.168.0.104",
-                "routerMac" : "00:00:00:00:01:04",
+                "routerMac" : "10:00:00:00:01:04",
                 "isEdgeRouter" : false,
                 "adjacencySids" : []
             }

@@ -36,10 +36,10 @@ class USECASE_SegmentRouting:
         main.path = os.path.dirname( main.testFile )
         main.dependencyPath = main.path + "/dependencies/"
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
-        #main.json = ["4x4"]
+        #main.json = ["0x1","0x1"]
         main.json = ["2x2", "2x2","4x4","4x4"]
         main.args = [" ", " ", " --spine 4 --leaf 4 ", " --spine 4 --leaf 4 "]
-        #main.args = [" --spine 4 --leaf 4 "]
+        #main.args = [" --spine 0 --leaf 1 "," --spine 0 --leaf 1 "]
         main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
         main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
         main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
@@ -114,18 +114,12 @@ class USECASE_SegmentRouting:
         else: main.log.error( "App list is empty" )
         main.case( "Package and start ONOS using apps:" + apps)
 
-        #kill off all onos processes
-        main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating environment setup" )
-
-        for i in range( main.maxNodes ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
-
         print "NODE COUNT = ", main.numCtrls
 
         tempOnosIp = []
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[i] )
+
         onosUser = main.params[ 'ENV' ][ 'cellUser' ]
         main.step("Create and Apply cell file")
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
@@ -143,6 +137,12 @@ class USECASE_SegmentRouting:
                                  onpass="Successfully applied cell to " + \
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
+        #kill off all onos processes
+        main.log.info( "Safety check, killing all ONOS processes" +
+                       " before initiating environment setup" )
+
+        for i in range( main.maxNodes ):
+            main.ONOSbench.onosDie( main.ONOSip[ i ] )
 
         main.step( "Create and Install ONOS package" )
         main.jsonFile=main.json.pop(0)
@@ -193,8 +193,10 @@ class USECASE_SegmentRouting:
         #time.sleep( 2*main.startUpSleep )
         #main.ONOSbench.handle.sendline( "onos-secure-ssh")
         main.step( "Checking if ONOS CLI is ready" )
+        cellResult = main.CLIs[0].setCell( "temp" )
+
         cliResult = main.CLIs[0].startOnosCli( main.ONOSip[ 0 ],
-                                           commandlineTimeout=100, onosStartTimeout=600 )
+                                           commandlineTimeout=60, onosStartTimeout=100 )
         utilities.assert_equals( expect=main.TRUE,
                              actual=cliResult,
                              onpass="ONOS CLI is ready",
@@ -215,27 +217,6 @@ class USECASE_SegmentRouting:
             main.log.error( "ONOS startup failed!" )
             main.cleanup()
             main.exit()
-
-    def CASE10( self, main ):
-        '''
-            Report errors/warnings/exceptions
-        '''
-        main.case( "Logging test for " + main.jsonFile )
-        #if len(main.json) > 0 :
-        main.ONOSbench.cpLogsToDir("/opt/onos/log/karaf.log",main.logdir, 
-                           copyFileName="karaf.log."+main.jsonFile+str(len(main.json)))
-        #main.ONOSbench.logReport( main.ONOSip[ 0 ],
-        #                          [ "INFO" ],
-        #                          "a" )
-        #main.log.info("Error report: \n" )
-        main.ONOSbench.logReport( main.ONOSip[ 0 ],
-                                  [ "INFO",
-                                    "FOLLOWER",
-                                    "WARN",
-                                    "flow",
-                                    "ERROR",
-                                    "Except" ],
-                                  "s" )
 
     def CASE3( self, main ):
         """
@@ -267,7 +248,7 @@ class USECASE_SegmentRouting:
         main.step(" Check whether the flow count is bigger than 80" )
         count =  utilities.retry( main.CLIs[0].checkFlowCount,
                                  main.FALSE,
-                                 kwargs={'min':80},
+                                 kwargs={'min':10},
                                  attempts=10 )
         utilities.assertEquals( \
             expect=True,
@@ -290,37 +271,45 @@ class USECASE_SegmentRouting:
         main.ONOSbench.dumpGroups( main.ONOSip[0],
                                    main.logdir, "groupsBefore" + main.jsonFile)
         #time.sleep( 3*main.startUpSleep)
+        main.count=1
 
     def CASE4( self, main ):
         main.case( "Check full connectivity" )
         main.log.report( "Check full connectivity" )
 
-        main.step("1st Check full connectivity")
+        main.step("Check full connectivity"+str(main.count))
         pa = main.Mininet1.pingall()
         utilities.assert_equals( expect=main.TRUE, actual=pa,
                                  onpass="Full connectivity successfully tested",
                                  onfail="Full connectivity failed" )
         # cleanup mininet
         main.ONOSbench.dumpFlows( main.ONOSip[0],
-                 main.logdir, "flowsAfter" + main.jsonFile)
+                 main.logdir, "flowsAfter" + str(main.count) + main.jsonFile)
         main.ONOSbench.dumpGroups( main.ONOSip[0],
-                           main.logdir, "groupsAfter" + main.jsonFile)
-        main.step("2nd Check full connectivity")
-        pa = main.Mininet1.pingall()
-        utilities.assert_equals( expect=main.TRUE, actual=pa,
-                                 onpass="Full connectivity successfully tested",
-                                 onfail="Full connectivity failed" )
+                           main.logdir, "groupsAfter" + str(main.count) + main.jsonFile)
 
-        main.ONOSbench.dumpFlows( main.ONOSip[0],
-                 main.logdir, "flowsAfter2nd" + main.jsonFile)
-
-        main.ONOSbench.dumpGroups( main.ONOSip[0],
-                                  main.logdir, "groupsAfter2nd" + main.jsonFile)
-
+    def CASE10( self, main ):
+        '''
+            Report errors/warnings/exceptions
+        '''
+        main.case( "Logging test for " + main.jsonFile )
+        #if len(main.json) > 0 :
         main.ONOSbench.onosStop( main.ONOSip[0] )
         main.Mininet1.stopNet()
-
-
+        main.ONOSbench.cpLogsToDir("/opt/onos/log/karaf.log",main.logdir,
+                                   copyFileName="karaf.log."+main.jsonFile+str(len(main.json)))
+        #main.ONOSbench.logReport( main.ONOSip[ 0 ],
+        #                          [ "INFO" ],
+        #                          "a" )
+        #main.log.info("Error report: \n" )
+        main.ONOSbench.logReport( main.ONOSip[ 0 ],
+                                  [ "INFO",
+                                    "FOLLOWER",
+                                    "WARN",
+                                    "flow",
+                                    "ERROR",
+                                    "Except" ],
+                                  "s" )
 
 
 

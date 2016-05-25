@@ -2321,6 +2321,8 @@ class MininetCliDriver( Emulator ):
         try:
             main.log.info( "Getting flows from Mininet" )
             flows = self.getFlowTable( sw, version, debug )
+            if flows == None:
+                return main.ERROR
 
             if debug: print "flow ids:\n{}\n\n".format(flowId)
 

@@ -245,10 +245,10 @@ class USECASE_SegmentRouting:
             main.cleanup()
             main.exit()
         #main.step("Waiting for switch initialization and configuration")
-        main.step(" Check whether the flow count is bigger than 80" )
+        main.step(" Check whether the flow count is bigger than 116" )
         count =  utilities.retry( main.CLIs[0].checkFlowCount,
                                  main.FALSE,
-                                 kwargs={'min':10},
+                                 kwargs={'min':116},
                                  attempts=10 )
         utilities.assertEquals( \
             expect=True,
@@ -296,7 +296,12 @@ class USECASE_SegmentRouting:
         #if len(main.json) > 0 :
         main.ONOSbench.onosStop( main.ONOSip[0] )
         main.Mininet1.stopNet()
-        main.ONOSbench.cpLogsToDir("/opt/onos/log/karaf.log",main.logdir,
+        
+        main.ONOSbench.scp( main.ONOScli1 ,
+                                          "/opt/onos/log/karaf.log",
+                                          "/tmp/karaf.log",
+                                          direction="from" )
+        main.ONOSbench.cpLogsToDir("/tmp/karaf.log",main.logdir,
                                    copyFileName="karaf.log."+main.jsonFile+str(len(main.json)))
         #main.ONOSbench.logReport( main.ONOSip[ 0 ],
         #                          [ "INFO" ],

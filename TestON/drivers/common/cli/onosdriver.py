@@ -1561,7 +1561,7 @@ class OnosDriver( CLI ):
             * fileName: Name of the file
         """
 
-        localtime = time.strftime( '%x %X' )
+        localtime = time.strftime( '%H %M' )
         localtime = localtime.replace( "/", "" )
         localtime = localtime.replace( " ", "_" )
         localtime = localtime.replace( ":", "" )
@@ -1595,7 +1595,7 @@ class OnosDriver( CLI ):
               with multiple file copying
         """
         try:
-            localtime = time.strftime( '%x %X' )
+            localtime = time.strftime( '%H %M' )
             localtime = localtime.replace( "/", "" )
             localtime = localtime.replace( " ", "_" )
             localtime = localtime.replace( ":", "" )

@@ -486,6 +486,7 @@ class SCPFscalingMaxIntentsWithFlowObj:
                 if not intentsState:
                     # If some intents are not installed, grep the previous flows list, and finished this test case
                     main.log.warn( "Some intens did not install" )
+                    verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600)
                     main.log.info("Total Intents: {}".format( totalIntents) )
                     break
 

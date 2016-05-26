@@ -38,6 +38,7 @@ import types
 import os
 from math import pow
 from drivers.common.cli.emulatordriver import Emulator
+from core.graph import Graph
 
 
 class MininetCliDriver( Emulator ):
@@ -57,6 +58,7 @@ class MininetCliDriver( Emulator ):
         self.hostPrompt = "~#"
         self.bashPrompt = "\$"
         self.scapyPrompt = ">>>"
+        self.graph = Graph()
 
     def connect( self, **connectargs ):
         """
@@ -1827,6 +1829,72 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
+    def getSwitchRandom( self, timeout=60, nonCut=True ):
+        """
+        Randomly get a switch from Mininet topology.
+        If nonCut is True, it gets a list of non-cut switches (the deletion
+        of a non-cut switch will not increase the number of connected
+        components of a graph) and randomly returns one of them, otherwise
+        it just randomly returns one switch from all current switches in
+        Mininet.
+        Returns the name of the chosen switch.
+        """
+        import random
+        candidateSwitches = []
+        try:
+            if not nonCut:
+                switches = self.getSwitches( timeout=timeout )
+                assert len( switches ) != 0
+                for switchName in switches.keys():
+                    candidateSwitches.append( switchName )
+            else:
+                graphDict = self.getGraphDict( timeout=timeout, useId=False )
+                if graphDict == None:
+                    return None
+                self.graph.update( graphDict )
+                candidateSwitches = self.graph.getNonCutVertices()
+            if candidateSwitches == None:
+                return None
+            elif len( candidateSwitches ) == 0:
+                main.log.info( self.name + ": No candidate switch for deletion" )
+                return None
+            else:
+                switch = random.sample( candidateSwitches, 1 )
+                return switch[ 0 ]
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return None
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
+    def delSwitchRandom( self, timeout=60, nonCut=True ):
+        """
+        Randomly delete a switch from Mininet topology.
+        If nonCut is True, it gets a list of non-cut switches (the deletion
+        of a non-cut switch will not increase the number of connected
+        components of a graph) and randomly chooses one for deletion,
+        otherwise it just randomly delete one switch from all current
+        switches in Mininet.
+        Returns the name of the deleted switch
+        """
+        try:
+            switch = self.getSwitchRandom( timeout, nonCut )
+            if switch == None:
+                return None
+            else:
+                deletionResult = self.delSwitch( switch )
+            if deletionResult:
+                return switch
+            else:
+                return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
     def addLink( self, node1, node2 ):
         """
            add a link to the mininet topology
@@ -1891,6 +1959,75 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
+
+    def getLinkRandom( self, timeout=60, nonCut=True ):
+        """
+        Randomly get a link from Mininet topology.
+        If nonCut is True, it gets a list of non-cut links (the deletion
+        of a non-cut link will not increase the number of connected
+        component of a graph) and randomly returns one of them, otherwise
+        it just randomly returns one link from all current links in
+        Mininet.
+        Returns the link as a list, e.g. [ 's1', 's2' ]
+        """
+        import random
+        candidateLinks = []
+        try:
+            if not nonCut:
+                links = self.getLinks( timeout=timeout )
+                assert len( links ) != 0
+                for link in links:
+                    # Exclude host-switch link
+                    if link[ 'node1' ].startswith( 'h' ) or link[ 'node2' ].startswith( 'h' ):
+                        continue
+                    candidateLinks.append( [ link[ 'node1' ], link[ 'node2' ] ] )
+            else:
+                graphDict = self.getGraphDict( timeout=timeout, useId=False )
+                if graphDict == None:
+                    return None
+                self.graph.update( graphDict )
+                candidateLinks = self.graph.getNonCutEdges()
+            if candidateLinks == None:
+                return None
+            elif len( candidateLinks ) == 0:
+                main.log.info( self.name + ": No candidate link for deletion" )
+                return None
+            else:
+                link = random.sample( candidateLinks, 1 )
+                return link[ 0 ]
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return None
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
+    def delLinkRandom( self, timeout=60, nonCut=True ):
+        """
+        Randomly delete a link from Mininet topology.
+        If nonCut is True, it gets a list of non-cut links (the deletion
+        of a non-cut link will not increase the number of connected
+        component of a graph) and randomly chooses one for deletion,
+        otherwise it just randomly delete one link from all current links
+        in Mininet.
+        Returns the deleted link as a list, e.g. [ 's1', 's2' ]
+        """
+        try:
+            link = self.getLinkRandom( timeout, nonCut )
+            if link == None:
+                return None
+            else:
+                deletionResult = self.delLink( link[ 0 ], link[ 1 ] )
+            if deletionResult:
+                return link
+            else:
+                return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
 
     def addHost( self, hostname, **kwargs ):
         """
@@ -2476,6 +2613,48 @@ class MininetCliDriver( Emulator ):
                             'enabled': isUp } )
         return ports
 
+    def getOVSPorts( self, nodeName ):
+        """
+        Read ports from OVS by executing 'ovs-ofctl dump-ports-desc' command.
+
+        Returns a list of dictionaries containing information about each
+        port of the given switch.
+        """
+        command = "sh ovs-ofctl dump-ports-desc " + str( nodeName )
+        try:
+            response = self.execute(
+                cmd=command,
+                prompt="mininet>",
+                timeout=10 )
+            ports = []
+            if response:
+                for line in response.split( "\n" ):
+                    # Regex patterns to parse 'ovs-ofctl dump-ports-desc' output
+                    # Example port:
+                    # 1(s1-eth1): addr:ae:60:72:77:55:51
+                    pattern = "(?P<index>\d+)\((?P<name>[^-]+-eth(?P<port>\d+))\):\saddr:(?P<mac>([a-f0-9]{2}:){5}[a-f0-9]{2})"
+                    result = re.search( pattern, line )
+                    if result:
+                        index = result.group( 'index' )
+                        name = result.group( 'name' )
+                        # This port number is extracted from port name
+                        port = result.group( 'port' )
+                        mac = result.group( 'mac' )
+                        ports.append( { 'index': index,
+                                        'name': name,
+                                        'port': port,
+                                        'mac': mac } )
+            return ports
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def getSwitches( self, verbose=False ):
         """
         Read switches from Mininet.
@@ -2962,6 +3141,100 @@ class MininetCliDriver( Emulator ):
         switchList = list( switchSet )
 
         return switchList
+
+    def getGraphDict( self, timeout=60, useId=True, includeHost=False ):
+        """
+        Return a dictionary which describes the latest Mininet topology data as a
+        graph.
+        An example of the dictionary:
+        { vertex1: { 'edges': ..., 'name': ..., 'protocol': ... },
+          vertex2: { 'edges': ..., 'name': ..., 'protocol': ... } }
+        Each vertex should at least have an 'edges' attribute which describes the
+        adjacency information. The value of 'edges' attribute is also represented by
+        a dictionary, which maps each edge (identified by the neighbor vertex) to a
+        list of attributes.
+        An example of the edges dictionary:
+        'edges': { vertex2: { 'port': ..., 'weight': ... },
+                   vertex3: { 'port': ..., 'weight': ... } }
+        If useId == True, dpid/mac will be used instead of names to identify
+        vertices, which is helpful when e.g. comparing Mininet topology with ONOS
+        topology.
+        If includeHost == True, all hosts (and host-switch links) will be included
+        in topology data.
+        Note that link or switch that are brought down by 'link x x down' or 'switch
+        x down' commands still show in the output of Mininet CLI commands such as
+        'links', 'dump', etc. Thus, to ensure the correctness of this function, it is
+        recommended to use delLink() or delSwitch functions to simulate link/switch
+        down, and addLink() or addSwitch to add them back.
+        """
+        graphDict = {}
+        try:
+            links = self.getLinks( timeout=timeout )
+            portDict = {}
+            if useId:
+                switches = self.getSwitches()
+            if includeHost:
+                hosts = self.getHosts()
+            for link in links:
+                # FIXME: support 'includeHost' argument
+                if link[ 'node1' ].startswith( 'h' ) or link[ 'node2' ].startswith( 'h' ):
+                    continue
+                nodeName1 = link[ 'node1' ]
+                nodeName2 = link[ 'node2' ]
+                port1 = link[ 'port1' ]
+                port2 = link[ 'port2' ]
+                # Loop for two nodes
+                for i in range( 2 ):
+                    # Get port index from OVS
+                    # The index extracted from port name may be inconsistent with ONOS
+                    portIndex = -1
+                    if not nodeName1 in portDict.keys():
+                        portList = self.getOVSPorts( nodeName1 )
+                        if len( portList ) == 0:
+                            main.log.warn( self.name + ": No port found on switch " + nodeName1 )
+                            return None
+                        portDict[ nodeName1 ] = portList
+                    for port in portDict[ nodeName1 ]:
+                        if port[ 'port' ] == port1:
+                            portIndex = port[ 'index' ]
+                            break
+                    if portIndex == -1:
+                        main.log.warn( self.name + ": Cannot find port index for interface {}-eth{}".format( nodeName1, port1 ) )
+                        return None
+                    if useId:
+                        node1 = 'of:' + str( switches[ nodeName1 ][ 'dpid' ] )
+                        node2 = 'of:' + str( switches[ nodeName2 ][ 'dpid' ] )
+                    else:
+                        node1 = nodeName1
+                        node2 = nodeName2
+                    if not node1 in graphDict.keys():
+                        if useId:
+                            graphDict[ node1 ] = { 'edges':{},
+                                                   'dpid':switches[ nodeName1 ][ 'dpid' ],
+                                                   'name':nodeName1,
+                                                   'ports':switches[ nodeName1 ][ 'ports' ],
+                                                   'swClass':switches[ nodeName1 ][ 'swClass' ],
+                                                   'pid':switches[ nodeName1 ][ 'pid' ],
+                                                   'options':switches[ nodeName1 ][ 'options' ] }
+                        else:
+                            graphDict[ node1 ] = { 'edges':{} }
+                    else:
+                        # Assert node2 is not connected to any current links of node1
+                        assert node2 not in graphDict[ node1 ][ 'edges' ].keys()
+                    graphDict[ node1 ][ 'edges' ][ node2 ] = { 'port':portIndex }
+                    # Swap two nodes/ports
+                    nodeName1, nodeName2 = nodeName2, nodeName1
+                    port1, port2 = port2, port1
+            return graphDict
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return None
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
 
     def update( self ):
         """

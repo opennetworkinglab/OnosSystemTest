@@ -55,6 +55,7 @@ class FUNCnetconf:
             main.configName = main.params[ 'CONFIGURE' ][ 'cfgName' ]
             main.configPass = main.params[ 'CONFIGURE' ][ 'cfgPass' ]
             main.configPort = main.params[ 'CONFIGURE' ][ 'cfgAppPort' ]
+            main.cycle = 0 # How many times FUNCintent has run through its tests
 
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.cellData = {} # for creating cell file
@@ -138,6 +139,8 @@ class FUNCnetconf:
         - Install ONOS cluster
         - Connect to cli
         """
+
+        main.cycle += 1
 
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
@@ -253,6 +256,28 @@ class FUNCnetconf:
 
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
+
+    def CASE19( self, main ):
+        """
+            Copy the karaf.log files after each testcase cycle
+        """
+        main.log.report( "Copy karaf logs" )
+        main.case( "Copy karaf logs" )
+        main.caseExplanation = "Copying the karaf logs to preserve them through" +\
+                               "reinstalling ONOS"
+        main.step( "Copying karaf logs" )
+        i = 0
+        for cli in main.CLIs:
+            main.node = cli
+            ip = main.ONOSip[ i ]
+            main.node.ip_address = ip
+            main.ONOSbench.scp( main.node ,
+                                "/opt/onos/log/karaf.log",
+                                "/tmp/karaf.log",
+                                direction="from" )
+            main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
+                                        copyFileName=( "karaf.log.node{0}.cycle{1}".format( str( i + 1 ), str( main.cycle ) ) ) )
+            i += 1
 
     def CASE100( self, main ):
         """

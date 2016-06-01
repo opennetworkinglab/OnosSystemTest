@@ -57,6 +57,7 @@ class FUNCoptical:
             main.ONOSip = []  # List of IPs of active ONOS nodes. CASE 2
             main.activeONOSip = []
             main.assertReturnString = ''  # Assembled assert return string
+            main.cycle = 0 # How many times FUNCintent has run through its tests
 
             main.ONOSip = main.ONOSbench.getOnosIps()
 
@@ -123,6 +124,8 @@ class FUNCoptical:
         - Install ONOS cluster
         - Connect to cli
         """
+
+        main.cycle += 1
 
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
@@ -301,6 +304,28 @@ class FUNCoptical:
                                  actual=stepResult,
                                  onpass="Successfully activated Flow Objectives",
                                  onfail="Failed to activate Flow Objectives" )
+
+    def CASE19( self, main ):
+        """
+            Copy the karaf.log files after each testcase cycle
+        """
+        main.log.report( "Copy karaf logs" )
+        main.case( "Copy karaf logs" )
+        main.caseExplanation = "Copying the karaf logs to preserve them through" +\
+                               "reinstalling ONOS"
+        main.step( "Copying karaf logs" )
+        i = 0
+        for cli in main.CLIs:
+            main.node = cli
+            ip = main.ONOSip[ i ]
+            main.node.ip_address = ip
+            main.ONOSbench.scp( main.node ,
+                                "/opt/onos/log/karaf.log",
+                                "/tmp/karaf.log",
+                                direction="from" )
+            main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
+                                        copyFileName=( "karaf.log.node{0}.cycle{1}".format( str( i + 1 ), str( main.cycle ) ) ) )
+            i += 1
 
     def CASE21( self,main ):
         """

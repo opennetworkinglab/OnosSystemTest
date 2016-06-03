@@ -2205,6 +2205,9 @@ class OnosCliDriver( CLI ):
             if returnValue == main.TRUE:
                 main.log.info( self.name + ": all intent IDs and states match that in ONOS" )
             return returnValue
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return main.ERROR
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, intentsRaw ) )
             return main.ERROR

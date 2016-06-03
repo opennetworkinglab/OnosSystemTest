@@ -1402,7 +1402,8 @@ class OnosCliDriver( CLI ):
             setEthSrc="",
             setEthDst="",
             vlanId="",
-            setVlan="" ):
+            setVlan="",
+            partial=False ):
         """
         Note:
             This function assumes the format of all ingress devices
@@ -1470,6 +1471,8 @@ class OnosCliDriver( CLI ):
                 cmd += " -v " + str( vlanId )
             if setVlan:
                 cmd += " --setVlan " + str( setVlan )
+            if partial:
+                cmd += " --partial"
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -1554,7 +1557,8 @@ class OnosCliDriver( CLI ):
             setEthSrc="",
             setEthDst="",
             vlanId="",
-            setVlan="" ):
+            setVlan="",
+            partial=False ):
         """
         Note:
             This function assumes the format of all egress devices
@@ -1622,6 +1626,8 @@ class OnosCliDriver( CLI ):
                 cmd += " -v " + str( vlanId )
             if setVlan:
                 cmd += " --setVlan " + str( setVlan )
+            if partial:
+                cmd += " --partial"
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -2348,7 +2354,7 @@ class OnosCliDriver( CLI ):
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, rawFlows ) )
             return None
-        
+
         except AssertionError:
             main.log.exception( "" )
             return None

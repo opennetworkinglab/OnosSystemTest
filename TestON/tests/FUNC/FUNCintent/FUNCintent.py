@@ -1931,6 +1931,9 @@ class FUNCintent:
         """
         Tests Multi to Single Point Intent and Single to Multi Point Intent End Point Failure
         """
+        # At some later point discussion on this behavior in MPSP and SPMP intents
+        # will be reoppened and this test case may need to be updated to reflect
+        # the outcomes of that discussion
         if main.initialized == main.FALSE:
             main.log.error( "Test components did not start correctly, skipping further tests" )
             main.skipCase()
@@ -1955,10 +1958,9 @@ class FUNCintent:
             main.initialized = main.FALSE
             main.skipCase()
         main.case( "Test Multi to Single End Point Failure" )
-        main.step( "Installing Multi to Single Point intents" )
-
-        main.assertReturnString = "Assertion results for IPV4 multi to single \
-                                  point intent end point failure with no options set\n"
+        main.step( "Installing Multi to Single Point intents with no options set" )
+        main.assertReturnString = "Assertion results for IPV4 multi to single " +\
+                                  "point intent end point failure with no options set\n"
         senders = [
             { "name":"h16", "device":"of:0000000000000006/8" },
             { "name":"h24", "device":"of:0000000000000007/8" }
@@ -2004,8 +2006,60 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
+        main.step( "Installing Multi to Single Point intents with partial failure allowed" )
+
+        main.assertReturnString = "Assertion results for IPV4 multi to single " +\
+                                  "with partial failures allowed\n"
+        senders = [
+            { "name":"h16", "device":"of:0000000000000006/8" },
+            { "name":"h24", "device":"of:0000000000000007/8" }
+        ]
+        recipients = [
+            { "name":"h8", "device":"of:0000000000000005/8" }
+        ]
+        isolatedSenders = [
+            { "name":"h24"}
+        ]
+        isolatedRecipients = []
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installMultiToSingleIntent(
+                                         main,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         partial=True )
+
+        if installResult:
+            testResult = main.intentFunction.testEndPointFail(
+                                         main,
+                                         intentId=installResult,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         isolatedSenders=isolatedSenders,
+                                         isolatedRecipients=isolatedRecipients,
+                                         sw1="s6",
+                                         sw2="s2",
+                                         sw3="s4",
+                                         sw4="s1",
+                                         sw5="s3",
+                                         expectedLink1=16,
+                                         expectedLink2=14,
+                                         partial=True )
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
         main.step( "NOOPTION: Install and test single point to multi point intents" )
-        main.assertReturnString = "Assertion results for IPV4 single to multi point intent with no options set\n"
+        main.assertReturnString = "Assertion results for IPV4 single to multi " +\
+                                  "point intent with no options set\n"
         senders = [
             { "name":"h8", "device":"of:0000000000000005/8" }
         ]
@@ -2013,7 +2067,8 @@ class FUNCintent:
             { "name":"h16", "device":"of:0000000000000006/8" },
             { "name":"h24", "device":"of:0000000000000007/8" }
         ]
-        isolatedSenders = [
+        isolatedSenders = []
+        isolatedRecipients = [
             { "name":"h24"}
         ]
         testResult = main.FALSE
@@ -2042,6 +2097,57 @@ class FUNCintent:
                                          sw5="s3",
                                          expectedLink1=16,
                                          expectedLink2=14 )
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        # Right now this functionality doesn't work properly in SPMP intents
+        main.step( "NOOPTION: Install and test single point to multi point " +\
+                   "intents with partial failures allowed" )
+        main.assertReturnString = "Assertion results for IPV4 single to multi " +\
+                                  "point intent with partial failures allowed\n"
+        senders = [
+            { "name":"h8", "device":"of:0000000000000005/8" }
+        ]
+        recipients = [
+            { "name":"h16", "device":"of:0000000000000006/8" },
+            { "name":"h24", "device":"of:0000000000000007/8" }
+        ]
+        isolatedSenders = []
+        isolatedRecipients = [
+            { "name":"h24"}
+        ]
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installSingleToMultiIntent(
+                                         main,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         partial=True)
+
+        if installResult:
+            testResult = main.intentFunction.testEndPointFail(
+                                         main,
+                                         intentId=installResult,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         isolatedSenders=isolatedSenders,
+                                         isolatedRecipients=isolatedRecipients,
+                                         sw1="s6",
+                                         sw2="s2",
+                                         sw3="s4",
+                                         sw4="s1",
+                                         sw5="s3",
+                                         expectedLink1=16,
+                                         expectedLink2=14,
+                                         partial=True )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 

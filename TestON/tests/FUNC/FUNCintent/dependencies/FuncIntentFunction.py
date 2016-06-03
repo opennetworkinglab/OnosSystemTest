@@ -699,7 +699,8 @@ def installSingleToMultiIntent( main,
                                 tcp="",
                                 sw1="",
                                 sw2="",
-                                setVlan=""):
+                                setVlan="",
+                                partial=False ):
     """
     Installs a Single to Multi Point Intent
 
@@ -787,7 +788,8 @@ def installSingleToMultiIntent( main,
                                             tcpSrc="",
                                             tcpDst="",
                                             vlanId=vlanId,
-                                            setVlan=setVlan )
+                                            setVlan=setVlan,
+                                            partial=partial )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -815,7 +817,8 @@ def installMultiToSingleIntent( main,
                                 tcp="",
                                 sw1="",
                                 sw2="",
-                                setVlan=""):
+                                setVlan="",
+                                partial=False ):
     """
     Installs a Multi to Single Point Intent
 
@@ -902,7 +905,8 @@ def installMultiToSingleIntent( main,
                                             tcpSrc="",
                                             tcpDst="",
                                             vlanId=vlanId,
-                                            setVlan=setVlan )
+                                            setVlan=setVlan,
+                                            partial=partial )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -1162,7 +1166,8 @@ def testEndPointFail( main,
                       sw4="",
                       sw5="",
                       expectedLink1=0,
-                      expectedLink2=0 ):
+                      expectedLink2=0,
+                      partial=False ):
     """
     Test Single to Multipoint Topology for Endpoint failures
     """
@@ -1215,9 +1220,9 @@ def testEndPointFail( main,
 
     # Check flows count in each node
     if utilities.retry( f=checkFlowsCount, retValue=main.FALSE,
-                        args=[ main ] ) and utilities.retry( f=checkFlowsState,
-                                                             retValue=main.FALSE,
-                                                             args=[ main ] ):
+                        args=[ main ], attempts=5 ) and utilities.retry( f=checkFlowsState,
+                                                                         retValue=main.FALSE,
+                                                                         args=[ main ], attempts=5 ):
         main.assertReturnString += 'Initial Flow State Passed\n'
     else:
         main.assertReturnString += 'Intial Flow State Failed\n'
@@ -1285,54 +1290,106 @@ def testEndPointFail( main,
         main.assertReturnString += 'Isolation link Down Failed\n'
         testResult = main.FALSE
 
-    # Check intent state
-    if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
-        main.assertReturnString += 'Isolation link Down Intent State Passed\n'
-    else:
-        main.assertReturnString += 'Isolation link Down Intent State Failed\n'
-        testResult = main.FALSE
+    if partial:
+        # Check intent state
+        if utilities.retry( f=checkIntentState, retValue=main.FALSE,
+                            args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
+            main.assertReturnString += 'Partial failure isolation link Down Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Partial failure isolation link Down Intent State Failed\n'
+            testResult = main.FALSE
 
-    # Check flows count in each node
-    if utilities.retry( f=checkFlowsCount, retValue=main.FALSE,
-                        args=[ main ] ) and utilities.retry( f=checkFlowsState,
-                                                             retValue=main.FALSE, args=[ main ] ):
-        main.assertReturnString += 'Isolation link Down Flow State Passed\n'
-    else:
-        main.assertReturnString += 'Isolation link Down Flow State Failed\n'
-        testResult = main.FALSE
+        # Check flows count in each node
+        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE,
+                            args=[ main ], attempts=5 ) and utilities.retry( f=checkFlowsState,
+                                                                             retValue=main.FALSE,
+                                                                             args=[ main ], attempts=5 ):
+            main.assertReturnString += 'Partial failure isolation link Down Flow State Passed\n'
+        else:
+            main.assertReturnString += 'Partial failure isolation link Down Flow State Failed\n'
+            testResult = main.FALSE
 
-    # Check OnosTopology
-    if utilities.retry( f=checkTopology, retValue=main.FALSE, args=( main, expectedLink2 ) ):
-        main.assertReturnString += 'Isolation link Down Topology State Passed\n'
-    else:
-        main.assertReturnString += 'Isolation link Down Topology State Failed\n'
-        testResult = main.FALSE
+        # Check OnosTopology
+        if utilities.retry( f=checkTopology, retValue=main.FALSE, args=( main, expectedLink2 ) ):
+            main.assertReturnString += 'Partial failure isolation link Down Topology State Passed\n'
+        else:
+            main.assertReturnString += 'Partial failure isolation link Down Topology State Failed\n'
+            testResult = main.FALSE
 
-    # Check Connectivity
-    # First check connectivity of any isolated senders to recipients
-    if isolatedSenderNames:
-        if scapyCheckConnection( main, isolatedSenderNames, recipientNames, None, None, None, None, main.TRUE ):
+        # Check Connectivity
+        # First check connectivity of any isolated senders to recipients
+        if isolatedSenderNames:
+            if scapyCheckConnection( main, isolatedSenderNames, recipientNames, None, None, None, None, main.TRUE ):
+                main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Passed\n'
+            else:
+                main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Failed\n'
+                testResult = main.FALSE
+
+        # Next check connectivity of senders to any isolated recipients
+        if isolatedRecipientNames:
+            if scapyCheckConnection( main, senderNames, isolatedRecipientNames, None, None, None, None, main.TRUE ):
+                main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Passed\n'
+            else:
+                main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Failed\n'
+                testResult = main.FALSE
+
+        # Next check connectivity of connected senders and recipients
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE,
+                            args=( main, connectedSenderNames , connectedRecipientNames ) ):
+            main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Passed\n'
+        else:
+            main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Failed\n'
+            testResult = main.FALSE
+    else:
+        # Check intent state
+        if not utilities.retry( f=checkIntentState, retValue=main.TRUE,
+                            args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
+            main.assertReturnString += 'Isolation link Down Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Isolation link Down Intent State Failed\n'
+            testResult = main.FALSE
+
+        # Check flows count in each node
+        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE,
+                            args=[ main ], attempts=5 ) and utilities.retry( f=checkFlowsState,
+                                                                             retValue=main.FALSE,
+                                                                             args=[ main ], attempts=5 ):
+            main.assertReturnString += 'Isolation link Down Flow State Passed\n'
+        else:
+            main.assertReturnString += 'Isolation link Down Flow State Failed\n'
+            testResult = main.FALSE
+
+        # Check OnosTopology
+        if utilities.retry( f=checkTopology, retValue=main.FALSE, args=( main, expectedLink2 ) ):
+            main.assertReturnString += 'Isolation link Down Topology State Passed\n'
+        else:
+            main.assertReturnString += 'Isolation link Down Topology State Failed\n'
+            testResult = main.FALSE
+
+        # Check Connectivity
+        # First check connectivity of any isolated senders to recipients
+        if isolatedSenderNames:
+            if scapyCheckConnection( main, isolatedSenderNames, recipientNames, None, None, None, None, main.TRUE ):
+                main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
+            else:
+                main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
+                testResult = main.FALSE
+
+        # Next check connectivity of senders to any isolated recipients
+        if isolatedRecipientNames:
+            if scapyCheckConnection( main, senderNames, isolatedRecipientNames, None, None, None, None, main.TRUE ):
+                main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
+            else:
+                main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
+                testResult = main.FALSE
+
+        # Next check connectivity of connected senders and recipients
+        if utilities.retry( f=scapyCheckConnection, retValue=main.TRUE,
+                            args=( main, connectedSenderNames , connectedRecipientNames, None, None, None, None, main.TRUE ) ):
             main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
         else:
             main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
             testResult = main.FALSE
-
-    # Next check connectivity of senders to any isolated recipients
-    if isolatedRecipientNames:
-        if scapyCheckConnection( main, senderNames, isolatedRecipientNames, None, None, None, None, main.TRUE ):
-            main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
-        else:
-            main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
-            testResult = main.FALSE
-
-    # Next check connectivity of connected senders and recipients
-    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE,
-                        args=( main, connectedSenderNames , connectedRecipientNames ) ):
-        main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
-    else:
-        main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
-        testResult = main.FALSE
 
     # Bring the links back up
     # Bring first link up
@@ -1369,8 +1426,9 @@ def testEndPointFail( main,
 
     # Check flows count in each node
     if utilities.retry( f=checkFlowsCount, retValue=main.FALSE,
-                        args=[ main ] ) and utilities.retry( f=checkFlowsState,
-                                                             retValue=main.FALSE, args=[ main ] ):
+                        args=[ main ], sleep=5, attempts=5 ) and utilities.retry( f=checkFlowsState,
+                                                                         retValue=main.FALSE,
+                                                                         args=[ main ], sleep=5, attempts=5 ):
         main.assertReturnString += 'Link Up Flow State Passed\n'
     else:
         main.assertReturnString += 'Link Up Flow State Failed\n'

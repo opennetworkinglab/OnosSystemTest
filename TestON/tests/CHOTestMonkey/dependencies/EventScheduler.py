@@ -172,7 +172,7 @@ class EventScheduler:
             if len( self.pendingEvents ) > 0:
                 events += str( self.pendingEvents[ -1 ].typeIndex )
         events += "]"
-        main.log.debug( "Event Scheduler - Events: " + events )
+        #main.log.debug( "Event Scheduler - Events: " + events )
 
     def isAvailable( self ):
         with self.pendingEventsCondition:

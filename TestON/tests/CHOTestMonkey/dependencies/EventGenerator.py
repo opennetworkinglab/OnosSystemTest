@@ -5,7 +5,6 @@ Author: you@onlab.us
 from threading import Lock, Condition
 from tests.CHOTestMonkey.dependencies.events.Event import EventType, EventStates, Event
 from tests.CHOTestMonkey.dependencies.EventScheduler import EventScheduleMethod
-from tests.CHOTestMonkey.dependencies.GraphHelper import GraphHelper
 
 class MessageType:
     def __init__( self ):
@@ -169,21 +168,10 @@ class EventGenerator:
             main.log.warn( "Event Generator - Too many arguments for randomLinkToggle: %s" % ( args ) )
         else:
             downUpAvgInterval = int( args[ 0 ] )
-        with main.variableLock:
-            graphHelper = GraphHelper()
-            availableLinks = graphHelper.getNonCutEdges()
-            if len( availableLinks ) == 0:
-                main.log.warn( "All links are cut edges, aborting event" )
-                return
-            link = random.sample( availableLinks, 1 )
-
         self.eventGeneratorLock.acquire()
         main.eventScheduler.scheduleEvent( EventType().NETWORK_LINK_DOWN,
                                            scheduleMethod,
-                                           [ link[ 0 ].deviceA.name, link[ 0 ].deviceB.name ] )
-        with main.variableLock:
-            link[ 0 ].setPendingDown()
-            link[ 0 ].backwardLink.setPendingDown()
+                                           [ 'random', 'random' ] )
         sleepTime = int( main.params[ 'EVENT' ][ 'randomLinkToggle' ][ 'sleepBeforeCheck' ] )
         main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
         self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
@@ -199,7 +187,7 @@ class EventGenerator:
             time.sleep( downUpInterval )
         main.eventScheduler.scheduleEvent( EventType().NETWORK_LINK_UP,
                                            scheduleMethod,
-                                           [ link[ 0 ].deviceA.name, link[ 0 ].deviceB.name ] )
+                                           [ 'random', 'random' ] )
         main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
         self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
         if scheduleMethod == EventScheduleMethod().RUN_BLOCK:
@@ -227,24 +215,12 @@ class EventGenerator:
             linkGroupSize = int( args[ 0 ] )
             downDownAvgInterval = int( args[ 1 ] )
             downUpAvgInterval = int( args[ 2 ] )
-        downLinks = []
         for i in range( 0, linkGroupSize ):
-            with main.variableLock:
-                graphHelper = GraphHelper()
-                availableLinks = graphHelper.getNonCutEdges()
-                if len( availableLinks ) == 0:
-                    main.log.warn( "All links are cut edges, aborting event" )
-                    continue
-                link = random.sample( availableLinks, 1 )
             if i == 0:
                 self.eventGeneratorLock.acquire()
             main.eventScheduler.scheduleEvent( EventType().NETWORK_LINK_DOWN,
                                                scheduleMethod,
-                                               [ link[ 0 ].deviceA.name, link[ 0 ].deviceB.name ] )
-            with main.variableLock:
-                link[ 0 ].setPendingDown()
-                link[ 0 ].backwardLink.setPendingDown()
-            downLinks.append( link[ 0 ] )
+                                               [ 'random', 'random' ] )
             sleepTime = int( main.params[ 'EVENT' ][ 'randomLinkGroupToggle' ][ 'sleepBeforeCheck' ] )
             main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
             self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
@@ -267,10 +243,10 @@ class EventGenerator:
         else:
             time.sleep( downUpInterval )
 
-        for link in downLinks:
+        for i in range( 0, linkGroupSize ):
             main.eventScheduler.scheduleEvent( EventType().NETWORK_LINK_UP,
                                                scheduleMethod,
-                                               [ link.deviceA.name, link.deviceB.name ] )
+                                               [ 'random', 'random' ] )
             main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
             self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
             if scheduleMethod == EventScheduleMethod().RUN_BLOCK:
@@ -301,20 +277,10 @@ class EventGenerator:
             main.log.warn( "Event Generator - Too many arguments for randomDeviceToggle: %s" % ( args ) )
         else:
             downUpAvgInterval = int( args[ 0 ] )
-        with main.variableLock:
-            graphHelper = GraphHelper()
-            availableDevices = graphHelper.getNonCutVertices()
-            if len( availableDevices ) == 0:
-                main.log.warn( "All devices are Cut vertices, aborting event" )
-                return
-            device = random.sample( availableDevices, 1 )
-
         self.eventGeneratorLock.acquire()
         main.eventScheduler.scheduleEvent( EventType().NETWORK_DEVICE_DOWN,
                                            scheduleMethod,
-                                           [ device[ 0 ].name ] )
-        with main.variableLock:
-            device[ 0 ].setPendingDown()
+                                           [ 'random' ] )
         sleepTime = int( main.params[ 'EVENT' ][ 'randomLinkToggle' ][ 'sleepBeforeCheck' ] )
         main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
         self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
@@ -330,7 +296,7 @@ class EventGenerator:
             time.sleep( downUpInterval )
         main.eventScheduler.scheduleEvent( EventType().NETWORK_DEVICE_UP,
                                            scheduleMethod,
-                                           [ device[ 0 ].name ] )
+                                           [ 'random' ] )
         main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
         self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
         if scheduleMethod == EventScheduleMethod().RUN_BLOCK:
@@ -358,23 +324,12 @@ class EventGenerator:
             deviceGroupSize = int( args[ 0 ] )
             downDownAvgInterval = int( args[ 1 ] )
             downUpAvgInterval = int( args[ 2 ] )
-        downDevices = []
         for i in range( 0, deviceGroupSize ):
-            with main.variableLock:
-                graphHelper = GraphHelper()
-                availableDevices = graphHelper.getNonCutVertices()
-                if len( availableDevices ) == 0:
-                    main.log.warn( "All devices are cut vertices, aborting event" )
-                    continue
-                device = random.sample( availableDevices, 1 )
             if i == 0:
                 self.eventGeneratorLock.acquire()
             main.eventScheduler.scheduleEvent( EventType().NETWORK_DEVICE_DOWN,
                                                scheduleMethod,
-                                               [ device[ 0 ].name ] )
-            with main.variableLock:
-                device[ 0 ].setPendingDown()
-            downDevices.append( device[ 0 ] )
+                                               [ 'random' ] )
             sleepTime = int( main.params[ 'EVENT' ][ 'randomLinkGroupToggle' ][ 'sleepBeforeCheck' ] )
             main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
             self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
@@ -397,10 +352,10 @@ class EventGenerator:
         else:
             time.sleep( downUpInterval )
 
-        for device in downDevices:
+        for i in range( 0, deviceGroupSize ):
             main.eventScheduler.scheduleEvent( EventType().NETWORK_DEVICE_UP,
                                                scheduleMethod,
-                                               [ device.name ] )
+                                               [ 'random' ] )
             main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
             self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
             if scheduleMethod == EventScheduleMethod().RUN_BLOCK:

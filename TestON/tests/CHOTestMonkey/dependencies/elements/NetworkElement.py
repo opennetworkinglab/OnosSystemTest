@@ -18,9 +18,6 @@ class NetworkElement:
     def isRemoved( self ):
         return self.status == 'removed'
 
-    def setPendingDown( self ):
-        self.status = 'pending_down'
-
     def setRemoved( self ):
         self.status = 'removed'
 

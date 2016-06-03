@@ -32,6 +32,7 @@ class CHOTestMonkey:
         """
         import time
         from threading import Lock, Condition
+        from core.graph import Graph
         from tests.CHOTestMonkey.dependencies.elements.ONOSElement import Controller
         from tests.CHOTestMonkey.dependencies.EventGenerator import EventGenerator
         from tests.CHOTestMonkey.dependencies.EventScheduler import EventScheduler
@@ -58,6 +59,7 @@ class CHOTestMonkey:
             if main.params[ 'EVENT' ][ eventName ][ 'status' ] == 'on':
                 main.enabledEvents[ int( main.params[ 'EVENT' ][ eventName ][ 'typeIndex' ] ) ] = eventName
         print main.enabledEvents
+        main.graph = Graph()
         main.eventScheduler = EventScheduler()
         main.eventGenerator = EventGenerator()
         main.variableLock = Lock()

@@ -2789,20 +2789,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkStatus(
-            self,
-            topologyResult,
-            numoswitch,
-            numolink,
-            logLevel="info" ):
+    def checkStatus(self, numoswitch, numolink, numoctrl = -1, logLevel="info"):
         """
         Checks the number of switches & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
         log level can be specific.
 
-        Params: topologyResult = the output of topology command
-                numoswitch = expected number of switches
+        Params: numoswitch = expected number of switches
                 numolink = expected number of links
+                numoctrl = expected number of controllers
                 logLevel = level to log to.
                 Currently accepts 'info', 'warn' and 'report'
 
@@ -2810,20 +2805,25 @@ class OnosCliDriver( CLI ):
                  main.FALSE if the number of switches and links is incorrect,
                  and main.ERROR otherwise
         """
+        import json
         try:
-            topology = self.getTopology( topologyResult )
-            if topology == {} or topology == None:
+            topology = self.getTopology( self.topology() )
+            summary = json.loads( self.summary() )
+            
+            if topology == {} or topology == None or summary == {} or summary == None:
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
             devices = topology.get( 'devices', False )
             links = topology.get( 'links', False )
-            if devices is False or links is False:
+            nodes = summary.get( 'nodes', False )
+            if devices is False or links is False or nodes is False:
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )
             # Is the number of links is what we expected
             linkCheck = ( int( links ) == int( numolink ) )
-            if switchCheck and linkCheck:
+            nodeCheck = ( int( nodes ) == int( numoctrl ) ) or int( numoctrl ) == -1
+            if switchCheck and linkCheck and nodeCheck:
                 # We expected the correct numbers
                 output = output + "The number of links and switches match "\
                     + "what was expected"
@@ -2837,6 +2837,9 @@ class OnosCliDriver( CLI ):
             output = output + " (%i expected) " % int( numoswitch )
             output = output + "and %i links " % int( links )
             output = output + "(%i expected)" % int( numolink )
+            if int( numoctrl ) > 0
+                output = output + "and %i controllers " % int( nodes )
+                output = output + "(%i expected)" % int( numoctrl )
             if logLevel == "report":
                 main.log.report( output )
             elif logLevel == "warn":
@@ -4800,3 +4803,71 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def portstate(self, dpid='of:0000000000000102', port='2', state='enable'):
+        '''
+        Description:
+             Changes the state of port in an OF switch by means of the
+             PORTSTATUS OF messages.
+        params:
+            dpid - (string) Datapath ID of the device
+            port - (string) target port in the device
+            state - (string) target state (enable or disabled)
+        returns:
+            main.TRUE if no exceptions were thrown and no Errors are
+            present in the resoponse. Otherwise, returns main.FALSE
+        '''
+        try:
+            cmd =  "portstate {} {} {}".format( dpid, port, state )
+            response = self.sendline( cmd, showResponse=True )
+            assert response is not None, "Error in sendline"
+            assert "Command not found:" not in response, response
+            if "Error" in response or "Failure" in response:
+                main.log.error( response )
+                return main.FALSE
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def logSet( self, level="INFO", app="org.onosproject" ):
+        """
+        Set the logging level to lvl for a specific app
+        returns main.TRUE on success
+        returns main.FALSE if Error occurred
+        if noExit is True, TestON will not exit, but clean up
+        Available level: DEBUG, TRACE, INFO, WARN, ERROR
+        Level defaults to INFO
+        """
+        try:
+            self.handle.sendline( "log:set %s %s" %( level, app ) )
+            self.handle.expect( "onos>" )
+
+            response = self.handle.before
+            if re.search( "Error", response ):
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.cleanup()
+            main.exit()
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

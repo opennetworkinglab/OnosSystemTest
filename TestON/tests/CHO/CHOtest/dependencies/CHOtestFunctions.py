@@ -139,9 +139,7 @@ def checkLinkEvents( linkEvent, linkNum ):
         linkResult = main.TRUE
         for e in range( int( main.numCtrls ) ):
             main.log.info( "Checking link number on ONOS%s" % (e+1) )
-            topology_output = main.CLIs[e].topology()
-            linkResultIndividual = main.ONOScli1.checkStatus( topology_output,
-                                                               main.numMNswitches,
+            linkResultIndividual = main.CLIs[e].checkStatus( main.numMNswitches,
                                                                str( linkNum ) )
             if not linkResultIndividual:
                 main.log.warn( "Link %s not discovered by ONOS%s" % ( linkEvent, (e+1) ) )

@@ -102,8 +102,7 @@ class TopoCheck( CheckEvent ):
         for controller in main.controllers:
             if controller.isUp():
                 with controller.CLILock:
-                    topologyOutput = controller.CLI.topology()
-                    topoState = controller.CLI.checkStatus( topologyOutput, upDeviceNum, upLinkNum )
+                    topoState = controller.CLI.checkStatus( upDeviceNum, upLinkNum )
                     #if not topoState:
                     #    main.log.warn( "Topo Check - link or device number discoverd by ONOS%s is incorrect" % ( controller.index ) )
                     #    checkResult = EventStates().FAIL

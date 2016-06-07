@@ -1844,9 +1844,7 @@ def checkTopology( main, expectedLink ):
     main.log.info( itemName + ": Checking ONOS topology " )
 
     for i in range( main.numCtrls ):
-        topologyResult = main.CLIs[ i ].topology()
-        statusResult = main.CLIs[ i ].checkStatus( topologyResult,
-                                                   main.numSwitch,
+        statusResult = main.CLIs[ i ].checkStatus( main.numSwitch,
                                                    expectedLink )\
                        and statusResult
     if not statusResult:

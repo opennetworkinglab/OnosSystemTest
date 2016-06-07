@@ -1760,18 +1760,18 @@ class OnosRestDriver( Controller ):
 
     def checkStatus(
             self,
-            topologyResult,
             numoswitch,
             numolink,
+            numoctrl = -1,
             logLevel="info" ):
         """
         Checks the number of switches & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
         log level can be specific.
 
-        Params: topologyResult = the output of topology command
-                numoswitch = expected number of switches
+        Params: numoswitch = expected number of switches
                 numolink = expected number of links
+                numoctrl = expected number of controllers
                 logLevel = level to log to.
                 Currently accepts 'info', 'warn' and 'report'
 
@@ -1780,19 +1780,21 @@ class OnosRestDriver( Controller ):
                  and main.ERROR otherwise
         """
         try:
-            topology = self.getTopology( topologyResult )
+            topology = self.getTopology( self.topology() )
             if topology == {}:
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
             devices = topology.get( 'devices', False )
             links = topology.get( 'links', False )
-            if devices is False or links is False:
+            nodes = topology.get( 'nodes' , False )
+            if devices is False or links is False or nodes is False:
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )
             # Is the number of links is what we expected
             linkCheck = ( int( links ) == int( numolink ) )
-            if switchCheck and linkCheck:
+            nodeCheck = ( int(nodes) == int(numoctrl) )or int(numoctrl) == -1
+            if switchCheck and linkCheck and nodeCheck:
                 # We expected the correct numbers
                 output = output + "The number of links and switches match "\
                     + "what was expected"
@@ -1806,6 +1808,9 @@ class OnosRestDriver( Controller ):
             output = output + " (%i expected) " % int( numoswitch )
             output = output + "and %i links " % int( links )
             output = output + "(%i expected)" % int( numolink )
+            if int( numoctrl ) > 0
+                output = output + "and %i controllers " % int( nodes )
+                output = output + "(%i expected)" % int( numoctrl )
             if logLevel == "report":
                 main.log.report( output )
             elif logLevel == "warn":

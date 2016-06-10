@@ -267,7 +267,7 @@ class FUNCnetconf:
                                "reinstalling ONOS"
         main.step( "Copying karaf logs" )
         i = 0
-        for cli in main.CLIs:
+        for cli in main.CLIs2:
             main.node = cli
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip

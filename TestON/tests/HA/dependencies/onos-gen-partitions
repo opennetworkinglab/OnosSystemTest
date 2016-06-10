@@ -27,12 +27,6 @@ def get_nodes(vars, port=9876):
   node = lambda k: { 'id': k, 'ip': k, 'port': port }
   return [ node(environ[v]) for v in vars ]
 
-def generate_base_partition(nodes):
-  return {
-            'id': 0,
-            'members': nodes
-         }
-
 def generate_extended_partitions(nodes, k):
   l = deque(nodes)
   perms = []
@@ -60,10 +54,8 @@ def generate_extended_partitions_HA(nodes, k):
 if __name__ == '__main__':
   vars = get_OC_vars()
   nodes = get_nodes(vars)
-  base_partition = generate_base_partition([v.get('id') for v in nodes])
   extended_partitions = generate_extended_partitions_HA([v.get('id') for v in nodes], 3)
   partitions = []
-  partitions.append(base_partition)
   partitions.extend(extended_partitions)
   name = 0
   for node in nodes:

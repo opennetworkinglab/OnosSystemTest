@@ -87,7 +87,7 @@ class FUNCnetCfg:
                 main.log.error( "Did not properly created list of ONOS handle" )
                 stepResult = main.FALSE
         except Exception as e:
-            main.log.exception(e)
+            main.log.exception( e )
             main.cleanup()
             main.exit()
 
@@ -333,7 +333,7 @@ class FUNCnetCfg:
 
         main.step( "Starting Mininet topology with OF 1.3 switches" )
         args = "--controller none --switch ovs,protocols=OpenFlow13"
-        switches = int( main.params['MININET']['switch'] )
+        switches = int( main.params[ 'MININET' ][ 'switch' ] )
         cmd = "mn --topo linear,{} {}".format( switches, args )
         topoResult = main.Mininet1.startNet( mnCmd = cmd )
         stepResult = topoResult
@@ -485,13 +485,13 @@ class FUNCnetCfg:
         devices = main.ONOSrest1.devices()
         main.log.debug( main.ONOSrest1.pprint( devices ) )
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4 ] ]
-        print allowedDevices
+        main.log.debug( allowedDevices )
         onosDevices = []
         try:
             for sw in json.loads( devices ):
                 onosDevices.append( str( sw['id'] ) )
             onosDevices.sort()
-            print onosDevices
+            main.log.debug( onosDevices )
         except( TypeError, ValueError ):
             main.log.error( "Problem loading devices" )
         utilities.assert_equals( expect=allowedDevices,
@@ -771,3 +771,59 @@ class FUNCnetCfg:
                                  actual=get,
                                  onpass="Successfully removed device config",
                                  onfail="Failed to remove device config" )
+
+    def CASE25( self, main ):
+        """
+            Use network-cfg.json to configure devices during ONOS startup
+        """
+        main.case( "Preparing network-cfg.json to load configurations" )
+        main.step( "Moving network-cfg.json to $ONOS_ROOT/tools/package/config/" )
+        prestartResult = main.TRUE
+        srcPath = "~/OnosSystemTest/TestON/tests/FUNC/FUNCnetCfg/dependencies/network-cfg.json"
+        dstPath = "~/onos/tools/package/config/network-cfg.json"
+        prestartResult = main.ONOSbench.scp( main.ONOSbench, srcPath, dstPath, direction="to" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=prestartResult,
+                                 onpass="Successfully copied network-cfg.json to target directory",
+                                 onfail="Failed to copy network-cfg.json to target directory" )
+
+    def CASE26( self, main ):
+        """
+            Check to see that pre-startup configurations were set correctly
+        """
+        import json
+        main.case( "Check to see if the pre-startup configurations were set, then remove their allowed status" )
+        main.step( "Checking configurations for Switches 5 and 6" )
+        main.step( "ONOS should only show devices S1, S2, S4, S5, and S6" )
+        devices = main.ONOSrest1.devices()
+        main.log.debug( main.ONOSrest1.pprint( devices ) )
+        allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5, 6 ] ]
+        main.log.debug( allowedDevices )
+        onosDevices = []
+        try:
+            for sw in json.loads( devices ):
+                onosDevices.append( str( sw['id'] ) )
+            onosDevices.sort()
+            main.log.debug( onosDevices )
+        except( TypeError, ValueError ):
+            main.log.error( "Problem loading devices" )
+        utilities.assert_equals( expect=allowedDevices,
+                                 actual=onosDevices,
+                                 onpass="Only allowed devices are in ONOS",
+                                 onfail="ONOS devices doesn't match the list" +
+                                        " of allowed devices" )
+
+        main.step( "Removing allowed status from Switches 5 and 6" )
+        main.s5Json = { "allowed": False }
+        main.s6Json = { "allowed": False }
+        s5Json = main.s5Json
+        setS1 = main.ONOSrest1.setNetCfg( s5Json,
+                                          subjectClass="devices",
+                                          subjectKey="of:0000000000000005",
+                                          configKey="basic" )
+
+        s6Json = main.s6Json
+        setS1 = main.ONOSrest1.setNetCfg( s6Json,
+                                          subjectClass="devices",
+                                          subjectKey="of:0000000000000006",
+                                          configKey="basic" )

@@ -126,7 +126,7 @@ class MininetCliDriver( Emulator ):
             Starts Mininet accepts a topology(.py) file and/or an optional
             argument, to start the mininet, as a parameter.
             Can also send regular mininet command to load up desired topology.
-            Eg. Pass in a string 'sudo mn --topo=tree,3,3' to mnCmd
+            Eg. Pass in a string 'mn --topo=tree,3,3' to mnCmd
         Options:
             topoFile = file path for topology file (.py)
             args = extra option added when starting the topology from the file

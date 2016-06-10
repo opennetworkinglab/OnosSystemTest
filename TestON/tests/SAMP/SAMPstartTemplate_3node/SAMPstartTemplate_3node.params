@@ -9,7 +9,7 @@
         CASE2: get onos warnings, errors from log
     -->
     <!--
-        CASE10: start a 1-node ONOS
+        CASE10: start a 3-node ONOS Cluster
     -->
     <!--
         CASE11: Start Mininet and assign controllers
@@ -20,8 +20,11 @@
     <!--
         CASE22: Sample case of using onos rest
     -->
+   <!--
+        CASE32: Configure fwd apps
+   -->
 
-    <testcases>0,1,10,11,12,22,2</testcases>
+    <testcases>0,1,10,11,12,22,2,32</testcases>
 
     <CASE0>
         <gitPull>False</gitPull> # False or True
@@ -39,7 +42,7 @@
     </CASE1>
 
     <CASE10>
-        <numNodes>1</numNodes>
+        <numNodes>3</numNodes>
         <Apps>
             org.onosproject.openflow,org.onosproject.fwd
         </Apps>
@@ -51,14 +54,13 @@
     </CASE10>
 
     <CASE11>
-        <path>~/OnosSystemTest/TestON/tests/SAMP/SAMPstartTemplate2_1node/Dependency/</path>
-        <topo>newFuncTopo.py</topo>
+         <topo> mn --topo tree,3,3</topo>
     </CASE11>
 
     <CASE12>
     </CASE12>
-
     <CASE22>
     </CASE22>
-
+    <CASE32>
+    </CASE32>
 </PARAMS>

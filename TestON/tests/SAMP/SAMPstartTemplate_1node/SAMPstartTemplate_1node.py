@@ -2,7 +2,7 @@
 # This is a sample template that starts up ONOS cluster, this template
 # can be use as a base script for ONOS System Testing.
 
-class SAMPstartTemplate2_3node:
+class SAMPstartTemplate_1node:
 
     def __init__( self ):
         self.default = ''
@@ -10,7 +10,7 @@ class SAMPstartTemplate2_3node:
 
     def CASE0(self, main):
         '''
-            Pull specific ONOS branch, then Build ONOS ono ONOS Bench.
+            Pull specific ONOS branch, then Build ONOS on ONOS Bench.
             This step is usually skipped. Because in a Jenkins driven automated
             test env. We want Jenkins jobs to pull&build for flexibility to handle
             different versions of ONOS.
@@ -105,7 +105,7 @@ class SAMPstartTemplate2_3node:
 
     def CASE10( self, main ):
         """
-        Start ONOS cluster (3 nodes in this example) in three steps:
+        Start ONOS cluster (1 node in this example) in three steps:
         1) start a basic cluster with drivers app via ONOSDriver;
         2) activate apps via ONOSCliDriver;
         3) configure onos via ONOSCliDriver;
@@ -178,13 +178,12 @@ class SAMPstartTemplate2_3node:
         """
         import time
 
-        dependencyPath = main.params['CASE11']['path']
         topology = main.params['CASE11']['topo']
         main.log.report( "Start Mininet topology" )
         main.log.case( "Start Mininet topology" )
 
         main.step( "Starting Mininet Topology" )
-        topoResult = main.Mininet1.startNet( topoFile=dependencyPath + topology )
+        topoResult = main.Mininet1.startNet( mnCmd=topology )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -197,7 +196,7 @@ class SAMPstartTemplate2_3node:
 
         main.step( "Assign switches to controllers.")
         assignResult = main.TRUE
-        onosNodes = [ main.ONOScli1.ip_address, main.ONOScli2.ip_address, main.ONOScli3.ip_address ]
+        onosNodes = [ main.ONOScli1.ip_address ]
         for i in range(1, 8):
             assignResult = assignResult & main.Mininet1.assignSwController( sw="s" + str( i ),
                                                          ip=onosNodes,
@@ -216,7 +215,7 @@ class SAMPstartTemplate2_3node:
 
         main.log.case( "Test some onos commands through CLI. ")
         main.log.debug( main.ONOScli1.sendline("summary") )
-        main.log.debug( main.ONOScli3.sendline("devices") )
+        main.log.debug( main.ONOScli1.sendline("devices") )
 
     def CASE22( self, main ):
         """
@@ -225,4 +224,26 @@ class SAMPstartTemplate2_3node:
 
         main.case( " Sample tests using ONOS REST API handles. ")
         main.log.debug( main.ONOSrest1.send("/devices") )
-        main.log.debug( main.ONOSrest2.apps() )
+        main.log.debug( main.ONOSrest1.apps() )
+
+    def CASE32( self, main ):
+        """
+            Configure fwd app from .param json string with parameter configured.
+            Check if configuration successful
+            Run pingall to check connectivity
+            Check ONOS log for warning/error/exceptions
+        """
+        main.case( "Configure onos-app-fwd and check if configuration successful. " )
+        main.step( "Install reactive forwarding app." )
+        installResults = main.ONOScli1.activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=installResults,
+                                 onpass = "Configure fwd successful", onfail="Configure fwd failed" )
+        main.step( "Run pingall to check connectivity. " )
+        pingResult = main.FALSE
+        passMsg = "Reactive Pingall test passed"
+        pingResult = main.Mininet1.pingall()
+        if not pingResult:
+           main.log.warn( "First pingall failed. Trying again..." )
+           pingResult = main.Mininet1.pingall()
+           passMsg += "on the second try"
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult, onpass=passMsg, onfail= "Reactive Pingall failed, " + "one or more ping pairs failed." )

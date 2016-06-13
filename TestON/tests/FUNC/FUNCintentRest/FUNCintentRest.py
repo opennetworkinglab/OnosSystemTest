@@ -782,18 +782,29 @@ class FUNCintentRest:
         main.caseExplanation = "Copying the karaf logs to preserve them through" +\
                                "reinstalling ONOS"
         main.step( "Copying karaf logs" )
+        stepResult = main.TRUE
+        scpResult = main.TRUE
+        copyResult = main.TRUE
         i = 0
         for cli in main.CLIs2:
             main.node = cli
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip
-            main.ONOSbench.scp( main.node ,
-                                "/opt/onos/log/karaf.log",
-                                "/tmp/karaf.log",
-                                direction="from" )
-            main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
-                                        copyFileName=( "karaf.log.node{0}.cycle{1}".format( str( i + 1 ), str( main.cycle ) ) ) )
+            scpResult = scpResult and main.ONOSbench.scp( main.node ,
+                                            "/opt/onos/log/karaf.log",
+                                            "/tmp/karaf.log",
+                                            direction="from" )
+            copyResult = copyResult and main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
+                                                                    copyFileName=( "karaf.log.node{0}.cycle{1}".format( str( i + 1 ), str( main.cycle ) ) ) )
+            if scpResult and copyResult:
+                stepResult =  main.TRUE and stepResult
+            else:
+                stepResult = main.FALSE and stepResult
             i += 1
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully copied remote ONOS logs",
+                                 onfail="Failed to copy remote ONOS logs" )
 
     def CASE1000( self, main ):
         """

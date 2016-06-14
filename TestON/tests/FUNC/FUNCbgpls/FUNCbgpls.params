@@ -1,0 +1,43 @@
+<PARAMS>
+#**** Scripted by Antony Silvester  - antony.silvester@huawei.com ******
+#This Test check the bgp_ls functionality
+#List of test cases:
+#CASE1: Compile ONOS and push it to the test machines
+#CASE2: Discovery the topology using BGPLS
+#CASE3: Addition of new Node to existing topology
+#CASE4: Deletion of Node
+#Case5: Uninstalling the app
+
+
+    <testcases>1,2,3,4,5</testcases>
+
+    <DEPENDENCY>
+        <path>/tests/FUNCbgpls/Dependencies/</path>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>bgp_ls</cellName>
+        <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
+    </ENV>
+
+    <CTRL>
+        <ip1>OC1</ip1>
+        <port1>6653</port1>
+    </CTRL>
+
+    <HTTP>
+        <port>8181</port>
+        <path>/onos/</path>
+    </HTTP>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+   <SCAPY>
+        <HOSTNAMES>OCN</HOSTNAMES>
+    </SCAPY>
+
+
+</PARAMS>

@@ -285,6 +285,8 @@ class FUNCnetconf:
             else:
                 stepResult = main.FALSE and stepResult
             i += 1
+            if main.numCtrls == 1:
+                break
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully copied remote ONOS logs",

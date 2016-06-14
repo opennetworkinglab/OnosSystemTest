@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,2,1,2,1,2,1,2</testcases>
+    <testcases>0,1,2,1,2,1,2,1,2</testcases>
 
     <SCALE>1,3,5,7</SCALE>
     <max>7</max>
@@ -14,29 +14,32 @@
         <skipCleanInstall>yes</skipCleanInstall>
         <warmUp>5</warmUp>
         <sampleSize>20</sampleSize>
-        <wait></wait>
         <intents>1,100,1000</intents>                       #list format, will be split on ','
-        <debug>True</debug>
-
-        <s1>1,1,1,1,1,1,1,1</s1>
-        <s3>2,2,1,1,3,3,3,1</s3>
-        <s5>2,2,1,1,3,4,5,3</s5>
-        <s7>2,3,1,1,5,6,7,4</s7>
-
+        <ingress>null:0000000000000001/0</ingress>
+        <egress>null:0000000000000007/0</egress>
+        <debug>False</debug>
     </TEST>
-
-    <METRICS>
-        <Submitted>0</Submitted>
-        <Installed>1</Installed>
-        <Failed>0</Failed>
-        <Withdraw>0</Withdraw>
-        <Withdrawn>0</Withdrawn>
-    </METRICS>
+    <DATABASE>
+        <file>/tmp/IntentRerouteLatDB</file>
+    </DATABASE>
 
     <GIT>
-        <autopull>off</autopull>
-        <checkout>master</checkout>
+        <gitPull>False</gitPull>
+        <gitBranch>master</gitBranch>
     </GIT>
+
+    <ATTEMPTS>
+        <verify>3</verify>
+    </ATTEMPTS>
+
+    <SLEEP>
+        <startup>10</startup>
+        <install>10</install>
+        <verify>3</verify>
+        <reroute>3</reroute>
+        # timeout for pexpect
+        <timeout>300</timeout>
+    </SLEEP>
 
     <CTRL>
         <USER>sdn</USER>

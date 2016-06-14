@@ -1664,6 +1664,8 @@ class OnosDriver( CLI ):
                 "stop/waiting",
                 "Not Running ...",
                 pexpect.TIMEOUT ], timeout=120 )
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
 
             if i == 0 or i == 1:
                 main.log.info( "ONOS is running" )

@@ -849,7 +849,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def links( self, jsonFormat=True ):
+    def links( self, jsonFormat=True, timeout=30 ):
         """
         Lists all core links
         Optional argument:
@@ -859,7 +859,7 @@ class OnosCliDriver( CLI ):
             cmdStr = "links"
             if jsonFormat:
                 cmdStr += " -j"
-            handle = self.sendline( cmdStr )
+            handle = self.sendline( cmdStr, timeout=timeout )
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -1872,7 +1872,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def removeAllIntents( self, purge=False, sync=False, app='org.onosproject.cli' ):
+    def removeAllIntents( self, purge=False, sync=False, app='org.onosproject.cli', timeout=30 ):
         """
         Description:
             Remove all the intents
@@ -1891,7 +1891,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -s"
 
             cmdStr += " " + app
-            handle = self.sendline( cmdStr )
+            handle = self.sendline( cmdStr, timeout=timeout )
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )
@@ -4386,7 +4386,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def summary( self, jsonFormat=True ):
+    def summary( self, jsonFormat=True, timeout=30 ):
         """
         Description: Execute summary command in onos
         Returns: json object ( summary -j ), returns main.FALSE if there is
@@ -4397,7 +4397,7 @@ class OnosCliDriver( CLI ):
             cmdStr = "summary"
             if jsonFormat:
                 cmdStr += " -j"
-            handle = self.sendline( cmdStr )
+            handle = self.sendline( cmdStr, timeout=timeout )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             assert "Error:" not in handle, handle
@@ -4758,7 +4758,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def link( self, begin, end, state ):
+    def link( self, begin, end, state, timeout=30, showResponse=True ):
         '''
         Description:
             Bring link down or up in the null-provider.
@@ -4771,7 +4771,7 @@ class OnosCliDriver( CLI ):
         '''
         try:
             cmd =  "null-link null:{} null:{} {}".format( begin, end, state )
-            response = self.sendline( cmd, showResponse=True )
+            response = self.sendline( cmd, showResponse=showResponse, timeout=timeout )
             assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
             if "Error" in response or "Failure" in response:

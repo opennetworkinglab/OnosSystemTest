@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,[2,3,4,4,10]*2</testcases>
+    <testcases>1,2,3,4,10</testcases>
 
     <SCALE>
         <size>1</size>
@@ -8,7 +8,6 @@
     </SCALE>
 
     <DEPENDENCY>
-        <path>/tests/USECASE_SegmentRouting/dependencies/</path>
         <wrapper1>startUp</wrapper1>
         <topology>cord_fabric.py</topology>
     </DEPENDENCY>
@@ -16,7 +15,7 @@
     <ENV>
         <cellName>productionCell</cellName>
         <cellApps>drivers,segmentrouting</cellApps>
-        <diffApps>openflow-base,netcfghostprovider,netcfglinksprovider;openflow</diffApps>
+        <diffApps>openflow-base,netcfghostprovider,netcfglinksprovider</diffApps>
         <cellUser>sdn</cellUser>
     </ENV>
 
@@ -28,6 +27,17 @@
     <CTRL>
         <port>6653</port>
     </CTRL>
+
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+    </timers>
+
+    <kill>
+        <switch> spine101 </switch>
+        <dpid> 000000000101 </dpid>
+        <links> leaf1 leaf2 </links>
+    </kill>
 
     <SLEEP>
         <startup>10</startup>

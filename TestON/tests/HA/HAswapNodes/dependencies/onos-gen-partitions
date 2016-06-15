@@ -27,12 +27,6 @@ def get_nodes(vars, port=9876):
   node = lambda k: { 'id': k, 'ip': k, 'port': port }
   return [ node(environ[v]) for v in vars ]
 
-def generate_base_partition(nodes):
-  return {
-            'id': 0,
-            'members': nodes
-         }
-
 def generate_extended_partitions_scaling(nodes, k, partitions=3, equal=False):
   l = deque(nodes)
   perms = []
@@ -65,11 +59,9 @@ if __name__ == '__main__':
   if num:
       nodes = nodes[:num]
 
-  base_partition = generate_base_partition([v.get('id') for v in nodes])
   extended_partitions = generate_extended_partitions_scaling([v.get('id') for v in nodes],
           3, equal=equal)
   partitions = []
-  partitions.append(base_partition)
   partitions.extend(extended_partitions)
   name = hash("HAScaling")
   data = {

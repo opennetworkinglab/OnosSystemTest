@@ -243,7 +243,7 @@ class FUNCbgpls:
         print (bgpls_post)
         main.ONOSrest.user_name = "karaf"
         main.ONOSrest.pwd = "karaf"
-        Poststatus, result = main.ONOSrest.send( ipList, httpport, '/network/configuration/', method="POST",data=bgpls_post)
+        Poststatus, result = main.ONOSrest.send( '/network/configuration/', method="POST", data=bgpls_post)
         main.step( "Configure BGP through RESTCONF" )
 
         utilities.assert_equals(

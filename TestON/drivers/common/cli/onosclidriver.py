@@ -2376,7 +2376,7 @@ class OnosCliDriver( CLI ):
 
 
     def pushTestIntents( self, ingress, egress, batchSize, offset="",
-                         options="", timeout=10, background = False, noExit=False ):
+                         options="", timeout=10, background = False, noExit=False, getResponse=False ):
         """
         Description:
             Push a number of intents in a batch format to
@@ -2388,6 +2388,9 @@ class OnosCliDriver( CLI ):
         Optional:
             * offset: the keyOffset is where the next batch of intents
                       will be installed
+            * noExit: If set to True, TestON will not exit if any error when issus command
+            * getResponse: If set to True, function will return ONOS response.
+
         Returns: If failed to push test intents, it will returen None,
                  if successful, return true.
                  Timeout expection will return None,
@@ -2410,6 +2413,9 @@ class OnosCliDriver( CLI ):
             main.log.info( response )
             if response == None:
                 return None
+
+            if getResponse:
+                return response
 
             # TODO: We should handle if there is failure in installation
             return main.TRUE

@@ -1,0 +1,58 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <nodes>1</nodes>
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOScli1>
+            <host>OC1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOScli1>
+        
+        <ONOScli2>
+            <host>OC2</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOScli2>
+
+        <ONOScli3>
+            <host>OC3</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOScli3>
+
+
+        <Mininet1>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>MininetCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+                <home>~/mininet/custom/</home>
+            </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

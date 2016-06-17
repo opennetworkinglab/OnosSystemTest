@@ -1,9 +1,15 @@
-# This test should always succeed. it runs cases 1,2,3
-#CASE1: 2x2 Leaf-Spine topo and test IP connectivity
-#CASE2: 4x4 topo + IP connectivity test
-#CASE3: 2x2 topo + 3-node ONOS CLUSTER + IP connectivity test
+# This test should always succeed. it runs cases 1,2,3,4
+#CASE1: Get and Build ONOS
+#CASE2: Package and Install ONOS
+#CASE3: Start Mininet and check flows
+#CASE4: Ping all
+#CASE5: Link Failure
+#CASE6: Switch Failure
+#CASE7: ONOS Failure
+#CASE8: CLUSTER Failure
+#CASE10: Logging
 
-class SRSanity:
+class SRLinkDown:
 
     def __init__( self ):
         self.default = ''
@@ -27,7 +33,12 @@ class SRSanity:
         run.startMininet(main, 'cord_fabric.py')
         #pre-configured routing and bridging test
         run.checkFlows(main, flowCount=116)
-        run.pingAll(main, "CASE1")
+        run.pingAll(main)
+        run.killLink(main, 'spine101', 'leaf2', switches='4', links='6')
+        run.pingAll(main, "CASE1_AfterLinkDown")
+        run.restoreLink(main, 'spine101', 'leaf2','of:0000000000000101',
+                        'of:0000000000000002', '2', '1', '4', '8')
+        run.pingAll(main, "CASE1_AfterLinkUp")
         #TODO Dynamic config of hosts in subnet
         #TODO Dynamic config of host not in subnet
         #TODO Dynamic config of vlan xconnect
@@ -52,10 +63,15 @@ class SRSanity:
         run.startMininet(main, 'cord_fabric.py', args="--leaf=4 --spine=4")
         #pre-configured routing and bridging test
         run.checkFlows(main, flowCount=350)
-        run.pingAll(main, 'CASE2')
+        run.pingAll(main)
+        run.killLink(main, 'spine101', 'leaf2', switches='8', links='30')
+        run.pingAll(main, "CASE2_AfterLinkDown")
+        run.restoreLink(main, 'spine101', 'leaf2','of:0000000000000101',
+                    'of:0000000000000002', '2', '1', '8', '32')
+        run.pingAll(main, "CASE2_AfterLinkUp")
         #TODO Dynamic config of hosts in subnet
         #TODO Dynamic config of host not in subnet
-        #TODO Dynamic config of vlan xconnect
+        #TODO preconfigured xconnect
         #TODO Vrouter integration
         #TODO Mcast integration
         run.cleanup(main)
@@ -77,7 +93,12 @@ class SRSanity:
         run.startMininet(main, 'cord_fabric.py')
         #pre-configured routing and bridging test
         run.checkFlows(main, flowCount=116)
-        run.pingAll(main, 'CASE3')
+        run.pingAll(main)
+        run.killLink(main, 'spine101', 'leaf2', switches='4', links='6')
+        run.pingAll(main, "CASE3_AfterLinkDown")
+        run.restoreLink(main, 'spine101', 'leaf2','of:0000000000000101',
+                        'of:0000000000000002', '2', '1', '4', '8')
+        run.pingAll(main, "CASE3_AfterLinkUp")
         #TODO Dynamic config of hosts in subnet
         #TODO Dynamic config of host not in subnet
         #TODO Dynamic config of vlan xconnect

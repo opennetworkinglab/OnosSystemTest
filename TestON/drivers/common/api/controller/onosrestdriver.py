@@ -1808,7 +1808,7 @@ class OnosRestDriver( Controller ):
             output = output + " (%i expected) " % int( numoswitch )
             output = output + "and %i links " % int( links )
             output = output + "(%i expected)" % int( numolink )
-            if int( numoctrl ) > 0
+            if int( numoctrl ) > 0:
                 output = output + "and %i controllers " % int( nodes )
                 output = output + "(%i expected)" % int( numoctrl )
             if logLevel == "report":

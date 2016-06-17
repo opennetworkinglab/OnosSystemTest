@@ -190,6 +190,7 @@ class SCPFintentInstallWithdrawLat:
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=7)
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "topoShape", value="linear")
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
+        main.CLIs[0].setCfg("org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal", value="true")
         time.sleep(main.startUpSleep)
 
         # balanceMasters

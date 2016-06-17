@@ -261,7 +261,7 @@ class SCPFflowTp1g:
                 if "failed" in rawResult:
                     main.log.report("FLOW_TESTER.PY FAILURE")
                     main.log.report( " \n" + rawResult + " \n")
-                    for i in range(clusterCount):
+                    for i in range(1, clusterCount+1):
                         main.log.report("=======================================================")
                         main.log.report(" ONOS " + str(i) + "LOG REPORT")
                         main.ONOSbench.logReport(ONOSIp[i], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")

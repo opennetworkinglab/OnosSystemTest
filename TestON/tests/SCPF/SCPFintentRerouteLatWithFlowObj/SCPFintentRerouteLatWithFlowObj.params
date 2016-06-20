@@ -35,6 +35,7 @@
     <SLEEP>
         <startup>10</startup>
         <install>10</install>
+        <setmaster>5</setmaster>
         <verify>5</verify>
         <reroute>3</reroute>
         # timeout for pexpect

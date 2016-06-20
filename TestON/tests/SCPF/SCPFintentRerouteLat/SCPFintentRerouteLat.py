@@ -74,6 +74,7 @@ class SCPFintentRerouteLat:
         main.startUpSleep = int(main.params['SLEEP']['startup'])
         main.installSleep = int(main.params['SLEEP']['install'])
         main.verifySleep = int(main.params['SLEEP']['verify'])
+        main.setMasterSleep = int(main.params['SLEEP']['setmaster'])
         main.verifyAttempts = int(main.params['ATTEMPTS']['verify'])
         main.sampleSize = int(main.params['TEST']['sampleSize'])
         main.warmUp = int(main.params['TEST']['warmUp'])
@@ -209,6 +210,7 @@ class SCPFintentRerouteLat:
         if len(main.ONOSip) > 1:
             main.CLIs[0].deviceRole("null:0000000000000003", main.ONOSip[0])
             main.CLIs[0].deviceRole("null:0000000000000004", main.ONOSip[0])
+        time.sleep( main.setMasterSleep )
 
     def CASE2( self, main ):
         import time

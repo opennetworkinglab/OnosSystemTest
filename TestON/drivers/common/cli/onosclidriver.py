@@ -2809,7 +2809,7 @@ class OnosCliDriver( CLI ):
         try:
             topology = self.getTopology( self.topology() )
             summary = json.loads( self.summary() )
-            
+
             if topology == {} or topology == None or summary == {} or summary == None:
                 return main.ERROR
             output = ""
@@ -2963,16 +2963,10 @@ class OnosCliDriver( CLI ):
                                self.name )
                 return None
             # error
-            errorPattern = "Command\snot\sfound"
-            if re.search( errorPattern, response ):
-                main.log.error( "Election app is not loaded on " + self.name )
-                # TODO: Should this be main.ERROR?
-                return main.FALSE
-            else:
-                main.log.error( "Error in electionTestLeader on " + self.name +
-                                ": " + "unexpected response" )
-                main.log.error( repr( response ) )
-                return main.FALSE
+            main.log.error( "Error in electionTestLeader on " + self.name +
+                            ": " + "unexpected response" )
+            main.log.error( repr( response ) )
+            return main.FALSE
         except AssertionError:
             main.log.exception( "" )
             return None
@@ -3009,15 +3003,10 @@ class OnosCliDriver( CLI ):
                                "for the Election app." )
                 return main.TRUE
             # error
-            errorPattern = "Command\snot\sfound"
-            if re.search( errorPattern, response ):
-                main.log.error( "Election app is not loaded on " + self.name )
-                return main.FALSE
-            else:
-                main.log.error( "Error in electionTestRun on " + self.name +
-                                ": " + "unexpected response" )
-                main.log.error( repr( response ) )
-                return main.FALSE
+            main.log.error( "Error in electionTestRun on " + self.name +
+                            ": " + "unexpected response" )
+            main.log.error( repr( response ) )
+            return main.FALSE
         except AssertionError:
             main.log.exception( "" )
             return None
@@ -3054,15 +3043,10 @@ class OnosCliDriver( CLI ):
                                "elections for the Election app." )
                 return main.TRUE
             # error
-            errorPattern = "Command\snot\sfound"
-            if re.search( errorPattern, response ):
-                main.log.error( "Election app is not loaded on " + self.name )
-                return main.FALSE
-            else:
-                main.log.error( "Error in electionTestWithdraw on " +
-                                self.name + ": " + "unexpected response" )
-                main.log.error( repr( response ) )
-                return main.FALSE
+            main.log.error( "Error in electionTestWithdraw on " +
+                            self.name + ": " + "unexpected response" )
+            main.log.error( repr( response ) )
+            return main.FALSE
         except AssertionError:
             main.log.exception( "" )
             return None

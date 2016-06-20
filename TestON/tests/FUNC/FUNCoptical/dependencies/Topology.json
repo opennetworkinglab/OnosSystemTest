@@ -1,0 +1,138 @@
+{
+    "devices": {
+        "of:0000ffffffffff01": {
+            "basic": {
+                "type": "ROADM",
+                "name": "OE1"
+            }
+        },
+        "of:0000ffffffffff02": {
+            "basic": {
+                "type": "ROADM",
+                "name": "OE2"
+            }
+        },
+        "of:0000ffffffffff03": {
+            "basic": {
+                "type": "ROADM",
+                "name": "OE3"
+            }
+        },
+        "of:0000000000000002": {
+            "basic": {
+                "type": "SWITCH",
+                "name": "ps2"
+            }
+        },
+        "of:0000000000000001": {
+            "basic": {
+                "type": "SWITCH",
+                "name": "ps1"
+            }
+        }
+    },
+    "links": {
+        "of:0000ffffffffff03/3100-of:0000ffffffffff01/1300": {
+            "basic": {
+                "durable": "true",
+                "type": "OPTICAL"
+            }
+        },
+        "of:0000000000000002/2-of:0000ffffffffff02/1": {
+            "basic": {
+                "durable": "true",
+                "type": "OPTICAL"
+            }
+        },
+        "of:0000ffffffffff01/1200-of:0000ffffffffff02/2100": {
+            "basic": {
+                "durable": "true",
+                "type": "OPTICAL"
+            }
+        },
+        "of:0000ffffffffff02/2300-of:0000ffffffffff03/3200": {
+            "basic": {
+                "durable": "true",
+                "type": "OPTICAL"
+            }
+        },
+        "of:0000000000000001/2-of:0000ffffffffff01/1": {
+            "basic": {
+                "durable": "true",
+                "type": "OPTICAL"
+            }
+        }
+    },
+    "ports": {
+        "of:0000ffffffffff01/1300": {
+            "optical": {
+                "type": "OMS",
+                "speed": 0,
+                "port": 1300
+            }
+        },
+        "of:0000000000000001/1": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 1
+            }
+        },
+        "of:0000ffffffffff03/3200": {
+            "optical": {
+                "type": "OMS",
+                "speed": 0,
+                "port": 3200
+            }
+        },
+        "of:0000ffffffffff02/2100": {
+            "optical": {
+                "type": "OMS",
+                "speed": 0,
+                "port": 2100
+            }
+        },
+        "of:0000ffffffffff01/1200": {
+            "optical": {
+                "type": "OMS",
+                "speed": 0,
+                "port": 1200
+            }
+        },
+        "of:0000000000000002/1": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 1
+            }
+        },
+        "of:0000ffffffffff03/3100": {
+            "optical": {
+                "type": "OMS",
+                "speed": 0,
+                "port": 3100
+            }
+        },
+        "of:0000ffffffffff01/1": {
+            "optical": {
+                "type": "OCH",
+                "speed": 0,
+                "port": 1
+            }
+        },
+        "of:0000ffffffffff02/1": {
+            "optical": {
+                "type": "OCH",
+                "speed": 0,
+                "port": 1
+            }
+        },
+        "of:0000ffffffffff02/2300": {
+            "optical": {
+                "type": "OMS",
+                "speed": 0,
+                "port": 2300
+            }
+        }
+    }
+}

@@ -44,8 +44,11 @@ class SCPFbatchFlowResp:
         main.cellData = {} # for creating cell file
         main.CLIs = []
         main.ONOSip = []
+
         main.ONOSip = main.ONOSbench.getOnosIps()
         main.commit = main.ONOSbench.getVersion()
+        main.commit = main.commit.split(" ")[1]
+
         main.cluster = main.params['GLOBAL']['cluster']
 
         # Assigning ONOS cli handles to a list
@@ -482,12 +485,16 @@ class SCPFbatchFlowResp:
             dbFileName="/tmp/SCPFbatchFlowRespData"
             dbfile = open(dbFileName, "w+")
             temp = "'" + main.commit + "',"
+            temp += "'1gig',"
             temp += "'" + str( main.scale ) + "',"
             temp += "'" + main.cluster + "',"
             temp += "'" + str( main.elapsePOST ) + "',"
             temp += "'" + str( main.POSTtoCONFRM ) + "',"
+            temp += "'" + str( main.numFlows / main.POSTtoCONFRM ) + "',"
             temp += "'" + str ( main.elapseDELETE ) + "',"
-            temp += "'" + str ( main.DELtoCONFRM ) + "'\n"
+            temp += "'" + str ( main.DELtoCONFRM ) + "',"
+            temp += "'" + str( main.numFlows / main.DELtoCONFRM ) + "',"
+            temp += "'" + str( main.numSw ) + "'\n"
             dbfile.write( temp )
             dbfile.close()
             stepResult = main.TRUE

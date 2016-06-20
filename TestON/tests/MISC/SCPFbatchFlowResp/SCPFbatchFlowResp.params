@@ -20,7 +20,7 @@
         <maxNodes>1</maxNodes> # currently only runs in single node onos
         <numSw>63</numSw> # Number of devices used in topology
         <numThreads>4</numThreads> #Number of Threads to use for POST and DELETE
-        <cluster>BM</cluster>
+        <cluster>baremetal1</cluster>
         <SLEEP>
             <startup>15</startup>
             <startMN>15</startMN>

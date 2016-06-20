@@ -123,11 +123,6 @@ class SCPFintentRerouteLat:
             main.ONOSbench.onosDie(main.ONOSip[i])
 
         main.log.info("NODE COUNT = %s" % main.numCtrls)
-
-        # tempOnosIp = []
-        # for i in range(main.numCtrls):
-        #    tempOnosIp.append(main.AllONOSip[i])
-        # print(tempOnosIp)
         main.ONOSbench.createCellFile(main.ONOSbench.ip_address,
                                       main.cellName,
                                       main.MN1Ip,
@@ -227,10 +222,13 @@ class SCPFintentRerouteLat:
         for batchSize in main.intentsList:
             main.log.report("Intent Batch size: " + str(batchSize) + "\n      ")
             main.LatencyList = []
-            for run in range(0, (main.warmUp + main.sampleSize)):
-                if run >= main.warmUp:
+            validRun = 0
+            invalidRun = 0
+            while validRun <= main.warmUp + main.sampleSize and invalidRun <= 20:
+                if validRun >= main.warmUp:
                     main.log.info("================================================")
-                    main.log.info("Starting test iteration " + str(run - main.warmUp))
+                    main.log.info("Starting test iteration: {} ".format(validRun - main.warmUp))
+                    main.log.info("Total iteration: {}".format(validRun + invalidRun))
                     main.log.info("================================================")
                 else:
                     main.log.info("====================Warm Up=====================")
@@ -257,7 +255,20 @@ class SCPFintentRerouteLat:
                 if not verify:
                     main.log.warn("Links or flows number are not match!")
                     main.log.warn("links: {}, flows: {} ".format(linkCheck, flowsCheck))
-                    continue
+                    # bring back topology
+                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
+                    time.sleep(1)
+                    main.CLIs[0].purgeWithdrawnIntents()
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
+                    if validRun >= main.warmUp:
+                        invalidRun += 1
+                        continue
+                    else:
+                        validRun += 1
+                        continue
 
                 # Bring link down
                 main.CLIs[0].link("0000000000000004/1", "0000000000000003/2", "down",
@@ -278,7 +289,20 @@ class SCPFintentRerouteLat:
                 if not verify:
                     main.log.warn("Links number are not match in TopologyManager log!")
                     main.log.warn(topoManagerLog)
-                    continue
+                    # bring back topology
+                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
+                    time.sleep(1)
+                    main.CLIs[0].purgeWithdrawnIntents()
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
+                    if validRun >= main.warmUp:
+                        invalidRun += 1
+                        continue
+                    else:
+                        validRun += 1
+                        continue
 
                 try:
                     # expect twice to clean the pexpect buffer
@@ -302,6 +326,19 @@ class SCPFintentRerouteLat:
                 except:
                     main.log.error("Topology Log is not correct!")
                     print(topoManagerLog)
+                    # bring back topology
+                    verify = main.FALSE
+                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
+                    time.sleep(1)
+                    main.CLIs[0].purgeWithdrawnIntents()
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
+                    if validRun >= main.warmUp:
+                        invalidRun += 1
+                    else:
+                        validRun += 1
                     # If we got wrong Topology log, we should skip this iteration, and continue for next one
                     continue
 
@@ -314,12 +351,14 @@ class SCPFintentRerouteLat:
                 for i in range(0, len(installedTemp)):
                     main.log.info("ONOS Node {} Installed Time stemp: {}".format((i + 1), installedTemp[i]))
                 maxInstallTime = float(max(installedTemp))
-                if run >= main.warmUp:
+                if validRun >= main.warmUp and verify:
                     main.log.info("Installed time stemp: {0:f}".format(maxInstallTime))
                     main.log.info("CutTimestamp: {0:f}".format(cutTimestamp))
                     # Both timeStemps are milliseconds
                     main.log.info("Latency: {0:f}".format(float(maxInstallTime - cutTimestamp)))
                     main.LatencyList.append(float(maxInstallTime - cutTimestamp))
+                # We get valid latency, validRun + 1
+                validRun += 1
 
                 # Verify Summary after we bring up link, and withdrawn intents
                 main.CLIs[0].link("0000000000000004/1", "0000000000000003/2", "up",
@@ -345,6 +384,15 @@ class SCPFintentRerouteLat:
                 if not verify:
                     main.log.error("links, flows, or intents are not correct!")
                     main.log.info("links: {}, flows: {}, intents: {} ".format(linkCheck, flowsCheck, intentCheck))
+                    # bring back topology
+                    main.log.info("Bring back topology...")
+                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
+                    time.sleep(1)
+                    main.CLIs[0].purgeWithdrawnIntents()
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
                     continue
 
             aveLatency = 0
@@ -356,11 +404,13 @@ class SCPFintentRerouteLat:
             main.log.report("Latency standard deviation:....." + str(stdLatency))
             main.log.report("________________________________________________________")
 
-            resultsDB = open(main.dbFileName, "a")
-            resultsDB.write("'" + main.commit + "',")
-            resultsDB.write(str(main.numCtrls) + ",")
-            resultsDB.write(str(batchSize) + ",")
-            resultsDB.write(str(aveLatency) + ",")
-            resultsDB.write(str(stdLatency) + "\n")
-            resultsDB.close()
+            if not (numpy.isnan(aveLatency) or numpy.isnan(stdLatency)):
+                # check if got NaN for result
+                resultsDB = open(main.dbFileName, "a")
+                resultsDB.write("'" + main.commit + "',")
+                resultsDB.write(str(main.numCtrls) + ",")
+                resultsDB.write(str(batchSize) + ",")
+                resultsDB.write(str(aveLatency) + ",")
+                resultsDB.write(str(stdLatency) + "\n")
+                resultsDB.close()
         del main.scale[0]

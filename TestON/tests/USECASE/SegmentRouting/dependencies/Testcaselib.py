@@ -1,6 +1,7 @@
 import os
 import imp
 import time
+import json
 
 from core import utilities
 
@@ -34,10 +35,12 @@ class Testcaselib:
         main.cellData = {} # for creating cell file
         main.CLIs = []
         main.ONOSip = []
+        main.RESTs= []
 
         # Assigning ONOS cli handles to a list
         for i in range( 1,  main.maxNodes + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            main.RESTs.append( getattr( main, 'ONOSrest' + str( i ) ) )
             main.ONOSip.append( main.CLIs[i-1].ip_address )
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         main.startUp = imp.load_source( wrapperFile1,
@@ -108,7 +111,6 @@ class Testcaselib:
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
         main.step( "Create and Install ONOS package" )
-        main.ONOSbench.handle.sendline( "cp "+main.dependencyPath+"/"+main.cfgName+".json ~/onos/tools/package/config/network-cfg.json")
         packageResult = main.ONOSbench.onosPackage()
 
         onosInstallResult = main.TRUE
@@ -162,6 +164,9 @@ class Testcaselib:
         utilities.assert_equals( expect=True, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
+
+        with open( main.dependencyPath + "/" + main.cfgName + ".json" ) as cfg:
+            main.RESTs[main.active].setNetCfg( json.load(cfg) )
 
         if not ready:
             main.log.error( "ONOS startup failed!" )
@@ -245,7 +250,7 @@ class Testcaselib:
         LinkDown = main.Mininet1.link( END1=end1, END2=end2, OPTION="down" )
         main.log.info( "Waiting %s seconds for link down to be discovered" % main.linkSleep )
         time.sleep( main.linkSleep )
-        topology =  utilities.retry( main.CLIs[main.active].checkStatus,
+        topology =  utilities.retry( main.CLIs[ main.active ].checkStatus,
                                      main.FALSE,
                                      kwargs={'numoswitch':switches, 'numolink':links},
                                      attempts=10,
@@ -334,9 +339,9 @@ class Testcaselib:
         Copies ONOS log
         """
         main.Mininet1.stopNet()
-        main.ONOSbench.scp( main.ONOScli1 ,"/opt/onos/log/karaf.log",
+        main.ONOSbench.scp( main.ONOScli1, "/opt/onos/log/karaf.log",
                            "/tmp/karaf.log", direction="from" )
-        main.ONOSbench.cpLogsToDir("/tmp/karaf.log",main.logdir,
-                                   copyFileName="karaf.log."+main.cfgName)
-        for i in range(main.numCtrls):
+        main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
+                                   copyFileName="karaf.log."+main.cfgName )
+        for i in range( main.numCtrls ):
             main.ONOSbench.onosStop( main.ONOSip[i] )

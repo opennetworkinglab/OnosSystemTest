@@ -28,13 +28,6 @@
             }
         }
     },
-    "apps": {
-        "org.onosproject.segmentrouting": {
-          "segmentrouting": {
-            "hostLearning": true
-          }
-        }
-    },
     "hosts" : {
         "00:00:00:00:00:01/-1" : {
             "basic": {

@@ -2244,7 +2244,7 @@ class OnosCliDriver( CLI ):
             # Check response if something wrong
             response = self.sendline( cmd, timeout=timeout )
             if response == None:
-                return main.False
+                return main.FALSE
             response = json.loads( response )
 
             # get total and installed number, see if they are match

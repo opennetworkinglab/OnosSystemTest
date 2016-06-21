@@ -202,6 +202,7 @@ class SCPFintentInstallWithdrawLatWithFlowObj:
 
         # balanceMasters
         main.CLIs[0].balanceMasters()
+        time.sleep(main.startUpSleep)
 
     def CASE2( self, main ):
         import time

@@ -178,6 +178,7 @@ class SCPFintentEventTp:
         main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
         main.ONOSbench.handle.expect(":~")
         print main.ONOSbench.handle.before
+        time.sleep(5)
 
         for i in range(3):
             passed = main.ONOSbench.verifySummary( ONOSIp[0] )

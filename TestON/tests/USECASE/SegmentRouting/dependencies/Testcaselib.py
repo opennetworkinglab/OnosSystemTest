@@ -17,7 +17,6 @@ class Testcaselib:
             - Install ONOS package
             - Build ONOS package
         """
-        main.case( "Constructing test variables and building ONOS" )
         main.step( "Constructing test variables" )
         # Test variables
         main.cellName = main.params[ 'ENV' ][ 'cellName' ]
@@ -192,13 +191,13 @@ class Testcaselib:
             main.exit()
 
     @staticmethod
-    def checkFlows( main, flowCount ):
-        main.step(" Check whether the flow count is bigger than %s" % flowCount)
-        count =  utilities.retry( main.CLIs[main.active].checkFlowCount,
-                                  main.FALSE,
-                                  kwargs={'min':flowCount},
-                                  attempts=10,
-                                  sleep=10 )
+    def checkFlows(main, minFlowCount):
+        main.step(" Check whether the flow count is bigger than %s" % minFlowCount)
+        count =  utilities.retry(main.CLIs[main.active].checkFlowCount,
+                                 main.FALSE,
+                                 kwargs={'min':minFlowCount},
+                                 attempts=10,
+                                 sleep=10)
         utilities.assertEquals( \
                 expect=True,
                 actual=(count>0),
@@ -229,7 +228,6 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=pa,
                                  onpass="Full connectivity successfully tested",
                                  onfail="Full connectivity failed" )
-        ##FIXME choose valid onos instead of 0
         main.ONOSbench.dumpFlows( main.ONOSip[main.active],
                                   main.logdir, "flowsOn" + tag)
         main.ONOSbench.dumpGroups( main.ONOSip[main.active],
@@ -245,10 +243,8 @@ class Testcaselib:
         main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
         main.step( "Kill link between %s and %s" %(end1, end2))
         LinkDown = main.Mininet1.link( END1=end1, END2=end2, OPTION="down" )
-        main.log.info( "Waiting %s seconds for link up to be discovered" % (main.linkSleep) )
-        # TODO Maybe parameterize number of expected links
+        main.log.info( "Waiting %s seconds for link down to be discovered" % main.linkSleep )
         time.sleep( main.linkSleep )
-        ##FIXME CLI for active node instead of 0
         topology =  utilities.retry( main.CLIs[main.active].checkStatus,
                                      main.FALSE,
                                      kwargs={'numoswitch':switches, 'numolink':links},
@@ -265,7 +261,7 @@ class Testcaselib:
         Params:
             end1,end2: identify the end switches, ex.: 'leaf1', 'spine1'
             dpid1, dpid2: dpid of the end switches respectively, ex.: 'of:0000000000000002'
-            port1, port2: respective port of the end switchs that connects to the link, ex.:'1'
+            port1, port2: respective port of the end switches that connects to the link, ex.:'1'
             switches, links: number of expected switches and links after linkDown, ex.: '4', '6'
         Kill a link and verify ONOS can see the proper link change
         """
@@ -276,7 +272,7 @@ class Testcaselib:
             count+=0
             main.Mininet1.link( END1=end1, END2=end2, OPTION="up" )
             main.Mininet1.link( END2=end1, END1=end2, OPTION="up" )
-            main.log.info( "Waiting %s seconds for link up to be discovered" % (main.linkSleep) )
+            main.log.info( "Waiting %s seconds for link up to be discovered" % main.linkSleep )
             time.sleep( main.linkSleep )
             main.CLIs[main.active].portstate( dpid=dpid1, port=port1 )
             main.CLIs[main.active].portstate( dpid=dpid2, port=port2 )
@@ -293,7 +289,7 @@ class Testcaselib:
     def killSwitch( main, switch, switches, links ):
         """
         Params: switches, links: number of expected switches and links after SwitchDown, ex.: '4', '6'
-        Kill a switch and verify ONOS can see the proper change
+        Completely kill a switch and verify ONOS can see the proper change
         """
         main.switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
         main.step( "Kill " + switch )

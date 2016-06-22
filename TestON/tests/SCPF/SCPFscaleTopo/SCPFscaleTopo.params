@@ -8,7 +8,7 @@
     # 200 - bring onos node up and balance masters
     # 1000 - report logs
 
-    <testcases>1,2,[10,300,11,100,300,11,200,300,11,1000]*3</testcases>
+    <testcases>1,[2,10,300,11,100,300,11,200,300,11,1000]*3</testcases>
 
     <DEPENDENCY>
         <path>/tests/SCPF/SCPFscaleTopo/dependencies/</path>

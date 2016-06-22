@@ -84,7 +84,7 @@ class SCPFswitchLat:
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
 
-            main.log.step("Grabbing commit number")
+            main.step("Grabbing commit number")
             commit = main.ONOSbench.getVersion()       ####
             commit = (commit.split(" "))[1]
 
@@ -103,17 +103,17 @@ class SCPFswitchLat:
 
         # -- END OF INIT SECTION --#
 
-        main.log.step("Adjusting scale")
+        main.step("Adjusting scale")
         clusterCount = int(scale[0])
         scale.remove(scale[0])
 
         #kill off all onos processes
-        main.log.step("Safety check, killing all ONOS processes before initiating environment setup")
+        main.step("Safety check, killing all ONOS processes before initiating environment setup")
         for node in range(main.maxNodes):
             main.ONOSbench.onosDie(main.ONOSIp[node])
 
         #Uninstall everywhere
-        main.log.step( "Cleaning Enviornment..." )
+        main.step( "Cleaning Enviornment..." )
         for i in range(main.maxNodes):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( main.ONOSIp[i] )

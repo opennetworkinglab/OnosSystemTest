@@ -811,8 +811,8 @@ class OnosCliDriver( CLI ):
 
             Dependencies: checkMasters() and summary()
 
-            Returns main.True if the devices are balanced
-            Returns main.False if the devices are unbalanced
+            Returns main.TRUE if the devices are balanced
+            Returns main.FALSE if the devices are unbalanced
             Exits on Exception
             Returns None on TypeError
         """
@@ -1837,7 +1837,7 @@ class OnosCliDriver( CLI ):
         -p or --purge: Purge the intent from the store after removal
 
         Returns:
-            main.False on error and
+            main.FALSE on error and
             cli output otherwise
         """
         try:

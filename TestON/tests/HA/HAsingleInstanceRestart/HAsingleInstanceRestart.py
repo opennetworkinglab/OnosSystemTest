@@ -212,7 +212,7 @@ class HAsingleInstanceRestart:
                                  onpass="ONOS startup successful",
                                  onfail="ONOS startup failed" )
 
-        main.log.step( "Starting ONOS CLI sessions" )
+        main.step( "Starting ONOS CLI sessions" )
         cliResults = main.TRUE
         threads = []
         for i in range( main.numCtrls ):
@@ -1401,7 +1401,7 @@ class HAsingleInstanceRestart:
                                  onpass="ONOS is back up",
                                  onfail="ONOS failed to start" )
 
-        main.log.step( "Starting ONOS CLI sessions" )
+        main.step( "Starting ONOS CLI sessions" )
         cliResults = main.ONOScli1.startOnosCli( main.nodes[0].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli startup successful",

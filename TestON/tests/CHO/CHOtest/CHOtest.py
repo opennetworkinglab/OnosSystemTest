@@ -146,7 +146,7 @@ class CHOtest:
 
         main.step( "Start ONOS CLI on all nodes" )
         cliResult = main.TRUE
-        main.log.step(" Start ONOS cli using thread ")
+        main.step(" Start ONOS cli using thread ")
         startCliResult  = main.TRUE
         pool = []
         time1 = time.time()
@@ -499,7 +499,7 @@ class CHOtest:
 
         import time
         main.log.report( "Clean up ONOS" )
-        main.log.case( "Stop topology and remove hosts and devices" )
+        main.case( "Stop topology and remove hosts and devices" )
 
         main.step( "Stop Topology" )
         stopStatus = main.Mininet1.stopNet()
@@ -2114,7 +2114,7 @@ class CHOtest:
 
         main.log.report( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
         main.log.report( "___________________________________________________________________________" )
-        main.log.case( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
+        main.case( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
 
         main.step( "Bring some core links down" )
         linkIndex = range(4)

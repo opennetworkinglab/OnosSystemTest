@@ -282,7 +282,7 @@ class HAscaling:
                                  onpass="ONOS startup successful",
                                  onfail="ONOS startup failed" )
 
-        main.log.step( "Starting ONOS CLI sessions" )
+        main.step( "Starting ONOS CLI sessions" )
         cliResults = main.TRUE
         threads = []
         for i in range( main.numCtrls ):
@@ -1894,7 +1894,7 @@ class HAscaling:
                                  onpass="ONOS started",
                                  onfail="ONOS start NOT successful" )
 
-        main.log.step( "Starting ONOS CLI sessions" )
+        main.step( "Starting ONOS CLI sessions" )
         cliResults = main.TRUE
         threads = []
         for i in main.activeNodes:

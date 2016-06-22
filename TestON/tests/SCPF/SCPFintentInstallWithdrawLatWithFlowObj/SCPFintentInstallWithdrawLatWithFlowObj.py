@@ -174,7 +174,7 @@ class SCPFintentInstallWithdrawLatWithFlowObj:
         time.sleep(2)
         main.step("Start ONOS CLI on all nodes")
         cliResult = main.TRUE
-        main.log.step(" Start ONOS cli using thread ")
+        main.step(" Start ONOS cli using thread ")
         startCliResult = main.TRUE
         pool = []
         main.threadID = 0

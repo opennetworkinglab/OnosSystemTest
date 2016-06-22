@@ -85,13 +85,13 @@ class SCPFflowTp1g:
         main.log.info("CLUSTER COUNT: " + str(clusterCount))
 
         #kill off all onos processes
-        main.log.step("Safety check, killing all ONOS processes")
-        main.log.step("before initiating environment setup")
+        main.step("Safety check, killing all ONOS processes")
+        main.step("before initiating environment setup")
         for node in range(1, main.maxNodes + 1):
             main.ONOSbench.onosDie(ONOSIp[node])
 
         #Uninstall everywhere
-        main.log.step( "Cleaning Enviornment..." )
+        main.step( "Cleaning Enviornment..." )
         for i in range(1, main.maxNodes + 1):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
@@ -191,9 +191,9 @@ class SCPFflowTp1g:
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 
         for n in neighborList:
-            main.log.step("\tSTARTING TEST")
-            main.log.step("\tLOADING FROM SERVERS:  \t" + str(clusterCount) )
-            main.log.step("\tNEIGHBORS:\t" + n )
+            main.step("\tSTARTING TEST")
+            main.step("\tLOADING FROM SERVERS:  \t" + str(clusterCount) )
+            main.step("\tNEIGHBORS:\t" + n )
             main.log.info("=============================================================")
             main.log.info("=============================================================")
             #write file to configure nil link

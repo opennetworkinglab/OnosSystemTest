@@ -254,7 +254,7 @@ class HAkillNodes:
                                  onpass="ONOS startup successful",
                                  onfail="ONOS startup failed" )
 
-        main.log.step( "Starting ONOS CLI sessions" )
+        main.step( "Starting ONOS CLI sessions" )
         cliResults = main.TRUE
         threads = []
         for i in range( main.numCtrls ):

@@ -180,7 +180,7 @@ class SAMPstartTemplate_1node:
 
         topology = main.params['CASE11']['topo']
         main.log.report( "Start Mininet topology" )
-        main.log.case( "Start Mininet topology" )
+        main.case( "Start Mininet topology" )
 
         main.step( "Starting Mininet Topology" )
         topoResult = main.Mininet1.startNet( mnCmd=topology )
@@ -213,7 +213,7 @@ class SAMPstartTemplate_1node:
             Tests using through ONOS CLI handles
         """
 
-        main.log.case( "Test some onos commands through CLI. ")
+        main.case( "Test some onos commands through CLI. ")
         main.log.debug( main.ONOScli1.sendline("summary") )
         main.log.debug( main.ONOScli1.sendline("devices") )
 

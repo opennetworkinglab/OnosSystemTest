@@ -247,7 +247,7 @@ class HAfullNetPartition:
                                  onpass="ONOS startup successful",
                                  onfail="ONOS startup failed" )
 
-        main.log.step( "Starting ONOS CLI sessions" )
+        main.step( "Starting ONOS CLI sessions" )
         cliResults = main.TRUE
         threads = []
         for i in range( main.numCtrls ):
@@ -1832,7 +1832,7 @@ class HAfullNetPartition:
                                  onpass="Firewall rules set successfully",
                                  onfail="Error setting firewall rules" )
 
-        main.log.step( "Sleeping 60 seconds" )
+        main.step( "Sleeping 60 seconds" )
         time.sleep( 60 )
 
     def CASE62( self, main ):

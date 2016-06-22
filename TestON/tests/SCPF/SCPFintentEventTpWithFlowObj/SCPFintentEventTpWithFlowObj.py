@@ -81,18 +81,18 @@ class SCPFintentEventTpWithFlowObj:
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
 
-            main.log.step("Grabbing commit number")
+            main.step("Grabbing commit number")
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
 
-            main.log.step("Creating results file")
+            main.step("Creating results file")
             # Create results file with flow object
             flowObjResultsDB = open("/tmp/IntentEventTPflowObjDB", "w+")
             flowObjResultsDB.close()
 
         # -- END OF INIT SECTION --#
 
-        main.log.step("Adjusting scale")
+        main.step("Adjusting scale")
         print str(scale)
         print str(ONOSIp)
         clusterCount = int(scale[0])
@@ -102,8 +102,8 @@ class SCPFintentEventTpWithFlowObj:
         BENCHIp = ONOSIp[len(ONOSIp) -2]
 
         #kill off all onos processes
-        main.log.step("Safety check, killing all ONOS processes")
-        main.log.step("before initiating environment setup")
+        main.step("Safety check, killing all ONOS processes")
+        main.step("before initiating environment setup")
         for node in range(maxNodes):
             main.ONOSbench.onosDie(ONOSIp[node])
 
@@ -111,7 +111,7 @@ class SCPFintentEventTpWithFlowObj:
         BENCHIp = ONOSIp[len(ONOSIp) -2]
 
         #Uninstall everywhere
-        main.log.step( "Cleaning Enviornment..." )
+        main.step( "Cleaning Enviornment..." )
         for i in range(maxNodes):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
@@ -162,7 +162,7 @@ class SCPFintentEventTpWithFlowObj:
         main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal " + skipRelRsrc)
         devices = int(clusterCount)*10
 
-        main.log.step("Setting up null provider")
+        main.step("Setting up null provider")
         for i in range(3):
             main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "deviceCount " + str(devices))
             main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "topoShape linear")

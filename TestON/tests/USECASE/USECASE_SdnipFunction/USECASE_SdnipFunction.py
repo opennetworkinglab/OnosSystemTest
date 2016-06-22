@@ -113,7 +113,7 @@ class USECASE_SdnipFunction:
         branchName = main.ONOSbench.getBranchName()
         main.log.report( "ONOS is on branch: " + branchName )
 
-        main.log.step( "Uninstalling ONOS" )
+        main.step( "Uninstalling ONOS" )
         uninstallResult = main.ONOSbench.onosUninstall( ONOS1Ip )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=uninstallResult,

@@ -1847,7 +1847,7 @@ class OnosDriver( CLI ):
 
                 deviceCount - number of switches to be assigned
         '''
-        main.log.step("Creating link graph configuration file." )
+        main.log.info("Creating link graph configuration file." )
         linkGraphPath = self.home + "/tools/package/etc/linkGraph.cfg"
         tempFile = "/tmp/linkGraph.cfg"
 
@@ -1923,13 +1923,13 @@ class OnosDriver( CLI ):
             numPorts = number of ports per device. Defaults to 10 both in this function and in ONOS. Optional arg
         '''
 
-        main.log.step("Configuring Null Device Provider" )
+        main.log.info("Configuring Null Device Provider" )
         clusterCount = len(ONOSIpList)
 
         try:
 
             if type(deviceCount) is int or type(deviceCount) is str:
-                main.log.step("Creating device distribution")
+                main.log.info("Creating device distribution")
                 deviceCount = int(deviceCount)
                 switchList = [0]*(clusterCount+1)
                 baselineSwitchCount = deviceCount/clusterCount

@@ -155,7 +155,7 @@ class FUNCvirNetNB:
                      onfail="ONOS startup failed" )
         time.sleep( main.startUpSleep )
 
-        main.log.step( "Starting ONOS CLI sessions" )
+        main.step( "Starting ONOS CLI sessions" )
 
         print main.nodes[0].ip_address
         cliResults = main.ONOScli1.startOnosCli(main.nodes[0].ip_address)

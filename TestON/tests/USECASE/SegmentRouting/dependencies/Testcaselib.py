@@ -25,23 +25,23 @@ class Testcaselib:
         main.diff = main.params[ 'ENV' ][ 'diffApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         main.path = os.path.dirname( main.testFile )
-        main.dependencyPath = main.path +"/../dependencies/"
+        main.dependencyPath = main.path + "/../dependencies/"
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
         wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
-        main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
+        main.scale = (main.params[ 'SCALE' ][ 'size' ]).split( "," )
         main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
-        #main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
+        # main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-        main.cellData = {} # for creating cell file
-        main.CLIs = []
-        main.ONOSip = []
-        main.RESTs= []
+        main.cellData = { }  # for creating cell file
+        main.CLIs = [ ]
+        main.ONOSip = [ ]
+        main.RESTs = [ ]
 
         # Assigning ONOS cli handles to a list
-        for i in range( 1,  main.maxNodes + 1 ):
+        for i in range( 1, main.maxNodes + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
             main.RESTs.append( getattr( main, 'ONOSrest' + str( i ) ) )
-            main.ONOSip.append( main.CLIs[i-1].ip_address )
+            main.ONOSip.append( main.CLIs[ i - 1 ].ip_address )
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         main.startUp = imp.load_source( wrapperFile1,
                                         main.dependencyPath +
@@ -79,18 +79,19 @@ class Testcaselib:
         - Connect to cli
         """
         # main.scale[ 0 ] determines the current number of ONOS controller
-        apps=main.apps
+        apps = main.apps
         if main.diff:
             apps = main.apps + "," + main.diff
-        else: main.log.error( "App list is empty" )
-        main.case( "Package and start ONOS using apps:" + apps)
+        else:
+            main.log.error( "App list is empty" )
+        main.case( "Package and start ONOS using apps:" + apps )
         print "NODE COUNT = ", main.numCtrls
         print main.ONOSip
-        tempOnosIp = []
+        tempOnosIp = [ ]
         for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[i] )
+            tempOnosIp.append( main.ONOSip[ i ] )
         onosUser = main.params[ 'ENV' ][ 'cellUser' ]
-        main.step("Create and Apply cell file")
+        main.step( "Create and Apply cell file" )
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp",
                                        main.Mininet1.ip_address,
@@ -98,32 +99,33 @@ class Testcaselib:
                                        tempOnosIp,
                                        onosUser )
         cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell()
+        verifyResult = main.ONOSbench.verifyCell( )
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully applied cell to " + \
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
-        #kill off all onos processes
+        # kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
         main.step( "Create and Install ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.onosPackage( )
 
         onosInstallResult = main.TRUE
         for i in range( main.numCtrls ):
             onosInstallResult = onosInstallResult and \
-                                main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
+                                main.ONOSbench.onosInstall(
+                                    node=main.ONOSip[ i ] )
         stepResult = onosInstallResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
         main.step( "Starting ONOS service" )
-        stopResult,startResult, onosIsUp= main.TRUE, main.TRUE, main.TRUE,
+        stopResult, startResult, onosIsUp = main.TRUE, main.TRUE, main.TRUE,
         for i in range( main.numCtrls ):
             onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
         if onosIsUp == main.TRUE:
@@ -145,17 +147,18 @@ class Testcaselib:
                                  onfail="ONOS service did not start properly" )
         main.step( "Checking if ONOS CLI is ready" )
         for i in range( main.numCtrls ):
-            main.CLIs[i].startCellCli()
-            cliResult = main.CLIs[i].startOnosCli( main.ONOSip[ i ],
-                                               commandlineTimeout=60, onosStartTimeout=100 )
+            main.CLIs[ i ].startCellCli( )
+            cliResult = main.CLIs[ i ].startOnosCli( main.ONOSip[ i ],
+                                                     commandlineTimeout=60,
+                                                     onosStartTimeout=100 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cliResult,
                                  onpass="ONOS CLI is ready",
                                  onfail="ONOS CLI is not ready" )
-        main.active=0
+        main.active = 0
         for i in range( 10 ):
             ready = True
-            output = main.CLIs[main.active].summary()
+            output = main.CLIs[ main.active ].summary( )
             if not output:
                 ready = False
             if ready:
@@ -166,25 +169,27 @@ class Testcaselib:
                                  onfail="ONOS summary command failed" )
 
         with open( main.dependencyPath + "/" + main.cfgName + ".json" ) as cfg:
-            main.RESTs[main.active].setNetCfg( json.load(cfg) )
+            main.RESTs[ main.active ].setNetCfg( json.load( cfg ) )
 
         if not ready:
             main.log.error( "ONOS startup failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanup( )
+            main.exit( )
 
         for i in range( main.numCtrls ):
-            main.CLIs[i].logSet( "DEBUG", "org.onosproject.segmentrouting" )
-            main.CLIs[i].logSet( "DEBUG", "org.onosproject.driver.pipeline" )
-            main.CLIs[i].logSet( "DEBUG", "org.onosproject.store.group.impl" )
-            main.CLIs[i].logSet( "DEBUG", "org.onosproject.net.flowobjective.impl" )
+            main.CLIs[ i ].logSet( "DEBUG", "org.onosproject.segmentrouting" )
+            main.CLIs[ i ].logSet( "DEBUG", "org.onosproject.driver.pipeline" )
+            main.CLIs[ i ].logSet( "DEBUG", "org.onosproject.store.group.impl" )
+            main.CLIs[ i ].logSet( "DEBUG",
+                                   "org.onosproject.net.flowobjective.impl" )
 
     @staticmethod
     def startMininet( main, topology, args="" ):
         main.step( "Starting Mininet Topology" )
         arg = "--onos %d %s" % (main.numCtrls, args)
-        main.topology=topology
-        topoResult = main.Mininet1.startNet( topoFile= main.dependencyPath + main.topology, args=arg )
+        main.topology = topology
+        topoResult = main.Mininet1.startNet(
+            topoFile=main.dependencyPath + main.topology, args=arg )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -192,51 +197,52 @@ class Testcaselib:
                                  onfail="Failed to load topology" )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanup( )
+            main.exit( )
 
     @staticmethod
-    def checkFlows(main, minFlowCount):
-        main.step(" Check whether the flow count is bigger than %s" % minFlowCount)
-        count =  utilities.retry(main.CLIs[main.active].checkFlowCount,
+    def checkFlows( main, minFlowCount ):
+        main.step(
+            " Check whether the flow count is bigger than %s" % minFlowCount )
+        count = utilities.retry( main.CLIs[ main.active ].checkFlowCount,
                                  main.FALSE,
-                                 kwargs={'min':minFlowCount},
+                                 kwargs={ 'min': minFlowCount },
                                  attempts=10,
-                                 sleep=10)
+                                 sleep=10 )
         utilities.assertEquals( \
                 expect=True,
-                actual=(count>0),
-                onpass="Flow count looks correct: "+str(count),
-                onfail="Flow count looks wrong: "+str(count) )
+                actual=(count > 0),
+                onpass="Flow count looks correct: " + str( count ),
+                onfail="Flow count looks wrong: " + str( count ) )
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.CLIs[main.active].checkFlowsState,
+        flowCheck = utilities.retry( main.CLIs[ main.active ].checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10,
-                                     sleep=10)
+                                     sleep=10 )
         utilities.assertEquals( \
                 expect=main.TRUE,
                 actual=flowCheck,
                 onpass="Flow status is correct!",
                 onfail="Flow status is wrong!" )
-        main.ONOSbench.dumpFlows( main.ONOSip[main.active],
-                                  main.logdir, "flowsBefore" + main.cfgName)
-        main.ONOSbench.dumpGroups( main.ONOSip[0],
-                                   main.logdir, "groupsBefore" + main.cfgName)
+        main.ONOSbench.dumpFlows( main.ONOSip[ main.active ],
+                                  main.logdir, "flowsBefore" + main.cfgName )
+        main.ONOSbench.dumpGroups( main.ONOSip[ 0 ],
+                                   main.logdir, "groupsBefore" + main.cfgName )
 
     @staticmethod
-    def pingAll( main, tag=""):
+    def pingAll( main, tag="" ):
         main.log.report( "Check full connectivity" )
-        main.step("Check full connectivity %s" %tag)
-        pa = main.Mininet1.pingall()
+        main.step( "Check full connectivity %s" % tag )
+        pa = main.Mininet1.pingall( )
         utilities.assert_equals( expect=main.TRUE, actual=pa,
                                  onpass="Full connectivity successfully tested",
                                  onfail="Full connectivity failed" )
-        main.ONOSbench.dumpFlows( main.ONOSip[main.active],
-                                  main.logdir, "flowsOn" + tag)
-        main.ONOSbench.dumpGroups( main.ONOSip[main.active],
-                                   main.logdir, "groupsOn" + tag)
+        main.ONOSbench.dumpFlows( main.ONOSip[ main.active ],
+                                  main.logdir, "flowsOn" + tag )
+        main.ONOSbench.dumpGroups( main.ONOSip[ main.active ],
+                                   main.logdir, "groupsOn" + tag )
 
     @staticmethod
     def killLink( main, end1, end2, switches, links ):
@@ -246,22 +252,25 @@ class Testcaselib:
         Kill a link and verify ONOS can see the proper link change
         """
         main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        main.step( "Kill link between %s and %s" %(end1, end2))
+        main.step( "Kill link between %s and %s" % (end1, end2) )
         LinkDown = main.Mininet1.link( END1=end1, END2=end2, OPTION="down" )
-        main.log.info( "Waiting %s seconds for link down to be discovered" % main.linkSleep )
+        main.log.info(
+            "Waiting %s seconds for link down to be discovered" % main.linkSleep )
         time.sleep( main.linkSleep )
-        topology =  utilities.retry( main.CLIs[ main.active ].checkStatus,
-                                     main.FALSE,
-                                     kwargs={'numoswitch':switches, 'numolink':links},
-                                     attempts=10,
-                                     sleep=main.linkSleep)
+        topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
+                                    main.FALSE,
+                                    kwargs={ 'numoswitch': switches,
+                                             'numolink': links },
+                                    attempts=10,
+                                    sleep=main.linkSleep )
         result = topology & LinkDown
         utilities.assert_equals( expect=main.TRUE, actual=result,
                                  onpass="Link down successful",
                                  onfail="Failed to turn off link?" )
 
     @staticmethod
-    def restoreLink( main, end1, end2, dpid1, dpid2, port1, port2, switches, links ):
+    def restoreLink( main, end1, end2, dpid1, dpid2, port1, port2, switches,
+                     links ):
         """
         Params:
             end1,end2: identify the end switches, ex.: 'leaf1', 'spine1'
@@ -270,21 +279,23 @@ class Testcaselib:
             switches, links: number of expected switches and links after linkDown, ex.: '4', '6'
         Kill a link and verify ONOS can see the proper link change
         """
-        main.step( "Restore link between %s and %s" %( end1, end2 ) )
+        main.step( "Restore link between %s and %s" % (end1, end2) )
         result = False
-        count=0
+        count = 0
         while True:
-            count+=0
+            count += 0
             main.Mininet1.link( END1=end1, END2=end2, OPTION="up" )
             main.Mininet1.link( END2=end1, END1=end2, OPTION="up" )
-            main.log.info( "Waiting %s seconds for link up to be discovered" % main.linkSleep )
+            main.log.info(
+                "Waiting %s seconds for link up to be discovered" % main.linkSleep )
             time.sleep( main.linkSleep )
-            main.CLIs[main.active].portstate( dpid=dpid1, port=port1 )
-            main.CLIs[main.active].portstate( dpid=dpid2, port=port2 )
+            main.CLIs[ main.active ].portstate( dpid=dpid1, port=port1 )
+            main.CLIs[ main.active ].portstate( dpid=dpid2, port=port2 )
             time.sleep( main.linkSleep )
 
-            result = main.CLIs[main.active].checkStatus( numoswitch=switches, numolink=links )
-            if count>5 or result:
+            result = main.CLIs[ main.active ].checkStatus( numoswitch=switches,
+                                                           numolink=links )
+            if count > 5 or result:
                 break
         utilities.assert_equals( expect=main.TRUE, actual=result,
                                  onpass="Link up successful",
@@ -300,13 +311,16 @@ class Testcaselib:
         main.step( "Kill " + switch )
         main.log.info( "Stopping" + switch )
         main.Mininet1.switch( SW=switch, OPTION="stop" )
-        main.log.info( "Waiting %s seconds for switch down to be discovered" % ( main.switchSleep ) )
+        # todo make this repeatable
+        main.log.info( "Waiting %s seconds for switch down to be discovered" % (
+        main.switchSleep) )
         time.sleep( main.switchSleep )
-        topology =  utilities.retry( main.CLIs[main.active].checkStatus,
-                                     main.FALSE,
-                                     kwargs={'numoswitch':switches, 'numolink':links},
-                                     attempts=10,
-                                     sleep=main.switchSleep)
+        topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
+                                    main.FALSE,
+                                    kwargs={ 'numoswitch': switches,
+                                             'numolink': links },
+                                    attempts=10,
+                                    sleep=main.switchSleep )
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Kill switch successful",
                                  onfail="Failed to kill switch?" )
@@ -317,16 +331,19 @@ class Testcaselib:
         Params: switches, links: number of expected switches and links after SwitchUp, ex.: '4', '6'
         Recover a switch and verify ONOS can see the proper change
         """
+        # todo make this repeatable
         main.step( "Recovering " + switch )
         main.log.info( "Starting" + switch )
-        main.Mininet1.switch( SW=switch, OPTION="start")
-        main.log.info( "Waiting %s seconds for switch up to be discovered" %(main.switchSleep))
+        main.Mininet1.switch( SW=switch, OPTION="start" )
+        main.log.info( "Waiting %s seconds for switch up to be discovered" % (
+        main.switchSleep) )
         time.sleep( main.switchSleep )
-        topology =  utilities.retry( main.CLIs[main.active].checkStatus,
-                                     main.FALSE,
-                                     kwargs={'numoswitch':switches, 'numolink':links},
-                                     attempts=10,
-                                     sleep=main.switchSleep)
+        topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
+                                    main.FALSE,
+                                    kwargs={ 'numoswitch': switches,
+                                             'numolink': links },
+                                    attempts=10,
+                                    sleep=main.switchSleep )
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Switch recovery successful",
                                  onfail="Failed to recover switch?" )
@@ -338,10 +355,10 @@ class Testcaselib:
         Stops Mininet
         Copies ONOS log
         """
-        main.Mininet1.stopNet()
+        main.Mininet1.stopNet( )
         main.ONOSbench.scp( main.ONOScli1, "/opt/onos/log/karaf.log",
-                           "/tmp/karaf.log", direction="from" )
+                            "/tmp/karaf.log", direction="from" )
         main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
-                                   copyFileName="karaf.log."+main.cfgName )
+                                    copyFileName="karaf.log." + main.cfgName )
         for i in range( main.numCtrls ):
-            main.ONOSbench.onosStop( main.ONOSip[i] )
+            main.ONOSbench.onosStop( main.ONOSip[ i ] )

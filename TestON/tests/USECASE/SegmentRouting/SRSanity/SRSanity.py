@@ -1,9 +1,9 @@
-#CASE1: 2x2 Leaf-Spine topo and test IP connectivity
-#CASE2: 4x4 topo + IP connectivity test
-#CASE3: Single switch topo + IP connectivity test
-#CASE4: 2x2 topo + 3-node ONOS CLUSTER + IP connectivity test
-#CASE5: 4x4 topo + 3-node ONOS CLUSTER + IP connectivity test
-#CASE6: Single switch + 3-node ONOS CLUSTER + IP connectivity test
+# CASE1: 2x2 Leaf-Spine topo and test IP connectivity
+# CASE2: 4x4 topo + IP connectivity test
+# CASE3: Single switch topo + IP connectivity test
+# CASE4: 2x2 topo + 3-node ONOS CLUSTER + IP connectivity test
+# CASE5: 4x4 topo + 3-node ONOS CLUSTER + IP connectivity test
+# CASE6: Single switch + 3-node ONOS CLUSTER + IP connectivity test
 
 class SRSanity:
     def __init__( self ):

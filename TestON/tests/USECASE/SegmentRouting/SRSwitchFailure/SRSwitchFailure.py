@@ -1,10 +1,10 @@
-# In this test we perform a link failure and then test for connectivity
-# CASE1: 2x2 topo + link failure + IP connectivity test
-# CASE2: 4x4 topo + link failure + IP connectivity test
-# CASE4: 2x2 topo + 3-node ONOS CLUSTER + link failure + IP connectivity test
-# CASE5: 4x4 topo + 3-node ONOS CLUSTER + link failure + IP connectivity test
+# In this test we perform a switch failure and then test for connectivity
+# CASE1: 2x2 topo + swtich failure + IP connectivity test
+# CASE2: 4x4 topo + switch failure + IP connectivity test
+# CASE4: 2x2 topo + 3-node ONOS CLUSTER + switch failure + IP connectivity test
+# CASE5: 4x4 topo + 3-node ONOS CLUSTER + switch failure + IP connectivity test
 
-class SRLinkFailure:
+class SRSwitchFailure:
     def __init__( self ):
         self.default = ''
 
@@ -13,7 +13,7 @@ class SRLinkFailure:
         Sets up 1-node Onos-cluster
         Start 2x2 Leaf-Spine topology
         Pingall
-        Cause link failure
+        Cause switch failure
         Pingall
         """
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
@@ -31,11 +31,12 @@ class SRLinkFailure:
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
         run.pingAll( main )
-        # link failure
-        run.killLink( main, 'spine101', 'leaf2', switches='4', links='6' )
+        # switch failure\
+        switch = main.params[ 'kill' ][ 'switch' ]
+        run.killSwitch( main, switch, switches='3', links='4' )
         run.pingAll( main, "CASE1_Failure" )
-        run.restoreLink( main, 'spine101', 'leaf2', 'of:0000000000000101',
-                         'of:0000000000000002', '2', '1', '4', '8' )
+        run.recoverSwitch( main, switch, switches='4', links='8' )
+        run.checkFlows( main, minFlowCount=116 )
         run.pingAll( main, "CASE1_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -49,7 +50,7 @@ class SRLinkFailure:
         Sets up 1-node Onos-cluster
         Start 4x4 Leaf-Spine topology
         Pingall
-        Cause link failure
+        Cause switch failure
         Pingall
         """
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
@@ -65,11 +66,12 @@ class SRLinkFailure:
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=350 )
         run.pingAll( main )
-        # link failure
-        run.killLink( main, 'spine101', 'leaf2', switches='8', links='30' )
+        # switch failure
+        switch = main.params[ 'kill' ][ 'switch' ]
+        run.killSwitch( main, switch, switches='7', links='24' )
         run.pingAll( main, "CASE2_Failure" )
-        run.restoreLink( main, 'spine101', 'leaf2', 'of:0000000000000101',
-                         'of:0000000000000002', '2', '1', '8', '32' )
+        run.recoverSwitch( main, switch, switches='8', links='32' )
+        run.checkFlows( main, minFlowCount=350 )
         run.pingAll( main, "CASE2_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -99,11 +101,12 @@ class SRLinkFailure:
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
         run.pingAll( main )
-        # link failure
-        run.killLink( main, 'spine101', 'leaf2', switches='4', links='6' )
+        # switch failure
+        switch = main.params[ 'kill' ][ 'switch' ]
+        run.killSwitch( main, switch, switches='3', links='4' )
         run.pingAll( main, "CASE3_Failure" )
-        run.restoreLink( main, 'spine101', 'leaf2', 'of:0000000000000101',
-                         'of:0000000000000002', '2', '1', '4', '8' )
+        run.recoverSwitch( main, switch, switches='4', links='8' )
+        run.checkFlows( main, minFlowCount=116 )
         run.pingAll( main, "CASE3_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -133,12 +136,13 @@ class SRLinkFailure:
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=350 )
         run.pingAll( main )
-        # link failure
-        run.killLink( main, 'spine101', 'leaf2', switches='8', links='30' )
-        run.pingAll( main, "CASE2_Failure" )
-        run.restoreLink( main, 'spine101', 'leaf2', 'of:0000000000000101',
-                         'of:0000000000000002', '2', '1', '8', '32' )
-        run.pingAll( main, "CASE2_Recovery" )
+        # switch failure
+        switch = main.params[ 'kill' ][ 'switch' ]
+        run.killSwitch( main, switch, switches='7', links='24' )
+        run.pingAll( main, "CASE4_Failure" )
+        run.recoverSwitch( main, switch, switches='8', links='32' )
+        run.checkFlows( main, minFlowCount=350 )
+        run.pingAll( main, "CASE4_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO preconfigured xconnect

@@ -1,0 +1,46 @@
+<PARAMS>
+
+    <testcases>1,2,3</testcases>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <wrapper1>startUp</wrapper1>
+        <topology>cord_fabric.py</topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,segmentrouting</cellApps>
+        <diffApps>openflow-base,netcfghostprovider,netcfglinksprovider</diffApps>
+        <cellUser>sdn</cellUser>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+    </timers>
+
+    <kill>
+        <switch> spine101 </switch>
+        <dpid> 000000000101 </dpid>
+        <links> leaf1 leaf2 </links>
+    </kill>
+
+    <SLEEP>
+        <startup>10</startup>
+    </SLEEP>
+
+</PARAMS>

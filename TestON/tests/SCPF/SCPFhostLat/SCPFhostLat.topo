@@ -87,7 +87,7 @@
         </ONOS1>
 
         <Mininet1>
-            <host>localhost</host>
+            <host>OCN</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>MininetCliDriver</type>

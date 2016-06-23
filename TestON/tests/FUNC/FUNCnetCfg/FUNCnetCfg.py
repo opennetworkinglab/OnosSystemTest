@@ -48,7 +48,8 @@ class FUNCnetCfg:
             main.hostsData = {}
             main.nodes = []
             main.ONOSip = []
-
+            main.retrytimes = main.params[ 'RETRY' ]
+            main.retrysleep = main.params[ 'RetrySleep' ]
             main.ONOSip = main.ONOSbench.getOnosIps()
 
             # Assigning ONOS cli handles to a list
@@ -431,6 +432,7 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
+                utilities.retry( f=main.ONOSrest1.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=s1Result,
                                  onpass="Net Cfg added for device s1",
@@ -460,6 +462,7 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
+                utilities.retry( f=main.ONOSrest1.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=s3Result,
                                  onpass="Net Cfg added for device s3",
@@ -499,7 +502,6 @@ class FUNCnetCfg:
                                  onpass="Only allowed devices are in ONOS",
                                  onfail="ONOS devices doesn't match the list" +
                                         " of allowed devices" )
-
         main.step( "Check device annotations" )
         keys = [ 'name', 'owner', 'rackAddress' ]
         try:
@@ -560,6 +562,7 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
+                utilities.retry( f=main.ONOSrest2.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=s2Result,
                                  onpass="Net Cfg added for device s2",
@@ -571,14 +574,14 @@ class FUNCnetCfg:
                    "owner": "John",
                    "allowed": False }
         main.s4Json = s4Json
-        setS4Disallow = main.ONOSrest4.setNetCfg( s4Json,
+        setS4Disallow = main.ONOSrest3.setNetCfg( s4Json,
                                                   subjectClass="devices",
                                                   subjectKey="of:0000000000000004",
                                                   configKey="basic" )
         s4Result = False
         if setS4Disallow:
             # Check what we set is what is in ONOS
-            getS4 = main.ONOSrest4.getNetCfg( subjectClass="devices",
+            getS4 = main.ONOSrest3.getNetCfg( subjectClass="devices",
                                               subjectKey="of:0000000000000004",
                                               configKey="basic" )
             onosCfg = pprint( getS4 )
@@ -589,10 +592,12 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
+                main.step( "Retrying main.ONOSrest3.getNetCfg" )
+                utilities.retry( f=main.ONOSrest3.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=s4Result,
                                  onpass="Net Cfg added for device s4",
-                                 onfail="Net Cfg for device s3 not correctly set" )
+                                 onfail="Net Cfg for device s4 not correctly set" )
 
         main.netCfg.compareCfg( main, main.gossipTime )
 
@@ -719,7 +724,7 @@ class FUNCnetCfg:
             del s4Json['allowed']
         except KeyError:
             main.log.exception( "Key not found" )
-        setS4 = main.ONOSrest4.setNetCfg( s4Json,
+        setS4 = main.ONOSrest3.setNetCfg( s4Json,
                                           subjectClass="devices",
                                           subjectKey="of:0000000000000004",
                                           configKey="basic" )
@@ -794,10 +799,10 @@ class FUNCnetCfg:
         import json
         main.case( "Check to see if the pre-startup configurations were set, then remove their allowed status" )
         main.step( "Checking configurations for Switches 5 and 6" )
-        main.step( "ONOS should only show devices S1, S2, S4, S5, and S6" )
+        main.step( "ONOS should only show devices S1, S2, S4, and S5" ) #and S6
         devices = main.ONOSrest1.devices()
         main.log.debug( main.ONOSrest1.pprint( devices ) )
-        allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5, 6 ] ]
+        allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5 ] ] #6
         main.log.debug( allowedDevices )
         onosDevices = []
         try:
@@ -827,3 +832,60 @@ class FUNCnetCfg:
                                           subjectClass="devices",
                                           subjectKey="of:0000000000000006",
                                           configKey="basic" )
+
+    def CASE27( self, main ):
+        """
+        1) A = get /network/configuration
+        2) Post A
+        3) Compare A with ONOS
+        4) Modify A so S6 is disallowed
+        5) Check
+
+        """
+        import json
+        pprint = main.nodes[0].pprint
+        main.case( "Posting network configurations to the top level web resource" )
+        main.step( "Get json object from Net Cfg" )
+        getinfo = main.ONOSrest1.getNetCfg( )
+        main.log.debug( getinfo )
+        main.step( "Posting json object to Net Cfg" )
+        postinfo = main.ONOSrest1.setNetCfg( json.loads( getinfo ) )
+        main.step( "Compare device with ONOS" )
+        main.netCfg.compareCfg( main )
+        main.step ( "ONOS should only show devices S1, S2, S4, S5 and S6" )
+        devices = main.ONOSrest1.devices( )
+        main.log.debug( main.ONOSrest1.pprint( devices ) )
+        allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5, 6 ] ]
+        onosDevices = []
+        try:
+            for sw in json.loads( devices ):
+                onosDevices.append( str( sw.get( 'id' ) ) )
+            onosDevices.sort( )
+            failMsg = "ONOS devices doesn't match the list of allowed devices. \n"
+            failMsg += "Expected devices: {}\nActual devices: {}".format( allowedDevices, onosDevices )
+        except( TypeError, ValueError ):
+            main.log.error( "Problem loading devices" )
+        utilities.assert_equals( expect=allowedDevices, actual=onosDevices,
+                                 onpass="Only allowed devices are in ONOS", onfail=failMsg )
+
+        main.step( "Modify json object so S6 is disallowed" )
+        main.s6Json = { "allowed": False }
+        s6Json = main.s6Json
+        setS6Disallow = main.ONOSrest1.setNetCfg( s6Json, subjectClass="devices",
+                                                  subjectKey="of:0000000000000006", configKey="basic" )
+        s6Result = False
+        if setS6Disallow:
+            getS6 = main.ONOSrest1.getNetCfg( subjectClass="devices",
+                                              subjectKey="of:0000000000000006", configKey="basic" )
+            onosCfg = pprint( getS6 )
+            sentCfg = pprint( s6Json )
+            if onosCfg == sentCfg:
+                s6Result = True
+            else:
+                main.log.error( "ONOS NetCfg doesn't match what was sent" )
+                main.log.debug( "ONOS config: {}".format( onosCfg ) )
+                main.log.debug( "Sent config: {}".format( sentCfg ) )
+                utilities.retry( f=main.ONOSrest1.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
+        utilities.assert_equals( expect=True, actual=s6Result,
+                                 onpass="Net Cfg added for devices s6",
+                                 onfail="Net Cfg for device s6 not correctly set" )

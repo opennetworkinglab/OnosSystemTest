@@ -14,8 +14,9 @@
     # 24 - Remove NetCfgs
     # 25 - Move network-cfg.json to onos directory for prebuild configurations
     # 26 - Check that prebuild configurations are correct
+    # 27 - Posting network configurations to the top level web resource
 
-    <testcases>1,25,2,20,11,26,21,22,23,24</testcases>
+    <testcases>1,25,2,20,11,27,26,21,22,23,24</testcases>
 
     <DEPENDENCY>
         <path>/tests/FUNC/FUNCnetCfg/dependencies/</path>
@@ -40,5 +41,6 @@
     <MININET>
         <switch>6</switch>
     </MININET>
-
+    <RETRY>5</RETRY>
+    <RetrySleep>2</RetrySleep>
 </PARAMS>

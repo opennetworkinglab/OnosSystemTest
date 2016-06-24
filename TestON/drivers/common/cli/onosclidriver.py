@@ -2807,9 +2807,12 @@ class OnosCliDriver( CLI ):
         """
         import json
         try:
-            topology = self.getTopology( self.topology() )
             summary = json.loads( self.summary() )
-
+        except ( TypeError, ValueError ):
+            main.log.exception( "{}: Object not as expected: {!r}".format( self.name, summary ) )
+            return main.ERROR
+        try:
+            topology = self.getTopology( self.topology() )
             if topology == {} or topology == None or summary == {} or summary == None:
                 return main.ERROR
             output = ""

@@ -194,10 +194,14 @@ class AddPointIntent( PointIntentEvent ):
         controller = main.controllers[ self.CLIIndex - 1 ]
         with controller.CLILock:
             # TODO: handle the case that multiple hosts attach to one device
+            srcMAC = ""
+            dstMAC = ""
+            if len( self.deviceA.hosts ) > 0:
+                srcMAC = self.deviceA.hosts[ 0 ].mac
+            if len( self.deviceB.hosts ) > 0:
+                dstMAC = self.deviceB.hosts[ 0 ].mac
             id = controller.CLI.addPointIntent( self.deviceA.dpid, self.deviceB.dpid,
-                                                1, 1, '',
-                                                self.deviceA.hosts[ 0 ].mac,
-                                                self.deviceB.hosts[ 0 ].mac )
+                                                1, 1, '', srcMAC, dstMAC )
         if id == None:
             main.log.warn( self.typeString + " - add point intent failed" )
             return EventStates().FAIL

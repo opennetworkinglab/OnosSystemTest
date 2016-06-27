@@ -4,7 +4,6 @@ Author: you@onlab.us
 """
 from tests.CHOTestMonkey.dependencies.events.Event import EventType, EventStates, Event
 from tests.CHOTestMonkey.dependencies.elements.NetworkElement import NetworkElement, Device, Host, Link
-from tests.CHOTestMonkey.dependencies.GraphHelper import GraphHelper
 
 class LinkEvent( Event ):
     def __init__( self ):
@@ -28,18 +27,16 @@ class LinkEvent( Event ):
                 main.log.warn( "%s - Too many arguments: %s" % ( self.typeString, args ) )
                 return EventStates().ABORT
             if args[ 0 ] == 'random' or args[ 1 ] == 'random':
-                import random
                 if self.typeIndex == EventType().NETWORK_LINK_DOWN:
-                    with main.variableLock:
-                        graphHelper = GraphHelper()
-                        availableLinks = graphHelper.getNonCutEdges()
-                        if len( availableLinks ) == 0:
-                            main.log.warn( "All links are cut edges, aborting event" )
-                            return EventStates().ABORT
-                        linkList = random.sample( availableLinks, 1 )
-                        self.linkA = linkList[ 0 ]
-                        self.linkB = linkList[ 0 ].backwardLink
+                    with main.mininetLock:
+                        linkRandom = main.Mininet1.getLinkRandom()
+                    if linkRandom == None:
+                        main.log.warn( "No link available, aborting event" )
+                        return EventStates().ABORT
+                    args[ 0 ] = linkRandom[ 0 ]
+                    args[ 1 ] = linkRandom[ 1 ]
                 elif self.typeIndex == EventType().NETWORK_LINK_UP:
+                    import random
                     with main.variableLock:
                         downLinks = []
                         for link in main.links:
@@ -54,7 +51,7 @@ class LinkEvent( Event ):
             elif args[ 0 ] == args[ 1 ]:
                 main.log.warn( "%s - invalid arguments: %s" % ( self.typeString, args ) )
                 return EventStates().ABORT
-            else:
+            if self.linkA == None or self.linkB == None:
                 for link in main.links:
                     if link.deviceA.name == args[ 0 ] and link.deviceB.name == args[ 1 ]:
                         self.linkA = link
@@ -88,9 +85,13 @@ class LinkDown( LinkEvent ):
                 main.log.warn( "Link Down - link has been removed" )
                 return EventStates().ABORT
         with main.mininetLock:
+            '''
             result = main.Mininet1.link( END1=self.linkA.deviceA.name,
                                          END2=self.linkA.deviceB.name,
                                          OPTION="down")
+            '''
+            result = main.Mininet1.delLink( self.linkA.deviceA.name,
+                                            self.linkA.deviceB.name )
         if not result:
             main.log.warn( "%s - failed to bring down link" % ( self.typeString ) )
             return EventStates().FAIL
@@ -118,9 +119,13 @@ class LinkUp( LinkEvent ):
                 main.log.warn( "Link Up - link has been removed" )
                 return EventStates().ABORT
         with main.mininetLock:
+            '''
             result = main.Mininet1.link( END1=self.linkA.deviceA.name,
                                          END2=self.linkA.deviceB.name,
                                          OPTION="up")
+            '''
+            result = main.Mininet1.addLink( self.linkA.deviceA.name,
+                                            self.linkA.deviceB.name )
         if not result:
             main.log.warn( "%s - failed to bring up link" % ( self.typeString ) )
             return EventStates().FAIL
@@ -152,14 +157,12 @@ class DeviceEvent( Event ):
             if args[ 0 ] == 'random':
                 import random
                 if self.typeIndex == EventType().NETWORK_DEVICE_DOWN:
-                    with main.variableLock:
-                        graphHelper = GraphHelper()
-                        availableDevices = graphHelper.getNonCutVertices()
-                        if len( availableDevices ) == 0:
-                            main.log.warn( "All devices are cut vertices, aborting event" )
-                            return EventStates().ABORT
-                        deviceList = random.sample( availableDevices, 1 )
-                        self.device = deviceList[ 0 ]
+                    with main.mininetLock:
+                        switchRandom = main.Mininet1.getSwitchRandom()
+                    if switchRandom == None:
+                        main.log.warn( "No switch available, aborting event" )
+                        return EventStates().ABORT
+                    args[ 0 ] = switchRandom
                 elif self.typeIndex == EventType().NETWORK_DEVICE_UP:
                     with main.variableLock:
                         removedDevices = []
@@ -171,7 +174,7 @@ class DeviceEvent( Event ):
                             return EventStates().ABORT
                         deviceList = random.sample( removedDevices, 1 )
                         self.device = deviceList[ 0 ]
-            else:
+            if self.device == None:
                 for device in main.devices:
                     if device.name == args[ 0 ]:
                         self.device = device

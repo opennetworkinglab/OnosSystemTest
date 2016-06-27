@@ -99,6 +99,8 @@ class TopoCheck( CheckEvent ):
                 if not host.isDown() and not host.isRemoved():
                     upHostNum += 1
         clusterNum = 1
+        with main.mininetLock:
+            graphDictMininet = main.Mininet1.getGraphDict( useId=True )
         for controller in main.controllers:
             if controller.isUp():
                 with controller.CLILock:
@@ -106,8 +108,14 @@ class TopoCheck( CheckEvent ):
                     #if not topoState:
                     #    main.log.warn( "Topo Check - link or device number discoverd by ONOS%s is incorrect" % ( controller.index ) )
                     #    checkResult = EventStates().FAIL
-                    # Check links
+                    # Compare ONOS and Mininet topologies
+                    graphDictONOS = controller.CLI.getGraphDict()
+                    compareResult = main.graph.compareGraphs( graphDictONOS, graphDictMininet )
+                    if not compareResult:
+                        checkResult = EventStates().FAIL
+                        main.log.warn( "Topo Check - ONOS and Mininet topologies do not match" )
                     try:
+                        # Check links
                         links = controller.CLI.links()
                         links = json.loads( links )
                         if not len( links ) == upLinkNum:

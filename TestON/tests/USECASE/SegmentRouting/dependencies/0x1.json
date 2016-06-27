@@ -1,0 +1,53 @@
+{
+    "ports" : {
+    "of:0000000000000001/1" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.1.254/24" ]
+        }
+        ]
+    },
+    "of:0000000000000001/2" : {
+        "interfaces" : [
+        {
+            "ips" : [ "10.0.1.254/24" ]
+        }
+        ]
+    }
+    },
+    "devices" : {
+        "of:0000000000000001" : {
+            "basic":{ "driver" : "ofdpa-cpqd" },
+            "segmentrouting" : {
+                "name" : "Leaf-R1",
+                "nodeSid" : 1,
+                "routerIp" : "192.168.0.1",
+                "routerMac" : "10:00:00:00:00:01",
+                "isEdgeRouter" : true,
+                "adjacencySids" : []
+            }
+        }
+    },
+    "apps": {
+        "org.onosproject.segmentrouting": {
+          "segmentrouting": {
+            "hostLearning": true
+          }
+        }
+    },
+    "hosts" : {
+        "00:00:00:00:00:01/-1" : {
+            "basic": {
+                "ips": ["10.0.1.1"],
+                "location": "of:0000000000000001/1"
+            }
+        },
+        "00:00:00:00:00:02/-1" : {
+            "basic": {
+                "ips": ["10.0.1.2"],
+                "location": "of:0000000000000001/2"
+            }
+        }
+    }
+
+}

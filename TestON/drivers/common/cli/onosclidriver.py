@@ -23,6 +23,7 @@ import types
 import time
 import os
 from drivers.common.clidriver import CLI
+from core.graph import Graph
 
 
 class OnosCliDriver( CLI ):
@@ -34,6 +35,7 @@ class OnosCliDriver( CLI ):
         self.name = None
         self.home = None
         self.handle = None
+        self.graph = Graph()
         super( CLI, self ).__init__()
 
     def connect( self, **connectargs ):
@@ -4855,3 +4857,72 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def getGraphDict( self, timeout=60, includeHost=False ):
+        """
+        Return a dictionary which describes the latest network topology data as a
+        graph.
+        An example of the dictionary:
+        { vertex1: { 'edges': ..., 'name': ..., 'protocol': ... },
+          vertex2: { 'edges': ..., 'name': ..., 'protocol': ... } }
+        Each vertex should at least have an 'edges' attribute which describes the
+        adjacency information. The value of 'edges' attribute is also represented by
+        a dictionary, which maps each edge (identified by the neighbor vertex) to a
+        list of attributes.
+        An example of the edges dictionary:
+        'edges': { vertex2: { 'port': ..., 'weight': ... },
+                   vertex3: { 'port': ..., 'weight': ... } }
+        If includeHost == True, all hosts (and host-switch links) will be included
+        in topology data.
+        """
+        graphDict = {}
+        try:
+            links = self.links()
+            links = json.loads( links )
+            devices = self.devices()
+            devices = json.loads( devices )
+            idToDevice = {}
+            for device in devices:
+                idToDevice[ device[ 'id' ] ] = device
+            if includeHost:
+                hosts = self.hosts()
+                # FIXME: support 'includeHost' argument
+            for link in links:
+                nodeA = link[ 'src' ][ 'device' ]
+                nodeB = link[ 'dst' ][ 'device' ]
+                assert idToDevice[ nodeA ][ 'available' ] and idToDevice[ nodeB ][ 'available' ]
+                if not nodeA in graphDict.keys():
+                    graphDict[ nodeA ] = { 'edges':{},
+                                           'dpid':idToDevice[ nodeA ][ 'id' ][3:],
+                                           'type':idToDevice[ nodeA ][ 'type' ],
+                                           'available':idToDevice[ nodeA ][ 'available' ],
+                                           'role':idToDevice[ nodeA ][ 'role' ],
+                                           'mfr':idToDevice[ nodeA ][ 'mfr' ],
+                                           'hw':idToDevice[ nodeA ][ 'hw' ],
+                                           'sw':idToDevice[ nodeA ][ 'sw' ],
+                                           'serial':idToDevice[ nodeA ][ 'serial' ],
+                                           'chassisId':idToDevice[ nodeA ][ 'chassisId' ],
+                                           'annotations':idToDevice[ nodeA ][ 'annotations' ]}
+                else:
+                    # Assert nodeB is not connected to any current links of nodeA
+                    assert nodeB not in graphDict[ nodeA ][ 'edges' ].keys()
+                graphDict[ nodeA ][ 'edges' ][ nodeB ] = { 'port':link[ 'src' ][ 'port' ],
+                                                           'type':link[ 'type' ],
+                                                           'state':link[ 'state' ] }
+            return graphDict
+        except ( TypeError, ValueError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return None
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return None

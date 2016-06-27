@@ -246,7 +246,7 @@ class CHOTestMonkey:
         startStatus = main.Mininet1.startNet( topoFile = topoPath )
         main.mininetSwitches = main.Mininet1.getSwitches()
         main.mininetHosts = main.Mininet1.getHosts()
-        main.mininetLinks = main.Mininet1.getLinks()
+        main.mininetLinks = main.Mininet1.getLinks( timeout=60 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=startStatus,
                                  onpass="Start Mininet topology test PASS",

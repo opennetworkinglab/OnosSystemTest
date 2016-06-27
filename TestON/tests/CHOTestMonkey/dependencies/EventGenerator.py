@@ -445,9 +445,7 @@ class EventGenerator:
                 main.eventScheduler.scheduleEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             sleepTime = int( main.params[ 'EVENT' ][ 'installAllHostIntents' ][ 'sleepBeforeCheck' ] )
             main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_INTENT, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_FLOW, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_TRAFFIC, EventScheduleMethod().RUN_NON_BLOCK )
+            self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
             if scheduleMethod == EventScheduleMethod().RUN_BLOCK:
                 main.eventScheduler.scheduleEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
 
@@ -482,9 +480,7 @@ class EventGenerator:
                 main.eventScheduler.scheduleEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             sleepTime = int( main.params[ 'EVENT' ][ 'removeAllHostIntents' ][ 'sleepBeforeCheck' ] )
             main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_INTENT, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_FLOW, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_TRAFFIC, EventScheduleMethod().RUN_NON_BLOCK )
+            self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
             if scheduleMethod == EventScheduleMethod().RUN_BLOCK:
                 main.eventScheduler.scheduleEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
 
@@ -519,9 +515,7 @@ class EventGenerator:
                 main.eventScheduler.scheduleEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             sleepTime = int( main.params[ 'EVENT' ][ 'installAllPointIntents' ][ 'sleepBeforeCheck' ] )
             main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_INTENT, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_FLOW, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_TRAFFIC, EventScheduleMethod().RUN_NON_BLOCK )
+            self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
             if scheduleMethod == EventScheduleMethod().RUN_BLOCK:
                 main.eventScheduler.scheduleEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
 
@@ -556,8 +550,6 @@ class EventGenerator:
                 main.eventScheduler.scheduleEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             sleepTime = int( main.params[ 'EVENT' ][ 'removeAllPointIntents' ][ 'sleepBeforeCheck' ] )
             main.eventScheduler.scheduleEvent( EventType().TEST_SLEEP, EventScheduleMethod().RUN_BLOCK, [ sleepTime ] )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_INTENT, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_FLOW, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventScheduler.scheduleEvent( EventType().CHECK_TRAFFIC, EventScheduleMethod().RUN_NON_BLOCK )
+            self.insertAllChecks( EventScheduleMethod().RUN_NON_BLOCK )
             if scheduleMethod == EventScheduleMethod().RUN_BLOCK:
                 main.eventScheduler.scheduleEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )

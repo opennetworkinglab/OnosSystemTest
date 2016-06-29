@@ -267,6 +267,10 @@ class CLI( threading.Thread,Cmd,object ):
                         index = index+1
                         options[option] = args[index]
                         options = self.testcasesInRange(index,option,args,options)
+                    elif re.match("--params", option, flags=0):
+                        # check if there is a params
+                        index = index + 1
+                        options['params'].append(args[index])
                 else :
                     options['testname'] = option
         except IndexError as e:
@@ -284,6 +288,8 @@ class CLI( threading.Thread,Cmd,object ):
         options['testdir'] = None
         options['testcases'] = None
         options['onoscell'] = None
+        # init params as a empty list
+        options['params'] = []
         return options
 
     def testcasesInRange(self,index,option,args,options):

@@ -781,7 +781,7 @@ def verifyOptions( options ):
     verifyTest( options )
     verifyExample( options )
     verifyTestScript( options )
-    verifyParams()
+    verifyParams( options )
     verifyLogdir( options )
     verifyMail( options )
     verifyTestCases( options )
@@ -929,7 +929,7 @@ def verifyTestScript( options ):
     main.params = main.parser.parseParams( main.classPath )
     main.topology = main.parser.parseTopology( main.classPath )
 
-def verifyParams():
+def verifyParams( options ):
     try:
         main.params = main.params['PARAMS']
     except KeyError:
@@ -942,6 +942,40 @@ def verifyParams():
         print "Error with the Topology file: Either the file not specified " +\
               "or the format is not correct"
         main.exit()
+    # Overwrite existing params variables if they are specified from command line
+    if len(options.params) > 0:
+        # Some params variables are specified from command line
+        for param in options.params:
+            if not re.search( ".=.", param ):
+                print( "Error when parsing params: params should follow key=value format" )
+                continue
+            # Split the param string to netest keys and value
+            [ keys, value ] = param.split( "=" )
+            # Split the nested keys according to its hierarchy
+            keyList = keys.split( "/" )
+            # Get the outermost dictionary
+            paramDict = main.params
+            # Get the innermost dictionary
+            try:
+                while len( keyList ) > 1:
+                    key = keyList.pop(0)
+                    assert isinstance( paramDict[ key ], dict )
+                    paramDict = paramDict[ key ]
+            except KeyError:
+                print( "Error when parsing params: key \"" + key + "\" not found in main.params" )
+                main.exit()
+            except AssertionError:
+                print( "Error when parsing params: \"" + key + "\" is already the innermost level in main.params" )
+                main.exit()
+            # Change the value
+            if not paramDict.has_key( keyList[0] ):
+                print( "Error when parsing params: key \"" + keyList[0] + "\" not found in main.params" )
+                main.exit()
+            elif isinstance( paramDict[ keyList[0] ], dict ):
+                print( "Error when parsing params: more levels under key \"" + keyList[0] + "\" in main.params" )
+                main.exit()
+            else:
+                paramDict[ keyList[0] ] = value
 
 def load_parser():
     '''

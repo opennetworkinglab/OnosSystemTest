@@ -118,6 +118,13 @@ class SCPFscaleTopo:
         - Install ONOS cluster
         - Connect to cli
         """
+        main.log.info( "Checking if mininet is already running" )
+        if len( main.topoScale ) < main.topoScaleSize:
+            main.log.info( "Mininet is already running. Stopping mininet." )
+            main.Mininet1.stopNet()
+            time.sleep(main.MNSleep)
+        else:
+            main.log.info( "Mininet was not running" )
 
         main.case( "Starting up " + str( main.numCtrls ) +
                    " node(s) ONOS cluster" )
@@ -211,6 +218,7 @@ class SCPFscaleTopo:
 
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE
+        main.activeNodes = []
         for i in range( main.numCtrls ):
             cliResult = cliResult and \
                         main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
@@ -220,7 +228,7 @@ class SCPFscaleTopo:
                                  actual=stepResult,
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
-
+        time.sleep( main.startUpSleep )
 
     def CASE10( self, main ):
         """
@@ -231,27 +239,9 @@ class SCPFscaleTopo:
         main.case( "Starting up Mininet and verifying topology" )
         main.caseExplanation = "Starting Mininet with a scalling topology and " +\
                 "comparing topology elements between Mininet and ONOS"
-
-        main.log.info( "Checking if mininet is already running" )
-        if len( main.topoScale ) < main.topoScaleSize:
-            main.log.info( "Mininet is already running. Stopping mininet." )
-            main.Mininet1.stopNet()
-            time.sleep(main.MNSleep)
-        else:
-            main.log.info( "Mininet was not running" )
-
         if main.topoScale:
             main.currScale = main.topoScale.pop(0)
         else: main.log.error( "topology scale is empty" )
-
-        # remove device before setup topology
-        devices = main.topo.getAllDevices( main )
-        if( devices[0] != '[]' ): # because devices is a list witch contain 3 string, not contain list!
-            temp = json.loads( devices[0] )
-            devicesIdList = []
-            for d in temp:
-                main.CLIs[0].deviceRemove( d.get('id').encode() )
-
         main.step( "Starting up TORUS %sx%s topology" % (main.currScale, main.currScale) )
 
         main.log.info( "Constructing Mininet command" )

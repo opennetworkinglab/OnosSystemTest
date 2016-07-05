@@ -762,6 +762,104 @@ class CHOTestMonkey:
                                  onfail="Balance masters test failed" )
         time.sleep( main.caseSleep )
 
+    def CASE70( self, main ):
+        """
+        Randomly generate events
+        """
+        import time
+        import random
+        from tests.CHOTestMonkey.dependencies.events.Event import EventType
+        from tests.CHOTestMonkey.dependencies.EventScheduler import EventScheduleMethod
+
+        main.log.report( "Randomly generate events" )
+        main.log.report( "__________________________________________________" )
+        main.case( "Randomly generate events" )
+        main.step( "Randomly generate events" )
+        main.caseResult = main.TRUE
+        sleepSec = int( main.params[ 'CASE70' ][ 'sleepSec' ] )
+        hostIntentNum = 0
+        pointIntentNum = 0
+        downDeviceNum = 0
+        downLinkNum = 0
+        upControllers = [ 1, 2, 3 ]
+        while True:
+            events = []
+            for i in range( int( main.params[ 'CASE70' ][ 'addHostIntentWeight' ] ) ):
+                events.append( 'add-host-intent' )
+            for i in range( int( main.params[ 'CASE70' ][ 'addPointIntentWeight' ] ) ):
+                events.append( 'add-point-intent' )
+            for i in range( int( main.params[ 'CASE70' ][ 'linkDownWeight' ] ) ):
+                events.append( 'link-down' )
+            for i in range( int( main.params[ 'CASE70' ][ 'deviceDownWeight' ] ) ):
+                events.append( 'device-down' )
+            for i in range( int( pow( hostIntentNum, 1.5 ) / 100 ) ):
+                events.append( 'del-host-intent' )
+            for i in range( int( pow( pointIntentNum/2, 1.5 ) / 100 ) ):
+                events.append( 'del-point-intent' )
+            for i in range( pow( 2, downLinkNum ) - 1 ):
+                events.append( 'link-up' )
+            for i in range( pow( 5, downDeviceNum ) - 1 ):
+                events.append( 'device-up' )
+            main.log.debug( events )
+            event = random.sample( events, 1 )[ 0 ]
+            if event == 'add-host-intent':
+                n = random.randint( 5, 50 )
+                for i in range( n ):
+                    cliIndex = random.sample( upControllers, 1 )[ 0 ]
+                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_HOST_ADD, EventScheduleMethod().RUN_NON_BLOCK, 'random', 'random', cliIndex )
+                    hostIntentNum += 1
+                main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
+            elif event == 'del-host-intent':
+                n = random.randint( 5, hostIntentNum )
+                for i in range( n ):
+                    cliIndex = random.sample( upControllers, 1 )[ 0 ]
+                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_HOST_DEL, EventScheduleMethod().RUN_NON_BLOCK, 'random', 'random', cliIndex )
+                    hostIntentNum -= 1
+                main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
+            elif event == 'add-point-intent':
+                n = random.randint( 5, 50 )
+                for i in range( n ):
+                    cliIndex = random.sample( upControllers, 1 )[ 0 ]
+                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_ADD, EventScheduleMethod().RUN_NON_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
+                    pointIntentNum += 1
+                main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
+            elif event == 'del-point-intent':
+                n = random.randint( 5, pointIntentNum )
+                for i in range( n ):
+                    cliIndex = random.sample( upControllers, 1 )[ 0 ]
+                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_DEL, EventScheduleMethod().RUN_NON_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
+                    pointIntentNum -= 1
+                main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
+            elif event == 'link-down':
+                main.eventGenerator.triggerEvent( EventType().NETWORK_LINK_DOWN, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
+                downLinkNum += 1
+            elif event == 'link-up':
+                main.eventGenerator.triggerEvent( EventType().NETWORK_LINK_UP, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
+                downLinkNum -= 1
+            elif event == 'device-down':
+                main.eventGenerator.triggerEvent( EventType().NETWORK_DEVICE_DOWN, EventScheduleMethod().RUN_BLOCK, 'random' )
+                downDeviceNum += 1
+            elif event == 'device-up':
+                main.eventGenerator.triggerEvent( EventType().NETWORK_DEVICE_UP, EventScheduleMethod().RUN_BLOCK, 'random' )
+                downDeviceNum -= 1
+            else:
+                pass
+            main.eventGenerator.triggerEvent( EventType().CHECK_TOPO, EventScheduleMethod().RUN_NON_BLOCK )
+            main.eventGenerator.triggerEvent( EventType().CHECK_ONOS, EventScheduleMethod().RUN_NON_BLOCK )
+            main.eventGenerator.triggerEvent( EventType().CHECK_TRAFFIC, EventScheduleMethod().RUN_NON_BLOCK )
+            main.eventGenerator.triggerEvent( EventType().CHECK_FLOW, EventScheduleMethod().RUN_NON_BLOCK )
+            main.eventGenerator.triggerEvent( EventType().CHECK_INTENT, EventScheduleMethod().RUN_NON_BLOCK )
+            main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
+            with main.eventScheduler.idleCondition:
+                while not main.eventScheduler.isIdle():
+                    main.eventScheduler.idleCondition.wait()
+            #time.sleep( sleepSec )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=main.caseResult,
+                                 onpass="Randomly generate events test passed",
+                                 onfail="Randomly generate events test failed" )
+        time.sleep( main.caseSleep )
+
     def CASE90( self, main ):
         """
         Sleep for some time

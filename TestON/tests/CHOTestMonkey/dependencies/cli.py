@@ -64,26 +64,28 @@ def startCLI():
             if cmdList[ 0 ] in commandMap.keys():
                 num = paramNum[ cmdList[ 0 ] ]
                 name = commandMap[ cmdList[ 0 ] ]
+                '''
                 if len( cmdList ) < num + 1:
                     print 'not enough arguments'
                 elif len( cmdList ) > num + 1:
                     print 'Too many arguments'
                 else:
-                    result = triggerEvent( debugMode, name, 'RUN_BLOCK', cmdList[ 1: ] )
-                    if result == 10:
-                        pass
-                    elif result == 11:
-                        print "Scheduler busy...Try later or use debugging mode by entering \'debug\'"
-                    elif result == 20:
-                        print "Unknown message to server"
-                    elif result == 21:
-                        print "Unknown event type to server"
-                    elif result == 22:
-                        print "Unknown schedule method to server"
-                    elif result == 23:
-                        print "Not enough argument"
-                    else:
-                        print "Unknown response from server"
+                '''
+                result = triggerEvent( debugMode, name, 'RUN_BLOCK', cmdList[ 1: ] )
+                if result == 10:
+                    pass
+                elif result == 11:
+                    print "Scheduler busy...Try later or use debugging mode by entering \'debug\'"
+                elif result == 20:
+                    print "Unknown message to server"
+                elif result == 21:
+                    print "Unknown event type to server"
+                elif result == 22:
+                    print "Unknown schedule method to server"
+                elif result == 23:
+                    print "Not enough argument"
+                else:
+                    print "Unknown response from server"
             else:
                 print 'Unknown command'
 

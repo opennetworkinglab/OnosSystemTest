@@ -37,7 +37,7 @@ class Device( NetworkElement ):
         self.outgoingLinks = []
 
     def __str__( self ):
-        return "name: " + self.name + ", dpid: " + self.dpid
+        return "name: " + self.name + ", dpid: " + self.dpid + ", status: " + self.status
 
 class Host( NetworkElement ):
     def __init__( self, index, name, id, mac, device, devicePort, vlan, ipAddresses ):
@@ -53,7 +53,7 @@ class Host( NetworkElement ):
         self.handle = None
 
     def __str__( self ):
-        return "name: " + self.name + ", mac: " + self.mac + ", device: " + self.device.dpid + ", ipAddresses: " + str( self.ipAddresses )
+        return "name: " + self.name + ", mac: " + self.mac + ", device: " + self.device.dpid + ", ipAddresses: " + str( self.ipAddresses ) + ", status: " + self.status
 
     def setHandle( self, handle ):
         self.handle = handle
@@ -71,7 +71,7 @@ class Link( NetworkElement ):
         self.portB = portB
 
     def __str__( self ):
-        return self.deviceA.dpid + "/" + self.portA + " - " + self.deviceB.dpid + "/" + self.portB
+        return self.deviceA.dpid + "/" + self.portA + " - " + self.deviceB.dpid + "/" + self.portB + ", status: " + self.status
 
     def setBackwardLink( self, link ):
         self.backwardLink = link

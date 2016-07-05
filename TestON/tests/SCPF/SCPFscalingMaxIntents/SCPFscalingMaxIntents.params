@@ -22,7 +22,9 @@
         <cellName>productionCell</cellName>
         <cellApps>drivers,openflow</cellApps>
     </ENV>
-
+    <TEST>
+        <flowObj>False</flowObj>
+    </TEST>
     <GIT>
         <pull>False</pull>
         <branch>master</branch>
@@ -47,7 +49,8 @@
     </ATTEMPTS>
 
     <DATABASE>
-        <file>/tmp/ScalingMaxIntentDB</file>
+        <dbName>/tmp/ScalingMaxIntentDB</dbName>
+        <dbFlowObj>/tmp/ScalingMaxIntentDBWFO</dbFlowObj>
         <nic>1gig</nic>
         <node>baremetal</node>
     </DATABASE>

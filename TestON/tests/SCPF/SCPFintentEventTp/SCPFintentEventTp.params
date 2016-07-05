@@ -60,8 +60,12 @@
         <neighbors>0,a</neighbors>           #a == all nodes (-1)
         <flowRuleBUEnabled>true</flowRuleBUEnabled>
         <skipReleaseResourcesOnWithdrawal>true</skipReleaseResourcesOnWithdrawal>
+        <flowObj>False</flowObj>
     </TEST>
-
+    <DATABASE>
+        <dbName>/tmp/IntentEventTPDB</dbName>
+        <dbFlowObj>/tmp/IntentEventTPflowObjDB</dbFlowObj>
+    </DATABASE>
     <METRICS>
         <intents_rate>intents-events-metrics|grep "Intent Installed Events"|cut -d ' ' -f7</intents_rate>
         <intents_withdrawn>intents-events-metrics|grep "Intent Withdrawn Events"|cut -d ' ' -f7</intents_withdrawn>

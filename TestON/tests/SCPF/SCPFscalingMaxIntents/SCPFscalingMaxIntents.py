@@ -43,9 +43,15 @@ class SCPFscalingMaxIntents:
         main.verifyAttempts = int( main.params['ATTEMPTS']['verify'] )
         main.ingress = main.params['LINK']['ingress']
         main.egress = main.params['LINK']['egress']
-        main.dbFileName = main.params['DATABASE']['file']
         main.cellData = {} # for creating cell file
         main.reroute = main.params['reroute']
+        main.flowObj = main.params['TEST']['flowObj']
+        if main.flowObj == "True":
+            main.flowObj = True
+            main.dbFileName = main.params['DATABASE']['dbFlowObj']
+        else:
+            main.flowObj = False
+            main.dbFileName = main.params['DATABASE']['dbName']
         main.threadID = 0
 
         if main.reroute == "True":
@@ -312,6 +318,9 @@ class SCPFscalingMaxIntents:
             main.CLIs[0].deviceRemove( d )
 
         time.sleep(main.startUpSleep)
+        if main.flowObj:
+            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                "useFlowObjectives", value="true")
         main.step('Starting mininet topology')
         mnStatus = main.Mininet1.startNet(topoFile='~/mininet/custom/rerouteTopo.py')
         utilities.assert_equals( expect=main.TRUE,

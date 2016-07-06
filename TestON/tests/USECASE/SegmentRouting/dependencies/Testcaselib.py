@@ -284,7 +284,7 @@ class Testcaselib:
         result = False
         count = 0
         while True:
-            count += 0
+            count += 1
             main.Mininet1.link( END1=end1, END2=end2, OPTION="up" )
             main.Mininet1.link( END2=end1, END1=end2, OPTION="up" )
             main.log.info(

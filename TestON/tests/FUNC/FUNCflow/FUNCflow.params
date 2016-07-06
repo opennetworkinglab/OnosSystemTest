@@ -1,21 +1,27 @@
 
 <PARAMS>
     # CASE - Descritpion
-    # 1,2,10,1000,1100,2000,1200,2000,100
+    # Openflow 1.0: 1,2,10,1000,3000,1100,3000,1400,3000,1600,3000,1700,100
+    # Openflow 1.3: 1,2,10,1000,3000,1100,3000,1200,3000,1300,3000,1400,3000,1500,3000,1600,3000,1700,3000,1800,3000,1900,3000,2000,100
     # 1 - Variable initialization and optional pull and build ONOS package
     # 2 - install ONOS
     # 10 - Start mininet and verify topology
     # 66 - Testing Scapy
     # 100 - Check logs for Errors and Warnings
     # 1000 - Add flows with MAC selector
-    # 1100 - Add flows with IPv4 selector
-    # 1200 - Add flows with VLAN selector
+    # 1100 - Add flows with VLAN selector
+    # 1200 - Add flows with ARP selector
     # 1300 - Add flows with MPLS selector
-    # 1400 - Add flows with TCP selectors
-    # 1500 - Add flows with UDP selectors
-    # 2000 - Delete flows
+    # 1400 - Add flows with IPv4 selector
+    # 1500 - Add flows with IPv6 selector
+    # 1600 - Add flows with UDP selector
+    # 1700 - Add flows with TCP selector
+    # 1800 - Add flows with SCTP selector
+    # 1900 - Add flows with ICMPv4 selector
+    # 2000 - Add flows with ICMPv6 selector
+    # 3000 - Delete flows
 
-    <testcases>1,2,10,1000,2000,1100,2000,1200,2000,1300,2000,1400,2000,1500,100</testcases>
+    <testcases>1,2,10,1000,3000,1100,3000,1200,3000,1300,3000,1400,3000,1500,3000,1600,3000,1700,3000,1800,3000,1900,3000,2000,100</testcases>
 
     <SCALE>
         <max>1</max>
@@ -49,9 +55,16 @@
         <mpls>22</mpls>
         <tcpDst>40001</tcpDst>
         <udpDst>40051</udpDst>
+        <sctpDst>40001</sctpDst>
         <ip4Type>2048</ip4Type>
+        <ip6Type>34525</ip6Type>
+        <arpType>2054</arpType>
         <tcpProto>6</tcpProto>
         <udpProto>17</udpProto>
+        <sctpProto>132</sctpProto>
+        <icmpProto>1</icmpProto>
+        <icmp6Proto>58</icmp6Proto>
+        <sctpProto>132</sctpProto>
         <vlanType>33024</vlanType>
         <mplsType>34887</mplsType>
         <swDPID>of:0000000000000001</swDPID>

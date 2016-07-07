@@ -25,7 +25,7 @@ from drivers.common.cli.emulator.mininetclidriver import MininetCliDriver
 
 
 class LincOEMininetDriver( MininetCliDriver ):
-    def runOpticalMnScript( self,onosDirectory = 'onos', ctrllerIP = None ):
+    def runOpticalMnScript( self,onosDirectory = 'onos', ctrllerIP = None, topology = 'opticalTest' ):
         import time
         import types
         """
@@ -35,6 +35,7 @@ class LincOEMininetDriver( MininetCliDriver ):
                 packet layer( mn ) and optical topology
             Optional:
                 name - Name of onos directory. (ONOS | onos)
+                topology - Name of optical topology to activate, defaults to opticalTest.py
             Required:
                 ctrllerIP = Controller(s) IP address
             TODO: If no ctrllerIP is provided, a default
@@ -58,7 +59,7 @@ class LincOEMininetDriver( MininetCliDriver ):
                 else:
                     main.log.info( "You need to specify a valid IP" )
                     return main.FALSE
-                topoFile = "~/{0}/tools/test/topos/opticalTest.py".format( onosDirectory )
+                topoFile = "~/{0}/tools/test/topos/{1}.py".format( onosDirectory, topology )
                 cmd = "sudo -E python {0} {1}".format( topoFile, controller )
                 main.log.info( self.name + ": cmd = " + cmd )
                 self.handle.sendline( cmd )

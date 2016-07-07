@@ -1,0 +1,99 @@
+{
+    "linkConfig": [
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 2100,
+                "port1": 1200,
+                "nodeName2": "OE2",
+                "nodeName1": "OE1"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:02",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 3200,
+                "port1": 2300,
+                "nodeName2": "OE3",
+                "nodeName1": "OE2"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:03",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 1300,
+                "port1": 3100,
+                "nodeName2": "OE1",
+                "nodeName1": "OE3"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:03",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:01",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 1,
+                "port1": 2,
+                "nodeName2": "OE1",
+                "nodeName1": "ps1"
+            },
+            "nodeDpid1": "00:00:00:00:00:00:00:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:01",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 1,
+                "port1": 2,
+                "nodeName2": "OE2",
+                "nodeName1": "ps2"
+            },
+            "nodeDpid1": "00:00:00:00:00:00:00:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:02",
+            "allowed": true
+        }
+    ],
+    "switchConfig": [
+        {
+            "name": "OE1",
+            "longitude": 0.0,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 0.0,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:01"
+        },
+        {
+            "name": "OE2",
+            "longitude": 0.0,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 0.0,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:02"
+        },
+        {
+            "name": "OE3",
+            "longitude": 0.0,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 0.0,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:03"
+        }
+    ]
+}

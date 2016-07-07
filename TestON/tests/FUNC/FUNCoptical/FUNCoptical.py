@@ -40,17 +40,14 @@ class FUNCoptical:
             else:
                 main.maxNodes = 0
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
-            wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
-            wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.checkIntentSleep = int( main.params[ 'SLEEP' ][ 'checkintent' ] )
-            main.removeIntentSleep = int( main.params[ 'SLEEP' ][ 'removeintent' ] )
-            main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
-            main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
             main.checkTopoAttempts = int( main.params[ 'SLEEP' ][ 'topoAttempts' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]
-            main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
-            main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
+            main.switches = int( main.params[ 'MININET' ][ 'switch' ] )
+            main.links = int( main.params[ 'MININET' ][ 'links' ] )
+            main.hosts = int( main.params[ 'MININET' ][ 'hosts' ] )
+            main.opticalTopo = main.params[ 'MININET' ][ 'toponame' ]
             main.cellData = {} # For creating cell file
             main.hostsData = {}
             main.CLIs = []
@@ -66,21 +63,10 @@ class FUNCoptical:
                 main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
 
             # -- INIT SECTION, ONLY RUNS ONCE -- #
-            main.startUp = imp.load_source( wrapperFile1,
-                                            main.dependencyPath +
-                                            wrapperFile1 +
-                                            ".py" )
-
-            main.intentFunction = imp.load_source( wrapperFile2,
-                                            main.dependencyPath +
-                                            wrapperFile2 +
-                                            ".py" )
-
-            main.topo = imp.load_source( wrapperFile3,
+            main.topo = imp.load_source( wrapperFile1,
                                          main.dependencyPath +
-                                         wrapperFile3 +
+                                         wrapperFile1 +
                                          ".py" )
-
             if main.CLIs:
                 stepResult = main.TRUE
             else:
@@ -237,26 +223,33 @@ class FUNCoptical:
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
 
-        main.intentFunction.report( main )
-
-
     def CASE10( self, main ):
         """
             Start Mininet opticalTest Topology
         """
         main.case( "Mininet with Linc-OE startup")
         main.caseExplanation = "Start opticalTest.py topology included with ONOS"
+        if main.opticalTopo:
+            main.step( "Copying optical topology to $ONOS_ROOT/tools/test/topos/" )
+            main.ONOSbench.scp( main.ONOSbench,
+                                "{0}{1}.py".format( main.dependencyPath, main.opticalTopo ),
+                                "~/onos/tools/test/topos/{0}.py".format( main.opticalTopo ) )
         main.step( "Starting mininet and LINC-OE" )
         topoResult = main.TRUE
         time.sleep( 10 )
         controllerIPs = ' '.join( main.activeONOSip )
-        opticalMnScript = main.LincOE.runOpticalMnScript(ctrllerIP = controllerIPs)
+        opticalMnScript = main.LincOE.runOpticalMnScript(ctrllerIP = controllerIPs, topology=main.opticalTopo )
         topoResult = opticalMnScript
         utilities.assert_equals(
             expect=main.TRUE,
             actual=topoResult,
             onpass="Started the topology successfully ",
             onfail="Failed to start the topology")
+
+        main.step( "Push Topology.json to ONOS through onos-netcfg" )
+        pushResult = main.TRUE
+        time.sleep( 20 )
+        main.ONOSbench.onosNetCfg( controllerIps=controllerIPs, path=main.dependencyPath, fileName="Topology" )
 
         # Exit if topology did not load properly
         if not topoResult:
@@ -285,6 +278,23 @@ class FUNCoptical:
         if not topoResult:
             main.cleanup()
             main.exit()
+
+    def CASE16( self, main ):
+        """
+            Balance Masters
+        """
+        main.case( "Balance mastership of switches" )
+        main.step( "Balancing mastership of switches" )
+
+        balanceResult = main.FALSE
+        balanceResult = utilities.retry( f=main.CLIs[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=balanceResult,
+                                 onpass="Successfully balanced mastership of switches",
+                                 onfail="Failed to balance mastership of switches" )
+        if not balanceResult:
+            main.initialized = main.FALSE
 
     def CASE17( self, main ):
         """
@@ -361,7 +371,9 @@ class FUNCoptical:
 
         main.step( "Send arping between all hosts" )
 
-        hosts = [ "h1","h2","h3","h4","h5","h6" ]
+        hosts = []
+        for i in range( main.hosts ):
+            hosts.append( 'h{}'.format( i + 1 ) )
 
         arpingHostResults = main.TRUE
         for host in hosts:
@@ -395,9 +407,9 @@ class FUNCoptical:
         hostFails = []  # Nodes where hosts are incorrect
         attempts = main.checkTopoAttempts  # Remaining Attempts
 
-        mnSwitches = 16
-        mnLinks = 46
-        mnHosts = 6
+        mnSwitches = main.switches
+        mnLinks = main.links
+        mnHosts = main.hosts
 
         main.step( "Comparing Mininet topology to ONOS topology" )
 
@@ -528,12 +540,12 @@ class FUNCoptical:
         checkFlowResult = main.TRUE
         main.pIntentsId = []
         pIntent1 = main.CLIs[ 0 ].addPointIntent(
-            "of:0000ffffffff0001/1",
-            "of:0000ffffffff0005/1" )
+            "of:0000000000000001/1",
+            "of:0000000000000002/1" )
         time.sleep( 10 )
         pIntent2 = main.CLIs[ 0 ].addPointIntent(
-            "of:0000ffffffff0005/1",
-            "of:0000ffffffff0001/1" )
+            "of:0000000000000002/1",
+            "of:0000000000000001/1" )
         main.pIntentsId.append( pIntent1 )
         main.pIntentsId.append( pIntent2 )
         time.sleep( 10 )
@@ -559,17 +571,50 @@ class FUNCoptical:
             onpass="Successfully added point intents",
             onfail="Failed to add point intents")
 
-        if not addIntentsResult:
-            main.log.error( "Intents were not properly installed. Exiting case." )
-            main.skipCase()
+        pingResult = main.FALSE
 
-        main.step( "Ping h1 and h5" )
-        pingResult = main.LincOE.pingHostOptical( src="h1", target="h5" )
+        if not addIntentsResult:
+            main.log.error( "Intents were not properly installed. Skipping ping." )
+
+        else:
+            main.step( "Ping h1 and h2" )
+            pingResult = main.LincOE.pingHostOptical( src="h1", target="h2" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=pingResult,
-            onpass="Successfully pinged h1 and h5",
-            onfail="Failed to ping between h1 and h5")
+            onpass="Successfully pinged h1 and h2",
+            onfail="Failed to ping between h1 and h2")
+
+        main.step( "Remove Point to Point intents" )
+        removeResult = main.FALSE
+        # Check remaining intents
+        try:
+            intentsJson = json.loads( main.CLIs[ 0 ].intents() )
+            main.log.debug( intentsJson )
+            main.CLIs[ 0 ].removeIntent( intentId=pIntent1, purge=True )
+            main.CLIs[ 0 ].removeIntent( intentId=pIntent2, purge=True )
+            for intents in intentsJson:
+                main.CLIs[ 0 ].removeIntent( intentId=intents.get( 'id' ),
+                                             app='org.onosproject.cli',
+                                             purge=True )
+                time.sleep( 15 )
+
+            for i in range( main.numCtrls ):
+                if len( json.loads( main.CLIs[ i ].intents() ) ):
+                    print json.loads( main.CLIs[ i ].intents() )
+                    removeResult = main.FALSE
+                else:
+                    removeResult = main.TRUE
+        except ( TypeError, ValueError ):
+            main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +\
+                            ".  Removing all intents.")
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.cli')
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=removeResult,
+                                 onpass="Successfully removed host intents",
+                                 onfail="Failed to remove host intents" )
 
     def CASE32( self ):
         """
@@ -581,17 +626,22 @@ class FUNCoptical:
         main.case( "Test add host intents between optical layer host" )
         main.caseExplanation = "Test host intents between 2 optical layer host"
 
+        main.step( "Creating list of hosts" )
+        hostnum = 0
+        try:
+            hostData = json.loads( hosts[ controller ] )
+        except( TypeError, ValueError ):
+            main.log.error("Could not load json:" + str( hosts[ controller ] ) )
+
         main.step( "Adding host intents to h1 and h2" )
-        hostMACs = []
         hostId = []
         # Listing host MAC addresses
-        for i in range( 1 , 7 ):
-            hostMACs.append( "00:00:00:00:00:" +
-                                str( hex( i )[ 2: ] ).zfill( 2 ).upper() )
-        for macs in hostMACs:
-            hostId.append( macs + "/-1" )
+        for host in hostData:
+            hostId.append( host.get("id") )
         host1 = hostId[ 0 ]
         host2 = hostId[ 1 ]
+        main.log.debug( host1 )
+        main.log.debug( host2 )
 
         intentsId = []
         intent1 = main.CLIs[ 0 ].addHostIntent( hostIdOne = host1,
@@ -599,14 +649,9 @@ class FUNCoptical:
         intentsId.append( intent1 )
         # Checking intents state before pinging
         main.log.info( "Checking intents state" )
-        intentResult = main.CLIs[ 0 ].checkIntentState( intentsId = intentsId )
-        # Check intent state again if intents are not in installed state
-
-
-        # If intent state is wrong, wait 3 sec and try again
-        if not intentResult:
-            time.sleep( 3 )
-            intentResult = main.CLIs[ 0 ].checkIntentState( intentsId = intentsId )
+        intentResult = utilities.retry( f=main.CLIs[ 0 ].checkIntentState,
+                                        retValue=main.FALSE, args=intentsId,
+                                        sleep=main.checkIntentSleep, attempts=10 )
 
         # If intent state is still wrong, display intent states
         if not intentResult:
@@ -645,11 +690,14 @@ class FUNCoptical:
                 main.CLIs[ 0 ].removeIntent( intentId=intents.get( 'id' ),
                                              app='org.onosproject.optical',
                                              purge=True )
+            time.sleep( 15 )
 
             for i in range( main.numCtrls ):
                 if len( json.loads( main.CLIs[ i ].intents() ) ):
                     print json.loads( main.CLIs[ i ].intents() )
                     removeResult = main.FALSE
+                else:
+                    removeResult = main.TRUE
         except ( TypeError, ValueError ):
             main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +\
                             ".  Removing all intents.")

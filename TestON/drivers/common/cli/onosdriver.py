@@ -2332,3 +2332,36 @@ class OnosDriver( CLI ):
 
         return main.TRUE if onosStatus else main.FALSE
 
+    def onosNetCfg( self, controllerIps, path, fileName ):
+        """
+        Push a specified json file to ONOS through the onos-netcfg service
+
+        Required:
+        controllerIps - the Ips of the ONOS nodes in the cluster
+        path - the location of the file to be sent
+        fileName - name of the json file to be sent
+
+        Returns main.TRUE on successfully sending json file, and main.FALSE if
+        there is an error.
+        """
+        try:
+            cmd = "onos-netcfg {0} {1}{2}.json".format( controllerIps, path, fileName )
+            main.log.info( "Sending: " + cmd )
+            main.ONOSbench.handle.sendline( cmd )
+            handle = self.handle.before
+            print handle
+            if "Error" in handle:
+                main.log.error( self.name + ":    " + self.handle.before )
+                return main.FALSE
+            else:
+                self.handle.expect( "\$" )
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

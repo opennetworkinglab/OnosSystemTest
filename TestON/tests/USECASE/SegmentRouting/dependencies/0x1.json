@@ -41,6 +41,24 @@
                 "location": "of:0000000000000001/2"
             }
         }
+    },
+    "apps": {
+        "org.onosproject.segmentrouting": {
+          "xconnect": {
+            "of:0000000000000001": [
+              {
+                "vlan": 5,
+                "ports": [3, 4],
+                "name": "OLT 1"
+              },
+              {
+                "vlan": 10,
+                "ports": [3, 5],
+                "name": "OLT 2"
+              }
+            ]
+          }
+        }
     }
 
 }

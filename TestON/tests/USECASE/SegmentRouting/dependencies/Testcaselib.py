@@ -234,11 +234,21 @@ class Testcaselib:
     @staticmethod
     def pingAll( main, tag="", dumpflows=True ):
         main.log.report( "Check full connectivity" )
-        main.step( "Check full connectivity %s" % tag )
-        pa = main.Mininet1.pingall( )
+        main.step("Check IP connectivity %s" %tag)
+        hosts = main.Mininet1.getHosts().keys()
+        vlan10 = [ '%s10' % s for s in [ 'olt', 'vsg' ] ]
+        vlan5 = [ '%s5' % s for s in [ 'olt', 'vsg' ] ]
+        IPHosts = [ host for host in hosts if host not in ( vlan10 + vlan5 ) ]
+        pa = main.Mininet1.pingallHosts(IPHosts)
         utilities.assert_equals( expect=main.TRUE, actual=pa,
-                                 onpass="Full connectivity successfully tested",
-                                 onfail="Full connectivity failed" )
+                                 onpass="IP connectivity successfully tested",
+                                 onfail="IP connectivity failed" )
+        main.step("Check VLAN  connectivity %s" %tag)
+        p1 = main.Mininet1.pingallHosts(vlan5)
+        p2 = main.Mininet1.pingallHosts(vlan10)
+        utilities.assert_equals( expect=main.TRUE, actual=p1&p2,
+                             onpass="Vlan connectivity successfully tested",
+                             onfail="Vlan connectivity failed" )
         if dumpflows:
             main.ONOSbench.dumpFlows( main.ONOSip[ main.active ],
                                       main.logdir, "flowsOn" + tag )

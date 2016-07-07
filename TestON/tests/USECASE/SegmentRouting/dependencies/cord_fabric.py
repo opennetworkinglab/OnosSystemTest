@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import re
 from optparse import OptionParser
 
 from mininet.net import Mininet
@@ -23,6 +24,8 @@ def parseOptions( ):
                        help='number of hosts per leaf switch, default=2' )
     parser.add_option( '--onos', dest='onos', type='int', default=0,
                        help='number of ONOS Instances, default=0, 0 means localhost, 1 will use OC1 and so on' )
+    parser.add_option( '--vlan', dest='vlan', type='int', default=-1,
+                       help='vid of cross connect, default=-1, -1 means utilize default value' )
     (options, args) = parser.parse_args( )
     return options, args
 
@@ -46,10 +49,6 @@ class LeafAndSpine( Topo ):
         for ls in range( leaf ):
             leafs[ ls ] = self.addSwitch( 'leaf%s' % (ls + 1),
                                           dpid="00000000000%s" % (1 + ls) )
-            # Connect leaf to all spines
-            for s in range( spine ):
-                switch = spines[ s ]
-                self.addLink( leafs[ ls ], switch, **linkopts )
             # Add hosts under a leaf, fanout hosts per leaf switch
             for f in range( fanout ):
                 host = self.addHost( 'h%s' % (ls * fanout + f + 1),
@@ -58,23 +57,34 @@ class LeafAndSpine( Topo ):
                                      gateway='10.0.%s.254' % (ls + 1) )
                 self.addLink( host, leafs[ ls ], **linkopts )
                 # Add Xconnect simulation
-        br1 = self.addSwitch( 'br1', cls=OVSBridge )
-        self.addLink( br1, leafs[ 0 ], **linkopts )
-        for vid in [ 5, 10 ]:
-            olt = self.addHost( 'olt%s' % vid, cls=VLANHost, vlan=vid,
-                                ip="10.%s.0.1/24" % vid
-                                , mac="00:00:%02d:00:00:01" % vid )
-            vsg = self.addHost( 'vsg%s' % vid, cls=VLANHost, vlan=vid,
-                                ip="10.%s.0.2/24" % vid
-                                , mac="00:00:%02d:00:00:02" % vid )
-            self.addLink( olt, leafs[ 0 ], **linkopts )
-            self.addLink( vsg, br1, **linkopts )
-
+            if ls is 0:
+                in1 = self.addHost( 'in1', cls=IpHost, ip='10.0.1.9/24', mac="00:00:00:00:00:09" )
+                self.addLink( in1, leafs[0], **linkopts )
+                out1 = self.addHost( 'out1', cls=IpHost, ip='10.0.9.1/24', mac="00:00:00:00:09:01" )
+                self.addLink( out1, leafs[0], **linkopts )
+                br1 = self.addSwitch( 'br1', cls=OVSBridge )
+                self.addLink( br1, leafs[ 0 ], **linkopts )
+                vlans = [ 1, 5, 10 ]
+                for vid in vlans:
+                    olt = self.addHost( 'olt%s' % vid, cls=VLANHost, vlan=vid,
+                                        ip="10.%s.0.1/24" % vid
+                                        , mac="00:00:%02d:00:00:01" % vid )
+                    vsg = self.addHost( 'vsg%s' % vid, cls=VLANHost, vlan=vid,
+                                        ip="10.%s.0.2/24" % vid
+                                        , mac="00:00:%02d:00:00:02" % vid )
+                    self.addLink( olt, leafs[ 0 ], **linkopts )
+                    self.addLink( vsg, br1, **linkopts )
+            # Connect leaf to all spines
+            for s in range( spine ):
+                switch = spines[ s ]
+                self.addLink( leafs[ ls ], switch, **linkopts )
 
 class IpHost( Host ):
-    def __init__( self, name, gateway, *args, **kwargs ):
+    def __init__( self, name, *args, **kwargs ):
         super( IpHost, self ).__init__( name, *args, **kwargs )
-        self.gateway = gateway
+        gateway = re.split('\.|/', kwargs['ip'])
+        gateway[3] = '254'
+        self.gateway = '.'.join(gateway[0:4])
 
     def config( self, **kwargs ):
         Host.config( self, **kwargs )
@@ -105,15 +115,43 @@ class VLANHost( Host ):
         # add VLAN interface to host's name to intf map
         self.nameToIntf[ newName ] = intf
 
+class ExtendedCLI( CLI ):
+    """
+    Extends mininet CLI with the following commands:
+    addvlanhost
+    addiphost
+    """
+    def do_addhost( self, line ):
+        #Parsing args from CLI
+        args = line.split( )
+        if len( args ) < 3 or len( args ) :
+            "usage: addhost hostname switch **params"
+        hostname, switch = args[0],  args[1]
+        params = eval(line.split( ' ', 3 )[2])
+        if 'cls' in params:
+            params['cls'] = eval( params[ 'cls' ] )
+        if hostname in self.mn:
+            #error( '%s already exists!\n' % hostname )
+            return
+        if switch not in self.mn:
+            #error( '%s does not exist!\n' % switch )
+            return
+        print params
+        host = self.mn.addHostCfg( hostname, **params )
+        #switch.attach( link.intf2 )
+        #host.config()
+        link = self.mn.addLink( host, switch )
+        host.config(**params)
 
 def config( opts ):
     spine = opts.spine
     leaf = opts.leaf
     fanout = opts.fanout
+    vlan = opts.vlan
     controllers = [ os.environ[ 'OC%s' % i ] for i in
                     range( 1, opts.onos + 1 ) ] if (opts.onos) else [
         '127.0.0.1' ]
-    topo = LeafAndSpine( spine=spine, leaf=leaf, fanout=fanout )
+    topo = LeafAndSpine( spine=spine, leaf=leaf, fanout=fanout, vlan=vlan )
     net = Mininet( topo=topo, link=TCLink, build=False,
                    switch=UserSwitch, controller=None, autoSetMacs=True )
     i = 0
@@ -122,7 +160,9 @@ def config( opts ):
         i += 1;
     net.build( )
     net.start( )
-    CLI( net )
+    out1 = net.get( 'out1' )
+    out1.cmd( "arp -s 10.0.9.254 10:00:00:00:00:01 -i %s " % (out1.intf()) )
+    CLI(net)
     net.stop( )
 
 

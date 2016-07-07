@@ -1,0 +1,8 @@
+{
+  "ip": {"expect": "True",
+    "hosts":["h1", "h2"]},
+  "vlan5": {"expect":"True",
+    "hosts":["olt5", "vsg5"]},
+  "vlan10": {"expect":"True",
+    "hosts":["olt10", "vsg10"]}
+}

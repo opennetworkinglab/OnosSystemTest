@@ -18,9 +18,11 @@
         <ingress>null:0000000000000001/0</ingress>
         <egress>null:0000000000000007/0</egress>
         <debug>False</debug>
+        <flowObj>False</flowObj>
     </TEST>
     <DATABASE>
-        <file>/tmp/IntentRerouteLatDB</file>
+        <dbName>/tmp/IntentRerouteLatDB</dbName>
+        <dbFlowObj>/tmp/IntentRerouteLatDBWithFlowObj</dbFlowObj>
     </DATABASE>
 
     <GIT>

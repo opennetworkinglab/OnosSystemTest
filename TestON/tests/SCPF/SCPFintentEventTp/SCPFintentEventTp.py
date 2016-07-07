@@ -41,7 +41,16 @@ class SCPFintentEventTp:
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
         flowRuleBU = main.params[ 'TEST' ][ 'flowRuleBUEnabled' ]
         skipRelRsrc = main.params[ 'TEST'][ 'skipReleaseResourcesOnWithdrawal']
+
         homeDir = os.path.expanduser('~')
+
+        main.flowObj = main.params['TEST']['flowObj']
+        if main.flowObj == "True":
+            main.flowObj = True
+            main.dbFileName = main.params['DATABASE']['dbFlowObj']
+        else:
+            main.flowObj = False
+            main.dbFileName = main.params['DATABASE']['dbName']
 
         main.exceptions = [0]*11
         main.warnings = [0]*11
@@ -86,7 +95,7 @@ class SCPFintentEventTp:
             commit = (commit.split(" "))[1]
 
             main.step("Creating results file")
-            resultsDB = open("/tmp/IntentEventTPDB", "w+")
+            resultsDB = open(main.dbFileName, "w+")
             resultsDB.close()
 
         # -- END OF INIT SECTION --#
@@ -159,6 +168,19 @@ class SCPFintentEventTp:
 
         main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupEnabled " + str(flowRuleBU))
         main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal " + skipRelRsrc)
+        if main.flowObj:
+            main.step("Set Intent Compiler use Flow Object")
+            stepResult = utilities.retry(main.ONOSbench.onosCfgSet,
+                                         main.FALSE,
+                                         args=[ONOSIp[0],
+                                               "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                               "useFlowObjectives true"],
+                                         sleep=3,
+                                         attempts=3)
+            utilities.assert_equals(expect=main.TRUE,
+                                    actual=stepResult,
+                                    onpass="Successfully set Intent compiler use Flow object",
+                                    onfail="Failed to set up")
         devices = int(clusterCount)*10
 
         main.step("Setting up null provider")
@@ -307,7 +329,7 @@ class SCPFintentEventTp:
             main.ONOSbench.handle.expect(":~")
             main.log.info("Stopping intentperf" )
 
-            with open("/tmp/IntentEventTPDB", "a") as resultsDB:
+            with open(main.dbFileName, "a") as resultsDB:
                 for node in groupResult:
                     resultString = "'" + commit + "',"
                     resultString += "'1gig',"

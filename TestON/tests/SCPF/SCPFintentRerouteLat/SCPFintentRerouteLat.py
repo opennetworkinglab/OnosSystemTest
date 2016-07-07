@@ -69,7 +69,6 @@ class SCPFintentRerouteLat:
         main.skipMvn = main.params['TEST']['skipCleanInstall']
         main.cellName = main.params['ENV']['cellName']
         main.scale = (main.params['SCALE']).split(",")
-        main.dbFileName = main.params['DATABASE']['file']
         main.timeout = int(main.params['SLEEP']['timeout'])
         main.startUpSleep = int(main.params['SLEEP']['startup'])
         main.installSleep = int(main.params['SLEEP']['install'])
@@ -82,6 +81,15 @@ class SCPFintentRerouteLat:
         main.ingress = main.params['TEST']['ingress']
         main.egress = main.params['TEST']['egress']
         main.debug = main.params['TEST']['debug']
+        main.flowObj = main.params['TEST']['flowObj']
+
+        if main.flowObj == "True":
+            main.flowObj = True
+            main.dbFileName = main.params['DATABASE']['dbFlowObj']
+        else:
+            main.flowObj = False
+            main.dbFileName = main.params['DATABASE']['dbName']
+
         for i in range(0, len(main.intentsList)):
             main.intentsList[i] = int(main.intentsList[i])
             # Create DataBase file
@@ -202,7 +210,9 @@ class SCPFintentRerouteLat:
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "topoShape", value="reroute")
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
         main.CLIs[0].setCfg("org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupEnabled", value="false")
-
+        if main.flowObj:
+            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                "useFlowObjectives", value="true")
         time.sleep(main.startUpSleep)
 
         # Balance Master

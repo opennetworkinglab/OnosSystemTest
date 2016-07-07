@@ -18,7 +18,8 @@
         <ingress>null:0000000000000001/6</ingress>
         <egress>null:0000000000000007/5</egress>
         <debug>False</debug>
-    </TEST>
+        <flowObj>False</flowObj>
+     </TEST>
 
     <GIT>
         <gitPull>off</gitPull>
@@ -26,7 +27,8 @@
     </GIT>
 
     <DATABASE>
-        <file>/tmp/IntentInstallWithdrawLatDB</file>
+        <dbName>/tmp/IntentInstallWithdrawLatDB</dbName>
+        <dbFlowObj>/tmp/IntentInstallWithdrawLatDBWFO</dbFlowObj>
     </DATABASE>
     <ATTEMPTS>
         <verify>3</verify>

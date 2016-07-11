@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 """
 Created on 24-Oct-2012
+Modified 2016 by ON.Lab
 
-author:s: Anil Kumar ( anilkumar.s@paxterrasolutions.com ),
-          Raghav Kashyap( raghavkashyap@paxterrasolutions.com )
-
+Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,9 +19,6 @@ author:s: Anil Kumar ( anilkumar.s@paxterrasolutions.com ),
 
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
-
-
-
 """
 import pexpect
 import re

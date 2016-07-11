@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+"""
+Modified 2015 by ON.Lab
+
+Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+"""
 
 import time
 import pexpect

@@ -16,7 +16,14 @@
 
 
 LincOEMininetDriver is an extension of the mininetclidriver to handle linc oe
+
+Modified 2016 by ON.Lab
+
+Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
+
 import pexpect
 import re
 import sys

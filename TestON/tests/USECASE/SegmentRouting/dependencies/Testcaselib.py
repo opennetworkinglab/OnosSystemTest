@@ -84,7 +84,6 @@ class Testcaselib:
             apps = main.apps + "," + main.diff
         else:
             main.log.error( "App list is empty" )
-        main.case( "Package and start ONOS using apps:" + apps )
         print "NODE COUNT = ", main.numCtrls
         print main.ONOSip
         tempOnosIp = [ ]

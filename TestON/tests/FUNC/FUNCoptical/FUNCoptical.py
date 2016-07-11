@@ -327,9 +327,8 @@ class FUNCoptical:
         stepResult = main.TRUE
         scpResult = main.TRUE
         copyResult = main.TRUE
-        i = 0
-        for cli in main.CLIs:
-            main.node = cli
+        for i in range( main.numCtrls ):
+            main.node = main.CLIs[ i ]
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip
             scpResult = scpResult and main.ONOSbench.scp( main.node ,
@@ -342,7 +341,6 @@ class FUNCoptical:
                 stepResult =  main.TRUE and stepResult
             else:
                 stepResult = main.FALSE and stepResult
-            i += 1
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully copied remote ONOS logs",

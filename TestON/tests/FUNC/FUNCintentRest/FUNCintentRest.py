@@ -785,9 +785,8 @@ class FUNCintentRest:
         stepResult = main.TRUE
         scpResult = main.TRUE
         copyResult = main.TRUE
-        i = 0
-        for cli in main.CLIs2:
-            main.node = cli
+        for i in range( main.numCtrls ):
+            main.node = main.CLIs2[ i ]
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip
             scpResult = scpResult and main.ONOSbench.scp( main.node ,
@@ -800,7 +799,6 @@ class FUNCintentRest:
                 stepResult =  main.TRUE and stepResult
             else:
                 stepResult = main.FALSE and stepResult
-            i += 1
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully copied remote ONOS logs",

@@ -45,7 +45,7 @@ In order to run TestON, you must have:
 
        resides into "TestON-master" directory as following:
 
-            paxterra@paxterra-desktop:~/TestON/bin$ ./cli.py
+            sdn@test-station:~/TestON/bin$ ./cli.py
             teston>run MininetTest
 
   2. TAI (Test Authoring Interface) UI based :
@@ -61,7 +61,7 @@ Examples
 --------
 For more examples, refer 'examples' directory.
 Please find the below link for examples:
-     https://github.com/Paxterra/TestON/tree/TestOn-1.0.0/examples
+     https://github.com/opennetworkinglab/OnosSystemTest/tree/master/TestON/examples
 
 
 

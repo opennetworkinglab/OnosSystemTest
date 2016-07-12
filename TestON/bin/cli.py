@@ -261,20 +261,24 @@ class CLI( threading.Thread,Cmd,object ):
         '''
         options = self.initOptions(options)
         try :
-            for index, option in enumerate(args):
+            index = 0
+            while index < len( args ):
+                option = args[index]
                 if index > 0 :
-                    if re.match("logdir|mail|example|testdir|testcases|onoscell", option, flags = 0):
-                        index = index+1
-                        options[option] = args[index]
-                        options = self.testcasesInRange(index,option,args,options)
-                    elif re.match("--params", option, flags=0):
+                    if re.match("--params", option, flags=0):
                         # check if there is a params
-                        index = index + 1
-                        options['params'].append(args[index])
+                        options['params'].append(args[index+1])
+                    elif re.match("logdir|mail|example|testdir|testcases|onoscell", option, flags = 0):
+                        options[option] = args[index+1]
+                        options = self.testcasesInRange(index+1,option,args,options)
+                    index += 2
                 else :
                     options['testname'] = option
+                    index += 1
         except IndexError as e:
-            print e
+            print (e)
+            main.cleanup()
+            main.exit()
 
         return options
 

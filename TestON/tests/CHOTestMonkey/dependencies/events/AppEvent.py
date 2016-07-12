@@ -144,11 +144,9 @@ class AddHostIntent( HostIntentEvent ):
                 newHostIntent = HostIntent( id, self.hostA, self.hostB )
                 if self.hostA.isDown() or self.hostA.isRemoved() or self.hostB.isDown() or self.hostB.isRemoved():
                     newHostIntent.setFailed()
+                else:
+                    newHostIntent.setInstalled()
                 main.intents.append( newHostIntent )
-                # Update host connectivity status
-                # TODO: should we check whether hostA and hostB are already correspondents?
-                self.hostB.correspondents.append( self.hostA )
-                self.hostA.correspondents.append( self.hostB )
             return EventStates().PASS
         except Exception:
             main.log.warn( "Caught exception, aborting event" )
@@ -184,10 +182,8 @@ class DelHostIntent( HostIntentEvent ):
                 main.log.warn( self.typeString + " - delete host intent failed" )
                 return EventStates().FAIL
             with main.variableLock:
+                targetIntent.setWithdrawn()
                 main.intents.remove( targetIntent )
-                # Update host connectivity status
-                self.hostB.correspondents.remove( self.hostA )
-                self.hostA.correspondents.remove( self.hostB )
             return EventStates().PASS
         except Exception:
             main.log.warn( "Caught exception, aborting event" )
@@ -304,11 +300,9 @@ class AddPointIntent( PointIntentEvent ):
                 newPointIntent = PointIntent( id, self.deviceA, self.deviceB )
                 if self.deviceA.isDown() or self.deviceB.isDown() or self.deviceA.isRemoved() or self.deviceB.isRemoved():
                     newPointIntent.setFailed()
+                else:
+                    newPointIntent.setInstalled()
                 main.intents.append( newPointIntent )
-                # Update host connectivity status
-                for hostA in self.deviceA.hosts:
-                    for hostB in self.deviceB.hosts:
-                        hostA.correspondents.append( hostB )
             return EventStates().PASS
         except Exception:
             main.log.warn( "Caught exception, aborting event" )
@@ -343,11 +337,8 @@ class DelPointIntent( PointIntentEvent ):
                 main.log.warn( self.typeString + " - delete point intent failed" )
                 return EventStates().FAIL
             with main.variableLock:
+                targetIntent.setWithdrawn()
                 main.intents.remove( targetIntent )
-                # Update host connectivity status
-                for hostA in self.deviceA.hosts:
-                    for hostB in self.deviceB.hosts:
-                        hostA.correspondents.remove( hostB )
             return EventStates().PASS
         except Exception:
             main.log.warn( "Caught exception, aborting event" )

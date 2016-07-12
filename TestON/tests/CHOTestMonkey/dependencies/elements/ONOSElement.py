@@ -33,7 +33,7 @@ class Intent:
         self.default = ''
         self.type = 'INTENT'
         self.id = id
-        self.expectedState = 'INSTALLED'
+        self.expectedState = 'UNKNOWN'
 
     def isHostIntent( self ):
         return self.type == 'INTENT_HOST'
@@ -47,12 +47,6 @@ class Intent:
     def isInstalled( self ):
         return self.expectedState == 'INSTALLED'
 
-    def setFailed( self ):
-        self.expectedState = 'FAILED'
-
-    def setInstalled( self ):
-        self.expectedState = 'INSTALLED'
-
 class HostIntent( Intent ):
     def __init__( self, id, hostA, hostB ):
         Intent.__init__( self, id )
@@ -61,6 +55,28 @@ class HostIntent( Intent ):
         self.hostB = hostB
         self.deviceA = hostA.device
         self.deviceB = hostB.device
+
+    def setWithdrawn( self ):
+        self.expectedState = 'WITHDRAWN'
+        # TODO: should we check whether hostA and hostB are made correspondents by other intents/flows?
+        if self.hostB in self.hostA.correspondents:
+            self.hostA.correspondents.remove( self.hostB )
+        if self.hostA in self.hostB.correspondents:
+            self.hostB.correspondents.remove( self.hostA )
+
+    def setFailed( self ):
+        self.expectedState = 'FAILED'
+        # TODO: should we check whether hostA and hostB are made correspondents by other intents/flows?
+        if self.hostB in self.hostA.correspondents:
+            self.hostA.correspondents.remove( self.hostB )
+        if self.hostA in self.hostB.correspondents:
+            self.hostB.correspondents.remove( self.hostA )
+
+    def setInstalled( self ):
+        self.expectedState = 'INSTALLED'
+        # TODO: should we check whether hostA and hostB are already correspondents?
+        self.hostA.correspondents.append( self.hostB )
+        self.hostB.correspondents.append( self.hostA )
 
     def __str__( self ):
         return "ID: " + self.id
@@ -71,6 +87,26 @@ class PointIntent( Intent ):
         self.type = 'INTENT_POINT'
         self.deviceA = deviceA
         self.deviceB = deviceB
+
+    def setWithdrawn( self ):
+        self.expectedState = 'WITHDRAWN'
+        for hostA in self.deviceA.hosts:
+            for hostB in self.deviceB.hosts:
+                if hostB in hostA.correspondents:
+                    hostA.correspondents.remove( hostB )
+
+    def setFailed( self ):
+        self.expectedState = 'FAILED'
+        for hostA in self.deviceA.hosts:
+            for hostB in self.deviceB.hosts:
+                if hostB in hostA.correspondents:
+                    hostA.correspondents.remove( hostB )
+
+    def setInstalled( self ):
+        self.expectedState = 'INSTALLED'
+        for hostA in self.deviceA.hosts:
+            for hostB in self.deviceB.hosts:
+                hostA.correspondents.append( hostB )
 
     def __str__( self ):
         return "ID: " + self.id

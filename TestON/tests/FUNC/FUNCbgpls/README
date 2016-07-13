@@ -28,7 +28,7 @@ Things to know :
 1] We use Scapy tool, to send the BGPLS packet to ONOS.
 2] The packets are already pre-captured.
 3] ONOS reads those packet and displays the topology.
-4] We query the devices information in ONOS to check the devices/links are learn
+4] We query the devices information in ONOS to check the devices/links are learned
 
 
 Steps :

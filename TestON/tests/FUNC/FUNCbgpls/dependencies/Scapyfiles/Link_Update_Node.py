@@ -38,13 +38,6 @@ c.send(str(pkts[775][BGPHeader]))
 c.send(str(pkts[778][BGPHeader]))
 c.send(str(pkts[765][BGPHeader]))
 
-time.sleep(15)
-c.send(str(pkts[1168][BGPHeader]))
-c.send(str(pkts[1250][BGPHeader]))
-c.send(str(pkts[1354][BGPHeader]))
-print ("Node Delete msg sent")
-
-
 while True:
     c.recv(4096)
     c.send(str(pkts[765][BGPHeader]))

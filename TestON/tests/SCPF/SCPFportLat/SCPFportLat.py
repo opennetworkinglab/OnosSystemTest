@@ -21,6 +21,7 @@ class SCPFportLat:
             init = False
 
         #Load values from params file
+        main.testOnDirectory = os.path.dirname(os.getcwd())
         checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
         gitPull = main.params[ 'GIT' ][ 'autopull' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
@@ -34,6 +35,9 @@ class SCPFportLat:
         topoCfgName = main.params['TEST']['topoConfigName']
         resultPath = main.params['DB']['portEventResultPath']
         skipMvn = main.params ['TEST']['mci']
+        main.topology = main.params['DEPENDENCY']['topology']
+        main.dependencyPath = main.testOnDirectory + \
+                              main.params['DEPENDENCY']['path']
         testONpath = re.sub( "(tests)$", "bin", main.testDir )  # TestON/bin
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -135,6 +139,10 @@ class SCPFportLat:
         verifyCellResult = main.ONOSbench.verifyCell()
 
         main.step('Starting mininet topology ')
+        copyResult = main.ONOSbench.copyMininetFile(main.topology,
+                                                    main.dependencyPath,
+                                                    main.Mininet1.user_name,
+                                                    main.Mininet1.ip_address)
         main.Mininet1.startNet()
 
         main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )

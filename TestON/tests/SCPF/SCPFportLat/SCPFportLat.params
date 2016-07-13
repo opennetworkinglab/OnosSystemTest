@@ -9,6 +9,11 @@
         <cellApps>drivers,metrics,openflow</cellApps>
     </ENV>
 
+    <DEPENDENCY>
+        <path>/tests/SCPF/SCPFportLat/dependencies/</path>
+        <topology>topo-perf-2sw.py</topology>
+    </DEPENDENCY>
+
     <GIT>
         <autopull>off</autopull>
         <checkout>master</checkout>

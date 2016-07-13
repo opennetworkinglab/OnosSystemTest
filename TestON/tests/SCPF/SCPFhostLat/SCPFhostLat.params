@@ -9,7 +9,7 @@
     </ENV>
 
     <DEPENDENCY>
-        <path>/tests/SCPFhostLat/dependencies/</path>
+        <path>/tests/SCPF/SCPFhostLat/dependencies/</path>
         <topology>topo-perf-1h1s.py</topology>
     </DEPENDENCY>
 

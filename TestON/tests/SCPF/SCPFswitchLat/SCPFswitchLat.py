@@ -88,7 +88,7 @@ class SCPFswitchLat:
             commit = main.ONOSbench.getVersion()       ####
             commit = (commit.split(" "))[1]
 
-            temp = testONpath.replace("bin","") + "tests/SCPFswitchLat/dependencies/"
+            temp = testONpath.replace("bin","") + "tests/SCPF/SCPFswitchLat/dependencies/"
             main.ONOSbench.scp( main.Mininet1,
                                 temp + "topo-perf-1sw.py",
                                 main.Mininet1.home,

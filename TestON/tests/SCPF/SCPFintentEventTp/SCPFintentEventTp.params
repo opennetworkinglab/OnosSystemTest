@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,2,1,2,1,2,1,2,1,2,1,2,1,2</testcases>
+    <testcases>0,1,2,1,2,1,2,1,2,1,2,1,2,1,2</testcases>
 
     <debugMode></debugMode>  #nothing means false
 
@@ -13,8 +13,8 @@
     <max>7</max>
 
     <GIT>
-        <autopull>off</autopull>
-        <checkout>master</checkout>
+        <gitPull>off</gitPull>
+        <gitBranch>master</gitBranch>
     </GIT>
 
     <CTRL>
@@ -44,6 +44,14 @@
 
     <MN><ip1>OCN</ip1></MN>
 
+    <SLEEP>
+        <startup>10</startup>
+        <install>10</install>
+        <verify>3</verify>
+        <reroute>3</reroute>
+        # timeout for pexpect
+        <timeout>300</timeout>
+    </SLEEP>
     <BENCH>
         <user>sdn</user>
         <ip1>OCN</ip1>

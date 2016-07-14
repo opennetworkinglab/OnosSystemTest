@@ -126,8 +126,9 @@ class Graph:
                                                                                                                                    attributeValueA,
                                                                                                                                    attributeValueB ) )
             if not result:
-                main.log.debug( "Graph: graphDictA: {}".format( graphDictA ) )
-                main.log.debug( "Graph: graphDictB: {}".format( graphDictB ) )
+                #main.log.debug( "Graph: graphDictA: {}".format( graphDictA ) )
+                #main.log.debug( "Graph: graphDictB: {}".format( graphDictB ) )
+                pass
             return result
         except TypeError:
             main.log.exception( "Graph: TypeError exception found" )
@@ -158,7 +159,7 @@ class Graph:
             for chain in self.chains:
                 for edge in chain:
                     nonCutEdges.append( edge )
-            main.log.debug( 'Non-cut-edges: {}'.format( nonCutEdges ) )
+            #main.log.debug( 'Non-cut-edges: {}'.format( nonCutEdges ) )
             return nonCutEdges
         except Exception:
             main.log.exception( "Graph: Uncaught exception" )
@@ -182,14 +183,14 @@ class Graph:
                 # chain, the chain is a cycle chain
                 if chain[ 0 ][ 0 ] == chain[ -1 ][ 1 ]:
                     cycleChains.append( chain )
-            main.log.debug( 'Cycle chains: {}'.format( cycleChains ) )
+            #main.log.debug( 'Cycle chains: {}'.format( cycleChains ) )
             # Get a set of vertices which are the first vertices of a cycle chain (excluding the first
             # cycle chain), and these vertices are a subset of all cut-vertices
             subsetOfCutVertices = []
             if len( cycleChains ) > 1:
                 for cycleChain in cycleChains[ 1: ]:
                     subsetOfCutVertices.append( cycleChain[ 0 ][ 0 ] )
-            main.log.debug( 'Subset of cut vertices: {}'.format( subsetOfCutVertices ) )
+            #main.log.debug( 'Subset of cut vertices: {}'.format( subsetOfCutVertices ) )
             nonCutVertices = []
             assert nonCutEdges != None
             for vertex in self.graphDict.keys():
@@ -204,7 +205,7 @@ class Graph:
                         break
                 if vertexIsNonCut:
                     nonCutVertices.append( vertex )
-            main.log.debug( 'Non-cut-vertices: {}'.format( nonCutVertices ) )
+            #main.log.debug( 'Non-cut-vertices: {}'.format( nonCutVertices ) )
             return nonCutVertices
         except KeyError:
             main.log.exception( "Graph: KeyError exception found" )

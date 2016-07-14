@@ -11,7 +11,7 @@ class ONOSEvent( Event ):
 
     def startEvent( self, args ):
         with self.eventLock:
-            main.log.info( "%s - starting event" % ( self.typeString ) )
+            #main.log.info( "%s - starting event" % ( self.typeString ) )
             result = EventStates().PASS
             if self.typeIndex == EventType().ONOS_ONOS_DOWN or self.typeIndex == EventType().ONOS_ONOS_UP:
                 if len( args ) < 1:
@@ -42,6 +42,7 @@ class ONOSDown( ONOSEvent ):
             if not main.controllers[ self.ONOSIndex - 1 ].isUp():
                 main.log.warn( "ONOS Down - ONOS already down" )
                 return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.ONOSIndex ) )
         with main.ONOSbenchLock:
             result = main.ONOSbench.onosStop( main.controllers[ self.ONOSIndex - 1 ].ip )
         if not result:
@@ -63,6 +64,7 @@ class ONOSUp( ONOSEvent ):
             if main.controllers[ self.ONOSIndex - 1 ].isUp():
                 main.log.warn( "ONOS Up - ONOS already up" )
                 return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.ONOSIndex ) )
         with main.ONOSbenchLock:
             startResult = main.ONOSbench.onosStart( main.controllers[ self.ONOSIndex - 1 ].ip )
         if not startResult:
@@ -92,7 +94,7 @@ class CfgEvent( Event ):
 
     def startEvent( self, args ):
         with self.eventLock:
-            main.log.info( "%s - starting event" % ( self.typeString ) )
+            #main.log.info( "%s - starting event" % ( self.typeString ) )
             result = self.startCfgEvent( args )
             return result
 
@@ -121,6 +123,7 @@ class SetCfg( CfgEvent ):
         if index == -1:
             main.log.warn( "%s - No available controllers" %s ( self.typeString ) )
             return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.component, self.propName, self.value ) )
         controller = main.controllers[ index - 1 ]
         with controller.CLILock:
             result = controller.CLI.setCfg( component=self.component,
@@ -158,6 +161,7 @@ class SetFlowObj( CfgEvent ):
         if index == -1:
             main.log.warn( "%s - No available controllers" %s ( self.typeString ) )
             return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.component, self.propName, self.value ) )
         controller = main.controllers[ index - 1 ]
         with controller.CLILock:
             result = controller.CLI.setCfg( component=self.component,
@@ -184,6 +188,7 @@ class BalanceMasters( Event ):
             if index == -1:
                 main.log.warn( "%s - No available controllers" %s ( self.typeString ) )
                 return EventStates().ABORT
+            main.log.info( "Event recorded: {} {}".format( self.typeIndex, self.typeString ) )
             controller = main.controllers[ index - 1 ]
             with controller.CLILock:
                 result = controller.CLI.balanceMasters()

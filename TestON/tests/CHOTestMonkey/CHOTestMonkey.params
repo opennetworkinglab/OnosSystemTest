@@ -15,9 +15,10 @@
     # 50. Set FlowObjective to True
     # 51. Set FlowObjective to False
     # 60. Rebalance devices across controllers
-    # 70. Randomly generate events
+    # 70. Run randomly generated events
+    # 80. Replay events from log file
     # 90. Sleep for some time
-    # 100. Do something else
+    # 100. Do nothing
     # Sample sequence: 0,1,2,3,[10,30,21,31,10,32,21,33,50,10,30,21,31,10,32,21,33,51,40,60,10,30,21,31,10,32,21,33,50,10,30,21,31,10,32,21,33,51,41,60]*500,100
     <testcases>
         0,1,2,3,70
@@ -390,6 +391,12 @@
         <linkDownWeight>3</linkDownWeight>
         <deviceDownWeight>2</deviceDownWeight>
     </CASE70>
+
+    <CASE80>
+        <filePath>/home/admin/log-for-replay</filePath>
+        <sleepTime>0.1</sleepTime>
+        <skipChecks>on</skipChecks>
+    </CASE80>
 
     <CASE90>
         <sleepSec>60</sleepSec>

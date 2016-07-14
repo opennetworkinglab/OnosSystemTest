@@ -19,7 +19,7 @@ class LinkEvent( Event ):
         args are the names of the two link ends, e.g. ['s1', 's2']
         """
         with self.eventLock:
-            main.log.info( "%s - starting event" % ( self.typeString ) )
+            #main.log.info( "%s - starting event" % ( self.typeString ) )
             if len( args ) < 2:
                 main.log.warn( "%s - Not enough arguments: %s" % ( self.typeString, args ) )
                 return EventStates().ABORT
@@ -84,6 +84,7 @@ class LinkDown( LinkEvent ):
             elif self.linkA.isRemoved() or self.linkB.isRemoved():
                 main.log.warn( "Link Down - link has been removed" )
                 return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.linkA.deviceA.name, self.linkA.deviceB.name ) )
         with main.mininetLock:
             '''
             result = main.Mininet1.link( END1=self.linkA.deviceA.name,
@@ -118,6 +119,7 @@ class LinkUp( LinkEvent ):
             if self.linkA.isRemoved() or self.linkB.isRemoved():
                 main.log.warn( "Link Up - link has been removed" )
                 return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.linkA.deviceA.name, self.linkA.deviceB.name ) )
         with main.mininetLock:
             '''
             result = main.Mininet1.link( END1=self.linkA.deviceA.name,
@@ -147,7 +149,7 @@ class DeviceEvent( Event ):
         args are the names of the device, e.g. 's1'
         """
         with self.eventLock:
-            main.log.info( "%s - starting event" % ( self.typeString ) )
+            #main.log.info( "%s - starting event" % ( self.typeString ) )
             if len( args ) < 1:
                 main.log.warn( "%s - Not enough arguments: %s" % ( self.typeString, args ) )
                 return EventStates().ABORT
@@ -199,6 +201,7 @@ class DeviceDown( DeviceEvent ):
             if self.device.isRemoved():
                 main.log.warn( "Device Down - device has been removed" )
                 return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.device.name ) )
         with main.mininetLock:
             result = main.Mininet1.delSwitch( self.device.name )
         if not result:
@@ -232,6 +235,7 @@ class DeviceUp( DeviceEvent ):
                 main.log.warn( "Device Up - device already up" )
                 return EventStates().ABORT
         # Re-add the device
+        main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.device.name ) )
         with main.mininetLock:
             result = main.Mininet1.addSwitch( self.device.name, dpid=self.device.dpid[3:] )
         if not result:

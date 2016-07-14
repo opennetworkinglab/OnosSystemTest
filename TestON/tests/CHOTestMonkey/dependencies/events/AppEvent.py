@@ -63,7 +63,7 @@ class HostIntentEvent( IntentEvent ):
 
     def startEvent( self, args ):
         with self.eventLock:
-            main.log.info( "%s - starting event" % ( self.typeString ) )
+            #main.log.info( "%s - starting event" % ( self.typeString ) )
             if self.typeIndex == EventType().APP_INTENT_HOST_ADD or self.typeIndex == EventType().APP_INTENT_HOST_DEL:
                 if len( args ) < 3:
                     main.log.warn( "%s - Not enough arguments: %s" % ( self.typeString, args ) )
@@ -138,6 +138,7 @@ class AddHostIntent( HostIntentEvent ):
                 intent.hostB == self.hostA and intent.hostA == self.hostB:
                     main.log.warn( self.typeString + " - find an exiting intent for the host pair, abort installation" )
                     return EventStates().ABORT
+            main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.hostA.name, self.hostB.name, self.CLIIndex ) )
             controller = main.controllers[ self.CLIIndex - 1 ]
             with controller.CLILock:
                 id = controller.CLI.addHostIntent( self.hostA.id, self.hostB.id )
@@ -179,6 +180,7 @@ class DelHostIntent( HostIntentEvent ):
             if targetIntent == None:
                 main.log.warn( self.typeString + " - intent does not exist" )
                 return EventStates().FAIL
+            main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.hostA.name, self.hostB.name, self.CLIIndex ) )
             controller = main.controllers[ self.CLIIndex - 1 ]
             with controller.CLILock:
                 result = controller.CLI.removeIntent( targetIntent.id, purge=True )
@@ -204,7 +206,7 @@ class PointIntentEvent( IntentEvent ):
 
     def startEvent( self, args ):
         with self.eventLock:
-            main.log.info( "%s - starting event" % ( self.typeString ) )
+            #main.log.info( "%s - starting event" % ( self.typeString ) )
             if self.typeIndex == EventType().APP_INTENT_POINT_ADD or self.typeIndex == EventType().APP_INTENT_POINT_DEL:
                 if len( args ) < 3:
                     main.log.warn( "%s - Not enough arguments: %s" % ( self.typeString, args ) )
@@ -290,6 +292,7 @@ class AddPointIntent( PointIntentEvent ):
                 if intent.deviceA == self.deviceA and intent.deviceB == self.deviceB:
                     main.log.warn( self.typeString + " - find an exiting intent for the device pair, abort installation" )
                     return EventStates().ABORT
+            main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.deviceA.name, self.deviceB.name, self.CLIIndex ) )
             controller = main.controllers[ self.CLIIndex - 1 ]
             with controller.CLILock:
                 srcMAC = ""
@@ -336,6 +339,7 @@ class DelPointIntent( PointIntentEvent ):
             if targetIntent == None:
                 main.log.warn( self.typeString + " - intent does not exist" )
                 return EventStates().FAIL
+            main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.deviceA.name, self.deviceB.name, self.CLIIndex ) )
             controller = main.controllers[ self.CLIIndex - 1 ]
             with controller.CLILock:
                 result = controller.CLI.removeIntent( targetIntent.id, purge=True )

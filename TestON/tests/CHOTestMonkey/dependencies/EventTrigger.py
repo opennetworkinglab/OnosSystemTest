@@ -15,7 +15,7 @@ def triggerEvent( type, scheduleMethod, *args ):
     address = ( host, port )
     conn = Client( address )
     request = []
-    request.append( 2 )
+    request.append( 1 )
     request.append( type )
     request.append( scheduleMethod )
     for arg in args:
@@ -23,7 +23,9 @@ def triggerEvent( type, scheduleMethod, *args ):
     conn.send( request )
     response = conn.recv()
     while response == 11:
+        conn.close()
         time.sleep( 1 )
+        conn = Client( address )
         conn.send( request )
         response = conn.recv()
     if response == 10:
@@ -64,5 +66,19 @@ def testLoop( sleepTime=5 ):
         else:
             pass
 
+def replayFromFile( filePath='/home/admin/event-list', sleepTime=1 ):
+    try:
+        f = open( filePath, 'r' )
+        for line in f.readlines():
+            event = line.split()
+            if event[ 3 ].startswith( 'CHECK' ):
+                continue
+            triggerEvent( event[ 3 ], 'RUN_BLOCK', *event[ 4: ] )
+            time.sleep( sleepTime )
+        f.close()
+    except Exception as e:
+        print e
+
 if __name__ == '__main__':
-    testLoop( 2 )
+    #testLoop( 2 )
+    replayFromFile()

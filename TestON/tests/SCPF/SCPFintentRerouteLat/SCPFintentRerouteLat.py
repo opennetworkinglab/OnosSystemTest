@@ -77,7 +77,6 @@ class SCPFintentRerouteLat:
         main.verifyAttempts = int(main.params['ATTEMPTS']['verify'])
         main.sampleSize = int(main.params['TEST']['sampleSize'])
         main.warmUp = int(main.params['TEST']['warmUp'])
-        main.intentsList = (main.params['TEST']['intents']).split(",")
         main.ingress = main.params['TEST']['ingress']
         main.egress = main.params['TEST']['egress']
         main.debug = main.params['TEST']['debug']
@@ -86,9 +85,11 @@ class SCPFintentRerouteLat:
         if main.flowObj == "True":
             main.flowObj = True
             main.dbFileName = main.params['DATABASE']['dbFlowObj']
+            main.intentsList = (main.params['TEST']['FObjintents']).split(",")
         else:
             main.flowObj = False
             main.dbFileName = main.params['DATABASE']['dbName']
+            main.intentsList = (main.params['TEST']['intents']).split(",")
 
         for i in range(0, len(main.intentsList)):
             main.intentsList[i] = int(main.intentsList[i])

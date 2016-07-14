@@ -15,6 +15,7 @@
         <warmUp>5</warmUp>
         <sampleSize>20</sampleSize>
         <intents>1,100,1000</intents>                       #list format, will be split on ','
+        <FObjintents>1,100</FObjintents>
         <ingress>null:0000000000000001/0</ingress>
         <egress>null:0000000000000007/0</egress>
         <debug>False</debug>

@@ -71,47 +71,51 @@ class HostIntentEvent( IntentEvent ):
                 elif len( args ) > 3:
                     main.log.warn( "%s - Too many arguments: %s" % ( self.typeString, args ) )
                     return EventStates().ABORT
-                if args[ 0 ] == 'random' or args[ 1 ] == 'random':
-                    if self.typeIndex == EventType().APP_INTENT_HOST_ADD:
-                        hostPairRandom = self.getRandomHostPair( connected=False )
-                        if hostPairRandom == None:
-                            main.log.warn( "All host pairs are connected, aborting event" )
-                            return EventStates().ABORT
-                        self.hostA = hostPairRandom[ 0 ]
-                        self.hostB = hostPairRandom[ 1 ]
-                    elif self.typeIndex == EventType().APP_INTENT_HOST_DEL:
-                        intent = self.getRandomIntentByType( 'INTENT_HOST' )
-                        if intent == None:
-                            main.log.warn( "No host intent for deletion, aborting event" )
-                            return EventStates().ABORT
-                        self.hostA = intent.hostA
-                        self.hostB = intent.hostB
-                elif args[ 0 ] == args[ 1 ]:
-                    main.log.warn( "%s - invalid argument: %s, %s" % ( self.typeString, args[ 0 ], args[ 1 ] ) )
-                    return EventStates().ABORT
-                else:
-                    for host in main.hosts:
-                        if host.name == args[ 0 ]:
-                            self.hostA = host
-                        elif host.name == args[ 1 ]:
-                            self.hostB = host
-                        if self.hostA != None and self.hostB != None:
-                            break
-                    if self.hostA == None:
-                        main.log.warn( "Host %s does not exist: " % ( args[ 0 ] ) )
+                try:
+                    if args[ 0 ] == 'random' or args[ 1 ] == 'random':
+                        if self.typeIndex == EventType().APP_INTENT_HOST_ADD:
+                            hostPairRandom = self.getRandomHostPair( connected=False )
+                            if hostPairRandom == None:
+                                main.log.warn( "All host pairs are connected, aborting event" )
+                                return EventStates().ABORT
+                            self.hostA = hostPairRandom[ 0 ]
+                            self.hostB = hostPairRandom[ 1 ]
+                        elif self.typeIndex == EventType().APP_INTENT_HOST_DEL:
+                            intent = self.getRandomIntentByType( 'INTENT_HOST' )
+                            if intent == None:
+                                main.log.warn( "No host intent for deletion, aborting event" )
+                                return EventStates().ABORT
+                            self.hostA = intent.hostA
+                            self.hostB = intent.hostB
+                    elif args[ 0 ] == args[ 1 ]:
+                        main.log.warn( "%s - invalid argument: %s, %s" % ( self.typeString, args[ 0 ], args[ 1 ] ) )
                         return EventStates().ABORT
-                    if self.hostB == None:
-                        main.log.warn( "Host %s does not exist: " % ( args[ 1 ] ) )
+                    else:
+                        for host in main.hosts:
+                            if host.name == args[ 0 ]:
+                                self.hostA = host
+                            elif host.name == args[ 1 ]:
+                                self.hostB = host
+                            if self.hostA != None and self.hostB != None:
+                                break
+                        if self.hostA == None:
+                            main.log.warn( "Host %s does not exist: " % ( args[ 0 ] ) )
+                            return EventStates().ABORT
+                        if self.hostB == None:
+                            main.log.warn( "Host %s does not exist: " % ( args[ 1 ] ) )
+                            return EventStates().ABORT
+                    index = int( args[ 2 ] )
+                    if index < 1 or index > int( main.numCtrls ):
+                        main.log.warn( "%s - invalid argument: %s" % ( self.typeString, index ) )
                         return EventStates().ABORT
-                index = int( args[ 2 ] )
-                if index < 1 or index > int( main.numCtrls ):
-                    main.log.warn( "%s - invalid argument: %s" % ( self.typeString, index ) )
+                    if not main.controllers[ index - 1 ].isUp():
+                        main.log.warn( self.typeString + " - invalid argument: onos %s is down" % ( controller.index ) )
+                        return EventStates().ABORT
+                    self.CLIIndex = index
+                    return self.startHostIntentEvent()
+                except Exception:
+                    main.log.warn( "Caught exception, aborting event" )
                     return EventStates().ABORT
-                if not main.controllers[ index - 1 ].isUp():
-                    main.log.warn( self.typeString + " - invalid argument: onos %s is down" % ( controller.index ) )
-                    return EventStates().ABORT
-                self.CLIIndex = index
-                return self.startHostIntentEvent()
 
 class AddHostIntent( HostIntentEvent ):
     """
@@ -208,57 +212,61 @@ class PointIntentEvent( IntentEvent ):
                 elif len( args ) > 4:
                     main.log.warn( "%s - Too many arguments: %s" % ( self.typeString, args ) )
                     return EventStates().ABORT
-                if args[ 0 ] == 'random' or args[ 1 ] == 'random':
-                    if self.typeIndex == EventType().APP_INTENT_POINT_ADD:
-                        hostPairRandom = self.getRandomHostPair( connected=False )
-                        if hostPairRandom == None:
-                            main.log.warn( "All host pairs are connected, aborting event" )
-                            return EventStates().ABORT
-                        self.deviceA = hostPairRandom[ 0 ].device
-                        self.deviceB = hostPairRandom[ 1 ].device
-                    elif self.typeIndex == EventType().APP_INTENT_POINT_DEL:
-                        intent = self.getRandomIntentByType( 'INTENT_POINT' )
-                        if intent == None:
-                            main.log.warn( "No point intent for deletion, aborting event" )
-                            return EventStates().ABORT
-                        self.deviceA = intent.deviceA
-                        self.deviceB = intent.deviceB
-                elif args[ 0 ] == args[ 1 ]:
-                    main.log.warn( "%s - invalid argument: %s" % ( self.typeString, args[ 0 ], args[ 1 ] ) )
-                    return EventStates().ABORT
-                else:
-                    for device in main.devices:
-                        if device.name == args[ 0 ]:
-                            self.deviceA = device
-                        elif device.name == args[ 1 ]:
-                            self.deviceB = device
-                        if self.deviceA != None and self.deviceB != None:
-                            break
-                    if self.deviceA == None:
-                        main.log.warn( "Device %s does not exist: " % ( args[ 0 ] ) )
+                try:
+                    if args[ 0 ] == 'random' or args[ 1 ] == 'random':
+                        if self.typeIndex == EventType().APP_INTENT_POINT_ADD:
+                            hostPairRandom = self.getRandomHostPair( connected=False )
+                            if hostPairRandom == None:
+                                main.log.warn( "All host pairs are connected, aborting event" )
+                                return EventStates().ABORT
+                            self.deviceA = hostPairRandom[ 0 ].device
+                            self.deviceB = hostPairRandom[ 1 ].device
+                        elif self.typeIndex == EventType().APP_INTENT_POINT_DEL:
+                            intent = self.getRandomIntentByType( 'INTENT_POINT' )
+                            if intent == None:
+                                main.log.warn( "No point intent for deletion, aborting event" )
+                                return EventStates().ABORT
+                            self.deviceA = intent.deviceA
+                            self.deviceB = intent.deviceB
+                    elif args[ 0 ] == args[ 1 ]:
+                        main.log.warn( "%s - invalid argument: %s" % ( self.typeString, args[ 0 ], args[ 1 ] ) )
                         return EventStates().ABORT
-                    if self.deviceB == None:
-                        main.log.warn( "Device %s does not exist: " % ( args[ 1 ] ) )
-                        return EventStates().ABORT
-                index = int( args[ 2 ] )
-                if index < 1 or index > int( main.numCtrls ):
-                    main.log.warn( "%s - invalid argument: %s" % ( self.typeString, index ) )
-                    return EventStates().ABORT
-                if not main.controllers[ index - 1 ].isUp():
-                    main.log.warn( self.typeString + " - invalid argument: onos %s is down" % ( controller.index ) )
-                    return EventStates().ABORT
-                self.CLIIndex = index
-                if len( args ) == 4 and args[ 3 ] == 'bidirectional':
-                    # Install point intents for both directions
-                    resultA = self.startPointIntentEvent()
-                    [ self.deviceA, self.deviceB ] = [ self.deviceB, self.deviceA ]
-                    resultB = self.startPointIntentEvent()
-                    if resultA == EventStates().PASS and resultB == EventStates().PASS:
-                        return EventStates().PASS
                     else:
-                        return EventStates().FAIL
-                else:
-                    return self.startPointIntentEvent()
+                        for device in main.devices:
+                            if device.name == args[ 0 ]:
+                                self.deviceA = device
+                            elif device.name == args[ 1 ]:
+                                self.deviceB = device
+                            if self.deviceA != None and self.deviceB != None:
+                                break
+                        if self.deviceA == None:
+                            main.log.warn( "Device %s does not exist: " % ( args[ 0 ] ) )
+                            return EventStates().ABORT
+                        if self.deviceB == None:
+                            main.log.warn( "Device %s does not exist: " % ( args[ 1 ] ) )
+                            return EventStates().ABORT
+                    index = int( args[ 2 ] )
+                    if index < 1 or index > int( main.numCtrls ):
+                        main.log.warn( "%s - invalid argument: %s" % ( self.typeString, index ) )
+                        return EventStates().ABORT
+                    if not main.controllers[ index - 1 ].isUp():
+                        main.log.warn( self.typeString + " - invalid argument: onos %s is down" % ( controller.index ) )
+                        return EventStates().ABORT
+                    self.CLIIndex = index
+                    if len( args ) == 4 and args[ 3 ] == 'bidirectional':
+                        # Install point intents for both directions
+                        resultA = self.startPointIntentEvent()
+                        [ self.deviceA, self.deviceB ] = [ self.deviceB, self.deviceA ]
+                        resultB = self.startPointIntentEvent()
+                        if resultA == EventStates().PASS and resultB == EventStates().PASS:
+                            return EventStates().PASS
+                        else:
+                            return EventStates().FAIL
+                    else:
+                        return self.startPointIntentEvent()
+                except Exception:
+                    main.log.warn( "Caught exception, aborting event" )
+                    return EventStates().ABORT
 
 class AddPointIntent( PointIntentEvent ):
     """
@@ -273,7 +281,7 @@ class AddPointIntent( PointIntentEvent ):
         try:
             assert self.deviceA != None and self.deviceB != None
             controller = main.controllers[ self.CLIIndex - 1 ]
-            # TODO: the following check only work when we use default port number for point intents
+            # TODO: support multiple hosts under one device
             # Check whether there already exists some intent for the device pair
             # For now we should avoid installing overlapping intents
             for intent in main.intents:
@@ -284,15 +292,13 @@ class AddPointIntent( PointIntentEvent ):
                     return EventStates().ABORT
             controller = main.controllers[ self.CLIIndex - 1 ]
             with controller.CLILock:
-                # TODO: handle the case that multiple hosts attach to one device
                 srcMAC = ""
                 dstMAC = ""
                 if len( self.deviceA.hosts ) > 0:
                     srcMAC = self.deviceA.hosts[ 0 ].mac
                 if len( self.deviceB.hosts ) > 0:
                     dstMAC = self.deviceB.hosts[ 0 ].mac
-                id = controller.CLI.addPointIntent( self.deviceA.dpid, self.deviceB.dpid,
-                                                    1, 1, '', srcMAC, dstMAC )
+                id = controller.CLI.addPointIntent( self.deviceA.dpid, self.deviceB.dpid, 1, 1, '', srcMAC, dstMAC )
             if id == None:
                 main.log.warn( self.typeString + " - add point intent failed" )
                 return EventStates().FAIL

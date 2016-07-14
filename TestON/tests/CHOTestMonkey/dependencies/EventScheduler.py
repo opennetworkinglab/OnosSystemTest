@@ -78,7 +78,7 @@ class EventScheduler:
             else:
                 main.log.warn( "Event Scheduler - invalid index when isnerting event: %s" % ( index ) )
             self.pendingEventsCondition.notify()
-        self.printEvents()
+        #self.printEvents()
 
     def startScheduler( self ):
         """
@@ -127,7 +127,7 @@ class EventScheduler:
 
         with self.runningEventsCondition:
             self.runningEvents.append( eventTuple )
-        self.printEvents()
+        #self.printEvents()
         rerunNum = 0
         result = eventTuple.startEvent()
         while result == EventStates().FAIL and rerunNum < eventTuple.maxRerunNum:
@@ -150,7 +150,7 @@ class EventScheduler:
                     if len( self.pendingEvents ) == 0:
                         with self.idleCondition:
                             self.idleCondition.notify()
-        self.printEvents()
+        #self.printEvents()
 
     def printEvents( self ):
         """
@@ -172,18 +172,18 @@ class EventScheduler:
             if len( self.pendingEvents ) > 0:
                 events += str( self.pendingEvents[ -1 ].typeIndex )
         events += "]"
-        #main.log.debug( "Event Scheduler - Events: " + events )
+        main.log.debug( "Event Scheduler - Events: " + events )
 
     def isAvailable( self ):
-        with self.pendingEventsCondition:
-            with self.runningEventsCondition:
+        with self.runningEventsCondition:
+            with self.pendingEventsCondition:
                 return len( self.pendingEvents ) < self.pendingEventsCapacity and\
                        len( self.runningEvents ) < self.runningEventsCapacity and\
                        self.isRunning
 
     def isIdle( self ):
-        with self.pendingEventsCondition:
-            with self.runningEventsCondition:
+        with self.runningEventsCondition:
+            with self.pendingEventsCondition:
                 return len( self.pendingEvents ) == 0 and\
                        len( self.runningEvents ) == 0 and\
                        self.isRunning

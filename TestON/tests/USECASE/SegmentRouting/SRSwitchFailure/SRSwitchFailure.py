@@ -55,6 +55,7 @@ class SRSwitchFailure:
         """
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
             Testcaselib as run
+        import time
         if not hasattr( main, 'apps' ):
             run.initTest( main )
         description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
@@ -69,6 +70,7 @@ class SRSwitchFailure:
         # switch failure
         switch = main.params[ 'kill' ][ 'switch' ]
         run.killSwitch( main, switch, switches='7', links='24' )
+        time.sleep( main.switchSleep )
         run.pingAll( main, "CASE2_Failure" )
         run.recoverSwitch( main, switch, switches='8', links='32' )
         run.checkFlows( main, minFlowCount=350 )
@@ -125,6 +127,7 @@ class SRSwitchFailure:
         """
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
             Testcaselib as run
+        import time
         if not hasattr( main, 'apps' ):
             run.initTest( main )
         description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
@@ -139,6 +142,7 @@ class SRSwitchFailure:
         # switch failure
         switch = main.params[ 'kill' ][ 'switch' ]
         run.killSwitch( main, switch, switches='7', links='24' )
+        time.sleep( main.switchSleep )
         run.pingAll( main, "CASE4_Failure" )
         run.recoverSwitch( main, switch, switches='8', links='32' )
         run.checkFlows( main, minFlowCount=350 )

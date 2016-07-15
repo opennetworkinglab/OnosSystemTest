@@ -441,7 +441,7 @@ class OnosCliDriver( CLI ):
         the onos> prompt. Use this function if you have
         a very specific command to send.
 
-        if noExit is True, TestON will not exit, but clean up
+        if noExit is True, TestON will not exit, and return None
 
         Warning: There are no sanity checking to commands
         sent using this method.
@@ -460,8 +460,11 @@ class OnosCliDriver( CLI ):
                         main.log.info( self.name + ": onos cli session reconnected." )
                     else:
                         main.log.error( self.name + ": reconnection failed." )
-                        main.cleanup()
-                        main.exit()
+                        if noExit:
+                            return None
+                        else:
+                            main.cleanup()
+                            main.exit()
                 else:
                     main.cleanup()
                     main.exit()
@@ -529,7 +532,6 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             if noExit:
-                main.cleanup()
                 return None
             else:
                 main.cleanup()
@@ -537,7 +539,6 @@ class OnosCliDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             if noExit:
-                main.cleanup()
                 return None
             else:
                 main.cleanup()
@@ -2229,12 +2230,13 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkIntentSummary( self, timeout=60 ):
+    def checkIntentSummary( self, timeout=60, noExit=True ):
         """
         Description:
             Check the number of installed intents.
         Optional:
             timeout - the timeout for pexcept
+            noExit - If noExit, TestON will not exit if any except.
         Return:
             Returns main.TRUE only if the number of all installed intents are the same as total intents number
             , otherwise, returns main.FALSE.
@@ -2244,7 +2246,7 @@ class OnosCliDriver( CLI ):
             cmd = "intents -s -j"
 
             # Check response if something wrong
-            response = self.sendline( cmd, timeout=timeout )
+            response = self.sendline( cmd, timeout=timeout, noExit=noExit )
             if response == None:
                 return main.FALSE
             response = json.loads( response )
@@ -2263,12 +2265,18 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                return main.FALSE
+            else:
+                main.cleanup()
+                main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                return main.FALSE
+            else:
+                main.cleanup()
+                main.exit()
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": ONOS timeout" )
             return None
@@ -2447,71 +2455,55 @@ class OnosCliDriver( CLI ):
             Get the number of ADDED flows.
         Return:
             The number of ADDED flows
+            Or return None if any exceptions
         """
 
         try:
             # get total added flows number
-            cmd = "flows -s|grep ADDED|wc -l"
-            totalFlows = self.sendline( cmd, timeout=timeout, noExit=noExit )
-
-            if totalFlows == None:
-                # if timeout, we will get total number of all flows, and subtract other states
-                states = ["PENDING_ADD", "PENDING_REMOVE", "REMOVED", "FAILED"]
-                checkedStates = []
+            cmd = "flows -c added"
+            rawFlows = self.sendline( cmd, timeout=timeout, noExit=noExit )
+            if rawFlows:
+                rawFlows = rawFlows.split("\n")
                 totalFlows = 0
-                statesCount = [0, 0, 0, 0]
-
-                # get total flows from summary
-                response = json.loads( self.sendline( "summary -j", timeout=timeout, noExit=noExit ) )
-                totalFlows = int( response.get("flows") )
-
-                for s in states:
-                    rawFlows = self.flows( state=s, timeout = timeout )
-                    if rawFlows == None:
-                        # if timeout, return the total flows number from summary command
-                        return totalFlows
-                    checkedStates.append( json.loads( rawFlows ) )
-
-                # Calculate ADDED flows number, equal total subtracts others
-                for i in range( len( states ) ):
-                    for c in checkedStates[i]:
-                        try:
-                            statesCount[i] += int( c.get( "flowCount" ) )
-                        except TypeError:
-                            main.log.exception( "Json object not as expected" )
-                    totalFlows = totalFlows - int( statesCount[i] )
-                    main.log.info( states[i] + " flows: " + str( statesCount[i] ) )
-
-                return totalFlows
-
-            return int(totalFlows)
+                for l in rawFlows:
+                    totalFlows += int(l.split("Count=")[1])
+            else:
+                main.log.error("Response not as expected!")
+                return None
+            return totalFlows
 
         except ( TypeError, ValueError ):
-            main.log.exception( "{}: Object not as expected: {!r}".format( self.name, rawFlows ) )
+            main.log.exception( "{}: Object not as expected!".format( self.name ) )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            if not noExit:
+                main.cleanup()
+                main.exit()
+            return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            if not noExit:
+                main.cleanup()
+                main.exit()
+            return None
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": ONOS timeout" )
             return None
 
-    def getTotalIntentsNum( self, timeout=60 ):
+    def getTotalIntentsNum( self, timeout=60, noExit = False ):
         """
         Description:
             Get the total number of intents, include every states.
+        Optional:
+            noExit - If noExit, TestON will not exit if any except.
         Return:
             The number of intents
         """
         try:
             cmd = "summary -j"
-            response = self.sendline( cmd, timeout=timeout )
+            response = self.sendline( cmd, timeout=timeout, noExit=noExit )
             if response == None:
                 return  -1
             response = json.loads( response )
@@ -2522,12 +2514,18 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                return -1
+            else:
+                main.cleanup()
+                main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            if noExit:
+                return -1
+            else:
+                main.cleanup()
+                main.exit()
 
     def intentsEventsMetrics( self, jsonFormat=True ):
         """

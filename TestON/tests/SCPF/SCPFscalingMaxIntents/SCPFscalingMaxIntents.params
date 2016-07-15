@@ -64,10 +64,10 @@
     <NULL>
         # CASE20
         <PUSH>
-            <batch_size>1000</batch_size>
-            <min_intents>10000</min_intents>
-            <max_intents>70000</max_intents>
-            <check_interval>10000</check_interval>
+            <batch_size>500</batch_size>
+            <min_intents>2500</min_intents>
+            <max_intents>1000000</max_intents>
+            <check_interval>2500</check_interval>
         </PUSH>
 
         # if reroute is true
@@ -83,10 +83,10 @@
     <OVS>
         # CASE20
         <PUSH>
-            <batch_size>1000</batch_size>
-            <min_intents>10000</min_intents>
-            <max_intents>500000</max_intents>
-            <check_interval>10000</check_interval>
+            <batch_size>500</batch_size>
+            <min_intents>2500</min_intents>
+            <max_intents>1000000</max_intents>
+            <check_interval>2500</check_interval>
         </PUSH>
 
         # if reroute is true

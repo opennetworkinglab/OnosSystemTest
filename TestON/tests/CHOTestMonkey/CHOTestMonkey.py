@@ -806,30 +806,26 @@ class CHOTestMonkey:
                 n = random.randint( 5, 50 )
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
-                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_HOST_ADD, EventScheduleMethod().RUN_NON_BLOCK, 'random', 'random', cliIndex )
+                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_HOST_ADD, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex )
                     hostIntentNum += 1
-                main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             elif event == 'del-host-intent':
                 n = random.randint( 5, hostIntentNum )
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
-                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_HOST_DEL, EventScheduleMethod().RUN_NON_BLOCK, 'random', 'random', cliIndex )
+                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_HOST_DEL, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex )
                     hostIntentNum -= 1
-                main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             elif event == 'add-point-intent':
                 n = random.randint( 5, 50 )
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
-                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_ADD, EventScheduleMethod().RUN_NON_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
+                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_ADD, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
                     pointIntentNum += 1
-                main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             elif event == 'del-point-intent':
                 n = random.randint( 5, pointIntentNum )
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
-                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_DEL, EventScheduleMethod().RUN_NON_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
+                    main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_DEL, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
                     pointIntentNum -= 1
-                main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             elif event == 'link-down':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_LINK_DOWN, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
                 downLinkNum += 1
@@ -849,7 +845,6 @@ class CHOTestMonkey:
             main.eventGenerator.triggerEvent( EventType().CHECK_TRAFFIC, EventScheduleMethod().RUN_NON_BLOCK )
             main.eventGenerator.triggerEvent( EventType().CHECK_FLOW, EventScheduleMethod().RUN_NON_BLOCK )
             main.eventGenerator.triggerEvent( EventType().CHECK_INTENT, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventGenerator.triggerEvent( EventType().NULL, EventScheduleMethod().RUN_BLOCK )
             with main.eventScheduler.idleCondition:
                 while not main.eventScheduler.isIdle():
                     main.eventScheduler.idleCondition.wait()

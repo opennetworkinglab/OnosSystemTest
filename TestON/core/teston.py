@@ -412,7 +412,7 @@ class TestON:
         argument is given.
 
         Optional Arguments:
-            result: Case insensite string. Can be 'PASS' or 'FAIL' and will set
+            result: Case insensitive string. Can be 'PASS' or 'FAIL' and will set
                     the case result accordingly.
             msg: Message to be printed when the case is skipped in the reports.
         """
@@ -949,7 +949,7 @@ def verifyParams( options ):
             if not re.search( ".=.", param ):
                 print( "Error when parsing params: params should follow key=value format" )
                 continue
-            # Split the param string to netest keys and value
+            # Split the param string to catch nested keys and the value
             [ keys, value ] = param.split( "=" )
             # Split the nested keys according to its hierarchy
             keyList = keys.split( "/" )

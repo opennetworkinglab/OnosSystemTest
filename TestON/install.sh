@@ -63,11 +63,18 @@ fi
 echo "Installing TestON dependencies"
 if [ "$DIST" = "Fedora" ]; then
     # Fedora may have vlan enabled by default. Still need to confirm and update later
-    $install python-pip build-essential python-dev pep8 arping python3-requests
+    $install python-pip build-essential python-dev pep8 python3-requests
     $pipinstall pexpect==3.2 configobj==4.7.2 numpy
 else
-    $install python-pip build-essential python-dev pep8 vlan arping python3-requests
+    $install python-pip build-essential python-dev pep8 vlan python3-requests
     $pipinstall pexpect==3.2 configobj==4.7.2 numpy
+fi
+
+# Some Distos have this already from another package
+if which arping > /dev/null ; then
+    echo "Arping command detected, skipping package installation."
+else
+    $install arping
 fi
 
 # Add check here to make sure OnosSystemTest is cloned into home directory (place holder)

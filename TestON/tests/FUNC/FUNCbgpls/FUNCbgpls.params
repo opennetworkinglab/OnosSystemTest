@@ -5,14 +5,15 @@
 #CASE1: Compile ONOS and push it to the test machines
 #CASE2: Discovery the topology using BGPLS
 #CASE3: Addition of new Node to existing topology
-#CASE4: Deletion of Node
-#Case5: Uninstalling the app
+#CASE4: Verification of Links thats is discovered"
+#CASE5: Deletion of Links
+#Case6: Uninstalling the app
 
 
-    <testcases>1,2,3,4,5</testcases>
+    <testcases>1,2,3,4,5,6</testcases>
 
     <DEPENDENCY>
-        <path>/tests/FUNCbgpls/Dependencies/</path>
+        <path>/tests/FUNC/FUNCbgpls/Dependencies/</path>
     </DEPENDENCY>
 
     <ENV>

@@ -270,7 +270,7 @@ class FUNCnetconf:
         scpResult = main.TRUE
         copyResult = main.TRUE
         for i in range( main.numCtrls ):
-            main.node = main.CLIs[ i ]
+            main.node = main.CLIs2[ i ]
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip
             scpResult = scpResult and main.ONOSbench.scp( main.node ,

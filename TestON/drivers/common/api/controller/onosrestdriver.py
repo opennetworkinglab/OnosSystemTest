@@ -1026,7 +1026,7 @@ class OnosRestDriver( Controller ):
             main.cleanup()
             main.exit()
 
-    def flows( self, ip="DEFAULT", port="DEFAULT" ):
+    def flows( self, ip="DEFAULT", port="DEFAULT", subjectClass=None, subjectKey=None ):
         """
         Description:
             Get flows currently added to the system
@@ -1038,6 +1038,7 @@ class OnosRestDriver( Controller ):
         """
         try:
             output = None
+            url = "/flows"
             if ip == "DEFAULT":
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
@@ -1045,7 +1046,13 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            response = self.send( url="/flows", ip = ip, port = port )
+            if subjectKey and not subjectClass:
+                main.log.warning( "Subject Key provided without Subject Class.  Ignoring Subject Key" )
+            if subjectClass:
+                url += "/" + subjectClass
+                if subjectKey:
+                    url += "/" + subjectKey
+            response = self.send( url=url, ip=ip, port=port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]

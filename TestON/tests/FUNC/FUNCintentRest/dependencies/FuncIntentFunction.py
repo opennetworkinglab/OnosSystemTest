@@ -94,11 +94,18 @@ def installHostIntent( main,
         main.log.error( errorMsg )
         return main.FALSE
 
-    if utilities.retry ( f=checkIntentState, retValue=main.FALSE,
-                         args = (main, intentsId ), sleep=main.checkIntentSleep ):
-        return intentsId
+    if utilities.retry( f=checkIntentState, retValue=main.FALSE,
+                        args=( main, intentsId ), sleep=main.checkIntentSleep, attempts=5 ):
+        main.assertReturnString += 'Install Intent State Passed\n'
+        if flowDuration( main ):
+            main.assertReturnString += 'Flow duration check Passed\n'
+            return intentsId
+        else:
+            main.assertReturnString += 'Flow duration check failed\n'
+            return main.FALSE
     else:
         main.log.error( "Host Intent did not install correctly" )
+        main.assertReturnString += 'Install Intent State Failed\n'
         return main.FALSE
 
 def testHostIntent( main,
@@ -398,17 +405,24 @@ def installPointIntent( main,
         intentsId = main.CLIs[ 0 ].getIntentsId()
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
-        if intentId:
+        if intentsId:
             errorMsg += "  There was a problem installing Point to Point intent."
         main.log.error( errorMsg )
         return main.FALSE
 
     # Check intent state
-    if utilities.retry ( f=checkIntentState, retValue=main.FALSE,
-                         args = (main, intentsId ), sleep=main.checkIntentSleep ):
-        return intentsId
+    if utilities.retry( f=checkIntentState, retValue=main.FALSE,
+                        args=( main, intentsId ), sleep=main.checkIntentSleep ):
+        main.assertReturnString += 'Install Intent State Passed\n'
+        if flowDuration( main ):
+            main.assertReturnString += 'Flow duration check Passed\n'
+            return intentsId
+        else:
+            main.assertReturnString += 'Flow duration check failed\n'
+            return main.FALSE
     else:
-        main.log.error( "Single to Single point intent did not install correctly" )
+        main.log.error( "Host Intent did not install correctly" )
+        main.assertReturnString += 'Install Intent State Failed\n'
         return main.FALSE
 
 def testPointIntent( main,
@@ -1771,3 +1785,41 @@ def report( main ):
         main.ONOSbench.logReport( main.ONOSip[ i ],
                 [ "WARN" ],
                 "d" )
+
+def flowDuration( main ):
+    """
+        Check age of flows to see if flows are being overwritten
+    """
+    import time
+    main.log.info( "Getting current flow durations" )
+    flowsJson1 = main.CLIs[ 0 ].flows()
+    try:
+        flowsJson1 = json.loads( flowsJson1 )
+    except ValueError:
+        main.log.error( "Unable to read flows" )
+        return main.FALSE
+    flowLife = []
+    waitFlowLife = []
+    for flow in flowsJson1:
+        if flow[ 'appId' ] == "org.onosproject.net.intent":
+            flowLife.append( flow[ 'life' ] )
+    main.log.info( "Sleeping for {} seconds".format( main.flowDurationSleep ) )
+    time.sleep( main.flowDurationSleep )
+    main.log.info( "Getting new flow durations" )
+    flowsJson2 = main.CLIs[ 0 ].flows()
+    try:
+        flowsJson2 = json.loads( flowsJson2 )
+    except ValueError:
+        main.log.error( "Unable to read flows" )
+        return main.FALSE
+    for flow in flowsJson2:
+        if flow[ 'appId' ] == "org.onosproject.net.intent":
+            waitFlowLife.append( flow[ 'life' ] )
+    main.log.info( "Determining whether flows where overwritten" )
+    if len( flowLife ) == len( waitFlowLife ):
+        for i in range( len( flowLife) ):
+            if waitFlowLife[ i ] - flowLife[ i ] < main.flowDurationSleep:
+                return main.FALSE
+    else:
+        return main.FALSE
+    return main.TRUE

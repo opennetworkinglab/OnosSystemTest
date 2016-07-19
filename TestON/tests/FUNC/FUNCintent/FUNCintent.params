@@ -50,6 +50,7 @@
         <checkintent>5</checkintent>
         <fwd>10</fwd>
         <topoAttempts>3</topoAttempts>
+        <flowDuration>10</flowDuration>
     </SLEEP>
 
     <MININET>

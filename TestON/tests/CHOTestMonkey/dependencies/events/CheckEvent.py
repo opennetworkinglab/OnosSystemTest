@@ -13,7 +13,7 @@ class CheckEvent( Event ):
 
     def startEvent( self, args ):
         with self.eventLock:
-            main.log.info( "%s - starting event" % ( self.typeString ) )
+            main.log.info( "Event recorded: {} {}".format( self.typeIndex, self.typeString ) )
             result = self.startCheckEvent()
             return result
 

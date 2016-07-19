@@ -794,7 +794,7 @@ class CHOTestMonkey:
                 events.append( 'device-down' )
             for i in range( int( pow( hostIntentNum, 1.5 ) / 100 ) ):
                 events.append( 'del-host-intent' )
-            for i in range( int( pow( pointIntentNum/2, 1.5 ) / 100 ) ):
+            for i in range( int( pow( pointIntentNum, 1.5 ) / 100 ) ):
                 events.append( 'del-point-intent' )
             for i in range( pow( 2, downLinkNum ) - 1 ):
                 events.append( 'link-up' )
@@ -819,13 +819,13 @@ class CHOTestMonkey:
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
                     main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_ADD, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
-                    pointIntentNum += 1
+                    pointIntentNum += 2
             elif event == 'del-point-intent':
-                n = random.randint( 5, pointIntentNum )
+                n = random.randint( 5, pointIntentNum / 2 )
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
                     main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_DEL, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
-                    pointIntentNum -= 1
+                    pointIntentNum -= 2
             elif event == 'link-down':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_LINK_DOWN, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
                 downLinkNum += 1
@@ -854,6 +854,45 @@ class CHOTestMonkey:
                                  onpass="Randomly generate events test passed",
                                  onfail="Randomly generate events test failed" )
         time.sleep( main.caseSleep )
+
+    def CASE80( self, main ):
+        """
+        Replay events from log file
+        """
+        import time
+        from tests.CHOTestMonkey.dependencies.events.Event import EventType
+        from tests.CHOTestMonkey.dependencies.EventScheduler import EventScheduleMethod
+
+        main.log.report( "Replay events from log file" )
+        main.log.report( "__________________________________________________" )
+        main.case( "Replay events from log file" )
+        main.step( "Replay events from log file" )
+        main.caseResult = main.TRUE
+        try:
+            f = open( main.params[ 'CASE80' ][ 'filePath' ], 'r' )
+            for line in f.readlines():
+                if 'CHOTestMonkey' in line and 'Event recorded' in line:
+                    line = line.split()
+                    eventIndex = int( line[ 9 ] )
+                    eventName = line[ 10 ]
+                    args = line[ 11: ]
+                    assert eventName.startswith( 'CHECK' )\
+                    or eventName.startswith( 'NETWORK' )\
+                    or eventName.startswith( 'APP' )\
+                    or eventName.startswith( 'ONOS' )
+                    if main.params[ 'CASE80' ][ 'skipChecks' ] == 'on' and eventName.startswith( 'CHECK' ):
+                        continue
+                    with main.eventScheduler.idleCondition:
+                        while not main.eventScheduler.isIdle():
+                            main.eventScheduler.idleCondition.wait()
+                    main.eventGenerator.triggerEvent( eventIndex, EventScheduleMethod().RUN_BLOCK, *args )
+                    time.sleep( float( main.params[ 'CASE80' ][ 'sleepTime' ] ) )
+        except Exception as e:
+            print e
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=main.caseResult,
+                                 onpass="Replay from log file passed",
+                                 onfail="Replay from log file failed" )
 
     def CASE90( self, main ):
         """

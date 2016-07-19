@@ -1,0 +1,34 @@
+_teston-cases()
+{
+    local dir=~/TestON
+    if [ ! -e $dir ]
+    then
+        echo
+        echo "ERROR: $dir does not exist"
+        return 1
+    fi
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    COMPREPLY=( $(compgen -o dirnames -W "$(find $dir/tests -name "*.params" | grep -v __init | grep -v dependencies | xargs dirname | xargs -0 | tr '\n' '\0' | xargs -l -0 basename)" -- $cur) )
+    return 0
+}
+_teston()
+{
+    local dir=~/TestON
+    COMPREPLY=()
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    case "$prev" in
+    run)
+            _teston-cases
+            return $?;;
+    teston | */cli.py )
+            COMPREPLY=( $( compgen -W 'run' -- $cur ) )
+            return 0;;
+    esac
+    return 0
+}
+
+
+complete -F _teston "./cli.py"
+complete -F _teston "teston"

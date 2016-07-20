@@ -4931,3 +4931,40 @@ class OnosCliDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             return None
+
+    def getIntentPerfSummary( self ):
+        '''
+        Send command to check intent-perf summary
+        Returns: dictionary for intent-perf summary
+                 if something wrong, function will return None
+        '''
+        cmd = "intent-perf -s"
+        respDic = {}
+        resp = self.sendline( cmd )
+        try:
+            # Generate the dictionary to return
+            for l in resp.split( "\n" ):
+                # Delete any white space in line
+                temp = re.sub( r'\s+', '', l )
+                temp = temp.split( ":" )
+                respDic[ temp[0] ] = temp[ 1 ]
+
+        except (TypeError, ValueError):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return None
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return None
+        return respDic
+
+

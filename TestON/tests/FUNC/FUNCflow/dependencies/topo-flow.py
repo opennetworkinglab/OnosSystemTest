@@ -48,6 +48,9 @@ class MyTopo( Topo ):
         host3=self.addHost( 'h3', ip='10.0.0.3/24', cls=VLANHost, vlan=10 )
         host4=self.addHost( 'h4', ip='10.0.0.4/24', cls=VLANHost, vlan=10 )
 
+        #IPv6 hosts
+        host5=self.addHost( 'h5', ip='10.0.0.5/24', cls=IPv6Host, v6Addr='1000::5/64')
+        host6=self.addHost( 'h6', ip='10.0.0.6/24', cls=IPv6Host, v6Addr='1000::6/64')
 
         s1 = self.addSwitch( 's1' )
 
@@ -55,6 +58,8 @@ class MyTopo( Topo ):
         self.addLink(s1, host2)
         self.addLink(s1, host3)
         self.addLink(s1, host4)
+        self.addLink(s1, host5)
+        self.addLink(s1, host6)
 
 
         topos = { 'mytopo': ( lambda: MyTopo() ) }

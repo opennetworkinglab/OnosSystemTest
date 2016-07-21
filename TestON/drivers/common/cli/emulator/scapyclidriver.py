@@ -624,7 +624,132 @@ class ScapyCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def buildICMP( self, **kwargs ):
+    def buildSCTP( self, ipVersion=4, **kwargs ):
+        """
+        Build an SCTP frame
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+
+        NOTE: Some arguments require quotes around them. It's up to you to
+        know which ones and to add them yourself. Arguments with an asterisk
+        do not need quotes.
+
+        Options:
+        ipVersion - Either 4 (default) or 6, indicates what Internet Protocol
+                    frame to use to encapsulate into
+        Default frame:
+        ###[ SCTP ]###
+          sport= domain *
+          dport= domain *
+          tag = None
+          chksum = None
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # Set the SCTP frame
+            cmd = 'sctp = SCTP( '
+            options = [ ]
+            for key, value in kwargs.iteritems( ):
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            if str( ipVersion ) is '4':
+                self.handle.sendline( "packet = ether/ip/sctp" )
+            elif str( ipVersion ) is '6':
+                self.handle.sendline( "packet = ether/ipv6/sctp" )
+            else:
+                main.log.error( "Unrecognized option for ipVersion, given " +
+                               repr( ipVersion ) )
+                return main.FALSE
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup( )
+            main.exit( )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup( )
+            main.exit( )
+
+    def buildARP( self, **kwargs ):
+        """
+        Build an ARP frame
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+
+        NOTE: Some arguments require quotes around them. It's up to you to
+        know which ones and to add them yourself. Arguments with an asterisk
+        do not need quotes.
+
+        Default frame:
+        ###[ ARP ]###
+        hwtype     : XShortField          = (1)
+        ptype      : XShortEnumField      = (2048)
+        hwlen      : ByteField            = (6)
+        plen       : ByteField            = (4)
+        op         : ShortEnumField       = (1)
+        hwsrc      : ARPSourceMACField    = (None)
+        psrc       : SourceIPField        = (None)
+        hwdst      : MACField             = ('00:00:00:00:00:00')
+        pdst       : IPField              = ('0.0.0.0')
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # Set the ARP frame
+            cmd = 'arp = ARP( '
+            options = []
+            for key, value in kwargs.iteritems( ):
+                if isinstance( value, str ):
+                    value = '"' + value + '"'
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            self.handle.sendline( "packet = ether/arp" )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup( )
+            main.exit( )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup( )
+            main.exit( )
+
+    def buildICMP( self, ipVersion=4, **kwargs ):
         """
         Build an ICMP frame
 
@@ -639,13 +764,24 @@ class ScapyCliDriver( Emulator ):
           id= 0x0
           seq= 0x0
 
+        Options:
+        ipVersion - Either 4 (default) or 6, indicates what Internet Protocol
+                    frame to use to encapsulate into
+
         Returns main.TRUE or main.FALSE on error
         """
         try:
             # Set the ICMP frame
-            cmd = 'icmp = ICMP( '
+            if str( ipVersion ) is '4':
+                cmd = 'icmp = ICMP( '
+            elif str( ipVersion ) is '6':
+                cmd = 'icmp6 = ICMPv6EchoReply( '
+            else:
+                main.log.error( "Unrecognized option for ipVersion, given " +
+                                repr( ipVersion ) )
+                return main.FALSE
             options = []
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.iteritems( ):
                 if isinstance( value, str ):
                     value = '"' + value + '"'
                 options.append( str( key ) + "=" + str( value ) )
@@ -657,7 +793,15 @@ class ScapyCliDriver( Emulator ):
                 # KeyError, SyntaxError, ...
                 main.log.error( "Error in sending command: " + self.handle.before )
                 return main.FALSE
-            self.handle.sendline( "packet = ether/ip/icmp" )
+
+            if str( ipVersion ) is '4':
+                self.handle.sendline( "packet = ether/ip/icmp" )
+            elif str( ipVersion ) is '6':
+                self.handle.sendline( "packet = ether/ipv6/icmp6" )
+            else:
+                main.log.error( "Unrecognized option for ipVersion, given " +
+                               repr( ipVersion ) )
+                return main.FALSE
             self.handle.expect( self.scapyPrompt )
             if "Traceback" in self.handle.before:
                 # KeyError, SyntaxError, ...
@@ -669,12 +813,12 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanup( )
+            main.exit( )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanup( )
+            main.exit( )
 
     def sendPacket( self, iface=None, packet=None, timeout=1 ):
         """
@@ -822,12 +966,15 @@ class ScapyCliDriver( Emulator ):
             main.exit()
         return self.handle.before
 
-    def updateSelf( self ):
+    def updateSelf( self, IPv6=False ):
         """
         Updates local MAC and IP fields
         """
         self.hostMac = self.getMac()
-        self.hostIp = self.getIp()
+        if IPv6:
+            self.hostIp = self.getIp( IPv6=True )
+        else:
+            self.hostIp = self.getIp()
 
     def getMac( self, ifaceName=None ):
         """
@@ -857,24 +1004,33 @@ class ScapyCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def getIp( self, ifaceName=None ):
+    def getIp( self, ifaceName=None, IPv6=False ):
         """
         Save host's IP address
 
         Returns the IP of the first interface that is not a loopback device.
         If no IP could be found then it will return 0.0.0.0.
+
+        If IPv6 is equal to True, returns IPv6 of the first interface that is not a loopback device.
+        If no IPv6 could be found then it will return :: .
+
         """
         def getIPofInterface( ifaceName ):
             cmd = 'get_if_addr("' + str( ifaceName ) + '")'
+            if IPv6:
+                cmd = 'get_if_raw_addr6("' + str( ifaceName ) + '")'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
 
             pattern = r'(((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9]))'
+            if IPv6:
+                pattern = r'(\\x([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])){16}'
             match = re.search( pattern, self.handle.before )
             if match:
                 # NOTE: The command will return 0.0.0.0 if the iface doesn't exist
-                if match.group() == '0.0.0.0':
-                    main.log.warn( 'iface {0} has no IPv4 address'.format( ifaceName ) )
+                if IPv6 != True:
+                    if match.group() == '0.0.0.0':
+                        main.log.warn( 'iface {0} has no IPv4 address'.format( ifaceName ) )
                 return match.group()
             else:
                 return None
@@ -882,13 +1038,33 @@ class ScapyCliDriver( Emulator ):
             if not ifaceName:
                 # Get list of interfaces
                 ifList = self.getIfList()
-                for ifaceName in ifList:
-                    if ifaceName == "lo":
-                        continue
-                    ip = getIPofInterface( ifaceName )
-                    if ip != "0.0.0.0":
-                        return ip
-                return "0.0.0.0"
+                if IPv6:
+                    for ifaceName in ifList:
+                        if ifaceName == "lo":
+                            continue
+                        ip = getIPofInterface( ifaceName )
+                        if ip != None:
+                            newip =ip
+                            tmp = newip.split( "\\x" )
+                            ip = ""
+                            counter = 0
+                            for i in tmp:
+                                if i != "":
+                                    counter = counter + 1;
+                                    if counter % 2 == 0 and counter < 16:
+                                        ip = ip + i + ":"
+                                    else:
+                                        ip = ip + i
+                            return ip
+                    return "::"
+                else:
+                    for ifaceName in ifList:
+                        if ifaceName == "lo":
+                            continue
+                        ip = getIPofInterface( ifaceName )
+                        if ip != "0.0.0.0":
+                            return ip
+                    return "0.0.0.0"
             else:
                 return getIPofInterface( ifaceName )
 

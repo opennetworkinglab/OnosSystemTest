@@ -1180,6 +1180,7 @@ class OnosRestDriver( Controller ):
                  udpDst="",
                  udpSrc="",
                  mpls="",
+                 priority=100,
                  ip="DEFAULT",
                  port="DEFAULT",
                  debug=False ):
@@ -1210,7 +1211,7 @@ class OnosRestDriver( Controller ):
             of the ONOS node
         """
         try:
-            flowJson = { "priority":100,
+            flowJson = {   "priority":priority,
                            "isPermanent":"true",
                            "timeout":0,
                            "deviceId":deviceId,

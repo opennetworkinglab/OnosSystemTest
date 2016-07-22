@@ -84,6 +84,10 @@ class LincOEMininetDriver( MininetCliDriver ):
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
             return main.FALSE
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
+            main.cleanup()
+            return main.FALSE
 
     def pingHostOptical( self, **pingParams ):
         """
@@ -114,6 +118,10 @@ class LincOEMininetDriver( MininetCliDriver ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
             main.cleanup()
             main.exit()
         main.log.info( self.name + ": Ping Response: " + response )

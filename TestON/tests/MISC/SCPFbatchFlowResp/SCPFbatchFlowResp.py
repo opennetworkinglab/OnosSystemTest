@@ -372,7 +372,7 @@ class SCPFbatchFlowResp:
         #pprint(main.addedBatchList)
         resp = main.FALSE
         while resp != main.TRUE and ( tAllAdded - tLastPostEnd < int (main.params['CASE2100']['chkFlowTO']) ):
-            if main.params['CASE2100']['RESTchkFlow'] == main.TRUE:
+            if main.params['CASE2100']['RESTchkFlow'] == 'main.TRUE':
                 resp = main.ONOSrest.checkFlowsState()
             else:
                 handle = main.CLIs[0].flows(state = " |grep PEND|wc -l", jsonFormat=False)
@@ -443,7 +443,7 @@ class SCPFbatchFlowResp:
         #pprint(main.addedBatchList)
         resp = main.FALSE
         while resp != main.TRUE and ( tAllRemoved - tLastDeleteEnd < int (main.params['CASE3100']['chkFlowTO']) ):
-            if main.params['CASE3100']['RESTchkFlow'] == main.TRUE:
+            if main.params['CASE3100']['RESTchkFlow'] == 'main.TRUE':
                 resp = main.ONOSrest.checkFlowsState()
             else:
                 handle = main.CLIs[0].flows(state = " |grep PEND|wc -l", jsonFormat=False)

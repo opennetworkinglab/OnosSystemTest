@@ -7,9 +7,9 @@ SCPFscalingMaxIntents
 Push test Intents to onos
 CASE10: set up Null Provider
 CASE11: set up Open Flows
+Check flows number, if flows number is not as except, finished this test iteration
 Scale up when reach the Limited
 Start from 1 nodes, 8 devices. Then Scale up to 3,5,7 nodes
-Recommand batch size: 100, check interval: 100
 '''
 class SCPFscalingMaxIntents:
     def __init__( self ):
@@ -429,6 +429,7 @@ class SCPFscalingMaxIntents:
         # make sure the checkInterval divisible batchSize
         main.checkInterval = int( int( main.checkInterval / main.batchSize ) * main.batchSize )
         flowTemp=0
+        intentVerifyTemp = 0
         totalFlows=0
         for i in range(limit):
 
@@ -467,32 +468,52 @@ class SCPFscalingMaxIntents:
                 main.log.info("Verify Intents states")
                 # k is a control variable for verify retry attempts
                 k = 1
-
                 while k <= main.verifyAttempts:
-                    # while loop for check intents by using REST api
+                    # while loop for check intents by using CLI driver
                     time.sleep(5)
-                    temp = 0
-                    intentsState = main.CLIs[0].checkIntentSummary(timeout=600)
+                    intentsState = main.CLIs[0].checkIntentSummary(timeout=600, noExit=True)
                     if intentsState:
-                        verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600)
-                        if temp < verifyTotalIntents:
-                            temp = verifyTotalIntents 
+                        verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600, noExit=True)
+                        if intentVerifyTemp < verifyTotalIntents:
+                            intentVerifyTemp = verifyTotalIntents
                         else:
-                            verifytotalIntents = temp
-                        main.log.info("Total Intents: {}".format( verifyTotalIntents ) )
+                            verifyTotalIntents = intentVerifyTemp
+                        main.log.info("Total Installed Intents: {}".format( verifyTotalIntents ) )
                         break
                     k = k+1
 
-                totalFlows = main.CLIs[0].getTotalFlowsNum( timeout=600, noExit=True )
-                if flowTemp < totalFlows:
-                    flowTemp = totalFlows
-                else:
-                    totalFlows = flowTemp 
+                k = 1
+                flowVerify = True
+                while k <= main.verifyAttempts:
+                    time.sleep(5)
+                    totalFlows = main.CLIs[0].getTotalFlowsNum( timeout=600, noExit=True )
+                    expectFlows = totalIntents * 7 + main.defaultFlows
+                    if totalFlows == expectFlows:
+                        main.log.info("Total Flows Added: {}".format(totalFlows))
+                        break
+                    else:
+                        main.log.info("Some Flows are not added, retry...")
+                        main.log.info("Total Flows Added: {} Expect Flows: {}".format(totalFlows, expectFlows))
+                        flowVerify = False
 
-                if not intentsState:
+                    k += 1
+                    if flowTemp < totalFlows:
+                        flowTemp = totalFlows
+                    else:
+                        totalFlows = flowTemp
+
+                if not intentsState or not flowVerify:
                     # If some intents are not installed, grep the previous flows list, and finished this test case
-                    main.log.warn( "Some intens did not install" )
-                    verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600)
+                    main.log.warn( "Intents or flows are not installed" )
+                    verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600, noExit=True)
+                    if intentVerifyTemp < verifyTotalIntents:
+                        intentVerifyTemp = verifyTotalIntents
+                    else:
+                        verifyTotalIntents = intentVerifyTemp
+                    if flowTemp < totalFlows:
+                        flowTemp = totalFlows
+                    else:
+                        totalFlows = flowTemp
                     main.log.info("Total Intents: {}".format( verifyTotalIntents) )
                     break
 

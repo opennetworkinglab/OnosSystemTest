@@ -1,0 +1,13 @@
+astroid==1.0.1
+autopep8==1.1
+configobj==4.7.2
+epydoc==3.0.1
+flake8==2.4.1
+numpy==1.9.1
+pep8==1.5.7
+pep8-naming==0.3.3
+pexpect==3.2
+pyflakes==0.8.1
+pylint==1.1.0
+requests==2.2.1
+scapy==2.3.1

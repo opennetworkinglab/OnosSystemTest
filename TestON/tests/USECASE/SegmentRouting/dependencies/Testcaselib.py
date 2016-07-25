@@ -2,7 +2,7 @@ import os
 import imp
 import time
 import json
-
+import urllib
 from core import utilities
 
 
@@ -66,7 +66,7 @@ class Testcaselib:
                                  onfail="Failed to construct test variables" )
 
     @staticmethod
-    def installOnos( main ):
+    def installOnos( main, vlanCfg=True ):
         """
         - Set up cell
             - Create cell file
@@ -87,6 +87,7 @@ class Testcaselib:
         print "NODE COUNT = ", main.numCtrls
         print main.ONOSip
         tempOnosIp = [ ]
+        main.dynamicHosts = [ 'in1', 'out1' ]
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[ i ] )
         onosUser = main.params[ 'ENV' ][ 'cellUser' ]
@@ -167,9 +168,12 @@ class Testcaselib:
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
 
-        with open( main.dependencyPath + "/" + main.cfgName + ".json" ) as cfg:
+        with open( "%s/json/%s.json" % (
+                main.dependencyPath, main.cfgName) ) as cfg:
             main.RESTs[ main.active ].setNetCfg( json.load( cfg ) )
-
+        with open( "%s/json/%s.chart" % (
+                main.dependencyPath, main.cfgName) ) as chart:
+            main.pingChart = json.load( chart )
         if not ready:
             main.log.error( "ONOS startup failed!" )
             main.cleanup( )
@@ -200,7 +204,7 @@ class Testcaselib:
             main.exit( )
 
     @staticmethod
-    def checkFlows( main, minFlowCount ):
+    def checkFlows( main, minFlowCount, dumpflows=True ):
         main.step(
                 " Check whether the flow count is bigger than %s" % minFlowCount )
         count = utilities.retry( main.CLIs[ main.active ].checkFlowCount,
@@ -218,36 +222,34 @@ class Testcaselib:
         flowCheck = utilities.retry( main.CLIs[ main.active ].checkFlowsState,
                                      main.FALSE,
                                      kwargs={ 'isPENDING': False },
-                                     attempts=10,
+                                     attempts=2,
                                      sleep=10 )
         utilities.assertEquals( \
                 expect=main.TRUE,
                 actual=flowCheck,
                 onpass="Flow status is correct!",
                 onfail="Flow status is wrong!" )
-        main.ONOSbench.dumpFlows( main.ONOSip[ main.active ],
-                                  main.logdir, "flowsBefore" + main.cfgName )
-        main.ONOSbench.dumpGroups( main.ONOSip[ 0 ],
-                                   main.logdir, "groupsBefore" + main.cfgName )
+        if dumpflows:
+            main.ONOSbench.dumpFlows( main.ONOSip[ main.active ],
+                                      main.logdir,
+                                      "flowsBefore" + main.cfgName )
+            main.ONOSbench.dumpGroups( main.ONOSip[ main.active ],
+                                       main.logdir,
+                                       "groupsBefore" + main.cfgName )
 
     @staticmethod
     def pingAll( main, tag="", dumpflows=True ):
         main.log.report( "Check full connectivity" )
-        main.step("Check IP connectivity %s" %tag)
-        hosts = main.Mininet1.getHosts().keys()
-        vlan10 = [ '%s10' % s for s in [ 'olt', 'vsg' ] ]
-        vlan5 = [ '%s5' % s for s in [ 'olt', 'vsg' ] ]
-        IPHosts = [ host for host in hosts if host not in ( vlan10 + vlan5 ) ]
-        pa = main.Mininet1.pingallHosts(IPHosts)
-        utilities.assert_equals( expect=main.TRUE, actual=pa,
-                                 onpass="IP connectivity successfully tested",
-                                 onfail="IP connectivity failed" )
-        main.step("Check VLAN  connectivity %s" %tag)
-        p1 = main.Mininet1.pingallHosts(vlan5)
-        p2 = main.Mininet1.pingallHosts(vlan10)
-        utilities.assert_equals( expect=main.TRUE, actual=p1&p2,
-                             onpass="Vlan connectivity successfully tested",
-                             onfail="Vlan connectivity failed" )
+        print main.pingChart
+        for entry in main.pingChart.itervalues( ):
+            print entry
+            hosts, expect = entry[ 'hosts' ], entry[ 'expect' ]
+            expect = main.TRUE if expect else main.FALSE
+            main.step( "Connectivity for %s %s" % (str( hosts ), tag) )
+            pa = main.Mininet1.pingallHosts( hosts )
+            utilities.assert_equals( expect=expect, actual=pa,
+                                     onpass="IP connectivity successfully tested",
+                                     onfail="IP connectivity failed" )
         if dumpflows:
             main.ONOSbench.dumpFlows( main.ONOSip[ main.active ],
                                       main.logdir, "flowsOn" + tag )
@@ -439,7 +441,6 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="ONOS Instance down successful",
                                  onfail="Failed to turn off ONOS Instance" )
-
         for i in range( 10 ):
             ready = True
             output = main.CLIs[ main.active ].summary( )
@@ -455,3 +456,72 @@ class Testcaselib:
             main.log.error( "ONOS startup failed!" )
             main.cleanup( )
             main.exit( )
+
+    @staticmethod
+    def addHostCfg( main ):
+        """
+        Adds Host Configuration to ONOS
+        Updates expected state of the network (pingChart)
+        """
+        import json
+        hostCfg = { }
+        with open( main.dependencyPath + "/json/extra.json" ) as template:
+            hostCfg = json.load( template )
+        main.pingChart[ 'ip' ][ 'hosts' ] += [ 'in1' ]
+        main.step( "Pushing new configuration" )
+        mac, cfg = hostCfg[ 'hosts' ].popitem( )
+        main.RESTs[ main.active ].setNetCfg( cfg[ 'basic' ],
+                                             subjectClass="hosts",
+                                             subjectKey=urllib.quote( mac,
+                                                                      safe='' ),
+                                             configKey="basic" )
+        main.pingChart[ 'ip' ][ 'hosts' ] += [ 'out1' ]
+        main.step( "Pushing new configuration" )
+        mac, cfg = hostCfg[ 'hosts' ].popitem( )
+        main.RESTs[ main.active ].setNetCfg( cfg[ 'basic' ],
+                                             subjectClass="hosts",
+                                             subjectKey=urllib.quote( mac,
+                                                                      safe='' ),
+                                             configKey="basic" )
+        main.pingChart.update( { 'vlan1': { "expect": "True",
+                                            "hosts": [ "olt1", "vsg1" ] } } )
+        main.pingChart[ 'vlan5' ][ 'expect' ] = 0
+        main.pingChart[ 'vlan10' ][ 'expect' ] = 0
+        ports = "[%s,%s]" % (5, 6)
+        cfg = '{"of:0000000000000001":[{"vlan":1,"ports":%s,"name":"OLT 1"}]}' % ports
+        main.RESTs[ main.active ].setNetCfg( json.loads( cfg ),
+                                             subjectClass="apps",
+                                             subjectKey="org.onosproject.segmentrouting",
+                                             configKey="xconnect" )
+
+    @staticmethod
+    def delHostCfg( main ):
+        """
+        Removest Host Configuration from ONOS
+        Updates expected state of the network (pingChart)
+        """
+        import json
+        hostCfg = { }
+        with open( main.dependencyPath + "/json/extra.json" ) as template:
+            hostCfg = json.load( template )
+        main.step( "Removing host configuration" )
+        main.pingChart[ 'ip' ][ 'expect' ] = 0
+        mac, cfg = hostCfg[ 'hosts' ].popitem( )
+        main.RESTs[ main.active ].removeNetCfg( subjectClass="hosts",
+                                                subjectKey=urllib.quote(
+                                                        mac,
+                                                        safe='' ),
+                                                configKey="basic" )
+        main.step( "Removing configuration" )
+        main.pingChart[ 'ip' ][ 'expect' ] = 0
+        mac, cfg = hostCfg[ 'hosts' ].popitem( )
+        main.RESTs[ main.active ].removeNetCfg( subjectClass="hosts",
+                                                subjectKey=urllib.quote(
+                                                        mac,
+                                                        safe='' ),
+                                                configKey="basic" )
+        main.step( "Removing vlan configuration" )
+        main.pingChart[ 'vlan1' ][ 'expect' ] = 0
+        main.RESTs[ main.active ].removeNetCfg( subjectClass="apps",
+                                                subjectKey="org.onosproject.segmentrouting",
+                                                configKey="xconnect" )

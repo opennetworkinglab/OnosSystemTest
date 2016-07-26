@@ -478,6 +478,7 @@ class SCPFscalingMaxIntents:
                             intentVerifyTemp = verifyTotalIntents
                         else:
                             verifyTotalIntents = intentVerifyTemp
+                            intentsState = False
                         main.log.info("Total Installed Intents: {}".format( verifyTotalIntents ) )
                         break
                     k = k+1

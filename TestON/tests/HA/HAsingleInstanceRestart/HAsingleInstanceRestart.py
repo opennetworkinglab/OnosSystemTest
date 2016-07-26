@@ -1854,6 +1854,10 @@ class HAsingleInstanceRestart:
                     main.CLIs[i].name,
                     main.CLIs[i].sendline( "scr:list | grep -v ACTIVE" ) ) )
 
+        if not topoResult:
+            main.cleanup()
+            main.exit()
+
     def CASE9( self, main ):
         """
         Link s3-s28 down

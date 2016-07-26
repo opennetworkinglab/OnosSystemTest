@@ -1793,6 +1793,8 @@ class HAfullNetPartition:
             main.log.debug( "Checking logs for errors on " + node.name + ":" )
             main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
 
+        main.log.debug( main.CLIs[0].roles( jsonFormat=False ) )
+
         n = len( main.nodes )  # Number of nodes
         p = ( ( n + 1 ) / 2 ) + 1  # Number of partitions
         main.partition = [ 0 ]  # ONOS node to partition, listed by index in main.nodes
@@ -1867,6 +1869,27 @@ class HAfullNetPartition:
                    "List of active nodes has duplicates, this likely indicates something was run out of order"
         except AssertionError:
             main.log.exception( "" )
+            main.cleanup()
+            main.exit()
+
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( main.HA.nodesCheck,
+                                       False,
+                                       args=[main.activeNodes],
+                                       sleep=15,
+                                       attempts=5 )
+
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+        if not nodeResults:
+            for i in main.activeNodes:
+                cli = main.CLIs[i]
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    cli.name,
+                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
 
@@ -2610,6 +2633,10 @@ class HAfullNetPartition:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     main.CLIs[i].name,
                     main.CLIs[i].sendline( "scr:list | grep -v ACTIVE" ) ) )
+
+        if not topoResult:
+            main.cleanup()
+            main.exit()
 
     def CASE9( self, main ):
         """

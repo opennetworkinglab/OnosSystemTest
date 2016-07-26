@@ -1829,6 +1829,27 @@ class HAkillNodes:
                                  onpass="ONOS nodes killed successfully",
                                  onfail="ONOS nodes NOT successfully killed" )
 
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( main.HA.nodesCheck,
+                                       False,
+                                       args=[main.activeNodes],
+                                       sleep=15,
+                                       attempts=5 )
+
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+        if not nodeResults:
+            for i in main.activeNodes:
+                cli = main.CLIs[i]
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    cli.name,
+                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to start ONOS, stopping test" )
+            main.cleanup()
+            main.exit()
+
     def CASE62( self, main ):
         """
         The bring up stopped nodes
@@ -1888,7 +1909,27 @@ class HAkillNodes:
         main.restartTime = time.time() - restartTime
         main.log.debug( "Restart time: " + str( main.restartTime ) )
         # TODO: MAke this configurable. Also, we are breaking the above timer
-        time.sleep( 60 )
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( main.HA.nodesCheck,
+                                       False,
+                                       args=[main.activeNodes],
+                                       sleep=15,
+                                       attempts=5 )
+
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+        if not nodeResults:
+            for i in main.activeNodes:
+                cli = main.CLIs[i]
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    cli.name,
+                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to start ONOS, stopping test" )
+            main.cleanup()
+            main.exit()
+
         node = main.activeNodes[0]
         main.log.debug( main.CLIs[node].nodes( jsonFormat=False ) )
         main.log.debug( main.CLIs[node].leaders( jsonFormat=False ) )
@@ -2645,6 +2686,10 @@ class HAkillNodes:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     main.CLIs[i].name,
                     main.CLIs[i].sendline( "scr:list | grep -v ACTIVE" ) ) )
+
+        if not topoResult:
+            main.cleanup()
+            main.exit()
 
     def CASE9( self, main ):
         """

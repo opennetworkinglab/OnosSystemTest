@@ -586,6 +586,9 @@ class HAsanity:
                    "one or more ping pairs failed" )
         main.log.info( "Time for pingall: %2f seconds" %
                        ( time2 - time1 ) )
+        if not pingResult:
+            main.cleanup()
+            main.exit()
         # timeout for fwd flows
         time.sleep( 11 )
         # uninstall onos-app-fwd
@@ -2546,6 +2549,10 @@ class HAsanity:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     main.CLIs[i].name,
                     main.CLIs[i].sendline( "scr:list | grep -v ACTIVE" ) ) )
+
+        if not topoResult:
+            main.cleanup()
+            main.exit()
 
     def CASE9( self, main ):
         """

@@ -1858,6 +1858,8 @@ class HAclusterRestart:
                 output = cli.summary()
                 if not output:
                     ready = False
+            if ready:
+                break
             time.sleep( 30 )
         utilities.assert_equals( expect=True, actual=ready,
                                  onpass="ONOS summary command succeded",
@@ -2626,6 +2628,10 @@ class HAclusterRestart:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     main.CLIs[i].name,
                     main.CLIs[i].sendline( "scr:list | grep -v ACTIVE" ) ) )
+
+        if not topoResult:
+            main.cleanup()
+            main.exit()
 
     def CASE9( self, main ):
         """

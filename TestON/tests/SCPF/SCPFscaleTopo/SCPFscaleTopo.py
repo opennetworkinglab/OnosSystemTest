@@ -8,10 +8,8 @@ class SCPFscaleTopo:
         self.default = ''
 
     def CASE1( self, main ):
-        import time
         import os
         import imp
-        import re
 
         """
         - Construct tests variables
@@ -48,6 +46,12 @@ class SCPFscaleTopo:
         main.pingallSleep = int( main.params[ 'SLEEP' ][ 'pingall' ] )
         main.MNSleep = int( main.params[ 'SLEEP' ][ 'MNsleep' ] )
         main.pingTimeout = float( main.params[ 'TIMEOUT' ][ 'pingall' ] )
+        main.hostDiscover = main.params[ 'TOPOLOGY' ][ 'host' ]
+        main.hostDiscoverSleep = float( main.params['SLEEP']['host'] )
+        if main.hostDiscover == 'True':
+            main.hostDiscover = True
+        else:
+            main.hostDiscover = False
         gitPull = main.params[ 'GIT' ][ 'pull' ]
         main.homeDir = os.path.expanduser('~')
         main.cellData = {} # for creating cell file
@@ -118,6 +122,7 @@ class SCPFscaleTopo:
         - Install ONOS cluster
         - Connect to cli
         """
+        import time
         main.log.info( "Checking if mininet is already running" )
         if len( main.topoScale ) < main.topoScaleSize:
             main.log.info( "Mininet is already running. Stopping mininet." )
@@ -234,7 +239,6 @@ class SCPFscaleTopo:
         """
             Starting up torus topology
         """
-        import json
 
         main.case( "Starting up Mininet and verifying topology" )
         main.caseExplanation = "Starting Mininet with a scalling topology and " +\
@@ -245,9 +249,8 @@ class SCPFscaleTopo:
         main.step( "Starting up TORUS %sx%s topology" % (main.currScale, main.currScale) )
 
         main.log.info( "Constructing Mininet command" )
-        mnCmd = " mn --custom " + main.Mininet1.home + main.multiovs +\
-                " --switch ovsm --topo " + main.topoName + ","+ main.currScale + "," + main.currScale
-
+        mnCmd = " mn --custom " + main.Mininet1.home + main.multiovs + \
+                " --switch ovsm --topo " + main.topoName + "," + main.currScale + "," + main.currScale
         for i in range( main.numCtrls ):
                 mnCmd += " --controller remote,ip=" + main.ONOSip[ i ]
 
@@ -263,11 +266,11 @@ class SCPFscaleTopo:
 
     def CASE11( self, main ):
         """
-            Pingall, and compare topo
-            We don't care the pingall result,
+            Compare topo, and sending Arping package
             if the topology is same, then Pass.
         """
         import json
+        import time
 
         main.case( "Verifying topology: TORUS %sx%s" % (main.currScale, main.currScale) )
         main.caseExplanation = "Pinging all hosts and comparing topology " +\
@@ -275,10 +278,6 @@ class SCPFscaleTopo:
 
         main.log.info( "Gathering topology information" )
         time.sleep( main.MNSleep )
-
-        devicesResults = main.TRUE
-        linksResults = main.TRUE
-        hostsResults = main.TRUE
         stepResult = main.TRUE
         main.step( "Comparing MN topology to ONOS topology" )
 
@@ -288,17 +287,14 @@ class SCPFscaleTopo:
             devices = main.topo.getAllDevices( main )
             ports = main.topo.getAllPorts( main )
             links = main.topo.getAllLinks( main)
-            clusters = main.topo.getAllClusters( main )
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks(timeout=180)
-            mnHosts = main.Mininet1.getHosts()
 
             for controller in range(len(main.activeNodes)):
-                controllerStr = str( main.activeNodes[controller] + 1 )
-                if devices[ controller ] and ports[ controller ] and\
-                    "Error" not in devices[ controller ] and\
-                    "Error" not in ports[ controller ]:
-
+                # controllerStr = str( main.activeNodes[controller] + 1 )
+                if devices[ controller ] and ports[ controller ] and \
+                                "Error" not in devices[ controller ] and \
+                                "Error" not in ports[ controller ]:
                     currentDevicesResult = main.Mininet1.compareSwitches(
                             mnSwitches,
                             json.loads( devices[ controller ] ),
@@ -313,40 +309,52 @@ class SCPFscaleTopo:
                 else:
                     currentLinksResult = main.FALSE
 
-                stepResult = currentDevicesResult and currentLinksResult
+                stepResult = stepResult and currentDevicesResult and currentLinksResult
             if stepResult:
                 break
             compareRetry += 1
+        utilities.assert_equals(expect=main.TRUE,
+                                actual=stepResult,
+                                onpass=" Topology match Mininet",
+                                onfail="ONOS Topology doesn't match Mininet")
 
-        # host discover
-        hostList=[]
-        for i in range( 1, int(main.currScale)+1 ):
-            for j in range( 1, int(main.currScale)+1 ):
-                hoststr = "h" + str(i)+ "x" + str(j)
-                hostList.append(hoststr)
-        totalNum = main.topo.sendArpPackage(main, hostList)
-        # check host number
-        main.log.info("{} hosts has been discovered".format( totalNum ))
-        if int(totalNum) == ( int(main.currScale) * int(main.currScale) ):
-            main.log.info("All hosts has been discovered")
-            stepResult = stepResult and main.TRUE
+        if stepResult:
+            if main.hostDiscover:
+                hostList = []
+                for i in range( 1, int( main.currScale ) + 1 ):
+                    for j in range( 1, int( main.currScale ) + 1) :
+                        # Generate host list
+                        hoststr = "h" + str(i) + "x" + str(j)
+                        hostList.append(hoststr)
+                for i in range( len(hostList) ):
+                    totalHost = main.topo.sendArpPackage( main, hostList[i] )
+                    time.sleep( main.hostDiscoverSleep )
+                    if totalHost < 0:
+                        # if totalHost less than 0 which means dependence function has exception.
+                        main.log.info( "Error when discover host!" )
+                        break
+                if totalHost == int( main.currScale ) *  int( main.currScale ):
+                    main.log.info( "Discovered all hosts" )
+                    stepResult = stepResult and True
+                else:
+                    main.log.warn( "Some hosts ware not discovered by ONOS... Topology doesn't match!" )
+                    stepResult = False
+                utilities.assert_equals(expect=main.TRUE,
+                                        actual=stepResult,
+                                        onpass=" Topology match Mininet",
+                                        onfail="ONOS Topology doesn't match Mininet")
+            main.log.info( "Finished this iteration, continue to scale next topology." )
         else:
-            main.log.warn("Hosts number is not correct!")
-            stepResult = stepResult and main.FALSE
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass=" Topology match Mininet",
-                                 onfail="ONOS" + controllerStr +
-                                 " Topology doesn't match Mininet" )
-
+            main.log.info( "Clean up and exit TestON. Finished this test." )
+            main.cleanup()
+            main.exit()
 
     def CASE100( self, main ):
         '''
            Bring Down node 3
         '''
 
-        main.case("Balancing Masters and bring ONOS node 3 down: TORUS %sx%s" % (main.currScale, main.currScale))
+        main.case("Bring ONOS node 3 down: TORUS %sx%s" % (main.currScale, main.currScale))
         main.caseExplanation = "Balance masters to make sure " +\
                         "each controller has some devices and " +\
                         "stop ONOS node 3 service. "
@@ -369,10 +377,10 @@ class SCPFscaleTopo:
 
     def CASE200( self, main ):
         '''
-            Bring up onos node and balance masters
+            Bring up onos node
         '''
 
-        main.case("Bring ONOS node 3 up and balance masters: TORUS %sx%s" % (main.currScale, main.currScale))
+        main.case("Bring ONOS node 3 up: TORUS %sx%s" % (main.currScale, main.currScale))
         main.caseExplanation = "Bring node 3 back up and balance the masters"
 
         node = main.deadNode + 1

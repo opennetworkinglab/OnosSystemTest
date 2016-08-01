@@ -2813,7 +2813,8 @@ class OnosCliDriver( CLI ):
         """
         import json
         try:
-            summary = json.loads( self.summary() )
+            summary = self.summary()
+            summary = json.loads( summary )
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, summary ) )
             return main.ERROR

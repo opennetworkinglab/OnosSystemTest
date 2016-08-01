@@ -49,46 +49,51 @@ class RemoteMininetDriver( Emulator ):
         """,user_name, ip_address, pwd,options ):
          Here the main is the TestON instance after creating all the log
          handles."""
-        for key in connectargs:
-            vars( self )[ key ] = connectargs[ key ]
-
-        self.name = self.options[ 'name' ]
-
         try:
-            if os.getenv( str( self.ip_address ) ) != None:
-                self.ip_address = os.getenv( str( self.ip_address ) )
+            for key in connectargs:
+                vars( self )[ key ] = connectargs[ key ]
+
+            self.name = self.options[ 'name' ]
+
+            try:
+                if os.getenv( str( self.ip_address ) ) != None:
+                    self.ip_address = os.getenv( str( self.ip_address ) )
+                else:
+                    main.log.info( self.name +
+                                   ": Trying to connect to " +
+                                   self.ip_address )
+
+            except KeyError:
+                main.log.info( "Invalid host name," +
+                               " connecting to local host instead" )
+                self.ip_address = 'localhost'
+            except Exception as inst:
+                main.log.error( "Uncaught exception: " + str( inst ) )
+
+            self.handle = super(
+                RemoteMininetDriver,
+                self ).connect(
+                user_name=self.user_name,
+                ip_address=self.ip_address,
+                port=None,
+                pwd=self.pwd )
+
+            # Copying the readme file to process the
+            if self.handle:
+                return main.TRUE
+
             else:
-                main.log.info( self.name +
-                               ": Trying to connect to " +
-                               self.ip_address )
-
-        except KeyError:
-            main.log.info( "Invalid host name," +
-                           " connecting to local host instead" )
-            self.ip_address = 'localhost'
-        except Exception as inst:
-            main.log.error( "Uncaught exception: " + str( inst ) )
-
-        self.handle = super(
-            RemoteMininetDriver,
-            self ).connect(
-            user_name=self.user_name,
-            ip_address=self.ip_address,
-            port=None,
-            pwd=self.pwd )
-
-        # Copying the readme file to process the
-        if self.handle:
-            return main.TRUE
-
-        else:
-            main.log.error(
-                "Connection failed to the host " +
-                self.user_name +
-                "@" +
-                self.ip_address )
-            main.log.error( "Failed to connect to the Mininet" )
-            return main.FALSE
+                main.log.error(
+                    "Connection failed to the host " +
+                    self.user_name +
+                    "@" +
+                    self.ip_address )
+                main.log.error( "Failed to connect to the Mininet" )
+                return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def checkForLoss( self, pingList ):
         """
@@ -96,107 +101,185 @@ class RemoteMininetDriver( Emulator ):
         Returns main.ERROR if "found multiple mininet" is found and
         Returns main.TRUE else
         """
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        self.handle.sendline( "cat " + pingList )
-        self.handle.expect( pingList )
-        self.handle.expect( "\$" )
-        outputs = self.handle.before + self.handle.after
-        if re.search( " 0% packet loss", outputs ):
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "cat " + pingList )
+            self.handle.expect( pingList )
+            self.handle.expect( "\$" )
+            outputs = self.handle.before + self.handle.after
+            if re.search( " 0% packet loss", outputs ):
+                return main.FALSE
+            elif re.search( "found multiple mininet", outputs ):
+                return main.ERROR
+            else:
+                # TODO: Parse for failed pings, give some truncated output
+                main.log.error( "Error, unexpected output in the ping file" )
+                main.log.warn( outputs )
+                return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in checkForLoss" )
+            main.log.error( self.name + ":    " + self.handle.before )
             return main.FALSE
-        elif re.search( "found multiple mininet", outputs ):
-            return main.ERROR
-        else:
-            # TODO: Parse for failed pings, give some truncated output
-            main.log.error( "Error, unexpected output in the ping file" )
-            main.log.warn( outputs )
-            return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def pingLong( self, **pingParams ):
         """
         Starts a continuous ping on the mininet host outputting
         to a file in the /tmp dir.
         """
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        args = utilities.parse_args(
-            [ "SRC", "TARGET", "PINGTIME" ], **pingParams )
-        precmd = "sudo rm /tmp/ping." + args[ "SRC" ]
-        self.execute( cmd=precmd, prompt="(.*)", timeout=10 )
-        command = "sudo mininet/util/m " + args[ "SRC" ] + " ping " +\
-                  args[ "TARGET" ] + " -i .2 -w " +\
-                  str( args[ 'PINGTIME' ] ) + " -D > /tmp/ping." +\
-                  args[ "SRC" ] + " &"
-        main.log.info( command )
-        self.execute( cmd=command, prompt="(.*)", timeout=10 )
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        return main.TRUE
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            args = utilities.parse_args(
+                [ "SRC", "TARGET", "PINGTIME" ], **pingParams )
+            precmd = "sudo rm /tmp/ping." + args[ "SRC" ]
+            self.execute( cmd=precmd, prompt="(.*)", timeout=10 )
+            command = "sudo mininet/util/m " + args[ "SRC" ] + " ping " +\
+                      args[ "TARGET" ] + " -i .2 -w " +\
+                      str( args[ 'PINGTIME' ] ) + " -D > /tmp/ping." +\
+                      args[ "SRC" ] + " &"
+            main.log.info( command )
+            self.execute( cmd=command, prompt="(.*)", timeout=10 )
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            return main.TRUE
+        except TypeError:
+            main.log.exception(self.name + ": Object not as expected")
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in pingLong" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
 
     def pingstatus( self, **pingParams ):
         """
         Tails the respective ping output file and check that
         there is a moving "64 bytes"
         """
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        args = utilities.parse_args( [ "SRC" ], **pingParams )
-        self.handle.sendline( "tail /tmp/ping." + args[ "SRC" ] )
-        self.handle.expect( "tail" )
-        self.handle.expect( "\$" )
-        result = self.handle.before + self.handle.after
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        if re.search( 'Unreachable', result ):
-            main.log.info( "Unreachable found in ping logs..." )
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            args = utilities.parse_args( [ "SRC" ], **pingParams )
+            self.handle.sendline( "tail /tmp/ping." + args[ "SRC" ] )
+            self.handle.expect( "tail" )
+            self.handle.expect( "\$" )
+            result = self.handle.before + self.handle.after
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            if re.search( 'Unreachable', result ):
+                main.log.info( "Unreachable found in ping logs..." )
+                return main.FALSE
+            elif re.search( '64\sbytes', result ):
+                main.log.info( "Pings look good" )
+                return main.TRUE
+            else:
+                main.log.info( "No, or faulty ping data..." )
+                return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
             return main.FALSE
-        elif re.search( '64\sbytes', result ):
-            main.log.info( "Pings look good" )
-            return main.TRUE
-        else:
-            main.log.info( "No, or faulty ping data..." )
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in pingstatus" )
+            main.log.error( self.name + ":    " + self.handle.before )
             return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
+            main.cleanup()
+            main.exit()
 
     def pingKill( self, testONUser, testONIP ):
         """
         Kills all continuous ping processes.
         Then copies all the ping files to the TestStation.
         """
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        command = "sudo kill -SIGINT `pgrep ping`"
-        main.log.info( command )
-        self.execute( cmd=command, prompt="(.*)", timeout=10 )
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            command = "sudo kill -SIGINT `pgrep ping`"
+            main.log.info( command )
+            self.execute( cmd=command, prompt="(.*)", timeout=10 )
 
-        main.log.info( "Transferring ping files to TestStation" )
-        command = "scp /tmp/ping.* " + \
-            str( testONUser ) + "@" + str( testONIP ) + ":/tmp/"
-        self.execute( cmd=command, prompt="100%", timeout=20 )
-        # Make sure the output is cleared
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        self.handle.sendline( "" )
-        i = self.handle.expect( [ "password", "\$" ] )
-        if i == 0:
-            main.log.error( "Error, sudo asking for password" )
-            main.log.error( self.handle.before )
-            return main.FALSE
-        else:
-            return main.TRUE
+            main.log.info( "Transferring ping files to TestStation" )
+            command = "scp /tmp/ping.* " + \
+                str( testONUser ) + "@" + str( testONIP ) + ":/tmp/"
+            self.execute( cmd=command, prompt="100%", timeout=20 )
+            # Make sure the output is cleared
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "" )
+            i = self.handle.expect( [ "password", "\$" ] )
+            if i == 0:
+                main.log.error( "Error, sudo asking for password" )
+                main.log.error( self.handle.before )
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found in pingKill" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def pingLongKill( self ):
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        command = "sudo kill -SIGING `pgrep ping`"
-        main.log.info( command )
-        self.execute( cmd=command, prompt="(.*)", timeout=10 )
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        return main.TRUE
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            command = "sudo kill -SIGING `pgrep ping`"
+            main.log.info( command )
+            self.execute( cmd=command, prompt="(.*)", timeout=10 )
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in pingLongKill" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
+            main.cleanup()
+            main.exit()
 
     def pingHostOptical( self, **pingParams ):
         """
@@ -245,52 +328,76 @@ class RemoteMininetDriver( Emulator ):
         """
         Pings between two hosts on remote mininet
         """
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
-        command = "mininet/util/m " + \
-            args[ "SRC" ] + " ping " + args[ "TARGET" ] + " -c 4 -W 1 -i .2"
-        main.log.info( command )
-        response = self.execute( cmd=command, prompt="rtt", timeout=10 )
-        if utilities.assert_matches(
-                expect=',\s0\%\spacket\sloss',
-                actual=response,
-                onpass="No Packet loss",
-                onfail="Host is not reachable" ):
-            main.log.info( "NO PACKET LOSS, HOST IS REACHABLE" )
-            main.lastResult = main.TRUE
-            return main.TRUE
-        else:
-            main.log.error( "PACKET LOST, HOST IS NOT REACHABLE" )
-            main.lastResult = main.FALSE
-            return main.FALSE
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
+            command = "mininet/util/m " + \
+                args[ "SRC" ] + " ping " + args[ "TARGET" ] + " -c 4 -W 1 -i .2"
+            main.log.info( command )
+            response = self.execute( cmd=command, prompt="rtt", timeout=10 )
+            if utilities.assert_matches(
+                    expect=',\s0\%\spacket\sloss',
+                    actual=response,
+                    onpass="No Packet loss",
+                    onfail="Host is not reachable" ):
+                main.log.info( "NO PACKET LOSS, HOST IS REACHABLE" )
+                main.lastResult = main.TRUE
+                return main.TRUE
+            else:
+                main.log.error( "PACKET LOST, HOST IS NOT REACHABLE" )
+                main.lastResult = main.FALSE
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
+            main.cleanup()
+            main.exit()
 
     def checknum( self, num ):
         """
         Verifies the correct number of switches are running
         """
-        if self.handle:
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            self.handle.sendline( 'ifconfig -a | grep "sw.. " | wc -l' )
-            self.handle.expect( "wc" )
-            self.handle.expect( "\$" )
-            response = self.handle.before
-            self.handle.sendline(
-                'ps -ef | grep "bash -ms mininet:sw" | grep -v color | wc -l' )
-            self.handle.expect( "color" )
-            self.handle.expect( "\$" )
-            response2 = self.handle.before
+        try:
+            if self.handle:
+                self.handle.sendline( "" )
+                self.handle.expect( "\$" )
+                self.handle.sendline( 'ifconfig -a | grep "sw.. " | wc -l' )
+                self.handle.expect( "wc" )
+                self.handle.expect( "\$" )
+                response = self.handle.before
+                self.handle.sendline(
+                    'ps -ef | grep "bash -ms mininet:sw" | grep -v color | wc -l' )
+                self.handle.expect( "color" )
+                self.handle.expect( "\$" )
+                response2 = self.handle.before
 
-            if re.search( num, response ):
-                if re.search( num, response2 ):
-                    return main.TRUE
+                if re.search( num, response ):
+                    if re.search( num, response2 ):
+                        return main.TRUE
+                    else:
+                        return main.FALSE
                 else:
                     return main.FALSE
             else:
-                return main.FALSE
-        else:
-            main.log.error( "Connection failed to the host" )
+                main.log.error( "Connection failed to the host" )
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in checknum" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def startTcpdump(
             self,
@@ -437,25 +544,39 @@ class RemoteMininetDriver( Emulator ):
         """
         Called at the end of the test to disconnect the handle.
         """
-        if self.handle:
-            # Close the ssh connection
-            self.handle.sendline( "" )
-            # self.handle.expect( "\$" )
-            i = self.handle.expect( [ '\$', 'mininet>', pexpect.TIMEOUT,
-                                      pexpect.EOF ], timeout=2 )
-            if i == 0:
-                self.handle.sendline( "exit" )
-                self.handle.expect( "closed" )
-            elif i == 1:
-                self.handle.sendline( "exit" )
-                self.handle.expect( "exit" )
-                self.handle.expect('\$')
-                self.handle.sendline( "exit" )
-                self.handle.expect( "exit" )
-                self.handle.expect( "closed" )
-        else:
-            main.log.error( "Connection failed to the host" )
-        return main.TRUE
+        try:
+            if self.handle:
+                # Close the ssh connection
+                self.handle.sendline( "" )
+                # self.handle.expect( "\$" )
+                i = self.handle.expect( [ '\$', 'mininet>', pexpect.TIMEOUT,
+                                          pexpect.EOF ], timeout=2 )
+                if i == 0:
+                    self.handle.sendline( "exit" )
+                    self.handle.expect( "closed" )
+                elif i == 1:
+                    self.handle.sendline( "exit" )
+                    self.handle.expect( "exit" )
+                    self.handle.expect('\$')
+                    self.handle.sendline( "exit" )
+                    self.handle.expect( "exit" )
+                    self.handle.expect( "closed" )
+            else:
+                main.log.error( "Connection failed to the host" )
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in disconnect" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
+            main.cleanup()
+            main.exit()
 
     def setIpTablesOUTPUT( self, dstIp, dstPort, action='add',
                            packetType='tcp', rule='DROP' ):

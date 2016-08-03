@@ -886,22 +886,21 @@ def pointIntentTcp( main,
 
     return stepResult
 
-def singleToMultiIntent( main,
-                         name,
-                         hostNames,
-                         onosNode=0,
-                         devices="",
-                         ports=None,
-                         ethType="",
-                         macs=None,
-                         bandwidth="",
-                         lambdaAlloc=False,
-                         ipProto="",
-                         ipAddresses="",
-                         tcp="",
-                         sw1="",
-                         sw2="",
-                         expectedLink=0 ):
+
+def installSingleToMultiIntent( main,
+                                name,
+                                senders,
+                                recipients,
+                                onosNode=0,
+                                ethType="",
+                                bandwidth="",
+                                lambdaAlloc=False,
+                                ipProto="",
+                                ipAddresses="",
+                                tcp="",
+                                sw1="",
+                                sw2="",
+                                partial=False ):
     """
         Verify Single to Multi Point intents
         NOTE:If main.hostsData is not defined, variables data should be passed
@@ -958,176 +957,85 @@ def singleToMultiIntent( main,
     """
 
     assert main, "There is no main variable"
-    assert hostNames, "You must specify hosts"
-    assert devices or main.hostsData, "You must specify devices"
+    assert senders, "You must specify a sender"
+    assert recipients, "You must specify a recipient"
+    # Assert devices or main.hostsData, "You must specify devices"
 
-    global itemName
+    global itemName  # The name of this run. Used for logs.
     itemName = name
-    tempHostsData = {}
-    intentsId = []
     onosNode = int( onosNode )
 
-    macsDict = {}
-    ipDict = {}
-    if hostNames and devices:
-        if len( hostNames ) != len( devices ):
-            main.log.debug( "hosts and devices does not have the same length" )
-            #print "len hostNames = ", len( hostNames )
-            #print "len devices = ", len( devices )
-            return main.FALSE
-        if ports:
-            if len( ports ) != len( devices ):
-                main.log.error( "Ports and devices does " +
-                                "not have the same length" )
-                #print "len devices = ", len( devices )
-                #print "len ports = ", len( ports )
-                return main.FALSE
-        else:
-            main.log.info( "Device Ports are not specified" )
-        if macs:
-            for i in range( len( devices ) ):
-                macsDict[ devices[ i ] ] = macs[ i ]
-
-    elif hostNames and not devices and main.hostsData:
-        devices = []
-        main.log.info( "singleToMultiIntent function is using main.hostsData" )
-        for host in hostNames:
-               devices.append( main.hostsData.get( host ).get( 'location' ) )
-               macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
-                           main.hostsData.get( host ).get( 'mac' )
-               ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
-                           main.hostsData.get( host ).get( 'ipAddresses' )
-        #print main.hostsData
-
-    #print 'host names = ', hostNames
-    #print 'devices = ', devices
-    #print "macsDict = ", macsDict
-
-    pingResult = main.TRUE
-    intentResult = main.TRUE
-    removeIntentResult = main.TRUE
-    flowResult = main.TRUE
-    topoResult = main.TRUE
-    linkDownResult = main.TRUE
-    linkUpResult = main.TRUE
-
-    devicesCopy = copy.copy( devices )
-    if ports:
-        portsCopy = copy.copy( ports )
     main.log.info( itemName + ": Adding single point to multi point intents" )
 
-    # Check flows count in each node
-    checkFlowsCount( main )
+    try:
+        for sender in senders:
+            if not sender.get( "device" ):
+                main.log.warn( "Device not given for sender {0}. Loading from main.hostData".format( sender.get( "name" ) ) )
+                sender[ "device" ] = main.hostsData.get( sender.get( "name" ) ).get( "location" )
 
-    # Adding bidirectional point  intents
-    for i in range( len( devices ) ):
-        ingressDevice = devicesCopy[ i ]
-        egressDeviceList = copy.copy( devicesCopy )
-        egressDeviceList.remove( ingressDevice )
-        if ports:
-            portIngress = portsCopy[ i ]
-            portEgressList = copy.copy( portsCopy )
-            del portEgressList[ i ]
-        else:
-            portIngress = ""
-            portEgressList = None
-        if not macsDict:
-            srcMac = ""
-        else:
-            srcMac = macsDict[ ingressDevice ]
-            if srcMac == None:
-                main.log.debug( "There is no MAC in device - " + ingressDevice )
-                srcMac = ""
+        for recipient in recipients:
+            if not recipient.get( "device" ):
+                main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
+                recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
+        vlanId = senders[ 0 ].get( "vlanId" )
 
-        intentsId.append(
-                        main.RESTs[ onosNode ].addSinglepointToMultipointIntent(
+        ingressDevice = senders[ 0 ].get( "device" )
+        egressDeviceList = [ x.get( "device" ) for x in recipients if x.get( "device" ) ]
+
+        portIngress = senders[ 0 ].get( "port", "" )
+        portEgressList = [ x.get( "port" ) for x in recipients if x.get( "port" ) ]
+        if not portEgressList:
+            portEgressList = []
+
+        main.log.debug( ingressDevice )
+        main.log.debug( egressDeviceList )
+
+        srcMac = senders[ 0 ].get( "mac" )
+        dstMac = []
+        for r in recipients:
+            mac = r.get( "mac" )
+            dstMac.append( mac )
+
+        ipSrc = senders[ 0 ].get( "ip" )
+        ipDst = []
+        for r in recipients:
+            ip = r.get( "ip" )
+            ipDst.append( ip )
+
+        # Adding point intent
+        intentId = main.RESTs[ onosNode ].addSinglepointToMultipointIntent(
                                             ingressDevice=ingressDevice,
                                             egressDeviceList=egressDeviceList,
                                             portIngress=portIngress,
                                             portEgressList=portEgressList,
                                             ethType=ethType,
                                             ethSrc=srcMac,
+                                            #ethDst=dstMac, #Isn't working because of ONOS itself
                                             bandwidth=bandwidth,
                                             lambdaAlloc=lambdaAlloc,
                                             ipProto=ipProto,
-                                            ipSrc="",
-                                            ipDst="",
+                                            ipSrc=ipSrc,
+                                            ipDst=ipDst,
                                             tcpSrc="",
-                                            tcpDst="" ) )
+                                            tcpDst="",
+                                            vlanId=vlanId,
+                                            partial=partial )
 
-    # Wait some time for the flow to go through when using multi instance
-    pingResult = pingallHosts( main, hostNames )
+        time.sleep( main.addIntentSleep )
+        intentsId = main.RESTs[ 0 ].getIntentsId()
+    except ( KeyError, TypeError ):
+        errorMsg = "There was a problem loading the hosts data."
+        if intentId:
+            errorMsg += "  There was a problem installing Singlepoint to Multipoint intent."
+        main.log.error( errorMsg )
+        return main.FALSE
 
     # Check intents state
-    time.sleep( main.checkIntentSleep )
-    intentResult = checkIntentState( main, intentsId )
-
-    # Check intents state again if first check fails...
-    if not intentResult:
-        intentResult = checkIntentState( main, intentsId )
-
-    # Check flows count in each node
-    checkFlowsCount( main )
-    # Verify flows
-    checkFlowsState( main )
-
-    pingResult = pingResult and pingallHosts( main, hostNames )
-
-    # Test rerouting if these variables exist
-    if sw1 and sw2 and expectedLink:
-        # link down
-        linkDownResult = link( main, sw1, sw2, "down" )
-        intentResult = intentResult and checkIntentState( main, intentsId )
-
-        # Check flows count in each node
-        checkFlowsCount( main )
-        # Verify flows
-        checkFlowsState( main )
-
-        # Check OnosTopology
-        topoResult = checkTopology( main, expectedLink )
-
-        # Ping hosts
-        pingResult = pingResult and pingallHosts( main, hostNames )
-
-        intentResult = checkIntentState( main, intentsId )
-
-        # Checks ONOS state in link down
-        if linkDownResult and topoResult and pingResult and intentResult:
-            main.log.info( itemName + ": Successfully brought link down" )
-        else:
-            main.log.error( itemName + ": Failed to bring link down" )
-
-        # link up
-        linkUpResult = link( main, sw1, sw2, "up" )
-        time.sleep( main.rerouteSleep )
-
-        # Check flows count in each node
-        checkFlowsCount( main )
-        # Verify flows
-        checkFlowsState( main )
-
-        # Check OnosTopology
-        topoResult = checkTopology( main, main.numLinks )
-
-        # Ping hosts
-        pingResult = pingResult and pingallHosts( main, hostNames )
-
-        intentResult = checkIntentState( main, intentsId )
-
-        # Checks ONOS state in link up
-        if linkUpResult and topoResult and pingResult and intentResult:
-            main.log.info( itemName + ": Successfully brought link back up" )
-        else:
-            main.log.error( itemName + ": Failed to bring link back up" )
-
-    # Remove all intents
-    removeIntentResult = removeAllIntents( main, intentsId )
-
-    stepResult = pingResult and linkDownResult and linkUpResult \
-                 and intentResult and removeIntentResult
-
-    return stepResult
+    if utilities.retry( f=checkIntentState, retValue=main.FALSE, args=( main, intentsId ), sleep=main.checkIntentSleep ):
+        return intentsId
+    else:
+        main.log.error( "Single to Multi Intent did not install correctly" )
+        return main.FALSE
 
 def multiToSingleIntent( main,
                          name,

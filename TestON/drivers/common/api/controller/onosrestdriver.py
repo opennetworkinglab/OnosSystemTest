@@ -216,34 +216,6 @@ class OnosRestDriver( Controller ):
             main.cleanup()
             main.exit()
 
-    def getIntentsId( self, ip="DEFAULT", port="DEFAULT" ):
-        """
-        Description:
-           Gets all intents ID using intents function
-        Returns:
-            List of intents ID;Returns None for exception; Returns None for
-            exception; Returns None for exception
-        """
-        try:
-            intentsDict = {}
-            intentsIdList = []
-            intentsDict = json.loads( self.intents( ip=ip, port=port ) )
-            for intent in intentsDict:
-                intentsIdList.append( intent.get( 'id' ) )
-            if not intentsIdList:
-                main.log.debug( "Cannot find any intents" )
-                return main.FALSE
-            else:
-                main.log.info( "Found intents: " + str( intentsIdList ) )
-                return main.TRUE
-        except ( AttributeError, TypeError ):
-            main.log.exception( self.name + ": Object not as expected" )
-            return None
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
-
     def apps( self, ip="DEFAULT", port="DEFAULT" ):
         """
         Description:
@@ -474,7 +446,7 @@ class OnosRestDriver( Controller ):
                                   url="/intents", ip = ip, port = port,
                                   data=json.dumps( intentJson ) )
             if response:
-                if 201:
+                if "201" in str( response[ 0 ] ):
                     main.log.info( self.name + ": Successfully POST host" +
                                    " intent between host: " + hostIdOne +
                                    " and host: " + hostIdTwo )
@@ -615,8 +587,6 @@ class OnosRestDriver( Controller ):
 
             # TODO: Bandwidth and Lambda will be implemented if needed
 
-            main.log.debug( intentJson )
-
             output = None
             if ip == "DEFAULT":
                 main.log.warn( "No ip given, reverting to ip from topo file" )
@@ -628,8 +598,11 @@ class OnosRestDriver( Controller ):
             response = self.send( method="POST",
                                   url="/intents", ip = ip, port = port,
                                   data=json.dumps( intentJson ) )
+
+            main.log.debug( intentJson )
+
             if response:
-                if 201:
+                if "201" in str( response[ 0 ] ):
                     main.log.info( self.name + ": Successfully POST point" +
                                    " intent between ingress: " + ingressDevice +
                                    " and egress: " + egressDevice + " devices" )
@@ -647,11 +620,176 @@ class OnosRestDriver( Controller ):
             main.cleanup()
             main.exit()
 
+    def addSinglepointToMultipointIntent(self,
+                       ingressDevice,
+                       egressDeviceList,
+                       portEgressList,
+                       appId='org.onosproject.cli',
+                       portIngress="",
+                       ethType="",
+                       ethSrc="",
+                       ethDst="",
+                       bandwidth="",
+                       lambdaAlloc=False,
+                       ipProto="",
+                       ipSrc="",
+                       ipDst="",
+                       tcpSrc="",
+                       tcpDst="",
+                       partial=False,
+                       ip="DEFAULT",
+                       port="DEFAULT",
+                       vlanId="" ):
+        """
+        Description:
+            Adds a point-to-multi point intent ( uni-directional ) by
+            specifying device id's and optional fields
+        Required:
+            * ingressDevice: device id of ingress device
+            * egressDevice: device id of egress device
+            * portEgressList: a list of port id of egress device
+
+        Optional:
+            * portIngress: port id of ingress device
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc ( i.e. src mac addr )
+            * ethDst: specify ethDst ( i.e. dst mac addr )
+            * bandwidth: specify bandwidth capacity of link (TODO)
+            * lambdaAlloc: if True, intent will allocate lambda
+              for the specified intent (TODO)
+            * ipProto: specify ip protocol
+            * ipSrc: specify ip source address with mask eg. ip#/24
+            * ipDst: specify ip destination address eg. ip#/24
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE if
+            no ingress|egress port found and if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        try:
+
+            if "/" in ingressDevice:
+                if not portIngress:
+                    ingressPort = ingressDevice.split( "/" )[ 1 ]
+                ingressDevice = ingressDevice.split( "/" )[ 0 ]
+            else:
+                if not portIngress:
+                    main.log.debug( self.name + ": Ingress port not specified" )
+                    return main.FALSE
+            index = 0
+            for egressDevice in egressDeviceList:
+                if "/" in egressDevice:
+                    portEgressList.append( egressDevice.split( "/" )[ 1 ] )
+                    egressDeviceList[ index ] = egressDevice.split( "/" )[ 0 ]
+                else:
+                    if not portEgressList:
+                        main.log.debug( self.name + ": Egress port not specified" )
+                        return main.FALSE
+                index = index + 1
+
+            intentJson = { "ingressPoint": { "device": ingressDevice,
+                                             "port": ingressPort },
+                           "selector": { "criteria": [] },
+                           "priority": 55,
+                           "treatment": { "deferred": [],
+                                          "instructions": [] },
+                           "egressPoint": { "connectPoints": [] },
+                           "appId": appId,
+                           "type": "SinglePointToMultiPointIntent",
+                           "constraints": [ { "type": "LinkTypeConstraint",
+                                              "types": ["OPTICAL"],
+                                              "inclusive": "false" } ] }
+
+            index = 0
+            for ep in portEgressList:
+                intentJson[ 'egressPoint' ][ 'connectPoints' ].append(
+                    { "device": egressDeviceList[ index ],
+                      "port": ep } )
+                index += 1
+
+            if ethType == "IPV4":
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                    { "type": "ETH_TYPE",
+                      "ethType": 2048 } )
+            elif ethType:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                    { "type": "ETH_TYPE",
+                      "ethType": ethType } )
+
+            if ethSrc:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                    { "type": "ETH_SRC",
+                      "mac": ethSrc } )
+
+            if ethDst:
+                for dst in ethDst:
+                    if dst:
+                        intentJson[ 'selector' ][ 'criteria' ].append(
+                            { "type": "ETH_DST",
+                              "mac": dst } )
+            if tcpSrc:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                    { "type": "TCP_SRC",
+                      "tcpPort": tcpSrc } )
+            if tcpDst:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                    { "type": "TCP_DST",
+                      "tcpPort": tcpDst } )
+            if ipProto:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                    { "type": "IP_PROTO",
+                      "protocol": ipProto } )
+            if vlanId:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                    { "type": "VLAN_VID",
+                      "vlanId": vlanId } )
+
+            # TODO: Bandwidth and Lambda will be implemented if needed
+
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            response = self.send( method="POST",
+                                 url="/intents", ip=ip, port=port,
+                                 data=json.dumps( intentJson ) )
+
+            main.log.debug(intentJson)
+
+            if response:
+                if "201" in str( response[ 0 ] ):
+                    main.log.info( self.name + ": Successfully POST point" +
+                                   " intent between ingress: " + ingressDevice +
+                                   " and egress: " + str(egressDeviceList) + " devices" )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " + str( response ) )
+                    return main.FALSE
+            else:
+                main.log.error( "REST request has no response." )
+                return main.FALSE
+
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def removeIntent( self, intentId, appId='org.onosproject.cli',
                        ip="DEFAULT", port="DEFAULT" ):
         """
-        Remove intent for specified application id and intent id;
-        Returns None for exception
+            Remove intent for specified application id and intent id;
+            Returns None for exception
         """
         try:
             output = None
@@ -681,16 +819,23 @@ class OnosRestDriver( Controller ):
             main.cleanup()
             main.exit()
 
-    def getIntentsId( self, ip="DEFAULT", port="DEFAULT" ):
+    def getIntentsId( self ):
         """
-        Returns a list of intents id; Returns None for exception
+        Description:
+            Gets all intents ID using intents function
+        Returns:
+            List of intents ID if found any intents; Returns main.FALSE for other exceptions
         """
         try:
             intentIdList = []
             intentsJson = json.loads( self.intents() )
             for intent in intentsJson:
                 intentIdList.append( intent.get( 'id' ) )
-            return intentIdList
+            if not intentIdList:
+                main.log.debug( "Cannot find any intents" )
+                return main.FALSE
+            else:
+                return intentIdList
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -711,7 +856,8 @@ class OnosRestDriver( Controller ):
         try:
             results = []
             if intentIdList == 'ALL':
-                intentIdList = self.getIntentsId( ip=ip, port=port )
+                # intentIdList = self.getIntentsId( ip=ip, port=port )
+                intentIdList = self.getIntentsId()
 
             main.log.info( self.name + ": Removing intents " +
                            str( intentIdList ) )
@@ -988,7 +1134,6 @@ class OnosRestDriver( Controller ):
                 intentsId = self.getIntentsId( ip=ip, port=port )
             intentsDict = self.getIntentState( intentsId, ip=ip, port=port )
 
-            #print "len of intentsDict ", str( len( intentsDict ) )
             if len( intentsId ) != len( intentsDict ):
                 main.log.error( self.name + ": There is something wrong " +
                                 "getting intents state" )
@@ -1152,7 +1297,7 @@ class OnosRestDriver( Controller ):
                                   url=url, ip = ip, port = port,
                                   data=json.dumps( flowJson ) )
             if response:
-                if 201:
+                if "201" in str( response[ 0 ] ):
                     main.log.info( self.name + ": Successfully POST flow" +
                                    "in device: " + str( deviceId ) )
                     return main.TRUE

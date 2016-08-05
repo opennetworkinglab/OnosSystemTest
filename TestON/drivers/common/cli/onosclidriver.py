@@ -1156,7 +1156,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="", setVlan="" ):
+    def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="", setVlan="", encap="" ):
         """
         Required:
             * hostIdOne: ONOS host id for host1
@@ -1164,6 +1164,7 @@ class OnosCliDriver( CLI ):
         Optional:
             * vlanId: specify a VLAN id for the intent
             * setVlan: specify a VLAN id treatment
+            * encap: specify an encapsulation type
         Description:
             Adds a host-to-host intent ( bidirectional ) by
             specifying the two hosts.
@@ -1176,6 +1177,8 @@ class OnosCliDriver( CLI ):
                 cmdStr += "-v " + str( vlanId ) + " "
             if setVlan:
                 cmdStr += "--setVlan " + str( vlanId ) + " "
+            if encap:
+                cmdStr += "--encapsulation " + str( encap ) + " "
             cmdStr += str( hostIdOne ) + " " + str( hostIdTwo )
             handle = self.sendline( cmdStr )
             assert "Command not found:" not in handle, handle
@@ -1274,7 +1277,8 @@ class OnosCliDriver( CLI ):
             tcpSrc="",
             tcpDst="",
             vlanId="",
-            setVlan="" ):
+            setVlan="",
+            encap="" ):
         """
         Required:
             * ingressDevice: device id of ingress device
@@ -1293,6 +1297,7 @@ class OnosCliDriver( CLI ):
             * tcpDst: specify tcp destination port
             * vlanId: specify vlan ID
             * setVlan: specify a VLAN id treatment
+            * encap: specify an Encapsulation type to use
         Description:
             Adds a point-to-point intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1330,6 +1335,8 @@ class OnosCliDriver( CLI ):
                 cmd += " -v " + str( vlanId )
             if setVlan:
                 cmd += " --setVlan " + str( setVlan )
+            if encap:
+                cmd += " --encapsulation " + str( encap )
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -1411,7 +1418,8 @@ class OnosCliDriver( CLI ):
             setEthDst="",
             vlanId="",
             setVlan="",
-            partial=False ):
+            partial=False,
+            encap="" ):
         """
         Note:
             This function assumes the format of all ingress devices
@@ -1438,6 +1446,7 @@ class OnosCliDriver( CLI ):
             * setEthDst: action to Rewrite Destination MAC Address
             * vlanId: specify vlan Id
             * setVlan: specify VLAN Id treatment
+            * encap: specify a type of encapsulation
         Description:
             Adds a multipoint-to-singlepoint intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1481,6 +1490,8 @@ class OnosCliDriver( CLI ):
                 cmd += " --setVlan " + str( setVlan )
             if partial:
                 cmd += " --partial"
+            if encap:
+                cmd += " --encapsulation " + str( encap )
 
             # Check whether the user appended the port
             # or provided it as an input
@@ -1566,7 +1577,8 @@ class OnosCliDriver( CLI ):
             setEthDst="",
             vlanId="",
             setVlan="",
-            partial=False ):
+            partial=False,
+            encap="" ):
         """
         Note:
             This function assumes the format of all egress devices
@@ -1593,6 +1605,7 @@ class OnosCliDriver( CLI ):
             * setEthDst: action to Rewrite Destination MAC Address
             * vlanId: specify vlan Id
             * setVlan: specify VLAN ID treatment
+            * encap: specify an encapsulation type
         Description:
             Adds a singlepoint-to-multipoint intent ( uni-directional ) by
             specifying device id's and optional fields
@@ -1636,6 +1649,8 @@ class OnosCliDriver( CLI ):
                 cmd += " --setVlan " + str( setVlan )
             if partial:
                 cmd += " --partial"
+            if encap:
+                cmd += " --encapsulation " + str( encap )
 
             # Check whether the user appended the port
             # or provided it as an input

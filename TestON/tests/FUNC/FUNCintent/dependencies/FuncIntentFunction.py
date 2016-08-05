@@ -23,7 +23,8 @@ def installHostIntent( main,
                        tcp="",
                        sw1="",
                        sw2="",
-                       setVlan="" ):
+                       setVlan="",
+                       encap="" ):
     """
     Installs a Host Intent
 
@@ -80,7 +81,8 @@ def installHostIntent( main,
         intentId = main.CLIs[ onosNode ].addHostIntent( hostIdOne=host1.get( "id" ),
                                                         hostIdTwo=host2.get( "id" ),
                                                         vlanId=vlanId,
-                                                        setVlan=setVlan )
+                                                        setVlan=setVlan,
+                                                        encap=encap )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -299,7 +301,8 @@ def installPointIntent( main,
                         ipDst="",
                         tcpSrc="",
                         tcpDst="",
-                        setVlan=""):
+                        setVlan="",
+                        encap="" ):
     """
     Installs a Single to Single Point Intent
 
@@ -388,7 +391,8 @@ def installPointIntent( main,
                                             tcpSrc=tcpSrc,
                                             tcpDst=tcpDst,
                                             vlanId=vlanId,
-                                            setVlan=setVlan )
+                                            setVlan=setVlan,
+                                            encap=encap )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -700,7 +704,8 @@ def installSingleToMultiIntent( main,
                                 sw1="",
                                 sw2="",
                                 setVlan="",
-                                partial=False ):
+                                partial=False,
+                                encap="" ):
     """
     Installs a Single to Multi Point Intent
 
@@ -789,7 +794,8 @@ def installSingleToMultiIntent( main,
                                             tcpDst="",
                                             vlanId=vlanId,
                                             setVlan=setVlan,
-                                            partial=partial )
+                                            partial=partial,
+                                            encap=encap )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -818,7 +824,8 @@ def installMultiToSingleIntent( main,
                                 sw1="",
                                 sw2="",
                                 setVlan="",
-                                partial=False ):
+                                partial=False,
+                                encap="" ):
     """
     Installs a Multi to Single Point Intent
 
@@ -906,7 +913,8 @@ def installMultiToSingleIntent( main,
                                             tcpDst="",
                                             vlanId=vlanId,
                                             setVlan=setVlan,
-                                            partial=partial )
+                                            partial=partial,
+                                            encap=encap )
     except (KeyError, TypeError):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -1079,7 +1087,7 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Check flows count in each node
-        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20, attempts=3 ):
+        if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=20, attempts=5 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ], sleep=20, attempts=5 ):
             main.assertReturnString += 'Link Down Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Down Flow State Failed\n'

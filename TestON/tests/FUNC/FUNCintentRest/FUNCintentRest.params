@@ -50,6 +50,7 @@
         <fwd>10</fwd>
         <addIntent>10</addIntent>
         <topoAttempts>3</topoAttempts>
+        <flowDuration>10</flowDuration>
     </SLEEP>
 
     <MININET>

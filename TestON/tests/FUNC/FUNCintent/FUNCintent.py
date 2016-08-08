@@ -49,6 +49,7 @@ class FUNCintent:
             main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
             main.checkTopoAttempts = int( main.params[ 'SLEEP' ][ 'topoAttempts' ] )
+            main.flowDurationSleep = int( main.params[ 'SLEEP' ][ 'flowDuration' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )

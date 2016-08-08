@@ -91,9 +91,16 @@ def installHostIntent( main,
     # Check intents state
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
                         args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
-        return intentId
+        main.assertReturnString += 'Install Intent State Passed\n'
+        if flowDuration( main ):
+            main.assertReturnString += 'Flow duration check Passed\n'
+            return intentId
+        else:
+            main.assertReturnString += 'Flow duration check failed\n'
+            return main.FALSE
     else:
         main.log.error( "Host Intent did not install correctly" )
+        main.assertReturnString += 'Install Intent State Failed\n'
         return main.FALSE
 
 def testHostIntent( main,
@@ -397,8 +404,15 @@ def installPointIntent( main,
         return main.FALSE
 
     # Check intents state
-    if utilities.retry( f=checkIntentState, retValue=main.FALSE, args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
-        return intentId
+    if utilities.retry( f=checkIntentState, retValue=main.FALSE,
+                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
+        main.assertReturnString += 'Install Intent State Passed\n'
+        if flowDuration( main ):
+            main.assertReturnString += 'Flow duration check Passed\n'
+            return intentId
+        else:
+            main.assertReturnString += 'Flow duration check failed\n'
+            return main.FALSE
     else:
         main.log.error( "Point Intent did not install correctly" )
         return main.FALSE
@@ -798,8 +812,15 @@ def installSingleToMultiIntent( main,
         return main.FALSE
 
     # Check intents state
-    if utilities.retry( f=checkIntentState, retValue=main.FALSE, args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
-        return intentId
+    if utilities.retry( f=checkIntentState, retValue=main.FALSE,
+                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
+        main.assertReturnString += 'Install Intent State Passed\n'
+        if flowDuration( main ):
+            main.assertReturnString += 'Flow duration check Passed\n'
+            return intentId
+        else:
+            main.assertReturnString += 'Flow duration check failed\n'
+            return main.FALSE
     else:
         main.log.error( "Single to Multi Intent did not install correctly" )
         return main.FALSE
@@ -915,8 +936,15 @@ def installMultiToSingleIntent( main,
         return main.FALSE
 
     # Check intents state
-    if utilities.retry( f=checkIntentState, retValue=main.FALSE, args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
-        return intentId
+    if utilities.retry( f=checkIntentState, retValue=main.FALSE,
+                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
+        main.assertReturnString += 'Install Intent State Passed\n'
+        if flowDuration( main ):
+            main.assertReturnString += 'Flow duration check Passed\n'
+            return intentId
+        else:
+            main.assertReturnString += 'Flow duration check failed\n'
+            return main.FALSE
     else:
         main.log.error( "Multi to Single Intent did not install correctly" )
         return main.FALSE
@@ -1200,8 +1228,8 @@ def testEndPointFail( main,
 
         for recipient in recipients:
             if not recipient.get( "device" ):
-                main.log.warn( "Device not given for recipient {0}. Loading from\
-                                main.hostData".format( recipient.get( "name" ) ) )
+                main.log.warn( "Device not given for recipient {0}. Loading from " +\
+                                main.hostData.format( recipient.get( "name" ) ) )
                 recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
     except (KeyError, TypeError):
         main.log.error( "There was a problem loading the hosts data." )
@@ -1879,3 +1907,43 @@ def report( main ):
         main.ONOSbench.logReport( main.ONOSip[ i ],
                 [ "WARN" ],
                 "d" )
+
+def flowDuration( main ):
+    """
+        Check age of flows to see if flows are being overwritten
+    """
+    import time
+    main.log.info( "Getting current flow durations" )
+    flowsJson1 = main.CLIs[ 0 ].flows( noCore=True )
+    try:
+        flowsJson1 = json.loads( flowsJson1 )
+    except ValueError:
+        main.log.error( "Unable to read flows" )
+        return main.FALSE
+    flowLife = []
+    waitFlowLife = []
+    for device in flowsJson1:
+        if device.get( 'flowcount', 0 ) > 0:
+            for i in range( device[ 'flowCount' ] ):
+                flowLife.append( device[ 'flows' ][ i ][ 'life' ] )
+    main.log.info( "Sleeping for {} seconds".format( main.flowDurationSleep ) )
+    time.sleep( main.flowDurationSleep )
+    main.log.info( "Getting new flow durations" )
+    flowsJson2 = main.CLIs[ 0 ].flows( noCore=True )
+    try:
+        flowsJson2 = json.loads( flowsJson2 )
+    except ValueError:
+        main.log.error( "Unable to read flows" )
+        return main.FALSE
+    for device in flowsJson2:
+        if device.get( 'flowcount', 0 ) > 0:
+            for i in range( device[ 'flowCount' ] ):
+                waitFlowLife.append( device[ 'flows' ][ i ][ 'life' ] )
+    main.log.info( "Determining whether flows where overwritten" )
+    if len( flowLife ) == len( waitFlowLife ):
+        for i in range( len( flowLife) ):
+            if waitFlowLife[ i ] - flowLife[ i ] < main.flowDurationSleep:
+                return main.FALSE
+    else:
+        return main.FALSE
+    return main.TRUE

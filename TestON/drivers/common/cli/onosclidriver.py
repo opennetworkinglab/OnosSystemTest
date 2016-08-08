@@ -2286,10 +2286,11 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ": ONOS timeout" )
             return None
 
-    def flows( self, state="", jsonFormat=True, timeout=60, noExit=False ):
+    def flows( self, state="", jsonFormat=True, timeout=60, noExit=False, noCore=False ):
         """
         Optional:
             * jsonFormat: enable output formatting in json
+            * noCore: suppress core flows
         Description:
             Obtain flows currently installed
         """
@@ -2297,6 +2298,8 @@ class OnosCliDriver( CLI ):
             cmdStr = "flows"
             if jsonFormat:
                 cmdStr += " -j "
+            if noCore:
+                cmdStr += " -n "
             cmdStr += state
             handle = self.sendline( cmdStr, timeout=timeout, noExit=noExit )
             assert "Command not found:" not in handle, handle

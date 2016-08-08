@@ -1,558 +1,315 @@
-# CASE1 starts number of nodes specified in param file
-#
-# cameron@onlab.us
+'''
+    SCPFportLat test
+    Test latency for port status change
+    Up & Down:
+    PortStatus --- Device --- Link --- Graph
 
+    yunpeng@onlab.us
+'''
 class SCPFportLat:
-
     def __init__( self ):
         self.default = ''
 
-    def CASE1( self, main ):
-        import sys
-        import re
+    def CASE0( self, main ):
         import os
-        import time
+        import imp
+        '''
+        - GIT
+        - BUILDING ONOS
+            Pull specific ONOS branch, then Build ONOS ono ONOS Bench.
+            This step is usually skipped. Because in a Jenkins driven automated
+            test env. We want Jenkins jobs to pull&build for flexibility to handle
+            different versions of ONOS.
+        - Construct tests variables
+        '''
+        gitPull = main.params['GIT']['gitPull']
+        gitBranch = main.params['GIT']['gitBranch']
 
-        global init
-        try:
-            if type(init) is not bool:
-                init = Fals
-        except NameError:
-            init = False
+        main.case( "Pull onos branch and build onos on Teststation." )
 
-        #Load values from params file
-        main.testOnDirectory = os.path.dirname(os.getcwd())
-        checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
-        gitPull = main.params[ 'GIT' ][ 'autopull' ]
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        Apps = main.params[ 'ENV' ][ 'cellApps' ]
-        BENCHIp = main.params[ 'BENCH' ][ 'ip' ]
-        MN1Ip = main.params[ 'MN' ][ 'ip1' ]
-        main.maxNodes = int(main.params[ 'max' ])
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        homeDir = os.path.expanduser('~')
-        topoCfgFile = main.params['TEST']['topoConfigFile']
-        topoCfgName = main.params['TEST']['topoConfigName']
-        resultPath = main.params['DB']['portEventResultPath']
-        skipMvn = main.params ['TEST']['mci']
-        main.topology = main.params['DEPENDENCY']['topology']
+        if gitPull == 'True':
+            main.step( "Git Checkout ONOS branch: " + gitBranch )
+            stepResult = main.ONOSbench.gitCheckout( branch=gitBranch )
+            utilities.assert_equals(expect=main.TRUE,
+                                    actual=stepResult,
+                                    onpass="Successfully checkout onos branch.",
+                                    onfail="Failed to checkout onos branch. Exiting test...")
+            if not stepResult: main.exit()
+
+            main.step( "Git Pull on ONOS branch:" + gitBranch )
+            stepResult = main.ONOSbench.gitPull()
+            utilities.assert_equals(expect=main.TRUE,
+                                    actual=stepResult,
+                                    onpass="Successfully pull onos. ",
+                                    onfail="Failed to pull onos. Exiting test ...")
+            if not stepResult: main.exit()
+
+            main.step( "Building ONOS branch: " + gitBranch )
+            stepResult = main.ONOSbench.cleanInstall( skipTest=True )
+            utilities.assert_equals(expect=main.TRUE,
+                                    actual=stepResult,
+                                    onpass="Successfully build onos.",
+                                    onfail="Failed to build onos. Exiting test...")
+            if not stepResult: main.exit()
+
+        else:
+            main.log.warn( "Skipped pulling onos and Skipped building ONOS" )
+
+        main.testOnDirectory = os.path.dirname( os.getcwd() )
+        main.MN1Ip = main.params['MN']['ip1']
         main.dependencyPath = main.testOnDirectory + \
                               main.params['DEPENDENCY']['path']
-        testONpath = re.sub( "(tests)$", "bin", main.testDir )  # TestON/bin
+        main.dependencyFunc = main.params['DEPENDENCY']['function']
+        main.topoName = main.params['DEPENDENCY']['topology']
+        main.cellName = main.params['ENV']['cellName']
+        main.Apps = main.params['ENV']['cellApps']
+        main.scale = (main.params['SCALE']).split(",")
+        main.ofportStatus = main.params['TSHARK']['ofpPortStatus']
+        main.tsharkResultPath = main.params['TSHARK']['tsharkReusltPath']
+        main.sampleSize = int( main.params['TEST']['sampleSize'] )
+        main.warmUp = int( main.params['TEST']['warmUp'] )
+        main.maxProcessTime = int( main.params['TEST']['maxProcessTime'])
+        main.dbFileName = main.params['DATABASE']['dbName']
+        main.startUpSleep = int( main.params['SLEEP']['startup'] )
+        main.measurementSleep = int( main.params['SLEEP']['measure'] )
+        main.maxScale = int( main.params['max'] )
+        main.interface = main.params['TEST']['interface']
+        main.timeout = int( main.params['TIMEOUT']['timeout'] )
+        main.MNSleep = int( main.params['SLEEP']['mininet'])
+        main.device = main.params['TEST']['device']
+        main.debug = main.params['TEST']['debug']
 
-        # -- INIT SECTION, ONLY RUNS ONCE -- #
-        if init == False:
-            init = True
-            global clusterCount             #number of nodes running
-            global ONOSIp                   #list of ONOS IP addresses
-            global scale
-            global commit
-            global timeToPost
-            global runNum
-            global jenkinsBuildNumber
-            global CLIs
-            CLIs = []
+        if main.debug == "True":
+            main.debug = True
+        else:
+            main.debug = False
 
-            timeToPost = time.strftime('%Y-%m-%d %H:%M:%S')
-            runNum = time.strftime('%d%H%M%S')
-            ONOSIp = main.ONOSbench.getOnosIps()
+        main.log.info( "Create Database file " + main.dbFileName )
+        resultsDB = open( main.dbFileName, "w+" )
+        resultsDB.close()
 
-            #Assigning ONOS cli handles to a list
-            for i in range(main.maxNodes):
-                CLIs.append( getattr( main, 'ONOS' + str(i+1) + 'cli'))
+        main.portFunc = imp.load_source(main.dependencyFunc,
+                                       main.dependencyPath +
+                                       main.dependencyFunc +
+                                       ".py")
 
-            try:
-                jenkinsBuildNumber = str(os.environ['BUILD_NUMBER'])
-                main.log.report( 'Jenkins build number: ' + jenkinsBuildNumber )
-            except KeyError:
-                jenkinsBuildNumber = str(0)
-                main.log.info( 'Job is not run by jenkins. ' + 'Build number set to: ' + jenkinsBuildNumber)
+    def CASE1( self, main ):
+        # Clean up test environment and set up
+        import time
+        main.log.info( "Get ONOS cluster IP" )
+        print( main.scale )
+        main.numCtrls = int( main.scale.pop(0) )
+        main.ONOSip = []
+        main.maxNumBatch = 0
+        main.AllONOSip = main.ONOSbench.getOnosIps()
+        for i in range( main.numCtrls ):
+            main.ONOSip.append( main.AllONOSip[i] )
+        main.log.info( main.ONOSip )
+        main.CLIs = []
+        main.log.info( "Creating list of ONOS cli handles" )
+        for i in range( main.numCtrls ):
+            main.CLIs.append( getattr(main, 'ONOS%scli' % (i + 1)) )
 
-            clusterCount = 0
-            ONOSIp = main.ONOSbench.getOnosIps()
+        if not main.CLIs:
+            main.log.error( "Failed to create the list of ONOS cli handles" )
+            main.cleanup()
+            main.exit()
 
-            scale = (main.params[ 'SCALE' ]).split(",")
-            clusterCount = int(scale[0])
+        main.commit = main.ONOSbench.getVersion( report=True )
+        main.commit = main.commit.split(" ")[1]
+        main.log.info( "Starting up %s node(s) ONOS cluster" % main.numCtrls )
+        main.log.info("Safety check, killing all ONOS processes" +
+                      " before initiating environment setup")
 
-            #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
-            if skipMvn != "off":
-                mvnResult = main.ONOSbench.cleanInstall()
+        for i in range( main.numCtrls ):
+            main.ONOSbench.onosDie( main.ONOSip[i] )
 
-            #git
-            main.step( "Git checkout and pull " + checkoutBranch )
-            if gitPull == 'on':
-                checkoutResult = main.ONOSbench.gitCheckout( checkoutBranch )
-                pullResult = main.ONOSbench.gitPull()
-
-            else:
-                checkoutResult = main.TRUE
-                pullResult = main.TRUE
-                main.log.info( "Skipped git checkout and pull" )
-
-            main.step("Grabbing commit number")
-            commit = main.ONOSbench.getVersion()
-            commit = (commit.split(" "))[1]
-
-            main.step("Creating results file")
-            resultsDB = open(resultPath, "w+")
-            resultsDB.close()
-
-            main.log.report('Commit information - ')
-            main.ONOSbench.getVersion(report=True)
-
-        # -- END OF INIT SECTION --#
-
-        main.step("Adjusting scale")
-        clusterCount = int(scale[0])
-        scale.remove(scale[0])
-
-        #kill off all onos processes
-        main.step("Killing all ONOS processes before environmnet setup")
-        for node in range(main.maxNodes):
-            main.ONOSbench.onosDie(ONOSIp[node])
-
-        #Uninstall everywhere
-        main.step( "Cleaning Enviornment..." )
-        for i in range(main.maxNodes):
-            main.log.info(" Uninstalling ONOS " + str(i) )
-            main.ONOSbench.onosUninstall( ONOSIp[i] )
-        main.log.info("Sleep 10 second for uninstall to settle...")
-        time.sleep(10)
-        main.ONOSbench.handle.sendline(" ")
-        main.ONOSbench.handle.expect(":~")
-
-        #construct the cell file
-        main.log.info("Creating cell file")
-        cellIp = []
-        for node in range (clusterCount):
-            cellIp.append(ONOSIp[node])
-
-        main.ONOSbench.createCellFile("localhost",cellName,MN1Ip,str(Apps), cellIp)
-
-        main.step( "Set Cell" )
-        main.ONOSbench.setCell(cellName)
+        main.log.info( "NODE COUNT = %s" % main.numCtrls )
+        main.ONOSbench.createCellFile(main.ONOSbench.ip_address,
+                                      main.cellName,
+                                      main.MN1Ip,
+                                      main.Apps,
+                                      main.ONOSip)
+        main.step( "Apply cell to environment" )
+        cellResult = main.ONOSbench.setCell( main.cellName )
+        verifyResult = main.ONOSbench.verifyCell()
+        stepResult = cellResult and verifyResult
+        utilities.assert_equals(expect=main.TRUE,
+                                actual=stepResult,
+                                onpass="Successfully applied cell to " + \
+                                       "environment",
+                                onfail="Failed to apply cell to environment ")
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()
+        stepResult = packageResult
+        utilities.assert_equals(expect=main.TRUE,
+                                actual=stepResult,
+                                onpass="Successfully created ONOS package",
+                                onfail="Failed to create ONOS package")
 
-        main.step( "verify cells" )
-        verifyCellResult = main.ONOSbench.verifyCell()
+        main.step( "Uninstall ONOS package on all Nodes" )
+        uninstallResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            main.log.info( "Uninstalling package on ONOS Node IP: " + main.ONOSip[i] )
+            u_result = main.ONOSbench.onosUninstall( main.ONOSip[i] )
+            utilities.assert_equals(expect=main.TRUE, actual=u_result,
+                                    onpass="Test step PASS",
+                                    onfail="Test step FAIL")
+            uninstallResult = uninstallResult and u_result
 
-        main.step('Starting mininet topology ')
-        copyResult = main.ONOSbench.copyMininetFile(main.topology,
-                                                    main.dependencyPath,
-                                                    main.Mininet1.user_name,
-                                                    main.Mininet1.ip_address)
+        main.step( "Install ONOS package on all Nodes" )
+        installResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            main.log.info( "Installing package on ONOS Node IP: " + main.ONOSip[i] )
+            i_result = main.ONOSbench.onosInstall( node=main.ONOSip[i] )
+            utilities.assert_equals(expect=main.TRUE, actual=i_result,
+                                    onpass="Test step PASS",
+                                    onfail="Test step FAIL")
+            installResult = installResult and i_result
+
+        main.step( "Verify ONOS nodes UP status" )
+        statusResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            main.log.info( "ONOS Node " + main.ONOSip[i] + " status:" )
+            onos_status = main.ONOSbench.onosStatus( node=main.ONOSip[i] )
+            utilities.assert_equals(expect=main.TRUE, actual=onos_status,
+                                    onpass="Test step PASS",
+                                    onfail="Test step FAIL")
+            statusResult = statusResult and onos_status
+        time.sleep(2)
+        main.step( "Start ONOS CLI on all nodes" )
+        cliResult = main.TRUE
+        main.step( " Start ONOS cli using thread " )
+        startCliResult = main.TRUE
+        pool = []
+        main.threadID = 0
+        for i in range( int( main.numCtrls ) ):
+            t = main.Thread(target=main.CLIs[i].startOnosCli,
+                            threadID=main.threadID,
+                            name="startOnosCli",
+                            args=[main.ONOSip[i]],
+                            kwargs={"onosStartTimeout": main.timeout})
+            pool.append(t)
+            t.start()
+            main.threadID = main.threadID + 1
+        for t in pool:
+            t.join()
+            startCliResult = startCliResult and t.result
+        time.sleep( main.startUpSleep )
+
+        main.log.info( "Configure apps" )
+        main.CLIs[0].setCfg("org.onosproject.net.topology.impl.DefaultTopologyProvider",
+                            "maxEvents 1")
+        main.CLIs[0].setCfg("org.onosproject.net.topology.impl.DefaultTopologyProvider",
+                            "maxBatchMs 0")
+        main.CLIs[0].setCfg("org.onosproject.net.topology.impl.DefaultTopologyProvider",
+                            "maxIdleMs 0")
+        time.sleep(1)
+        main.log.info( "Copy topology file to Mininet" )
+        main.ONOSbench.copyMininetFile(main.topoName,
+                                       main.dependencyPath,
+                                       main.Mininet1.user_name,
+                                       main.Mininet1.ip_address)
+        main.log.info( "Stop Mininet..." )
+        main.Mininet1.stopNet()
+        time.sleep( main.MNSleep )
+        main.log.info( "Start new mininet topology" )
         main.Mininet1.startNet()
+        main.log.info( "Assign switch to controller to ONOS node 1" )
+        time.sleep(1)
+        main.Mininet1.assignSwController( sw='s1', ip=main.ONOSip[0] )
+        main.Mininet1.assignSwController( sw='s2', ip=main.ONOSip[0] )
 
-        main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )
-        for node in range(clusterCount):
-            main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
-            main.ONOSbench.onosInstall( ONOSIp[node])
-
-        for node in range(clusterCount):
-            for i in range( 2 ):
-                isup = main.ONOSbench.isup( ONOSIp[node] )
-                if isup:
-                    main.log.info("ONOS " + str(node + 1) + " is up\n")
-                    break
-            if not isup:
-                main.log.report( "ONOS " + str(node) + " didn't start!" )
-        main.log.info("Startup sequence complete")
-
-        main.step('Starting onos CLIs')
-        for i in range(clusterCount):
-            CLIs[i].startOnosCli(ONOSIp[i])
-
-        time.sleep(20)
-
-        main.step( 'activating essential applications' )
-        CLIs[0].activateApp( 'org.onosproject.metrics' )
-        CLIs[0].activateApp( 'org.onosproject.openflow' )
-
-        main.step( 'Configuring application parameters' )
-
-        configName = 'org.onosproject.net.topology.impl.DefaultTopologyProvider'
-        configParam = 'maxEvents 1'
-        main.ONOSbench.onosCfgSet( ONOSIp[0], configName, configParam )
-        configParam = 'maxBatchMs 0'
-        main.ONOSbench.onosCfgSet( ONOSIp[0], configName, configParam )
-        configParam = 'maxIdleMs 0'
-        main.ONOSbench.onosCfgSet( ONOSIp[0], configName, configParam )
+        time.sleep(2)
 
     def CASE2( self, main ):
-        """
-        Bring port up / down and measure latency.
-        Port enable / disable is simulated by ifconfig up / down
-
-        In ONOS-next, we must ensure that the port we are
-        manipulating is connected to another switch with a valid
-        connection. Otherwise, graph view will not be updated.
-        """
         import time
-        import subprocess
-        import os
-        import requests
-        import json
         import numpy
-
-        ONOSUser = main.params['CTRL']['user']
-        numIter = main.params['TEST']['numIter']
-        iterIgnore = int(main.params['TEST']['iterIgnore'])
-
-        deviceTimestampKey = main.params['JSON']['deviceTimestamp']
-        graphTimestampKey = main.params['JSON']['graphTimestamp']
-        linkTimestampKey = main.params['JSON']['linkTimestamp']
-
-        tsharkPortUp = '/tmp/tshark_port_up.txt'
-        tsharkPortDown = '/tmp/tshark_port_down.txt'
-        tsharkPortStatus = main.params[ 'TSHARK' ][ 'ofpPortStatus' ]
-
-        debugMode = main.params['TEST']['debugMode']
-        postToDB = main.params['DB']['postToDB']
-        resultPath = main.params['DB']['portEventResultPath']
-        localTime = time.strftime('%x %X')
-        localTime = localTime.replace('/', '')
-        localTime = localTime.replace(' ', '_')
-        localTime = localTime.replace(':', '')
-
-        if debugMode == 'on':
-            main.ONOSbench.tsharkPcap('eth0', '/tmp/port_lat_pcap_' + localTime)
-
-        upThresholdStr = main.params['TEST']['portUpThreshold']
-        downThresholdStr = main.params['TEST']['portDownThreshold']
-        upThresholdObj = upThresholdStr.split(',')
-        downThresholdObj = downThresholdStr.split(',')
-        upThresholdMin = int(upThresholdObj[0])
-        upThresholdMax = int(upThresholdObj[1])
-        downThresholdMin = int(downThresholdObj[0])
-        downThresholdMax = int(downThresholdObj[1])
-
-        interfaceConfig = 's1-eth1'
-        main.log.report('Port enable / disable latency')
-        main.log.report('Simulated by ifconfig up / down')
-        main.log.report('Total iterations of test: ' + str(numIter))
-        main.step('Assign switches s1 and s2 to controller 1')
-
-        main.Mininet1.assignSwController(sw='s1', ip=ONOSIp[0])
-        main.Mininet1.assignSwController(sw='s2', ip=ONOSIp[0])
-
-        time.sleep(15)
-
-        portUpEndToEndNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        portUpOfpToDevNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        portUpDevToLinkNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        portUpLinkToGraphNodeIter = numpy.zeros((clusterCount, int(numIter)))
-
-        portDownEndToEndNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        portDownOfpToDevNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        portDownDevToLinkNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        portDownLinkToGraphNodeIter = numpy.zeros((clusterCount, int(numIter)))
-
-        for i in range(0, int(numIter)):
-            main.log.report('Iteration: ' + str(i+1) + ' ClusterCount: ' + str(clusterCount))
-            main.step('Starting wireshark capture for port status down')
-            main.ONOSbench.tsharkGrep(tsharkPortStatus, tsharkPortDown)
-
-            time.sleep(2)
-
-            main.step('Disable port: ' + interfaceConfig)
-            main.Mininet1.handle.sendline('sh ifconfig ' +
-                    interfaceConfig + ' down')
-            main.Mininet1.handle.expect('mininet>')
-
-            time.sleep(2)
-
-            jsonStrPtDown = []
-            for node in range (0, clusterCount):
-                metricsPortDown = CLIs[node].topologyEventsMetrics()
-                jsonStrPtDown.append(metricsPortDown)
-
-            time.sleep(10)
-
-            main.ONOSbench.tsharkStop()
-
-            fPortDown = open(tsharkPortDown, 'r')
-            fLine = fPortDown.readline()
-            objDown = fLine.split(' ')
-            if len(fLine) > 0:
-                timestampBeginPtDown = int(float(objDown[1]) * 1000)
-                # At times, tshark reports timestamp at the 3rd
-                # index of the array. If initial readings were
-                # unlike the epoch timestamp, then check the 3rd
-                # index and set that as a timestamp
-                if timestampBeginPtDown < 1400000000000:
-                   timestampBeginPtDown = int(float(objDown[2]) * 1000)
+        # dictionary for each node and each timestamps
+        resultDict = {'up' : {}, 'down' : {}}
+        for d in resultDict:
+            for i in range( 1, main.numCtrls + 1 ):
+                resultDict[d][ 'node' + str(i) ] = {}
+                resultDict[d][ 'node' + str(i) ][ 'Ave' ] = {}
+                resultDict[d][ 'node' + str(i) ][ 'Std' ] = {}
+                resultDict[d][ 'node' + str(i) ][ 'EtoE' ] = []
+                resultDict[d][ 'node' + str(i) ][ 'PtoD' ] = []
+                resultDict[d][ 'node' + str(i) ][ 'DtoL' ] = []
+                resultDict[d][ 'node' + str(i) ][ 'LtoG' ] = []
+        for i in range( 1, main.sampleSize + main.warmUp ):
+            main.log.info( "==========================================" )
+            main.log.info( "================iteration:{}==============".format(str (i) ) )
+            if i > main.warmUp:
+                # Portdown iteration
+                main.portFunc.capturePortStatusPack( main, main.device, main.interface, "down", resultDict, False )
+                time.sleep(2)
+                # PortUp iteration
+                main.portFunc.capturePortStatusPack( main, main.device, main.interface, "up", resultDict, False )
             else:
-                main.log.info('Tshark output file returned unexpected' +
-                        ' results: ' + str(objDown))
-                timestampBeginPtDown = 0
-            fPortDown.close()
+                # if warm up, keep old result dictionary
+                main.portFunc.capturePortStatusPack( main, main.device, main.interface, "down", resultDict, True)
+                main.portFunc.capturePortStatusPack( main, main.device, main.interface, "up", resultDict, True)
 
-            for node in range(0, clusterCount):
-                nodeNum = node+1
-                metricsDown = CLIs[node].topologyEventsMetrics
-                jsonStrPtDown[node] = metricsDown()
-                jsonObj = json.loads(jsonStrPtDown[node])
+        # Dictionary for result
+        maxDict  = {}
+        maxDict['down'] = {}
+        maxDict['up'] = {}
+        maxDict['down']['max'] = 0
+        maxDict['up']['max'] = 0
+        maxDict['down']['node'] = 0
+        maxDict['up']['node'] = 0
+        EtoEtemp = 0
+        for d in resultDict:
+            for i in range( 1, main.numCtrls + 1 ):
+                # calculate average and std for result, and grep the max End to End data
+                EtoEtemp = numpy.average( resultDict[d][ 'node' + str(i) ]['EtoE'] )
+                resultDict[d][ 'node' + str(i) ][ 'Ave' ][ 'EtoE' ] = EtoEtemp
+                if maxDict[d]['max'] < EtoEtemp:
+                    # get max End to End latency
+                    maxDict[d]['max'] = EtoEtemp
+                    maxDict[d]['node'] = i
+                resultDict[d]['node' + str(i)]['Ave']['PtoD'] = numpy.average(resultDict[d]['node' + str(i)]['PtoD'])
+                resultDict[d]['node' + str(i)]['Ave']['DtoL'] = numpy.average(resultDict[d]['node' + str(i)]['DtoL'])
+                resultDict[d]['node' + str(i)]['Ave']['LtoG'] = numpy.average(resultDict[d]['node' + str(i)]['LtoG'])
 
-                if jsonObj:
-                    graphTimestamp = jsonObj[graphTimestampKey]['value']
-                    deviceTimestamp = jsonObj[deviceTimestampKey]['value']
-                    linkTimestamp = jsonObj[linkTimestampKey]['value']
-                else:
-                    main.log.error( "Unexpected json object" )
-                    graphTimestamp = 0
-                    deviceTimestamp = 0
-                    linkTimestamp = 0
+                resultDict[d]['node' + str(i)]['Std']['EtoE'] = numpy.std(resultDict[d]['node' + str(i)]['EtoE'])
+                resultDict[d]['node' + str(i)]['Std']['PtoD'] = numpy.std(resultDict[d]['node' + str(i)]['PtoD'])
+                resultDict[d]['node' + str(i)]['Std']['DtoL'] = numpy.std(resultDict[d]['node' + str(i)]['DtoL'])
+                resultDict[d]['node' + str(i)]['Std']['LtoG'] = numpy.std(resultDict[d]['node' + str(i)]['LtoG'])
 
-                main.log.info('ptDownTimestamp: ' + str(timestampBeginPtDown))
-                main.log.info("graphTimestamp: " + str(graphTimestamp))
-                main.log.info("deviceTimestamp: " + str(deviceTimestamp))
-                main.log.info("linkTimestamp: " + str(linkTimestamp))
+                main.log.report( "=====node{} Summary:=====".format( str(i) ) )
+                main.log.report( "=============Port {}=======".format( str(d) ) )
+                main.log.report(
+                    "End to End average: {}".format( str(resultDict[d][ 'node' + str(i) ][ 'Ave' ][ 'EtoE' ]) ) )
+                main.log.report(
+                    "End to End Std: {}".format( str(resultDict[d][ 'node' + str(i) ][ 'Std' ][ 'EtoE' ]) ) )
+                main.log.report(
+                    "Package to Device average: {}".format( str(resultDict[d]['node' + str(i)]['Ave']['PtoD']) ) )
+                main.log.report(
+                    "Package to Device Std: {}".format( str( resultDict[d]['node' + str(i)]['Std']['PtoD'])))
+                main.log.report(
+                    "Device to Link average: {}".format( str( resultDict[d]['node' + str(i)]['Ave']['DtoL']) ) )
+                main.log.report(
+                    "Device to Link Std: {}".format( str( resultDict[d]['node' + str(i)]['Std']['DtoL'])))
+                main.log.report(
+                    "Link to Grapg average: {}".format( str( resultDict[d]['node' + str(i)]['Ave']['LtoG']) ) )
+                main.log.report(
+                    "Link to Grapg Std: {}".format( str( resultDict[d]['node' + str(i)]['Std']['LtoG'] ) ) )
 
-                ptDownEndToEnd = int(graphTimestamp) - int(timestampBeginPtDown)
-                ptDownOfpToDevice = float(deviceTimestamp) - float(timestampBeginPtDown)
-                ptDownDeviceToLink = float(linkTimestamp) - float(deviceTimestamp)
-                ptDownLinkToGraph = float(graphTimestamp) - float(linkTimestamp)
-
-                if ptDownEndToEnd < downThresholdMin or ptDownEndToEnd >= downThresholdMax:
-                    main.log.info("ONOS " +str(nodeNum) + " surpassed threshold - port down End-to-end: "+ str(ptDownEndToEnd) + " ms")
-                elif i < iterIgnore:
-                    main.log.info("ONOS "+str(nodeNum) + " warming up - port down End-to-end: "+ str(ptDownEndToEnd) + " ms")
-                else:
-                    portDownEndToEndNodeIter[node][i] = ptDownEndToEnd
-                    main.log.info("ONOS "+str(nodeNum) + " port down End-to-end: "+ str(ptDownEndToEnd) + " ms")
-
-                if ptDownOfpToDevice < downThresholdMin or ptDownOfpToDevice >= downThresholdMax:
-                    main.log.info("ONOS " +str(nodeNum) + " surpassed threshold - port down Ofp-to-device: "+ str(ptDownOfpToDevice) + " ms")
-                elif i < iterIgnore:
-                    main.log.info("ONOS "+str(nodeNum) + " warming up - port down Ofp-to-device: "+ str(ptDownOfpToDevice) + " ms")
-                else:
-                    portDownOfpToDevNodeIter[node][i] = ptDownOfpToDevice
-                    main.log.info("ONOS "+str(nodeNum) + " port down Ofp-to-device: "+ str(ptDownOfpToDevice) + " ms")
-
-                if ptDownDeviceToLink < downThresholdMin or ptDownDeviceToLink >= downThresholdMax:
-                    main.log.info("ONOS " +str(nodeNum) + " surpassed threshold - port down Device-to-link: "+ str(ptDownDeviceToLink) + " ms")
-                elif i < iterIgnore:
-                    main.log.info("ONOS "+str(nodeNum) + " warming up - port down Device-to-link: "+ str(ptDownDeviceToLink) + " ms")
-                else:
-                    portDownDevToLinkNodeIter[node][i] = ptDownDeviceToLink
-                    main.log.info("ONOS "+str(nodeNum) + " port down Device-to-link: "+ str(ptDownDeviceToLink) + " ms")
-
-                if ptDownLinkToGraph < downThresholdMin or ptDownLinkToGraph >= downThresholdMax:
-                    main.log.info("ONOS " +str(nodeNum) + " surpassed threshold - port down Link-to-graph: "+ str(ptDownLinkToGraph) + " ms")
-                elif i < iterIgnore:
-                    main.log.info("ONOS "+str(nodeNum) + " warming up - port down Link-to-graph: "+ str(ptDownLinkToGraph) + " ms")
-                else:
-                    portDownLinkToGraphNodeIter[node][i] = ptDownLinkToGraph
-                    main.log.info("ONOS "+str(nodeNum) + " port down Link-to-graph: "+ str(ptDownLinkToGraph) + " ms")
-
-            time.sleep(3)
-
-            main.step('Starting wireshark capture for port status up')
-            main.ONOSbench.tsharkGrep(tsharkPortStatus, tsharkPortUp)
-
-            time.sleep(5)
-            main.step('Enable port and obtain timestamp')
-            main.Mininet1.handle.sendline('sh ifconfig ' + interfaceConfig + ' up')
-            main.Mininet1.handle.expect('mininet>')
-
-            time.sleep(5)
-
-            jsonStrPtUp = []
-            for node in range (0, clusterCount):
-                metricsPortUp = CLIs[node].topologyEventsMetrics()
-                jsonStrPtUp.append(metricsPortUp)
-
-            time.sleep(5)
-            main.ONOSbench.tsharkStop()
-
-            time.sleep(3)
-
-            fPortUp = open(tsharkPortUp, 'r')
-            fLine = fPortUp.readline()
-            objUp = fLine.split(' ')
-            if len(fLine) > 0:
-                timestampBeginPtUp = int(float(objUp[1]) * 1000)
-                if timestampBeginPtUp < 1400000000000:
-                    timestampBeginPtUp = int(float(objUp[2]) * 1000)
-            else:
-                main.log.info('Tshark output file returned unexpected' + ' results.')
-                timestampBeginPtUp = 0
-            fPortUp.close()
-
-            for node in range(0, clusterCount):
-                nodeNum = node+1
-                metricsUp = CLIs[node].topologyEventsMetrics
-                jsonStrUp = metricsUp()
-                jsonObj = json.loads(jsonStrPtUp[node])
-
-                if jsonObj:
-                    graphTimestamp = jsonObj[graphTimestampKey]['value']
-                    deviceTimestamp = jsonObj[deviceTimestampKey]['value']
-                    linkTimestamp = jsonObj[linkTimestampKey]['value']
-                else:
-                    main.log.error( "Unexpected json object" )
-                    graphTimestamp = 0
-                    deviceTimestamp = 0
-                    linkTimestamp = 0
-
-
-                main.log.info('ptUpTimestamp: ' + str(timestampBeginPtUp))
-                main.log.info("graphTimestamp: " + str(graphTimestamp))
-                main.log.info("deviceTimestamp: " + str(deviceTimestamp))
-                main.log.info("linkTimestamp: " + str(linkTimestamp))
-
-                ptUpEndToEnd = int(graphTimestamp) - int(timestampBeginPtUp)
-                ptUpOfpToDevice = float(deviceTimestamp) - float(timestampBeginPtUp)
-                ptUpDeviceToLink = float(linkTimestamp) - float(deviceTimestamp)
-                ptUpLinkToGraph = float(graphTimestamp) - float(linkTimestamp)
-
-                if ptUpEndToEnd < upThresholdMin or ptUpEndToEnd >= upThresholdMax:
-                    main.log.info("ONOS " +str(nodeNum) + " surpassed threshold - port up End-to-end: "+ str(ptUpEndToEnd) + " ms")
-                elif i < iterIgnore:
-                    main.log.info("ONOS "+str(nodeNum) + " warming up - port up End-to-end: "+ str(ptUpEndToEnd) + " ms")
-                else:
-                    portUpEndToEndNodeIter[node][i] = ptUpEndToEnd
-                    main.log.info("ONOS "+str(nodeNum) + " port up End-to-end: "+ str(ptUpEndToEnd) + " ms")
-
-                if ptUpOfpToDevice < upThresholdMin or ptUpOfpToDevice >= upThresholdMax:
-                    main.log.info("ONOS " + str(nodeNum) + " surpassed threshold - port up Ofp-to-device: "+ str(ptUpOfpToDevice) + " ms")
-                elif i < iterIgnore:
-                    main.log.info("ONOS "+ str(nodeNum) + " warming up - port up Ofp-to-device: "+ str(ptUpOfpToDevice) + " ms")
-                else:
-                    portUpOfpToDevNodeIter[node][i] = ptUpOfpToDevice
-                    main.log.info("ONOS "+ str(nodeNum) + " port up Ofp-to-device: "+ str(ptUpOfpToDevice) + " ms")
-
-                if ptUpDeviceToLink < upThresholdMin or ptUpDeviceToLink >= upThresholdMax:
-                    main.log.info("ONOS " +str(nodeNum) + " surpassed threshold - port up Device-to-link: "+ str(ptUpDeviceToLink) + " ms")
-                elif i < iterIgnore:
-                    main.log.info("ONOS "+str(nodeNum) + " warming up - port up Device-to-link: "+ str(ptUpDeviceToLink) + " ms")
-                else:
-                    portUpDevToLinkNodeIter[node][i] = ptUpDeviceToLink
-                    main.log.info("ONOS "+str(nodeNum) + " port up Device-to-link: "+ str(ptUpDeviceToLink) + " ms")
-
-                if ptUpLinkToGraph < upThresholdMin or ptUpLinkToGraph >= upThresholdMax:
-                    main.log.info("ONOS " + str(nodeNum) + " surpassed threshold - port up Link-to-graph: " + str(ptUpLinkToGraph) + " ms")
-                elif i < iterIgnore:
-                    main.log.info("ONOS " + str(nodeNum) + " warming up - port up Link-to-graph: " + str(ptUpLinkToGraph) + " ms")
-                else:
-                    portUpLinkToGraphNodeIter[node][i] = ptUpLinkToGraph
-                    main.log.info("ONOS " + str(nodeNum) + " port up Link-to-graph: " + str(ptUpLinkToGraph) + " ms")
-
-        dbCmdList = []
-        for node in range(0, clusterCount):
-            portUpEndToEndList = []
-            portUpOfpToDevList = []
-            portUpDevToLinkList = []
-            portUpLinkToGraphList = []
-
-            portDownEndToEndList = []
-            portDownOfpToDevList = []
-            portDownDevToLinkList = []
-            portDownLinkToGraphList = []
-
-            portUpEndToEndAvg = 0
-            portUpOfpToDevAvg = 0
-            portUpDevToLinkAvg = 0
-            portUpLinkToGraphAvg = 0
-
-            portDownEndToEndAvg = 0
-            portDownOfpToDevAvg = 0
-            portDownDevToLinkAvg = 0
-            portDownLinkToGraphAvg = 0
-
-            # TODO: Update for more pythonic way to get list
-            # portUpDevList = [item for item in portUpDevNodeIter[node]
-            #        if item > 0.0]
-            for item in portUpEndToEndNodeIter[node]:
-                if item > 0.0:
-                    portUpEndToEndList.append(item)
-
-            for item in portUpOfpToDevNodeIter[node]:
-                if item > 0.0:
-                    portUpOfpToDevList.append(item)
-
-            for item in portUpDevToLinkNodeIter[node]:
-                if item > 0.0:
-                    portUpDevToLinkList.append(item)
-
-            for item in portUpLinkToGraphNodeIter[node]:
-                if item >= 0.0:
-                    portUpLinkToGraphList.append(item)
-
-            for item in portDownEndToEndNodeIter[node]:
-                if item > 0.0:
-                    portDownEndToEndList.append(item)
-
-            for item in portDownOfpToDevNodeIter[node]:
-                if item > 0.0:
-                    portDownOfpToDevList.append(item)
-
-            for item in portDownDevToLinkNodeIter[node]:
-                if item >= 0.0:
-                    portDownDevToLinkList.append(item)
-
-            for item in portDownLinkToGraphNodeIter[node]:
-                if item >= 0.0:
-                    portDownLinkToGraphList.append(item)
-
-            portUpEndToEndAvg = round(numpy.mean(portUpEndToEndList), 2)
-            portUpOfpToDevAvg = round(numpy.mean(portUpOfpToDevList), 2)
-            portUpDevToLinkAvg = round(numpy.mean(portUpDevToLinkList), 2)
-            portUpLinkToGraphAvg = round(numpy.mean(portUpLinkToGraphList), 2)
-
-            portDownEndToEndAvg = round(numpy.mean(portDownEndToEndList), 2)
-            portDownOfpToDevAvg = round(numpy.mean(portDownOfpToDevList), 2)
-            portDownDevToLinkAvg = round(numpy.mean(portDownDevToLinkList), 2)
-            portDownLinkToGraphAvg = round(numpy.mean(portDownLinkToGraphList), 2)
-
-            portUpStdDev = round(numpy.std(portUpEndToEndList), 2)
-            portDownStdDev = round(numpy.std(portDownEndToEndList), 2)
-
-            main.log.report(' - Node ' + str(node + 1) + ' Summary ---------------- ')
-            main.log.report(' Port up End-to-end ' +
-                    str(portUpEndToEndAvg) + ' ms')
-            main.log.report(' Port up Ofp-to-device ' +
-                    str(portUpOfpToDevAvg) + ' ms')
-            main.log.report(' Port up Device-to-link ' +
-                    str(portUpDevToLinkAvg) + ' ms')
-            main.log.report(' Port up Link-to-graph ' +
-                    str(portUpLinkToGraphAvg) + ' ms')
-
-            main.log.report(' Port down End-to-end ' +
-                    str(round(portDownEndToEndAvg, 2)) + ' ms')
-            main.log.report(' Port down Ofp-to-device ' +
-                    str(portDownOfpToDevAvg) + ' ms')
-            main.log.report(' Port down Device-to-link ' +
-                    str(portDownDevToLinkAvg) + ' ms')
-            main.log.report(' Port down Link-to-graph' +
-                    str(portDownLinkToGraphAvg) + ' ms')
-
-            dbCmdList.append(
-                    "'" + timeToPost + "','port_latency_results'," + jenkinsBuildNumber +
-                    ',' + str(clusterCount) + ",'baremetal" + str(node + 1) +
-                    "'," +
-                    str(portUpEndToEndAvg) +',' +
-                    str(portUpOfpToDevAvg) + ',' +
-                    str(portUpDevToLinkAvg) + ',' +
-                    str(portUpLinkToGraphAvg) + ',' +
-                    str(portDownEndToEndAvg) + ',' +
-                    str(portDownOfpToDevAvg) + ',' +
-                    str(portDownDevToLinkAvg) + ',' +
-                    str(portDownLinkToGraphAvg))
-
-        fResult = open(resultPath, 'a')
-        for line in dbCmdList:
-            if line:
-                fResult.write(line + '\n')
-
-        fResult.close()
-
-        # Delete switches from controller to prepare for next
-        # set of tests
-        main.Mininet1.deleteSwController('s1')
-        main.Mininet1.deleteSwController('s2')
-
-        main.log.info("Stopping mininet")
-        main.Mininet1.stopNet()
+        with open( main.dbFileName, "a" ) as dbFile:
+            # Scale number
+            temp = str( main.numCtrls )
+            temp += ",'baremetal1'"
+            # put result
+            temp += "," + str( resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'EtoE' ] )
+            temp += "," + str( resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'PtoD' ] )
+            temp += "," + str( resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'DtoL' ] )
+            temp += "," + str( resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'LtoG' ] )
+            temp += "," + str( resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'EtoE' ] )
+            temp += "," + str( resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'PtoD' ] )
+            temp += "," + str( resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'DtoL' ] )
+            temp += "," + str( resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'LtoG' ] )
+            temp += "\n"
+            dbFile.write( temp )
+            dbFile.close()

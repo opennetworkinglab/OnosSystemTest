@@ -3794,6 +3794,43 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
+    def changeInterfaceStatus( self, devicename, intf, status ):
+        '''
+
+        Args:
+            devicename: switch name
+            intf: port name on switch
+            status: up or down
+
+        Returns: boolean to show success change status
+
+        '''
+        if status == "down" or status == "up":
+            try:
+                cmd = devicename + " ifconfig " + intf + " " + status
+                self.handle.sendline( cmd )
+                self.handle.expect("mininet>")
+                return main.TRUE
+            except pexpect.TIMEOUT:
+                main.log.exception(self.name + ": Command timed out")
+                return main.FALSE
+            except pexpect.EOF:
+                main.log.exception(self.name + ": connection closed.")
+                main.cleanup()
+                main.exit()
+            except TypeError:
+                main.log.exception(self.name + ": TypeError")
+                main.cleanup()
+                main.exit()
+            except Exception:
+                main.log.exception(self.name + ": Uncaught exception!")
+                main.cleanup()
+                main.exit()
+        else:
+            main.log.warn("Interface status should be up or down!")
+            return main.FALSE
+
+
 
 if __name__ != "__main__":
     sys.modules[ __name__ ] = MininetCliDriver()

@@ -38,7 +38,7 @@
         <nodeSleep>10</nodeSleep>
         <pingall>15</pingall>
         <MNsleep>60</MNsleep>
-        <host>0.2</host>
+        <host>0</host>
     </SLEEP>
 
     <TIMEOUT>

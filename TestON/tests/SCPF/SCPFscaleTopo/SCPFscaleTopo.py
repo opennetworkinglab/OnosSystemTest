@@ -335,10 +335,10 @@ class SCPFscaleTopo:
                         break
                 if totalHost == int( main.currScale ) *  int( main.currScale ):
                     main.log.info( "Discovered all hosts" )
-                    stepResult = stepResult and True
+                    stepResult = stepResult and main.TRUE
                 else:
                     main.log.warn( "Some hosts ware not discovered by ONOS... Topology doesn't match!" )
-                    stepResult = False
+                    stepResult = main.FALSE
                 utilities.assert_equals(expect=main.TRUE,
                                         actual=stepResult,
                                         onpass=" Topology match Mininet",

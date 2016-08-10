@@ -7,8 +7,8 @@
     # 100 - balance master and bring onos node down
     # 200 - bring onos node up and balance masters
     # 1000 - report logs
-
-    <testcases>1,[2,10,300,11,100,300,11,200,300,11,1000]*3</testcases>
+    # 1,[2,10,300,11,100,300,11,200,300,11,1000]*3
+    <testcases>1,[2,10,300,11,1000]*10</testcases>
 
     <DEPENDENCY>
         <path>/tests/SCPF/SCPFscaleTopo/dependencies/</path>
@@ -19,7 +19,7 @@
     </DEPENDENCY>
 
     <ENV>
-        <cellApps>drivers,openflow,fwd</cellApps>
+        <cellApps>drivers,openflow</cellApps>
     </ENV>
 
     <GIT>
@@ -38,6 +38,7 @@
         <nodeSleep>10</nodeSleep>
         <pingall>15</pingall>
         <MNsleep>60</MNsleep>
+        <host>0.2</host>
     </SLEEP>
 
     <TIMEOUT>
@@ -52,7 +53,8 @@
 
     <TOPOLOGY>
         <topology>torus</topology>
-        <scale>10,15,20</scale>
+        <scale>20,25,30,35,40,45,50,55,60</scale>
+        <host>True</host>
     </TOPOLOGY>
 
 </PARAMS>

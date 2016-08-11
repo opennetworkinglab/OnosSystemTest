@@ -929,6 +929,36 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString)
 
+        main.step( "Encapsulation: Add host intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for VLAN Encapsulated host intent\n"
+        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
+        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
+                                              name='ENCAPSULATION',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
+                                              encap="VLAN" )
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='ENCAPSULATION',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink = 18)
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString)
+
         main.step( "Confirm that ONOS leadership is unchanged")
         intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
         main.intentFunction.checkLeaderChange( intentLeadersOld,
@@ -1317,6 +1347,41 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
+        main.step( "Add point to point intents using VLAN Encapsulation" )
+        main.assertReturnString = "Assertion Result for VLAN Encapsulation Point Intent"
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1" }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1" }
+        ]
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installPointIntent(
+                                       main,
+                                       name="ENCAPSULATION",
+                                       senders=senders,
+                                       recipients=recipients,
+                                       encap="VLAN" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="ENCAPSULATION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
         main.intentFunction.report( main )
 
     def CASE3000( self, main ):
@@ -1567,6 +1632,48 @@ class FUNCintent:
                                          main,
                                          intentId=installResult,
                                          name="VLAN2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "ENCAPSULATION: Install and test single point to multi point intents" )
+        main.assertReturnString = "Assertion results for VLAN Encapsulation single to multi point intent\n"
+        senders = [
+            { "name":"h8", "device":"of:0000000000000005/8" }
+        ]
+        recipients = [
+            { "name":"h16", "device":"of:0000000000000006/8" },
+            { "name":"h24", "device":"of:0000000000000007/8" }
+        ]
+        badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installSingleToMultiIntent(
+                                         main,
+                                         name="ENCAPSULATION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         encap="VLAN" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="ENCAPSULATION",
                                          senders=senders,
                                          recipients=recipients,
                                          badSenders=badSenders,
@@ -1840,6 +1947,48 @@ class FUNCintent:
                                          sw1="s5",
                                          sw2="s2",
                                          expectedLink=18)
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "ENCAPSULATION: Add multi point to single point intents" )
+        main.assertReturnString = "Assertion results for VLAN Encapsulation multi to single point intent\n"
+        senders = [
+            { "name":"h16", "device":"of:0000000000000006/8" },
+            { "name":"h24", "device":"of:0000000000000007/8" }
+        ]
+        recipients = [
+            { "name":"h8", "device":"of:0000000000000005/8" }
+        ]
+        badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.FALSE
+        installResult = main.intentFunction.installMultiToSingleIntent(
+                                         main,
+                                         name="ENCAPSULATION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         encap="VLAN" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="ENCAPSULATION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 

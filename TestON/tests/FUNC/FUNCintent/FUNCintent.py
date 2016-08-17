@@ -301,7 +301,7 @@ class FUNCintent:
                     try:
                         deviceData = json.loads( devices[ controller ] )
                         portData = json.loads( ports[ controller ] )
-                    except (TypeError,ValueError):
+                    except( TypeError, ValueError ):
                         main.log.error( "Could not load json: {0} or {1}".format( str( devices[ controller ] ), str( ports[ controller ] ) ) )
                         currentDevicesResult = main.FALSE
                     else:
@@ -316,8 +316,8 @@ class FUNCintent:
                 if links[ controller ] and "Error" not in links[ controller ]:
                     try:
                         linkData = json.loads( links[ controller ] )
-                    except (TypeError,ValueError):
-                        main.log.error("Could not load json:" + str( links[ controller ] ) )
+                    except( TypeError, ValueError ):
+                        main.log.error( "Could not load json:" + str( links[ controller ] ) )
                         currentLinksResult = main.FALSE
                     else:
                         currentLinksResult = main.Mininet1.compareLinks(
@@ -331,8 +331,8 @@ class FUNCintent:
                 if hosts[ controller ] and "Error" not in hosts[ controller ]:
                     try:
                         hostData = json.loads( hosts[ controller ] )
-                    except (TypeError,ValueError):
-                        main.log.error("Could not load json:" + str( hosts[ controller ] ) )
+                    except( TypeError, ValueError ):
+                        main.log.error( "Could not load json:" + str( hosts[ controller ] ) )
                         currentHostsResult = main.FALSE
                     else:
                         currentHostsResult = main.Mininet1.compareHosts(
@@ -583,6 +583,7 @@ class FUNCintent:
         """
         if main.initialized == main.FALSE:
             main.log.error( "Test components did not start correctly, skipping further tests" )
+            main.stop()
             main.skipCase()
         main.case( "Balance mastership of switches" )
         main.step( "Balancing mastership of switches" )
@@ -648,7 +649,7 @@ class FUNCintent:
                                  onfail="Failed to stop mininet and scapy" )
 
         main.step( "Stopping Mininet Topology" )
-        mininetResult = main.Mininet1.stopNet( )
+        mininetResult = main.Mininet1.stopNet()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=mininetResult,
@@ -733,8 +734,8 @@ class FUNCintent:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in " +\
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
 
@@ -750,7 +751,7 @@ class FUNCintent:
                                 "each step such as IPV4, Dual stack, VLAN " +\
                                 "etc;\nThe test will use OF " + main.OFProtocol +\
                                 " OVS running in Mininet and compile intents" +\
-                               " using " + main.flowCompiler
+                                " using " + main.flowCompiler
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 host intent with mac addresses\n"
@@ -762,7 +763,7 @@ class FUNCintent:
                                               name='IPV4',
                                               onosNode='0',
                                               host1=host1,
-                                              host2=host2)
+                                              host2=host2 )
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name='IPV4',
@@ -772,14 +773,14 @@ class FUNCintent:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18)
+                                              expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
+                                 onfail=main.assertReturnString )
 
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
         main.assertReturnString = "Assertion Result for dualstack IPV4 with MAC addresses\n"
@@ -791,7 +792,7 @@ class FUNCintent:
                                               name='DUALSTACK',
                                               onosNode='0',
                                               host1=host1,
-                                              host2=host2)
+                                              host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
@@ -802,12 +803,12 @@ class FUNCintent:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18)
+                                              expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
+                                 onfail=main.assertReturnString )
 
         main.step( "DUALSTACK2: Add host intents between h1 and h11" )
         main.assertReturnString = "Assertion Result for dualstack2 host intent\n"
@@ -819,7 +820,7 @@ class FUNCintent:
                                               name='DUALSTACK2',
                                               onosNode='0',
                                               host1=host1,
-                                              host2=host2)
+                                              host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
@@ -830,14 +831,14 @@ class FUNCintent:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18)
+                                              expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
+                                 onfail=main.assertReturnString )
 
         main.step( "1HOP: Add host intents between h1 and h3" )
         main.assertReturnString = "Assertion Result for 1HOP for IPV4 same switch\n"
@@ -849,7 +850,7 @@ class FUNCintent:
                                               name='1HOP',
                                               onosNode='0',
                                               host1=host1,
-                                              host2=host2)
+                                              host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
@@ -860,14 +861,14 @@ class FUNCintent:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18)
+                                              expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
         main.assertReturnString = "Assertion Result vlan IPV4\n"
@@ -879,7 +880,7 @@ class FUNCintent:
                                               name='VLAN1',
                                               onosNode='0',
                                               host1=host1,
-                                              host2=host2)
+                                              host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
@@ -890,14 +891,14 @@ class FUNCintent:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18)
+                                              expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN2: Add vlan host intents between h4 and h13" )
         main.assertReturnString = "Assertion Result vlan IPV4\n"
@@ -909,7 +910,7 @@ class FUNCintent:
                                               name='VLAN2',
                                               onosNode='0',
                                               host1=host1,
-                                              host2=host2)
+                                              host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
@@ -920,14 +921,14 @@ class FUNCintent:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18)
+                                              expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
+                                 onfail=main.assertReturnString )
 
         main.step( "Encapsulation: Add host intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for VLAN Encapsulated host intent\n"
@@ -950,16 +951,16 @@ class FUNCintent:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18)
+                                              expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
+                                 onfail=main.assertReturnString )
 
-        main.step( "Confirm that ONOS leadership is unchanged")
+        main.step( "Confirm that ONOS leadership is unchanged" )
         intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
         main.intentFunction.checkLeaderChange( intentLeadersOld,
                                                 intentLeadersNew )
@@ -967,7 +968,7 @@ class FUNCintent:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass="ONOS Leaders Unchanged",
-                                 onfail="ONOS Leader Mismatch")
+                                 onfail="ONOS Leader Mismatch" )
 
         main.intentFunction.report( main )
 
@@ -1014,8 +1015,8 @@ class FUNCintent:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in " +\
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
 
@@ -1057,7 +1058,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1093,7 +1094,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1127,7 +1128,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1172,7 +1173,7 @@ class FUNCintent:
                                          sw1="s5",
                                          sw2="s2",
                                          expectedLink=18,
-                                         useTCP=True)
+                                         useTCP=True )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1238,7 +1239,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1261,7 +1262,7 @@ class FUNCintent:
                                        main,
                                        name="VLAN",
                                        senders=senders,
-                                       recipients=recipients)
+                                       recipients=recipients )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1272,7 +1273,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1294,7 +1295,7 @@ class FUNCintent:
                                        name="VLAN2",
                                        senders=senders,
                                        recipients=recipients,
-                                       setVlan=200)
+                                       setVlan=200 )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1305,7 +1306,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1338,7 +1339,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1373,7 +1374,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1422,8 +1423,8 @@ class FUNCintent:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in "+ \
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
 
@@ -1458,7 +1459,7 @@ class FUNCintent:
                                          senders=senders,
                                          recipients=recipients,
                                          sw1="s5",
-                                         sw2="s2")
+                                         sw2="s2" )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1471,7 +1472,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1500,7 +1501,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          ethType="IPV4",
                                          sw1="s5",
-                                         sw2="s2")
+                                         sw2="s2" )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1513,7 +1514,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1542,7 +1543,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          ethType="IPV4",
                                          sw1="s5",
-                                         sw2="s2")
+                                         sw2="s2" )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1555,7 +1556,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1583,7 +1584,7 @@ class FUNCintent:
                                          senders=senders,
                                          recipients=recipients,
                                          sw1="s5",
-                                         sw2="s2")
+                                         sw2="s2" )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1596,7 +1597,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1625,7 +1626,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         setVlan=100)
+                                         setVlan=100 )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1638,7 +1639,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1680,7 +1681,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1729,8 +1730,8 @@ class FUNCintent:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in "+\
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
 
@@ -1807,7 +1808,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          ethType="IPV4",
                                          sw1="s5",
-                                         sw2="s2")
+                                         sw2="s2" )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1820,7 +1821,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1849,7 +1850,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          ethType="IPV4",
                                          sw1="s5",
-                                         sw2="s2")
+                                         sw2="s2" )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1862,7 +1863,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1890,7 +1891,7 @@ class FUNCintent:
                                          senders=senders,
                                          recipients=recipients,
                                          sw1="s5",
-                                         sw2="s2")
+                                         sw2="s2" )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1903,7 +1904,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -1933,7 +1934,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         setVlan=100)
+                                         setVlan=100 )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1946,7 +1947,7 @@ class FUNCintent:
                                          badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
 
@@ -2023,15 +2024,15 @@ class FUNCintent:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in "+\
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
         main.case( "Test host mobility with host intents " )
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
         h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
-        main.log.info( "Moving h1 from s5 to s6")
+        main.log.info( "Moving h1 from s5 to s6" )
         main.Mininet1.moveHost( "h1","s5","s6" )
 
         # Send discovery ping from moved host
@@ -2112,8 +2113,8 @@ class FUNCintent:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in "+\
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
         main.case( "Test Multi to Single End Point Failure" )
@@ -2238,7 +2239,7 @@ class FUNCintent:
                                          senders=senders,
                                          recipients=recipients,
                                          sw1="s5",
-                                         sw2="s2")
+                                         sw2="s2" )
 
         if installResult:
             testResult = main.intentFunction.testEndPointFail(
@@ -2288,7 +2289,7 @@ class FUNCintent:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         partial=True)
+                                         partial=True )
 
         if installResult:
             testResult = main.intentFunction.testEndPointFail(

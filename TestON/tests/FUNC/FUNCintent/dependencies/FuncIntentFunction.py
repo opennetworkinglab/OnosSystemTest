@@ -83,7 +83,7 @@ def installHostIntent( main,
                                                         vlanId=vlanId,
                                                         setVlan=setVlan,
                                                         encap=encap )
-    except (KeyError, TypeError):
+    except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
             errorMsg += "  There was a problem installing host to host intent."
@@ -113,7 +113,7 @@ def testHostIntent( main,
                     onosNode=0,
                     sw1="s5",
                     sw2="s2",
-                    expectedLink=0):
+                    expectedLink=0 ):
     """
     Test a Host Intent
 
@@ -184,7 +184,7 @@ def testHostIntent( main,
         vlanId = host1.get( "vlan" )
 
         testResult = main.TRUE
-    except (KeyError, TypeError):
+    except( KeyError, TypeError ):
         main.log.error( "There was a problem loading the hosts data." )
         return main.FALSE
 
@@ -400,7 +400,7 @@ def installPointIntent( main,
                                             vlanId=vlanId,
                                             setVlan=setVlan,
                                             encap=encap )
-    except (KeyError, TypeError):
+    except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
             errorMsg += "  There was a problem installing Point to Point intent."
@@ -597,7 +597,7 @@ def pointIntentTcp( main,
     checkFlowsState( main )
 
     # Run iperf to both host
-    iperfTemp = main.Mininet1.iperftcp( host1,host2,10 )
+    iperfTemp = main.Mininet1.iperftcp( host1, host2 ,10 )
     iperfResult = iperfResult and iperfTemp
     if iperfTemp:
         main.assertReturnString += 'Initial Iperf Passed\n'
@@ -627,7 +627,7 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcp( host1,host2,10 )
+        iperfTemp = main.Mininet1.iperftcp( host1, host2, 10 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
             main.assertReturnString += 'Link Down Iperf Passed\n'
@@ -671,7 +671,7 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcp( host1,host2,10 )
+        iperfTemp = main.Mininet1.iperftcp( host1, host2, 10 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
             main.assertReturnString += 'Link Up Iperf Passed\n'
@@ -810,7 +810,7 @@ def installSingleToMultiIntent( main,
                                             setVlan=setVlan,
                                             partial=partial,
                                             encap=encap )
-    except (KeyError, TypeError):
+    except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
             errorMsg += "  There was a problem installing Singlepoint to Multipoint intent."
@@ -936,7 +936,7 @@ def installMultiToSingleIntent( main,
                                             setVlan=setVlan,
                                             partial=partial,
                                             encap=encap )
-    except (KeyError, TypeError):
+    except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
             errorMsg += "  There was a problem installing Multipoint to Singlepoint intent."
@@ -974,7 +974,7 @@ def testPointIntent( main,
                      sw1="s5",
                      sw2="s2",
                      expectedLink=0,
-                     useTCP=False):
+                     useTCP=False ):
     """
     Test a Point Intent
 
@@ -1053,7 +1053,7 @@ def testPointIntent( main,
                 main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
                 recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
         vlanId = senders[ 0 ].get( "vlan" )
-    except (KeyError, TypeError):
+    except( KeyError, TypeError ):
         main.log.error( "There was a problem loading the hosts data." )
         return main.FALSE
 
@@ -1239,7 +1239,7 @@ def testEndPointFail( main,
                 main.log.warn( "Device not given for recipient {0}. Loading from " +\
                                 main.hostData.format( recipient.get( "name" ) ) )
                 recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
-    except (KeyError, TypeError):
+    except( KeyError, TypeError ):
         main.log.error( "There was a problem loading the hosts data." )
         return main.FALSE
 
@@ -1577,7 +1577,7 @@ def confirmHostDiscovery( main ):
             return main.FALSE
 
     if hostFails:
-        main.log.error( "List of failed ONOS Nodes:" + ', '.join(map(str, hostFails )) )
+        main.log.error( "List of failed ONOS Nodes:" + ', '.join( map( str, hostFails ) ) )
         return main.FALSE
     else:
         return main.TRUE
@@ -1591,7 +1591,7 @@ def sendDiscoveryArp( main, hosts=None ):
     if not hosts:
         hosts = main.scapyHosts
     for host in hosts:
-        pkt = 'Ether( src="{0}")/ARP( psrc="{1}")'.format( host.hostMac ,host.hostIp )
+        pkt = 'Ether( src="{0}")/ARP( psrc="{1}")'.format( host.hostMac, host.hostIp )
         # Send from the VLAN interface if there is one so ONOS discovers the VLAN correctly
         iface = None
         for interface in host.getIfList():
@@ -1628,7 +1628,7 @@ def populateHostData( main ):
         main.log.error( "ValueError while populating hostsData" )
         return main.FALSE
     except KeyError:
-        main.log.error( "KeyError while populating hostsData")
+        main.log.error( "KeyError while populating hostsData" )
         return main.FALSE
     except IndexError:
         main.log.error( "IndexError while populating hostsData" )
@@ -1696,7 +1696,7 @@ def checkFlowsState( main ):
     checkFlowsResult = main.CLIs[ 0 ].checkFlowsState( isPENDING=False )
     return checkFlowsResult
 
-def link( main, sw1, sw2, option):
+def link( main, sw1, sw2, option ):
 
     # link down
     main.log.info( itemName + ": Bring link " + option + "between " +
@@ -1861,7 +1861,7 @@ def checkLeaderChange( leaders1, leaders2 ):
     try:
         leaders1 = json.loads( leaders1 )
         leaders2 = json.loads( leaders2 )
-    except ( AttributeError, TypeError):
+    except( AttributeError, TypeError ):
         main.log.exception( self.name + ": Object not as expected" )
         return main.FALSE
     except Exception:

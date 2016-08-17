@@ -69,9 +69,9 @@ class FUNCflow:
                                          direction="to" )
 
         utilities.assert_equals( expect=main.TRUE,
-                                actual=copyResult,
-                                onpass="Successfully copy " + "test variables ",
-                                onfail="Failed to copy test variables" )
+                                 actual=copyResult,
+                                 onpass="Successfully copy " + "test variables ",
+                                 onfail="Failed to copy test variables" )
 
 
         if main.CLIs:
@@ -157,7 +157,7 @@ class FUNCflow:
         onosUninstallResult = main.TRUE
         for ip in main.ONOSip:
             onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp = ip )
+                    main.ONOSbench.onosUninstall( nodeIp=ip )
         stepResult = onosUninstallResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -168,7 +168,7 @@ class FUNCflow:
         onosInstallResult = main.TRUE
         for i in range( main.numCtrls ):
             onosInstallResult = onosInstallResult and \
-                    main.ONOSbench.onosInstall( node = main.ONOSip[ i ] )
+                    main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
         stepResult = onosInstallResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

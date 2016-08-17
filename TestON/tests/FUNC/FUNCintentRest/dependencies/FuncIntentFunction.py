@@ -23,7 +23,7 @@ def installHostIntent( main,
                        ipAddresses="",
                        tcp="",
                        sw1="",
-                       sw2=""):
+                       sw2="" ):
     """
     Installs a Host Intent
 
@@ -46,7 +46,7 @@ def installHostIntent( main,
         host2 - Dictionary for host2
             { "name":"h16", "id":"of:0000000000000006/8" }
     Optional:
-        onosNode - ONOS node to install the intents in main.CLIs[ ]
+        onosNode - ONOS node to install the intents in main.RESTs[ ]
                    0 by default so that it will always use the first
                    ONOS node
         ethType - Ethernet type eg. IPV4, IPV6
@@ -80,14 +80,14 @@ def installHostIntent( main,
         # Adding host intents
         main.log.info( itemName + ": Adding host intents" )
 
-        intent1 = main.CLIs[ onosNode ].addHostIntent( hostIdOne=host1.get( "id" ),
+        intent1 = main.RESTs[ onosNode ].addHostIntent( hostIdOne=host1.get( "id" ),
                                                        hostIdTwo=host2.get( "id" ),
                                                        vlanId=vlanId )
 
         # Get all intents ID in the system, time delay right after intents are added
         time.sleep( main.addIntentSleep )
-        intentsId = main.CLIs[ 0 ].getIntentsId()
-    except (KeyError, TypeError):
+        intentsId = main.RESTs[ 0 ].getIntentsId()
+    except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentsId:
             errorMsg += "  There was a problem installing host to host intent."
@@ -116,7 +116,7 @@ def testHostIntent( main,
                     onosNode=0,
                     sw1="s5",
                     sw2="s2",
-                    expectedLink=0):
+                    expectedLink=0 ):
     """
     Test a Host Intent
 
@@ -150,7 +150,7 @@ def testHostIntent( main,
         host2 - Dictionary for host2
             { "name":"h16", "id":"of:0000000000000006/8" }
     Optional:
-        onosNode - ONOS node to install the intents in main.CLIs[ ]
+        onosNode - ONOS node to install the intents in main.RESTs[ ]
                    0 by default so that it will always use the first
                    ONOS node
         sw1 - First switch to bring down & up for rerouting purpose
@@ -185,7 +185,7 @@ def testHostIntent( main,
         senderNames = [ host1.get( "name" ), host2.get( "name" ) ]
         recipientNames = [ host1.get( "name" ), host2.get( "name" ) ]
         vlanId = host1.get( "vlanId" )
-    except ( KeyError, TypeError ):
+    except( KeyError, TypeError ):
         main.log.error( "There was a problem loading the hosts data." )
         return main.FALSE
 
@@ -309,7 +309,7 @@ def installPointIntent( main,
                         ipSrc="",
                         ipDst="",
                         tcpSrc="",
-                        tcpDst=""):
+                        tcpDst="" ):
     """
     Installs a Single to Single Point Intent
 
@@ -331,7 +331,7 @@ def installPointIntent( main,
         recipients - List of host dictionaries i.e.
             [ { "name":"h16", "device":"of:0000000000000006/8", "mac":"00:00:00:00:00:10" } ]
     Optional:
-        onosNode - ONOS node to install the intents in main.CLIs[ ]
+        onosNode - ONOS node to install the intents in main.RESTs[ ]
                    0 by default so that it will always use the first
                    ONOS node
         ethType - Ethernet type eg. IPV4, IPV6
@@ -384,7 +384,7 @@ def installPointIntent( main,
         ipSrc = senders[ 0 ].get( "ip" )
         ipDst = recipients[ 0 ].get( "ip" )
 
-        intent1 = main.CLIs[ onosNode ].addPointIntent(
+        intent1 = main.RESTs[ onosNode ].addPointIntent(
                                             ingressDevice=ingressDevice,
                                             egressDevice=egressDevice,
                                             ingressPort=portIngress,
@@ -402,8 +402,8 @@ def installPointIntent( main,
                                             vlanId=vlanId )
 
         time.sleep( main.addIntentSleep )
-        intentsId = main.CLIs[ 0 ].getIntentsId()
-    except (KeyError, TypeError):
+        intentsId = main.RESTs[ 0 ].getIntentsId()
+    except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentsId:
             errorMsg += "  There was a problem installing Point to Point intent."
@@ -476,7 +476,7 @@ def testPointIntent( main,
         recipients - List of host dictionaries i.e.
             { "name":"h16", "device":"of:0000000000000006/8", "mac":"00:00:00:00:00:10" }
     Optional:
-        onosNode - ONOS node to install the intents in main.CLIs[ ]
+        onosNode - ONOS node to install the intents in main.RESTs[ ]
                    0 by default so that it will always use the first
                    ONOS node
         ethType - Ethernet type eg. IPV4, IPV6
@@ -521,7 +521,7 @@ def testPointIntent( main,
                 main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
                 recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
         vlanId=senders[ 0 ].get( "vlanId" )
-    except (KeyError, TypeError):
+    except( KeyError, TypeError ):
         main.log.error( "There was a problem loading the hosts data." )
         return main.FALSE
 
@@ -697,7 +697,7 @@ def pointIntentTcp( main,
         host1 - Name of first host
         host2 - Name of second host
     Optional:
-        onosNode - ONOS node to install the intents in main.CLIs[ ]
+        onosNode - ONOS node to install the intents in main.RESTs[ ]
                    0 by default so that it will always use the first
                    ONOS node
         deviceId1 - ONOS device id of the first switch, the same as the
@@ -745,7 +745,7 @@ def pointIntentTcp( main,
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding point intents" )
-    intent1 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
+    intent1 = main.RESTs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
                                                     egressDevice=deviceId2,
                                                     ingressPort=port1,
                                                     egressPort=port2,
@@ -760,7 +760,7 @@ def pointIntentTcp( main,
                                                     tcpSrc=tcp1,
                                                     tcpDst="" )
 
-    intent2 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
+    intent2 = main.RESTs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
                                                     egressDevice=deviceId1,
                                                     ingressPort=port2,
                                                     egressPort=port1,
@@ -775,7 +775,7 @@ def pointIntentTcp( main,
                                                     tcpSrc=tcp2,
                                                     tcpDst="" )
 
-    intent3 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
+    intent3 = main.RESTs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
                                                     egressDevice=deviceId2,
                                                     ingressPort=port1,
                                                     egressPort=port2,
@@ -790,7 +790,7 @@ def pointIntentTcp( main,
                                                     tcpSrc="",
                                                     tcpDst=tcp2 )
 
-    intent4 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
+    intent4 = main.RESTs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
                                                     egressDevice=deviceId1,
                                                     ingressPort=port2,
                                                     egressPort=port1,
@@ -807,7 +807,7 @@ def pointIntentTcp( main,
 
     # Get all intents ID in the system, time delay right after intents are added
     time.sleep( main.addIntentSleep )
-    intentsId = main.CLIs[ 0 ].getIntentsId()
+    intentsId = main.RESTs[ 0 ].getIntentsId()
     # Check intents state
     time.sleep( main.checkIntentSleep )
     intentResult = checkIntentState( main, intentsId )
@@ -934,7 +934,7 @@ def singleToMultiIntent( main,
             name - Type of point intent to add eg. IPV4 | VLAN | Dualstack
             hostNames - List of host names
         Optional:
-            onosNode - ONOS node to install the intents in main.CLIs[ ]
+            onosNode - ONOS node to install the intents in main.RESTs[ ]
                        0 by default so that it will always use the first
                        ONOS node
             devices - List of device ids in the same order as the hosts
@@ -1040,7 +1040,7 @@ def singleToMultiIntent( main,
                 srcMac = ""
 
         intentsId.append(
-                        main.CLIs[ onosNode ].addSinglepointToMultipointIntent(
+                        main.RESTs[ onosNode ].addSinglepointToMultipointIntent(
                                             ingressDevice=ingressDevice,
                                             egressDeviceList=egressDeviceList,
                                             portIngress=portIngress,
@@ -1176,7 +1176,7 @@ def multiToSingleIntent( main,
             name - Type of point intent to add eg. IPV4 | VLAN | Dualstack
             hostNames - List of host names
         Optional:
-            onosNode - ONOS node to install the intents in main.CLIs[ ]
+            onosNode - ONOS node to install the intents in main.RESTs[ ]
                        0 by default so that it will always use the first
                        ONOS node
             devices - List of device ids in the same order as the hosts
@@ -1281,7 +1281,7 @@ def multiToSingleIntent( main,
                 dstMac = ""
 
         intentsId.append(
-                        main.CLIs[ onosNode ].addMultipointToSinglepointIntent(
+                        main.RESTs[ onosNode ].addMultipointToSinglepointIntent(
                                             ingressDeviceList=ingressDeviceList,
                                             egressDevice=egressDevice,
                                             portIngressList=portIngressList,
@@ -1388,7 +1388,7 @@ def getHostsData( main, hostList ):
     appCheck = main.TRUE
     getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
-    activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
+    activateResult = main.RESTs[ 0 ].activateApp( "org.onosproject.fwd" )
     if not activateResult:
         main.log.error( "Something went wrong installing fwd app" )
     time.sleep( main.fwdSleep )
@@ -1398,7 +1398,7 @@ def getHostsData( main, hostList ):
         for i in xrange( len( hostList ) ):
             main.Mininet1.pingallHosts( hostList[ i ] )
 
-    hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
+    hostsJson = json.loads( main.RESTs[ 0 ].hosts() )
     hosts = main.Mininet1.getHosts().keys()
     # TODO: Make better use of new getHosts function
     for host in hosts:
@@ -1415,7 +1415,7 @@ def getHostsData( main, hostList ):
                 main.hostsData[ host ][ 'ipAddresses' ] = hostj[ 'ipAddresses' ]
 
     main.log.info( "Deactivating reactive forwarding app " )
-    deactivateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
+    deactivateResult = main.RESTs[ 0 ].deactivateApp( "org.onosproject.fwd" )
     if activateResult and deactivateResult and main.hostsData:
         main.log.info( "Successfully used fwd app to discover hosts " )
         getDataResult = main.TRUE
@@ -1433,7 +1433,7 @@ def checkTopology( main, expectedLink ):
     main.log.info( itemName + ": Checking ONOS topology " )
 
     for i in range( main.numCtrls ):
-        statusResult = main.CLIs[ i ].checkStatus( main.numSwitch,
+        statusResult = main.RESTs[ i ].checkStatus( main.numSwitch,
                                                    expectedLink )\
                        and statusResult
     if not statusResult:
@@ -1454,7 +1454,7 @@ def checkIntentState( main, intentsId ):
     main.log.info( itemName + ": Checking intents state" )
     # First check of intents
     for i in range( main.numCtrls ):
-        tempResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+        tempResult = main.RESTs[ i ].checkIntentState( intentsId=intentsId )
         results.append( tempResult )
 
     expectedState = [ 'INSTALLED', 'INSTALLING' ]
@@ -1469,7 +1469,7 @@ def checkIntentState( main, intentsId ):
         # Second check of intents since some of the intents may be in
         # INSTALLING state, they should be in INSTALLED at this time
         for i in range( main.numCtrls ):
-            tempResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+            tempResult = main.RESTs[ i ].checkIntentState( intentsId=intentsId )
             results.append( tempResult )
         if all( result == main.TRUE for result in results ):
             main.log.info( itemName + ": Intents are installed correctly" )
@@ -1483,7 +1483,7 @@ def checkIntentState( main, intentsId ):
 def checkFlowsState( main ):
 
     main.log.info( itemName + ": Check flows state" )
-    checkFlowsResult = main.CLIs[ 0 ].checkFlowsState()
+    checkFlowsResult = main.RESTs[ 0 ].checkFlowsState()
     return checkFlowsResult
 
 def link( main, sw1, sw2, option):
@@ -1502,7 +1502,7 @@ def removeAllIntents( main ):
     onosSummary = []
     removeIntentResult = main.TRUE
     # Remove intents
-    removeIntentResult = main.CLIs[ 0 ].removeAllIntents( )
+    removeIntentResult = main.RESTs[ 0 ].removeAllIntents( )
 
     if removeIntentResult:
         main.log.info( itemName + ": There are no more intents remaining, " +
@@ -1518,7 +1518,7 @@ def checkFlowsCount( main ):
     flowsCount = []
     main.log.info( itemName + ": Checking flows count in each ONOS node" )
     for i in range( main.numCtrls ):
-        flowsCount.append( len( json.loads( main.CLIs[ i ].flows() ) ) )
+        flowsCount.append( len( json.loads( main.RESTs[ i ].flows() ) ) )
 
     if flowsCount:
         if all( flows==flowsCount[ 0 ] for flows in flowsCount ):
@@ -1595,7 +1595,7 @@ def confirmHostDiscovery( main ):
             return main.FALSE
 
     if hostFails:
-        main.log.error( "List of failed ONOS Nodes:" + ', '.join(map(str, hostFails )) )
+        main.log.error( "List of failed ONOS Nodes:" + ', '.join( map( str, hostFails ) ) )
         return main.FALSE
     else:
         return main.TRUE
@@ -1606,7 +1606,7 @@ def populateHostData( main ):
     """
     import json
     try:
-        hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
+        hostsJson = json.loads( main.RESTs[ 0 ].hosts() )
         hosts = main.Mininet1.getHosts().keys()
         # TODO: Make better use of new getHosts function
         for host in hosts:
@@ -1650,7 +1650,7 @@ def scapyCheckConnection( main, senders, recipients, vlanId=None, useTCP=False, 
     if not packetFilter:
         packetFilter = 'ether host {}'
     if useTCP:
-        packetFilter += ' ip proto \\tcp tcp port {}'.format(main.params[ 'SDNIP' ][ 'dstPort' ])
+        packetFilter += ' ip proto \\tcp tcp port {}'.format( main.params[ 'SDNIP' ][ 'dstPort' ] )
     if expectFailure:
         timeout = 1
     else:
@@ -1766,7 +1766,7 @@ def report( main ):
                                 "flow",
                                 "ERROR",
                                 "Except" ],
-                              "s" )
+                                "s" )
 
     main.log.info( "ERROR report: \n" )
     for i in range( main.numCtrls ):
@@ -1792,7 +1792,7 @@ def flowDuration( main ):
     """
     import time
     main.log.info( "Getting current flow durations" )
-    flowsJson1 = main.CLIs[ 0 ].flows()
+    flowsJson1 = main.RESTs[ 0 ].flows()
     try:
         flowsJson1 = json.loads( flowsJson1 )
     except ValueError:
@@ -1806,7 +1806,7 @@ def flowDuration( main ):
     main.log.info( "Sleeping for {} seconds".format( main.flowDurationSleep ) )
     time.sleep( main.flowDurationSleep )
     main.log.info( "Getting new flow durations" )
-    flowsJson2 = main.CLIs[ 0 ].flows()
+    flowsJson2 = main.RESTs[ 0 ].flows()
     try:
         flowsJson2 = json.loads( flowsJson2 )
     except ValueError:
@@ -1817,7 +1817,7 @@ def flowDuration( main ):
             waitFlowLife.append( flow[ 'life' ] )
     main.log.info( "Determining whether flows where overwritten" )
     if len( flowLife ) == len( waitFlowLife ):
-        for i in range( len( flowLife) ):
+        for i in range( len( flowLife ) ):
             if waitFlowLife[ i ] - flowLife[ i ] < main.flowDurationSleep:
                 return main.FALSE
     else:

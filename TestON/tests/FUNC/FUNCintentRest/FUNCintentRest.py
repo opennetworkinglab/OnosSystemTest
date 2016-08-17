@@ -65,8 +65,8 @@ class FUNCintentRest:
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
             main.cellData = {} # for creating cell file
             main.hostsData = {}
+            main.RESTs = []
             main.CLIs = []
-            main.CLIs2 = []
             main.ONOSip = []
             main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
             main.scapyHosts = []  # List of scapy hosts for iterating
@@ -79,14 +79,14 @@ class FUNCintentRest:
             # Assigning ONOS cli handles to a list
             try:
                 for i in range( 1,  main.maxNodes + 1 ):
-                    main.CLIs.append( getattr( main, 'ONOSrest' + str( i ) ) )
-                    main.CLIs2.append( getattr( main, 'ONOScli' + str( i ) ) )
+                    main.RESTs.append( getattr( main, 'ONOSrest' + str( i ) ) )
+                    main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
             except AttributeError:
                 main.log.warn( "A " + str( main.maxNodes ) + " node cluster " +
                                "was defined in env variables, but only " +
-                               str( len( main.CLIs ) ) +
+                               str( len( main.RESTs ) ) +
                                " nodes were defined in the .topo file. " +
-                               "Using " + str( len( main.CLIs ) ) +
+                               "Using " + str( len( main.RESTs ) ) +
                                " nodes for the test." )
 
             # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -110,13 +110,13 @@ class FUNCintentRest:
                                               main.topology,
                                               main.Mininet1.home + "custom/",
                                               direction="to" )
-            if main.CLIs and main.CLIs2:
+            if main.RESTs and main.CLIs:
                 stepResult = main.TRUE
             else:
                 main.log.error( "Did not properly created list of ONOS CLI handle" )
                 stepResult = main.FALSE
         except Exception as e:
-            main.log.exception(e)
+            main.log.exception( e )
             main.cleanup()
             main.exit()
 
@@ -263,7 +263,7 @@ class FUNCintentRest:
         cliResult = main.TRUE
         for i in range( main.numCtrls ):
             cliResult = cliResult and \
-                        main.CLIs2[ i ].startOnosCli( main.ONOSip[ i ] )
+                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
         stepResult = cliResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -475,7 +475,7 @@ class FUNCintentRest:
             Report errors/warnings/exceptions
         '''
         main.log.info( "Error report: \n" )
-        main.ONOSbench.logReport( globalONOSip[0],
+        main.ONOSbench.logReport( globalONOSip[ 0 ],
                 [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR" , "Except" ],
                 "s" )
         #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
@@ -702,7 +702,7 @@ class FUNCintentRest:
         main.step( "Balancing mastership of switches" )
 
         balanceResult = main.FALSE
-        balanceResult = utilities.retry( f=main.CLIs2[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
+        balanceResult = utilities.retry( f=main.CLIs[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -725,7 +725,7 @@ class FUNCintentRest:
 
         cmd = "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator"
 
-        stepResult = main.CLIs2[ 0 ].setCfg( component=cmd,
+        stepResult = main.CLIs[ 0 ].setCfg( component=cmd,
                                             propName="useFlowObjectives", value="true" )
 
         utilities.assert_equals( expect=main.TRUE,
@@ -787,7 +787,7 @@ class FUNCintentRest:
         scpResult = main.TRUE
         copyResult = main.TRUE
         for i in range( main.numCtrls ):
-            main.node = main.CLIs2[ i ]
+            main.node = main.CLIs[ i ]
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip
             scpResult = scpResult and main.ONOSbench.scp( main.node ,
@@ -834,9 +834,9 @@ class FUNCintentRest:
         # if you want to use the wrapper function
         assert main, "There is no main"
         try:
-            assert main.CLIs
+            assert main.RESTs
         except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.log.error( "There is no main.RESTs, skipping test cases" )
             main.initialized = main.FALSE
             main.skipCase()
         try:
@@ -848,13 +848,13 @@ class FUNCintentRest:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in "+\
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
 
         # Save leader candidates
-        intentLeadersOld = main.CLIs2[ 0 ].leaderCandidates()
+        intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
 
         main.case( "Host Intents Test - " + str( main.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
@@ -886,7 +886,7 @@ class FUNCintentRest:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18 )
+                                              expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -896,7 +896,7 @@ class FUNCintentRest:
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
         main.assertReturnString = "Assertion Result for dualstack IPV4 with MAC addresses\n"
         host1 = { "name":"h3", "id":"00:00:00:00:00:03/-1" }
-        host2 = { "name":"h11","id":"00:00:00:00:00:0B/-1"}
+        host2 = { "name":"h11","id":"00:00:00:00:00:0B/-1" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name='DUALSTACK1',
@@ -913,12 +913,12 @@ class FUNCintentRest:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18 )
+                                              expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString)
+                                 onfail=main.assertReturnString )
 
         main.step( "DUALSTACK2: Add host intents between h1 and h11" )
         main.assertReturnString = "Assertion Result for dualstack2 host intent\n"
@@ -940,7 +940,7 @@ class FUNCintentRest:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18 )
+                                              expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -967,7 +967,7 @@ class FUNCintentRest:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18 )
+                                              expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -994,7 +994,7 @@ class FUNCintentRest:
                                               host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink = 18 )
+                                              expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1022,7 +1022,7 @@ class FUNCintentRest:
         #                                       host2=host2,
         #                                       sw1='s5',
         #                                       sw2='s2',
-        #                                       expectedLink = 18 )
+        #                                       expectedLink=18 )
 
         # utilities.assert_equals( expect=main.TRUE,
         #                          actual=testResult,
@@ -1032,8 +1032,8 @@ class FUNCintentRest:
         # Change the following to use the REST API when leader checking is
         # supported by it
 
-        main.step( "Confirm that ONOS leadership is unchanged")
-        intentLeadersNew = main.CLIs2[ 0 ].leaderCandidates()
+        main.step( "Confirm that ONOS leadership is unchanged" )
+        intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
         main.intentFunction.checkLeaderChange( intentLeadersOld,
                                                 intentLeadersNew )
 
@@ -1073,9 +1073,9 @@ class FUNCintentRest:
         # if you want to use the wrapper function
         assert main, "There is no main"
         try:
-            assert main.CLIs
+            assert main.RESTs
         except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.log.error( "There is no main.RESTs, skipping test cases" )
             main.initialized = main.FALSE
             main.skipCase()
         try:
@@ -1087,8 +1087,8 @@ class FUNCintentRest:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in "+\
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
 
@@ -1128,7 +1128,7 @@ class FUNCintentRest:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1159,7 +1159,7 @@ class FUNCintentRest:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1189,7 +1189,7 @@ class FUNCintentRest:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1293,7 +1293,7 @@ class FUNCintentRest:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1323,7 +1323,7 @@ class FUNCintentRest:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1356,7 +1356,7 @@ class FUNCintentRest:
                                          recipients=recipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1657,9 +1657,9 @@ class FUNCintentRest:
         # if you want to use the wrapper function
         assert main, "There is no main"
         try:
-            assert main.CLIs
+            assert main.RESTs
         except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
+            main.log.error( "There is no main.RESTs, skipping test cases" )
             main.initialized = main.FALSE
             main.skipCase()
         try:
@@ -1671,16 +1671,16 @@ class FUNCintentRest:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in \
-                             main.numSwitch" )
+            main.log.error( "Place the total number of switch topology in " +\
+                             main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
         main.case( "Test host mobility with host intents " )
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
         h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
-        main.log.info( "Moving h1 from s5 to s6")
-        main.Mininet1.moveHost( "h1","s5","s6" )
+        main.log.info( "Moving h1 from s5 to s6" )
+        main.Mininet1.moveHost( "h1", "s5", "s6" )
 
         # Send discovery ping from moved host
         # Moving the host brings down the default interfaces and creates a new one.
@@ -1712,7 +1712,7 @@ class FUNCintentRest:
                                               name='IPV4 Mobility IPV4',
                                               onosNode='0',
                                               host1=host1,
-                                              host2=host2)
+                                              host2=host2 )
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                                   name='Host Mobility IPV4',

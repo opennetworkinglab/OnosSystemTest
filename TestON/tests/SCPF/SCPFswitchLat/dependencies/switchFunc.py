@@ -77,7 +77,6 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
         time.sleep(10)
     main.log.info( "Stopping all Tshark processes" )
     main.ONOSbench.tsharkStop()
-
     tempResultDict = {}
     if switchStatus == 'up':
         for d in main.tsharkResultPath['up']:
@@ -105,18 +104,20 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
             ACKlines = resultFile.readlines()
             resultFile.close()
 
+        AckPackage = ""
         for l in ACKlines:
             temp = processPackage(l)
             if temp['Seq'] == findSeqBySeqAck(FinAckOFseq, ACKlines):
                 AckPackage = l
-
-        FinAckText = FinAckText.strip()
-        FinAckText = FinAckText.split(" ")
-        AckPackage = AckPackage.strip()
-        AckPackage = AckPackage.split(" ")
-        tempResultDict['ACK'] = float("%.2f" % (float(AckPackage[1]) * 1000) )
-        tempResultDict['FA'] = float("%.2f" % (float(FinAckText[1]) * 1000) )
-
+        if len(AckPackage) > 0:
+            FinAckText = FinAckText.strip()
+            FinAckText = FinAckText.split(" ")
+            AckPackage = AckPackage.strip()
+            AckPackage = AckPackage.split(" ")
+            tempResultDict['ACK'] = float("%.2f" % (float(AckPackage[1]) * 1000) )
+            tempResultDict['FA'] = float("%.2f" % (float(FinAckText[1]) * 1000) )
+        else:
+            return
     # calculate latency
     if switchStatus == "up":
         # up Latency

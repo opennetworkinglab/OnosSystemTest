@@ -45,7 +45,7 @@
 
     <TSHARK>
         <up>
-            <TCP>TCP 74 openflow</TCP>  #1
+            <TCP>openflow\ \[SYN\]</TCP>  #1
             <RQ>OF 1.3 90 of_role_request</RQ> #2
             <RR>OF 1.3 90 of_role_reply</RR> #3
             <Feature>OF 1.3 98 of_features_reply</Feature>#4

@@ -85,7 +85,7 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                 resultText = resultFile.readlines()
                 if d == "TCP":
                     # if TCP package, we should use the latest one package
-                    resultText = resultText[len(resultText) - 1:]
+                    resultText = resultText[len(resultText) - 1]
                 else:
                     resultText = resultText[0]
                 main.log.info("Capture result:" + resultText)
@@ -246,5 +246,5 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                 resultDict[switchStatus]['node' + str(i)][ 'A_D' ].append( A_Dtemp )
                 resultDict[switchStatus]['node' + str(i)][ 'D_G' ].append( D_Gtemp )
                 resultDict[switchStatus]['node' + str(i)][ 'E_E' ].append( E_Etemp )
-        main.CLIs[0].removeDevice(["of:0000000000000001"])
+        main.CLIs[0].removeDevice( "of:0000000000000001" )
 

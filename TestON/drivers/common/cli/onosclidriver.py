@@ -4711,7 +4711,9 @@ class OnosCliDriver( CLI ):
         '''
         try:
             if type( device ) is str:
-                device = list( device )
+                deviceStr = device
+                device = []
+                device.append( deviceStr )
 
             for d in device:
                 time.sleep( 1 )

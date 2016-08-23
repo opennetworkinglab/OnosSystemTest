@@ -120,7 +120,7 @@ class USECASE_SdnipFunctionCluster:
         main.ONOSbench.getVersion( report=True )
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage( opTimeout=500 )
+        packageResult = main.ONOSbench.buckBuild()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=packageResult,
                                  onpass="Package ONOS succeeded",

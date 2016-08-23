@@ -124,7 +124,7 @@ class SCPFbatchFlowResp:
 
 
             main.step( "Creating ONOS package" )
-            packageResult = main.ONOSbench.onosPackage(opTimeout=240)
+            packageResult = main.ONOSbench.buckBuild()
             stepResult = packageResult
             utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

@@ -205,7 +205,7 @@ class HAstopNodes:
                                               dstDir,
                                               pwd=main.ONOSbench.pwd,
                                               direction="from" )
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.buckBuild()
         utilities.assert_equals( expect=main.TRUE, actual=packageResult,
                                  onpass="ONOS package successful",
                                  onfail="ONOS package failed" )

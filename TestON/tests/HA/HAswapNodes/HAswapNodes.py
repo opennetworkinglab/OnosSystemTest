@@ -232,14 +232,20 @@ class HAswapNodes:
         main.log.warn( sed )
         main.log.warn( repr( sed ) )
         handle.sendline( sed )
+        handle.expect( metaFile )
+        output = handle.before
         handle.expect( "\$" )
-        main.log.debug( repr( handle.before ) )
+        output += handle.before
+        main.log.debug( repr( output ) )
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.buckBuild()
         utilities.assert_equals( expect=main.TRUE, actual=packageResult,
                                  onpass="ONOS package successful",
                                  onfail="ONOS package failed" )
+        if not packageResult:
+            main.cleanup()
+            main.exit()
 
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
@@ -1839,7 +1845,7 @@ class HAswapNodes:
             main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
 
         main.step( "Generate new metadata file" )
-        old = [ main.activeNodes[0],  main.activeNodes[-1] ]
+        old = [ main.activeNodes[1],  main.activeNodes[-2] ]
         new = range( main.ONOSbench.maxNodes )[-2:]
         assert len( old ) == len( new ), "Length of nodes to swap don't match"
         handle = main.ONOSbench.handle

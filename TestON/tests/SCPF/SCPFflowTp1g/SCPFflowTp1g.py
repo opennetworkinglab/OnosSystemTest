@@ -109,7 +109,7 @@ class SCPFflowTp1g:
         main.ONOSbench.setCell(cellName)
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.buckBuild()
 
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()

@@ -105,7 +105,7 @@ class SCPFcbench:
         #print "pexpect: \n" + main.ONOSbench.handle.before
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.buckBuild()
 
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()

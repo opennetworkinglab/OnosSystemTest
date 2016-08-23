@@ -51,7 +51,7 @@ class SDNIPfunction:
         main.ONOSbench.getVersion( report = True )
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage( opTimeout = 500 )
+        packageResult = main.ONOSbench.buckBuild()
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall( options = "-f",

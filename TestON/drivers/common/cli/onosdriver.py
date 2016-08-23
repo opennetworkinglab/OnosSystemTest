@@ -358,6 +358,51 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def buckBuild( self, timeout=180 ):
+        """
+        Build onos using buck.
+        """
+        try:
+            ret = main.TRUE
+            self.handle.sendline( "buck build onos" )
+            self.handle.expect( "buck build onos" )
+            output = ""
+            while True:
+                i = self.handle.expect( [ "This does not appear to be the root of a Buck project.",
+                                          "\n",
+                                          "BUILD FAILED",
+                                          "\$" ],
+                                        timeout=timeout )
+                output += str( self.handle.before + self.handle.after )
+                if i == 0:
+                    main.log.error( "Wrong location" )
+                    ret = main.FALSE
+                elif i == 1:
+                    # end of a line, buck is still printing output
+                    pass
+                elif i == 2:
+                    # Build failed
+                    main.log.error( "Build failed" )
+                    ret = main.FALSE
+                elif i == 3:
+                    # Prompt returned
+                    break
+            main.log.debug( output )
+            return ret
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( "Failed to build and package ONOS" )
+            main.cleanup()
+            main.exit()
+
     def gitPull( self, comp1="", fastForward=True ):
         """
         Assumes that "git pull" works without login
@@ -956,31 +1001,38 @@ class OnosDriver( CLI ):
                                       "onos\sstart/running,\sprocess",
                                       "ONOS\sis\salready\sinstalled",
                                       "already\sup-to-date",
+                                      "does not exist",
                                       "\$",
                                       pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
+                # can't reach ONOS node
                 main.log.warn( "Network is unreachable" )
                 self.handle.expect( "\$" )
                 return main.FALSE
             elif i == 1:
+                # Process started
                 main.log.info(
                     "ONOS was installed on " +
                     node +
                     " and started" )
                 self.handle.expect( "\$" )
                 return main.TRUE
-            elif i == 2:
-                main.log.info( "ONOS is already installed on " + node )
-                self.handle.expect( "\$" )
-                return main.TRUE
-            elif i == 3:
+            elif i == 2 or i == 3:
+                # same bits are already on ONOS node
                 main.log.info( "ONOS is already installed on " + node )
                 self.handle.expect( "\$" )
                 return main.TRUE
             elif i == 4:
+                # onos not packaged
+                main.log.error( "ONOS package not found." )
+                self.handle.expect( "\$" )
+                return main.FALSE
+            elif i == 5:
+                # prompt
                 main.log.info( "ONOS was installed on " + node )
                 return main.TRUE
-            elif i == 5:
+            elif i == 6:
+                # timeout
                 main.log.info(
                     "Installation of ONOS on " +
                     node +

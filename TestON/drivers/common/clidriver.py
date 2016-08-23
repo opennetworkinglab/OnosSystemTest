@@ -67,6 +67,9 @@ class CLI( Component ):
                 maxread=1000000,
                 timeout=60 )
 
+        # set tty window size
+        self.handle.setwinsize( 24, 250 )
+
         self.handle.logfile = self.logfile_handler
         i = 5
         while i == 5:

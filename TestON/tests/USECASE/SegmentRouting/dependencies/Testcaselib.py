@@ -113,7 +113,7 @@ class Testcaselib:
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
         main.step( "Create and Install ONOS package" )
-        packageResult = main.ONOSbench.onosPackage( )
+        packageResult = main.ONOSbench.buckBuild()
 
         onosInstallResult = main.TRUE
         for i in range( main.numCtrls ):

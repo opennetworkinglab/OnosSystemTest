@@ -137,7 +137,7 @@ class SCPFintentInstallWithdrawLat:
                                 onfail="Failed to apply cell to environment ")
 
         main.step("Creating ONOS package")
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.buckBuild()
         stepResult = packageResult
         utilities.assert_equals(expect=main.TRUE,
                                 actual=stepResult,

@@ -120,7 +120,7 @@ class FUNCbgpls:
                                  onfail="MCI failed" )
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.buckBuild()
         utilities.assert_equals( expect=main.TRUE,
                                      actual=packageResult,
                                      onpass="Successfully created ONOS package",

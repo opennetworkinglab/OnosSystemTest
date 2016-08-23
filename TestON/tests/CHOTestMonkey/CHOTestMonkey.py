@@ -116,7 +116,7 @@ class CHOTestMonkey:
 
         main.step( "Create ONOS package" )
         if onosPackage == 'on':
-            packageResult = main.ONOSbench.onosPackage()
+            packageResult = main.ONOSbench.buckBuild()
         else:
             packageResult = main.TRUE
             main.log.info( "Skipped onos package as it is disabled in params file" )

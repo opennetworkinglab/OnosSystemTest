@@ -109,7 +109,7 @@ class CHOtest:
         main.ONOSbench.getVersion( report=True )
 
         main.step( "Create ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.buckBuild()
         utilities.assert_equals( expect=main.TRUE, actual=packageResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )

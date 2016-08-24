@@ -374,6 +374,10 @@ class SCPFswitchLat:
             temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'FA_A' ] )
             temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'A_D' ] )
             temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'D_G' ] )
+
+            temp += "," + str( "%.2f" % resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Std' ][ 'E_E' ] )
+            temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Std' ][ 'E_E' ] )
+
             temp += "\n"
             dbFile.write( temp )
             dbFile.close()

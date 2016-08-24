@@ -187,9 +187,9 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                 resultDict[switchStatus]['node' + str(i)][ 'D_G' ].append( D_Gtemp )
                 resultDict[switchStatus]['node' + str(i)][ 'E_E' ].append( E_Etemp )
 
-            main.log.info( "{} Role Reply to Device: {}".format( d, str(RR_Dtemp) ) )
-            main.log.info( "{} Device to Graph: {}".format( d, str(D_Gtemp) ) )
-            main.log.info( "{} End to End: {}".format( d, str(E_Etemp) ) )
+            main.log.info( "Node {} Role Reply to Device: {}".format(str(i), str(RR_Dtemp) ) )
+            main.log.info( "Node {} Device to Graph: {}".format(str(i), str(D_Gtemp) ) )
+            main.log.info( "Node {} End to End: {}".format(str(i), str(E_Etemp) ) )
 
     if switchStatus == "down":
         # down Latency
@@ -201,6 +201,7 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                 main.log.warn("Tshark Result was incorrect!")
                 main.log.warn(tempResultDict)
                 return
+
             if not warmup:
                 resultDict[switchStatus][d][ 'FA_A' ].append( FA_Atemp )
             main.log.info( "{} FIN/ACK TO ACK {}:".format(d , FA_Atemp) )

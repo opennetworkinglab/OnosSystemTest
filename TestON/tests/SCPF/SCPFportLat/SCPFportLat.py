@@ -310,6 +310,10 @@ class SCPFportLat:
             temp += "," + str( resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'PtoD' ] )
             temp += "," + str( resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'DtoL' ] )
             temp += "," + str( resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'LtoG' ] )
+
+            temp += "," + str( resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Std' ][ 'EtoE' ] )
+            temp += "," + str( resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Std' ][ 'EtoE' ] )
+
             temp += "\n"
             dbFile.write( temp )
             dbFile.close()

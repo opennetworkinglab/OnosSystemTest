@@ -165,6 +165,11 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                 main.log.warn("Error to decode Json object!")
                 break
             try:
+                #FIXME: the Device Event (PORT_ADD) we got from metrics app is not the one generated Graph Event
+                if DeviceTime > GraphTime:
+                    # This fixes the negative latency values. However we are not using the right Device Event
+                    # timestamp. This should be fixed later.
+                    DeviceTime = GraphTime
                 RR_Dtemp = DeviceTime - tempResultDict['RR']
                 D_Gtemp = GraphTime - DeviceTime
                 E_Etemp = GraphTime - tempResultDict['TCP']

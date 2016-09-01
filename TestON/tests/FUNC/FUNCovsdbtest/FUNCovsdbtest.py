@@ -160,29 +160,17 @@ class FUNCovsdbtest:
             main.cleanup()
             main.exit()
 
-        main.step( "Install onos-ovsdatabase" )
+        main.step( "Install onos-ovsdb" )
         installResults = main.ONOScli1.activateApp( "org.onosproject.ovsdb" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install onos-ovsdatabase successful",
                                  onfail="Install onos-ovsdatabase failed" )
-
-        main.step( "Install onos-app-vtnrsc" )
-        installResults = main.ONOScli1.activateApp( "org.onosproject.vtnrsc" )
-        utilities.assert_equals( expect=main.TRUE, actual=installResults,
-                                 onpass="Install onos-app-vtnrsc successful",
-                                 onfail="Install onos-app-vtnrsc failed" )
 
         main.step( "Install onos-app-vtn" )
         installResults = main.ONOScli1.activateApp( "org.onosproject.vtn" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install onos-app-vtn successful",
                                  onfail="Install onos-app-vtn failed" )
-
-        main.step( "Install onos-app-vtnweb" )
-        installResults = main.ONOScli1.activateApp( "org.onosproject.vtnweb" )
-        utilities.assert_equals( expect=main.TRUE, actual=installResults,
-                                 onpass="Install onos-app-vtnweb successful",
-                                 onfail="Install onos-app-vtnweb failed" )
 
     def CASE2( self, main ):
 

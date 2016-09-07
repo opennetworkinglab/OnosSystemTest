@@ -192,7 +192,7 @@ class Testcaselib:
         arg = "--onos %d %s" % (main.numCtrls, args)
         main.topology = topology
         topoResult = main.Mininet1.startNet(
-                topoFile=main.dependencyPath + main.topology, args=arg )
+                topoFile=main.Mininet1.home + main.topology, args=arg )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

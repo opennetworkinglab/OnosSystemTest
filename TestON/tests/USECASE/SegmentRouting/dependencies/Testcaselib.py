@@ -240,12 +240,14 @@ class Testcaselib:
                 onpass="Flow status is correct!",
                 onfail="Flow status is wrong!" )
         if dumpflows:
-            main.ONOSbench.dumpFlows( main.ONOSip[ main.active ],
-                                      main.logdir,
-                                      "flowsBefore" + main.cfgName )
-            main.ONOSbench.dumpGroups( main.ONOSip[ main.active ],
-                                       main.logdir,
-                                       "groupsBefore" + main.cfgName )
+            main.ONOSbench.dumpONOSCmd( main.ONOSip[ main.active ],
+                                        "flows",
+                                        main.logdir,
+                                        "flowsBefore" + main.cfgName )
+            main.ONOSbench.dumpONOSCmd( main.ONOSip[ main.active ],
+                                        "groups",
+                                        main.logdir,
+                                        "groupsBefore" + main.cfgName )
 
     @staticmethod
     def pingAll( main, tag="", dumpflows=True ):
@@ -261,10 +263,14 @@ class Testcaselib:
                                      onpass="IP connectivity successfully tested",
                                      onfail="IP connectivity failed" )
         if dumpflows:
-            main.ONOSbench.dumpFlows( main.ONOSip[ main.active ],
-                                      main.logdir, "flowsOn" + tag )
-            main.ONOSbench.dumpGroups( main.ONOSip[ main.active ],
-                                       main.logdir, "groupsOn" + tag )
+            main.ONOSbench.dumpONOSCmd( main.ONOSip[ main.active ],
+                                        "flows",
+                                        main.logdir,
+                                        "flowsOn" + tag )
+            main.ONOSbench.dumpONOSCmd( main.ONOSip[ main.active ],
+                                        "groups",
+                                        main.logdir,
+                                        "groupsOn" + tag )
 
     @staticmethod
     def killLink( main, end1, end2, switches, links ):

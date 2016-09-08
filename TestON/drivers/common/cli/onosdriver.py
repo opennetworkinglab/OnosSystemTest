@@ -1624,19 +1624,20 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def dumpFlows(self,ONOSIp, destDir, filename="flows" ):
+    def dumpONOSCmd(self, ONOSIp, CMD, destDir, filename, options=""):
         """
-        Dump Flow Tables to a desired directory.
+        Dump Cmd to a desired directory.
         For debugging purposes, you may want to use
-        this function to capture flows at a given point in time.
+        this function to capture Cmd at a given point in time.
         Localtime will be attached to the filename
 
         Required:
             * ONOSIp: the IP of the target ONOS instance
+            * CMD: the command to dump;
             * destDir: specify directory to copy to.
               ex ) /tmp/
-        Optional:
             * fileName: Name of the file
+            * options: Options for ONOS command
         """
 
         localtime = time.strftime( '%x %X' )
@@ -1645,32 +1646,8 @@ class OnosDriver( CLI ):
         localtime = localtime.replace( ":", "" )
         if destDir[ -1: ] != "/":
             destDir += "/"
-        cmd="flows > "+ str( destDir ) + str( filename ) + localtime
-        return self.onosCli(ONOSIp,cmd)
-
-    def dumpGroups(self,ONOSIp, destDir, filename="groups" ):
-        """
-        Dump Group Tables to a desired directory.
-        For debugging purposes, you may want to use
-        this function to capture groups at a given point in time.
-        Localtime will be attached to the filename
-
-        Required:
-            * ONOSIp: the IP of the target ONOS instance
-            * destDir: specify directory to copy to.
-              ex ) /tmp/
-        Optional:
-            * fileName: Name of the file
-        """
-
-        localtime = time.strftime( '%H %M' )
-        localtime = localtime.replace( "/", "" )
-        localtime = localtime.replace( " ", "_" )
-        localtime = localtime.replace( ":", "" )
-        if destDir[ -1: ] != "/":
-            destDir += "/"
-        cmd="groups > "+ str( destDir ) + str( filename ) + localtime
-        return self.onosCli(ONOSIp,cmd)
+        cmd=CMD + " " + options + " > " + str( destDir ) + str( filename ) + localtime
+        return self.onosCli(ONOSIp, cmd)
 
     def cpLogsToDir( self, logToCopy,
                      destDir, copyFileName="" ):

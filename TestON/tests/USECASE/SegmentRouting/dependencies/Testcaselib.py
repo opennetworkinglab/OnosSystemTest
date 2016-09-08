@@ -97,7 +97,8 @@ class Testcaselib:
                                        main.Mininet1.ip_address,
                                        apps,
                                        tempOnosIp,
-                                       onosUser )
+                                       onosUser,
+                                       useSSH=True )
         cellResult = main.ONOSbench.setCell( "temp" )
         verifyResult = main.ONOSbench.verifyCell( )
         stepResult = cellResult and verifyResult
@@ -124,6 +125,15 @@ class Testcaselib:
                                  actual=stepResult,
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
+        for i in range( main.numCtrls ):
+            onosInstallResult = onosInstallResult and \
+                                main.ONOSbench.onosSecureSSH(
+                                        node=main.ONOSip[ i ] )
+        stepResult = onosInstallResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully secure SSH",
+                                 onfail="Failed to secure SSH" )
         main.step( "Starting ONOS service" )
         stopResult, startResult, onosIsUp = main.TRUE, main.TRUE, main.TRUE,
         for i in range( main.numCtrls ):

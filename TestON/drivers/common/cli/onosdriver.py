@@ -727,7 +727,7 @@ class OnosDriver( CLI ):
             main.exit()
 
     def createCellFile( self, benchIp, fileName, mnIpAddrs,
-                        appString, onosIpAddrs, onosUser="sdn" ):
+                        appString, onosIpAddrs, onosUser="sdn", useSSH=False ):
         """
         Creates a cell file based on arguments
         Required:
@@ -762,6 +762,8 @@ class OnosDriver( CLI ):
         appString = "export ONOS_APPS=" + appString
         onosGroup = "export ONOS_GROUP=" + onosUser
         onosUser = "export ONOS_USER=" + onosUser
+        if useSSH:
+            onosUseSSH = "export ONOS_USE_SSH=true"
         mnString = "export OCN="
         if mnIpAddrs == "":
             mnString = ""
@@ -797,6 +799,8 @@ class OnosDriver( CLI ):
             cellFile.write( appString + "\n" )
             cellFile.write( onosGroup + "\n" )
             cellFile.write( onosUser + "\n" )
+            if useSSH:
+                cellFile.write( onosUseSSH + "\n" )
             cellFile.close()
 
             # We use os.system to send the command to TestON cluster
@@ -977,6 +981,47 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def onosSecureSSH( self, userName="onos", userPWD="rocks", node=""):
+        """
+        Enables secure access to ONOS console
+        by removing default users & keys.
+
+        onos-secure-ssh -u onos -p rocks node
+
+        Returns: main.TRUE on success and main.FALSE on failure
+        """
+
+        try:
+            self.handle.sendline( " onos-secure-ssh -u " + userName + " -p " + userPWD + " " + node )
+
+            # NOTE: this timeout may need to change depending on the network
+            # and size of ONOS
+            # TODO: Handle the other possible error
+            i = self.handle.expect([ "Network\sis\sunreachable",
+                                     "\$",
+                                     pexpect.TIMEOUT ], timeout=180 )
+            if i == 0:
+                # can't reach ONOS node
+                main.log.warn( "Network is unreachable" )
+                self.handle.expect( "\$" )
+                return main.FALSE
+            elif i == 1:
+                # Process started
+                main.log.info(
+                "Secure SSH performed on " +
+                node)
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
 
     def onosInstall( self, options="-f", node="" ):
         """

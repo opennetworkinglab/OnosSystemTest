@@ -4,8 +4,6 @@
     remove switch and caputer openflow package
     calculate latency
 '''
-
-
 import time
 import json
 def processPackage( package ):
@@ -118,8 +116,8 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
             FinAckText = FinAckText.split(" ")
             AckPackage = AckPackage.strip()
             AckPackage = AckPackage.split(" ")
-            tempResultDict['ACK'] = float("%.2f" % (float(AckPackage[1]) * 1000) )
-            tempResultDict['FA'] = float("%.2f" % (float(FinAckText[1]) * 1000) )
+            tempResultDict['ACK'] = int(float(AckPackage[1]) * 1000)
+            tempResultDict['FA'] = int(float(FinAckText[1]) * 1000)
         else:
             return
     # calculate latency
@@ -201,7 +199,7 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
         for d in resultDict[switchStatus]:
             FA_Atemp = 0
             try:
-                FA_Atemp = float("%.2f" % (tempResultDict['ACK'] - tempResultDict['FA']) )
+                FA_Atemp = tempResultDict['ACK'] - tempResultDict['FA']
             except KeyError:
                 main.log.warn("Tshark Result was incorrect!")
                 main.log.warn(tempResultDict)
@@ -231,9 +229,9 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                 break
             main.log.info("================================================")
             try:
-                A_Dtemp = float("%.2f" % (DeviceTime - tempResultDict['ACK']) )
+                A_Dtemp = DeviceTime - tempResultDict['ACK']
                 D_Gtemp = GraphTime - DeviceTime
-                E_Etemp = float("%.2f" % (GraphTime - tempResultDict['FA']) )
+                E_Etemp = GraphTime - tempResultDict['FA']
                 main.log.info("ACK to device: {}".format(A_Dtemp))
                 main.log.info("Device ot Graph: {}".format(D_Gtemp))
                 main.log.info("End to End: {}".format(E_Etemp))

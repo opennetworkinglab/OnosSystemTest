@@ -4990,4 +4990,44 @@ class OnosCliDriver( CLI ):
             return None
         return respDic
 
+    def logSearch( self, searchTerm, mode='all' ):
+        """
+        Searches the latest ONOS log file for the given search term and
+        return a list that contains all the lines that have the search term.
 
+        Arguments:
+            searchTerm - A string to grep for in the ONOS log.
+            mode:
+                all: return all the strings that contain the search term
+                last: return the last string that contains the search term
+                first: return the first string that contains the search term
+        """
+        try:
+            assert type( searchTerm ) is str
+            cmd = "cat /opt/onos/log/karaf.log | grep " + searchTerm
+            if mode == 'last':
+                cmd = cmd + " | tail -n 1"
+            if mode == 'first':
+                cmd = cmd + " | head -n 1"
+            before = self.sendline( cmd )
+            before = before.splitlines()
+            # make sure the returned list only contains the search term
+            returnLines = [line for line in before if searchTerm in line]
+            return returnLines
+        except AssertionError:
+            main.log.error( self.name + " searchTerm is not string type" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

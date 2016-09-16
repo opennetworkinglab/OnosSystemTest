@@ -770,7 +770,7 @@ class HAscaling:
                 # check for all intent partitions
                 topics = []
                 for i in range( 14 ):
-                    topics.append( "intent-partition-" + str( i ) )
+                    topics.append( "work-partition-" + str( i ) )
                 main.log.debug( topics )
                 ONOStopics = [ j['topic'] for j in parsedLeaders ]
                 for topic in topics:
@@ -926,7 +926,7 @@ class HAscaling:
                     # check for election
                     topics = []
                     for i in range( 14 ):
-                        topics.append( "intent-partition-" + str( i ) )
+                        topics.append( "work-partition-" + str( i ) )
                     # FIXME: this should only be after we start the app
                     topics.append( "org.onosproject.election" )
                     main.log.debug( topics )
@@ -1076,7 +1076,7 @@ class HAscaling:
                 # TODO: Look at Devices as topics now that it uses this system
                 topics = []
                 for i in range( 14 ):
-                    topics.append( "intent-partition-" + str( i ) )
+                    topics.append( "work-partition-" + str( i ) )
                 # FIXME: this should only be after we start the app
                 # FIXME: topics.append( "org.onosproject.election" )
                 # Print leaders output
@@ -1175,7 +1175,7 @@ class HAscaling:
                     # check for election
                     topics = []
                     for i in range( 14 ):
-                        topics.append( "intent-partition-" + str( i ) )
+                        topics.append( "work-partition-" + str( i ) )
                     # FIXME: this should only be after we start the app
                     topics.append( "org.onosproject.election" )
                     main.log.debug( topics )

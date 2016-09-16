@@ -160,7 +160,7 @@ class ONOSCheck( CheckEvent ):
         topics = []
         # TODO: Other topics?
         for i in range( 14 ):
-            topics.append( "intent-partition-" + str( i ) )
+            topics.append( "work-partition-" + str( i ) )
         dpidToAvailability = {}
         dpidToMaster = {}
         for device in main.devices:

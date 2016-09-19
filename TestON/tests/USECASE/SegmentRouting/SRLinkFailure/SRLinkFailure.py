@@ -35,7 +35,7 @@ class SRLinkFailure:
         run.killLink( main, 'spine101', 'leaf2', switches='4', links='6' )
         run.pingAll( main, "CASE1_Failure" )
         run.restoreLink( main, 'spine101', 'leaf2', 'of:0000000000000101',
-                         'of:0000000000000002', '2', '1', '4', '8' )
+                         'of:0000000000000002', '2', '3', '4', '8' )
         run.pingAll( main, "CASE1_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -69,7 +69,7 @@ class SRLinkFailure:
         run.killLink( main, 'spine101', 'leaf2', switches='8', links='30' )
         run.pingAll( main, "CASE2_Failure" )
         run.restoreLink( main, 'spine101', 'leaf2', 'of:0000000000000101',
-                         'of:0000000000000002', '2', '1', '8', '32' )
+                         'of:0000000000000002', '2', '3', '8', '32' )
         run.pingAll( main, "CASE2_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -103,7 +103,7 @@ class SRLinkFailure:
         run.killLink( main, 'spine101', 'leaf2', switches='4', links='6' )
         run.pingAll( main, "CASE3_Failure" )
         run.restoreLink( main, 'spine101', 'leaf2', 'of:0000000000000101',
-                         'of:0000000000000002', '2', '1', '4', '8' )
+                         'of:0000000000000002', '2', '3', '4', '8' )
         run.pingAll( main, "CASE3_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -137,7 +137,7 @@ class SRLinkFailure:
         run.killLink( main, 'spine101', 'leaf2', switches='8', links='30' )
         run.pingAll( main, "CASE2_Failure" )
         run.restoreLink( main, 'spine101', 'leaf2', 'of:0000000000000101',
-                         'of:0000000000000002', '2', '1', '8', '32' )
+                         'of:0000000000000002', '2', '3', '8', '32' )
         run.pingAll( main, "CASE2_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet

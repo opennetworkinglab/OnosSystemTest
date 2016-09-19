@@ -63,7 +63,6 @@ def installHostIntent( main,
 
     global itemName  # The name of this run. Used for logs.
     itemName = name
-    onosNode = int( onosNode )
 
     main.log.info( itemName + ": Adding single point to multi point intents" )
     try:
@@ -92,14 +91,23 @@ def installHostIntent( main,
 
     # Check intents state
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
+                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=5 ):
         main.assertReturnString += 'Install Intent State Passed\n'
+
+        #Check VLAN if test encapsulation
+        if encap != "":
+            if EncapsulatedIntentCheck( main, tag=encap ):
+                main.assertReturnString += 'Encapsulation intents check Passed\n'
+            else:
+                main.assertReturnString += 'Encapsulation intents check failed\n'
+
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
             return intentId
         else:
             main.assertReturnString += 'Flow duration check failed\n'
             return main.FALSE
+
     else:
         main.log.error( "Host Intent did not install correctly" )
         main.assertReturnString += 'Install Intent State Failed\n'
@@ -165,8 +173,6 @@ def testHostIntent( main,
 
     global itemName
     itemName = name
-    tempHostsData = {}
-    onosNode = int( onosNode )
 
     main.log.info( itemName + ": Testing Host Intent" )
 
@@ -242,7 +248,7 @@ def testHostIntent( main,
             testResult = main.FALSE
 
         # Check Connection
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ) ):
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId ), sleep=5, attempts=5 ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -353,7 +359,6 @@ def installPointIntent( main,
 
     global itemName  # The name of this run. Used for logs.
     itemName = name
-    onosNode = int( onosNode )
 
     main.log.info( itemName + ": Adding point to point intents" )
 
@@ -409,8 +414,15 @@ def installPointIntent( main,
 
     # Check intents state
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
+                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=5 ):
         main.assertReturnString += 'Install Intent State Passed\n'
+
+        # Check VLAN if test encapsulation
+        if encap != "":
+            if EncapsulatedIntentCheck( main, tag=encap ):
+                main.assertReturnString += 'Encapsulation intents check Passed\n'
+            else:
+                main.assertReturnString += 'Encapsulation intents check failed\n'
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
             return intentId
@@ -502,17 +514,11 @@ def pointIntentTcp( main,
     itemName = name
     host1 = host1
     host2 = host2
-    hostNames = [ host1, host2 ]
     intentsId = []
 
     iperfResult = main.TRUE
-    intentResult = main.TRUE
-    removeIntentResult = main.TRUE
-    flowResult = main.TRUE
-    topoResult = main.TRUE
     linkDownResult = main.TRUE
     linkUpResult = main.TRUE
-    onosNode = int( onosNode )
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding point intents" )
@@ -650,7 +656,7 @@ def pointIntentTcp( main,
 
         # link up
         linkUpResult = link( main, sw1, sw2, "up" )
-        if linkUpTemp:
+        if linkUpResult:
             main.assertReturnString += 'Link Up Passed\n'
         else:
             main.assertReturnString += 'Link Up Failed\n'
@@ -764,7 +770,6 @@ def installSingleToMultiIntent( main,
 
     global itemName  # The name of this run. Used for logs.
     itemName = name
-    onosNode = int( onosNode )
 
     main.log.info( itemName + ": Adding single point to multi point intents" )
 
@@ -891,7 +896,6 @@ def installMultiToSingleIntent( main,
 
     global itemName  # The name of this run. Used for logs.
     itemName = name
-    onosNode = int( onosNode )
 
     main.log.info( itemName + ": Adding mutli to single point intents" )
 
@@ -1031,8 +1035,6 @@ def testPointIntent( main,
 
     global itemName
     itemName = name
-    tempHostsData = {}
-    onosNode = int( onosNode )
 
     main.log.info( itemName + ": Testing Point Intent" )
 
@@ -1129,7 +1131,7 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Check Connection
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId, useTCP ) ):
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, args=( main, senderNames, recipientNames, vlanId, useTCP ), sleep=5, attempts=5 ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -1215,8 +1217,6 @@ def testEndPointFail( main,
 
     global itemName
     itemName = name
-    tempHostsData = {}
-    onosNode = int( onosNode )
 
     main.log.info( itemName + ": Testing Point Intent" )
 
@@ -1506,9 +1506,7 @@ def fwdPingall( main ):
     """
         Use fwd app and pingall to discover all the hosts
     """
-    activateResult = main.TRUE
     appCheck = main.TRUE
-    getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
     activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
 
@@ -1541,7 +1539,6 @@ def confirmHostDiscovery( main ):
         Confirms that all ONOS nodes have discovered all scapy hosts
     """
     import collections
-    scapyHostCount = len( main.scapyHosts )
     hosts = main.topo.getAllHosts( main )  # Get host data from each ONOS node
     hostFails = []  # Reset for each failed attempt
 
@@ -1667,8 +1664,6 @@ def checkIntentState( main, intentsId ):
         tempResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
         results.append( tempResult )
 
-    expectedState = [ 'INSTALLED', 'INSTALLING' ]
-
     if all( result == main.TRUE for result in results ):
         main.log.info( itemName + ": Intents are installed correctly" )
     else:
@@ -1699,7 +1694,7 @@ def checkFlowsState( main ):
 def link( main, sw1, sw2, option ):
 
     # link down
-    main.log.info( itemName + ": Bring link " + option + "between " +
+    main.log.info( itemName + ": Bring link " + option + " between " +
                        sw1 + " and " + sw2 )
     linkResult = main.Mininet1.link( end1=sw1, end2=sw2, option=option )
     return linkResult
@@ -1776,6 +1771,7 @@ def scapyCheckConnection( main, senders, recipients, vlanId=None, useTCP=False, 
                     connectionsFunctional = main.FALSE
                 else:
                     main.log.info( "Packet from {0} successfully received by {1}".format( sender , recipient ) )
+                    connectionsFunctional = main.TRUE
             else:
                 recipientComp.killFilter()
                 if expectFailure:
@@ -1785,6 +1781,7 @@ def scapyCheckConnection( main, senders, recipients, vlanId=None, useTCP=False, 
                     connectionsFunctional = main.FALSE
 
         return connectionsFunctional
+
 
 def removeAllIntents( main, intentsId ):
     """
@@ -1949,9 +1946,54 @@ def flowDuration( main ):
                 waitFlowLife.append( device[ 'flows' ][ i ][ 'life' ] )
     main.log.info( "Determining whether flows where overwritten" )
     if len( flowLife ) == len( waitFlowLife ):
-        for i in range( len( flowLife) ):
+        for i in range( len( flowLife ) ):
             if waitFlowLife[ i ] - flowLife[ i ] < main.flowDurationSleep:
                 return main.FALSE
     else:
         return main.FALSE
     return main.TRUE
+
+
+def EncapsulatedIntentCheck( main, tag="" ):
+    """
+        Check encapsulated intents
+        tag: encapsulation tag (e.g. VLAN, MPLS)
+
+        Getting added flows
+        Check tags on each flows
+        If each direction has push or pop, passed
+        else failed
+
+    """
+    import json
+    HostJson = []
+    Jflows = main.CLIs[ 0 ].flows( noCore=True )
+    try:
+        Jflows = json.loads( Jflows )
+    except ValueError:
+        main.log.error( "Unable to read flows" )
+        return main.FALSE
+
+    for flow in Jflows:
+        if len(flow[ "flows" ]) != 0:
+            HostJson.append( flow[ "flows" ] )
+
+    totalflows = len( HostJson[ 0 ])
+
+    pop = 0
+    push = 0
+
+    PopTag = tag + "_POP"
+    PushTag = tag + "_PUSH"
+
+    for EachHostJson in HostJson:
+        for i in range( totalflows ):
+            if EachHostJson[ i ][ "treatment" ][ "instructions" ][ 0 ][ "subtype" ] == PopTag:
+                pop += 1
+            elif EachHostJson[ i ][ "treatment" ][ "instructions" ][ 0 ][ "subtype" ] == PushTag:
+                push += 1
+
+    if pop == totalflows and push == totalflows:
+        return main.TRUE
+    else:
+        return main.FALSE

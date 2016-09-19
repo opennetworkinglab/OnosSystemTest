@@ -6,7 +6,6 @@ class FUNCipv6Intent:
         self.default = ''
 
     def CASE1( self, main ):
-        import time
         import imp
         import re
 
@@ -127,7 +126,7 @@ class FUNCipv6Intent:
         - Install ONOS cluster
         - Connect to cli
         """
-
+        import time
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
 
@@ -250,7 +249,7 @@ class FUNCipv6Intent:
             main.exit()
 
         main.step( "setup the ipv6NeighbourDiscovery" )
-        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.proxyarp.ProxyArp", "ipv6NeighborDiscovery", "true" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
         cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "ipv6NeighborDiscovery", "true" )
         cfgResult = cfgResult1 and cfgResult2
         utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
@@ -338,7 +337,6 @@ class FUNCipv6Intent:
         """
         main.case( "Discover all hosts" )
 
-        stepResult = main.TRUE
         main.step( "Discover all hosts using pingall " )
         stepResult = main.intentFunction.getHostsData( main )
         utilities.assert_equals( expect=main.TRUE,

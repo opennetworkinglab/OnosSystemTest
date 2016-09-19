@@ -1795,7 +1795,7 @@ def getHostsData( main ):
     main.log.info( "Activating reactive forwarding app " )
     activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
     main.CLIs[ 0 ].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "ipv6NeighborDiscovery", "true")
-    main.CLIs[ 0 ].setCfg( "org.onosproject.proxyarp.ProxyArp", "ipv6NeighborDiscovery", "true")
+    main.CLIs[ 0 ].setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
     main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true")
     main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true")
     time.sleep( main.fwdSleep )

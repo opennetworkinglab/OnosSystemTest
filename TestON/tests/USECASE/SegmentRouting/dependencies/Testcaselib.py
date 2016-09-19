@@ -7,6 +7,9 @@ from core import utilities
 
 
 class Testcaselib:
+
+    useSSH=False
+
     @staticmethod
     def initTest( main ):
         """
@@ -98,7 +101,7 @@ class Testcaselib:
                                        apps,
                                        tempOnosIp,
                                        onosUser,
-                                       useSSH=True )
+                                       useSSH=Testcaselib.useSSH )
         cellResult = main.ONOSbench.setCell( "temp" )
         verifyResult = main.ONOSbench.verifyCell( )
         stepResult = cellResult and verifyResult
@@ -125,15 +128,16 @@ class Testcaselib:
                                  actual=stepResult,
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
-        for i in range( main.numCtrls ):
-            onosInstallResult = onosInstallResult and \
-                                main.ONOSbench.onosSecureSSH(
-                                        node=main.ONOSip[ i ] )
-        stepResult = onosInstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully secure SSH",
-                                 onfail="Failed to secure SSH" )
+        if Testcaselib.useSSH:
+            for i in range( main.numCtrls ):
+                onosInstallResult = onosInstallResult and \
+                                    main.ONOSbench.onosSecureSSH(
+                                            node=main.ONOSip[ i ] )
+            stepResult = onosInstallResult
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass="Successfully secure SSH",
+                                     onfail="Failed to secure SSH" )
         main.step( "Starting ONOS service" )
         stopResult, startResult, onosIsUp = main.TRUE, main.TRUE, main.TRUE,
         for i in range( main.numCtrls ):
@@ -282,6 +286,7 @@ class Testcaselib:
         main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
         main.step( "Kill link between %s and %s" % (end1, end2) )
         LinkDown = main.Mininet1.link( END1=end1, END2=end2, OPTION="down" )
+        LinkDown = main.Mininet1.link( END2=end1, END1=end2, OPTION="down" )
         main.log.info(
                 "Waiting %s seconds for link down to be discovered" % main.linkSleep )
         time.sleep( main.linkSleep )
@@ -317,8 +322,12 @@ class Testcaselib:
             main.log.info(
                     "Waiting %s seconds for link up to be discovered" % main.linkSleep )
             time.sleep( main.linkSleep )
-            main.CLIs[ main.active ].portstate( dpid=dpid1, port=port1 )
-            main.CLIs[ main.active ].portstate( dpid=dpid2, port=port2 )
+
+            for i in range(0, main.numCtrls):
+                onosIsUp = main.ONOSbench.isup( main.ONOSip[ i ] )
+                if onosIsUp == main.TRUE:
+                    main.CLIs[ i ].portstate( dpid=dpid1, port=port1 )
+                    main.CLIs[ i ].portstate( dpid=dpid2, port=port2 )
             time.sleep( main.linkSleep )
 
             result = main.CLIs[ main.active ].checkStatus( numoswitch=switches,

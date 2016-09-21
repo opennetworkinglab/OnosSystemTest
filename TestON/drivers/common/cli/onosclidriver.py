@@ -2216,21 +2216,27 @@ class OnosCliDriver( CLI ):
             intentDictONOS = {}
             for intent in intentsJson:
                 intentDictONOS[ intent[ 'id' ] ] = intent[ 'state' ]
+            returnValue = main.TRUE
             if len( intentDict ) != len( intentDictONOS ):
-                main.log.info( self.name + ": expected intent count does not match that in ONOS, " +
+                main.log.warn( self.name + ": expected intent count does not match that in ONOS, " +
                                str( len( intentDict ) ) + " expected and " +
                                str( len( intentDictONOS ) ) + " actual" )
-                return main.FALSE
-            returnValue = main.TRUE
+                returnValue = main.FALSE
             for intentID in intentDict.keys():
                 if not intentID in intentDictONOS.keys():
                     main.log.debug( self.name + ": intent ID - " + intentID + " is not in ONOS" )
                     returnValue = main.FALSE
-                elif intentDict[ intentID ] != intentDictONOS[ intentID ]:
-                    main.log.debug( self.name + ": intent ID - " + intentID +
-                                    " expected state is " + intentDict[ intentID ] +
-                                    " but actual state is " + intentDictONOS[ intentID ] )
-                    returnValue = main.FALSE
+                else:
+                    if intentDict[ intentID ] != intentDictONOS[ intentID ]:
+                        main.log.debug( self.name + ": intent ID - " + intentID +
+                                        " expected state is " + intentDict[ intentID ] +
+                                        " but actual state is " + intentDictONOS[ intentID ] )
+                        returnValue = main.FALSE
+                    intentDictONOS.pop( intentID )
+            if len( intentDictONOS ) > 0:
+                returnValue = main.FALSE
+                for intentID in intentDictONOS.keys():
+                    main.log.debug( self.name + ": find extra intent in ONOS: intent ID " + intentID )
             if returnValue == main.TRUE:
                 main.log.info( self.name + ": all intent IDs and states match that in ONOS" )
             return returnValue

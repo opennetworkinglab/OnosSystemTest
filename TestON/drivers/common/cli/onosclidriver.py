@@ -2660,14 +2660,20 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def FlowAddedCount( self, deviceId ):
+    def flowAddedCount( self, deviceId, core=False ):
         """
         Determine the number of flow rules for the given device id that are
         in the added state
+        Params:
+            core: if True, only return the number of core flows added
         """
         try:
-            cmdStr = "flows any " + str( deviceId ) + " | " +\
-                     "grep 'state=ADDED' | wc -l"
+            if core:
+                cmdStr = "flows any " + str( deviceId ) + " | " +\
+                         "grep 'state=ADDED' | grep org.onosproject.core | wc -l"
+            else:
+                cmdStr = "flows any " + str( deviceId ) + " | " +\
+                         "grep 'state=ADDED' | wc -l"
             handle = self.sendline( cmdStr )
             assert "Command not found:" not in handle, handle
             return handle

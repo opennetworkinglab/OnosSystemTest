@@ -178,8 +178,8 @@ class CHOTestMonkey:
         setIPv6CfgSleep = int( main.params[ 'TEST' ][ 'setIPv6CfgSleep' ] )
         if main.enableIPv6:
             time.sleep( setIPv6CfgSleep )
-            cfgResult1 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.proxyarp.ProxyArp",
-                                                           "ipv6NeighborDiscovery",
+            cfgResult1 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager",
+                                                           "ndpEnabled",
                                                            "true" )
             time.sleep( setIPv6CfgSleep )
             cfgResult2 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider",
@@ -848,7 +848,7 @@ class CHOTestMonkey:
             with main.eventScheduler.idleCondition:
                 while not main.eventScheduler.isIdle():
                     main.eventScheduler.idleCondition.wait()
-            #time.sleep( sleepSec )
+            time.sleep( sleepSec )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=main.caseResult,
                                  onpass="Randomly generate events test passed",

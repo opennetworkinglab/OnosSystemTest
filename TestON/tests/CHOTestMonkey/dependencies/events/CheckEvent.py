@@ -46,9 +46,27 @@ class FlowCheck( CheckEvent ):
     def startCheckEvent( self, args=None ):
         import json
         checkResult = EventStates().PASS
+        if main.enableIPv6:
+            coreFlowNum = main.params[ 'EVENT' ][ 'FlowCheck' ][ 'coreFlowNum6' ]
+        else:
+            coreFlowNum = main.params[ 'EVENT' ][ 'FlowCheck' ][ 'coreFlowNum' ]
         for controller in main.controllers:
             if controller.isUp():
                 with controller.CLILock:
+                    # Check core flow number
+                    for device in main.devices:
+                        if device.isRemoved():
+                            continue
+                        coreFlowNumOnos = controller.CLI.flowAddedCount( device.dpid, core=True )
+                        if coreFlowNumOnos == None:
+                            main.log.warn( "Flow Check - error when trying to get flow number of %s on ONOS%s" % ( device.dpid, controller.index ) )
+                            checkResult = EventStates().FAIL
+                        else:
+                            coreFlowNumOnos = int( coreFlowNumOnos )
+                            if coreFlowNumOnos != coreFlowNum:
+                                main.log.warn( "Flow Check - core flow number of %s on ONOS%s is %s" % ( device.dpid, controller.index, coreFlowNumOnos ) )
+                                checkResult = EventStates().FAIL
+                    # Get flows for comparison
                     flows = controller.CLI.flows()
                     try:
                         flows = json.loads( flows )

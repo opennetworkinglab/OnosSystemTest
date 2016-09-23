@@ -47,9 +47,9 @@ class FlowCheck( CheckEvent ):
         import json
         checkResult = EventStates().PASS
         if main.enableIPv6:
-            coreFlowNum = main.params[ 'EVENT' ][ 'FlowCheck' ][ 'coreFlowNum6' ]
+            coreFlowNum = int( main.params[ 'EVENT' ][ 'FlowCheck' ][ 'coreFlowNum6' ] )
         else:
-            coreFlowNum = main.params[ 'EVENT' ][ 'FlowCheck' ][ 'coreFlowNum' ]
+            coreFlowNum = int( main.params[ 'EVENT' ][ 'FlowCheck' ][ 'coreFlowNum' ] )
         for controller in main.controllers:
             if controller.isUp():
                 with controller.CLILock:

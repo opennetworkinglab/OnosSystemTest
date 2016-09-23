@@ -3381,7 +3381,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def apps( self, jsonFormat=True ):
+    def apps( self, summary=False, active=False, jsonFormat=True ):
         """
         Returns the output of the apps command for ONOS. This command lists
         information about installed ONOS applications
@@ -3393,6 +3393,10 @@ class OnosCliDriver( CLI ):
         # "features":"[onos-openflow]","state":"ACTIVE"}]
         try:
             cmdStr = "onos:apps"
+            if summary:
+                cmdStr += " -s"
+            if active:
+                cmdStr += " -a"
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )

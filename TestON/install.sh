@@ -217,6 +217,7 @@ function usage {
 
 if [ $# -eq 0 ]
 then
+    init
     default
 elif [ $1 == "--help" ]
 then

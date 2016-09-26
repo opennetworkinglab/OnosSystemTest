@@ -407,7 +407,9 @@ class Testcaselib:
         switches, links, nodes: number of expected switches, links and nodes after KillOnos, ex.: '4', '6'
         Completely Kill an ONOS instance and verify the ONOS cluster can see the proper change
         """
+
         main.step( "Killing ONOS instance" )
+
         for i in nodes:
             killResult = main.ONOSbench.onosDie( main.CLIs[ i ].ip_address )
             utilities.assert_equals( expect=main.TRUE, actual=killResult,
@@ -416,7 +418,32 @@ class Testcaselib:
             if i == main.active:
                 main.active = (i + 1) % main.numCtrls
         time.sleep( 12 )
+
         if len( nodes ) < main.numCtrls:
+
+            nodesToCheck = []
+            for x in range(0, main.numCtrls):
+                if x not in nodes:
+                    nodesToCheck.append(x)
+            nodeResults = utilities.retry( Testcaselib.nodesCheck,
+                                           False,
+                                           args=[nodesToCheck],
+                                           attempts=5,
+                                           sleep=10 )
+            utilities.assert_equals( expect=True, actual=nodeResults,
+                                     onpass="Nodes check successful",
+                                     onfail="Nodes check NOT successful" )
+
+            if not nodeResults:
+                for i in nodes:
+                    cli = main.CLIs[i]
+                    main.log.debug( "{} components not ACTIVE: \n{}".format(
+                        cli.name,
+                        cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                main.log.error( "Failed to kill ONOS, stopping test" )
+                main.cleanup()
+                main.exit()
+
             topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
                                         main.FALSE,
                                         kwargs={ 'numoswitch': switches,
@@ -455,6 +482,26 @@ class Testcaselib:
                                      onpass="ONOS CLI is ready",
                                      onfail="ONOS CLI is not ready" )
             main.active = i if main.active == -1 else main.active
+
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( Testcaselib.nodesCheck,
+                                       False,
+                                       args=[nodes],
+                                       attempts=5,
+                                       sleep=10 )
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+        if not nodeResults:
+            for i in nodes:
+                cli = main.CLIs[i]
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    cli.name,
+                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to start ONOS, stopping test" )
+            main.cleanup()
+            main.exit()
 
         topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
                                     main.FALSE,
@@ -550,3 +597,39 @@ class Testcaselib:
         main.RESTs[ main.active ].removeNetCfg( subjectClass="apps",
                                                 subjectKey="org.onosproject.segmentrouting",
                                                 configKey="xconnect" )
+    @staticmethod
+    def nodesCheck( nodes ):
+        nodesOutput = []
+        results = True
+        threads = []
+        for i in nodes:
+            t = main.Thread( target=main.CLIs[i].nodes,
+                             name="nodes-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            nodesOutput.append( t.result )
+        ips = [ main.ONOSip[ node ] for node in nodes ]
+        ips.sort()
+        for i in nodesOutput:
+            try:
+                current = json.loads( i )
+                activeIps = []
+                currentResult = False
+                for node in current:
+                    if node['state'] == 'READY':
+                        activeIps.append( node['ip'] )
+                currentResult = True
+                for ip in ips:
+                    if ip not in activeIps:
+                        currentResult = False
+                        break
+            except ( ValueError, TypeError ):
+                main.log.error( "Error parsing nodes output" )
+                main.log.warn( repr( i ) )
+                currentResult = False
+            results = results and currentResult
+        return results

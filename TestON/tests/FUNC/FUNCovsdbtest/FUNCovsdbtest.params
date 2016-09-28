@@ -30,6 +30,10 @@
         <delaytime>5</delaytime>      #delaytime for ovsdb connection create and delete
     </TIMER>
 
+    <SLEEP>
+        <startup>15</startup>
+    </SLEEP>
+
     <HTTP>
         <port>8181</port>
         <path>/onos/vtn/</path>

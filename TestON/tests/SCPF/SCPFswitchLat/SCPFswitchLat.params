@@ -66,6 +66,18 @@
         <onosLogFile>/opt/onos/log/karaf*</onosLogFile>
         <mci>off</mci>
 
+        <MaxWrong>20</MaxWrong>
+
+        <ResultRange>
+            <Min>0</Min>
+            <Max>500</Max>
+        </ResultRange>
+
+        <SearchTerm>
+            <up>DEVICE_ADDED</up>
+            <down>DEVICE_AVAILABILITY_CHANGED</down>
+        </SearchTerm>
+
         <topoConfigFile>
         single_topo_event_accumulator.cfg
         </topoConfigFile>
@@ -81,6 +93,7 @@
         <device>s3</device>
         <tsharkResultPath>
             <up>
+                <ALL>/tmp/Tshark_ALL</ALL>
                 <TCP>/tmp/Tshark_TCP</TCP>
                 <RQ>/tmp/Tshark_RQ</RQ> #role request
                 <RR>/tmp/Tshark_RR</RR> #role reply OF output
@@ -88,10 +101,10 @@
             </up>
 
             <down>
+                <ALL>/tmp/Tshark_ALL</ALL> #Fin_ack and Ack
                 <FA>/tmp/Tshark_FA</FA>#Fin_ack
                 <ACK>/tmp/Tshark_ACK</ACK>
             </down>
-
         </tsharkResultPath>
 
         <singleSwThreshold>0,1000</singleSwThreshold>
@@ -103,6 +116,7 @@
         <startup>5</startup>
         <measure>5</measure>
         <mininet>5</mininet>
+        <deleteSW>10</deleteSW>
     </SLEEP>
 
     <DATABASE>

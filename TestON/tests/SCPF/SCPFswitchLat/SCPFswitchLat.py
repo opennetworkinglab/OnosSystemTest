@@ -57,8 +57,14 @@ class SCPFswitchLat:
 
         else:
             main.log.warn( "Skipped pulling onos and Skipped building ONOS" )
-
-        main.testOnDirectory = os.path.dirname(os.getcwd())
+        # The dictionary to record different type of wrongs
+        main.wrong = { 'totalWrong': 0, 'skipDown' : 0, 'TsharkValueIncorrect': 0,
+                'TypeError' : 0, 'decodeJasonError': 0,
+                'checkResultIncorrect': 0}
+        main.maxWrong = int( main.params['TEST'] ['MaxWrong'] )
+        main.resultRange = main.params['TEST']['ResultRange']
+        main.searchTerm = main.params['TEST']['SearchTerm']
+        main.testOnDirectory = os.path.dirname( os.getcwd() )
         main.MN1Ip = main.params['MN']['ip1']
         main.dependencyPath = main.testOnDirectory + \
                               main.params['DEPENDENCY']['path']
@@ -76,11 +82,11 @@ class SCPFswitchLat:
         main.dbFileName = main.params['DATABASE']['dbName']
         main.startUpSleep = int(main.params['SLEEP']['startup'])
         main.measurementSleep = int( main.params['SLEEP']['measure'] )
+        main.deleteSwSleep = int( main.params['SLEEP']['deleteSW'] )
         main.maxScale = int( main.params['max'] )
         main.timeout = int( main.params['TIMEOUT']['timeout'] )
         main.MNSleep = int( main.params['SLEEP']['mininet'])
         main.device = main.params['TEST']['device']
- 
         main.log.info("Create Database file " + main.dbFileName)
         resultsDB = open(main.dbFileName, "w+")
         resultsDB.close()
@@ -202,6 +208,8 @@ class SCPFswitchLat:
                             "maxBatchMs 0")
         main.CLIs[0].setCfg("org.onosproject.net.topology.impl.DefaultTopologyProvider",
                             "maxIdleMs 0")
+        for i in range(main.numCtrls):
+            main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.topology")
         time.sleep(1)
 
         main.log.info("Copy topology file to Mininet")
@@ -251,11 +259,14 @@ class SCPFswitchLat:
                                                "up", resultDict, True )
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "down", resultDict, True )
+                main.CLIs[0].removeDevice( "of:0000000000000001" )
             else:
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "up", resultDict, False )
                 main.switchFunc.captureOfPack (main, main.device, main.ofPackage,
                                                "down", resultDict, False )
+                main.CLIs[0].removeDevice( "of:0000000000000001" )
+
         # Dictionary for result
         maxDict  = {}
         maxDict['down'] = {}

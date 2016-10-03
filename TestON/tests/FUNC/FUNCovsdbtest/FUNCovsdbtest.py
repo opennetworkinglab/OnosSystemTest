@@ -24,46 +24,46 @@ class FUNCovsdbtest:
         CASE1 is to compile ONOS and push it to the test machines
 
         Startup sequence:
-        cell <name>
-        onos-verify-cell
+        Construct test variables
+        Safety check, kill all ONOS processes before setup
         NOTE: temporary - onos-remove-raft-logs
-        onos-uninstall
-        start mininet
-        git pull
-        mvn clean install
-        onos-package
-        onos-install -f
-        onos-wait-for-start
+        Create ONOS package
+        Install ONOS package
         start cli sessions
         start ovsdb
         start vtn apps
         """
         import os
-        main.log.info( "ONOS Single node start " +
-                         "ovsdb test - initialization" )
+        import time
+        main.log.info( "ONOS Single node start ovsdb test - initialization" )
         main.case( "Setting up test environment" )
         main.caseExplanation = "Setup the test environment including " +\
                                 "installing ONOS, start ONOS."
 
         # load some variables from the params file
-        PULLCODE = False
-        if main.params[ 'GIT' ][ 'pull' ] == 'True':
-            PULLCODE = True
+        main.step( "Constructing test variables" )
+        gitPull = main.params[ 'GIT' ][ 'pull' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
-        OVSDB1Ip = os.getenv( main.params[ 'OVSDB' ][ 'ip1' ] )
-        OVSDB2Ip = os.getenv( main.params[ 'OVSDB' ][ 'ip2' ] )
+        main.startUpSleep = int( main.params['SLEEP']['startup'] )
+        cellAppString = main.params['ENV']['cellApps']
 
-        main.step( "Create cell file" )
-        cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
-                                       main.OVSDB1.ip_address,
-                                       cellAppString, ipList )
+        if gitPull == 'True':
+            main.step( "Building ONOS in " + gitBranch + "branch" )
+            onosBuildResult = main.startUp.onosBuild( main, gitBranch )
+            stepResult = onosBuildResult
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass="Successfully compiled latest ONOS",
+                                     onfail="Failed to compile latest ONOS")
+        else:
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                          "clean install" )
+        main.ONOSbench.getVersion( report=True )
 
-        main.step( "Applying cell variable to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
+        main.log.info( "Safety check, killing all ONOS processes" +
+                       " before initiating environment setup" )
 
         main.log.info( "Removing raft logs" )
         main.ONOSbench.onosRemoveRaftLogs()
@@ -80,9 +80,15 @@ class FUNCovsdbtest:
             except AttributeError:
                 break
 
-        main.log.info( "Uninstalling ONOS" )
+        main.step( "Uninstalling ONOS package" )
+        onosUninstallResult = main.TRUE
         for node in main.nodes:
-            main.ONOSbench.onosUninstall( node.ip_address )
+            onosUninstallResult = onosUninstallResult and main.ONOSbench.onosUninstall( node.ip_address )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=onosUninstallResult,
+                                 onpass="Successfully uninstalled ONOS package",
+                                 onfail="Failed to uninstall ONOS package" )
+        time.sleep( main.startUpSleep )
 
         # Make sure ONOS process is not running
         main.log.info( "Killing any ONOS processes" )
@@ -90,75 +96,83 @@ class FUNCovsdbtest:
         for node in main.nodes:
             killed = main.ONOSbench.onosKill( node.ip_address )
             killResults = killResults and killed
-
-        cleanInstallResult = main.TRUE
-        gitPullResult = main.TRUE
-        main.step( "Git checkout and pull" + gitBranch )
-        if PULLCODE:
-            main.ONOSbench.gitCheckout( gitBranch )
-            gitPullResult = main.ONOSbench.gitPull()
-            # values of 1 or 3 are good
-            utilities.assert_lesser( expect=0, actual=gitPullResult,
-                                      onpass="Git pull successful",
-                                      onfail="Git pull failed" )
-
-        main.ONOSbench.getVersion( report=True )
-
-        main.step( "Using mvn clean install" )
-        cleanInstallResult = main.TRUE
-        if PULLCODE and gitPullResult == main.TRUE:
-            cleanInstallResult = main.ONOSbench.cleanInstall()
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn" +
-                           "clean install" )
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=cleanInstallResult,
-                                 onpass="MCI successful",
-                                 onfail="MCI failed" )
+                                 actual=onosUninstallResult,
+                                 onpass="Successfully kill all ONOS processes",
+                                 onfail="Failed to kill all ONOS processes" )
+
+        main.step( "Create cell file" )
+        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
+                                       main.OVSDB1.ip_address,
+                                       cellAppString, ipList )
+
+        main.step( "Apply cell to environment" )
+        cellResult = main.ONOSbench.setCell( cellName )
+        verifyResult = main.ONOSbench.verifyCell()
+        stepResult = cellResult and verifyResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully applied cell to environment",
+                                 onfail="Failed to apply cell to environment" )
+
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.buckBuild()
         utilities.assert_equals( expect=main.TRUE,
-                                     actual=packageResult,
-                                     onpass="Successfully created ONOS package",
-                                     onfail="Failed to create ONOS package" )
+                                 actual=packageResult,
+                                 onpass="Successfully created ONOS package",
+                                 onfail="Failed to create ONOS package" )
 
+        time.sleep( main.startUpSleep )
         main.step( "Installing ONOS package" )
-        onosInstallResult = main.ONOSbench.onosInstall(
-                options="-f", node=main.nodes[0].ip_address )
+        onosInstallResult = main.ONOSbench.onosInstall( options="-f", node=main.nodes[0].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
-                                 onpass="ONOS install successful",
-                                 onfail="ONOS install failed" )
+                                 onpass="Successfully installed ONOS package",
+                                 onfail="Failed to install ONOS package" )
 
-        main.step( "Checking if ONOS is up yet" )
-        print main.nodes[0].ip_address
+        time.sleep( main.startUpSleep )
+        main.step("Starting ONOS service")
+        stopResult = main.TRUE
+        startResult = main.TRUE
+        onos1Isup = main.TRUE
         for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( main.nodes[0].ip_address )
+            Isup = main.ONOSbench.isup( main.nodes[ 0 ].ip_address )
+            onos1Isup = onos1Isup and Isup
             if onos1Isup:
-                break
-        utilities.assert_equals( expect=main.TRUE, actual=onos1Isup,
-                                 onpass="ONOS startup successful",
-                                 onfail="ONOS startup failed" )
+                main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
+            else:
+                main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +
+                                "start ONOS again" )
+                stopResult = stopResult and main.ONOSbench.onosStop( main.ONOSip[ i ] )
+                startResult = startResult and main.ONOSbench.onosStart( main.ONOSip[ i ] )
+                if not startResult or stopResult:
+                    main.log.report( "ONOS instance {0} did not start correctly.".format( i + 1 ) )
+        stepResult = onos1Isup and stopResult and startResult
+        utilities.assert_equals( expect=main.TRUE, actual=stepResult,
+                                 onpass="ONOS service is ready on all nodes",
+                                 onfail="ONOS service did not start properly on all nodes" )
+
         main.step( "Starting ONOS CLI sessions" )
-        print main.nodes[0].ip_address
-        cliResults = main.ONOScli1.startOnosCli( main.nodes[0].ip_address )
+        cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli startup successful",
-                                 onfail="ONOS cli startup failed" )
+                                 onpass="Successfully start ONOS cli",
+                                 onfail="Failed to start ONOS cli" )
+
+        if cliResults == main.FALSE:
+            main.log.error( "Failed to start ONOS, stopping test" )
+            main.cleanup()
+            main.exit()
 
         main.step( "App Ids check" )
         appCheck = main.ONOScli1.appToIDCheck()
 
-        if appCheck !=main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
-            utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[ 0 ].apps() )
+            main.log.warn( main.CLIs[ 0 ].appIDs() )
+
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
-        if cliResults == main.FALSE:
-            main.log.error( "Failed to start ONOS,stopping test" )
-            main.cleanup()
-            main.exit()
 
         main.step( "Install onos-ovsdb" )
         installResults = main.ONOScli1.activateApp( "org.onosproject.ovsdb" )
@@ -177,9 +191,8 @@ class FUNCovsdbtest:
         """
         Test ovsdb connection and teardown
         """
-        import os,sys
+        import os
         import re
-        import time
 
         main.case( "Test ovsdb connection and teardown" )
         main.caseExplanation = "Test ovsdb connection create and delete" +\
@@ -233,8 +246,7 @@ class FUNCovsdbtest:
         Test default br-int configuration and vxlan port
         """
         import re
-        import time
-        import os,sys
+        import os
 
         main.case( "Test default br-int configuration and vxlan port" )
         main.caseExplanation = "onos create default br-int bridge and" +\
@@ -243,6 +255,8 @@ class FUNCovsdbtest:
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         ovsdbport = main.params[ 'CTRL' ][ 'ovsdbport' ]
         delaytime = main.params[ 'TIMER' ][ 'delaytime' ]
+        OVSDB1Ip = os.getenv( main.params['OVSDB']['ip1'] )
+        OVSDB2Ip = os.getenv( main.params['OVSDB']['ip2'] )
 
         main.step( "ovsdb node 1 set ovs manager to " + str( ctrlip ) )
         assignResult = main.OVSDB1.setManager( ip=ctrlip, port=ovsdbport, delaytime=delaytime )
@@ -336,8 +350,7 @@ class FUNCovsdbtest:
         Test default openflow configuration
         """
         import re
-        import time
-        import os,sys
+        import os
 
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         ovsdbport = main.params[ 'CTRL' ][ 'ovsdbport' ]
@@ -441,8 +454,7 @@ class FUNCovsdbtest:
         Test default flows
         """
         import re
-        import time
-        import os,sys
+        import os
 
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         ovsdbport = main.params[ 'CTRL' ][ 'ovsdbport' ]
@@ -578,8 +590,7 @@ class FUNCovsdbtest:
         Test host go online and ping each other
         """
         import re
-        import time
-        import os,sys
+        import os
 
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         ovsdbport = main.params[ 'CTRL' ][ 'ovsdbport' ]
@@ -698,8 +709,7 @@ class FUNCovsdbtest:
         Clear ovs configuration and host configuration
         """
         import re
-        import time
-        import os,sys
+        import os
 
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         OVSDB1Ip = os.getenv( main.params[ 'OVSDB' ][ 'ip1' ] )

@@ -18,9 +18,19 @@
         <multiovs>multiovs.py</multiovs>
     </DEPENDENCY>
 
+    <DATABASE>
+        <dbPath>/tmp/scaleTopoResultDb</dbPath>
+    </DATABASE>
+
     <ENV>
         <cellApps>drivers,openflow</cellApps>
     </ENV>
+
+    <SearchTerm>
+        <start>New switch connection</start>
+        <end>Topology DefaultTopology</end>
+        <Disconnect>Switch disconnected callback</Disconnect>
+    </SearchTerm>
 
     <GIT>
         <pull>False</pull>
@@ -53,7 +63,7 @@
 
     <TOPOLOGY>
         <topology>torus</topology>
-        <scale>20,25,30,35,40,45,50,55,60</scale>
+        <scale>5,10,20,30,35,40,50,55,60</scale>
         <host>True</host>
     </TOPOLOGY>
 

@@ -36,6 +36,7 @@
     <SLEEP>
         <startup>15</startup>
         <cfgGossip>2</cfgGossip>
+        <SetNetCfgSleep>5</SetNetCfgSleep>
     </SLEEP>
 
     <MININET>

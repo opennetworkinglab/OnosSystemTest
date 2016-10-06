@@ -43,6 +43,7 @@ class FUNCnetCfg:
             wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.gossipTime = int( main.params[ 'SLEEP'][ 'cfgGossip' ] )
+            main.SetNetCfgSleep = int( main.params[ 'SLEEP' ][ 'SetNetCfgSleep' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.cellData = {}  # for creating cell file
             main.hostsData = {}
@@ -402,6 +403,7 @@ class FUNCnetCfg:
         Add some device configurations and then check they are distributed
         to all nodes
         """
+        import time
         main.case( "Add Network configurations to the cluster" )
         main.caseExplanation = "Add Network Configurations for devices" +\
                                " not discovered yet. One device is allowed" +\
@@ -419,6 +421,8 @@ class FUNCnetCfg:
                                                subjectKey="of:0000000000000001",
                                                configKey="basic" )
         s1Result = False
+        #Wait 5 secs after set up netCfg
+        time.sleep( main.SetNetCfgSleep )
         if setS1Allow:
             # Check what we set is what is in ONOS
             getS1 = main.ONOSrest1.getNetCfg( subjectClass="devices",
@@ -427,6 +431,7 @@ class FUNCnetCfg:
             onosCfg = pprint( getS1 )
             sentCfg = pprint( s1Json )
             if onosCfg == sentCfg:
+                main.log.info( "ONOS NetCfg match what was sent" )
                 s1Result = True
             else:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
@@ -449,6 +454,7 @@ class FUNCnetCfg:
                                                   subjectKey="of:0000000000000003",
                                                   configKey="basic" )
         s3Result = False
+        time.sleep( main.SetNetCfgSleep )
         if setS3Disallow:
             # Check what we set is what is in ONOS
             getS3 = main.ONOSrest1.getNetCfg( subjectClass="devices",
@@ -457,6 +463,7 @@ class FUNCnetCfg:
             onosCfg = pprint( getS3 )
             sentCfg = pprint( s3Json )
             if onosCfg == sentCfg:
+                main.log.info("ONOS NetCfg match what was sent")
                 s3Result = True
             else:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )

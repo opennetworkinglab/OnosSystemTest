@@ -20,11 +20,13 @@ class SCPFscaleTopo:
             - Install ONOS package
             - Build ONOS package
         """
-
         main.case( "Constructing test variables" )
         main.step( "Constructing test variables" )
         stepResult = main.FALSE
-
+        # The variable to decide if the data should be written into data base.
+        # 1 means Yes and -1 means No.
+        main.writeData = 1
+        main.searchTerm = main.params[ 'SearchTerm' ]
         main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
         main.apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
@@ -63,6 +65,20 @@ class SCPFscaleTopo:
 
         for i in range(main.numCtrls):
                 main.CLIs.append( getattr( main, 'ONOScli%s' % (i+1) ) )
+
+        main.allinfo = {} # The dictionary to record all the data from karaf.log
+        for i in range( 2 ):
+            main.allinfo[ i ]={}
+            for w in range ( 3 ):
+                # Totaltime: the time from the new switchConnection to its end
+                # swConnection: the time from the first new switchConnection to the last new switchConnection
+                # disconnectRate: the rate that shows how many switch disconnect after connection
+                main.allinfo[ i ][ 'info' + str( w ) ]= { 'totalTime': 0, 'swConnection': 0,'disconnectRate': 0 }
+
+        main.dbFilePath = main.params[ 'DATABASE' ][ 'dbPath' ]
+        main.log.info( "Create Database file " + main.dbFilePath )
+        resultDB = open(main.dbFilePath, 'w+' )
+        resultDB.close()
 
         main.startUp = imp.load_source( wrapperFile1,
                                         main.dependencyPath +
@@ -253,11 +269,10 @@ class SCPFscaleTopo:
                 " --switch ovsm --topo " + main.topoName + "," + main.currScale + "," + main.currScale
         for i in range( main.numCtrls ):
                 mnCmd += " --controller remote,ip=" + main.ONOSip[ i ]
-
-        stepResult = main.Mininet1.startNet(mnCmd=mnCmd)
+        stepResult = main.Mininet1.startNet( mnCmd=mnCmd )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass=main.topoName +
+                                  onpass=main.topoName +
                                     " topology started successfully",
                                  onfail=main.topoName +
                                     " topology failed to start" )
@@ -271,18 +286,26 @@ class SCPFscaleTopo:
         """
         import json
         import time
+        # First capture
+        for i in range( 3 ):
+            # Calculate total time
+            main.allinfo[ 0 ][ 'info' + str( i )][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'end' ], 'last', index=i, funcMode='TD' )
+            # Calculate switch connection time
+            main.allinfo[ 0 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
+            # Calculate the disconnecti rate
+            main.allinfo[ 0 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ], 'num', index=i, funcMode='DR' )
+        main.log.debug( "The data is " + str( main.allinfo[ 0 ] ) )
 
-        main.case( "Verifying topology: TORUS %sx%s" % (main.currScale, main.currScale) )
+        main.case( "Verifying topology: TORUS %sx%s" % ( main.currScale, main.currScale ) )
         main.caseExplanation = "Pinging all hosts and comparing topology " +\
                 "elements between Mininet and ONOS"
 
-        main.log.info( "Gathering topology information" )
+        main.log.info( "Gathering topology information")
         time.sleep( main.MNSleep )
         stepResult = main.TRUE
         main.step( "Comparing MN topology to ONOS topology" )
-
-        compareRetry=0
-        while compareRetry <3:
+        compareRetry = 0
+        while compareRetry < 3:
             #While loop for retry
             devices = main.topo.getAllDevices( main )
             ports = main.topo.getAllPorts( main )
@@ -429,8 +452,42 @@ class SCPFscaleTopo:
         '''
             Report errors/warnings/exceptions
         '''
+        # Compare the slowest Node through total time of each node
+        slowestNode = 0
+        slowestTotalTime = 0
+        # Second capture
+        for i in range( 3 ):
+            # Calculate total time
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'end' ], 'last', index=i, funcMode='TD' )
+            # Compare the total time
+            if main.allinfo[ 1 ][ 'info' + str( i ) ][ 'totalTime' ] > slowestTotalTime:
+                slowestTotalTime = main.allinfo[ 1 ][ 'info' + str( i ) ][ 'totalTime' ]
+                slowestNode = i
+            # Calculate switch connection time
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
+            # Calculate the disconnecti rate
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ],'num', index=i, funcMode='DR' )
+
+        if ( main.allinfo[ 0 ] != main.allinfo[ 1 ] ):
+            main.log.error( "The results of two capture are different!" )
+        main.log.debug( "The data is " + str( main.allinfo ) )
+        if main.writeData != -1:
+            main.log.info( "Write the date into database" )
+            # write the date into data base
+            with open( main.dbFilePath, "a" ) as dbFile:
+                temp = str( main.currScale )
+                temp += ",'baremetal1'"
+                # put result from second capture into data base
+                temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'totalTime' ] )
+                temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'swConnection' ] )
+                temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'disconnectRate' ] )
+                temp += "\n"
+                dbFile.write( temp )
+        else:
+            main.log.error( "The data from log is wrong!" )
+        main.writeData = 1
         main.case( "Checking logs for errors, warnings, and exceptions" )
-        main.log.info("Error report: \n" )
+        main.log.info( "Error report: \n" )
         main.ONOSbench.logReport( main.ONOSip[ 0 ],
                                                             [ "INFO",
                                                               "FOLLOWER",

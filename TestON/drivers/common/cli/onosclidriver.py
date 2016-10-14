@@ -5017,14 +5017,19 @@ class OnosCliDriver( CLI ):
                 all: return all the strings that contain the search term
                 last: return the last string that contains the search term
                 first: return the first string that contains the search term
+                num: return the number that the searchTerm appears in the log
         """
         try:
             assert type( searchTerm ) is str
-            cmd = "cat /opt/onos/log/karaf.log | grep " + searchTerm
+            cmd = "cat /opt/onos/log/karaf.log | grep \'" + searchTerm + "\'"
             if mode == 'last':
                 cmd = cmd + " | tail -n 1"
             if mode == 'first':
                 cmd = cmd + " | head -n 1"
+            if mode == 'num':
+                cmd = "cat /opt/onos/log/karaf.log | grep -c \'" + searchTerm + "\'"
+                num = self.sendline( cmd )
+                return num
             before = self.sendline( cmd )
             before = before.splitlines()
             # make sure the returned list only contains the search term

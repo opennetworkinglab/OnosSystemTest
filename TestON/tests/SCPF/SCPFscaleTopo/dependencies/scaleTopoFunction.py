@@ -9,6 +9,74 @@ import re
 def __init__( self ):
     self.default = ''
 
+def getTimestampFromString( main, targetString ):
+    #Get time string from the target string
+    try:
+        assert type( targetString ) is str
+        timeString = targetString.split( ' | ' )
+        timeString = timeString[ 0 ]
+        from datetime import datetime
+        # convert time string to timestamp
+        t = datetime.strptime( timeString, "%Y-%m-%d %H:%M:%S,%f" )
+        import time
+        timestamp = time.mktime( t.timetuple() )
+        timestamp += int( t.microsecond / 1000 ) / 1000.0
+        return timestamp
+    except AssertionError:
+        main.log.error( "Got nothing firom log" )
+        return -1
+    except IndexError:
+        main.log.error( "Time string index error" )
+        return -1
+    except ValueError:
+        main.log.error( "Got wrong string from log" )
+        return -1
+
+def getInfoFromLog( main, term1, mode1, term2, mode2, index=0, funcMode='TD' ):
+    '''
+    Description:
+        Get needed informations of the search term from karaf.log
+        Includes onosclidriver functions
+    Function mode:
+        TD (time difference):
+            Get time difference between start and end
+            Term1: startTerm
+            Term2: endTerm
+        DR (disconnect rate):
+            Get switch disconnect rate
+            Term1: disconnectTerm
+            Term2: connectTerm
+
+    '''
+    try:
+        termInfo1 = main.CLIs[ index ].logSearch( term1, mode=mode1 )
+        termInfo2 = main.CLIs[ index ].logSearch( term2, mode=mode2 )
+        if funcMode == 'TD':
+            startTime = getTimestampFromString( main, termInfo1[0] )
+            endTime = getTimestampFromString ( main, termInfo2[0] )
+            if startTime == -1 or endTime == -1:
+                main.log.error( "Wrong Time!" )
+                main.writeData = -1
+                return -1
+            return endTime - startTime
+        if funcMode == 'DR':
+            #In this mode, termInfo1 means the total number of switch disconnection and
+            #termInfo2 means the total number of new switch connection
+            #termInfo2 - termInfo1 means the actual real number of switch connection.
+            disconnection = int( termInfo1 ) * 1.0
+            expectConnection = int( main.currScale ) ** 2
+            realConnection = int( termInfo2 ) - int( termInfo1 )
+            if expectConnection != realConnection:
+                main.log.error( "The number of real switch connection doesn't match the number of expected connection" )
+                main.writeData = -1
+                return -1
+            rate = disconnection / expectConnection
+            return rate
+    except IndexError:
+        main.log.error( "Catch the wrong information of search term" )
+        main.writeData = -1
+        return -1
+
 def testTopology( main, topoFile='', args='', mnCmd='', timeout=300, clean=True ):
     """
     Description:

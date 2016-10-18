@@ -73,7 +73,7 @@ class SCPFscaleTopo:
                 # Totaltime: the time from the new switchConnection to its end
                 # swConnection: the time from the first new switchConnection to the last new switchConnection
                 # disconnectRate: the rate that shows how many switch disconnect after connection
-                main.allinfo[ i ][ 'info' + str( w ) ]= { 'totalTime': 0, 'swConnection': 0,'disconnectRate': 0 }
+                main.allinfo[ i ][ 'info' + str( w ) ]= { 'totalTime': 0, 'swConnection': 0,'lastSwToTopology': 0, 'disconnectRate': 0 }
 
         main.dbFilePath = main.params[ 'DATABASE' ][ 'dbPath' ]
         main.log.info( "Create Database file " + main.dbFilePath )
@@ -292,6 +292,8 @@ class SCPFscaleTopo:
             main.allinfo[ 0 ][ 'info' + str( i )][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'end' ], 'last', index=i, funcMode='TD' )
             # Calculate switch connection time
             main.allinfo[ 0 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
+            # Calculate the time from last switch connection to the end
+            main.allinfo[ 0 ][ 'info' + str( i )][ 'lastSwToTopology' ] =  main.allinfo[ 0 ][ 'info' + str( i )][ 'totalTime' ] -  main.allinfo[ 0 ][ 'info' + str( i )][ 'swConnection' ]
             # Calculate the disconnecti rate
             main.allinfo[ 0 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ], 'num', index=i, funcMode='DR' )
         main.log.debug( "The data is " + str( main.allinfo[ 0 ] ) )
@@ -465,6 +467,10 @@ class SCPFscaleTopo:
                 slowestNode = i
             # Calculate switch connection time
             main.allinfo[ 1 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
+            # Calculate the time from last switch connection to the end
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'lastSwToTopology' ] =  main.allinfo[ 1 ][
+            'info' + str( i )][ 'totalTime' ] -  main.allinfo[ 1 ][ 'info' + str( i )][
+            'swConnection' ]
             # Calculate the disconnecti rate
             main.allinfo[ 1 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ],'num', index=i, funcMode='DR' )
 
@@ -480,6 +486,7 @@ class SCPFscaleTopo:
                 # put result from second capture into data base
                 temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'totalTime' ] )
                 temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'swConnection' ] )
+                temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'lastSwToTopology' ] )
                 temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'disconnectRate' ] )
                 temp += "\n"
                 dbFile.write( temp )

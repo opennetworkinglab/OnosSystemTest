@@ -6,7 +6,6 @@ class FUNCintent:
         self.default = ''
 
     def CASE1( self, main ):
-        import time
         import imp
         import re
 
@@ -133,7 +132,7 @@ class FUNCintent:
         - Install ONOS cluster
         - Connect to cli
         """
-
+        import time
         main.cycle += 1
 
         # main.scale[ 0 ] determines the current number of ONOS controller
@@ -439,7 +438,6 @@ class FUNCintent:
         main.caseExplanation = "Assign OF " + main.OFProtocol +\
                                 " switches to ONOS nodes"
 
-        assignResult = main.TRUE
         switchList = []
 
         # Creates a list switch name, use getSwitch() function later...
@@ -452,7 +450,7 @@ class FUNCintent:
 
         assignResult = main.Mininet1.assignSwController( sw=switchList,
                                                          ip=tempONOSip,
-                                                         port='6653' )
+                                                         port="6653" )
         if not assignResult:
             main.log.error( "Problem assigning mastership of switches" )
             main.initialized = main.FALSE
@@ -484,7 +482,6 @@ class FUNCintent:
             main.skipCase()
         main.case( "Create scapy components" )
         main.step( "Create scapy components" )
-        import json
         scapyResult = main.TRUE
         for hostName in main.scapyHostNames:
             main.Scapy1.createHostComponent( hostName )
@@ -547,7 +544,6 @@ class FUNCintent:
         main.case( "Discover all hosts using scapy" )
         main.step( "Send packets from each host to the first host and confirm onos discovery" )
 
-        import collections
         if len( main.scapyHosts ) < 1:
             main.log.error( "No scapy hosts have been created" )
             main.initialized = main.FALSE
@@ -588,7 +584,6 @@ class FUNCintent:
         main.case( "Balance mastership of switches" )
         main.step( "Balancing mastership of switches" )
 
-        balanceResult = main.FALSE
         balanceResult = utilities.retry( f=main.CLIs[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
 
         utilities.assert_equals( expect=main.TRUE,
@@ -710,9 +705,6 @@ class FUNCintent:
                     - Ping hosts
                 - Remove intents
         """
-        import time
-        import json
-        import re
         if main.initialized == main.FALSE:
             main.log.error( "Test components did not start correctly, skipping further tests" )
             main.skipCase()
@@ -758,21 +750,20 @@ class FUNCintent:
         host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
         host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='IPV4',
-                                              onosNode='0',
+                                              name="IPV4",
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2 )
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='IPV4',
+                                              name="IPV4",
                                               intentId = installResult,
-                                              onosNode='0',
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
+                                              sw1="s5",
+                                              sw2="s2",
                                               expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
@@ -787,22 +778,21 @@ class FUNCintent:
         host1 = { "name":"h3","id":"00:00:00:00:00:03/-1" }
         host2 = { "name":"h11","id":"00:00:00:00:00:0B/-1 "}
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='DUALSTACK',
-                                              onosNode='0',
+                                              name="DUALSTACK",
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='DUALSTACK',
+                                              name="DUALSTACK",
                                               intentId = installResult,
-                                              onosNode='0',
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
+                                              sw1="s5",
+                                              sw2="s2",
                                               expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
@@ -815,22 +805,21 @@ class FUNCintent:
         host1 = { "name":"h1" }
         host2 = { "name":"h11" }
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='DUALSTACK2',
-                                              onosNode='0',
+                                              name="DUALSTACK2",
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='DUALSTACK2',
+                                              name="DUALSTACK2",
                                               intentId = installResult,
-                                              onosNode='0',
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
+                                              sw1="s5",
+                                              sw2="s2",
                                               expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
@@ -845,22 +834,21 @@ class FUNCintent:
         host1 = { "name":"h1" }
         host2 = { "name":"h3" }
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='1HOP',
-                                              onosNode='0',
+                                              name="1HOP",
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='1HOP',
+                                              name="1HOP",
                                               intentId = installResult,
-                                              onosNode='0',
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
+                                              sw1="s5",
+                                              sw2="s2",
                                               expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
@@ -875,22 +863,21 @@ class FUNCintent:
         host1 = { "name":"h4","id":"00:00:00:00:00:04/100", "vlan":"100" }
         host2 = { "name":"h12","id":"00:00:00:00:00:0C/100", "vlan":"100" }
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='VLAN1',
-                                              onosNode='0',
+                                              name="VLAN1",
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='VLAN1',
+                                              name="VLAN1",
                                               intentId = installResult,
-                                              onosNode='0',
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
+                                              sw1="s5",
+                                              sw2="s2",
                                               expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
@@ -905,22 +892,21 @@ class FUNCintent:
         host1 = { "name":"h5", "vlan":"200" }
         host2 = { "name":"h12", "vlan":"100" }
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='VLAN2',
-                                              onosNode='0',
+                                              name="VLAN2",
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='VLAN2',
+                                              name="VLAN2",
                                               intentId = installResult,
-                                              onosNode='0',
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
+                                              sw1="s5",
+                                              sw2="s2",
                                               expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
@@ -935,22 +921,21 @@ class FUNCintent:
         host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
         host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='ENCAPSULATION',
-                                              onosNode='0',
+                                              name="ENCAPSULATION",
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2,
                                               encap="VLAN" )
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='ENCAPSULATION',
+                                              name="ENCAPSULATION",
                                               intentId = installResult,
-                                              onosNode='0',
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
+                                              sw1="s5",
+                                              sw2="s2",
                                               expectedLink=18 )
         else:
             main.CLIs[ 0 ].removeAllIntents( purge=True )
@@ -960,9 +945,39 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
+        # Testing MPLS would need to update kernel version (Right now is 3.16)
+        # main.step( "Encapsulation: Add host intents between h1 and h9" )
+        # main.assertReturnString = "Assertion Result for MPLS Encapsulated host intent\n"
+        # host1 = { "name": "h1", "id": "00:00:00:00:00:01/-1" }
+        # host2 = { "name": "h9", "id": "00:00:00:00:00:09/-1" }
+        # testResult = main.FALSE
+        # installResult = main.intentFunction.installHostIntent( main,
+        #                                                        name="ENCAPSULATION",
+        #                                                        onosNode=0,
+        #                                                        host1=host1,
+        #                                                        host2=host2,
+        #                                                        encap="MPLS" )
+        # if installResult:
+        #     testResult = main.intentFunction.testHostIntent( main,
+        #                                                      name="ENCAPSULATION",
+        #                                                      intentId=installResult,
+        #                                                      onosNode=0,
+        #                                                      host1=host1,
+        #                                                      host2=host2,
+        #                                                      sw1="s5",
+        #                                                      sw2="s2",
+        #                                                      expectedLink=18 )
+        # else:
+        #     main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=testResult,
+        #                          onpass=main.assertReturnString,
+        #                          onfail=main.assertReturnString )
+
         main.step( "Confirm that ONOS leadership is unchanged" )
         intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
-        main.intentFunction.checkLeaderChange( intentLeadersOld,
+        testResult = main.intentFunction.checkLeaderChange( intentLeadersOld,
                                                 intentLeadersNew )
 
         utilities.assert_equals( expect=main.TRUE,
@@ -991,9 +1006,6 @@ class FUNCintent:
                     - Ping hosts
                 - Remove intents
         """
-        import time
-        import json
-        import re
         if main.initialized == main.FALSE:
             main.log.error( "Test components did not start correctly, skipping further tests" )
             main.skipCase()
@@ -1042,7 +1054,6 @@ class FUNCintent:
             { "name":"h9","device":"of:0000000000000006/1" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="NOOPTION",
@@ -1067,7 +1078,6 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        stepResult = main.TRUE
         main.step( "IPV4: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 point intent\n"
         senders = [
@@ -1077,7 +1087,6 @@ class FUNCintent:
             { "name":"h9","device":"of:0000000000000006/1","mac":"00:00:00:00:00:09" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="IPV4",
@@ -1111,7 +1120,6 @@ class FUNCintent:
             { "name":"h9","device":"of:0000000000000006/1" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="IPV4_2",
@@ -1152,7 +1160,6 @@ class FUNCintent:
         tcpSrc = main.params[ 'SDNIP' ][ 'srcPort' ]
         tcpDst = main.params[ 'SDNIP' ][ 'dstPort' ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="SDNIP-ICMP",
@@ -1222,7 +1229,6 @@ class FUNCintent:
             { "name":"h11","device":"of:0000000000000006/3","mac":"00:00:00:00:00:0B" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="DUALSTACK1",
@@ -1257,7 +1263,6 @@ class FUNCintent:
             { "name":"h21","device":"of:0000000000000007/5","mac":"00:00:00:00:00:15", "vlan":"200" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="VLAN",
@@ -1289,7 +1294,6 @@ class FUNCintent:
             { "name":"h21", "vlan":"200" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="VLAN2",
@@ -1322,7 +1326,6 @@ class FUNCintent:
             { "name":"h3","device":"of:0000000000000005/3","mac":"00:00:00:00:00:03" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="1HOP IPV4",
@@ -1357,7 +1360,6 @@ class FUNCintent:
             { "name":"h9","device":"of:0000000000000006/1" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="ENCAPSULATION",
@@ -1382,6 +1384,41 @@ class FUNCintent:
                                  actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
+
+        # Testing MPLS would need to update kernel version (Right now is 3.16)
+        # main.step( "Add point to point intents using MPLS Encapsulation" )
+        # main.assertReturnString = "Assertion Result for MPLS Encapsulation Point Intent"
+        # senders = [
+        #     { "name": "h1", "device": "of:0000000000000005/1" }
+        # ]
+        # recipients = [
+        #     { "name": "h9", "device": "of:0000000000000006/1" }
+        # ]
+        # testResult = main.FALSE
+        # installResult = main.intentFunction.installPointIntent(
+        #     main,
+        #     name="ENCAPSULATION",
+        #     senders=senders,
+        #     recipients=recipients,
+        #     encap="MPLS" )
+        #
+        # if installResult:
+        #     testResult = main.intentFunction.testPointIntent(
+        #         main,
+        #         intentId=installResult,
+        #         name="ENCAPSULATION",
+        #         senders=senders,
+        #         recipients=recipients,
+        #         sw1="s5",
+        #         sw2="s2",
+        #         expectedLink=18 )
+        # else:
+        #     main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=testResult,
+        #                          onpass=main.assertReturnString,
+        #                          onfail=main.assertReturnString )
 
         main.intentFunction.report( main )
 
@@ -1452,7 +1489,6 @@ class FUNCintent:
         badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
                                          name="NOOPTION",
@@ -1493,7 +1529,6 @@ class FUNCintent:
         badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
                                          name="IPV4",
@@ -1535,7 +1570,6 @@ class FUNCintent:
         badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
                                          name="IPV4_2",
@@ -1577,10 +1611,9 @@ class FUNCintent:
         badSenders=[ { "name":"h13" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h21" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
-                                         name="VLAN`",
+                                         name="VLAN",
                                          senders=senders,
                                          recipients=recipients,
                                          sw1="s5",
@@ -1618,7 +1651,6 @@ class FUNCintent:
         badSenders=[ { "name":"h13" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h21" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
                                          name="VLAN2",
@@ -1648,47 +1680,47 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        main.step( "ENCAPSULATION: Install and test single point to multi point intents" )
-        main.assertReturnString = "Assertion results for VLAN Encapsulation single to multi point intent\n"
-        senders = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
-        ]
-        recipients = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
-        ]
-        badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
-        testResult = main.FALSE
-        installResult = main.FALSE
-        installResult = main.intentFunction.installSingleToMultiIntent(
-                                         main,
-                                         name="ENCAPSULATION",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         sw1="s5",
-                                         sw2="s2",
-                                         encap="VLAN" )
-
-        if installResult:
-            testResult = main.intentFunction.testPointIntent(
-                                         main,
-                                         intentId=installResult,
-                                         name="ENCAPSULATION",
-                                         senders=senders,
-                                         recipients=recipients,
-                                         badSenders=badSenders,
-                                         badRecipients=badRecipients,
-                                         sw1="s5",
-                                         sw2="s2",
-                                         expectedLink=18 )
-        else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=testResult,
-                                 onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
+        # Does not support Single point to multi point encapsulation
+        # main.step( "ENCAPSULATION: Install and test single point to multi point intents" )
+        # main.assertReturnString = "Assertion results for VLAN Encapsulation single to multi point intent\n"
+        # senders = [
+        #     { "name":"h8", "device":"of:0000000000000005/8" }
+        # ]
+        # recipients = [
+        #     { "name":"h16", "device":"of:0000000000000006/8" },
+        #     { "name":"h24", "device":"of:0000000000000007/8" }
+        # ]
+        # badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
+        # badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        # testResult = main.FALSE
+        # installResult = main.intentFunction.installSingleToMultiIntent(
+        #                                  main,
+        #                                  name="ENCAPSULATION",
+        #                                  senders=senders,
+        #                                  recipients=recipients,
+        #                                  sw1="s5",
+        #                                  sw2="s2",
+        #                                  encap="VLAN" )
+        #
+        # if installResult:
+        #     testResult = main.intentFunction.testPointIntent(
+        #                                  main,
+        #                                  intentId=installResult,
+        #                                  name="ENCAPSULATION",
+        #                                  senders=senders,
+        #                                  recipients=recipients,
+        #                                  badSenders=badSenders,
+        #                                  badRecipients=badRecipients,
+        #                                  sw1="s5",
+        #                                  sw2="s2",
+        #                                  expectedLink=18 )
+        # else:
+        #     main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=testResult,
+        #                          onpass=main.assertReturnString,
+        #                          onfail=main.assertReturnString )
 
         main.intentFunction.report( main )
 
@@ -1759,7 +1791,6 @@ class FUNCintent:
         badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="NOOPTION",
@@ -1800,7 +1831,6 @@ class FUNCintent:
         badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="IPV4",
@@ -1842,7 +1872,6 @@ class FUNCintent:
         badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="IPV4_2",
@@ -1884,7 +1913,6 @@ class FUNCintent:
         badSenders=[ { "name":"h12" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h20" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="VLAN",
@@ -1926,7 +1954,6 @@ class FUNCintent:
         badSenders=[ { "name":"h12" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h20" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="VLAN2",
@@ -1968,7 +1995,6 @@ class FUNCintent:
         badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
         badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="ENCAPSULATION",
@@ -1997,6 +2023,48 @@ class FUNCintent:
                                  actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
+
+        # Testing MPLS would need to update kernel version (Right now is 3.16)
+        # main.step( "ENCAPSULATION: Add multi point to single point intents" )
+        # main.assertReturnString = "Assertion results for MPLS Encapsulation multi to single point intent\n"
+        # senders = [
+        #     { "name": "h16", "device": "of:0000000000000006/8" },
+        #     { "name": "h24", "device": "of:0000000000000007/8" }
+        # ]
+        # recipients = [
+        #     { "name": "h8", "device": "of:0000000000000005/8" }
+        # ]
+        # badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
+        # badRecipients = [ {"name": "h9" } ]  # Recipients that are not in the intent
+        # testResult = main.FALSE
+        # installResult = main.intentFunction.installMultiToSingleIntent(
+        #     main,
+        #     name="ENCAPSULATION",
+        #     senders=senders,
+        #     recipients=recipients,
+        #     sw1="s5",
+        #     sw2="s2",
+        #     encap="MPLS" )
+        #
+        # if installResult:
+        #     testResult = main.intentFunction.testPointIntent(
+        #         main,
+        #         intentId=installResult,
+        #         name="ENCAPSULATION",
+        #         senders=senders,
+        #         recipients=recipients,
+        #         badSenders=badSenders,
+        #         badRecipients=badRecipients,
+        #         sw1="s5",
+        #         sw2="s2",
+        #         expectedLink=18 )
+        # else:
+        #     main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=testResult,
+        #                          onpass=main.assertReturnString,
+        #                          onfail=main.assertReturnString )
 
         main.intentFunction.report( main )
 
@@ -2028,9 +2096,9 @@ class FUNCintent:
                              main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
-        main.case( "Test host mobility with host intents " )
+        main.case( "Test host mobility with host intents " + " - " + str( main.numCtrls ) +
+                   " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
-        h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
         main.log.info( "Moving h1 from s5 to s6" )
         main.Mininet1.moveHost( "h1","s5","s6" )
@@ -2061,17 +2129,16 @@ class FUNCintent:
         host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
         host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='IPV4 Mobility IPV4',
-                                              onosNode='0',
+                                              name="IPV4 Mobility IPV4",
+                                              onosNode=0,
                                               host1=host1,
                                               host2=host2 )
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                                  name='Host Mobility IPV4',
+                                                  name="Host Mobility IPV4",
                                                   intentId = installResult,
-                                                  onosNode='0',
+                                                  onosNode=0,
                                                   host1=host1,
                                                   host2=host2,
                                                   sw1="s6",
@@ -2113,11 +2180,11 @@ class FUNCintent:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in "+\
-                             main.numSwitch )
+            main.log.error( "Place the total number of switch topology in " + main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
-        main.case( "Test Multi to Single End Point Failure" )
+        main.case( "Test Multi to Single End Point Failure" + " - " + str( main.numCtrls ) +
+                   " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.step( "Installing Multi to Single Point intents with no options set" )
         main.assertReturnString = "Assertion results for IPV4 multi to single " +\
                                   "point intent end point failure with no options set\n"
@@ -2129,11 +2196,10 @@ class FUNCintent:
             { "name":"h8", "device":"of:0000000000000005/8" }
         ]
         isolatedSenders = [
-            { "name":"h24"}
+            { "name":"h24" }
         ]
         isolatedRecipients = []
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="NOOPTION",
@@ -2178,11 +2244,10 @@ class FUNCintent:
             { "name":"h8", "device":"of:0000000000000005/8" }
         ]
         isolatedSenders = [
-            { "name":"h24"}
+            { "name":"h24" }
         ]
         isolatedRecipients = []
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="NOOPTION",
@@ -2229,10 +2294,9 @@ class FUNCintent:
         ]
         isolatedSenders = []
         isolatedRecipients = [
-            { "name":"h24"}
+            { "name":"h24" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
                                          name="NOOPTION",
@@ -2278,10 +2342,9 @@ class FUNCintent:
         ]
         isolatedSenders = []
         isolatedRecipients = [
-            { "name":"h24"}
+            { "name":"h24" }
         ]
         testResult = main.FALSE
-        installResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
                                          name="NOOPTION",

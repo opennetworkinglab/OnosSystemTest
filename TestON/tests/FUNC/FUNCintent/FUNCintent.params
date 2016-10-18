@@ -47,7 +47,7 @@
         <startup>15</startup>
         <reroute>5</reroute>
         <removeintent>10</removeintent>
-        <checkintent>5</checkintent>
+        <checkintent>10</checkintent>
         <fwd>10</fwd>
         <topoAttempts>3</topoAttempts>
         <flowDuration>10</flowDuration>

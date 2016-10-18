@@ -1,0 +1,53 @@
+<PARAMS>
+
+    <testcases>1,2,3,4,5,6,7,8</testcases>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <wrapper1>startUp</wrapper1>
+        <topology>cord_fabric.py</topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,segmentrouting</cellApps>
+        <diffApps>openflow-base,netcfghostprovider,netcfglinksprovider</diffApps>
+        <cellUser>sdn</cellUser>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+    </timers>
+
+    <switches>
+        <spine1> spine101 </spine1>
+        <spine2> spine102 </spine2>
+        <spine3> spine103 </spine3>
+        <spine4> spine104 </spine4>
+        <spinedpid1> 000000000101 </spinedpid1>
+        <spinedpid2> 000000000102 </spinedpid2>
+        <spinedpid3> 000000000103 </spinedpid3>
+        <spinedpid4> 000000000104 </spinedpid4>
+    </switches>
+
+    <failures>3</failures>
+
+    <SLEEP>
+        <startup>10</startup>
+    </SLEEP>
+
+</PARAMS>

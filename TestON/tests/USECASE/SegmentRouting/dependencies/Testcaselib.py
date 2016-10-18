@@ -218,6 +218,51 @@ class Testcaselib:
             main.exit( )
 
     @staticmethod
+    def config(main, cfgName, numCtrls):
+        main.spines     = []
+
+        main.failures   = int(main.params[ 'failures' ])
+        main.cfgName    = cfgName
+        main.numCtrls   = numCtrls
+
+        if main.cfgName == '2x2' :
+            spine           = {}
+            spine[ 'name' ] = main.params['switches'][ 'spine1' ]
+            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid1' ]
+            main.spines.append(spine)
+
+            spine           = {}
+            spine[ 'name' ] = main.params['switches'][ 'spine2' ]
+            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid2' ]
+            main.spines.append(spine)
+
+        elif main.cfgName == '4x4' :
+            spine           = {}
+            spine[ 'name' ] = main.params['switches'][ 'spine1' ]
+            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid1' ]
+            main.spines.append(spine)
+
+            spine           = {}
+            spine[ 'name' ] = main.params['switches'][ 'spine2' ]
+            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid2' ]
+            main.spines.append(spine)
+
+            spine           = {}
+            spine[ 'name' ] = main.params['switches'][ 'spine3' ]
+            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid3' ]
+            main.spines.append(spine)
+
+            spine           = {}
+            spine[ 'name' ] = main.params['switches'][ 'spine4' ]
+            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid4' ]
+            main.spines.append(spine)
+
+        else :
+            main.log.error( "Configuration failed!" )
+            main.cleanup( )
+            main.exit( )
+
+    @staticmethod
     def checkFlows( main, minFlowCount, dumpflows=True ):
         main.step(
                 " Check whether the flow count is bigger than %s" % minFlowCount )

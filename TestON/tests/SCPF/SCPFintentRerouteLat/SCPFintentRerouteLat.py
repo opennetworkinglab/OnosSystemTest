@@ -81,6 +81,9 @@ class SCPFintentRerouteLat:
         main.egress = main.params['TEST']['egress']
         main.debug = main.params['TEST']['debug']
         main.flowObj = main.params['TEST']['flowObj']
+        main.deviceCount = int(main.params['TEST']['deviceCount'])
+        main.end1 = main.params['TEST']['end1']
+        main.end2 = main.params['TEST']['end2']
 
         if main.flowObj == "True":
             main.flowObj = True
@@ -207,7 +210,7 @@ class SCPFintentRerouteLat:
         time.sleep(main.startUpSleep)
 
         # configure apps
-        main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+        main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "topoShape", value="reroute")
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
         main.CLIs[0].setCfg("org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupEnabled", value="false")
@@ -219,8 +222,8 @@ class SCPFintentRerouteLat:
         # Balance Master
         main.CLIs[0].balanceMasters()
         if len(main.ONOSip) > 1:
-            main.CLIs[0].deviceRole("null:0000000000000003", main.ONOSip[0])
-            main.CLIs[0].deviceRole("null:0000000000000004", main.ONOSip[0])
+            main.CLIs[0].deviceRole(main.end1[ 'name' ], main.ONOSip[0])
+            main.CLIs[0].deviceRole(main.end2[ 'name' ], main.ONOSip[0])
         time.sleep( main.setMasterSleep )
 
     def CASE2( self, main ):
@@ -260,7 +263,7 @@ class SCPFintentRerouteLat:
                     summary = json.loads(main.CLIs[0].summary(timeout=main.timeout))
                     linkCheck = summary.get("links")
                     flowsCheck = summary.get("flows")
-                    if linkCheck == 16 and flowsCheck == batchSize * 7:
+                    if linkCheck == main.deviceCount * 2 and flowsCheck == batchSize * (main.deviceCount - 1 ):
                         main.log.info("links: {}, flows: {} ".format(linkCheck, flowsCheck))
                         verify = main.TRUE
                         break
@@ -274,7 +277,7 @@ class SCPFintentRerouteLat:
                     main.CLIs[0].purgeWithdrawnIntents()
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
                     if validRun >= main.warmUp:
                         invalidRun += 1
@@ -284,7 +287,7 @@ class SCPFintentRerouteLat:
                         continue
 
                 # Bring link down
-                main.CLIs[0].link("0000000000000004/1", "0000000000000003/2", "down",
+                main.CLIs[0].link( main.end1[ 'port' ], main.end2[ 'port' ], "down",
                                   timeout=main.timeout, showResponse=False)
                 verify = main.FALSE
                 k = 0
@@ -294,7 +297,7 @@ class SCPFintentRerouteLat:
                     summary = json.loads(main.CLIs[0].summary(timeout=main.timeout))
                     linkCheck = summary.get("links")
                     flowsCheck = summary.get("flows")
-                    if linkCheck == 14:
+                    if linkCheck == (main.deviceCount - 1) * 2:
                         main.log.info("links: {}, flows: {} ".format(linkCheck, flowsCheck))
                         verify = main.TRUE
                         break
@@ -308,7 +311,7 @@ class SCPFintentRerouteLat:
                     main.CLIs[0].purgeWithdrawnIntents()
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
                     if validRun >= main.warmUp:
                         invalidRun += 1
@@ -346,7 +349,7 @@ class SCPFintentRerouteLat:
                     main.CLIs[0].purgeWithdrawnIntents()
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
                     if validRun >= main.warmUp:
                         invalidRun += 1
@@ -374,7 +377,7 @@ class SCPFintentRerouteLat:
                 validRun += 1
 
                 # Verify Summary after we bring up link, and withdrawn intents
-                main.CLIs[0].link("0000000000000004/1", "0000000000000003/2", "up",
+                main.CLIs[0].link( main.end1[ 'port' ], main.end2[ 'port' ], "up",
                                   timeout=main.timeout)
                 k = 0
                 verify = main.FALSE
@@ -389,7 +392,7 @@ class SCPFintentRerouteLat:
                     linkCheck = summary.get("links")
                     flowsCheck = summary.get("flows")
                     intentCheck = summary.get("intents")
-                    if linkCheck == 16 and flowsCheck == 0 and intentCheck == 0:
+                    if linkCheck == main.deviceCount * 2 and flowsCheck == 0 and intentCheck == 0:
                         main.log.info("links: {}, flows: {}, intents: {} ".format(linkCheck, flowsCheck, intentCheck))
                         verify = main.TRUE
                         break
@@ -404,7 +407,7 @@ class SCPFintentRerouteLat:
                     main.CLIs[0].purgeWithdrawnIntents()
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=8)
+                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
                     main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
                     continue
 

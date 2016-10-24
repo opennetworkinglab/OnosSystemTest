@@ -2425,11 +2425,9 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( "Uncaught exception" )
 
-    def startBasicONOS(self, nodeList, opSleep = 60, onosStartupSleep = 60):
-
+    def startBasicONOS( self, nodeList, opSleep=60, onosStartupSleep=60 ):
         '''
         Start onos cluster with defined nodes, but only with drivers app
-
         '''
         import time
 
@@ -2444,7 +2442,7 @@ class OnosDriver( CLI ):
         verifyResult = self.verifyCell()
 
         main.log.info( self.name + ": Creating ONOS package" )
-        packageResult = self.onosPackage( opTimeout=opSleep )
+        packageResult = self.buckBuild( timeout=opSleep )
 
         main.log.info( self.name + ": Installing ONOS package" )
         for nd in nodeList:

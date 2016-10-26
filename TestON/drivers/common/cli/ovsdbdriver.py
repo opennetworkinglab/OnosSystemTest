@@ -44,7 +44,7 @@ class OvsdbDriver( CLI ):
                     pwd=self.pwd)
 
             if self.handle:
-                main.log.onfo( "Connection successful to the ovsdb node " +
+                main.log.info( "Connection successful to the ovsdb node " +
                                 self.name )
                 return self.handle
             else:

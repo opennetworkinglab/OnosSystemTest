@@ -388,8 +388,6 @@ class OnosDriver( CLI ):
                     # Prompt returned
                     break
             main.log.debug( output )
-            # FIXME: This is a workaround for a bug in buck see ONOS-5320
-            self.buckPackage( )
             return ret
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
@@ -404,53 +402,6 @@ class OnosDriver( CLI ):
             main.log.exception( "Failed to build and package ONOS" )
             main.cleanup()
             main.exit()
-
-    def buckPackage( self, timeout=180 ):
-        """
-        Package onos using buck. This will not build the source and this rule
-        should be automatically run when building onos.
-        """
-        try:
-            ret = main.TRUE
-            self.handle.sendline( "buck build package" )
-            self.handle.expect( "buck build package" )
-            output = ""
-            while True:
-                i = self.handle.expect( [ "This does not appear to be the root of a Buck project.",
-                                          "\n",
-                                          "BUILD FAILED",
-                                          "\$" ],
-                                        timeout=timeout )
-                output += str( self.handle.before + self.handle.after )
-                if i == 0:
-                    main.log.error( "Wrong location" )
-                    ret = main.FALSE
-                elif i == 1:
-                    # end of a line, buck is still printing output
-                    pass
-                elif i == 2:
-                    # Build failed
-                    main.log.error( "Build failed" )
-                    ret = main.FALSE
-                elif i == 3:
-                    # Prompt returned
-                    break
-            main.log.debug( output )
-            return ret
-        except pexpect.TIMEOUT:
-            main.log.exception( self.name + ": TIMEOUT exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            return main.FALSE
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
-        except Exception:
-            main.log.exception( "Failed to package ONOS" )
-            main.cleanup()
-            main.exit()
-
 
     def gitPull( self, comp1="", fastForward=True ):
         """

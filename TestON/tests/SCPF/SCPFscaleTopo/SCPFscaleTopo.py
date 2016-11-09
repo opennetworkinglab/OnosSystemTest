@@ -278,6 +278,8 @@ class SCPFscaleTopo:
                                     " topology failed to start" )
 
         time.sleep( main.MNSleep )
+        main.CLIs[ 0 ].activateApp( "org.onosproject.openflow" )
+        time.sleep( main.MNSleep )
 
     def CASE11( self, main ):
         """

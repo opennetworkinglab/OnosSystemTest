@@ -344,15 +344,20 @@ class SCPFbatchFlowResp:
         main.addedBatchList = []
         q = Queue()
         tAllAdded = 0
+        main.postFailed = False
 
         def postWorker(id):
             while True:
                 item = q.get()
                 #print json.dumps(item)
                 status,response = main.ONOSrest.sendFlowBatch(batch = item)
-                main.log.info("Thread {} is working on posting. ".format(id))
-                #print json.dumps(response)
-                main.addedBatchList.append(response[1])
+                if status == main.TRUE:
+                    main.log.info("Thread {} is working on posting. ".format(id))
+                    #print json.dumps(response)
+                    main.addedBatchList.append(response[1])
+                else:
+                    main.log.error( "Thread {} failed to post.".format(id) )
+                    main.postFailed = True
                 q.task_done()
 
         for i in range( int( main.params['CASE2100']['numThreads'])):
@@ -367,6 +372,10 @@ class SCPFbatchFlowResp:
 
         q.join()
         tLastPostEnd = time.time()
+        if main.postFailed:
+            main.log.error( "Flow batch posting failed, exit test" )
+            main.cleanup()
+            main.exit()
 
         main.step("Check to ensure all flows are in added state.")
         #pprint(main.addedBatchList)

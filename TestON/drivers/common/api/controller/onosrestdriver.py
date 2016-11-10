@@ -1842,12 +1842,12 @@ class OnosRestDriver( Controller ):
             else:
                 main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
-                return main.FALSE
+                return main.FALSE, response
         except NotImplementedError as e:
             raise e  # Inform the caller
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
-            return None
+            return None, None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()

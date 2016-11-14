@@ -94,8 +94,8 @@
             <CLIParamNum>0</CLIParamNum>
             <rerunInterval>5</rerunInterval>
             <maxRerunNum>5</maxRerunNum>
-            <coreFlowNum>4</coreFlowNum>
-            <coreFlowNum6>6</coreFlowNum6>
+            <coreFlowNum>3</coreFlowNum>
+            <coreFlowNum6>5</coreFlowNum6>
         </FlowCheck>
 
         <TrafficCheck>

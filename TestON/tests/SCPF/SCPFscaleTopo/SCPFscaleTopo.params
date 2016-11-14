@@ -18,6 +18,8 @@
         <multiovs>multiovs.py</multiovs>
     </DEPENDENCY>
 
+    <TsharkPath>/tmp/scaleTopo_tshark_role_request</TsharkPath>
+
     <DATABASE>
         <dbPath>/tmp/scaleTopoResultDb</dbPath>
     </DATABASE>
@@ -30,6 +32,7 @@
         <start>New switch connection</start>
         <end>Topology DefaultTopology</end>
         <Disconnect>Switch disconnected callback</Disconnect>
+        <roleRequest>of_role_request</roleRequest>
     </SearchTerm>
 
     <GIT>

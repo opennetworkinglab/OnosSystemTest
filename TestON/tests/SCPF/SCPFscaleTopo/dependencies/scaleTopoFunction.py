@@ -32,6 +32,44 @@ def getTimestampFromString( main, targetString ):
         main.log.error( "Got wrong string from log" )
         return -1
 
+def getRoleRequestTimeFromTshark( main ):
+    try:
+        main.log.info( "Get role request time" )
+        with open(main.tsharkResultPath, "r" ) as resultFile:
+            resultText = resultFile.readlines()
+            # select the last role request string
+            roleRequestString = resultText[ len( resultText ) - 1 ]
+            main.log.info( roleRequestString )
+            # get timestamp from role request string
+            roleRequestTime = roleRequestString.split( " " )
+            resultFile.close()
+            return float(roleRequestTime[1])
+    except IndexError:
+        main.log.error("Got wrong role request string from Tshark file")
+        return -1
+
+def compareTimeDiffWithRoleRequest(main, term, Mode, index=0 ):
+    '''
+    Description:
+        Compare the time difference between the time of target term and the time of role request
+        Inclides onosclidriver functions
+
+    '''
+    try:
+        termInfo = main.CLIs[ index ].logSearch( term, mode=Mode)
+        termTime = getTimestampFromString( main, termInfo[ 0 ] )
+        roleRequestTime = getRoleRequestTimeFromTshark( main )
+        if termTime == -1 or roleRequestTime == -1:
+            main.writeData = -1
+            main.log.error( "Can't compare the difference with role request time" )
+            return -1
+	# Only concern about the absolute value of difference.
+        return abs( roleRequestTime - termTime )
+    except IndexError:
+        main.log.error( "Catch the wrong information of search term " )
+        main.writeData = -1
+        return -1
+
 def getInfoFromLog( main, term1, mode1, term2, mode2, index=0, funcMode='TD' ):
     '''
     Description:

@@ -10,7 +10,6 @@ class SCPFscaleTopo:
     def CASE1( self, main ):
         import os
         import imp
-
         """
         - Construct tests variables
         - GIT ( optional )
@@ -32,6 +31,8 @@ class SCPFscaleTopo:
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         main.dependencyPath = main.testOnDirectory + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
+        main.tsharkResultPath = main.params[ 'TsharkPath' ]
+        main.roleRequest = main.params[ 'SearchTerm' ]['roleRequest']
         main.multiovs = main.params[ 'DEPENDENCY' ][ 'multiovs' ]
         main.topoName = main.params[ 'TOPOLOGY' ][ 'topology' ]
         main.numCtrls = int( main.params[ 'CTRL' ][ 'numCtrls' ] )
@@ -67,31 +68,38 @@ class SCPFscaleTopo:
                 main.CLIs.append( getattr( main, 'ONOScli%s' % (i+1) ) )
 
         main.allinfo = {} # The dictionary to record all the data from karaf.log
+
         for i in range( 2 ):
             main.allinfo[ i ]={}
             for w in range ( 3 ):
                 # Totaltime: the time from the new switchConnection to its end
                 # swConnection: the time from the first new switchConnection to the last new switchConnection
+                # lastSwToLastRr: the time from the last new switchConnection to the last role request
+                # lastRrToLastTopology: the time form the last role request to the last topology
                 # disconnectRate: the rate that shows how many switch disconnect after connection
-                main.allinfo[ i ][ 'info' + str( w ) ]= { 'totalTime': 0, 'swConnection': 0,'lastSwToTopology': 0, 'disconnectRate': 0 }
+                main.allinfo[ i ][ 'info' + str( w ) ]= { 'totalTime': 0, 'swConnection': 0, 'lastSwToLastRr': 0, 'lastRrToLastTopology': 0, 'disconnectRate': 0 }
 
         main.dbFilePath = main.params[ 'DATABASE' ][ 'dbPath' ]
         main.log.info( "Create Database file " + main.dbFilePath )
         resultDB = open(main.dbFilePath, 'w+' )
         resultDB.close()
 
+
         main.startUp = imp.load_source( wrapperFile1,
                                         main.dependencyPath +
                                         wrapperFile1 +
                                         ".py" )
+
         main.scaleTopoFunction = imp.load_source( wrapperFile2,
                                                   main.dependencyPath +
                                                   wrapperFile2 +
                                                   ".py" )
+
         main.topo = imp.load_source( wrapperFile3,
                                      main.dependencyPath +
                                      wrapperFile3 +
                                      ".py" )
+
         main.ONOSbench.scp( main.Mininet1,
                             main.dependencyPath +
                             main.multiovs,
@@ -278,8 +286,19 @@ class SCPFscaleTopo:
                                     " topology failed to start" )
 
         time.sleep( main.MNSleep )
+        main.log.info( "Clean up Tshark" )
+        with open(main.tsharkResultPath, "w" ) as tshark:
+            tshark.write( "" )
+        main.log.info( "Starting Tshark capture" )
+        main.ONOSbench.tsharkGrep( main.roleRequest, main.tsharkResultPath, grepOptions='-E' )
         main.CLIs[ 0 ].activateApp( "org.onosproject.openflow" )
         time.sleep( main.MNSleep )
+        main.log.info( "Stop Tshark" )
+        main.ONOSbench.tsharkStop()
+        main.log.info( "Get role request time" )
+        with open( main.tsharkResultPath, "r" ) as resultFile:
+            resultText = resultFile.readlines()
+            resultFile.close()
 
     def CASE11( self, main ):
         """
@@ -294,8 +313,10 @@ class SCPFscaleTopo:
             main.allinfo[ 0 ][ 'info' + str( i )][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'end' ], 'last', index=i, funcMode='TD' )
             # Calculate switch connection time
             main.allinfo[ 0 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
-            # Calculate the time from last switch connection to the end
-            main.allinfo[ 0 ][ 'info' + str( i )][ 'lastSwToTopology' ] =  main.allinfo[ 0 ][ 'info' + str( i )][ 'totalTime' ] -  main.allinfo[ 0 ][ 'info' + str( i )][ 'swConnection' ]
+            # Calculate the time from last switch connection to the last role request
+            main.allinfo[ 0 ][ 'info' + str( i )][ 'lastSwToLastRr' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'start' ], 'last', index=i )
+            # Calculate the time from the last role request to the last topology
+            main.allinfo[ 0 ][ 'info' + str( i )][ 'lastRrToLastTopology' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'end' ], 'last', index=i )
             # Calculate the disconnecti rate
             main.allinfo[ 0 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ], 'num', index=i, funcMode='DR' )
         main.log.debug( "The data is " + str( main.allinfo[ 0 ] ) )
@@ -469,10 +490,10 @@ class SCPFscaleTopo:
                 slowestNode = i
             # Calculate switch connection time
             main.allinfo[ 1 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
-            # Calculate the time from last switch connection to the end
-            main.allinfo[ 1 ][ 'info' + str( i )][ 'lastSwToTopology' ] =  main.allinfo[ 1 ][
-            'info' + str( i )][ 'totalTime' ] -  main.allinfo[ 1 ][ 'info' + str( i )][
-            'swConnection' ]
+            # Calculate the time from last switch connection to the last role request
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'lastSwToLastRr' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'start' ], 'last', index=i )
+            # Calculate the time from the last role request to the last topology
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'lastRrToLastTopology' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'end' ], 'last', index=i )
             # Calculate the disconnecti rate
             main.allinfo[ 1 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ],'num', index=i, funcMode='DR' )
 
@@ -488,7 +509,8 @@ class SCPFscaleTopo:
                 # put result from second capture into data base
                 temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'totalTime' ] )
                 temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'swConnection' ] )
-                temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'lastSwToTopology' ] )
+                temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'lastSwToLastRr' ] )
+                temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'lastRrToLastTopology' ] )
                 temp += "," + str( "%.2f" % main.allinfo[ 1 ][ 'info' + str( slowestNode )][ 'disconnectRate' ] )
                 temp += "\n"
                 dbFile.write( temp )
@@ -504,4 +526,4 @@ class SCPFscaleTopo:
                                                               "flow",
                                                               "ERROR",
                                                               "Except" ],
-                                                            "s" )
+                                                              "s" )

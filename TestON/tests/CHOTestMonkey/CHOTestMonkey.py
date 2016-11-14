@@ -781,9 +781,12 @@ class CHOTestMonkey:
         pointIntentNum = 0
         downDeviceNum = 0
         downLinkNum = 0
+        flowObj = False
         upControllers = [ 1, 2, 3 ]
         while True:
             events = []
+            for i in range( int( main.params[ 'CASE70' ][ 'toggleFlowObj' ] ) ):
+                events.append( 'toggle-flowobj' )
             for i in range( int( main.params[ 'CASE70' ][ 'addHostIntentWeight' ] ) ):
                 events.append( 'add-host-intent' )
             for i in range( int( main.params[ 'CASE70' ][ 'addPointIntentWeight' ] ) ):
@@ -838,6 +841,12 @@ class CHOTestMonkey:
             elif event == 'device-up':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_DEVICE_UP, EventScheduleMethod().RUN_BLOCK, 'random' )
                 downDeviceNum -= 1
+            elif event == 'toggle-flowobj':
+                if flowObj == False:
+                    main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'true' )
+                else:
+                    main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'false' )
+                flowObj = not flowObj
             else:
                 pass
             main.eventGenerator.triggerEvent( EventType().CHECK_TOPO, EventScheduleMethod().RUN_NON_BLOCK )

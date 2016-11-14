@@ -36,7 +36,7 @@
         <ipv4Prefix>10.1.</ipv4Prefix>
         <karafCliTimeout>7200000</karafCliTimeout>
         <testDuration>86400</testDuration>
-        <package>off</package>
+        <package>on</package>
         <autoPull>off</autoPull>
         <branch>master</branch>
     </TEST>
@@ -392,6 +392,7 @@
         <addPointIntentWeight>3</addPointIntentWeight>
         <linkDownWeight>3</linkDownWeight>
         <deviceDownWeight>2</deviceDownWeight>
+        <toggleFlowObj>0</toggleFlowObj>
     </CASE70>
 
     <CASE80>

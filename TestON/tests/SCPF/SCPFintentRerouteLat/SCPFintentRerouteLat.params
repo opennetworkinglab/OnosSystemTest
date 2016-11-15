@@ -20,6 +20,15 @@
         <egress>null:0000000000000007/0</egress>
         <debug>False</debug>
         <flowObj>False</flowObj>
+        <deviceCount>8</deviceCount>
+        <end1>
+            <name>null:0000000000000004</name>
+            <port>0000000000000004/1</port>
+        </end1>
+        <end2>
+            <name>null:0000000000000003</name>
+            <port>0000000000000003/2</port>>
+        </end2>
     </TEST>
     <DATABASE>
         <dbName>/tmp/IntentRerouteLatDB</dbName>

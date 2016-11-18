@@ -10,6 +10,16 @@
         <cellApps>drivers,null,intentperf,metrics</cellApps>
     </ENV>
 
+    <DEPENDENCY>
+        <FILE1>intentRerouteLatFuncs</FILE1>
+        <PATH>/tests/SCPF/SCPFintentRerouteLat/dependencies/</PATH>
+    </DEPENDENCY>
+
+    <SEARCHTERM>
+        <TopologyTime>TopologyManager</TopologyTime>
+        <InstallTime>INSTALLED</InstallTime>
+    </SEARCHTERM>
+
     <TEST>
         <skipCleanInstall>yes</skipCleanInstall>
         <warmUp>5</warmUp>
@@ -30,6 +40,7 @@
             <port>0000000000000003/2</port>>
         </end2>
     </TEST>
+
     <DATABASE>
         <dbName>/tmp/IntentRerouteLatDB</dbName>
         <dbFlowObj>/tmp/IntentRerouteLatDBWithFlowObj</dbFlowObj>

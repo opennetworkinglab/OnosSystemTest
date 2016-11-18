@@ -5015,30 +5015,54 @@ class OnosCliDriver( CLI ):
             return None
         return respDic
 
-    def logSearch( self, searchTerm, mode='all' ):
+    def logSearch( self, mode='all', searchTerm='', startLine='', logNum=1 ):
         """
         Searches the latest ONOS log file for the given search term and
         return a list that contains all the lines that have the search term.
 
         Arguments:
-            searchTerm - A string to grep for in the ONOS log.
+            searchTerm:
+                The string to grep from the ONOS log.
+            startLine:
+                The term that decides which line is the start to search the searchTerm in
+                the karaf log. For now, startTerm only works in 'first' mode.
+            logNum:
+                In some extreme cases, one karaf log is not big enough to contain all the
+                information.Because of this, search mutiply logs is necessary to capture
+                the right result. logNum is the number of karaf logs that we need to search
+                the searchTerm.
             mode:
                 all: return all the strings that contain the search term
                 last: return the last string that contains the search term
                 first: return the first string that contains the search term
-                num: return the number that the searchTerm appears in the log
+                num: return the number of times that the searchTerm appears in the log
+                total: return how many lines in karaf log
         """
         try:
             assert type( searchTerm ) is str
-            cmd = "cat /opt/onos/log/karaf.log | grep \'" + searchTerm + "\'"
+            #Build the log paths string
+            logPath = '/opt/onos/log/karaf.log.'
+            logPaths = '/opt/onos/log/karaf.log'
+            for i in range( 1, logNum ):
+                logPaths = logPath + str( i ) + " " + logPaths
+            cmd = "cat " + logPaths
+            if mode == 'all':
+                cmd = cmd + " | grep \'" + searchTerm + "\'"
             if mode == 'last':
-                cmd = cmd + " | tail -n 1"
+                cmd = cmd + " | grep \'" + searchTerm + "\'" + " | tail -n 1"
             if mode == 'first':
-                cmd = cmd + " | head -n 1"
+                if startLine != '':
+                    # 100000000 is just a extreme large number to make sure this function can grep all the lines after startLine
+                    cmd = cmd + " | grep -A 100000000 \'" + startLine + "\' | grep \'" + searchTerm + "\'" + "| head -n 1"
+                else:
+                    cmd = cmd + " | grep \'" + searchTerm + "\'" + " | head -n 1"
             if mode == 'num':
-                cmd = "cat /opt/onos/log/karaf.log | grep -c \'" + searchTerm + "\'"
-                num = self.sendline( cmd )
+                cmd = cmd + " | grep -c \'" + searchTerm + "\'"
+                num = self.sendstartTerm=startTerm1, line( cmd )
                 return num
+            if mode == 'total':
+                totalLines = self.sendline( "cat /opt/onos/log/karaf.log | wc -l" )
+                return int(totalLines)
             before = self.sendline( cmd )
             before = before.splitlines()
             # make sure the returned list only contains the search term
@@ -5404,3 +5428,42 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def getTimeStampFromLog( self, mode, searchTerm, splitTerm_before, splitTerm_after, startLine='', logNum=1 ):
+        '''
+        Get the timestamp of searchTerm from karaf log.
+
+        Arguments:
+            splitTerm_before and splitTerm_after:
+
+                The terms that split the string that contains the timeStamp of
+                searchTerm. For example, if that string is "xxxxxxxcreationTime =
+                1419510501xxxxxx", then the splitTerm_before is "CreationTime = "
+                and the splitTerm_after is "x"
+
+            others:
+
+                plz look at the "logsearch" Function in onosclidriver.py
+
+
+        '''
+        if logNum < 0:
+            main.log.error("Get wrong log number ")
+            return main.ERROR
+        lines = self.logSearch( mode=mode, searchTerm=searchTerm, startLine=startLine, logNum=logNum )
+        if len(lines) == 0:
+            main.log.warn( "Captured timestamp string is empty" )
+            return main.ERROR
+        lines = lines[ 0 ]
+        try:
+            assert type(lines) is str
+            # get the target value
+            line = lines.split( splitTerm_before )
+            key = line[ 1 ].split( splitTerm_after )
+            return int( key[ 0 ] )
+        except IndexError:
+            main.log.warn( "Index Error!" )
+            return main.ERROR
+        except AssertionError:
+            main.log.warn( "Search Term Not Found " )
+            return main.ERROR

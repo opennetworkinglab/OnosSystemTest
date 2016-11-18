@@ -15,7 +15,7 @@ def getTimestampFromLog( index, searchTerm ):
         searchTerm: the key term of timestamp
 
     '''
-    lines = main.CLIs[ index ].logSearch( searchTerm, mode='last' )
+    lines = main.CLIs[ index ].logSearch( mode='last', searchTerm=searchTerm )
     try:
         assert lines != None
         logString = lines[ len ( lines ) - 1 ]

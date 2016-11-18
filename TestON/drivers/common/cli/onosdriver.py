@@ -2123,6 +2123,35 @@ class OnosDriver( CLI ):
 
         return sorted( self.onosIps.values() )
 
+    def listLog( self, nodeIp ):
+        """
+            Get a list of all the karaf log names
+        """
+        try:
+            cmd = "onos-ssh " + nodeIp + " ls -tr /opt/onos/log"
+            self.handle.sendline( cmd )
+            self.handle.expect( ":~" )
+            before = self.handle.before.splitlines()
+            logNames = []
+            for word in before:
+                if 'karaf.log' in word:
+                    logNames.append( word )
+            return logNames
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def logReport( self, nodeIp, searchTerms, outputMode="s" ):
         """
         Searches the latest ONOS log file for the given search terms and

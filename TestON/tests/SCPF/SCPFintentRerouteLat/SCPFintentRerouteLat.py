@@ -14,11 +14,14 @@ SCPFintentRerouteLat
     - The unit of the latency result is milliseconds
 """
 
+
 class SCPFintentRerouteLat:
     def __init__(self):
         self.default = ''
 
     def CASE0( self, main ):
+        import imp
+        import os
         '''
         - GIT
         - BUILDING ONOS
@@ -40,7 +43,8 @@ class SCPFintentRerouteLat:
                                     actual=stepResult,
                                     onpass="Successfully checkout onos branch.",
                                     onfail="Failed to checkout onos branch. Exiting test...")
-            if not stepResult: main.exit()
+            if not stepResult:
+                main.exit()
 
             main.step("Git Pull on ONOS branch:" + gitBranch)
             stepResult = main.ONOSbench.gitPull()
@@ -56,11 +60,12 @@ class SCPFintentRerouteLat:
                                     actual=stepResult,
                                     onpass="Successfully build onos.",
                                     onfail="Failed to build onos. Exiting test...")
-            if not stepResult: main.exit()
+            if not stepResult:
+                main.exit()
 
         else:
             main.log.warn("Skipped pulling onos and Skipped building ONOS")
-
+        main.onosIp = main.ONOSbench.getOnosIps()
         main.apps = main.params['ENV']['cellApps']
         main.BENCHUser = main.params['BENCH']['user']
         main.BENCHIp = main.params['BENCH']['ip1']
@@ -84,7 +89,7 @@ class SCPFintentRerouteLat:
         main.deviceCount = int(main.params['TEST']['deviceCount'])
         main.end1 = main.params['TEST']['end1']
         main.end2 = main.params['TEST']['end2']
-
+        main.searchTerm = main.params['SEARCHTERM']
         if main.flowObj == "True":
             main.flowObj = True
             main.dbFileName = main.params['DATABASE']['dbFlowObj']
@@ -100,6 +105,11 @@ class SCPFintentRerouteLat:
         main.log.info("Create Database file " + main.dbFileName)
         resultsDB = open(main.dbFileName, "w+")
         resultsDB.close()
+        file1 = main.params[ "DEPENDENCY" ][ "FILE1" ]
+        main.dependencyPath = os.path.dirname( os.getcwd() ) + main.params[ "DEPENDENCY" ][ "PATH" ]
+        main.intentRerouteLatFuncs = imp.load_source(file1, main.dependencyPath + file1 + ".py")
+
+        main.record = 0
 
     def CASE1( self, main ):
         '''
@@ -179,24 +189,36 @@ class SCPFintentRerouteLat:
                                     onfail="Test step FAIL")
             installResult = installResult and i_result
 
-        main.step("Verify ONOS nodes UP status")
-        statusResult = main.TRUE
-        for i in range(int(main.numCtrls)):
-            main.log.info("ONOS Node " + main.ONOSip[i] + " status:")
-            onos_status = main.ONOSbench.onosStatus(node=main.ONOSip[i])
-            utilities.assert_equals(expect=main.TRUE, actual=onos_status,
-                                    onpass="Test step PASS",
-                                    onfail="Test step FAIL")
-            statusResult = (statusResult and onos_status)
+        main.step( "Starting ONOS service" )
+        stopResult = main.TRUE
+        startResult = main.TRUE
+        onosIsUp = main.TRUE
 
+        for i in range( main.numCtrls ):
+            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
+        if onosIsUp == main.TRUE:
+            main.log.report( "ONOS instance is up and ready" )
+        else:
+            main.log.report( "ONOS instance may not be up, stop and " +
+                             "start ONOS again " )
+
+            for i in range( main.numCtrls ):
+                stopResult = stopResult and \
+                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
+            for i in range( main.numCtrls ):
+                startResult = startResult and \
+                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
+        stepResult = onosIsUp and stopResult and startResult
+        utilities.assert_equals( expect=main.TRUE, actual=stepResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
             secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
+            utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                    onpass="Test step PASS",
+                                    onfail="Test step FAIL" )
         time.sleep(2)
         main.step("Start ONOS CLI on all nodes")
         cliResult = main.TRUE
@@ -226,8 +248,10 @@ class SCPFintentRerouteLat:
         if main.flowObj:
             main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                 "useFlowObjectives", value="true")
-        time.sleep(main.startUpSleep)
-
+        time.sleep( main.startUpSleep )
+        for i in range( int( main.numCtrls ) ):
+            main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.topology" )
+            main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.intent" )
         # Balance Master
         main.CLIs[0].balanceMasters()
         if len(main.ONOSip) > 1:
@@ -247,13 +271,19 @@ class SCPFintentRerouteLat:
         for batchSize in main.intentsList:
             main.log.report("Intent Batch size: " + str(batchSize) + "\n      ")
             main.LatencyList = []
-            validRun = 0
-            invalidRun = 0
-            while validRun <= main.warmUp + main.sampleSize and invalidRun <= 20:
-                if validRun >= main.warmUp:
+            main.LatencyListTopoToFirstInstalled = []
+            main.LatencyListFirstInstalledToLastInstalled = []
+            main.validRun = 0
+            main.invalidRun = 0
+            # initial a variables to record the term of startLine in karaf logs of each node
+            main.totalLines = []
+            for i in range( main.numCtrls ):
+                main.totalLines.append( '' )
+            while main.validRun <= main.warmUp + main.sampleSize and main.invalidRun <= 20:
+                if main.validRun >= main.warmUp:
                     main.log.info("================================================")
-                    main.log.info("Starting test iteration: {} ".format(validRun - main.warmUp))
-                    main.log.info("Total iteration: {}".format(validRun + invalidRun))
+                    main.log.info("Starting test iteration: {} ".format( main.validRun - main.warmUp))
+                    main.log.info("Total iteration: {}".format( main.validRun + main.invalidRun))
                     main.log.info("================================================")
                 else:
                     main.log.info("====================Warm Up=====================")
@@ -264,7 +294,7 @@ class SCPFintentRerouteLat:
 
                 # check links and flows
                 k = 0
-                verify = main.FALSE
+                main.verify = main.FALSE
                 linkCheck = 0
                 flowsCheck = 0
                 while k <= main.verifyAttempts:
@@ -274,31 +304,24 @@ class SCPFintentRerouteLat:
                     flowsCheck = summary.get("flows")
                     if linkCheck == main.deviceCount * 2 and flowsCheck == batchSize * (main.deviceCount - 1 ):
                         main.log.info("links: {}, flows: {} ".format(linkCheck, flowsCheck))
-                        verify = main.TRUE
+                        main.verify = main.TRUE
                         break
                     k += 1
-                if not verify:
+                if not main.verify:
                     main.log.warn("Links or flows number are not match!")
                     main.log.warn("links: {}, flows: {} ".format(linkCheck, flowsCheck))
                     # bring back topology
-                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
-                    time.sleep(1)
-                    main.CLIs[0].purgeWithdrawnIntents()
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
-                    if validRun >= main.warmUp:
-                        invalidRun += 1
+                    main.intentRerouteLatFuncs.bringBackTopology( main )
+                    if main.validRun >= main.warmUp:
+                        main.invalidRun += 1
                         continue
                     else:
-                        validRun += 1
+                        main.validRun += 1
                         continue
-
                 # Bring link down
                 main.CLIs[0].link( main.end1[ 'port' ], main.end2[ 'port' ], "down",
                                   timeout=main.timeout, showResponse=False)
-                verify = main.FALSE
+                main.verify = main.FALSE
                 k = 0
                 topoManagerLog = ""
                 while k <= main.verifyAttempts:
@@ -308,88 +331,42 @@ class SCPFintentRerouteLat:
                     flowsCheck = summary.get("flows")
                     if linkCheck == (main.deviceCount - 1) * 2:
                         main.log.info("links: {}, flows: {} ".format(linkCheck, flowsCheck))
-                        verify = main.TRUE
+                        main.verify = main.TRUE
                         break
                     k += 1
-                if not verify:
+                if not main.verify:
                     main.log.warn("Links number are not match in TopologyManager log!")
                     main.log.warn(topoManagerLog)
                     # bring back topology
-                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
-                    time.sleep(1)
-                    main.CLIs[0].purgeWithdrawnIntents()
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
-                    if validRun >= main.warmUp:
-                        invalidRun += 1
+                    main.intentRerouteLatFuncs.bringBackTopology( main )
+                    if main.validRun >= main.warmUp:
+                        main.invalidRun += 1
                         continue
                     else:
-                        validRun += 1
+                        main.validRun += 1
                         continue
-
-                try:
-                    # expect twice to clean the pexpect buffer
-                    main.ONOSbench.handle.sendline("")
-                    main.ONOSbench.handle.expect("\$")
-                    main.ONOSbench.handle.expect("\$")
-                    # send line by using bench, can't use driver because pexpect buffer problem
-                    cmd = "onos-ssh $OC1 cat /opt/onos/log/karaf.log | grep TopologyManager| tail -1"
-                    main.ONOSbench.handle.sendline(cmd)
-                    time.sleep(1)
-                    main.ONOSbench.handle.expect(":~")
-                    topoManagerLog = main.ONOSbench.handle.before
-                    topoManagerLogTemp = topoManagerLog.splitlines()
-                    # To make sure we get correct topology log
-                    for lines in topoManagerLogTemp:
-                        if "creationTime" in lines:
-                            topoManagerLog = lines
-                    main.log.info("Topology Manager log:")
-                    print(topoManagerLog)
-                    cutTimestamp = float(topoManagerLog.split("creationTime=")[1].split(",")[0])
-                except:
-                    main.log.error("Topology Log is not correct!")
-                    print(topoManagerLog)
-                    # bring back topology
-                    verify = main.FALSE
-                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
-                    time.sleep(1)
-                    main.CLIs[0].purgeWithdrawnIntents()
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
-                    if validRun >= main.warmUp:
-                        invalidRun += 1
+                # record the link romving time as the startLine
+                for i in range( main.numCtrls ):
+                    logNum = main.intentRerouteLatFuncs.checkLog( main, i )
+                    main.totalLines[i] = str(main.CLIs[ i ].getTimeStampFromLog( "last", "LINK_REMOVED", "time = ", " ", logNum=logNum ))
+                    main.log.info("Node " + str( i+1 ) + ": the start timestamp is " + main.totalLines[i] + " this iteration" )
+                #Calculate values
+                lastTopologyToFirstInstalled, firstInstalledToLastInstalled, totalTime = main.intentRerouteLatFuncs.getValues( main )
+                if totalTime == -1:
+                    if main.validRun >= main.warmUp:
+                        main.invalidRun += 1
                     else:
-                        validRun += 1
-                    # If we got wrong Topology log, we should skip this iteration, and continue for next one
+                        main.validRun += 1
                     continue
-
-                installedTemp = []
-                time.sleep(1)
-                for cli in main.CLIs:
-                    tempJson = json.loads(cli.intentsEventsMetrics())
-                    Installedtime = tempJson.get('intentInstalledTimestamp').get('value')
-                    installedTemp.append(float(Installedtime))
-                for i in range(0, len(installedTemp)):
-                    main.log.info("ONOS Node {} Installed Time stemp: {}".format((i + 1), installedTemp[i]))
-                maxInstallTime = float(max(installedTemp))
-                if validRun >= main.warmUp and verify:
-                    main.log.info("Installed time stemp: {0:f}".format(maxInstallTime))
-                    main.log.info("CutTimestamp: {0:f}".format(cutTimestamp))
-                    # Both timeStemps are milliseconds
-                    main.log.info("Latency: {0:f}".format(float(maxInstallTime - cutTimestamp)))
-                    main.LatencyList.append(float(maxInstallTime - cutTimestamp))
-                # We get valid latency, validRun + 1
-                validRun += 1
+                else:
+                    main.log.info("Get valid latency")
+                    main.validRun += 1
 
                 # Verify Summary after we bring up link, and withdrawn intents
                 main.CLIs[0].link( main.end1[ 'port' ], main.end2[ 'port' ], "up",
                                   timeout=main.timeout)
                 k = 0
-                verify = main.FALSE
+                main.verify = main.FALSE
                 linkCheck = 0
                 flowsCheck = 0
                 while k <= main.verifyAttempts:
@@ -403,31 +380,41 @@ class SCPFintentRerouteLat:
                     intentCheck = summary.get("intents")
                     if linkCheck == main.deviceCount * 2 and flowsCheck == 0 and intentCheck == 0:
                         main.log.info("links: {}, flows: {}, intents: {} ".format(linkCheck, flowsCheck, intentCheck))
-                        verify = main.TRUE
+                        main.verify = main.TRUE
                         break
                     k += 1
-                if not verify:
+                if not main.verify:
                     main.log.error("links, flows, or intents are not correct!")
                     main.log.info("links: {}, flows: {}, intents: {} ".format(linkCheck, flowsCheck, intentCheck))
                     # bring back topology
-                    main.log.info("Bring back topology...")
-                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
-                    time.sleep(1)
-                    main.CLIs[0].purgeWithdrawnIntents()
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
-                    main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
+                    main.intentRerouteLatFuncs.bringBackTopology( main )
                     continue
+                main.log.info("total negative results num: " + str( main.record ) )
 
             aveLatency = 0
+            aveLatencyTopoToFirstInstalled = 0
+            aveLatencyFirstInstalledToLastInstalled = 0
+
             stdLatency = 0
-            aveLatency = numpy.average(main.LatencyList)
-            stdLatency = numpy.std(main.LatencyList)
-            main.log.report("Scale: " + str(main.numCtrls) + "  \tIntent batch: " + str(batchSize))
-            main.log.report("Latency average:................" + str(aveLatency))
-            main.log.report("Latency standard deviation:....." + str(stdLatency))
-            main.log.report("________________________________________________________")
+            stdLatencyTopoToFirstInstalled = 0
+            stdLatencyFirstInstalledToLastInstalled = 0
+
+            aveLatency = numpy.average( main.LatencyList )
+            aveLatencyTopoToFirstInstalled = numpy.average( main.LatencyListTopoToFirstInstalled )
+            aveLatencyFirstInstalledToLastInstalled = numpy.average( main.LatencyListFirstInstalledToLastInstalled )
+
+            stdLatency = numpy.std( main.LatencyList )
+            stdLatencyTopoToFirstInstalled = numpy.std( main.LatencyListTopoToFirstInstalled )
+            stdLatencyFirstInstalledToLastInstalled = numpy.std( main.LatencyListFirstInstalledToLastInstalled )
+
+            main.log.report( "Scale: " + str( main.numCtrls ) + "  \tIntent batch: " + str( batchSize ) )
+            main.log.report( "Total Latency average:................" + str( aveLatency ) )
+            main.log.report( "Latency standard deviation:..........." + str( stdLatency ) )
+            main.log.report( "Last Topology to first installed Latency average:................." + str( aveLatencyTopoToFirstInstalled ) )
+            main.log.report( "Last Topology to first installed Latency standard deviation:......" + str( stdLatencyTopoToFirstInstalled ) )
+            main.log.report( "First installed to last installed Latency average:................" + str( aveLatencyFirstInstalledToLastInstalled ) )
+            main.log.report( "First installed to last installed Latency standard deviation:....." + str( stdLatencyFirstInstalledToLastInstalled ) )
+            main.log.report( "________________________________________________________" )
 
             if not (numpy.isnan(aveLatency) or numpy.isnan(stdLatency)):
                 # check if got NaN for result
@@ -436,6 +423,10 @@ class SCPFintentRerouteLat:
                 resultsDB.write(str(main.numCtrls) + ",")
                 resultsDB.write(str(batchSize) + ",")
                 resultsDB.write(str(aveLatency) + ",")
-                resultsDB.write(str(stdLatency) + "\n")
+                resultsDB.write(str(stdLatency) + ",")
+                resultsDB.write(str(aveLatencyTopoToFirstInstalled) + ",")
+                resultsDB.write(str(stdLatencyTopoToFirstInstalled) + ",")
+                resultsDB.write(str(aveLatencyFirstInstalledToLastInstalled) + ",")
+                resultsDB.write(str(stdLatencyFirstInstalledToLastInstalled) + "\n")
                 resultsDB.close()
         del main.scale[0]

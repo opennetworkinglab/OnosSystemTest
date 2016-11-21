@@ -1337,6 +1337,7 @@ class OnosRestDriver( Controller ):
                  udpSrc="",
                  mpls="",
                  priority=100,
+                 groupId="",
                  ip="DEFAULT",
                  port="DEFAULT",
                  debug=False ):
@@ -1375,6 +1376,12 @@ class OnosRestDriver( Controller ):
                            "selector": {"criteria":[]}}
             if appId:
                 flowJson[ "appId" ] = appId
+
+            if groupId:
+                flowJson[ 'treatment' ][ 'instructions' ].append( {
+                                                        "type":"GROUP",
+                                                        "groupId":groupId } )
+
             if egressPort:
                 flowJson[ 'treatment' ][ 'instructions' ].append( {
                                                         "type":"OUTPUT",
@@ -1989,3 +1996,180 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def addGroup( self, deviceId, groupType, bucketList, appCookie, groupId, ip="DEFAULT", port="DEFAULT", debug=False ):
+        """
+        Description:
+            Creates a single Group for the specified device.
+        Required:
+            * deviceId: id of the device
+            * type: Type of the Group
+            * bucketList: Buckets to be added to the group
+            * appCookie: Cookie for the Group
+            * groupId: Id of the Group
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        Note:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        try:
+            groupJson = { "type": groupType,
+                          "appCookie": appCookie,
+                          "groupId": groupId,
+                          "buckets": bucketList
+                        }
+            return self.sendGroup( deviceId=deviceId, groupJson=groupJson, ip="DEFAULT", port="DEFAULT", debug=False )
+
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def sendGroup( self, deviceId, groupJson, ip="DEFAULT", port="DEFAULT", debug=False ):
+        """
+        Description:
+            Sends a single group to the specified device.
+        Required:
+            * deviceId: id of the device
+            * groupJson: the group in json
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        try:
+            if debug: main.log.debug( "Adding group: " + self.pprint( groupJson ) )
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/groups/" + deviceId
+            response = self.send( method="POST",
+                                  url=url, ip = ip, port = port,
+                                  data=json.dumps( groupJson ) )
+            if response:
+                if "201" in str( response[ 0 ] ):
+                    main.log.info( self.name + ": Successfully POST group " +
+                                   "in device: " + str( deviceId ) )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except NotImplementedError as e:
+            raise e  # Inform the caller
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def getGroups( self, deviceId=None, appCookie=None, ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Get all the groups or get a specific group by giving the
+            deviceId and appCookie
+        Optional:
+            * deviceId: id of the Device
+            * appCookie: Cookie of the Group
+        Returns:
+            Returns Groups for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/groups"
+            if deviceId:
+                url += "/" + deviceId
+                if appCookie:
+                   url += "/" + appCookie
+            response = self.send( url=url, ip = ip, port = port )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    output = response[ 1 ]
+                    groupsJson = json.loads( output ).get( 'groups' )
+                    assert groupsJson is not None, "Error parsing json object"
+                    groups = json.dumps( groupsJson )
+                    return groups
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def removeGroup( self, deviceId, appCookie,
+                       ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Removes specific device group
+        Required:
+            * deviceId: id of the Device
+            * appCookie: Cookie of the Group
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            query = "/" + str( deviceId ) + "/" + str( appCookie )
+            response = self.send( method="DELETE",
+                                  url="/groups" + query, ip = ip, port = port )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+

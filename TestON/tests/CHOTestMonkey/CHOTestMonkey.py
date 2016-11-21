@@ -147,6 +147,24 @@ class CHOTestMonkey:
                                      onfail="Test step FAIL" )
             installResult = ( installResult and iResult )
 
+        main.step( "Verify ONOS nodes UP status" )
+        statusResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            main.log.info( "ONOS Node " + main.onosIPs[i] + " status:" )
+            onos_status = main.ONOSbench.onosStatus( node=main.onosIPs[i] )
+            utilities.assert_equals( expect=main.TRUE, actual=onos_status,
+                                     onpass="Test step PASS",
+                                     onfail="Test step FAIL" )
+            statusResult = ( statusResult and onos_status )
+
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+
         main.step( "Start ONOS CLI on all nodes" )
         cliResult = main.TRUE
         startCliResult  = main.TRUE

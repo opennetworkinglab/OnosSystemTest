@@ -202,6 +202,14 @@ class SCPFscalingMaxIntents:
                                      onfail="Test step FAIL" )
             statusResult = ( statusResult and onos_status )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+
         main.step( "Start ONOS CLI on all nodes" )
         cliResult = main.TRUE
         main.step(" Start ONOS cli using thread ")

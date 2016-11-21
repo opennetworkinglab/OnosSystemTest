@@ -167,6 +167,13 @@ class USECASE_SdnipFunction:
                                  onpass="ONOS is up",
                                  onfail="ONOS is NOT up" )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=secureSshResult,
+                                 onpass="Set up ONOS secure SSH succeeded",
+                                 onfail="Set up ONOS secure SSH failed " )
+
         main.step( "Checking if ONOS CLI is ready" )
         cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
                 commandlineTimeout=100, onosStartTimeout=600 )

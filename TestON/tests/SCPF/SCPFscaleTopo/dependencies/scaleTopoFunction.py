@@ -435,6 +435,16 @@ def reinstallOnos( main ):
         else:
             main.log.error( main.topoName + ": Failed to start ONOS cluster" )
 
+    main.log.info( main.topoName + ": set up ONOS secure SSH" )
+    secureSshResult = []
+    for i in range( int( main.numCtrls ) ):
+        secureSshResult.append( main..onosSecureSSH( node=main.ONOSip[i] ) )
+    if all( result == main.TRUE for result in secureSshResult ):
+        main.log.info( main.topoName + ": Successfully set up ONOS secure SSH" )
+    else:
+        main.log.error( main.topoName + ": Failed to set up ONOS secure SSH" )
+        restartResult = main.FALSE
+
     main.log.info( main.topoName + ": Starting ONOS CLI" )
     cliResult = []
     for i in range( main.numCtrls ):

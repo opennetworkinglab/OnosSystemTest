@@ -259,6 +259,14 @@ class FUNCintentRest:
         # supported by the Rest API remove this when Leader Checking is supported
         # by the REST API
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE
         for i in range( main.numCtrls ):

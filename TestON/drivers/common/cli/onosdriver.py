@@ -762,6 +762,7 @@ class OnosDriver( CLI ):
         appString = "export ONOS_APPS=" + appString
         onosGroup = "export ONOS_GROUP=" + onosUser
         onosUser = "export ONOS_USER=" + onosUser
+        # FIXME: unset ONOS_USE_SSH when not using SSH?
         if useSSH:
             onosUseSSH = "export ONOS_USE_SSH=true"
         mnString = "export OCN="
@@ -993,6 +994,8 @@ class OnosDriver( CLI ):
         """
 
         try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
             self.handle.sendline( " onos-secure-ssh -u " + userName + " -p " + userPWD + " " + node )
 
             # NOTE: this timeout may need to change depending on the network

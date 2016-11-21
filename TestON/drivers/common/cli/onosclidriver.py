@@ -232,7 +232,7 @@ class OnosCliDriver( CLI ):
             main.exit()
 
     def startOnosCli( self, ONOSIp, karafTimeout="",
-                      commandlineTimeout=10, onosStartTimeout=60 ):
+                      commandlineTimeout=10, onosStartTimeout=60, waitForStart=False ):
         """
         karafTimeout is an optional argument. karafTimeout value passed
         by user would be used to set the current karaf shell idle timeout.
@@ -257,8 +257,12 @@ class OnosCliDriver( CLI ):
                 main.log.info( "ONOS cli is already running" )
                 return main.TRUE
 
-            # Wait for onos start ( -w ) and enter onos cli
-            self.handle.sendline( "onos -w " + str( ONOSIp ) )
+            if waitForStart:
+                # Wait for onos start ( -w ) and enter onos cli
+                startCliCommand = "onos -w "
+            else:
+                startCliCommand = "onos "
+            self.handle.sendline( startCliCommand + str( ONOSIp ) )
             i = self.handle.expect( [
                 "onos>",
                 pexpect.TIMEOUT ], onosStartTimeout )
@@ -271,14 +275,14 @@ class OnosCliDriver( CLI ):
                                  sshIdleTimeout " +
                         karafTimeout )
                     self.handle.expect( "\$" )
-                    self.handle.sendline( "onos -w " + str( ONOSIp ) )
+                    self.handle.sendline( startCliCommand + str( ONOSIp ) )
                     self.handle.expect( "onos>" )
                 return main.TRUE
             else:
                 # If failed, send ctrl+c to process and try again
                 main.log.info( "Starting CLI failed. Retrying..." )
                 self.handle.send( "\x03" )
-                self.handle.sendline( "onos -w " + str( ONOSIp ) )
+                self.handle.sendline( startCliCommand + str( ONOSIp ) )
                 i = self.handle.expect( [ "onos>", pexpect.TIMEOUT ],
                                         timeout=30 )
                 if i == 0:
@@ -290,7 +294,7 @@ class OnosCliDriver( CLI ):
                                     sshIdleTimeout " +
                             karafTimeout )
                         self.handle.expect( "\$" )
-                        self.handle.sendline( "onos -w " + str( ONOSIp ) )
+                        self.handle.sendline( startCliCommand + str( ONOSIp ) )
                         self.handle.expect( "onos>" )
                     return main.TRUE
                 else:

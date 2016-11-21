@@ -155,6 +155,12 @@ class FUNCvirNetNB:
                      onfail="ONOS startup failed" )
         time.sleep( main.startUpSleep )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=main.nodes[0].ip_address )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+
         main.step( "Starting ONOS CLI sessions" )
 
         print main.nodes[0].ip_address

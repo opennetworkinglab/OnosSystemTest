@@ -129,11 +129,13 @@ class SCPFflowTp1g:
                 main.log.report( "ONOS " + str(node) + " didn't start!" )
 
         for node in range(1, clusterCount + 1):
+            secureSshResult = main.ONOSbench.onosSecureSSH( ONOSIp[node] )
             exec "a = main.ONOS%scli.startOnosCli" %str(node)
             a(ONOSIp[node])
 
         main.log.info("Startup sequence complete")
         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
+
     def CASE2( self, main ):
         #
         # This is the flow TP test

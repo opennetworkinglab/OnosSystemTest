@@ -64,13 +64,17 @@ class SDNIPperf:
         if not onos1Isup:
             main.log.report( "ONOS1 didn't start!" )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
+
         cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
                 commandlineTimeout=100, onosStartTimeout=600)
 
         case1Result = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and
                         onos1InstallResult and
-                        onos1Isup and cliResult )
+                        onos1Isup and secureSshResult and
+                        cliResult )
 
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="ONOS startup successful",

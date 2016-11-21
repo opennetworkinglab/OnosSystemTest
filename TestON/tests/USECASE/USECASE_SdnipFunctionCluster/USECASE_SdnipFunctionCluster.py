@@ -150,6 +150,15 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="ONOS nodes are up",
                                  onfail="ONOS nodes are NOT up" )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
+        secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=ONOS2Ip )
+        secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=ONOS3Ip )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=secureSshResult,
+                                 onpass="Set up ONOS secure SSH succeeded",
+                                 onfail="Set up ONOS secure SSH failed " )
+
         main.step( "Checking if ONOS CLI is ready" )
         main.CLIs = []
         cliResult1 = main.ONOScli1.startOnosCli( ONOS1Ip,

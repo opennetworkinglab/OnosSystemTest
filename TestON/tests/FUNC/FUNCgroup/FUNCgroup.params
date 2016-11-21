@@ -1,0 +1,66 @@
+
+<PARAMS>
+    # CASE - Description
+    # 1    - Variable initialization and optional pull and build ONOS package
+    # 2    - install ONOS
+    # 3    - Start mininet and verify topology
+    # 4    - Testing Scapy
+    # 5    - Testing GROUP with type "ALL"
+    # 6    - Deleting the Group and Flow
+    # 7    - Testing GROUP with type "INDIRECT"
+    # 8    - Deleting the group and flow
+    # 100  - Check logs for Errors and Warnings
+    <testcases>1,2,3,5,6,7,8,100</testcases>
+
+    <SCALE>
+        <max>1</max>
+    </SCALE>
+
+    <DEBUG>on</DEBUG>
+
+    <DEPENDENCY>
+        <path>/tests/FUNC/FUNCgroup/dependencies/</path>
+        <wrapper1>startUp</wrapper1>
+        <wrapper2>topo</wrapper2>
+        <topology>topo-group.py</topology>
+        <bucket>group-bucket</bucket>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,openflow</cellApps>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <TEST>
+     <swDPID>of:0000000000000001</swDPID>
+     <waitTime>200</waitTime>
+     <appCookie>0x1234abcd</appCookie>
+     <type1>ALL</type1>
+     <type2>INDIRECT</type2>
+     <groupId>1</groupId>
+     <priority>38000</priority>
+     <ingressPort>1</ingressPort>
+     <egressPort1>2</egressPort1>
+     <egressPort2>3</egressPort2>
+     <egressPort3>4</egressPort3>
+    </TEST>
+
+    <SLEEP>
+        <startup>15</startup>
+        <startMN>5</startMN>
+        <addFlow>10</addFlow>
+        <delFlow>10</delFlow>
+        <addGroup>10</addGroup>
+        <delGroup>10</delGroup>
+    </SLEEP>
+
+</PARAMS>

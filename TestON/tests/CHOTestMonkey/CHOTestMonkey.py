@@ -201,7 +201,7 @@ class CHOTestMonkey:
                                                            "true" )
             time.sleep( setIPv6CfgSleep )
             cfgResult2 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider",
-                                                           "ipv6NeighborDiscovery",
+                                                           "useIpv6ND",
                                                            "true" )
         else:
             main.log.info( "Skipped setting IPv6 cfg parameters as it is disabled in params file" )

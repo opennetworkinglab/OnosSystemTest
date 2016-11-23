@@ -128,7 +128,7 @@ class FUNCbgpls:
 
         main.step( "Installing ONOS package" )
         onosInstallResult = main.ONOSbench.onosInstall(
-                options="-f", node=main.nodes[0].ip_address )
+                options="-f", node=main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
                                  onpass="ONOS install successful",
                                  onfail="ONOS install failed" )
@@ -136,7 +136,7 @@ class FUNCbgpls:
         main.step( "Checking if ONOS is up yet" )
         print main.nodes[0].ip_address
         for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( main.nodes[0].ip_address )
+            onos1Isup = main.ONOSbench.isup( main.nodes[ 0 ].ip_address )
             if onos1Isup:
                 break
         utilities.assert_equals( expect=main.TRUE, actual=onos1Isup,
@@ -144,14 +144,14 @@ class FUNCbgpls:
                                  onfail="ONOS startup failed" )
 
         main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.ONOSbench.onosSecureSSH( node=main.nodes[0].ip_address )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
+                                     onpass="Test step PASS",
+                                     onfail="Test step FAIL" )
 
         main.step( "Starting ONOS CLI sessions" )
-        print main.nodes[0].ip_address
-        cliResults = main.ONOScli1.startOnosCli( main.nodes[0].ip_address )
+        print main.nodes[ 0 ].ip_address
+        cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
@@ -160,8 +160,8 @@ class FUNCbgpls:
         appCheck = main.ONOScli1.appToIDCheck()
 
         if appCheck !=main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[ 0 ].apps() )
+            main.log.warn( main.CLIs[ 0 ].appIDs() )
             utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -249,8 +249,8 @@ class FUNCbgpls:
         bgplsConfig.Comments()
 
         print (bgpls_post)
-        main.ONOSrest.user_name = "karaf"
-        main.ONOSrest.pwd = "karaf"
+        main.ONOSrest.user_name = "onos"
+        main.ONOSrest.pwd = "rocks"
         Poststatus, result = main.ONOSrest.send( '/network/configuration/', method="POST", data=bgpls_post)
         main.step( "Configure BGP through RESTCONF" )
 

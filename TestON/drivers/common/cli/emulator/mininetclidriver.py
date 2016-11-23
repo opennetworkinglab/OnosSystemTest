@@ -587,7 +587,7 @@ class MininetCliDriver( Emulator ):
                 main.log.info( self.name + ": no packets lost, host is reachable" )
                 return main.TRUE
             else:
-                main.log.error(
+                main.log.info(
                     self.name +
                     ": PACKET LOST, HOST IS NOT REACHABLE" )
                 return main.FALSE
@@ -636,7 +636,7 @@ class MininetCliDriver( Emulator ):
                 main.log.info( self.name + ": no packets lost, host is reachable" )
                 return main.TRUE
             else:
-                main.log.error(
+                main.log.info(
                     self.name +
                     ": PACKET LOST, HOST IS NOT REACHABLE" )
                 return main.FALSE
@@ -1603,7 +1603,7 @@ class MininetCliDriver( Emulator ):
             main.log.info( self.name + ": Ping between two hosts SUCCESSFUL" )
             return main.TRUE
         else:
-            main.log.error( self.name + ": PACKET LOST, HOSTS NOT REACHABLE" )
+            main.log.info( self.name + ": PACKET LOST, HOSTS NOT REACHABLE" )
             return main.FALSE
 
     def link( self, **linkargs ):

@@ -4,6 +4,7 @@
 
     #Environment variables
     <ENV>
+        #Cells that you use
         <cellName>sdnip_single</cellName>
         <appString>drivers,openflow,proxyarp</appString>
     </ENV>
@@ -21,14 +22,14 @@
     </DEPENDENCY>
 
     <config>
-        <peerNum> 3 </peerNum>
+        <peerNum> 7 </peerNum>
         <switchNum> 39 </switchNum>
     </config>
 
     <timers>
         <SdnIpSetup>10</SdnIpSetup>
         <TopoDiscovery>60</TopoDiscovery>
-        <PingTestWithRoutes>20</PingTestWithRoutes>
+        <PingTestWithRoutes>30</PingTestWithRoutes>
         <PingTestWithoutRoutes>100</PingTestWithoutRoutes>
         <RouteDelivery>60</RouteDelivery>
         <PathAvailable>20</PathAvailable>

@@ -258,7 +258,7 @@ class FUNCipv6Intent:
 
         main.step( "setup the ipv6NeighbourDiscovery" )
         cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
-        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "ipv6NeighborDiscovery", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
         cfgResult = cfgResult1 and cfgResult2
         utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
                                 onpass="ipv6NeighborDiscovery cfg is set to true",

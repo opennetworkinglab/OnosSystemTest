@@ -58,7 +58,7 @@ def createConfig( main ):
     main.cfgJson = '{ "devices":{ "netconf:'+ main.configDeviceIp + ":" +\
                     main.configDevicePort + '":' + '{ "basic":{ "driver":"'+\
                     main.configDriver + '" } } }, "apps": { "' +\
-                    main.configApps + '":{ "devices":[ { "name":' +\
+                    main.configApps + '":{ "devices":[ { "username":' +\
                     main.configName + ', "password":' + main.configPass +\
                     ', "ip":"' + main.configDeviceIp + '", "port":' +\
                     main.configPort + '} ] } } }'

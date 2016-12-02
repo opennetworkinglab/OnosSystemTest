@@ -4,7 +4,7 @@
             "devices": [
                 {
                     "ip": "10.128.50.10",
-                    "name": "sdn",
+                    "username": "sdn",
                     "password": "rocks",
                     "port": 830
                 }

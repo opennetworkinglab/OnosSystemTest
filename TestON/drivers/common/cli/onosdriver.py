@@ -727,7 +727,7 @@ class OnosDriver( CLI ):
             main.exit()
 
     def createCellFile( self, benchIp, fileName, mnIpAddrs,
-                        appString, onosIpAddrs, onosUser="sdn", useSSH=False ):
+                        appString, onosIpAddrs, onosUser="sdn", useSSH=True ):
         """
         Creates a cell file based on arguments
         Required:
@@ -762,7 +762,6 @@ class OnosDriver( CLI ):
         appString = "export ONOS_APPS=" + appString
         onosGroup = "export ONOS_GROUP=" + onosUser
         onosUser = "export ONOS_USER=" + onosUser
-        # FIXME: unset ONOS_USE_SSH when not using SSH?
         if useSSH:
             onosUseSSH = "export ONOS_USE_SSH=true"
         mnString = "export OCN="

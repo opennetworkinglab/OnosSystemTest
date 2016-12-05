@@ -4139,11 +4139,11 @@ class OnosCliDriver( CLI ):
                 match = re.search( pattern, output )
             else:  # if given values
                 if length == 1:  # Contains output
-                    patternTrue = pattern + "\n" + containsTrue
-                    patternFalse = pattern + "\n" + containsFalse
+                    patternTrue = pattern + "\r\n" + containsTrue
+                    patternFalse = pattern + "\r\n" + containsFalse
                 else:  # ContainsAll output
-                    patternTrue = pattern + "\n" + containsAllTrue
-                    patternFalse = pattern + "\n" + containsAllFalse
+                    patternTrue = pattern + "\r\n" + containsAllTrue
+                    patternFalse = pattern + "\r\n" + containsAllFalse
                 matchTrue = re.search( patternTrue, output )
                 matchFalse = re.search( patternFalse, output )
                 if matchTrue:

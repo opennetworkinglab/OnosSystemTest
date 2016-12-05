@@ -2,8 +2,9 @@
 
 import os
 import re
+import math
 from optparse import OptionParser
-
+from ipaddress import IPv6Network, IPv4Network
 from mininet.net import Mininet
 from mininet.topo import Topo
 from mininet.node import RemoteController, UserSwitch, Host, OVSBridge
@@ -26,12 +27,77 @@ def parseOptions( ):
                        help='number of ONOS Instances, default=0, 0 means localhost, 1 will use OC1 and so on' )
     parser.add_option( '--vlan', dest='vlan', type='int', default=-1,
                        help='vid of cross connect, default=-1, -1 means utilize default value' )
+    parser.add_option( '--ipv6', action="store_true", dest='ipv6',
+                       help='hosts are capable to use also ipv6' )
     (options, args) = parser.parse_args( )
     return options, args
 
 
 opts, args = parseOptions( )
 
+IP6_SUBNET_CLASS = 120
+IP4_SUBNET_CLASS = 24
+
+class LeafAndSpine6( Topo ):
+    """
+    Create Leaf and Spine Topology for IPv4/IPv6 tests.
+    """
+    def __init__( self, spine=2, leaf=2, fanout=2, **opts ):
+        Topo.__init__( self, **opts )
+        spines          = {}
+        leafs           = {}
+        """
+        We calculate the offset from /120 and from /24 in order to have
+        a number of /120 and /24 subnets == leaf
+        """
+        offset          = int(math.ceil(math.sqrt( leaf )))
+        """
+        We calculate the subnets to use and set options
+        """
+        ipv6SubnetClass = unicode('2000::/%s' % (IP6_SUBNET_CLASS - offset))
+        ipv6Subnets     = list(IPv6Network(ipv6SubnetClass).subnets( new_prefix = IP6_SUBNET_CLASS ))
+        ipv4SubnetClass = unicode('10.0.0.0/%s' % (IP4_SUBNET_CLASS - offset))
+        ipv4Subnets     = list(IPv4Network(ipv4SubnetClass).subnets( new_prefix = IP4_SUBNET_CLASS ))
+        linkopts        = dict( bw=100 )
+        """
+        We create the spine switches
+        """
+        for s in range( spine ):
+            spines[ s ] = self.addSwitch( 'spine10%s' % (s + 1),
+                                          dpid="00000000010%s" % (s + 1) )
+        """
+        We create the leaf switches
+        """
+        for ls in range( leaf ):
+            leafs[ ls ] = self.addSwitch( 'leaf%s' % (ls + 1),
+                                          dpid="00000000000%s" % (1 + ls) )
+            ipv6Subnet  = ipv6Subnets[ ls ]
+            ipv6Hosts   = list(ipv6Subnet.hosts())
+            ipv4Subnet  = ipv4Subnets[ ls ]
+            ipv4Hosts   = list(ipv4Subnet.hosts())
+            """
+            We add the hosts
+            """
+            for f in range( fanout ):
+                ipv6 = ipv6Hosts[ f ]
+                ipv6Gateway = ipv6Hosts[ len( ipv6Hosts ) - 1 ]
+                ipv4 = ipv4Hosts[ f ]
+                ipv4Gateway = ipv4Hosts[ len( ipv4Hosts ) - 1 ]
+                host = self.addHost(
+                    name='h%s' % (ls * fanout + f + 1),
+                    cls=Ipv6Host,
+                    ip="%s/%s" %(ipv4, IP4_SUBNET_CLASS),
+                    gateway='%s' % ipv4Gateway,
+                    ipv6="%s/%s" %(ipv6, IP6_SUBNET_CLASS),
+                    ipv6Gateway="%s" % ipv6Gateway
+                    )
+                self.addLink( host, leafs[ ls ], **linkopts )
+            """
+            Connect leaf to all spines
+            """
+            for s in range( spine ):
+                switch = spines[ s ]
+                self.addLink( leafs[ ls ], switch, **linkopts )
 
 class LeafAndSpine( Topo ):
     def __init__( self, spine=2, leaf=2, fanout=2, **opts ):
@@ -92,6 +158,22 @@ class IpHost( Host ):
         self.cmd( mtu )
         self.cmd( 'ip route add default via %s' % self.gateway )
 
+class Ipv6Host( IpHost ):
+    """
+    Abstraction to model an augmented host with a ipv6
+    functionalities as well
+    """
+    def __init__( self, name, *args, **kwargs ):
+        IpHost.__init__(self, name, *args, **kwargs)
+
+    def config( self, **kwargs ):
+        IpHost.config( self, **kwargs )
+        ipv6Cmd         = 'ifconfig %s-eth0 inet6 add %s' % (self.name, kwargs['ipv6'])
+        ipv6GatewayCmd  = 'ip -6 route add default via %s' % kwargs['ipv6Gateway']
+        ipv6MtuCmd      = 'ifconfig %s-eth0 inet6 mtu 1490' % (self.name)
+        self.cmd( ipv6Cmd )
+        self.cmd( ipv6GatewayCmd )
+        self.cmd( ipv6MtuCmd )
 
 class VLANHost( Host ):
     "Host connected to VLAN interface"
@@ -143,15 +225,34 @@ class ExtendedCLI( CLI ):
         link = self.mn.addLink( host, switch )
         host.config(**params)
 
+    def do_pingall6( self, line ):
+        "Ping6 between all hosts."
+        self.mn.pingAll6( line )
+
 def config( opts ):
     spine = opts.spine
     leaf = opts.leaf
     fanout = opts.fanout
     vlan = opts.vlan
+    ipv6 = opts.ipv6
     controllers = [ os.environ[ 'OC%s' % i ] for i in
                     range( 1, opts.onos + 1 ) ] if (opts.onos) else [
         '127.0.0.1' ]
-    topo = LeafAndSpine( spine=spine, leaf=leaf, fanout=fanout, vlan=vlan )
+    if not ipv6:
+        topo = LeafAndSpine(
+            spine=spine,
+            leaf=leaf,
+            fanout=fanout,
+            vlan=vlan,
+            )
+    else:
+        topo = LeafAndSpine6(
+            spine=spine,
+            leaf=leaf,
+            fanout=fanout,
+            vlan=vlan,
+            ipv6=ipv6
+            )
     net = Mininet( topo=topo, link=TCLink, build=False,
                    switch=UserSwitch, controller=None, autoSetMacs=True )
     i = 0
@@ -160,11 +261,11 @@ def config( opts ):
         i += 1;
     net.build( )
     net.start( )
-    out1 = net.get( 'out1' )
-    out1.cmd( "arp -s 10.0.9.254 10:00:00:00:00:01 -i %s " % (out1.intf()) )
-    CLI(net)
+    if not ipv6:
+        out1 = net.get( 'out1' )
+        out1.cmd( "arp -s 10.0.9.254 10:00:00:00:00:01 -i %s " % (out1.intf()) )
+    ExtendedCLI(net)
     net.stop( )
-
 
 if __name__ == '__main__':
     setLogLevel( 'info' )

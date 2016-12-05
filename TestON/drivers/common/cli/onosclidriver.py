@@ -249,14 +249,15 @@ class OnosCliDriver( CLI ):
         """
         self.onosIp = ONOSIp
         try:
+            # Check if we are already in the cli
             self.handle.sendline( "" )
             x = self.handle.expect( [
                 "\$", "onos>" ], commandlineTimeout)
-
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
                 return main.TRUE
 
+            # Not in CLI so login
             if waitForStart:
                 # Wait for onos start ( -w ) and enter onos cli
                 startCliCommand = "onos -w "
@@ -4102,7 +4103,7 @@ class OnosCliDriver( CLI ):
             containsCheck = None
             # Patterns to match
             setPattern = "\[(.*)\]"
-            pattern = "Items in set " + setName + ":\n" + setPattern
+            pattern = "Items in set " + setName + ":\r\n" + setPattern
             containsTrue = "Set " + setName + " contains the value " + values
             containsFalse = "Set " + setName + " did not contain the value " +\
                             values
@@ -4204,7 +4205,7 @@ class OnosCliDriver( CLI ):
             setName = str( setName ).strip()
             # Patterns to match
             setPattern = "\[(.*)\]"
-            pattern = "There are (\d+) items in set " + setName + ":\n" +\
+            pattern = "There are (\d+) items in set " + setName + ":\r\n" +\
                           setPattern
             cmdStr = "set-test-get -s "
             cmdStr += setName

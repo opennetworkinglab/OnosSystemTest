@@ -63,7 +63,7 @@ def compareTimeDiffWithRoleRequest(main, term, Mode, index=0 ):
             main.writeData = -1
             main.log.error( "Can't compare the difference with role request time" )
             return -1
-	# Only concern about the absolute value of difference.
+        # Only concern about the absolute value of difference.
         return abs( roleRequestTime - termTime )
     except IndexError:
         main.log.error( "Catch the wrong information of search term " )

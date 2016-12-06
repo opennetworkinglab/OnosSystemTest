@@ -6,11 +6,11 @@
     # 10-null provider setup
     # 20-pushing intents, and rerouting intents if reroute is true
     # 0,1,2,10,20,1,2,10,20,1,2,10,20
-   <testcases>0,1,2,11,20,1,2,11,20,1,2,11,20</testcases>
+   <testcases>0,1,2,11,20,1,2,11,20,1,2,11,20,1,2,11,20</testcases>
 
     <reroute>False</reroute>
 
-    <SCALE>1,3,5</SCALE>
+    <SCALE>1,3,5,7</SCALE>
 
     <DEPENDENCY>
         <path>/tests/SCPF/SCPFscalingMaxIntents/dependencies/</path>

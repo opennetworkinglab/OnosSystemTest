@@ -1,9 +1,9 @@
 <PARAMS>
 
-    <testcases>0,1,2,1,2,1,2</testcases>
+    <testcases>0,1,2,1,2,1,2,1,2</testcases>
 
-    <SCALE>1,3,5</SCALE>
-    <max>5</max>
+    <SCALE>1,3,5,7</SCALE>
+    <max>7</max>
 
     <ENV>
         <cellName>intentRerouteCell</cellName>

@@ -318,7 +318,7 @@ class RemoteMininetDriver( Emulator ):
             main.lastResult = main.TRUE
             return main.TRUE
         else:
-            main.log.error(
+            main.log.info(
                 self.name +
                 ": PACKET LOST, HOST IS NOT REACHABLE" )
             main.lastResult = main.FALSE
@@ -345,7 +345,7 @@ class RemoteMininetDriver( Emulator ):
                 main.lastResult = main.TRUE
                 return main.TRUE
             else:
-                main.log.error( "PACKET LOST, HOST IS NOT REACHABLE" )
+                main.log.info( "PACKET LOST, HOST IS NOT REACHABLE" )
                 main.lastResult = main.FALSE
                 return main.FALSE
         except pexpect.EOF:

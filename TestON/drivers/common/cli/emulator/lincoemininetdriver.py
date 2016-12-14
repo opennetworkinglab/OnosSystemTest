@@ -130,7 +130,7 @@ class LincOEMininetDriver( MininetCliDriver ):
             main.lastResult = main.TRUE
             return main.TRUE
         else:
-            main.log.error(
+            main.log.info(
                 self.name +
                 ": PACKET LOST, HOST IS NOT REACHABLE" )
             main.lastResult = main.FALSE

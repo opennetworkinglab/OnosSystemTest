@@ -10,7 +10,6 @@ class USECASE_SdnipFunction:
             Start mininet
         """
         import os
-        import imp
         main.case( "Setup the Mininet testbed" )
         main.dependencyPath = main.testDir + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
@@ -69,10 +68,8 @@ class USECASE_SdnipFunction:
            onos-install -f
            onos-wait-for-start
         """
-        import json
         import time
         import os
-        from operator import eq
 
         main.case( "Setting up ONOS environment" )
 
@@ -200,6 +197,9 @@ class USECASE_SdnipFunction:
             main.exit()
 
     def CASE200( self, main ):
+        import json
+        import time
+
         main.case( "Activate sdn-ip application" )
         main.log.info( "waiting link discovery......" )
         time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
@@ -242,6 +242,8 @@ class USECASE_SdnipFunction:
         '''
         This test case is to load the methods from other Python files.
         '''
+        import imp
+
         main.case( "Loading methods from other Python file" )
         # load the methods from other file
         wrapperFile = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
@@ -253,20 +255,29 @@ class USECASE_SdnipFunction:
 
     def CASE1( self, main ):
         '''
-        ping test from 3 bgp peers to BGP speaker
+        ping test from 7 bgp peers to BGP speaker
         '''
 
         main.case( "Ping tests between BGP peers and speakers" )
-        main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
-                       peers=["peer64514", "peer64515", "peer64516"],
-                       expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk1" ],
+                                          peers=[ "p64514", "p64515", "p64516" ],
+                                          expectAllSuccess=True )
 
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk2" ],
+                                          peers=[ "p64517", "p64518" ],
+                                          expectAllSuccess=True )
+
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk3" ],
+                                          peers=[ "p64519", "p64520" ],
+                                          expectAllSuccess=True )
 
     def CASE2( self, main ):
         '''
         point-to-point intents test for each BGP peer and BGP speaker pair
         '''
         import time
+        from operator import eq
+
         main.case( "Check point-to-point intents" )
         main.log.info( "There are %s BGP peers in total "
                        % main.params[ 'config' ][ 'peerNum' ] )
@@ -304,6 +315,11 @@ class USECASE_SdnipFunction:
         allRoutesExpected.append( "5.0.0.0/24" + "/" + "10.0.5.1" )
         allRoutesExpected.append( "6.0.0.0/24" + "/" + "10.0.6.1" )
 
+        allRoutesExpected.append( "7.0.0.0/24" + "/" + "10.0.7.1" )
+        allRoutesExpected.append( "8.0.0.0/24" + "/" + "10.0.8.1" )
+        allRoutesExpected.append( "9.0.0.0/24" + "/" + "10.0.9.1" )
+        allRoutesExpected.append( "20.0.0.0/24" + "/" + "10.0.20.1" )
+
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
         allRoutesActual = \
             main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
@@ -330,7 +346,7 @@ class USECASE_SdnipFunction:
         getIntentsResult = main.ONOScli.intents( jsonFormat=True )
         routeIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
-        routeIntentsExpectedNum = 3
+        routeIntentsExpectedNum = 7
         if routeIntentsActualNum != routeIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
             getIntentsResult = main.ONOScli.intents( jsonFormat=True )
@@ -364,10 +380,19 @@ class USECASE_SdnipFunction:
         Ping test in data plane for each route
         '''
         main.case( "Ping test for each route, all hosts behind BGP peers" )
+        #No vlan
         main.Functions.pingHostToHost( main,
-                        hosts=["host64514", "host64515", "host64516"],
-                        expectAllSuccess=True )
+                                       hosts=[ "h64514", "h64515", "h64516" ],
+                                       expectAllSuccess=True )
+        #vlan 10
+        main.Functions.pingHostToHost( main,
+                                       hosts=[ "h64519", "h64520" ],
+                                       expectAllSuccess=True )
 
+        # vlan 20
+        main.Functions.pingHostToHost( main,
+                                       hosts=[ "h64517", "h64518" ],
+                                       expectAllSuccess=True )
 
     def CASE5( self, main ):
         '''
@@ -375,8 +400,8 @@ class USECASE_SdnipFunction:
         '''
         import time
         main.case( "Bring down links and check routes/intents" )
-        main.step( "Bring down the link between sw32 and peer64514" )
-        linkResult1 = main.Mininet.link( END1="sw32", END2="peer64514",
+        main.step( "Bring down the link between sw32 and p64514" )
+        linkResult1 = main.Mininet.link( END1="sw32", END2="p64514",
                                          OPTION="down" )
         utilities.assertEquals( expect=main.TRUE,
                                 actual=linkResult1,
@@ -385,15 +410,15 @@ class USECASE_SdnipFunction:
 
         if linkResult1 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 2 )
-            main.Functions.checkM2SintentNum( main, 2 )
+            main.Functions.checkRouteNum( main, 6 ) #We have 7 links between peers and sw. After one link down, 7-1=6.
+            main.Functions.checkM2SintentNum( main, 6 )
         else:
             main.log.error( "Bring down link failed!" )
             main.cleanup()
             main.exit()
 
-        main.step( "Bring down the link between sw8 and peer64515" )
-        linkResult2 = main.Mininet.link( END1="sw8", END2="peer64515",
+        main.step( "Bring down the link between sw8 and p64515" )
+        linkResult2 = main.Mininet.link( END1="sw8", END2="p64515",
                                          OPTION="down" )
         utilities.assertEquals( expect=main.TRUE,
                                 actual=linkResult2,
@@ -401,15 +426,15 @@ class USECASE_SdnipFunction:
                                 onfail="Bring down link failed!" )
         if linkResult2 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 1 )
-            main.Functions.checkM2SintentNum( main, 1 )
+            main.Functions.checkRouteNum( main, 5 ) #2 links down, 7-2=5.
+            main.Functions.checkM2SintentNum( main, 5 )
         else:
             main.log.error( "Bring down link failed!" )
             main.cleanup()
             main.exit()
 
-        main.step( "Bring down the link between sw28 and peer64516" )
-        linkResult3 = main.Mininet.link( END1="sw28", END2="peer64516",
+        main.step( "Bring down the link between sw28 and p64516" )
+        linkResult3 = main.Mininet.link( END1="sw28", END2="p64516",
                                          OPTION="down" )
         utilities.assertEquals( expect=main.TRUE,
                                 actual=linkResult3,
@@ -417,8 +442,8 @@ class USECASE_SdnipFunction:
                                 onfail="Bring down link failed!" )
         if linkResult3 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 0 )
-            main.Functions.checkM2SintentNum( main, 0 )
+            main.Functions.checkRouteNum( main, 4 ) #3 links downs 7-3=4
+            main.Functions.checkM2SintentNum( main, 4 )
         else:
             main.log.error( "Bring down link failed!" )
             main.cleanup()
@@ -436,12 +461,13 @@ class USECASE_SdnipFunction:
             onfail="Flow status is wrong!" )
 
         # Ping test
-        main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
-                       peers=["peer64514", "peer64515", "peer64516"],
-                       expectAllSuccess=False )
+        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
+                                          peers=["p64514", "p64515", "p64516"],
+                                          expectAllSuccess=False )
+
         main.Functions.pingHostToHost( main,
-                        hosts=["host64514", "host64515", "host64516"],
-                        expectAllSuccess=False )
+                                       hosts=["h64514", "h64515", "h64516"],
+                                       expectAllSuccess=False )
 
 
     def CASE6( self, main ):
@@ -450,8 +476,8 @@ class USECASE_SdnipFunction:
         '''
         import time
         main.case( "Bring up links and check routes/intents" )
-        main.step( "Bring up the link between sw32 and peer64514" )
-        linkResult1 = main.Mininet.link( END1="sw32", END2="peer64514",
+        main.step( "Bring up the link between sw32 and p64514" )
+        linkResult1 = main.Mininet.link( END1="sw32", END2="p64514",
                                          OPTION="up" )
         utilities.assertEquals( expect=main.TRUE,
                                 actual=linkResult1,
@@ -459,15 +485,15 @@ class USECASE_SdnipFunction:
                                 onfail="Bring up link failed!" )
         if linkResult1 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 1 )
-            main.Functions.checkM2SintentNum( main, 1 )
+            main.Functions.checkRouteNum( main, 5 ) #one links up, 4+1=5
+            main.Functions.checkM2SintentNum( main, 5 )
         else:
             main.log.error( "Bring up link failed!" )
             main.cleanup()
             main.exit()
 
-        main.step( "Bring up the link between sw8 and peer64515" )
-        linkResult2 = main.Mininet.link( END1="sw8", END2="peer64515",
+        main.step( "Bring up the link between sw8 and p64515" )
+        linkResult2 = main.Mininet.link( END1="sw8", END2="p64515",
                                          OPTION="up" )
         utilities.assertEquals( expect=main.TRUE,
                                 actual=linkResult2,
@@ -475,15 +501,15 @@ class USECASE_SdnipFunction:
                                 onfail="Bring up link failed!" )
         if linkResult2 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 2 )
-            main.Functions.checkM2SintentNum( main, 2 )
+            main.Functions.checkRouteNum( main, 6 )
+            main.Functions.checkM2SintentNum( main, 6 )
         else:
             main.log.error( "Bring up link failed!" )
             main.cleanup()
             main.exit()
 
-        main.step( "Bring up the link between sw28 and peer64516" )
-        linkResult3 = main.Mininet.link( END1="sw28", END2="peer64516",
+        main.step( "Bring up the link between sw28 and p64516" )
+        linkResult3 = main.Mininet.link( END1="sw28", END2="p64516",
                                          OPTION="up" )
         utilities.assertEquals( expect=main.TRUE,
                                 actual=linkResult3,
@@ -491,8 +517,8 @@ class USECASE_SdnipFunction:
                                 onfail="Bring up link failed!" )
         if linkResult3 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 3 )
-            main.Functions.checkM2SintentNum( main, 3 )
+            main.Functions.checkRouteNum( main, 7 )
+            main.Functions.checkM2SintentNum( main, 7 )
         else:
             main.log.error( "Bring up link failed!" )
             main.cleanup()
@@ -510,11 +536,11 @@ class USECASE_SdnipFunction:
             onfail="Flow status is wrong!" )
 
         # Ping test
-        main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
-                       peers=["peer64514", "peer64515", "peer64516"],
+        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
+                       peers=["p64514", "p64515", "p64516"],
                        expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["host64514", "host64515", "host64516"],
+                        hosts=["h64514", "h64515", "h64516"],
                         expectAllSuccess=True )
 
 
@@ -532,18 +558,18 @@ class USECASE_SdnipFunction:
 
         if result == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 2 )
-            main.Functions.checkM2SintentNum( main, 2 )
-            main.Functions.checkP2PintentNum( main, 12 )
+            main.Functions.checkRouteNum( main, 6 ) #stop one sw, which bring one link between peer and sw down.
+            main.Functions.checkM2SintentNum( main, 6 )
+            main.Functions.checkP2PintentNum( main, 36 ) #6 intents from sw to speakers x 6 intents to sw x 2 intents between them
         else:
             main.log.error( "Stopping switch failed!" )
             main.cleanup()
             main.exit()
 
         main.step( "Check ping between hosts behind BGP peers" )
-        result1 = main.Mininet.pingHost( src="host64514", target="host64515" )
-        result2 = main.Mininet.pingHost( src="host64515", target="host64516" )
-        result3 = main.Mininet.pingHost( src="host64514", target="host64516" )
+        result1 = main.Mininet.pingHost( src="h64514", target="h64515" )
+        result2 = main.Mininet.pingHost( src="h64515", target="h64516" )
+        result3 = main.Mininet.pingHost( src="h64514", target="h64516" )
 
         pingResult1 = ( result1 == main.FALSE ) and ( result2 == main.TRUE ) \
                                                 and ( result3 == main.FALSE )
@@ -556,9 +582,9 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check ping between BGP peers and speakers" )
-        result4 = main.Mininet.pingHost( src="speaker1", target="peer64514" )
-        result5 = main.Mininet.pingHost( src="speaker1", target="peer64515" )
-        result6 = main.Mininet.pingHost( src="speaker1", target="peer64516" )
+        result4 = main.Mininet.pingHost( src="spk1", target="p64514" )
+        result5 = main.Mininet.pingHost( src="spk1", target="p64515" )
+        result6 = main.Mininet.pingHost( src="spk1", target="p64516" )
 
         pingResult2 = ( result4 == main.FALSE ) and ( result5 == main.TRUE ) \
                                                 and ( result6 == main.TRUE )
@@ -606,9 +632,9 @@ class USECASE_SdnipFunction:
 
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 3 )
-            main.Functions.checkM2SintentNum( main, 3 )
-            main.Functions.checkP2PintentNum( main, 18 )
+            main.Functions.checkRouteNum( main, 7 )
+            main.Functions.checkM2SintentNum( main, 7 )
+            main.Functions.checkP2PintentNum( main, 42 )
         else:
             main.log.error( "Starting switch failed!" )
             main.cleanup()
@@ -626,11 +652,11 @@ class USECASE_SdnipFunction:
             onfail="Flow status is wrong!" )
 
         # Ping test
-        main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
-                       peers=["peer64514", "peer64515", "peer64516"],
+        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
+                       peers=["p64514", "p64515", "p64516"],
                        expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["host64514", "host64515", "host64516"],
+                        hosts=["h64514", "h64515", "h64516"],
                         expectAllSuccess=True )
 
 
@@ -643,9 +669,9 @@ class USECASE_SdnipFunction:
         check route number, P2P intent number, M2S intent number, ping test" )
 
         main.log.info( "Check the flow number correctness before stopping sw11" )
-        main.Functions.checkFlowNum( main, "sw11", 13 )
+        main.Functions.checkFlowNum( main, "sw11", 43 )
         main.Functions.checkFlowNum( main, "sw1", 3 )
-        main.Functions.checkFlowNum( main, "sw7", 3 )
+        main.Functions.checkFlowNum( main, "sw7", 34 )
         main.log.debug( main.Mininet.checkFlows( "sw11" ) )
         main.log.debug( main.Mininet.checkFlows( "sw1" ) )
         main.log.debug( main.Mininet.checkFlows( "sw7" ) )
@@ -658,9 +684,9 @@ class USECASE_SdnipFunction:
         if result:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 3 )
-            main.Functions.checkM2SintentNum( main, 3 )
-            main.Functions.checkP2PintentNum( main, 18 )
+            main.Functions.checkRouteNum( main, 7 )
+            main.Functions.checkM2SintentNum( main, 7 )
+            main.Functions.checkP2PintentNum( main, 42 )
         else:
             main.log.error( "Stopping switch failed!" )
             main.cleanup()
@@ -677,11 +703,11 @@ class USECASE_SdnipFunction:
             onpass="Flow status is correct!",
             onfail="Flow status is wrong!" )
         # Ping test
-        main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
-                       peers=["peer64514", "peer64515", "peer64516"],
+        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
+                       peers=["p64514", "p64515", "p64516"],
                        expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["host64514", "host64515", "host64516"],
+                        hosts=["h64514", "h64515", "h64516"],
                         expectAllSuccess=True )
 
 
@@ -694,8 +720,8 @@ class USECASE_SdnipFunction:
         check route number, P2P intent number, M2S intent number, ping test" )
 
         main.log.info( "Check the flow status before starting sw11" )
-        main.Functions.checkFlowNum( main, "sw1", 11 )
-        main.Functions.checkFlowNum( main, "sw7", 5 )
+        main.Functions.checkFlowNum( main, "sw1", 33 )
+        main.Functions.checkFlowNum( main, "sw7", 28 )
         main.log.debug( main.Mininet.checkFlows( "sw1" ) )
         main.log.debug( main.Mininet.checkFlows( "sw7" ) )
 
@@ -710,9 +736,9 @@ class USECASE_SdnipFunction:
                                 onfail="Connect switch to ONOS failed!" )
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 3 )
-            main.Functions.checkM2SintentNum( main, 3 )
-            main.Functions.checkP2PintentNum( main, 18 )
+            main.Functions.checkRouteNum( main, 7 )
+            main.Functions.checkM2SintentNum( main, 7 )
+            main.Functions.checkP2PintentNum( main, 42 )
 
             main.log.debug( main.Mininet.checkFlows( "sw11" ) )
             main.log.debug( main.Mininet.checkFlows( "sw1" ) )
@@ -733,9 +759,9 @@ class USECASE_SdnipFunction:
             onpass="Flow status is correct!",
             onfail="Flow status is wrong!" )
         # Ping test
-        main.Functions.pingSpeakerToPeer( main, speakers=["speaker1"],
-                       peers=["peer64514", "peer64515", "peer64516"],
+        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
+                       peers=["p64514", "p64515", "p64516"],
                        expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["host64514", "host64515", "host64516"],
+                        hosts=["h64514", "h64515", "h64516"],
                         expectAllSuccess=True )

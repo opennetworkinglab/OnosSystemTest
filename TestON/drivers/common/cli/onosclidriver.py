@@ -3347,7 +3347,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def partitions( self, jsonFormat=True ):
+    def partitions( self, candidates=False, jsonFormat=True ):
         """
         Returns the output of the raft partitions command for ONOS.
         """
@@ -3364,6 +3364,8 @@ class OnosCliDriver( CLI ):
         # },
         try:
             cmdStr = "onos:partitions"
+            if candidates:
+                cmdStr += " -c"
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
@@ -4704,7 +4706,7 @@ class OnosCliDriver( CLI ):
             return main.TRUE
         except AssertionError:
             main.log.exception( "" )
-            return None
+            return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.FALSE
@@ -4788,7 +4790,7 @@ class OnosCliDriver( CLI ):
             return main.TRUE
         except AssertionError:
             main.log.exception( "" )
-            return None
+            return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.FALSE
@@ -4824,7 +4826,7 @@ class OnosCliDriver( CLI ):
             return main.TRUE
         except AssertionError:
             main.log.exception( "" )
-            return None
+            return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.FALSE
@@ -4838,20 +4840,22 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def portstate(self, dpid='of:0000000000000102', port='2', state='enable'):
+    def portstate( self, dpid, port, state ):
         '''
         Description:
              Changes the state of port in an OF switch by means of the
              PORTSTATUS OF messages.
         params:
-            dpid - (string) Datapath ID of the device
-            port - (string) target port in the device
-            state - (string) target state (enable or disabled)
+            dpid - (string) Datapath ID of the device. Ex: 'of:0000000000000102'
+            port - (string) target port in the device. Ex: '2'
+            state - (string) target state (enable or disable)
         returns:
             main.TRUE if no exceptions were thrown and no Errors are
             present in the resoponse. Otherwise, returns main.FALSE
         '''
         try:
+            state = state.lower()
+            assert state == 'enable' or state == 'disable', "Unknown state"
             cmd =  "portstate {} {} {}".format( dpid, port, state )
             response = self.sendline( cmd, showResponse=True )
             assert response is not None, "Error in sendline"
@@ -4862,7 +4866,7 @@ class OnosCliDriver( CLI ):
             return main.TRUE
         except AssertionError:
             main.log.exception( "" )
-            return None
+            return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.FALSE
@@ -5053,6 +5057,349 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def vplsShow( self, jsonFormat=True ):
+        """
+        Description: Returns result of onos:vpls show, which should list the
+                     configured VPLS networks and the assigned interfaces.
+        Optional:
+            * jsonFormat: enable json formatting of output
+        Returns:
+            The output of the command or None on error.
+        """
+        try:
+            cmdStr = "vpls show"
+            if jsonFormat:
+                raise NotImplementedError
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except NotImplementedError:
+            main.log.exception( self.name + ": Json output not supported")
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def parseVplsShow( self ):
+        """
+        Parse the cli output of 'vpls show' into json output. This is required
+        as there is currently no json output available.
+        """
+        try:
+            output = []
+            raw = self.vplsShow( jsonFormat=False )
+            namePat = "VPLS name: (?P<name>\w+)"
+            interfacesPat = "Associated interfaces: \[(?P<interfaces>.*)\]"
+            encapPat = "Encapsulation: (?P<encap>\w+)"
+            pattern = "\s+".join( [ namePat, interfacesPat, encapPat ] )
+            mIter = re.finditer( pattern, raw )
+            for match in mIter:
+                item = {}
+                item[ 'name' ] = match.group( 'name' )
+                ifaces = match.group( 'interfaces' ).split( ', ')
+                if ifaces == [ "" ]:
+                    ifaces = []
+                item[ 'interfaces' ] = ifaces
+                encap = match.group( 'encap' )
+                if encap != 'NONE':
+                    item[ 'encapsulation' ] = encap.lower()
+                output.append( item )
+            return output
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def vplsList( self, jsonFormat=True ):
+        """
+        Description: Returns result of onos:vpls list, which should list the
+                     configured VPLS networks.
+        Optional:
+            * jsonFormat: enable json formatting of output
+        """
+        try:
+            cmdStr = "vpls list"
+            if jsonFormat:
+                raise NotImplementedError
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except NotImplementedError:
+            main.log.exception( self.name + ": Json output not supported")
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def vplsCreate( self, network ):
+        """
+        CLI command to create a new VPLS network.
+        Required arguments:
+            network - String name of the network to create.
+        returns:
+            main.TRUE on success and main.FALSE on failure
+        """
+        try:
+            network = str( network )
+            cmdStr = "vpls create "
+            cmdStr += network
+            output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
+            assert "Command not found:" not in output, output
+            assert "Error executing command" not in output, output
+            assert "VPLS already exists:" not in output, output
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def vplsDelete( self, network ):
+        """
+        CLI command to delete a VPLS network.
+        Required arguments:
+            network - Name of the network to delete.
+        returns:
+            main.TRUE on success and main.FALSE on failure
+        """
+        try:
+            network = str( network )
+            cmdStr = "vpls delete "
+            cmdStr += network
+            output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
+            assert "Command not found:" not in output, output
+            assert "Error executing command" not in output, output
+            assert " not found" not in output, output
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def vplsAddIface( self, network, iface ):
+        """
+        CLI command to add an interface to a VPLS network.
+        Required arguments:
+            network - Name of the network to add the interface to.
+            iface - The ONOS name for an interface.
+        returns:
+            main.TRUE on success and main.FALSE on failure
+        """
+        try:
+            network = str( network )
+            iface = str( iface )
+            cmdStr = "vpls add-if "
+            cmdStr += network + " " + iface
+            output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
+            assert "Command not found:" not in output, output
+            assert "Error executing command" not in output, output
+            assert "already associated to network" not in output, output
+            assert "Interface cannot be added." not in output, output
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def vplsRemIface( self, network, iface ):
+        """
+        CLI command to remove an interface from a VPLS network.
+        Required arguments:
+            network - Name of the network to remove the interface from.
+            iface - Name of the interface to remove.
+        returns:
+            main.TRUE on success and main.FALSE on failure
+        """
+        try:
+            iface = str( iface )
+            cmdStr = "vpls rem-if "
+            cmdStr += network + " " + iface
+            output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
+            assert "Command not found:" not in output, output
+            assert "Error executing command" not in output, output
+            assert "is not configured" not in output, output
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def vplsClean( self ):
+        """
+        Description: Clears the VPLS app configuration.
+        Returns: main.TRUE on success and main.FALSE on failure
+        """
+        try:
+            cmdStr = "vpls clean"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def vplsSetEncap( self, network, encapType ):
+        """
+        CLI command to add an interface to a VPLS network.
+        Required arguments:
+            network - Name of the network to create.
+            encapType - Type of encapsulation.
+        returns:
+            main.TRUE on success and main.FALSE on failure
+        """
+        try:
+            network = str( network )
+            encapType = str( encapType ).upper()
+            assert encapType in [ "MPLS", "VLAN", "NONE" ], "Incorrect type"
+            cmdStr = "vpls set-encap "
+            cmdStr += network + " " + encapType
+            output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
+            assert "Command not found:" not in output, output
+            assert "Error executing command" not in output, output
+            assert "already associated to network" not in output, output
+            assert "Encapsulation type " not in output, output
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def interfaces( self, jsonFormat=True ):
+        """
+        Description: Returns result of interfaces command.
+        Optional:
+            * jsonFormat: enable json formatting of output
+        Returns:
+            The output of the command or None on error.
+        """
+        try:
+            cmdStr = "interfaces"
+            if jsonFormat:
+                #raise NotImplementedError
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except NotImplementedError:
+            main.log.exception( self.name + ": Json output not supported")
+            return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()

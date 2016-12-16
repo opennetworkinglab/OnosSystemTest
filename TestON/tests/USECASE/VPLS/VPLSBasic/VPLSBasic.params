@@ -1,0 +1,32 @@
+<PARAMS>
+
+    <testcases>1,2,3</testcases>
+
+    <num_controllers>3</num_controllers>
+
+    <DEPENDENCY>
+        <wrapper1>startUp</wrapper1>
+        <topology>~/onos/tools/test/topos/vpls.json</topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>vpls</cellName>
+        <cellApps>drivers,openflow,vpls</cellApps>
+        <cellUser>sdn</cellUser>
+    </ENV>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <vpls>
+        <name>org.onosproject.vpls</name>
+        <hosts>6</hosts>
+    </vpls>
+
+    <SLEEP>
+        <startup>10</startup>
+        <netcfg>10</netcfg>
+    </SLEEP>
+
+</PARAMS>

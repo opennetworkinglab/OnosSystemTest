@@ -745,43 +745,43 @@ class OnosDriver( CLI ):
         NOTE: Assumes cells are located at:
             ~/<self.home>/tools/test/cells/
         """
-        # Variable initialization
-        cellDirectory = self.home + "/tools/test/cells/"
-        # We want to create the cell file in the dependencies directory
-        # of TestON first, then copy over to ONOS bench
-        tempDirectory = "/tmp/"
-        # Create the cell file in the directory for writing ( w+ )
-        cellFile = open( tempDirectory + fileName, 'w+' )
-        if isinstance( onosIpAddrs, types.StringType ):
-            onosIpAddrs = [ onosIpAddrs ]
-
-        # App string is hardcoded environment variables
-        # That you may wish to use by default on startup.
-        # Note that you  may not want certain apps listed
-        # on here.
-        appString = "export ONOS_APPS=" + appString
-        onosGroup = "export ONOS_GROUP=" + onosUser
-        onosUser = "export ONOS_USER=" + onosUser
-        if useSSH:
-            onosUseSSH = "export ONOS_USE_SSH=true"
-        mnString = "export OCN="
-        if mnIpAddrs == "":
-            mnString = ""
-        onosString = "export OC"
-        tempCount = 1
-
-        # Create ONOSNIC ip address prefix
-        tempOnosIp = str( onosIpAddrs[ 0 ] )
-        tempList = []
-        tempList = tempOnosIp.split( "." )
-        # Omit last element of list to format for NIC
-        tempList = tempList[ :-1 ]
-        # Structure the nic string ip
-        nicAddr = ".".join( tempList ) + ".*"
-        self.nicAddr = nicAddr
-        onosNicString = "export ONOS_NIC=" + nicAddr
-
         try:
+            # Variable initialization
+            cellDirectory = self.home + "/tools/test/cells/"
+            # We want to create the cell file in the dependencies directory
+            # of TestON first, then copy over to ONOS bench
+            tempDirectory = "/tmp/"
+            # Create the cell file in the directory for writing ( w+ )
+            cellFile = open( tempDirectory + fileName, 'w+' )
+            if isinstance( onosIpAddrs, types.StringType ):
+                onosIpAddrs = [ onosIpAddrs ]
+
+            # App string is hardcoded environment variables
+            # That you may wish to use by default on startup.
+            # Note that you  may not want certain apps listed
+            # on here.
+            appString = "export ONOS_APPS=" + appString
+            onosGroup = "export ONOS_GROUP=" + onosUser
+            onosUser = "export ONOS_USER=" + onosUser
+            if useSSH:
+                onosUseSSH = "export ONOS_USE_SSH=true"
+            mnString = "export OCN="
+            if mnIpAddrs == "":
+                mnString = ""
+            onosString = "export OC"
+            tempCount = 1
+
+            # Create ONOSNIC ip address prefix
+            tempOnosIp = str( onosIpAddrs[ 0 ] )
+            tempList = []
+            tempList = tempOnosIp.split( "." )
+            # Omit last element of list to format for NIC
+            tempList = tempList[ :-1 ]
+            # Structure the nic string ip
+            nicAddr = ".".join( tempList ) + ".*"
+            self.nicAddr = nicAddr
+            onosNicString = "export ONOS_NIC=" + nicAddr
+
             # Start writing to file
             cellFile.write( onosNicString + "\n" )
 

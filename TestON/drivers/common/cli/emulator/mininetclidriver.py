@@ -587,11 +587,10 @@ class MininetCliDriver( Emulator ):
                 main.log.info( self.name + ": no packets lost, host is reachable" )
                 return main.TRUE
             else:
-                main.log.info(
+                main.log.warn(
                     self.name +
                     ": PACKET LOST, HOST IS NOT REACHABLE" )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

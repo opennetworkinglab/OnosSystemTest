@@ -23,17 +23,17 @@
     </DEPENDENCY>
 
     <config>
-        <peerNum> 3 </peerNum>
+        <peerNum> 7 </peerNum>
         <switchNum> 39 </switchNum>
-        <peer64514> 10.0.14.1</peer64514>
-        <peer64515> 10.0.15.1</peer64515>
-        <peer64516> 10.0.16.1</peer64516>
+        <p64514> 10.0.14.1</p64514>
+        <p64515> 10.0.15.1</p64515>
+        <p64516> 10.0.16.1</p64516>
     </config>
 
     <timers>
         <SdnIpSetup>10</SdnIpSetup>
-        <TopoDiscovery>10</TopoDiscovery>
-        <PingTestWithRoutes>20</PingTestWithRoutes>
+        <TopoDiscovery>15</TopoDiscovery>
+        <PingTestWithRoutes>30</PingTestWithRoutes>
         <PingTestWithoutRoutes>100</PingTestWithoutRoutes>
         <RouteDelivery>30</RouteDelivery>
         <PathAvailable>20</PathAvailable>

@@ -1276,6 +1276,7 @@ class OnosCliDriver( CLI ):
             ethDst="",
             bandwidth="",
             lambdaAlloc=False,
+            protected=False,
             ipProto="",
             ipSrc="",
             ipDst="",
@@ -1342,6 +1343,8 @@ class OnosCliDriver( CLI ):
                 cmd += " --setVlan " + str( setVlan )
             if encap:
                 cmd += " --encapsulation " + str( encap )
+            if protected:
+                cmd += " --protect "
 
             # Check whether the user appended the port
             # or provided it as an input

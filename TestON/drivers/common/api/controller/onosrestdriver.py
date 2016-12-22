@@ -474,6 +474,7 @@ class OnosRestDriver( Controller ):
                         ethSrc="",
                         ethDst="",
                         bandwidth="",
+                        protected=False,
                         lambdaAlloc=False,
                         ipProto="",
                         ipSrc="",
@@ -542,6 +543,9 @@ class OnosRestDriver( Controller ):
                           "constraints": [ { "type": "LinkTypeConstraint",
                                              "types": [ "OPTICAL" ],
                                              "inclusive": "false" } ] }
+
+            # if protected:
+            #     intentJson['constraints'].append( { "type": "Protection", "types": ["Protection"], "inclusive": "true" } )
 
             if ethType == "IPV4":
                 intentJson[ 'selector' ][ 'criteria' ].append( {

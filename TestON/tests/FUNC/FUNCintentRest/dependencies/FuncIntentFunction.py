@@ -305,6 +305,7 @@ def installPointIntent( main,
                         ethType="",
                         bandwidth="",
                         lambdaAlloc=False,
+                        protected=False,
                         ipProto="",
                         ipSrc="",
                         ipDst="",
@@ -394,6 +395,7 @@ def installPointIntent( main,
                                             ethDst=dstMac,
                                             bandwidth=bandwidth,
                                             lambdaAlloc=lambdaAlloc,
+                                            protected=protected,
                                             ipProto=ipProto,
                                             ipSrc=ipSrc,
                                             ipDst=ipDst,
@@ -436,6 +438,7 @@ def testPointIntent( main,
                      ethType="",
                      bandwidth="",
                      lambdaAlloc=False,
+                     protected=False,
                      ipProto="",
                      ipAddresses="",
                      tcp="",
@@ -574,6 +577,21 @@ def testPointIntent( main,
         else:
             main.assertReturnString += 'Link Down Failed\n'
             testResult = main.FALSE
+
+        if protected:
+            # Check Connection
+            if utilities.retry(f=scapyCheckConnection, retValue=main.FALSE,
+                               args=(main, senderNames, recipientNames, vlanId, useTCP)):
+                main.assertReturnString += 'Link down Scapy Packet Received Passed\n'
+            else:
+                main.assertReturnString += 'Link down Scapy Packet Recieved Failed\n'
+                testResult = main.FALSE
+
+            if ProtectedIntentCheck(main):
+                main.assertReturnString += 'Protected Intent Check Passed\n'
+            else:
+                main.assertReturnString += 'Protected Intent Check Failed\n'
+                testResult = main.FALSE
 
         # Check intent state
         if utilities.retry( f=checkIntentState, retValue=main.FALSE, args=( main, intentId ), sleep=main.checkIntentSleep ):
@@ -1731,3 +1749,11 @@ def flowDuration( main ):
     else:
         return main.FALSE
     return main.TRUE
+
+def ProtectedIntentCheck( main ):
+    intent = main.RESTs[ 0 ].intents()
+    main.log.debug(intent)
+    main.stop()
+    if "Protection" in intent:
+        return main.TRUE
+    return main.FALSE

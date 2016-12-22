@@ -1173,6 +1173,39 @@ class FUNCintentRest:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
+        # main.step( "Protected: Add point intents between h1 and h9" )
+        # main.assertReturnString = "Assertion Result for protected point intent\n"
+        # senders = [
+        #     { "name": "h1", "device": "of:0000000000000005/1", "mac": "00:00:00:00:00:01" }
+        # ]
+        # recipients = [
+        #     { "name": "h9", "device": "of:0000000000000006/1", "mac": "00:00:00:00:00:09" }
+        # ]
+        # testResult = main.FALSE
+        # installResult = main.intentFunction.installPointIntent(
+        #     main,
+        #     name="Protected",
+        #     senders=senders,
+        #     recipients=recipients,
+        #     protected=True )
+        # 
+        # if installResult:
+        #     testResult = main.intentFunction.testPointIntent(
+        #         main,
+        #         name="Protected",
+        #         intentId=installResult,
+        #         senders=senders,
+        #         recipients=recipients,
+        #         sw1="s5",
+        #         sw2="s2",
+        #         protected=True,
+        #         expectedLink=18 )
+        #
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=testResult,
+        #                          onpass=main.assertReturnString,
+        #                          onfail=main.assertReturnString )
+
         main.step( "IPV4_2: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 no mac address point intents\n"
         senders = [

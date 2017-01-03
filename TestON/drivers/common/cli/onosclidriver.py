@@ -5058,7 +5058,7 @@ class OnosCliDriver( CLI ):
                     cmd = cmd + " | grep \'" + searchTerm + "\'" + " | head -n 1"
             if mode == 'num':
                 cmd = cmd + " | grep -c \'" + searchTerm + "\'"
-                num = self.sendstartTerm=startTerm1, line( cmd )
+                num = self.sendline( cmd )
                 return num
             if mode == 'total':
                 totalLines = self.sendline( "cat /opt/onos/log/karaf.log | wc -l" )

@@ -56,7 +56,7 @@ def compareTimeDiffWithRoleRequest(main, term, Mode, index=0 ):
 
     '''
     try:
-        termInfo = main.CLIs[ index ].logSearch( mode=Mode, term=term )
+        termInfo = main.CLIs[ index ].logSearch( mode=Mode, searchTerm=term )
         termTime = getTimestampFromString( main, termInfo[ 0 ] )
         roleRequestTime = getRoleRequestTimeFromTshark( main )
         if termTime == -1 or roleRequestTime == -1:
@@ -87,8 +87,8 @@ def getInfoFromLog( main, term1, mode1, term2, mode2, index=0, funcMode='TD' ):
 
     '''
     try:
-        termInfo1 = main.CLIs[ index ].logSearch( mode=mode1,term=term1 )
-        termInfo2 = main.CLIs[ index ].logSearch( mode=mode2,term=term2 )
+        termInfo1 = main.CLIs[ index ].logSearch( mode=mode1, searchTerm=term1 )
+        termInfo2 = main.CLIs[ index ].logSearch( mode=mode2, searchTerm=term2 )
         if funcMode == 'TD':
             startTime = getTimestampFromString( main, termInfo1[0] )
             endTime = getTimestampFromString ( main, termInfo2[0] )

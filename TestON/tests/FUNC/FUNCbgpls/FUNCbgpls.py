@@ -133,6 +133,12 @@ class FUNCbgpls:
                                  onpass="ONOS install successful",
                                  onfail="ONOS install failed" )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=main.nodes[ 0 ].ip_address )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                     onpass="Test step PASS",
+                                     onfail="Test step FAIL" )
+
         main.step( "Checking if ONOS is up yet" )
         print main.nodes[0].ip_address
         for i in range( 2 ):
@@ -142,12 +148,6 @@ class FUNCbgpls:
         utilities.assert_equals( expect=main.TRUE, actual=onos1Isup,
                                  onpass="ONOS startup successful",
                                  onfail="ONOS startup failed" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.ONOSbench.onosSecureSSH( node=main.nodes[ 0 ].ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
 
         main.step( "Starting ONOS CLI sessions" )
         print main.nodes[ 0 ].ip_address

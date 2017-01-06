@@ -56,6 +56,9 @@ class SDNIPperf:
         onos1InstallResult = main.ONOSbench.onosInstall( options="-f",
                                                            node=ONOS1Ip )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
+
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):
             onos1Isup = main.ONOSbench.isup( ONOS1Ip, timeout=420 )
@@ -63,9 +66,6 @@ class SDNIPperf:
                 break
         if not onos1Isup:
             main.log.report( "ONOS1 didn't start!" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
 
         cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
                 commandlineTimeout=100, onosStartTimeout=600)

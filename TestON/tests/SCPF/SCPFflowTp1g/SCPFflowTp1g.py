@@ -120,6 +120,9 @@ class SCPFflowTp1g:
             main.ONOSbench.onosInstall( ONOSIp[node])
 
         for node in range(1, clusterCount + 1):
+            secureSshResult = main.ONOSbench.onosSecureSSH( ONOSIp[node] )
+
+        for node in range(1, clusterCount + 1):
             for i in range( 2 ):
                 isup = main.ONOSbench.isup( ONOSIp[node] )
                 if isup:
@@ -129,7 +132,6 @@ class SCPFflowTp1g:
                 main.log.report( "ONOS " + str(node) + " didn't start!" )
 
         for node in range(1, clusterCount + 1):
-            secureSshResult = main.ONOSbench.onosSecureSSH( ONOSIp[node] )
             exec "a = main.ONOS%scli.startOnosCli" %str(node)
             a(ONOSIp[node])
 

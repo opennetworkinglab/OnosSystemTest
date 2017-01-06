@@ -189,6 +189,14 @@ class SCPFintentRerouteLat:
                                     onfail="Test step FAIL")
             installResult = installResult and i_result
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+            utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                    onpass="Test step PASS",
+                                    onfail="Test step FAIL" )
+
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
@@ -212,13 +220,7 @@ class SCPFintentRerouteLat:
         utilities.assert_equals( expect=main.TRUE, actual=stepResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
-            utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                    onpass="Test step PASS",
-                                    onfail="Test step FAIL" )
+
         time.sleep(2)
         main.step("Start ONOS CLI on all nodes")
         cliResult = main.TRUE

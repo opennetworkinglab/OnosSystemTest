@@ -219,6 +219,14 @@ class SCPFscaleTopo:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+
         time.sleep( main.startUpSleep )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
@@ -244,14 +252,6 @@ class SCPFscaleTopo:
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
 
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE

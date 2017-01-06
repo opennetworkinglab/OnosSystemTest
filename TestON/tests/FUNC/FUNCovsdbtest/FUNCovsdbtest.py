@@ -130,6 +130,14 @@ class FUNCovsdbtest:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.nodes[ i ].ip_address )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+
         time.sleep( main.startUpSleep )
         main.step("Starting ONOS service")
         stopResult = main.TRUE
@@ -151,14 +159,6 @@ class FUNCovsdbtest:
         utilities.assert_equals( expect=main.TRUE, actual=stepResult,
                                  onpass="ONOS service is ready on all nodes",
                                  onfail="ONOS service did not start properly on all nodes" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.nodes[ i ].ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
 
         main.step( "Starting ONOS CLI sessions" )
         cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )

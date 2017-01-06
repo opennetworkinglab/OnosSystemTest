@@ -140,6 +140,15 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="Install ONOS to nodes succeeded",
                                  onfail="Install ONOS to nodes failed" )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
+        secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=ONOS2Ip )
+        secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=ONOS3Ip )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=secureSshResult,
+                                 onpass="Set up ONOS secure SSH succeeded",
+                                 onfail="Set up ONOS secure SSH failed " )
+
         main.step( "Checking if ONOS is up yet" )
         onos1UpResult = main.ONOSbench.isup( ONOS1Ip, timeout=420 )
         onos2UpResult = main.ONOSbench.isup( ONOS2Ip, timeout=420 )
@@ -149,15 +158,6 @@ class USECASE_SdnipFunctionCluster:
                                  actual=onosUpResult,
                                  onpass="ONOS nodes are up",
                                  onfail="ONOS nodes are NOT up" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
-        secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=ONOS2Ip )
-        secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=ONOS3Ip )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=secureSshResult,
-                                 onpass="Set up ONOS secure SSH succeeded",
-                                 onfail="Set up ONOS secure SSH failed " )
 
         main.step( "Checking if ONOS CLI is ready" )
         main.CLIs = []

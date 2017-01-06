@@ -8,7 +8,7 @@ from core import utilities
 
 class Testcaselib:
 
-    useSSH=False
+    useSSH=True
 
     @staticmethod
     def initTest( main ):

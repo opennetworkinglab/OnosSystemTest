@@ -198,6 +198,14 @@ class HAsingleInstanceRestart:
                                  onpass="ONOS install successful",
                                  onfail="ONOS install failed" )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for node in main.nodes:
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=node.ip_address )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):
             onosIsupResult = main.TRUE
@@ -211,14 +219,6 @@ class HAsingleInstanceRestart:
         utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
                                  onpass="ONOS startup successful",
                                  onfail="ONOS startup failed" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for node in main.nodes:
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=node.ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
 
         main.step( "Starting ONOS CLI sessions" )
         cliResults = main.TRUE

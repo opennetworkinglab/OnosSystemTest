@@ -166,17 +166,6 @@ class SCPFintentEventTp:
                                     onfail="Test step FAIL")
             installResult = installResult and i_result
 
-        main.step( "Verify ONOS nodes UP status" )
-        statusResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            main.log.info( "ONOS Node " + main.ONOSip[i] + " status:" )
-            onos_status = main.ONOSbench.onosStatus(node=main.ONOSip[i])
-            utilities.assert_equals(expect=main.TRUE, actual=onos_status,
-                                    onpass="Test step PASS",
-                                    onfail="Test step FAIL")
-            statusResult = (statusResult and onos_status)
-        time.sleep(2)
-
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
@@ -184,6 +173,30 @@ class SCPFintentEventTp:
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
+
+        time.sleep( main.startUpSleep )
+        main.step( "Starting ONOS service" )
+        stopResult = main.TRUE
+        startResult = main.TRUE
+        onosIsUp = main.TRUE
+        for i in range( main.numCtrls ):
+            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
+        if onosIsUp == main.TRUE:
+            main.log.report( "ONOS instance is up and ready" )
+        else:
+            main.log.report( "ONOS instance may not be up, stop and " +
+                             "start ONOS again " )
+            for i in range( main.numCtrls ):
+                stopResult = stopResult and \
+                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
+            for i in range( main.numCtrls ):
+                startResult = startResult and \
+                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
+        stepResult = onosIsUp and stopResult and startResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ONOS service is ready",
+                                 onfail="ONOS service did not start properly" )
 
         main.step( "Start ONOS cli using thread" )
         startCliResult = main.TRUE

@@ -91,8 +91,8 @@ def checkFlowNum( main, switch, flowNumExpected ):
         onfail = "Flow number in " + switch + " is wrong!" )
 
 
-def pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+def pingSpeakerToPeer( main, speakers = ["spk1"],
+                       peers = ["p64514", "p64515", "p64516"],
                        expectAllSuccess = True ):
     """
     Carry out ping test between each BGP speaker and peer pair
@@ -138,7 +138,7 @@ def pingSpeakerToPeer( main, speakers = ["speaker1"],
         main.exit()
 
 
-def pingHostToHost( main, hosts = ["host64514", "host64515", "host64516"],
+def pingHostToHost( main, hosts = ["h64514", "h64515", "h64516"],
                 expectAllSuccess = True ):
     """
     Carry out ping test between each BGP host pair

@@ -15,6 +15,7 @@ from mininet.net import Mininet
 from mininet.node import Controller, RemoteController
 from mininet.log import setLogLevel, info
 from mininet.cli import CLI
+from mininet.node import Host, RemoteController
 from mininet.topo import Topo
 from mininet.util import quietRun
 from mininet.moduledeps import pathCheck
@@ -29,6 +30,18 @@ QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE/USECASE_SdnipFunction
 numSw = 39
 
 # net = Mininet( controller = RemoteController )
+class VLANHost( Host ):
+    def config( self, vlan=100, intfName=None, **params ):
+        r = super( Host, self ).config( **params )
+        intf = self.intf( intfName )
+        self.cmd( 'ifconfig %s inet 0' % intf )
+        self.cmd( 'vconfig add %s %d' % ( intf, vlan ) )
+        self.cmd( 'ifconfig %s.%d inet %s' % ( intf, vlan, params['ip'] ) )
+        newName = '%s.%d' % ( intf, vlan )
+        intf.name = newName
+        self.nameToIntf[ newName ] = intf
+        return r
+
 
 class SDNTopo( Topo ):
     "SDN Topology"
@@ -38,9 +51,14 @@ class SDNTopo( Topo ):
         Topo.__init__( self, *args, **kwargs )
 
         # BGP peer hosts
-        peer64514 = self.addHost( 'peer64514' )
-        peer64515 = self.addHost( 'peer64515' )
-        peer64516 = self.addHost( 'peer64516' )
+        p64514 = self.addHost( 'p64514' )
+        p64515 = self.addHost( 'p64515' )
+        p64516 = self.addHost( 'p64516' )
+
+        p64517 = self.addHost( 'p64517', cls=VLANHost, vlan=20 )
+        p64518 = self.addHost( 'p64518', cls=VLANHost, vlan=20 )
+        p64519 = self.addHost( 'p64519', cls=VLANHost, vlan=10 )
+        p64520 = self.addHost( 'p64520', cls=VLANHost, vlan=10 )
 
         '''
         sw1 = self.addSwitch( 'SEAT', dpid = '00000000000000a1' )
@@ -131,18 +149,27 @@ class SDNTopo( Topo ):
 
 
         # BGP speaker hosts
-        speaker1 = self.addHost( 'speaker1' )
-        speaker2 = self.addHost( 'speaker2' )
-
+        spk1 = self.addHost( 'spk1' )
+        spk2 = self.addHost( 'spk2' )
+        spk3 = self.addHost( 'spk3', cls=VLANHost, vlan=10 )
+        spk4 = self.addHost( 'spk4', cls=VLANHost, vlan=20 )
         root = self.addHost( 'root', inNamespace = False , ip = '0' )
 
         # hosts behind each AS
-        host64514 = self.addHost( 'host64514' )
-        host64515 = self.addHost( 'host64515' )
-        host64516 = self.addHost( 'host64516' )
+        h64514 = self.addHost( 'h64514' )
+        h64515 = self.addHost( 'h64515' )
+        h64516 = self.addHost( 'h64516' )
 
-        self.addLink( 'speaker1', sw24 )
-        self.addLink( 'speaker2', sw24 )
+        # VLAN hosts behind each AS
+        h64517 = self.addHost( 'h64517', cls=VLANHost, vlan=20 )
+        h64518 = self.addHost( 'h64518', cls=VLANHost, vlan=20 )
+        h64519 = self.addHost( 'h64519', cls=VLANHost, vlan=10 )
+        h64520 = self.addHost( 'h64520', cls=VLANHost, vlan=10 )
+
+        self.addLink( 'spk1', sw24 )
+        self.addLink( 'spk2', sw24 )
+        self.addLink( 'spk3', sw24 )
+        self.addLink( 'spk4', sw24 )
 
         # connect all switches
         self.addLink( sw1, sw2 )
@@ -197,25 +224,45 @@ class SDNTopo( Topo ):
         self.addLink( sw38, sw39 )
 
         # connection between switches and peers
-        self.addLink( peer64514, sw32 )
-        self.addLink( peer64515, sw8 )
-        self.addLink( peer64516, sw28 )
+        self.addLink( p64514, sw32 )
+        self.addLink( p64515, sw8 )
+        self.addLink( p64516, sw28 )
+
+        self.addLink( p64517, sw7 )
+        self.addLink( p64518, sw9 )
+        self.addLink( p64519, sw5 )
+        self.addLink( p64520, sw5 )
 
         # connection between BGP peer and hosts behind the BGP peer
-        self.addLink( peer64514, host64514 )
-        self.addLink( peer64515, host64515 )
-        self.addLink( peer64516, host64516 )
+        self.addLink( p64514, h64514 )
+        self.addLink( p64515, h64515 )
+        self.addLink( p64516, h64516 )
+
+        self.addLink( p64517, h64517 )
+        self.addLink( p64518, h64518 )
+        self.addLink( p64519, h64519 )
+        self.addLink( p64520, h64520 )
 
         # Internal Connection To Hosts
-        self.addLink( swCtl100, peer64514 )
-        self.addLink( swCtl100, peer64515 )
-        self.addLink( swCtl100, peer64516 )
-        self.addLink( swCtl100, speaker1 )
-        self.addLink( swCtl100, speaker2 )
+        self.addLink( swCtl100, p64514 )
+        self.addLink( swCtl100, p64515 )
+        self.addLink( swCtl100, p64516 )
 
+        self.addLink( swCtl100, p64517 )
+        self.addLink( swCtl100, p64518 )
+        self.addLink( swCtl100, p64519 )
+        self.addLink( swCtl100, p64520 )
 
-        # add host64514 to control plane for ping test
-        self.addLink( swCtl100, host64514 )
+        self.addLink( swCtl100, spk1 )
+        self.addLink( swCtl100, spk2 )
+        self.addLink( swCtl100, spk3 )
+        self.addLink( swCtl100, spk4 )
+
+        # add h64514 to control plane for ping test
+        self.addLink( swCtl100, h64514 )
+        self.addLink( swCtl100, h64517 )
+        self.addLink( swCtl100, h64519 )
+
         self.addLink( swCtl100, root )
         self.addLink( swCtl100, root )
         self.addLink( swCtl100, root )
@@ -286,70 +333,129 @@ def sdn1net():
     net = Mininet( topo = topo, controller = RemoteController )
 
 
-    speaker1, speaker2, peer64514, peer64515, peer64516 = \
-    net.get( 'speaker1', 'speaker2' ,
-             'peer64514', 'peer64515', 'peer64516' )
+    spk1, spk2, spk3, spk4, p64514, p64515, p64516, p64517, p64518, p64519, p64520 = \
+    net.get( 'spk1', 'spk2', 'spk3', 'spk4',
+             'p64514', 'p64515', 'p64516', 'p64517', 'p64518', 'p64519', 'p64520' )
 
     # Adding addresses to speakers' interface connected to sw24
     # for BGP peering
-    speaker1.setMAC( '00:00:00:00:00:01', 'speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.4.101/24 dev speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.5.101/24 dev speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.6.101/24 dev speaker1-eth0' )
+    spk1.setMAC( '00:00:00:00:00:01', 'spk1-eth0' )
+    spk1.cmd( 'ip addr add 10.0.4.101/24 dev spk1-eth0' )
+    spk1.cmd( 'ip addr add 10.0.5.101/24 dev spk1-eth0' )
+    spk1.cmd( 'ip addr add 10.0.6.101/24 dev spk1-eth0' )
 
-    speaker1.defaultIntf().setIP( '10.0.4.101/24' )
-    speaker1.defaultIntf().setMAC( '00:00:00:00:00:01' )
+    spk1.defaultIntf().setIP( '10.0.4.101/24' )
+    spk1.defaultIntf().setMAC( '00:00:00:00:00:01' )
 
-    speaker2.setMAC( '00:00:00:00:00:02', 'speaker2-eth0' )
-    speaker2.cmd( 'ip addr add 10.0.14.101/24 dev speaker2-eth0' )
-    speaker2.cmd( 'ip addr add 10.0.15.101/24 dev speaker2-eth0' )
-    speaker2.cmd( 'ip addr add 10.0.16.101/24 dev speaker2-eth0' )
+    spk2.setMAC( '00:00:00:00:00:02', 'spk2-eth0' )
+    spk2.cmd( 'ip addr add 10.0.14.101/24 dev spk2-eth0' )
+    spk2.cmd( 'ip addr add 10.0.15.101/24 dev spk2-eth0' )
+    spk2.cmd( 'ip addr add 10.0.16.101/24 dev spk2-eth0' )
 
-    speaker2.defaultIntf().setIP( '10.0.14.101/24' )
-    speaker2.defaultIntf().setMAC( '00:00:00:00:00:02' )
+    spk2.defaultIntf().setIP( '10.0.14.101/24' )
+    spk2.defaultIntf().setMAC( '00:00:00:00:00:02' )
+
+    spk3.setMAC( '00:00:00:00:00:03', 'spk3-eth0.10' )
+    spk3.cmd( 'ip addr add 10.0.9.101/24 dev spk3-eth0.10' )
+    spk3.cmd( 'ip addr add 10.0.20.101/24 dev spk3-eth0.10' )
+    spk3.defaultIntf().setIP( '10.1.9.101/24' )
+    spk3.defaultIntf().setMAC( '00:00:00:00:00:03' )
+
+    spk4.setMAC( '00:00:00:00:00:04', 'spk4-eth0.20' )
+    spk4.cmd( 'ip addr add 10.0.7.101/24 dev spk4-eth0.20' )
+    spk4.cmd( 'ip addr add 10.0.8.101/24 dev spk4-eth0.20' )
+    spk4.defaultIntf().setIP( '10.1.7.101/24' )
+    spk4.defaultIntf().setMAC( '00:00:00:00:00:04' )
+
+    p64517.config( vlan=20, intfName="p64517-eth1", ip="7.0.0.254" )
+    p64518.config( vlan=20, intfName="p64518-eth1", ip="8.0.0.254" )
+    p64519.config( vlan=10, intfName="p64519-eth1", ip="9.0.0.254" )
+    p64520.config( vlan=10, intfName="p64520-eth1", ip="20.0.0.254" )
 
     # Net has to be start after adding the above link
     net.start()
 
     # setup configuration on the interface connected to switch
-    peer64514.cmd( "ifconfig  peer64514-eth0 10.0.4.1 up" )
-    peer64514.cmd( "ip addr add 10.0.14.1/24 dev peer64514-eth0" )
-    peer64514.setMAC( '00:00:00:00:00:04', 'peer64514-eth0' )
-    peer64515.cmd( "ifconfig  peer64515-eth0 10.0.5.1 up" )
-    peer64515.cmd( "ip addr add 10.0.15.1/24 dev peer64515-eth0" )
-    peer64515.setMAC( '00:00:00:00:00:05', 'peer64515-eth0' )
-    peer64516.cmd( "ifconfig  peer64516-eth0 10.0.6.1 up" )
-    peer64516.cmd( "ip addr add 10.0.16.1/24 dev peer64516-eth0" )
-    peer64516.setMAC( '00:00:00:00:00:06', 'peer64516-eth0' )
+    p64514.cmd( "ifconfig p64514-eth0 10.0.4.1 up" )
+    p64514.cmd( "ip addr add 10.0.14.1/24 dev p64514-eth0" )
+    p64514.setMAC( '00:00:00:00:00:14', 'p64514-eth0' ) # do not repeat spk4's MAC addr
+    p64515.cmd( "ifconfig p64515-eth0 10.0.5.1 up" )
+    p64515.cmd( "ip addr add 10.0.15.1/24 dev p64515-eth0" )
+    p64515.setMAC( '00:00:00:00:00:05', 'p64515-eth0' )
+    p64516.cmd( "ifconfig p64516-eth0 10.0.6.1 up" )
+    p64516.cmd( "ip addr add 10.0.16.1/24 dev p64516-eth0" )
+    p64516.setMAC( '00:00:00:00:00:06', 'p64516-eth0' )
+
+    p64517.cmd( "ifconfig p64517-eth0.20 10.0.7.1 up" )
+    p64517.setMAC( '00:00:00:00:00:07', 'p64517-eth0.20' )
+    p64518.cmd( "ifconfig p64518-eth0.20 10.0.8.1 up" )
+    p64518.setMAC( '00:00:00:00:00:08', 'p64518-eth0.20' )
+
+    p64519.cmd( "ifconfig p64519-eth0.10 10.0.9.1 up" )
+    p64519.setMAC( '00:00:00:00:00:09', 'p64519-eth0.10' )
+    p64520.cmd( "ifconfig p64520-eth0.10 10.0.20.1 up" )
+    p64520.setMAC( '00:00:00:00:00:20', 'p64520-eth0.10' )
 
     # setup configuration on the interface connected to hosts
-    peer64514.setIP( "4.0.0.254", 8, "peer64514-eth1" )
-    peer64514.setMAC( '00:00:00:00:00:44', 'peer64514-eth1' )
-    peer64515.setIP( "5.0.0.254", 8, "peer64515-eth1" )
-    peer64515.setMAC( '00:00:00:00:00:55', 'peer64515-eth1' )
-    peer64516.setIP( "6.0.0.254", 8, "peer64516-eth1" )
-    peer64516.setMAC( '00:00:00:00:00:66', 'peer64516-eth1' )
+    p64514.setIP( "4.0.0.254", 8, "p64514-eth1" )
+    p64514.setMAC( '00:00:00:00:00:44', 'p64514-eth1' )
+    p64515.setIP( "5.0.0.254", 8, "p64515-eth1" )
+    p64515.setMAC( '00:00:00:00:00:55', 'p64515-eth1' )
+    p64516.setIP( "6.0.0.254", 8, "p64516-eth1" )
+    p64516.setMAC( '00:00:00:00:00:66', 'p64516-eth1' )
+
+    p64517.setIP( "7.0.0.254", 8, "p64517-eth1.20" )
+    p64517.setMAC( '00:00:00:00:00:77', 'p64517-eth1.20' )
+    p64518.setIP( "8.0.0.254", 8, "p64518-eth1.20" )
+    p64518.setMAC( '00:00:00:00:00:88', 'p64518-eth1.20' )
+
+    p64519.setIP( "9.0.0.254", 8, "p64519-eth1.10" )
+    p64519.setMAC( '00:00:00:00:00:99', 'p64519-eth1.10' )
+    p64520.setIP( "20.0.0.254", 8, "p64520-eth1.10" )
+    p64520.setMAC( '00:00:00:00:00:20', 'p64520-eth1.10' )
 
     # enable forwarding on BGP peer hosts
-    peer64514.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
-    peer64515.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
-    peer64516.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    p64514.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    p64515.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    p64516.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+
+    p64517.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    p64518.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    p64519.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    p64520.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
 
     # config interface for control plane connectivity
-    peer64514.setIP( "192.168.0.4", 24, "peer64514-eth2" )
-    peer64515.setIP( "192.168.0.5", 24, "peer64515-eth2" )
-    peer64516.setIP( "192.168.0.6", 24, "peer64516-eth2" )
+    p64514.setIP( "192.168.0.4", 24, "p64514-eth2" )
+    p64515.setIP( "192.168.0.5", 24, "p64515-eth2" )
+    p64516.setIP( "192.168.0.6", 24, "p64516-eth2" )
+
+    p64517.setIP( "192.168.0.7", 24, "p64517-eth2" )
+    p64518.setIP( "192.168.0.8", 24, "p64518-eth2" )
+    p64519.setIP( "192.168.0.9", 24, "p64519-eth2" )
+    p64520.setIP( "192.168.0.20", 24, "p64520-eth2" )
 
     # Setup hosts in each non-SDN AS
-    host64514, host64515, host64516 = \
-    net.get( 'host64514', 'host64515', 'host64516' )
-    host64514.cmd( 'ifconfig host64514-eth0 4.0.0.1 up' )
-    host64514.cmd( 'ip route add default via 4.0.0.254' )
-    host64514.setIP( '192.168.0.44', 24, 'host64514-eth1' )  # for control plane
-    host64515.cmd( 'ifconfig host64515-eth0 5.0.0.1 up' )
-    host64515.cmd( 'ip route add default via 5.0.0.254' )
-    host64516.cmd( 'ifconfig host64516-eth0 6.0.0.1 up' )
-    host64516.cmd( 'ip route add default via 6.0.0.254' )
+    h64514, h64515, h64516, h64517, h64518, h64519, h64520 = \
+    net.get( 'h64514', 'h64515', 'h64516', 'h64517', 'h64518', 'h64519', 'h64520' )
+    h64514.cmd( 'ifconfig h64514-eth0 4.0.0.1 up' )
+    h64514.cmd( 'ip route add default via 4.0.0.254' )
+    h64514.setIP( '192.168.0.44', 24, 'h64514-eth1' )  # for control plane
+    h64515.cmd( 'ifconfig h64515-eth0 5.0.0.1 up' )
+    h64515.cmd( 'ip route add default via 5.0.0.254' )
+    h64516.cmd( 'ifconfig h64516-eth0 6.0.0.1 up' )
+    h64516.cmd( 'ip route add default via 6.0.0.254' )
+
+    h64517.cmd( 'ifconfig h64517-eth0.20 7.0.0.1 up' )
+    h64517.cmd( 'ip route add default via 7.0.0.254' )
+    h64517.setIP( '192.168.0.77', 24, 'h64517-eth1' )  # for control plane
+    h64518.cmd( 'ifconfig h64518-eth0.20 8.0.0.1 up' )
+    h64518.cmd( 'ip route add default via 8.0.0.254' )
+
+    h64519.cmd( 'ifconfig h64519-eth0.10 9.0.0.1 up' )
+    h64519.cmd( 'ip route add default via 9.0.0.254' )
+    h64519.setIP( '192.168.0.99', 24, 'h64519-eth1' )  # for control plane
+    h64520.cmd( 'ifconfig h64520-eth0.10 20.0.0.1 up' )
+    h64520.cmd( 'ip route add default via 20.0.0.254' )
 
 
     # set up swCtl100 as a learning
@@ -368,14 +474,20 @@ def sdn1net():
     '''
 
     # Start Quagga on border routers
-    startquagga( peer64514, 64514, 'quagga64514.conf' )
-    startquagga( peer64515, 64515, 'quagga64515.conf' )
-    startquagga( peer64516, 64516, 'quagga64516.conf' )
+    startquagga( p64514, 64514, 'quagga64514.conf' )
+    startquagga( p64515, 64515, 'quagga64515.conf' )
+    startquagga( p64516, 64516, 'quagga64516.conf' )
+
+    startquagga( p64517, 64517, 'quagga64517.conf' )
+    startquagga( p64518, 64518, 'quagga64518.conf' )
+    startquagga( p64519, 64519, 'quagga64519.conf' )
+    startquagga( p64520, 64520, 'quagga64520.conf' )
 
     # start Quagga in SDN network
-    startquagga( speaker1, 64513, 'quagga-sdn.conf' )
-    startquagga( speaker2, 64512, 'quagga-sdn-speaker2.conf' )
-
+    startquagga( spk1, 64513, 'quagga-sdn.conf' )
+    startquagga( spk2, 64512, 'quagga-sdn-speaker2.conf' )
+    startquagga( spk3, 64511, 'quagga-sdn3.conf' )
+    startquagga( spk4, 64510, 'quagga-sdn4.conf' )
 
     root = net.get( 'root' )
     root.intf( 'root-eth0' ).setIP( '1.1.1.2/24' )
@@ -387,13 +499,16 @@ def sdn1net():
     root.intf( 'root-eth2' ).setIP( '1.1.1.6/24' )
     root.cmd( 'ip addr add 192.168.0.102/24 dev root-eth2' )
 
-    speaker1.intf( 'speaker1-eth1' ).setIP( '1.1.1.1/24' )
-    speaker2.intf( 'speaker2-eth1' ).setIP( '1.1.1.3/24' )
+    spk1.intf( 'spk1-eth1' ).setIP( '1.1.1.1/24' )
+    spk2.intf( 'spk2-eth1' ).setIP( '1.1.1.3/24' )
+    spk3.intf( 'spk3-eth1' ).setIP( '1.1.1.5/24' )
+    spk4.intf( 'spk4-eth1' ).setIP( '1.1.1.7/24' )
 
 
     stopsshd()
 
-    hosts = [ peer64514, peer64515, peer64516, host64514];
+    hosts = [ p64514, p64515, p64516, p64517, p64518, p64519, p64520,
+              h64514, h64517, h64519 ];
     startsshds( hosts )
 
 

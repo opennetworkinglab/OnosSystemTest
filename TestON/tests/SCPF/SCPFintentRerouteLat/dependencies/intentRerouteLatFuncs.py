@@ -21,13 +21,19 @@ def checkLog( main, nodeId ):
 
 def bringBackTopology( main ):
     main.log.info( "Bring back topology " )
-    main.CLIs[ 0 ].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
-    time.sleep( 1 )
+    main.CLIs[ 0 ].pushTestIntents(main.ingress, main.egress, main.batchSize,
+                                 offset=1, options="-w", timeout=main.timeout)
     main.CLIs[ 0 ].purgeWithdrawnIntents()
     main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
     main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "enabled", value="false")
     main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
     main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "enabled", value="true")
+    main.CLIs[ 0 ].balanceMasters()
+    time.sleep( main.setMasterSleep )
+    if len( main.ONOSip ) > 1:
+        main.CLIs[ 0 ].deviceRole(main.end1[ 'name' ], main.ONOSip[ 0 ])
+        main.CLIs[ 0 ].deviceRole(main.end2[ 'name' ], main.ONOSip[ 0 ])
+    time.sleep( main.setMasterSleep )
 
 def getValues( main ):
     '''

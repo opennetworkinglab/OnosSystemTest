@@ -80,6 +80,7 @@ class SCPFintentRerouteLat:
         main.verifySleep = int(main.params['SLEEP']['verify'])
         main.setMasterSleep = int(main.params['SLEEP']['setmaster'])
         main.verifyAttempts = int(main.params['ATTEMPTS']['verify'])
+        main.maxInvalidRun = int(main.params['ATTEMPTS']['maxInvalidRun'])
         main.sampleSize = int(main.params['TEST']['sampleSize'])
         main.warmUp = int(main.params['TEST']['warmUp'])
         main.ingress = main.params['TEST']['ingress']
@@ -222,7 +223,7 @@ class SCPFintentRerouteLat:
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
 
-        time.sleep(2)
+        time.sleep(main.startUpSleep)
         main.step("Start ONOS CLI on all nodes")
         cliResult = main.TRUE
         main.step(" Start ONOS cli using thread ")
@@ -257,6 +258,7 @@ class SCPFintentRerouteLat:
             main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.intent" )
         # Balance Master
         main.CLIs[0].balanceMasters()
+        time.sleep( main.setMasterSleep )
         if len(main.ONOSip) > 1:
             main.CLIs[0].deviceRole(main.end1[ 'name' ], main.ONOSip[0])
             main.CLIs[0].deviceRole(main.end2[ 'name' ], main.ONOSip[0])
@@ -272,6 +274,7 @@ class SCPFintentRerouteLat:
         ts = time.time()
         print(main.intentsList)
         for batchSize in main.intentsList:
+            main.batchSize = batchSize
             main.log.report("Intent Batch size: " + str(batchSize) + "\n      ")
             main.LatencyList = []
             main.LatencyListTopoToFirstInstalled = []
@@ -282,7 +285,7 @@ class SCPFintentRerouteLat:
             main.totalLines = []
             for i in range( main.numCtrls ):
                 main.totalLines.append( '' )
-            while main.validRun <= main.warmUp + main.sampleSize and main.invalidRun <= 20:
+            while main.validRun <= main.warmUp + main.sampleSize and main.invalidRun <= main.maxInvalidRun:
                 if main.validRun >= main.warmUp:
                     main.log.info("================================================")
                     main.log.info("Starting test iteration: {} ".format( main.validRun - main.warmUp))
@@ -292,7 +295,7 @@ class SCPFintentRerouteLat:
                     main.log.info("====================Warm Up=====================")
 
                 # push intents
-                main.CLIs[0].pushTestIntents(main.ingress, main.egress, batchSize,
+                main.CLIs[0].pushTestIntents(main.ingress, main.egress, main.batchSize,
                                              offset=1, options="-i", timeout=main.timeout)
 
                 # check links and flows
@@ -311,7 +314,7 @@ class SCPFintentRerouteLat:
                         break
                     k += 1
                 if not main.verify:
-                    main.log.warn("Links or flows number are not match!")
+                    main.log.warn("Links or flows number not as expected")
                     main.log.warn("links: {}, flows: {} ".format(linkCheck, flowsCheck))
                     # bring back topology
                     main.intentRerouteLatFuncs.bringBackTopology( main )
@@ -326,20 +329,19 @@ class SCPFintentRerouteLat:
                                   timeout=main.timeout, showResponse=False)
                 main.verify = main.FALSE
                 k = 0
-                topoManagerLog = ""
                 while k <= main.verifyAttempts:
                     time.sleep(main.verifySleep)
                     summary = json.loads(main.CLIs[0].summary(timeout=main.timeout))
                     linkCheck = summary.get("links")
                     flowsCheck = summary.get("flows")
-                    if linkCheck == (main.deviceCount - 1) * 2:
+                    if linkCheck == (main.deviceCount - 1) * 2 and flowsCheck == batchSize * main.deviceCount:
                         main.log.info("links: {}, flows: {} ".format(linkCheck, flowsCheck))
                         main.verify = main.TRUE
                         break
                     k += 1
                 if not main.verify:
-                    main.log.warn("Links number are not match in TopologyManager log!")
-                    main.log.warn(topoManagerLog)
+                    main.log.warn("Links or flows number not as expected")
+                    main.log.warn("links: {}, flows: {} ".format(linkCheck, flowsCheck))
                     # bring back topology
                     main.intentRerouteLatFuncs.bringBackTopology( main )
                     if main.validRun >= main.warmUp:
@@ -374,8 +376,8 @@ class SCPFintentRerouteLat:
                 flowsCheck = 0
                 while k <= main.verifyAttempts:
                     time.sleep(main.verifySleep)
-                    main.CLIs[0].removeAllIntents(purge=True, sync=True, timeout=main.timeout)
-                    time.sleep(1)
+                    main.CLIs[0].pushTestIntents(main.ingress, main.egress, batchSize,
+                                                 offset=1, options="-w", timeout=main.timeout)
                     main.CLIs[0].purgeWithdrawnIntents()
                     summary = json.loads(main.CLIs[0].summary())
                     linkCheck = summary.get("links")
@@ -387,12 +389,12 @@ class SCPFintentRerouteLat:
                         break
                     k += 1
                 if not main.verify:
-                    main.log.error("links, flows, or intents are not correct!")
+                    main.log.error("links, flows or intents number not as expected")
                     main.log.info("links: {}, flows: {}, intents: {} ".format(linkCheck, flowsCheck, intentCheck))
                     # bring back topology
                     main.intentRerouteLatFuncs.bringBackTopology( main )
                     continue
-                main.log.info("total negative results num: " + str( main.record ) )
+                #main.log.info("total negative results num: " + str( main.record ) )
 
             aveLatency = 0
             aveLatencyTopoToFirstInstalled = 0

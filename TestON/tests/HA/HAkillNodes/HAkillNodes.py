@@ -180,6 +180,8 @@ class HAkillNodes:
         handle = main.ONOSbench.handle
         handle.sendline( "sed -i -e 's/^respawn$/#respawn/g' tools/package/init/onos.conf" )
         handle.expect( "\$" )  # $ from the command
+        handle.sendline( "sed -i -e 's/^Restart=always/Restart=no/g' tools/package/init/onos.service" )
+        handle.expect( "\$" )  # $ from the command
         handle.expect( "\$" )  # $ from the prompt
 
         # GRAPHS
@@ -292,6 +294,7 @@ class HAkillNodes:
 
         main.step( "Clean up ONOS service changes" )
         handle.sendline( "git checkout -- tools/package/init/onos.conf" )
+        handle.sendline( "git checkout -- tools/package/init/onos.service" )
         handle.expect( "\$" )
 
         main.step( "Checking ONOS nodes" )

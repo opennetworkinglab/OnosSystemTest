@@ -1,0 +1,43 @@
+FUNCgroup test suite
+
+Summary:
+
+        The purpose of this test suite is to test the Group Subsystem.
+        As part of this test, we are testing the functionality of the Group Subsystem.
+        Install a group of type ‘ALL’ whose bucket will have treatments of type ‘OUTPUT’ to port 2,3, and 4 respectively.
+        Install a flow which will have selector criteria IN_PORT as port 1 and Instructions as type ‘Group’ with the Group Id already created.
+        Verify when port 1 receives any packet, it should follow the actions which are mentioned in the Group and send the packet to port 2, 3 and 4.
+
+Topology:
+        The topology consists of one switch with four hosts connected to it.
+
+Required:
+        Ths test requires Mininet topology file topo-group.py located in the dependencies folder.
+        You will also need to install the Python module, Scapy.
+
+Test Description:
+    # CASE - Description
+    # 1    - Variable initialization and optional pull and build ONOS package
+    # 2    - install ONOS
+    # 3    - Start mininet and verify topology
+    # 4    - Testing Scapy
+    # 5    - Testing GROUP with type "ALL"
+             # 5.1 - Adds a Group with type ‘ALL’ and whose bucket will have treatments as type ‘OUTPUT’
+                     to port 2, 3,  4 respectively and verify if the Group was added correctly.
+             # 5.2 - Adds a flow with selector criteria as IN_PORT 1 and Instructions as type ‘Group’
+                     with GroupId already created and tests if the flow was added correctly.
+             # 5.3 - Sends a packet using SCAPY to port 1 of the device and check whether the
+                     same packet was received at port 2, 3, and 4 of the device.
+    # 6    - Deleting the Group and Flow
+    # 7    - Testing GROUP with type "INDIRECT"
+             # 7.1 - Adds a Group with type ‘INDIRECT’ and whose bucket will have treatments
+                     as type ‘OUTPUT’ to port 2 respectively and verify  if the Group was added correctly
+             # 7.2 - Adds a flow with selector criteria as IN_PORT 1 and Instructions as  type ‘Group’
+                     with GroupId already created and tests if the flow was added correctly.
+             # 7.3 - Sends a packet using SCAPY to port 1 of the device and check whether
+                     the same packet was received at port 2 of the device.
+    # 8    - Deleting the group and flow
+
+
+Scapy install:
+    sudo apt-get install Scapy

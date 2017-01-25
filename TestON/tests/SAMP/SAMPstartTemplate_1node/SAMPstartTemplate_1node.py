@@ -68,33 +68,23 @@ class SAMPstartTemplate_1node:
         main.onosCfgSleep = float( main.params['CASE1']['SleepTimers']['onosCfg'] )
         main.mnStartupSleep = float( main.params['CASE1']['SleepTimers']['mnStartup'] )
         main.mnCfgSleep = float( main.params['CASE1']['SleepTimers']['mnCfg'] )
+        main.numCtrls = int( main.params['CASE10']['numNodes'] )
+        main.AllONOSip = main.ONOSbench.getOnosIps()
+        main.ONOSip = []
+        for i in range( main.numCtrls ):
+            main.ONOSip.append( main.AllONOSip[i] )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=main.TRUE,
                                  onpass="Successfully construct " +
                                         "test variables ",
                                  onfail="Failed to construct test variables" )
 
-
-
-        main.step( "Uninstall all onos nodes in the env.")
-        stepResult = main.TRUE
-        for node in main.nodeList:
-            nodeResult = main.ONOSbench.onosUninstall( nodeIp = "$" + node )
-            stepResult = stepResult & nodeResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully uninstall onos on all nodes in env.",
-                                 onfail="Failed to uninstall onos on all nodes in env!" )
-        if not stepResult:
-            main.log.error( "Failure to clean test env. Exiting test..." )
-            main.exit()
-
     def CASE2( self, main ):
         '''
             Report errors/warnings/exceptions
         '''
         main.log.info("Error report: \n" )
-        main.ONOSbench.logReport( main.ONOScli1.ip_address,
+        main.ONOSbench.logReport( main.ONOSip[0],
                                   [ "INFO",
                                     "FOLLOWER",
                                     "WARN",
@@ -113,16 +103,9 @@ class SAMPstartTemplate_1node:
 
         import time
 
-        numNodes = int( main.params['CASE10']['numNodes'] )
-        main.case( "Start up " + str( numNodes ) + "-node onos cluster.")
-
+        main.case( "Start up " + str( main.numCtrls ) + "-node onos cluster.")
         main.step( "Start ONOS cluster with basic (drivers) app.")
-        onosClusterIPs = []
-        for n in range( 1, numNodes + 1 ):
-            handle = "main.ONOScli" + str( n )
-            onosClusterIPs.append( eval( handle ).ip_address )
-
-        stepResult = main.ONOSbench.startBasicONOS(nodeList = onosClusterIPs, opSleep = 200 )
+        stepResult = main.ONOSbench.startBasicONOS( nodeList=main.ONOSip, opSleep=200 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully started basic ONOS cluster ",
@@ -130,9 +113,9 @@ class SAMPstartTemplate_1node:
 
         main.step( "Establishing Handles on ONOS CLIs.")
         cliResult = main.TRUE
-        for n in range( 1, numNodes + 1 ):
+        for n in range( 1, main.numCtrls + 1 ):
             handle = "main.ONOScli" + str( n )
-            cliResult = cliResult & ( eval( handle ).startCellCli() )
+            cliResult = cliResult & ( eval( handle ).startOnosCli( main.ONOSip[ n-1 ] ) )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cliResult,
                                  onpass="Successfully started onos cli's ",
@@ -196,10 +179,9 @@ class SAMPstartTemplate_1node:
 
         main.step( "Assign switches to controllers.")
         assignResult = main.TRUE
-        onosNodes = [ main.ONOScli1.ip_address ]
         for i in range(1, 8):
             assignResult = assignResult & main.Mininet1.assignSwController( sw="s" + str( i ),
-                                                         ip=onosNodes,
+                                                         ip=main.ONOSip,
                                                          port='6653' )
         time.sleep(main.mnCfgSleep)
         utilities.assert_equals( expect=main.TRUE,

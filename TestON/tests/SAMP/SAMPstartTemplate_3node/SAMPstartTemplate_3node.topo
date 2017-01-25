@@ -17,7 +17,7 @@
         </ONOSbench>
 
         <ONOScli1>
-            <host>OC1</host>
+            <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
@@ -27,7 +27,7 @@
         </ONOScli1>
 
         <ONOScli2>
-            <host>OC2</host>
+            <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
@@ -37,7 +37,7 @@
         </ONOScli2>
 
          <ONOScli3>
-            <host>OC3</host>
+            <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>

@@ -2407,7 +2407,7 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( "Uncaught exception" )
 
-    def startBasicONOS( self, nodeList, opSleep=60, onosStartupSleep=60 ):
+    def startBasicONOS( self, nodeList, opSleep=60, onosStartupSleep=30 ):
         '''
         Start onos cluster with defined nodes, but only with drivers app
         '''
@@ -2426,9 +2426,17 @@ class OnosDriver( CLI ):
         main.log.info( self.name + ": Creating ONOS package" )
         packageResult = self.buckBuild( timeout=opSleep )
 
+        main.log.info( self.name + ": Uninstalling ONOS" )
+        for nd in nodeList:
+            self.onosUninstall( nodeIp=nd )
+
         main.log.info( self.name + ": Installing ONOS package" )
         for nd in nodeList:
-                    self.onosInstall( node=nd )
+            self.onosInstall( node=nd )
+
+        main.log.info( self.name + ": Set up ONOS secure SSH" )
+        for nd in nodeList:
+            self.onosSecureSSH( node=nd )
 
         main.log.info( self.name + ": Starting ONOS service" )
         time.sleep( onosStartupSleep )

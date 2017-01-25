@@ -32,7 +32,7 @@
     </CASE0>
 
     <CASE1>
-        <NodeList>OC1,OC2,OC3</NodeList>
+        <NodeList>OC1</NodeList>
         <SleepTimers>
             <onosStartup>60</onosStartup>
             <onosCfg>5</onosCfg>

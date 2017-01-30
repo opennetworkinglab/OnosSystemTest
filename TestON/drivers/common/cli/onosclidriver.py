@@ -2640,18 +2640,13 @@ class OnosCliDriver( CLI ):
         """
         try:
             # Obtain output of intents function
-            intentsStr = self.intents(jsonFormat=False)
+            intentsStr = self.intents(jsonFormat=True)
+            # Convert to a dictionary
+            intents = json.loads( intentsStr )
             intentIdList = []
-
-            # Parse the intents output for ID's
-            intentsList = [ s.strip() for s in intentsStr.splitlines() ]
-            for intents in intentsList:
-                match = re.search('id=0x([\da-f]+),', intents)
-                if match:
-                    tmpId = match.group()[3:-1]
-                    intentIdList.append( tmpId )
+            for intent in intents:
+                intentIdList.append( intent[ 'id' ] )
             return intentIdList
-
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

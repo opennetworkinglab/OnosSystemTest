@@ -292,10 +292,10 @@ class HAclusterRestart:
             for app in apps:
                 state = main.CLIs[ 0 ].appStatus( app )
                 if state == "ACTIVE":
-                    activateResult = activeResult and True
+                    activateResult = activateResult and True
                 else:
                     main.log.error( "{} is in {} state".format( app, state ) )
-                    activeResult = False
+                    activateResult = False
             utilities.assert_equals( expect=True,
                                      actual=activateResult,
                                      onpass="Successfully activated apps",

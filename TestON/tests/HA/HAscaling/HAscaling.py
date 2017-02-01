@@ -275,7 +275,8 @@ class HAscaling:
 
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
-        for node in main.nodes:
+        for i in range( main.numCtrls ):
+            node = main.nodes[i]
             secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=node.ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
@@ -1898,6 +1899,7 @@ class HAscaling:
             onosIsupResult = main.TRUE
             for i in main.activeNodes:
                 node = main.nodes[i]
+                main.ONOSbench.onosSecureSSH( node=node.ip_address )
                 started = main.ONOSbench.isup( node.ip_address )
                 if not started:
                     main.log.error( node.name + " didn't start!" )

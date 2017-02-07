@@ -74,15 +74,16 @@ class SCPFintentEventTp:
         main.testDuration = main.params[ 'TEST' ][ 'duration' ]
         main.logInterval = main.params[ 'TEST' ][ 'log_interval' ]
         main.debug = main.params[ 'debugMode' ]
-        main.numKeys = main.params[ 'TEST' ][ 'numKeys' ]
         main.timeout = int(main.params['SLEEP']['timeout'])
         main.cyclePeriod = main.params[ 'TEST' ][ 'cyclePeriod' ]
         if main.flowObj == "True":
             main.flowObj = True
             main.dbFileName = main.params['DATABASE']['dbFlowObj']
+            main.numKeys = main.params[ 'TEST' ][ 'numKeysFlowObj' ]
         else:
             main.flowObj = False
             main.dbFileName = main.params['DATABASE']['dbName']
+            main.numKeys = main.params[ 'TEST' ][ 'numKeys' ]
         # Create DataBase file
         main.log.info( "Create Database file " + main.dbFileName )
         resultsDB = open( main.dbFileName, "w+" )

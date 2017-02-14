@@ -2152,7 +2152,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def logReport( self, nodeIp, searchTerms, outputMode="s" ):
+    def logReport( self, nodeIp, searchTerms, outputMode="s", startStr=None, endStr=None ):
         """
         Searches the latest ONOS log file for the given search terms and
         prints the total occurances of each term. Returns to combined total of
@@ -2169,6 +2169,10 @@ class OnosDriver( CLI ):
                            number of occurances of each term. Defaults to 's',
                            which prints the simple output of just the number
                            of occurances for each term.
+            * startStr - the start string to be given to stream editor command
+                         as the start point for extraction of data
+            * endStr -  the end string to be given to stream editor command as
+                        the end point for extraction of data
         """
         try:
             main.log.info( " Log Report for {} ".format( nodeIp ).center( 70, '=' ) )
@@ -2182,7 +2186,14 @@ class OnosDriver( CLI ):
             for termIndex in range( numTerms ):
                 term = searchTerms[termIndex]
                 logLines.append( [term] )
-                cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + term
+                if startStr and endStr:
+                    cmd = "onos-ssh {} \"sed -n '/{}/,/{}/p' /opt/onos/log/karaf.log | grep {}\"".format( nodeIp,
+                                                                                                          startStr,
+                                                                                                          endStr,
+                                                                                                          term )
+                else:
+                    cmd = "onos-ssh {} cat /opt/onos/log/karaf.log | grep {}".format( nodeIp,
+                                                                                      term )
                 self.handle.sendline( cmd )
                 self.handle.expect( ":~" )
                 before = self.handle.before.splitlines()

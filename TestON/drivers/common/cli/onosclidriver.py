@@ -397,7 +397,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def log( self, cmdStr, level="",noExit=False):
+    def log( self, cmdStr, level="", noExit=False ):
         """
             log  the commands in the onos CLI.
             returns main.TRUE on success
@@ -405,6 +405,7 @@ class OnosCliDriver( CLI ):
             if noExit is True, TestON will not exit, but clean up
             Available level: DEBUG, TRACE, INFO, WARN, ERROR
             Level defaults to INFO
+            if cmdStr has spaces then put quotes in the passed string
         """
         try:
             lvlStr = ""

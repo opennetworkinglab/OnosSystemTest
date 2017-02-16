@@ -143,7 +143,8 @@ class SCPFintentRerouteLat:
                       " before initiating environment setup")
 
         for i in range(main.numCtrls):
-            main.ONOSbench.onosDie(main.ONOSip[i])
+            main.ONOSbench.onosStop(main.ONOSip[i])
+            main.ONOSbench.onosKill(main.ONOSip[i])
 
         main.log.info("NODE COUNT = %s" % main.numCtrls)
         main.ONOSbench.createCellFile(main.ONOSbench.ip_address,

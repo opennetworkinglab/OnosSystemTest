@@ -167,7 +167,8 @@ class SCPFscaleTopo:
                        " before initiating environment setup" )
 
         for i in range( main.numCtrls ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
+            main.ONOSbench.onosStop( main.ONOSip[ i ] )
+            main.ONOSbench.onosKill( main.ONOSip[ i ] )
 
         tempOnosIp = []
         for i in range( main.numCtrls ):

@@ -80,7 +80,8 @@ class SCPFcbench:
         main.step("Safety check, killing all ONOS processes")
         main.step("before initiating environment setup")
         for node in range(1, maxNodes + 1):
-            main.ONOSbench.onosDie(ONOSIp[node])
+            main.ONOSbench.onosStop(ONOSIp[node])
+            main.ONOSbench.onosKill(ONOSIp[node])
 
         #Uninstall everywhere
         main.step( "Cleaning Enviornment..." )

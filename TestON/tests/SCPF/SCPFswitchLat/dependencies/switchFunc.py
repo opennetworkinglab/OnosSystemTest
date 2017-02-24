@@ -195,6 +195,13 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
             resultFile.close()
         FinAckSeq = processPackage( FinAckText )[ 'Seq' ]
         FinAckOFseq = findSeqBySeqAck( FinAckSeq, resultText )
+        if FinAckOFseq == None:
+            main.log.warn( "Tshark Result was incorrect!" )
+            main.log.warn( resultText )
+            main.wrong[ 'TsharkValueIncorrect' ] += 1
+            main.wrong[ 'totalWrong' ] += 1
+            checkTotalWrongNum()
+            return
         with open( main.tsharkResultPath[ 'down' ][ 'ACK' ], "r" ) as resultFile:
             ACKlines = resultFile.readlines()
             resultFile.close()

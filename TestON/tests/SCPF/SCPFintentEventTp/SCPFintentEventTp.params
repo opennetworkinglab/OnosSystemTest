@@ -64,6 +64,7 @@
         <duration>400</duration>
         <log_interval>20</log_interval>
         <numKeys>40000</numKeys>
+        <numKeysFlowObj>4000</numKeysFlowObj>
         <cyclePeriod>1000</cyclePeriod>
         <neighbors>0,a</neighbors>           #a == all nodes (-1)
         <flowRuleBUEnabled>true</flowRuleBUEnabled>

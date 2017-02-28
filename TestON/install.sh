@@ -83,9 +83,9 @@ function system_reqs {
     echo "Installing TestON dependencies"
     if [ "$DIST" = "Fedora" ]; then
         # Fedora may have vlan enabled by default. Still need to confirm and update later
-        $cmd python-pip build-essential python-dev pep8 python3-requests
+        $cmd python-pip build-essential python-dev pep8 python3-requests docker docker-engine
     else
-        $cmd python-pip build-essential python-dev pep8 vlan python3-requests
+        $cmd python-pip build-essential python-dev pep8 vlan python3-requests docker docker-engine
     fi
 
     # Some Distos have this already from another package

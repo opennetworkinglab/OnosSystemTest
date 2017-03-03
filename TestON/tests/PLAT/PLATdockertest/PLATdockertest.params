@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,1000,5,10,110,900,1000</testcases>
+    <testcases>0,[1,1000,10,110,900,1000]*8</testcases>
 
     <DOCKER>
         <repo>onosproject/onos</repo>

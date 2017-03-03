@@ -47,6 +47,20 @@ class DockerApiDriver( API ):
         except Exception as e:
             main.log.exception( e )
 
+    def getListOfImages( self, repo="onosproject/onos" ):
+        """
+        Get the list of image tags
+        """
+        try:
+            imageList = list( self.dockerClient.images( name=repo ) )
+            imageListToSend = []
+            for imageDict in imageList:
+                if imageDict[ 'RepoTags' ] is not None:
+                    imageListToSend.append( imageDict['RepoTags'][0].encode('UTF8').split(':')[1] )
+            return imageListToSend
+        except Exception as e:
+            main.log.exception( e )
+
     def dockerPull( self, onosRepo ="onosproject/onos", onosTag="latest" ):
         """
         Pulls Docker image from repository
@@ -60,8 +74,8 @@ class DockerApiDriver( API ):
             main.log.info(json.dumps(json.loads(line), indent =4))
 
             #response = json.dumps( json.load( pullResult ), indent=4 )
-            if re.search( "for onosproject/onos:latest", line ):
-                main.log.info( "latest onos docker image pulled is: " + line )
+            if re.search( "for onosproject/onos:" + onosTag, line ):
+                main.log.info( "onos docker image pulled is: " + line )
                 return main.TRUE
             else:
                 main.log.error( "Failed to download image from: " + onosRepo +":"+ onosTag )
@@ -202,18 +216,19 @@ class DockerApiDriver( API ):
             #main.cleanup()
             #main.exit()
 
-    def dockerRemoveImage( self, image="onosproject/onos:latest" ):
+    def dockerRemoveImage( self, imageRepoTag=None ):
         """
             Remove Docker image
         """
         rmResult = main.TRUE
-
         if self.dockerClient.images() is []:
-            main.log.info( "No docker image found with RepoTags: " + image )
+            main.log.info( "No docker image found" )
             return rmResult
         else:
-            list = [ image["Id"] for image in self.dockerClient.images() if image["RepoTags"][0] == '<none>:<none>' ]
-            for id in list:
+            imageList = [ image["Id"] for image in self.dockerClient.images()
+                                        if image["RepoTags"] is None
+                                           or imageRepoTag in image["RepoTags"] ]
+            for id in imageList:
                 try:
                     main.log.info( self.name + ": Removing Docker image " + id )
                     response = self.dockerClient.remove_image(id, force = True)

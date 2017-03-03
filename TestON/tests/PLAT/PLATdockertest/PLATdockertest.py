@@ -24,6 +24,27 @@ class PLATdockertest:
         DOCKERREPO = "onosproject/onos"
         DOCKERTAG = "latest"
 
+    def CASE0( self, main ):
+        """
+        Pull all docker images and get a list of image tags
+        """
+        main.case( "Pull all docker images and get a list of image tags" )
+        main.step( "Pull all ONOS docker images" )
+        import os
+        DOCKERREPO = main.params[ 'DOCKER' ][ 'repo' ]
+        os.system( "docker pull -a " + DOCKERREPO )
+        imageTagList = list()
+        imageTagCounter = 0
+        main.step( "Get a list of image tags" )
+        stepResult = main.FALSE
+        imageTagList = main.ONOSbenchDocker.getListOfImages( DOCKERREPO )
+        if imageTagList is not []:
+            main.log.info( "The Image tag list is: " + str(imageTagList) )
+            stepResult = main.TRUE
+        utilities.assert_equals( expect = main.TRUE, actual = stepResult,
+                                    onpass = "image tag list pulled successfully",
+                                    onfail = "image tag list not pulled" )
+
     def CASE1( self, main ):
         """
         1) set up test params;
@@ -32,14 +53,16 @@ class PLATdockertest:
         import time
         import subprocess
 
-        main.case("Set case test params")
+        if imageTagCounter < len( imageTagList ):
+            DOCKERTAG = imageTagList[imageTagCounter]
+        imageTagCounter += 1
+
+        main.case("Set case test params for onos image {}".format( DOCKERTAG ))
         main.step("Initialize test params")
         NODElist = main.params["SCALE"]["nodelist"].split(',')
         main.log.info("onos container names are: " + ",".join(NODElist) )
         IPlist = list()
         main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
-        DOCKERREPO = main.params[ 'DOCKER' ][ 'repo' ]
-        DOCKERTAG = main.params[ 'DOCKER' ][ 'tag' ]
         CTIDlist = list()
 
         main.log.info("Check docker status, it not running, try restart it")
@@ -58,16 +81,20 @@ class PLATdockertest:
             main.log.warn("docker is not running - exiting test")
             main.exit()
             main.cleanup()
+        if imageTagCounter > len( imageTagList ):
+            main.log.warn("All images have been tested")
+            main.exit()
+            main.cleanup()
 
     def CASE5(self, main):
         """
-        Pull (default) "onosproject/onos:latest" image
+        Pull the specified image
         """
 
-        main.case( "Pull latest onos docker image from onosproject/onos - \
-                    it may take sometime if this is a first time pulling." )
+        main.case( "Pull onos docker image {} from {} - \
+                    it may take sometime if this is a first time pulling.".format( DOCKERTAG, DOCKERREPO ) )
         stepResult = main.FALSE
-        main.step( "pull latest image from onosproject/onos")
+        main.step( "pull image {} from {}".format( DOCKERTAG, DOCKERREPO ) )
         stepResult = main.ONOSbenchDocker.dockerPull( onosRepo = DOCKERREPO, onosTag = DOCKERTAG )
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "Succeeded in pulling " + DOCKERREPO + ":" + DOCKERTAG,
@@ -81,10 +108,10 @@ class PLATdockertest:
         import re
         createResult = main.TRUE
         startResult = main.TRUE
-        main.case( "Start onos container(s)")
+        main.case( "Start onos container(s) for onos image {}".format( DOCKERTAG ))
         image = DOCKERREPO + ":" + DOCKERTAG
 
-        main.step( "Create and (re)start docker container(s) if not already exist")
+        main.step( "Create and (re)start docker container(s) for onos image {} if not already exist".format( DOCKERTAG ))
         #stepResult = main.FALSE
 
         for ct in xrange(0, len(NODElist)):
@@ -94,7 +121,7 @@ class PLATdockertest:
                 CTIDlist.append(ctid)
                 startResult = main.ONOSbenchDocker.dockerStartCT( ctID = ctid )
             else:
-                main.log.info("Container exists for node onos" + str(ct + 1) + "; restart container with latest image" )
+                main.log.info("Container exists for node onos" + str(ct + 1) + "; restart container with {} image".format( DOCKERTAG ) )
                 startResult = main.ONOSbenchDocker.dockerRestartCT( ctName = NODElist[ct ] )
 
         utilities.assert_equals( expect = main.TRUE, actual = createResult and startResult,
@@ -126,6 +153,8 @@ class PLATdockertest:
         import time
         import json
 
+        main.case( "Form onos cluster and check status of onos apps for onos image {}".format( DOCKERTAG ) )
+
         startupSleep = int(main.params["SLEEP"]["startup"])
 
         appToAct = main.params["CASE110"]["apps"]
@@ -134,7 +163,7 @@ class PLATdockertest:
         main.log.info( "Wait for startup, sleep (sec): " + str(startupSleep))
         time.sleep(startupSleep)
 
-        main.step( "Check initial app states from onos1")
+        main.step( "Check initial app states from onos1 for onos image {}".format( DOCKERTAG ))
         stepResult = main.TRUE
         response = main.ONOSbenchRest.apps( ip=IPlist[0], port = 8181 )
         main.log.debug("Rest call response is: " + response)
@@ -167,9 +196,12 @@ class PLATdockertest:
         main.log.debug("Rest call response: " + str(status) + " - " + response)
         if status == 200:
             jrsp = json.loads(response)
-            clusterIP = [item["ip"]for item in jrsp["nodes"] if item["status"]== "READY"]
+            if DOCKERTAG == "1.2" or DOCKERTAG == "1.3" or DOCKERTAG == "1.4" or DOCKERTAG == "1.5":
+                clusterIP = [item["ip"]for item in jrsp["nodes"] if item["status"]== "ACTIVE"]
+            else:
+                clusterIP = [item["ip"]for item in jrsp["nodes"] if item["status"]== "READY"]
             main.log.debug(" IPlist is:" + ",".join(IPlist))
-            main.log.debug("cluster IP is" + ",".join(clusterIP) )
+            main.log.debug(" cluster IP is" + ",".join(clusterIP))
             if set(IPlist) == set(clusterIP): stepResult = main.TRUE
 
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
@@ -206,7 +238,7 @@ class PLATdockertest:
             time.sleep(5)
             appResults.append(appRslt)
             stepResult = stepResult and appRslt
-        main.log.debug("Apps activation result for " + ",".join(applist) + ": " + str(appResults) ) 
+        main.log.debug("Apps activation result for " + ",".join(applist) + ": " + str(appResults) )
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "Successfully activated apps",
                                     onfail = "Failed to activated apps correctly" )
@@ -241,7 +273,7 @@ class PLATdockertest:
         user = main.params["DOCKER"]["user"]
         pwd = main.params["DOCKER"]["password"]
 
-        main.case("onos Exceptions check")
+        main.case("onos Exceptions check with onos image {}".format( DOCKERTAG ))
         main.step("check onos for any exceptions")
 
         for ip in IPlist:
@@ -278,7 +310,7 @@ class PLATdockertest:
     def CASE1000( self, main ):
 
         """
-        Cleanup after tests - stop and delete the containers created; delete "onosproject/onos:latest image
+        Cleanup after tests - stop and delete the containers created; delete the image
         """
         import time
 
@@ -286,11 +318,11 @@ class PLATdockertest:
         main.step("Stop onos containers")
         stepResult = main.TRUE
         for ctname in NODElist:
-            if main.ONOSbenchDocker.dockerCheckCTName(ctName = "/" + ctname):
-                main.log.info( "stopping docker container: /" + ctname)
-                stopResult = main.ONOSbenchDocker.dockerStopCT( ctName = "/" + ctname )
+            if main.ONOSbenchDocker.dockerCheckCTName( ctName="/" + ctname ):
+                main.log.info( "stopping docker container: /" + ctname )
+                stopResult = main.ONOSbenchDocker.dockerStopCT( ctName="/" + ctname )
                 time.sleep(10)
-                rmResult = main.ONOSbenchDocker.dockerRemoveCT( ctName = "/" + ctname)
+                rmResult = main.ONOSbenchDocker.dockerRemoveCT( ctName="/" + ctname )
                 stepResult = stepResult and stopResult and rmResult
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "Container successfully stopped",
@@ -299,7 +331,7 @@ class PLATdockertest:
         #main.step( "remove exiting onosproject/onos images")
         #stepResult = main.ONOSbenchDocker.dockerRemoveImage( image = DOCKERREPO + ":" + DOCKERTAG )
         main.step( "remove dangling 'none:none' images")
-        stepResult = main.ONOSbenchDocker.dockerRemoveImage( image = "<none>:<none>" )
+        stepResult = main.ONOSbenchDocker.dockerRemoveImage()
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "Succeeded in cleaning up images",
                                     onfail = "Failed in cleaning up images" )

@@ -44,9 +44,12 @@ class CHOTestMonkey:
         main.enableIPv6 = main.params[ 'TEST' ][ 'IPv6' ]
         main.enableIPv6 = True if main.enableIPv6 == "on" else False
         main.caseSleep = int( main.params[ 'TEST' ][ 'caseSleep' ] )
-        main.numCtrls = main.params[ 'TEST' ][ 'numCtrl' ]
+        main.numCtrls = int( main.params[ 'TEST' ][ 'numCtrl' ] )
+        main.ONOSip = []
+        main.AllONOSip = main.ONOSbench.getOnosIps()
         main.controllers = []
-        for i in range( 1, int( main.numCtrls ) + 1 ):
+        for i in range( 1, main.numCtrls + 1 ):
+            main.ONOSip.append( main.AllONOSip[ i-1 ] )
             newController = Controller( i )
             newController.setCLI( getattr( main, 'ONOScli' + str( i ) ) )
             main.controllers.append( newController )
@@ -127,9 +130,9 @@ class CHOTestMonkey:
 
         main.step( "Uninstall ONOS package on all Nodes" )
         uninstallResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            main.log.info( "Uninstalling package on ONOS Node IP: " + main.onosIPs[i] )
-            uResult = main.ONOSbench.onosUninstall( main.onosIPs[i] )
+        for i in range( main.numCtrls ):
+            main.log.info( "Uninstalling package on ONOS Node IP: " + main.ONOSip[i] )
+            uResult = main.ONOSbench.onosUninstall( main.ONOSip[i] )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=uResult,
                                      onpass="Test step PASS",
@@ -138,9 +141,9 @@ class CHOTestMonkey:
 
         main.step( "Install ONOS package on all Nodes" )
         installResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            main.log.info( "Installing package on ONOS Node IP: " + main.onosIPs[i] )
-            iResult = main.ONOSbench.onosInstall( node=main.onosIPs[i] )
+        for i in range( main.numCtrls ):
+            main.log.info( "Installing package on ONOS Node IP: " + main.ONOSip[i] )
+            iResult = main.ONOSbench.onosInstall( node=main.ONOSip[i] )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=iResult,
                                      onpass="Test step PASS",
@@ -149,8 +152,8 @@ class CHOTestMonkey:
 
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.onosIPs[i] )
+        for i in range( main.numCtrls ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -289,10 +292,10 @@ class CHOTestMonkey:
         main.step( "Assign switches to controllers" )
         switchMastership = main.TRUE
         for switchName in main.mininetSwitches.keys():
-            main.Mininet1.assignSwController( sw=switchName, ip=main.onosIPs )
+            main.Mininet1.assignSwController( sw=switchName, ip=main.ONOSip )
             response = main.Mininet1.getSwController( switchName )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.onosIPs[ 0 ], response ):
+            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
                 switchMastership = switchMastership and main.TRUE
             else:
                 switchMastership = main.FALSE

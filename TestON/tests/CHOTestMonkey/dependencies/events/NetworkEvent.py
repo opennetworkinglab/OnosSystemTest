@@ -273,7 +273,7 @@ class DeviceUp( DeviceEvent ):
                             intent.setInstalled()
         # Re-assign mastership for the device
         with main.mininetLock:
-            main.Mininet1.assignSwController( sw=self.device.name, ip=main.onosIPs )
+            main.Mininet1.assignSwController( sw=self.device.name, ip=main.ONOSip )
         # Re-discover hosts
         for host in self.device.hosts:
             correspondent = None

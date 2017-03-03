@@ -676,6 +676,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "topology -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             main.log.info( cmdStr + " returned: " + str( handle ) )
             return handle
@@ -704,6 +705,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "device-remove " + str( deviceId )
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing device" )
@@ -738,6 +740,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -765,6 +768,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "onos:balance-masters"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in balancing masters" )
@@ -874,6 +878,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr, timeout=timeout )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -903,6 +908,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -932,6 +938,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -1023,6 +1030,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "onos:paths " + str( srcId ) + " " + str( dstId )
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in getting paths" )
@@ -1187,6 +1195,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += "--encapsulation " + str( encap ) + " "
             cmdStr += str( hostIdOne ) + " " + str( hostIdTwo )
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in adding Host intent" )
@@ -1235,6 +1244,7 @@ class OnosCliDriver( CLI ):
             cmdStr = "add-optical-intent " + str( ingressDevice ) +\
                 " " + str( egressDevice )
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             # If error, return error message
             if re.search( "Error", handle ):
@@ -1375,6 +1385,7 @@ class OnosCliDriver( CLI ):
                     str( portEgress )
 
             handle = self.sendline( cmd )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             # If error, return error message
             if re.search( "Error", handle ):
@@ -1537,6 +1548,7 @@ class OnosCliDriver( CLI ):
                     str( egressDevice ) + "/" +\
                     str( portEgress )
             handle = self.sendline( cmd )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             # If error, return error message
             if re.search( "Error", handle ):
@@ -1697,6 +1709,7 @@ class OnosCliDriver( CLI ):
                                     "have the same length" )
                     return main.FALSE
             handle = self.sendline( cmd )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             # If error, return error message
             if re.search( "Error", handle ):
@@ -1828,6 +1841,7 @@ class OnosCliDriver( CLI ):
                     str( egressPort )
 
             handle = self.sendline( cmd )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             # If error, return error message
             if re.search( "Error", handle ):
@@ -1881,6 +1895,7 @@ class OnosCliDriver( CLI ):
 
             cmdStr += " " + app + " " + str( intentId )
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )
@@ -1924,6 +1939,7 @@ class OnosCliDriver( CLI ):
 
             cmdStr += " " + app
             handle = self.sendline( cmdStr, timeout=timeout )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )
@@ -1953,6 +1969,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "purge-intents"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error", handle ):
                 main.log.error( "Error in purging intents" )
@@ -1989,6 +2006,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -2017,6 +2035,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "routes -s -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             jsonResult = json.loads( handle )
             return jsonResult['totalRoutes4']
@@ -2053,6 +2072,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             args = utilities.parse_args( [ "TYPE" ], **intentargs )
             if "TYPE" in args.keys():
@@ -2332,6 +2352,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -n "
             cmdStr += state
             handle = self.sendline( cmdStr, timeout=timeout, noExit=noExit )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error:", handle ):
                 main.log.error( self.name + ": flows() response: " +
@@ -2458,11 +2479,9 @@ class OnosCliDriver( CLI ):
                                                                 offset,
                                                                 back )
             response = self.sendline( cmd, timeout=timeout, noExit=noExit )
+            assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
             main.log.info( response )
-            if response == None:
-                return None
-
             if getResponse:
                 return response
 
@@ -2577,6 +2596,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -2606,6 +2626,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if handle:
                 return handle
@@ -2679,6 +2700,7 @@ class OnosCliDriver( CLI ):
                 cmdStr = "flows any " + str( deviceId ) + " | " +\
                          "grep 'state=ADDED' | wc -l"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -2920,6 +2942,7 @@ class OnosCliDriver( CLI ):
                     str( onosNode ) + " " +\
                     str( role )
                 handle = self.sendline( cmdStr )
+                assert handle is not None, "Error in sendline"
                 assert "Command not found:" not in handle, handle
                 if re.search( "Error", handle ):
                     # end color output to escape any colours
@@ -2959,6 +2982,7 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
         except AssertionError:
@@ -2988,6 +3012,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "election-test-leader"
             response = self.sendline( cmdStr )
+            assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
             # Leader
             leaderPattern = "The\scurrent\sleader\sfor\sthe\sElection\s" +\
@@ -3037,6 +3062,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "election-test-run"
             response = self.sendline( cmdStr )
+            assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
             # success
             successPattern = "Entering\sleadership\selections\sfor\sthe\s" +\
@@ -3078,6 +3104,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "election-test-withdraw"
             response = self.sendline( cmdStr )
+            assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
             # success
             successPattern = "Withdrawing\sfrom\sleadership\selections\sfor" +\
@@ -3503,6 +3530,8 @@ class OnosCliDriver( CLI ):
                 return main.FALSE
             cmdStr = "onos:app " + option + " " + appName
             output = self.sendline( cmdStr )
+            assert output is not None, "Error in sendline"
+            assert "Command not found:" not in output, output
             if "Error executing command" in output:
                 main.log.error( "Error in processing onos:app command: " +
                                 str( output ) )
@@ -3522,6 +3551,9 @@ class OnosCliDriver( CLI ):
             # else: Command was successful
             # main.log.debug( "app response: " + repr( output ) )
             return main.TRUE
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return main.ERROR
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.ERROR
@@ -4988,6 +5020,8 @@ class OnosCliDriver( CLI ):
         cmd = "intent-perf -s"
         respDic = {}
         resp = self.sendline( cmd )
+        assert resp is not None, "Error in sendline"
+        assert "Command not found:" not in resp, resp
         try:
             # Generate the dictionary to return
             for l in resp.split( "\n" ):

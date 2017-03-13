@@ -480,7 +480,9 @@ class OnosCliDriver( CLI ):
                     main.cleanup()
                     main.exit()
             if i == 2:
-                self.handle.sendline( "" )
+                main.log.warn( "Timeout when testing cli responsiveness" )
+                main.log.debug( self.handle.before )
+                self.handle.send( "\x03" )  # Send ctrl-c to clear previous output
                 self.handle.expect( "onos>" )
 
             if debug:
@@ -2666,6 +2668,8 @@ class OnosCliDriver( CLI ):
         try:
             # Obtain output of intents function
             intentsStr = self.intents(jsonFormat=True)
+            if intentsStr is None:
+                raise TypeError
             # Convert to a dictionary
             intents = json.loads( intentsStr )
             intentIdList = []
@@ -3960,6 +3964,57 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def distPrimitivesSend( self, cmd ):
+        """
+        Function to handle sending cli commands for the distributed primitives test app
+
+        This command will catch some exceptions and retry the command on some
+        specific store exceptions.
+
+        Required arguments:
+            cmd - The command to send to the cli
+        returns:
+            string containing the cli output
+            None on Error
+        """
+        try:
+            output = self.sendline( cmd )
+            try:
+                assert output is not None, "Error in sendline"
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing '" + cmd + "' " +
+                                "command: " + str( output ) )
+                retryTime = 30  # Conservative time, given by Madan
+                main.log.info( "Waiting " + str( retryTime ) +
+                               "seconds before retrying." )
+                time.sleep( retryTime )  # Due to change in mastership
+                output = self.sendline( cmd )
+            assert output is not None, "Error in sendline"
+            assert "Command not found:" not in output, output
+            assert "Error executing command" not in output, output
+            main.log.info( self.name + ": " + output )
+            return output
+        except AssertionError:
+            main.log.exception( "Error in processing '" + cmd + "' command." )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def setTestAdd( self, setName, values ):
         """
         CLI command to add elements to a distributed set.
@@ -3976,28 +4031,9 @@ class OnosCliDriver( CLI ):
         """
         try:
             cmdStr = "set-test-add " + str( setName ) + " " + str( values )
-            output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
-            try:
-                # TODO: Maybe make this less hardcoded
-                # ConsistentMap Exceptions
-                assert "org.onosproject.store.service" not in output
-                # Node not leader
-                assert "java.lang.IllegalStateException" not in output
-            except AssertionError:
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( output ) )
-                retryTime = 30  # Conservative time, given by Madan
-                main.log.info( "Waiting " + str( retryTime ) +
-                               "seconds before retrying." )
-                time.sleep( retryTime )  # Due to change in mastership
-                output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Error executing command" not in output
+            output = self.distPrimitivesSend( cmdStr )
             positiveMatch = "\[(.*)\] was added to the set " + str( setName )
             negativeMatch = "\[(.*)\] was already in set " + str( setName )
-            main.log.info( self.name + ": " + output )
             if re.search( positiveMatch, output):
                 return main.TRUE
             elif re.search( negativeMatch, output):
@@ -4007,17 +4043,9 @@ class OnosCliDriver( CLI ):
                                 " match expected output" )
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return main.ERROR
-        except AssertionError:
-            main.log.exception( "Error in processing '" + cmdStr + "' command. " )
-            return main.ERROR
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.ERROR
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -4046,26 +4074,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += "-r " + str( setName ) + " " + str( values )
             else:
                 cmdStr += str( setName ) + " " + str( values )
-            output = self.sendline( cmdStr )
-            try:
-                assert output is not None, "Error in sendline"
-                # TODO: Maybe make this less hardcoded
-                # ConsistentMap Exceptions
-                assert "org.onosproject.store.service" not in output
-                # Node not leader
-                assert "java.lang.IllegalStateException" not in output
-            except AssertionError:
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( output ) )
-                retryTime = 30  # Conservative time, given by Madan
-                main.log.info( "Waiting " + str( retryTime ) +
-                               "seconds before retrying." )
-                time.sleep( retryTime )  # Due to change in mastership
-                output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
-            assert "Error executing command" not in output, output
-            main.log.info( self.name + ": " + output )
+            output = self.distPrimitivesSend( cmdStr )
             if clear:
                 pattern = "Set " + str( setName ) + " cleared"
                 if re.search( pattern, output ):
@@ -4098,17 +4107,9 @@ class OnosCliDriver( CLI ):
             main.log.debug( self.name + " expected: " + pattern )
             main.log.debug( self.name + " actual: " + repr( output ) )
             return main.ERROR
-        except AssertionError:
-            main.log.exception( "Error in processing '" + cmdStr + "' commandr. " )
-            return main.ERROR
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.ERROR
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -4147,27 +4148,7 @@ class OnosCliDriver( CLI ):
 
             cmdStr = "set-test-get "
             cmdStr += setName + " " + values
-            output = self.sendline( cmdStr )
-            try:
-                assert output is not None, "Error in sendline"
-                # TODO: Maybe make this less hardcoded
-                # ConsistentMap Exceptions
-                assert "org.onosproject.store.service" not in output
-                # Node not leader
-                assert "java.lang.IllegalStateException" not in output
-            except AssertionError:
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( output ) )
-                retryTime = 30  # Conservative time, given by Madan
-                main.log.info( "Waiting " + str( retryTime ) +
-                               "seconds before retrying." )
-                time.sleep( retryTime )  # Due to change in mastership
-                output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
-            assert "Error executing command" not in output, output
-            main.log.info( self.name + ": " + output )
-
+            output = self.distPrimitivesSend( cmdStr )
             if length == 0:
                 match = re.search( pattern, output )
             else:  # if given values
@@ -4207,17 +4188,9 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + " expected: " + pattern )
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return main.ERROR
-        except AssertionError:
-            main.log.exception( "Error in processing '" + cmdStr + "' command." )
-            return main.ERROR
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.ERROR
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -4242,26 +4215,7 @@ class OnosCliDriver( CLI ):
                           setPattern
             cmdStr = "set-test-get -s "
             cmdStr += setName
-            output = self.sendline( cmdStr )
-            try:
-                assert output is not None, "Error in sendline"
-                # TODO: Maybe make this less hardcoded
-                # ConsistentMap Exceptions
-                assert "org.onosproject.store.service" not in output
-                # Node not leader
-                assert "java.lang.IllegalStateException" not in output
-            except AssertionError:
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( output ) )
-                retryTime = 30  # Conservative time, given by Madan
-                main.log.info( "Waiting " + str( retryTime ) +
-                               "seconds before retrying." )
-                time.sleep( retryTime )  # Due to change in mastership
-                output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
-            assert "Error executing command" not in output, output
-            main.log.info( self.name + ": " + output )
+            output = self.distPrimitivesSend( cmdStr )
             match = re.search( pattern, output )
             if match:
                 setSize = int( match.group( 1 ) )
@@ -4281,17 +4235,9 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + " expected: " + pattern )
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return None
-        except AssertionError:
-            main.log.exception( "Error in processing '" + cmdStr + "' command." )
-            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -4351,26 +4297,7 @@ class OnosCliDriver( CLI ):
             cmdStr += counter
             if delta != 1:
                 cmdStr += " " + str( delta )
-            output = self.sendline( cmdStr )
-            try:
-                assert output is not None, "Error in sendline"
-                # TODO: Maybe make this less hardcoded
-                # ConsistentMap Exceptions
-                assert "org.onosproject.store.service" not in output
-                # Node not leader
-                assert "java.lang.IllegalStateException" not in output
-            except AssertionError:
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( output ) )
-                retryTime = 30  # Conservative time, given by Madan
-                main.log.info( "Waiting " + str( retryTime ) +
-                               "seconds before retrying." )
-                time.sleep( retryTime )  # Due to change in mastership
-                output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
-            assert "Error executing command" not in output, output
-            main.log.info( self.name + ": " + output )
+            output = self.distPrimitivesSend( cmdStr )
             pattern = counter + " was updated to (-?\d+)"
             match = re.search( pattern, output )
             if match:
@@ -4381,17 +4308,9 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + " expected: " + pattern )
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return None
-        except AssertionError:
-            main.log.exception( "Error in processing '" + cmdStr + "' command." )
-            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -4415,26 +4334,7 @@ class OnosCliDriver( CLI ):
             cmdStr += counter
             if delta != 1:
                 cmdStr += " " + str( delta )
-            output = self.sendline( cmdStr )
-            try:
-                assert output is not None, "Error in sendline"
-                # TODO: Maybe make this less hardcoded
-                # ConsistentMap Exceptions
-                assert "org.onosproject.store.service" not in output
-                # Node not leader
-                assert "java.lang.IllegalStateException" not in output
-            except AssertionError:
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( output ) )
-                retryTime = 30  # Conservative time, given by Madan
-                main.log.info( "Waiting " + str( retryTime ) +
-                               "seconds before retrying." )
-                time.sleep( retryTime )  # Due to change in mastership
-                output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
-            assert "Error executing command" not in output, output
-            main.log.info( self.name + ": " + output )
+            output = self.distPrimitivesSend( cmdStr )
             pattern = counter + " was updated to (-?\d+)"
             match = re.search( pattern, output )
             if match:
@@ -4445,17 +4345,181 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + " expected: " + pattern )
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return None
-        except AssertionError:
-            main.log.exception( "Error in processing '" + cmdStr + "' command." )
-            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def valueTestGet( self, valueName ):
+        """
+        CLI command to get the value of an atomic value.
+        Required arguments:
+            valueName - The name of the value to get.
+        returns:
+            string value of the value or
+            None on Error
+        """
+        try:
+            valueName = str( valueName )
+            cmdStr = "value-test "
+            operation = "get"
+            cmdStr = "value-test {} {}".format( valueName,
+                                                operation )
+            output = self.distPrimitivesSend( cmdStr )
+            pattern = "(\w+)"
+            match = re.search( pattern, output )
+            if match:
+                return match.group( 1 )
+            else:
+                main.log.error( self.name + ": valueTestGet did not" +
+                                " match expected output." )
+                main.log.debug( self.name + " expected: " + pattern )
+                main.log.debug( self.name + " actual: " + repr( output ) )
+                return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def valueTestSet( self, valueName, newValue ):
+        """
+        CLI command to set the value of an atomic value.
+        Required arguments:
+            valueName - The name of the value to set.
+            newValue - The value to assign to the given value.
+        returns:
+            main.TRUE on success or
+            main.ERROR on Error
+        """
+        try:
+            valueName = str( valueName )
+            newValue = str( newValue )
+            operation = "set"
+            cmdStr = "value-test {} {} {}".format( valueName,
+                                                   operation,
+                                                   newValue )
+            output = self.distPrimitivesSend( cmdStr )
+            if output is not None:
+                return main.TRUE
+            else:
+                return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def valueTestCompareAndSet( self, valueName, oldValue, newValue ):
+        """
+        CLI command to compareAndSet the value of an atomic value.
+        Required arguments:
+            valueName - The name of the value.
+            oldValue - Compare the current value of the atomic value to this
+            newValue - If the value equals oldValue, set the value to newValue
+        returns:
+            main.TRUE on success or
+            main.FALSE on failure or
+            main.ERROR on Error
+        """
+        try:
+            valueName = str( valueName )
+            oldValue = str( oldValue )
+            newValue = str( newValue )
+            operation = "compareAndSet"
+            cmdStr = "value-test {} {} {} {}".format( valueName,
+                                                      operation,
+                                                      oldValue,
+                                                      newValue )
+            output = self.distPrimitivesSend( cmdStr )
+            pattern = "(\w+)"
+            match = re.search( pattern, output )
+            if match:
+                result = match.group( 1 )
+                if result == "true":
+                    return main.TRUE
+                elif result == "false":
+                    return main.FALSE
+            else:
+                main.log.error( self.name + ": valueTestCompareAndSet did not" +
+                                " match expected output." )
+                main.log.debug( self.name + " expected: " + pattern )
+                main.log.debug( self.name + " actual: " + repr( output ) )
+                return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def valueTestGetAndSet( self, valueName, newValue ):
+        """
+        CLI command to getAndSet the value of an atomic value.
+        Required arguments:
+            valueName - The name of the value to get.
+            newValue - The value to assign to the given value
+        returns:
+            string value of the value or
+            None on Error
+        """
+        try:
+            valueName = str( valueName )
+            cmdStr = "value-test "
+            operation = "getAndSet"
+            cmdStr += valueName + " " + operation
+            cmdStr = "value-test {} {} {}".format( valueName,
+                                                   operation,
+                                                   newValue )
+            output = self.distPrimitivesSend( cmdStr )
+            pattern = "(\w+)"
+            match = re.search( pattern, output )
+            if match:
+                return match.group( 1 )
+            else:
+                main.log.error( self.name + ": valueTestGetAndSet did not" +
+                                " match expected output." )
+                main.log.debug( self.name + " expected: " + pattern )
+                main.log.debug( self.name + " actual: " + repr( output ) )
+                return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def valueTestDestroy( self, valueName ):
+        """
+        CLI command to destroy an atomic value.
+        Required arguments:
+            valueName - The name of the value to destroy.
+        returns:
+            main.TRUE on success or
+            main.ERROR on Error
+        """
+        try:
+            valueName = str( valueName )
+            cmdStr = "value-test "
+            operation = "destroy"
+            cmdStr += valueName + " " + operation
+            output = self.distPrimitivesSend( cmdStr )
+            if output is not None:
+                return main.TRUE
+            else:
+                return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -4512,19 +4576,7 @@ class OnosCliDriver( CLI ):
             keyName = str( keyName )
             cmdStr = "transactional-map-test-get "
             cmdStr += keyName
-            output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
-            try:
-                # TODO: Maybe make this less hardcoded
-                # ConsistentMap Exceptions
-                assert "org.onosproject.store.service" not in output
-                # Node not leader
-                assert "java.lang.IllegalStateException" not in output
-            except AssertionError:
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( output ) )
-                return None
+            output = self.distPrimitivesSend( cmdStr )
             pattern = "Key-value pair \(" + keyName + ", (?P<value>.+)\) found."
             if "Key " + keyName + " not found." in output:
                 main.log.warn( output )
@@ -4539,17 +4591,9 @@ class OnosCliDriver( CLI ):
                     main.log.debug( self.name + " expected: " + pattern )
                     main.log.debug( self.name + " actual: " + repr( output ) )
                     return None
-        except AssertionError:
-            main.log.exception( "" )
-            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -4579,19 +4623,7 @@ class OnosCliDriver( CLI ):
             value = str( value )
             cmdStr = "transactional-map-test-put "
             cmdStr += numKeys + " " + value
-            output = self.sendline( cmdStr )
-            assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
-            try:
-                # TODO: Maybe make this less hardcoded
-                # ConsistentMap Exceptions
-                assert "org.onosproject.store.service" not in output
-                # Node not leader
-                assert "java.lang.IllegalStateException" not in output
-            except AssertionError:
-                main.log.error( "Error in processing '" + cmdStr + "' " +
-                                "command: " + str( output ) )
-                return None
+            output = self.distPrimitivesSend( cmdStr )
             newPattern = 'Created Key (?P<key>(\w)+) with value (?P<value>(.)+)\.'
             updatedPattern = "Put (?P<value>(.)+) into key (?P<key>(\w)+)\. The old value was (?P<oldValue>(.)+)\."
             results = {}
@@ -4611,17 +4643,9 @@ class OnosCliDriver( CLI ):
                                                                         updatedPattern ) )
                     main.log.debug( self.name + " actual: " + repr( output ) )
             return results
-        except AssertionError:
-            main.log.exception( "" )
-            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()

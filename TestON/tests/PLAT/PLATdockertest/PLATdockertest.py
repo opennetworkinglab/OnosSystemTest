@@ -336,3 +336,70 @@ class PLATdockertest:
                                     onpass = "Succeeded in cleaning up images",
                                     onfail = "Failed in cleaning up images" )
 
+    def CASE1001( self, main ):
+
+        """
+        Create a file for publishing results on wiki in tabular form
+        """
+
+        main.case( "Create a file for publishing on wiki in tabular form" )
+        import re
+        imageTagCounter = 0
+        testCaseCounter = 0
+        resultCounter = 0
+        resultDictionary = {}
+        testCaseList = []
+        totalNumOfTestCases = 6
+        try:
+            main.tableFileName = main.logdir + "/" + main.TEST + "TableWiki.txt"
+            main.wikiTableFile = open(main.tableFileName, "a+")
+            main.wikiFileHandle = open(main.WikiFileName, "r")
+            for imageTag in imageTagList:
+                resultDictionary[ imageTag ] = []
+            for line in main.wikiFileHandle:
+                matchObj = re.search("(?!.*Case 0).*<h3>(.+?)<\/h3>", line)
+                if testCaseCounter < totalNumOfTestCases:
+                    if matchObj:
+                        wordsToRemove = re.compile("latest|- PASS|- FAIL|- No Result")
+                        testCaseName = wordsToRemove.sub("", matchObj.group(1))
+                        testCaseList.append(testCaseName)
+                        testCaseCounter += 1
+                if matchObj:
+                    if "- PASS" in line:
+                        resultDictionary[ imageTagList[ imageTagCounter ] ].append("PASS")
+                    if "- FAIL" in line:
+                        resultDictionary[ imageTagList[ imageTagCounter ] ].append("FAIL")
+                    if "- No Result" in line:
+                        resultDictionary[ imageTagList[ imageTagCounter ] ].append("No Result")
+                    resultCounter += 1
+                if resultCounter == totalNumOfTestCases:
+                    imageTagCounter += 1
+                    resultCounter = 0
+            main.wikiTableFile.write( "<table style=\"width:100%\">\n" )
+            main.wikiTableFile.write( "<tr>\n" )
+            main.wikiTableFile.write( "<th>ONOS Version</th>\n" )
+            for testCaseName in testCaseList:
+                main.wikiTableFile.write( "<th>" + testCaseName + "</th>\n" )
+            main.wikiTableFile.write( "</tr>\n" )
+            for imageTag in imageTagList:
+                main.wikiTableFile.write( "<tr>\n" )
+                main.wikiTableFile.write( "<td>" + imageTag + "</td>\n" )
+                for resultValue in resultDictionary[ imageTag ]:
+                    if resultValue == "PASS":
+                        emoticonValue = "\"tick\""
+                    if resultValue == "FAIL":
+                        emoticonValue = "\"cross\""
+                    if resultValue == "No Result":
+                        emoticonValue = "\"warning\""
+                    main.wikiTableFile.write( "<td>" + resultValue + "  <ac:emoticon ac:name=" + emoticonValue + " /></td>\n" )
+                main.wikiTableFile.write( "</tr>\n" )
+            main.wikiTableFile.write( "</table>\n" )
+            main.wikiTableFile.close()
+            main.wikiFileHandle.close()
+            logResult = main.TRUE
+        except Exception:
+            main.log.exception( "Exception while writing to the table file" )
+            logResult = main.FALSE
+        utilities.assert_equals( expect = main.TRUE, actual = logResult,
+                                    onpass = "onos exception check passed",
+                                    onfail = "onos exception check failed" )

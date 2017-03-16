@@ -331,6 +331,7 @@ class Utilities:
                 else:
                     sleeptime = sleep
                 time.sleep( sleeptime )
+            main.log.debug( str( i ) + " Attempts needed to pass this test" )
             return ret
         except AssertionError:
             main.log.exception( "Invalid arguements for retry: " )

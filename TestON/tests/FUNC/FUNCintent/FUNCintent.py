@@ -47,6 +47,10 @@ class FUNCintent:
             main.removeIntentSleep = int( main.params[ 'SLEEP' ][ 'removeintent' ] )
             main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
+            main.checkConnectionSleep = int( main.params[ 'SLEEP' ][ 'checkConnection' ] )
+            main.checkFlowCountSleep = int( main.params[ 'SLEEP' ][ 'checkFlowCount' ] )
+            main.checkIntentHostSleep = int( main.params[ 'SLEEP' ][ 'checkIntentHost' ] )
+            main.checkIntentPointSleep = int( main.params[ 'SLEEP' ][ 'checkIntentPoint' ] )
             main.checkTopoAttempts = int( main.params[ 'SLEEP' ][ 'topoAttempts' ] )
             main.flowDurationSleep = int( main.params[ 'SLEEP' ][ 'flowDuration' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]
@@ -953,7 +957,7 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        # Testing MPLS would need to update kernel version (Right now is 3.16)
+        # Testing MPLS would require kernel version of 4.1 or higher (Current version is 3.13)
         # main.step( "Encapsulation: Add host intents between h1 and h9" )
         # main.assertReturnString = "Assertion Result for MPLS Encapsulated host intent\n"
         # host1 = { "name": "h1", "id": "00:00:00:00:00:01/-1" }
@@ -1429,7 +1433,7 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        # Testing MPLS would need to update kernel version (Right now is 3.16)
+        # Testing MPLS would require kernel version of 4.1 or higher (Current version is 3.13)
         # main.step( "Add point to point intents using MPLS Encapsulation" )
         # main.assertReturnString = "Assertion Result for MPLS Encapsulation Point Intent"
         # senders = [
@@ -2068,47 +2072,47 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        # Testing MPLS would need to update kernel version (Right now is 3.16)
-        # main.step( "ENCAPSULATION: Add multi point to single point intents" )
-        # main.assertReturnString = "Assertion results for MPLS Encapsulation multi to single point intent\n"
-        # senders = [
-        #     { "name": "h16", "device": "of:0000000000000006/8" },
-        #     { "name": "h24", "device": "of:0000000000000007/8" }
-        # ]
-        # recipients = [
-        #     { "name": "h8", "device": "of:0000000000000005/8" }
-        # ]
-        # badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
-        # badRecipients = [ {"name": "h9" } ]  # Recipients that are not in the intent
-        # testResult = main.FALSE
-        # installResult = main.intentFunction.installMultiToSingleIntent(
-        #     main,
-        #     name="ENCAPSULATION",
-        #     senders=senders,
-        #     recipients=recipients,
-        #     sw1="s5",
-        #     sw2="s2",
-        #     encap="MPLS" )
+        #Testing MPLS would require kernel version of 4.1 or higher (Current version is 3.13)
+        #main.step( "ENCAPSULATION: Add multi point to single point intents" )
+        #main.assertReturnString = "Assertion results for MPLS Encapsulation multi to single point intent\n"
+        #senders = [
+        #    { "name": "h16", "device": "of:0000000000000006/8" },
+        #    { "name": "h24", "device": "of:0000000000000007/8" }
+        #]
+        #recipients = [
+        #    { "name": "h8", "device": "of:0000000000000005/8" }
+        #]
+        #badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
+        #badRecipients = [ {"name": "h9" } ]  # Recipients that are not in the intent
+        #testResult = main.FALSE
+        #installResult = main.intentFunction.installMultiToSingleIntent(
+        #    main,
+        #    name="ENCAPSULATION",
+        #    senders=senders,
+        #    recipients=recipients,
+        #    sw1="s5",
+        #    sw2="s2",
+        #    encap="MPLS" )
         #
-        # if installResult:
-        #     testResult = main.intentFunction.testPointIntent(
-        #         main,
-        #         intentId=installResult,
-        #         name="ENCAPSULATION",
-        #         senders=senders,
-        #         recipients=recipients,
-        #         badSenders=badSenders,
-        #         badRecipients=badRecipients,
-        #         sw1="s5",
-        #         sw2="s2",
-        #         expectedLink=18 )
-        # else:
-        #     main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #if installResult:
+        #    testResult = main.intentFunction.testPointIntent(
+        #        main,
+        #        intentId=installResult,
+        #        name="ENCAPSULATION",
+        #        senders=senders,
+        #        recipients=recipients,
+        #        badSenders=badSenders,
+        #        badRecipients=badRecipients,
+        #        sw1="s5",
+        #        sw2="s2",
+        #        expectedLink=18 )
+        #else:
+        #    main.CLIs[ 0 ].removeAllIntents( purge=True )
         #
-        # utilities.assert_equals( expect=main.TRUE,
-        #                          actual=testResult,
-        #                          onpass=main.assertReturnString,
-        #                          onfail=main.assertReturnString )
+        #utilities.assert_equals( expect=main.TRUE,
+        #                         actual=testResult,
+        #                         onpass=main.assertReturnString,
+        #                         onfail=main.assertReturnString )
 
         main.intentFunction.report( main )
 

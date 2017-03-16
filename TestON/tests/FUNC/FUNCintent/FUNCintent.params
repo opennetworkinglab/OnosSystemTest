@@ -51,6 +51,10 @@
         <fwd>10</fwd>
         <topoAttempts>3</topoAttempts>
         <flowDuration>10</flowDuration>
+        <checkConnection>50</checkConnection>
+        <checkFlowCount>200</checkFlowCount>
+        <checkIntentHost>100</checkIntentHost>
+        <checkIntentPoint>200</checkIntentPoint>
     </SLEEP>
 
     <MININET>

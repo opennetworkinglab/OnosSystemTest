@@ -54,10 +54,13 @@ class DockerApiDriver( API ):
         try:
             imageList = list( self.dockerClient.images( name=repo ) )
             imageListToSend = []
+            duplicateTagDetected = 0
             for imageDict in imageList:
                 if imageDict[ 'RepoTags' ] is not None:
+                    if len( imageDict[ 'RepoTags' ] ) > 1:
+                        duplicateTagDetected = 1
                     imageListToSend.append( imageDict['RepoTags'][0].encode('UTF8').split(':')[1] )
-            return imageListToSend
+            return imageListToSend, duplicateTagDetected
         except Exception as e:
             main.log.exception( e )
 

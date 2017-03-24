@@ -29,15 +29,22 @@ class PLATdockertest:
         Pull all docker images and get a list of image tags
         """
         main.case( "Pull all docker images and get a list of image tags" )
-        main.step( "Pull all ONOS docker images" )
         import os
         DOCKERREPO = main.params[ 'DOCKER' ][ 'repo' ]
         os.system( "docker pull -a " + DOCKERREPO )
         imageTagList = list()
         imageTagCounter = 0
+        duplicateTagDetected = 0
+        imageTagList, duplicateTagDetected = main.ONOSbenchDocker.getListOfImages( DOCKERREPO )
+        stepResult = main.FALSE
+        main.step( "Check for duplicate Tags for a given image" )
+        if not duplicateTagDetected:
+            stepResult = main.TRUE
+        utilities.assert_equals( expect = main.TRUE, actual = stepResult,
+                                    onpass = "no duplicate image tags",
+                                    onfail = "duplicate image tags detected!!" )
         main.step( "Get a list of image tags" )
         stepResult = main.FALSE
-        imageTagList = main.ONOSbenchDocker.getListOfImages( DOCKERREPO )
         if imageTagList is not []:
             main.log.info( "The Image tag list is: " + str(imageTagList) )
             stepResult = main.TRUE
@@ -82,7 +89,7 @@ class PLATdockertest:
             main.exit()
             main.cleanup()
         if imageTagCounter > len( imageTagList ):
-            main.log.warn("All images have been tested")
+            main.log.info("All images have been tested")
             main.exit()
             main.cleanup()
 

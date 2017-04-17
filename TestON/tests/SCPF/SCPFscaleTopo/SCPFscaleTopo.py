@@ -155,12 +155,13 @@ class SCPFscaleTopo:
         else:
             main.log.info( "Mininet was not running" )
 
+        main.commit = main.ONOSbench.getVersion(report=True)
+        main.commit = main.commit.split(" ")[1]
+
         main.case( "Starting up " + str( main.numCtrls ) +
                    " node(s) ONOS cluster" )
         main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) +\
                                 " node(s) ONOS cluster"
-
-
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +

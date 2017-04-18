@@ -163,7 +163,7 @@ class OnosCliDriver( CLI ):
                         except pexpect.TIMEOUT:
                             main.log.error( "ONOS did not respond to 'logout' or CTRL-d" )
                         return main.TRUE
-                    else: # some other output
+                    else:  # some other output
                         main.log.warn( "Unknown repsonse to logout command: '{}'",
                                        repr( self.handle.before ) )
                         return main.FALSE
@@ -488,7 +488,7 @@ class OnosCliDriver( CLI ):
             if debug:
                 # NOTE: This adds and average of .4 seconds per call
                 logStr = "\"Sending CLI command: '" + cmdStr + "'\""
-                self.log( logStr,noExit=noExit )
+                self.log( logStr, noExit=noExit )
             self.handle.sendline( cmdStr )
             i = self.handle.expect( ["onos>", "\$"], timeout )
             response = self.handle.before
@@ -853,8 +853,8 @@ class OnosCliDriver( CLI ):
                     main.log.error( "Mastership not balanced" )
                     main.log.info( "\n" + self.checkMasters( False ) )
                     return main.FALSE
-            main.log.info( "Mastership balanced between " \
-                            + str( len(masters) ) + " masters" )
+            main.log.info( "Mastership balanced between " +
+                           str( len(masters) ) + " masters" )
             return main.TRUE
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, mastersOutput ) )
@@ -2254,7 +2254,7 @@ class OnosCliDriver( CLI ):
                                str( len( intentDictONOS ) ) + " actual" )
                 returnValue = main.FALSE
             for intentID in intentDict.keys():
-                if not intentID in intentDictONOS.keys():
+                if intentID not in intentDictONOS.keys():
                     main.log.debug( self.name + ": intent ID - " + intentID + " is not in ONOS" )
                     returnValue = main.FALSE
                 else:
@@ -2304,7 +2304,7 @@ class OnosCliDriver( CLI ):
 
             # Check response if something wrong
             response = self.sendline( cmd, timeout=timeout, noExit=noExit )
-            if response == None:
+            if response is None:
                 return main.FALSE
             response = json.loads( response )
 
@@ -2327,6 +2327,9 @@ class OnosCliDriver( CLI ):
             else:
                 main.cleanup()
                 main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": ONOS timeout" )
+            return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             if noExit:
@@ -2334,9 +2337,6 @@ class OnosCliDriver( CLI ):
             else:
                 main.cleanup()
                 main.exit()
-        except pexpect.TIMEOUT:
-            main.log.error( self.name + ": ONOS timeout" )
-            return None
 
     def flows( self, state="", jsonFormat=True, timeout=60, noExit=False, noCore=False ):
         """
@@ -2381,10 +2381,10 @@ class OnosCliDriver( CLI ):
 
     def checkFlowCount(self, min=0, timeout=60 ):
         count = self.getTotalFlowsNum( timeout=timeout )
-        count = int (count) if count else 0
-        return count if (count > min) else False
+        count = int( count ) if count else 0
+        return count if ( count > min ) else False
 
-    def checkFlowsState( self, isPENDING=True, timeout=60,noExit=False ):
+    def checkFlowsState( self, isPENDING=True, timeout=60, noExit=False ):
         """
         Description:
             Check the if all the current flows are in ADDED state
@@ -2433,6 +2433,9 @@ class OnosCliDriver( CLI ):
         except AssertionError:
             main.log.exception( "" )
             return None
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": ONOS timeout" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -2442,10 +2445,6 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
-        except pexpect.TIMEOUT:
-            main.log.error( self.name + ": ONOS timeout" )
-            return None
-
 
     def pushTestIntents( self, ingress, egress, batchSize, offset="",
                          options="", timeout=10, background = False, noExit=False, getResponse=False ):
@@ -2542,14 +2541,14 @@ class OnosCliDriver( CLI ):
                 main.cleanup()
                 main.exit()
             return None
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": ONOS timeout" )
+            return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             if not noExit:
                 main.cleanup()
                 main.exit()
-            return None
-        except pexpect.TIMEOUT:
-            main.log.error( self.name + ": ONOS timeout" )
             return None
 
     def getTotalIntentsNum( self, timeout=60, noExit = False ):
@@ -2564,8 +2563,8 @@ class OnosCliDriver( CLI ):
         try:
             cmd = "summary -j"
             response = self.sendline( cmd, timeout=timeout, noExit=noExit )
-            if response == None:
-                return  -1
+            if response is None:
+                return -1
             response = json.loads( response )
             return int( response.get("intents") )
         except ( TypeError, ValueError ):
@@ -2880,7 +2879,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         try:
             topology = self.getTopology( self.topology() )
-            if topology == {} or topology == None or summary == {} or summary == None:
+            if topology == {} or topology is None or summary == {} or summary is None:
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
@@ -4167,7 +4166,7 @@ class OnosCliDriver( CLI ):
                     containsCheck = main.FALSE
                     match = matchFalse
                 else:
-                    main.log.error( self.name + " setTestGet did not match " +\
+                    main.log.error( self.name + " setTestGet did not match " +
                                     "expected output" )
                     main.log.debug( self.name + " expected: " + pattern )
                     main.log.debug( self.name + " actual: " + repr( output ) )
@@ -4253,7 +4252,6 @@ class OnosCliDriver( CLI ):
             None on error
         """
         try:
-            counters = {}
             cmdStr = "counters"
             if jsonFormat:
                 cmdStr += " -j"
@@ -4871,7 +4869,7 @@ class OnosCliDriver( CLI ):
             present in the resoponse. Otherwise, returns main.FALSE
         '''
         try:
-            cmd =  "null-link null:{} null:{} {}".format( begin, end, state )
+            cmd = "null-link null:{} null:{} {}".format( begin, end, state )
             response = self.sendline( cmd, showResponse=showResponse, timeout=timeout )
             assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
@@ -4911,7 +4909,7 @@ class OnosCliDriver( CLI ):
         try:
             state = state.lower()
             assert state == 'enable' or state == 'disable', "Unknown state"
-            cmd =  "portstate {} {} {}".format( dpid, port, state )
+            cmd = "portstate {} {} {}".format( dpid, port, state )
             response = self.sendline( cmd, showResponse=True )
             assert response is not None, "Error in sendline"
             assert "Command not found:" not in response, response
@@ -4945,7 +4943,7 @@ class OnosCliDriver( CLI ):
         Level defaults to INFO
         """
         try:
-            self.handle.sendline( "log:set %s %s" %( level, app ) )
+            self.handle.sendline( "log:set %s %s" % ( level, app ) )
             self.handle.expect( "onos>" )
 
             response = self.handle.before
@@ -4999,24 +4997,24 @@ class OnosCliDriver( CLI ):
                 nodeA = link[ 'src' ][ 'device' ]
                 nodeB = link[ 'dst' ][ 'device' ]
                 assert idToDevice[ nodeA ][ 'available' ] and idToDevice[ nodeB ][ 'available' ]
-                if not nodeA in graphDict.keys():
-                    graphDict[ nodeA ] = { 'edges':{},
-                                           'dpid':idToDevice[ nodeA ][ 'id' ][3:],
-                                           'type':idToDevice[ nodeA ][ 'type' ],
-                                           'available':idToDevice[ nodeA ][ 'available' ],
-                                           'role':idToDevice[ nodeA ][ 'role' ],
-                                           'mfr':idToDevice[ nodeA ][ 'mfr' ],
-                                           'hw':idToDevice[ nodeA ][ 'hw' ],
-                                           'sw':idToDevice[ nodeA ][ 'sw' ],
-                                           'serial':idToDevice[ nodeA ][ 'serial' ],
-                                           'chassisId':idToDevice[ nodeA ][ 'chassisId' ],
-                                           'annotations':idToDevice[ nodeA ][ 'annotations' ]}
+                if nodeA not in graphDict.keys():
+                    graphDict[ nodeA ] = { 'edges': {},
+                                           'dpid': idToDevice[ nodeA ][ 'id' ][3:],
+                                           'type': idToDevice[ nodeA ][ 'type' ],
+                                           'available': idToDevice[ nodeA ][ 'available' ],
+                                           'role': idToDevice[ nodeA ][ 'role' ],
+                                           'mfr': idToDevice[ nodeA ][ 'mfr' ],
+                                           'hw': idToDevice[ nodeA ][ 'hw' ],
+                                           'sw': idToDevice[ nodeA ][ 'sw' ],
+                                           'serial': idToDevice[ nodeA ][ 'serial' ],
+                                           'chassisId': idToDevice[ nodeA ][ 'chassisId' ],
+                                           'annotations': idToDevice[ nodeA ][ 'annotations' ]}
                 else:
                     # Assert nodeB is not connected to any current links of nodeA
                     assert nodeB not in graphDict[ nodeA ][ 'edges' ].keys()
-                graphDict[ nodeA ][ 'edges' ][ nodeB ] = { 'port':link[ 'src' ][ 'port' ],
-                                                           'type':link[ 'type' ],
-                                                           'state':link[ 'state' ] }
+                graphDict[ nodeA ][ 'edges' ][ nodeB ] = { 'port': link[ 'src' ][ 'port' ],
+                                                           'type': link[ 'type' ],
+                                                           'state': link[ 'state' ] }
             return graphDict
         except ( TypeError, ValueError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -5097,7 +5095,7 @@ class OnosCliDriver( CLI ):
         """
         try:
             assert type( searchTerm ) is str
-            #Build the log paths string
+            # Build the log paths string
             logPath = '/opt/onos/log/karaf.log.'
             logPaths = '/opt/onos/log/karaf.log'
             for i in range( 1, logNum ):
@@ -5461,7 +5459,7 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "interfaces"
             if jsonFormat:
-                #raise NotImplementedError
+                raise NotImplementedError
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
             assert handle is not None, "Error in sendline"
@@ -5499,10 +5497,7 @@ class OnosCliDriver( CLI ):
                 and the splitTerm_after is "x"
 
             others:
-
-                plz look at the "logsearch" Function in onosclidriver.py
-
-
+                Please look at the "logsearch" Function in onosclidriver.py
         '''
         if logNum < 0:
             main.log.error("Get wrong log number ")
@@ -5524,3 +5519,240 @@ class OnosCliDriver( CLI ):
         except AssertionError:
             main.log.warn( "Search Term Not Found " )
             return main.ERROR
+
+    def workQueueAdd( self, queueName, value ):
+        """
+        CLI command to add a string to the specified Work Queue.
+        This function uses the distributed primitives test app, which
+        gives some cli access to distributed primitives for testing
+        purposes only.
+
+        Required arguments:
+            queueName - The name of the queue to add to
+            value - The value to add to the queue
+        returns:
+            main.TRUE on success, main.FALSE on failure and
+            main.ERROR on error.
+        """
+        try:
+            queueName = str( queueName )
+            value = str( value )
+            prefix = "work-queue-test"
+            operation = "add"
+            cmdStr = " ".join( [ prefix, queueName, operation, value ] )
+            output = self.distPrimitivesSend( cmdStr )
+            if "Invalid operation name" in output:
+                main.log.warn( output )
+                return main.ERROR
+            elif "Done" in output:
+                return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def workQueueAddMultiple( self, queueName, value1, value2 ):
+        """
+        CLI command to add two strings to the specified Work Queue.
+        This function uses the distributed primitives test app, which
+        gives some cli access to distributed primitives for testing
+        purposes only.
+
+        Required arguments:
+            queueName - The name of the queue to add to
+            value1 - The first value to add to the queue
+            value2 - The second value to add to the queue
+        returns:
+            main.TRUE on success, main.FALSE on failure and
+            main.ERROR on error.
+        """
+        try:
+            queueName = str( queueName )
+            value1 = str( value1 )
+            value2 = str( value2 )
+            prefix = "work-queue-test"
+            operation = "addMultiple"
+            cmdStr = " ".join( [ prefix, queueName, operation, value1, value2 ] )
+            output = self.distPrimitivesSend( cmdStr )
+            if "Invalid operation name" in output:
+                main.log.warn( output )
+                return main.ERROR
+            elif "Done" in output:
+                return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def workQueueTakeAndComplete( self, queueName, number=1 ):
+        """
+        CLI command to take a value from the specified Work Queue and compelte it.
+        This function uses the distributed primitives test app, which
+        gives some cli access to distributed primitives for testing
+        purposes only.
+
+        Required arguments:
+            queueName - The name of the queue to add to
+            number - The number of items to take and complete
+        returns:
+            main.TRUE on success, main.FALSE on failure and
+            main.ERROR on error.
+        """
+        try:
+            queueName = str( queueName )
+            number = str( int( number ) )
+            prefix = "work-queue-test"
+            operation = "takeAndComplete"
+            cmdStr = " ".join( [ prefix, queueName, operation, number ] )
+            output = self.distPrimitivesSend( cmdStr )
+            if "Invalid operation name" in output:
+                main.log.warn( output )
+                return main.ERROR
+            elif "Done" in output:
+                return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def workQueueDestroy( self, queueName ):
+        """
+        CLI command to destroy the specified Work Queue.
+        This function uses the distributed primitives test app, which
+        gives some cli access to distributed primitives for testing
+        purposes only.
+
+        Required arguments:
+            queueName - The name of the queue to add to
+        returns:
+            main.TRUE on success, main.FALSE on failure and
+            main.ERROR on error.
+        """
+        try:
+            queueName = str( queueName )
+            prefix = "work-queue-test"
+            operation = "destroy"
+            cmdStr = " ".join( [ prefix, queueName, operation ] )
+            output = self.distPrimitivesSend( cmdStr )
+            if "Invalid operation name" in output:
+                main.log.warn( output )
+                return main.ERROR
+            return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def workQueueTotalPending( self, queueName ):
+        """
+        CLI command to get the Total Pending items of the specified Work Queue.
+        This function uses the distributed primitives test app, which
+        gives some cli access to distributed primitives for testing
+        purposes only.
+
+        Required arguments:
+            queueName - The name of the queue to add to
+        returns:
+            The number of Pending items in the specified work queue or
+            None on error
+        """
+        try:
+            queueName = str( queueName )
+            prefix = "work-queue-test"
+            operation = "totalPending"
+            cmdStr = " ".join( [ prefix, queueName, operation ] )
+            output = self.distPrimitivesSend( cmdStr )
+            pattern = r'\d+'
+            if "Invalid operation name" in output:
+                main.log.warn( output )
+                return None
+            else:
+                match = re.search( pattern, output )
+                return match.group(0)
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected; " + str( output ) )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def workQueueTotalCompleted( self, queueName ):
+        """
+        CLI command to get the Total Completed items of the specified Work Queue.
+        This function uses the distributed primitives test app, which
+        gives some cli access to distributed primitives for testing
+        purposes only.
+
+        Required arguments:
+            queueName - The name of the queue to add to
+        returns:
+            The number of complete items in the specified work queue or
+            None on error
+        """
+        try:
+            queueName = str( queueName )
+            prefix = "work-queue-test"
+            operation = "totalCompleted"
+            cmdStr = " ".join( [ prefix, queueName, operation ] )
+            output = self.distPrimitivesSend( cmdStr )
+            pattern = r'\d+'
+            if "Invalid operation name" in output:
+                main.log.warn( output )
+                return None
+            else:
+                match = re.search( pattern, output )
+                return match.group(0)
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected; " + str( output ) )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def workQueueTotalInProgress( self, queueName ):
+        """
+        CLI command to get the Total In Progress items of the specified Work Queue.
+        This function uses the distributed primitives test app, which
+        gives some cli access to distributed primitives for testing
+        purposes only.
+
+        Required arguments:
+            queueName - The name of the queue to add to
+        returns:
+            The number of In Progress items in the specified work queue or
+            None on error
+        """
+        try:
+            queueName = str( queueName )
+            prefix = "work-queue-test"
+            operation = "totalInProgress"
+            cmdStr = " ".join( [ prefix, queueName, operation ] )
+            output = self.distPrimitivesSend( cmdStr )
+            pattern = r'\d+'
+            if "Invalid operation name" in output:
+                main.log.warn( output )
+                return None
+            else:
+                match = re.search( pattern, output )
+                return match.group(0)
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected; " + str( output ) )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

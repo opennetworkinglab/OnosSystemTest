@@ -109,7 +109,7 @@ class HA():
     def consistentLeaderboards( self, nodes ):
         TOPIC = 'org.onosproject.election'
         # FIXME: use threads
-        #FIXME: should we retry outside the function?
+        # FIXME: should we retry outside the function?
         for n in range( 5 ):  # Retry in case election is still happening
             leaderList = []
             # Get all leaderboards
@@ -160,11 +160,73 @@ class HA():
             results = results and currentResult
         return results
 
+    def workQueueStatsCheck( self, workQueueName, completed, inProgress, pending ):
+        # Completed
+        threads = []
+        completedValues = []
+        for i in main.activeNodes:
+            t = main.Thread( target=main.CLIs[i].workQueueTotalCompleted,
+                             name="WorkQueueCompleted-" + str( i ),
+                             args=[ workQueueName ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            completedValues.append( int( t.result ) )
+        # Check the results
+        completedResults = [ x == completed for x in completedValues ]
+        completedResult = all( completedResults )
+        if not completedResult:
+            main.log.warn( "Expected Work Queue {} to have {} completed, found {}".format(
+                workQueueName, completed, completedValues ) )
+
+        # In Progress
+        threads = []
+        inProgressValues = []
+        for i in main.activeNodes:
+            t = main.Thread( target=main.CLIs[i].workQueueTotalInProgress,
+                             name="WorkQueueInProgress-" + str( i ),
+                             args=[ workQueueName ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            inProgressValues.append( int( t.result ) )
+        # Check the results
+        inProgressResults = [ x == inProgress for x in inProgressValues ]
+        inProgressResult = all( inProgressResults )
+        if not inProgressResult:
+            main.log.warn( "Expected Work Queue {} to have {} inProgress, found {}".format(
+                workQueueName, inProgress, inProgressValues ) )
+
+        # Pending
+        threads = []
+        pendingValues = []
+        for i in main.activeNodes:
+            t = main.Thread( target=main.CLIs[i].workQueueTotalPending,
+                             name="WorkQueuePending-" + str( i ),
+                             args=[ workQueueName ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pendingValues.append( int( t.result ) )
+        # Check the results
+        pendingResults = [ x == pending for x in pendingValues ]
+        pendingResult = all( pendingResults )
+        if not pendingResult:
+            main.log.warn( "Expected Work Queue {} to have {} pending, found {}".format(
+                workQueueName, pending, pendingValues ) )
+        return completedResult and inProgressResult and pendingResult
+
     def CASE17( self, main ):
         """
         Check for basic functionality with distributed primitives
         """
-        #TODO: Clean this up so it's not just a cut/paste from the test
+        # TODO: Clean this up so it's not just a cut/paste from the test
         try:
             # Make sure variables are defined/set
             assert main.numCtrls, "main.numCtrls not defined"
@@ -188,8 +250,12 @@ class HA():
             addValue = "a"
             addAllValue = "a b c d e f"
             retainValue = "c d e f"
-            valueName = "TestOn-Value"
+            valueName = "TestON-Value"
             valueValue = None
+            workQueueName = "TestON-Queue"
+            workQueueCompleted = 0
+            workQueueInProgress = 0
+            workQueuePending = 0
 
             description = "Check for basic functionality with distributed " +\
                           "primitives"
@@ -1522,5 +1588,123 @@ class HA():
                                      onfail="Error getting atomic Value " +
                                             str( valueValue ) + ", found: " +
                                             str( getValues ) )
+
+            # WORK QUEUES
+            main.step( "Work Queue add()" )
+            threads = []
+            i = main.activeNodes[0]
+            addResult = main.CLIs[i].workQueueAdd( workQueueName, 'foo' )
+            workQueuePending += 1
+            main.log.debug( addResult )
+            # Check the results
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=addResult,
+                                     onpass="Work Queue add successful",
+                                     onfail="Error adding to Work Queue" )
+
+            main.step( "Check the work queue stats" )
+            statsResults = self.workQueueStatsCheck( workQueueName,
+                                                     workQueueCompleted,
+                                                     workQueueInProgress,
+                                                     workQueuePending )
+            utilities.assert_equals( expect=True,
+                                     actual=statsResults,
+                                     onpass="Work Queue stats correct",
+                                     onfail="Work Queue stats incorrect " )
+
+            main.step( "Work Queue addMultiple()" )
+            threads = []
+            i = main.activeNodes[0]
+            addMultipleResult = main.CLIs[i].workQueueAddMultiple( workQueueName, 'bar', 'baz' )
+            workQueuePending += 2
+            main.log.debug( addMultipleResult )
+            # Check the results
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=addMultipleResult,
+                                     onpass="Work Queue add multiple successful",
+                                     onfail="Error adding multiple items to Work Queue" )
+
+            main.step( "Check the work queue stats" )
+            statsResults = self.workQueueStatsCheck( workQueueName,
+                                                     workQueueCompleted,
+                                                     workQueueInProgress,
+                                                     workQueuePending )
+            utilities.assert_equals( expect=True,
+                                     actual=statsResults,
+                                     onpass="Work Queue stats correct",
+                                     onfail="Work Queue stats incorrect " )
+
+            main.step( "Work Queue takeAndComplete() 1" )
+            threads = []
+            i = main.activeNodes[0]
+            number = 1
+            take1Result = main.CLIs[i].workQueueTakeAndComplete( workQueueName, number )
+            workQueuePending -= number
+            workQueueCompleted += number
+            main.log.debug( take1Result )
+            # Check the results
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=take1Result,
+                                     onpass="Work Queue takeAndComplete 1 successful",
+                                     onfail="Error taking 1 from Work Queue" )
+
+            main.step( "Check the work queue stats" )
+            statsResults = self.workQueueStatsCheck( workQueueName,
+                                                     workQueueCompleted,
+                                                     workQueueInProgress,
+                                                     workQueuePending )
+            utilities.assert_equals( expect=True,
+                                     actual=statsResults,
+                                     onpass="Work Queue stats correct",
+                                     onfail="Work Queue stats incorrect " )
+
+            main.step( "Work Queue takeAndComplete() 2" )
+            threads = []
+            i = main.activeNodes[0]
+            number = 2
+            take2Result = main.CLIs[i].workQueueTakeAndComplete( workQueueName, number )
+            workQueuePending -= number
+            workQueueCompleted += number
+            main.log.debug( take2Result )
+            # Check the results
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=take2Result,
+                                     onpass="Work Queue takeAndComplete 2 successful",
+                                     onfail="Error taking 2 from Work Queue" )
+
+            main.step( "Check the work queue stats" )
+            statsResults = self.workQueueStatsCheck( workQueueName,
+                                                     workQueueCompleted,
+                                                     workQueueInProgress,
+                                                     workQueuePending )
+            utilities.assert_equals( expect=True,
+                                     actual=statsResults,
+                                     onpass="Work Queue stats correct",
+                                     onfail="Work Queue stats incorrect " )
+
+            main.step( "Work Queue destroy()" )
+            valueValue = None
+            threads = []
+            i = main.activeNodes[0]
+            destroyResult = main.CLIs[i].workQueueDestroy( workQueueName )
+            workQueueCompleted = 0
+            workQueueInProgress = 0
+            workQueuePending = 0
+            main.log.debug( destroyResult )
+            # Check the results
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=destroyResult,
+                                     onpass="Work Queue destroy successful",
+                                     onfail="Error destroying Work Queue" )
+
+            main.step( "Check the work queue stats" )
+            statsResults = self.workQueueStatsCheck( workQueueName,
+                                                     workQueueCompleted,
+                                                     workQueueInProgress,
+                                                     workQueuePending )
+            utilities.assert_equals( expect=True,
+                                     actual=statsResults,
+                                     onpass="Work Queue stats correct",
+                                     onfail="Work Queue stats incorrect " )
         except Exception as e:
             main.log.error( "Exception: " + str( e ) )

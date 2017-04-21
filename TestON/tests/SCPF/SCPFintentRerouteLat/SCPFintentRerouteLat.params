@@ -7,7 +7,7 @@
 
     <ENV>
         <cellName>intentRerouteCell</cellName>
-        <cellApps>drivers,null,intentperf,metrics</cellApps>
+        <cellApps>drivers,null,metrics</cellApps>
     </ENV>
 
     <DEPENDENCY>
@@ -60,7 +60,7 @@
         <startup>5</startup>
         <setmaster>5</setmaster>
         <install>10</install>
-        <verify>5</verify>
+        <verify>10</verify>
         # timeout for pexpect
         <timeout>300</timeout>
     </SLEEP>

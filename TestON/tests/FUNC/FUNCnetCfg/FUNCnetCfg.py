@@ -411,10 +411,16 @@ class FUNCnetCfg:
         pprint = main.nodes[0].pprint
 
         main.step( "Add Net Cfg for switch1" )
-        s1Json = { "rackAddress": 1,
-                   "name": "Switch1",
-                   "owner": "Jimmy",
-                   "allowed": True }
+
+        import json
+        import os
+        try:
+            with open( os.path.dirname( main.testFile ) + '/dependencies/s1Json', 'r' ) as s1Jsondata:
+                s1Json = json.load( s1Jsondata )
+        except IOError:
+            main.log.exception( "s1Json File not found." )
+        main.log.info( "s1Json:" + str( s1Json ) )
+
         main.s1Json = s1Json
         setS1Allow = main.ONOSrest1.setNetCfg( s1Json,
                                                subjectClass="devices",
@@ -444,10 +450,14 @@ class FUNCnetCfg:
                                  onfail="Net Cfg for device s1 not correctly set" )
 
         main.step( "Add Net Cfg for switch3" )
-        s3Json = { "rackAddress": 3,
-                   "name": "Switch3",
-                   "owner": "Jane",
-                   "allowed": False }
+
+        try:
+            with open( os.path.dirname( main.testFile ) + '/dependencies/s3Json', 'r' ) as s3Jsondata:
+                s3Json = json.load( s3Jsondata )
+        except IOError:
+            main.log.exception( "s3Json File not found" )
+        main.log.info( "s3Json:" + str( s3Json) )
+
         main.s3Json = s3Json
         setS3Disallow = main.ONOSrest1.setNetCfg( s3Json,
                                                   subjectClass="devices",
@@ -546,10 +556,12 @@ class FUNCnetCfg:
         pprint = main.nodes[0].pprint
 
         main.step( "Add Net Cfg for switch2" )
-        s2Json = { "rackAddress": 2,
-                   "name": "Switch2",
-                   "owner": "Jenny",
-                   "allowed": True }
+        try:
+            with open( os.path.dirname( main.testFile ) + '/dependencies/s2Json', 'r' ) as s2Jsondata:
+                s2Json = json.load( s2Jsondata )
+        except IOError:
+            main.log.exception( "s2Json File not found" )
+        main.log.info( "s2Json:" + str( s2Json ) )
         main.s2Json = s2Json
         setS2Allow = main.ONOSrest2.setNetCfg( s2Json,
                                                subjectClass="devices",
@@ -576,10 +588,13 @@ class FUNCnetCfg:
                                  onfail="Net Cfg for device s2 not correctly set" )
 
         main.step( "Add Net Cfg for switch4" )
-        s4Json = { "rackAddress": 4,
-                   "name": "Switch4",
-                   "owner": "John",
-                   "allowed": False }
+
+        try:
+            with open( os.path.dirname( main.testFile ) + '/dependencies/s4Json', 'r' ) as s4Jsondata:
+                s4Json = json.load( s4Jsondata )
+        except IOError:
+            main.log.exception( "s4Json File not found" )
+        main.log.info( "s4Json:" + str( s4Json ) )
         main.s4Json = s4Json
         setS4Disallow = main.ONOSrest3.setNetCfg( s4Json,
                                                   subjectClass="devices",
@@ -826,8 +841,20 @@ class FUNCnetCfg:
                                         " of allowed devices" )
 
         main.step( "Removing allowed status from Switches 5 and 6" )
-        main.s5Json = { "allowed": False }
-        main.s6Json = { "allowed": False }
+        try:
+            with open( os.path.dirname( main.testFile ) + '/dependencies/s5Json', 'r' ) as s5Jsondata:
+                main.s5Json = json.load( s5Jsondata )
+        except IOError:
+            main.log.exception( "s5Json File not found" )
+        main.log.info( "s5Json:" + str( main.s5Json ) )
+
+        try:
+            with open( os.path.dirname( main.testFile ) + '/dependencies/s6Json', 'r' ) as s6Jsondata:
+                main.s6Json = json.load( s6Jsondata )
+        except IOError:
+            main.log.exception( "s6Json File not found" )
+        main.log.info( "s6Json:" + str( main.s6Json ) )
+
         s5Json = main.s5Json
         setS1 = main.ONOSrest1.setNetCfg( s5Json,
                                           subjectClass="devices",

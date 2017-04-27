@@ -1,0 +1,182 @@
+#!groovy
+// This is a Jenkinsfile for a scripted pipeline for the SCPF tests
+properties([pipelineTriggers([cron('30 19 * * *')])])
+
+// TODO: Exception handling around steps
+SCPF = [
+    SCPFcbench: [ test:'SCPFcbench', table:'cbench_bm_tests', results:'cbench_bm_results', file:'CbenchDB'],
+    SCPFhostLat: [ test:'SCPFhostLat', table:'host_latency_results', results:'host_latency_results', file:'HostAddLatency'],
+    SCPFportLat: [ test:'SCPFportLat', table:'port_latency_details', results:'port_latency_results', file:'/tmp/portEventResultDb'],
+    SCPFflowTp1g: [ test:'SCPFflowTp1g', table:'flow_tp_tests', results:'flow_tp_results', file:'flowTP1gDB'],
+    SCPFscaleTopo: [ test:'SCPFscaleTopo', table:'scale_topo_latency_details', results:'scale_topo_latency_results', file:'/tmp/scaleTopoResultDb'],
+    SCPFswitchLat: [ test:'SCPFswitchLat', table:'switch_latency_details', results:'switch_latency_results', file:'/tmp/switchEventResultDb'],
+    SCPFbatchFlowResp: [ test:'SCPFbatchFlowResp', table:'batch_flow_tests', results:'batch_flow_results', file:'SCPFbatchFlowRespData'],
+    SCPFintentEventTp: [ test:'SCPFintentEventTp', table:'intent_tp_tests', results:'intent_tp_results', file:'IntentEventTPDB'],
+    SCPFintentRerouteLat: [ test:'SCPFintentRerouteLat', table:'intent_reroute_latency_tests', results:'intent_reroute_latency_results', file:'IntentRerouteLatDB'],
+    SCPFscalingMaxIntents: [ test:'SCPFscalingMaxIntents', table:'max_intents_tests', results:'max_intents_results', file:'ScalingMaxIntentDB'],
+    SCPFintentEventTpWithFlowObj: [ test:'SCPFintentEventTp --params TEST/flowObj=True', table:'intent_tp_fobj_tests', results:'intent_tp_fobj_results', file:'IntentEventTPflowObjDB'],
+    SCPFintentInstallWithdrawLat: [ test:'SCPFintentInstallWithdrawLat', table:'intent_latency_tests', results:'intent_latency_results', file:'IntentInstallWithdrawLatDB'],
+    SCPFintentRerouteLatWithFlowObj: [ test:'SCPFintentRerouteLat --params TEST/flowObj=True', table:'intent_reroute_latency_fobj_tests', results:'intent_reroute_latency_fobj_results', file:'IntentRerouteLatDBWithFlowObj'],
+    SCPFscalingMaxIntentsWithFlowObj: [ test:'SCPFscalingMaxIntents --params TEST/flowObj=True', table:'max_intents_fobj_tests', results:'max_intents_fobj_results', file:'ScalingMaxIntentDBWFO'],
+    SCPFintentInstallWithdrawLatWithFlowObj: [ test:'SCPFintentInstallWithdrawLat --params TEST/flowObj=True', table:'intent_latency_fobj_tests', results:'intent_latency_fobj_results', file:'IntentInstallWithdrawLatDBWFO']
+]
+
+// Get just the test names
+def defaultTests = SCPF.keySet().toArray()
+// Convert to a string with new line deliminators for user input
+StringBuilder sb = new StringBuilder();
+for (String s : defaultTests)
+{
+    sb.append(s);
+    sb.append("\n");
+}
+choices = sb.toString();
+// Define sets of tests
+SCPF_Basic = "SCPFswitchLat\nSCPFportLat\nSCPFintentInstallWithdrawLat\nSCPFintentEventTp\nSCPFflowTp1g\nSCPFcbench\nSCPFbatchFlowResp"
+SCPF_ExtraSetA = "SCPFintentRerouteLat\nSCPFscalingMaxIntents\nSCPFhostLat\nSCPFscaleTopo"
+SCPF_ExtraSetB = "SCPFintentInstallWithdrawLatWithFlowObj\nSCPFintentEventTpWithFlowObj\nSCPFintentRerouteLatWithFlowObj\nSCPFscalingMaxIntentsWithFlowObj"
+
+try {
+    timeout(time: 120, unit: 'SECONDS') {
+        // This is kind of hacky, I can't seem to find the correct way to get a "build with parameters" button
+        testcases = input message: 'Tests to run?', parameters:[[$class:'TextParameterDefinition', defaultValue: choices, description:'', name: 'Run these tests']]
+    }
+} catch(org.jenkinsci.plugins.workflow.steps.FlowInterruptedException Err) {
+    echo("Input timed out or cancled, using default values")
+    // Set tests based on day of week
+    def now = new Date()
+    echo(now.toString())
+    today = now[Calendar.DAY_OF_WEEK]
+    switch (today) {
+        // TODO Choose which tests to run based on day of the week for nightly run?
+        // TODO Maybe define different subsets of tests above then just add them here
+        case Calendar.MONDAY:
+            choices = SCPF_Basic + SCPF_ExtraSetA
+            println "Defaulting to Monday tests:" + choices
+            break
+        case Calendar.TUESDAY:
+            choices = SCPF_Basic + SCPF_ExtraSetB
+            println "Defaulting to Tuesday tests:" + choices
+            break
+        case Calendar.WEDNESDAY:
+            choices = SCPF_Basic
+            println "Defaulting to Wednesday tests:" + choices
+            break
+        case Calendar.THURSDAY:
+            choices = SCPF_Basic + SCPF_ExtraSetA
+            println "Defaulting to Thursday tests:" + choices
+            break
+        case Calendar.FRIDAY:
+            choices = SCPF_Basic + SCPF_ExtraSetA + SCPF_ExtraSetB
+            println "Defaulting to Fridat tests:" + choices
+            break
+        case Calendar.SATURDAY:
+            choices = SCPF_Basic + SCPF_ExtraSetA + SCPF_ExtraSetB
+            println "Defaulting to Saturday tests:" + choices
+            break
+        case Calendar.SUNDAY:
+            choices = SCPF_Basic
+            println "Defaulting to Sunday tests:" + choices
+            break
+    }
+    testcases = choices
+}
+
+echo("Testcases:")
+//println testcases
+// TODO REMOVE AFTER DEBUGGING
+def testsToRun = testcases.tokenize("\n;, ")
+for (String test : testsToRun) {
+    println test
+}
+
+def tests = [:]
+for (int i = 0; i < testsToRun.size(); i++) {
+    // Get the actual string here.
+    def testName = testsToRun[i]
+    def stepName = "Running ${testName}"
+    tests[stepName] = SCPFTest(testName)
+}
+
+// run the tests
+parallel tests
+
+// The testName should be the key from the SCPF map
+def SCPFTest( testName ) {
+    return {
+        node ("TestStation-BMs"){ // only run SCPF tests on the BM cluster
+            def prop = readProperties(file:'/var/jenkins/TestONOS.property') // TODO set defaults
+
+            withEnv(['ONOSBranch='+prop["ONOSBranch"],
+                     'ONOSJVMHeap='+prop["ONOSJVMHeap"],
+                     'TestONBranch='+prop["TestONBranch"],
+                     'ONOSTag='+prop["ONOSTag"],
+                     'WikiPrefix='+prop["WikiPrefix"]]){
+                stage(testName) {
+                    sh '''#!/bin/bash -l
+                    set -i # interactive
+                    shopt -s expand_aliases # expand alias in non-interactive mode
+                    export PYTHONUNBUFFERED=1
+
+                    ifconfig
+
+                    echo "ONOS Branch is: $ONOSBranch"
+                    echo "TestON Branch is: $TestONBranch"
+                    echo "Test date: "
+                    date
+
+                    cd ~
+                    export PATH=$PATH:onos/tools/test/bin
+
+                    stc teardown
+
+                    cd ~/OnosSystemTest/TestON/bin
+                    git log |head
+                    ./cleanup.sh
+                    '''
+                    sh "./cli.py run " + SCPF[testName]['test']
+
+                    // Post Results
+                    withCredentials([
+                        string(credentialsId: 'db_pass', variable: 'pass'),
+                        string(credentialsId: 'db_user', variable: 'user'),
+                        string(credentialsId: 'db_host', variable: 'host'),
+                        string(credentialsId: 'db_port', variable: 'port')]) {
+                            sh '''#!/bin/bash
+
+                            export DATE=\$(date +%F_%T)
+                            cd ~
+                            pwd
+                            cd /tmp
+                            while read line
+                            do
+
+                            echo \$line
+                            echo ''' + pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + '''','\$BUILD_NUMBER', '\$ONOSBranch', \$line );\"
+
+                            done< ''' + SCPF[testName]['file'] + '''
+                            echo 'Done'
+                            '''
+                    }
+                    // Fetch Logs
+                    sh '''#!/bin/bash
+
+                    cd ~/OnosSystemTest/TestON/logs
+                    echo "Job Name is: ${JOB_NAME}"
+                    TestONlogDir=$(ls -t | grep ${TEST_NAME}_  |head -1)
+                    echo "########################################################################################"
+                    echo "#####  copying ONOS logs from all nodes to TestON/logs directory: ${TestONlogDir}"
+                    echo "########################################################################################"
+                    cd $TestONlogDir
+                    if [ $? -eq 1 ]
+                    then
+                        echo "Job name does not match any test suite name to move log!"
+                    else
+                        pwd
+                        for i in $OC{1..7}; do onos-fetch-logs $i; done
+                    fi'''
+                }
+            }
+        }
+    }
+}

@@ -5101,23 +5101,25 @@ class OnosCliDriver( CLI ):
             for i in range( 1, logNum ):
                 logPaths = logPath + str( i ) + " " + logPaths
             cmd = "cat " + logPaths
+            if startLine:
+                # 100000000 is just a extreme large number to make sure this function can grep all the lines after startLine
+                cmd = cmd + " | grep -A 100000000 \'" + startLine + "\'"
             if mode == 'all':
                 cmd = cmd + " | grep \'" + searchTerm + "\'"
-            if mode == 'last':
+            elif mode == 'last':
                 cmd = cmd + " | grep \'" + searchTerm + "\'" + " | tail -n 1"
-            if mode == 'first':
-                if startLine != '':
-                    # 100000000 is just a extreme large number to make sure this function can grep all the lines after startLine
-                    cmd = cmd + " | grep -A 100000000 \'" + startLine + "\' | grep \'" + searchTerm + "\'" + "| head -n 1"
-                else:
-                    cmd = cmd + " | grep \'" + searchTerm + "\'" + " | head -n 1"
-            if mode == 'num':
+            elif mode == 'first':
+                cmd = cmd + " | grep \'" + searchTerm + "\'" + " | head -n 1"
+            elif mode == 'num':
                 cmd = cmd + " | grep -c \'" + searchTerm + "\'"
                 num = self.sendline( cmd )
                 return num
-            if mode == 'total':
+            elif mode == 'total':
                 totalLines = self.sendline( "cat /opt/onos/log/karaf.log | wc -l" )
                 return int(totalLines)
+            else:
+                main.log.error( self.name + " unsupported mode" )
+                return main.ERROR
             before = self.sendline( cmd )
             before = before.splitlines()
             # make sure the returned list only contains the search term

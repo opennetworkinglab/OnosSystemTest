@@ -248,7 +248,8 @@ class SCPFintentRerouteLat:
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "topoShape", value="reroute")
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
-        main.CLIs[0].setCfg("org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupEnabled", value="false")
+        # "bakcupEnabled" should be true by default. Not sure if it's intended or not to disable it. Seems no impact to test results.
+        #main.CLIs[0].setCfg("org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupEnabled", value="false")
         if main.flowObj:
             main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                 "useFlowObjectives", value="true")
@@ -271,24 +272,21 @@ class SCPFintentRerouteLat:
         import json
         # from scipy import stats
 
-        ts = time.time()
         print(main.intentsList)
         for batchSize in main.intentsList:
             main.batchSize = batchSize
             main.log.report("Intent Batch size: " + str(batchSize) + "\n      ")
-            main.LatencyList = []
-            main.LatencyListTopoToFirstInstalled = []
-            main.LatencyListFirstInstalledToLastInstalled = []
+            firstLocalLatencies = []
+            lastLocalLatencies = []
+            firstGlobalLatencies = []
+            lastGlobalLatencies = []
+            main.startLine = {}
             main.validRun = 0
             main.invalidRun = 0
-            # initial a variables to record the term of startLine in karaf logs of each node
-            main.totalLines = []
-            for i in range( main.numCtrls ):
-                main.totalLines.append( '' )
             while main.validRun <= main.warmUp + main.sampleSize and main.invalidRun <= main.maxInvalidRun:
                 if main.validRun >= main.warmUp:
                     main.log.info("================================================")
-                    main.log.info("Starting test iteration: {} ".format( main.validRun - main.warmUp))
+                    main.log.info("Valid iteration: {} ".format( main.validRun - main.warmUp))
                     main.log.info("Total iteration: {}".format( main.validRun + main.invalidRun))
                     main.log.info("================================================")
                 else:
@@ -298,140 +296,112 @@ class SCPFintentRerouteLat:
                 main.CLIs[0].pushTestIntents(main.ingress, main.egress, main.batchSize,
                                              offset=1, options="-i", timeout=main.timeout)
 
-                # check links and flows
-                k = 0
-                main.verify = main.FALSE
-                linkCheck = 0
-                flowsCheck = 0
-                while k <= main.verifyAttempts:
-                    time.sleep(main.verifySleep)
-                    summary = json.loads(main.CLIs[0].summary(timeout=main.timeout))
-                    linkCheck = summary.get("links")
-                    flowsCheck = summary.get("flows")
-                    if linkCheck == main.deviceCount * 2 and flowsCheck == batchSize * (main.deviceCount - 1 ):
-                        main.log.info("links: {}, flows: {} ".format(linkCheck, flowsCheck))
-                        main.verify = main.TRUE
-                        break
-                    k += 1
+                # check links, flows and intents
+                main.intentRerouteLatFuncs.sanityCheck( main, main.deviceCount * 2, batchSize * (main.deviceCount - 1 ), main.batchSize )
                 if not main.verify:
-                    main.log.warn("Links or flows number not as expected")
-                    main.log.warn("links: {}, flows: {} ".format(linkCheck, flowsCheck))
-                    # bring back topology
-                    main.intentRerouteLatFuncs.bringBackTopology( main )
-                    if main.validRun >= main.warmUp:
-                        main.invalidRun += 1
-                        continue
-                    else:
-                        main.validRun += 1
-                        continue
-                # Bring link down
+                    main.log.warn( "Sanity check failed, skipping this iteration..." )
+                    continue
+
+                # Insert one line in karaf.log before link down
+                for i in range( main.numCtrls ):
+                    main.CLIs[ i ].log( "\'Scale: {}, Batch:{}, Iteration: {}\'".format( main.numCtrls, batchSize, main.validRun + main.invalidRun ) )
+
+                # bring link down
                 main.CLIs[0].link( main.end1[ 'port' ], main.end2[ 'port' ], "down",
                                   timeout=main.timeout, showResponse=False)
-                main.verify = main.FALSE
-                k = 0
-                while k <= main.verifyAttempts:
-                    time.sleep(main.verifySleep)
-                    summary = json.loads(main.CLIs[0].summary(timeout=main.timeout))
-                    linkCheck = summary.get("links")
-                    flowsCheck = summary.get("flows")
-                    if linkCheck == (main.deviceCount - 1) * 2 and flowsCheck == batchSize * main.deviceCount:
-                        main.log.info("links: {}, flows: {} ".format(linkCheck, flowsCheck))
-                        main.verify = main.TRUE
-                        break
-                    k += 1
+
+                # check links, flows and intents
+                main.intentRerouteLatFuncs.sanityCheck( main, (main.deviceCount - 1) * 2, batchSize * main.deviceCount, main.batchSize )
                 if not main.verify:
-                    main.log.warn("Links or flows number not as expected")
-                    main.log.warn("links: {}, flows: {} ".format(linkCheck, flowsCheck))
-                    # bring back topology
-                    main.intentRerouteLatFuncs.bringBackTopology( main )
-                    if main.validRun >= main.warmUp:
-                        main.invalidRun += 1
-                        continue
-                    else:
-                        main.validRun += 1
-                        continue
-                # record the link romving time as the startLine
+                    main.log.warn( "Sanity check failed, skipping this iteration..." )
+                    continue
+
+                # Get timestamp of last LINK_REMOVED event as separator between iterations
+                skip = False
                 for i in range( main.numCtrls ):
-                    logNum = main.intentRerouteLatFuncs.checkLog( main, i )
-                    main.totalLines[i] = str(main.CLIs[ i ].getTimeStampFromLog( "last", "LINK_REMOVED", "time = ", " ", logNum=logNum ))
-                    main.log.info("Node " + str( i+1 ) + ": the start timestamp is " + main.totalLines[i] + " this iteration" )
-                #Calculate values
-                lastTopologyToFirstInstalled, firstInstalledToLastInstalled, totalTime = main.intentRerouteLatFuncs.getValues( main )
-                if totalTime == -1:
+                    logNum = main.intentRerouteLatFuncs.getLogNum( main, i )
+                    timestamp = str( main.CLIs[ i ].getTimeStampFromLog( "last", "LINK_REMOVED", "time = ", " ", logNum=logNum ) )
+                    if timestamp == main.ERROR:
+                        # Try again in case that the log number just increased
+                        logNum = main.intentRerouteLatFuncs.getLogNum( main, i )
+                        timestamp = str( main.CLIs[ i ].getTimeStampFromLog( "last", "LINK_REMOVED", "time = ", " ", logNum=logNum ) )
+                    if timestamp == main.ERROR:
+                        main.log.warn( "Cannot find the event we want in the log, skipping this iteration..." )
+                        main.intentRerouteLatFuncs.bringBackTopology( main )
+                        if main.validRun >= main.warmUp:
+                            main.invalidRun += 1
+                        else:
+                            main.validRun += 1
+                        skip = True
+                        break
+                    else:
+                        main.startLine[ i ] = timestamp
+                        main.log.info( "Timestamp of last LINK_REMOVED event on node {} is {}".format( i+1, main.startLine[ i ] ) )
+                if skip: continue
+
+                # calculate values
+                topologyTimestamps = main.intentRerouteLatFuncs.getTopologyTimestamps( main )
+                intentTimestamps = main.intentRerouteLatFuncs.getIntentTimestamps( main )
+                if intentTimestamps == main.ERROR or topologyTimestamps == main.ERROR:
+                    main.log.info( "Got invalid timestamp, skipping this iteration..." )
+                    main.intentRerouteLatFuncs.bringBackTopology( main )
                     if main.validRun >= main.warmUp:
                         main.invalidRun += 1
                     else:
                         main.validRun += 1
                     continue
                 else:
-                    main.log.info("Get valid latency")
+                    main.log.info( "Got valid timestamps" )
+
+                firstLocalLatnecy, lastLocalLatnecy, firstGlobalLatency, lastGlobalLatnecy = main.intentRerouteLatFuncs.calculateLatency( main, topologyTimestamps, intentTimestamps )
+                if firstLocalLatnecy < 0:
+                    main.log.info( "Got negative latency, skipping this iteration..." )
+                    main.intentRerouteLatFuncs.bringBackTopology( main )
+                    if main.validRun >= main.warmUp:
+                        main.invalidRun += 1
+                    else:
+                        main.validRun += 1
+                    continue
+                else:
+                    main.log.info( "Got valid latencies" )
                     main.validRun += 1
 
-                # Verify Summary after we bring up link, and withdrawn intents
+                firstLocalLatencies.append( firstLocalLatnecy )
+                lastLocalLatencies.append( lastLocalLatnecy )
+                firstGlobalLatencies.append( firstGlobalLatency )
+                lastGlobalLatencies.append( lastGlobalLatnecy )
+
+                # bring up link and withdraw intents
                 main.CLIs[0].link( main.end1[ 'port' ], main.end2[ 'port' ], "up",
                                   timeout=main.timeout)
-                k = 0
-                main.verify = main.FALSE
-                linkCheck = 0
-                flowsCheck = 0
-                while k <= main.verifyAttempts:
-                    time.sleep(main.verifySleep)
-                    main.CLIs[0].pushTestIntents(main.ingress, main.egress, batchSize,
-                                                 offset=1, options="-w", timeout=main.timeout)
-                    main.CLIs[0].purgeWithdrawnIntents()
-                    summary = json.loads(main.CLIs[0].summary())
-                    linkCheck = summary.get("links")
-                    flowsCheck = summary.get("flows")
-                    intentCheck = summary.get("intents")
-                    if linkCheck == main.deviceCount * 2 and flowsCheck == 0 and intentCheck == 0:
-                        main.log.info("links: {}, flows: {}, intents: {} ".format(linkCheck, flowsCheck, intentCheck))
-                        main.verify = main.TRUE
-                        break
-                    k += 1
+                main.CLIs[0].pushTestIntents(main.ingress, main.egress, batchSize,
+                                             offset=1, options="-w", timeout=main.timeout)
+                main.CLIs[0].purgeWithdrawnIntents()
+
+                # check links, flows and intents
+                main.intentRerouteLatFuncs.sanityCheck( main, main.deviceCount * 2, 0, 0 )
                 if not main.verify:
-                    main.log.error("links, flows or intents number not as expected")
-                    main.log.info("links: {}, flows: {}, intents: {} ".format(linkCheck, flowsCheck, intentCheck))
-                    # bring back topology
-                    main.intentRerouteLatFuncs.bringBackTopology( main )
                     continue
-                #main.log.info("total negative results num: " + str( main.record ) )
 
-            aveLatency = 0
-            aveLatencyTopoToFirstInstalled = 0
-            aveLatencyFirstInstalledToLastInstalled = 0
-
-            stdLatency = 0
-            stdLatencyTopoToFirstInstalled = 0
-            stdLatencyFirstInstalledToLastInstalled = 0
-
-            aveLatency = numpy.average( main.LatencyList )
-            aveLatencyTopoToFirstInstalled = numpy.average( main.LatencyListTopoToFirstInstalled )
-            aveLatencyFirstInstalledToLastInstalled = numpy.average( main.LatencyListFirstInstalledToLastInstalled )
-
-            stdLatency = numpy.std( main.LatencyList )
-            stdLatencyTopoToFirstInstalled = numpy.std( main.LatencyListTopoToFirstInstalled )
-            stdLatencyFirstInstalledToLastInstalled = numpy.std( main.LatencyListFirstInstalledToLastInstalled )
+            aveLocalLatency = numpy.average( lastLocalLatencies )
+            aveGlobalLatency = numpy.average( lastGlobalLatencies )
+            stdLocalLatency = numpy.std( lastLocalLatencies )
+            stdGlobalLatency = numpy.std( lastGlobalLatencies )
 
             main.log.report( "Scale: " + str( main.numCtrls ) + "  \tIntent batch: " + str( batchSize ) )
-            main.log.report( "Total Latency average:................" + str( aveLatency ) )
-            main.log.report( "Latency standard deviation:..........." + str( stdLatency ) )
-            main.log.report( "Last Topology to first installed Latency average:................." + str( aveLatencyTopoToFirstInstalled ) )
-            main.log.report( "Last Topology to first installed Latency standard deviation:......" + str( stdLatencyTopoToFirstInstalled ) )
-            main.log.report( "First installed to last installed Latency average:................" + str( aveLatencyFirstInstalledToLastInstalled ) )
-            main.log.report( "First installed to last installed Latency standard deviation:....." + str( stdLatencyFirstInstalledToLastInstalled ) )
+            main.log.report( "Local latency average:................" + str( aveLocalLatency ) )
+            main.log.report( "Global latency average:................" + str( aveGlobalLatency ) )
+            main.log.report( "Local latency std:................" + str( stdLocalLatency ) )
+            main.log.report( "Global latency std:................" + str( stdGlobalLatency ) )
             main.log.report( "________________________________________________________" )
 
-            if not (numpy.isnan(aveLatency) or numpy.isnan(stdLatency)):
+            if not ( numpy.isnan( aveLocalLatency ) or numpy.isnan( aveGlobalLatency ) ):
                 # check if got NaN for result
-                resultsDB = open(main.dbFileName, "a")
-                resultsDB.write("'" + main.commit + "',")
-                resultsDB.write(str(main.numCtrls) + ",")
-                resultsDB.write(str(batchSize) + ",")
-                resultsDB.write(str(aveLatency) + ",")
-                resultsDB.write(str(stdLatency) + ",")
-                resultsDB.write(str(aveLatencyTopoToFirstInstalled) + ",")
-                resultsDB.write(str(stdLatencyTopoToFirstInstalled) + ",")
-                resultsDB.write(str(aveLatencyFirstInstalledToLastInstalled) + ",")
-                resultsDB.write(str(stdLatencyFirstInstalledToLastInstalled) + "\n")
+                resultsDB = open( main.dbFileName, "a" )
+                resultsDB.write( "'" + main.commit + "'," )
+                resultsDB.write( str( main.numCtrls ) + "," )
+                resultsDB.write( str( batchSize ) + "," )
+                resultsDB.write( str( aveLocalLatency ) + "," )
+                resultsDB.write( str( stdLocalLatency ) + "\n" )
                 resultsDB.close()
-        del main.scale[0]
+        del main.scale[ 0 ]

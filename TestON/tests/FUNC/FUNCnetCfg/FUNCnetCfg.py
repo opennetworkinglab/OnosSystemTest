@@ -404,6 +404,8 @@ class FUNCnetCfg:
         to all nodes
         """
         import time
+        import json
+        import os
         main.case( "Add Network configurations to the cluster" )
         main.caseExplanation = "Add Network Configurations for devices" +\
                                " not discovered yet. One device is allowed" +\
@@ -412,13 +414,13 @@ class FUNCnetCfg:
 
         main.step( "Add Net Cfg for switch1" )
 
-        import json
-        import os
         try:
             with open( os.path.dirname( main.testFile ) + '/dependencies/s1Json', 'r' ) as s1Jsondata:
                 s1Json = json.load( s1Jsondata )
         except IOError:
             main.log.exception( "s1Json File not found." )
+            main.cleanup()
+            main.exit()
         main.log.info( "s1Json:" + str( s1Json ) )
 
         main.s1Json = s1Json
@@ -456,6 +458,8 @@ class FUNCnetCfg:
                 s3Json = json.load( s3Jsondata )
         except IOError:
             main.log.exception( "s3Json File not found" )
+            main.cleanup()
+            main.exit()
         main.log.info( "s3Json:" + str( s3Json) )
 
         main.s3Json = s3Json
@@ -561,6 +565,8 @@ class FUNCnetCfg:
                 s2Json = json.load( s2Jsondata )
         except IOError:
             main.log.exception( "s2Json File not found" )
+            main.cleanup()
+            main.exit()
         main.log.info( "s2Json:" + str( s2Json ) )
         main.s2Json = s2Json
         setS2Allow = main.ONOSrest2.setNetCfg( s2Json,
@@ -594,6 +600,8 @@ class FUNCnetCfg:
                 s4Json = json.load( s4Jsondata )
         except IOError:
             main.log.exception( "s4Json File not found" )
+            main.cleanup()
+            main.exit()
         main.log.info( "s4Json:" + str( s4Json ) )
         main.s4Json = s4Json
         setS4Disallow = main.ONOSrest3.setNetCfg( s4Json,
@@ -846,6 +854,8 @@ class FUNCnetCfg:
                 main.s5Json = json.load( s5Jsondata )
         except IOError:
             main.log.exception( "s5Json File not found" )
+            main.cleanup()
+            main.exit()
         main.log.info( "s5Json:" + str( main.s5Json ) )
 
         try:
@@ -853,6 +863,8 @@ class FUNCnetCfg:
                 main.s6Json = json.load( s6Jsondata )
         except IOError:
             main.log.exception( "s6Json File not found" )
+            main.cleanup()
+            main.exit()
         main.log.info( "s6Json:" + str( main.s6Json ) )
 
         s5Json = main.s5Json

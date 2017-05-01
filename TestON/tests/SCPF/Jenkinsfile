@@ -51,11 +51,11 @@ try {
         // TODO Choose which tests to run based on day of the week for nightly run?
         // TODO Maybe define different subsets of tests above then just add them here
         case Calendar.MONDAY:
-            choices = SCPF_Basic + SCPF_ExtraSetA
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetA
             println "Defaulting to Monday tests:" + choices
             break
         case Calendar.TUESDAY:
-            choices = SCPF_Basic + SCPF_ExtraSetB
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetB
             println "Defaulting to Tuesday tests:" + choices
             break
         case Calendar.WEDNESDAY:
@@ -63,15 +63,15 @@ try {
             println "Defaulting to Wednesday tests:" + choices
             break
         case Calendar.THURSDAY:
-            choices = SCPF_Basic + SCPF_ExtraSetA
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetA
             println "Defaulting to Thursday tests:" + choices
             break
         case Calendar.FRIDAY:
-            choices = SCPF_Basic + SCPF_ExtraSetA + SCPF_ExtraSetB
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetA + "\n" + SCPF_ExtraSetB
             println "Defaulting to Fridat tests:" + choices
             break
         case Calendar.SATURDAY:
-            choices = SCPF_Basic + SCPF_ExtraSetA + SCPF_ExtraSetB
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetA + "\n" + SCPF_ExtraSetB
             println "Defaulting to Saturday tests:" + choices
             break
         case Calendar.SUNDAY:

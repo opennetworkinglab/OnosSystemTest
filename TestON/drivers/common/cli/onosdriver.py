@@ -656,22 +656,35 @@ class OnosDriver( CLI ):
             main.exit()
 
     def getBranchName( self ):
-        main.log.info( "self.home = " )
-        main.log.info( self.home )
-        self.handle.sendline( "cd " + self.home )
-        self.handle.expect( self.home + "\$" )
-        self.handle.sendline( "git name-rev --name-only HEAD" )
-        self.handle.expect( "git name-rev --name-only HEAD" )
-        self.handle.expect( "\$" )
-
-        lines =  self.handle.before.splitlines()
-        if lines[1] == "master":
-            return "master"
-        elif lines[1] == "onos-1.0":
-            return "onos-1.0"
-        else:
-            main.log.info( lines[1] )
-            return "unexpected ONOS branch for SDN-IP test"
+        import re
+        try:
+            main.log.info( "self.home = " )
+            main.log.info( self.home )
+            self.handle.sendline( "cd " + self.home )
+            self.handle.expect( self.home + "\$" )
+            self.handle.sendline( "git name-rev --name-only HEAD" )
+            self.handle.expect( "git name-rev --name-only HEAD" )
+            self.handle.expect( "\$" )
+            lines =  self.handle.before.splitlines()
+            if lines[1] == "master" or re.search( "^onos-\d+(\.\d+)+$", lines[1] ):
+                return lines[1]
+            else:
+                main.log.info( lines[1] )
+                return "unexpected ONOS branch"
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def getVersion( self, report=False ):
         """

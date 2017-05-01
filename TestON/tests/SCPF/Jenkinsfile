@@ -133,8 +133,7 @@ def SCPFTest( testName ) {
                     cd ~/OnosSystemTest/TestON/bin
                     git log |head
                     ./cleanup.sh
-                    '''
-                    sh "./cli.py run " + SCPF[testName]['test']
+                    ''' + "./cli.py run " + SCPF[testName]['test']
 
                     // Post Results
                     withCredentials([

@@ -29,6 +29,7 @@
 
     <DEPENDENCY>
         <path>/tests/FUNC/FUNCintent/dependencies/</path>
+        <filePath>/dependencies/allocations.txt</filePath>
         <wrapper1>startUp</wrapper1>
         <wrapper2>FuncIntentFunction</wrapper2>
         <wrapper3>topo</wrapper3>

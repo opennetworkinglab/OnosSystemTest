@@ -29,7 +29,8 @@ import time
 import os
 from drivers.common.clidriver import CLI
 from core.graph import Graph
-
+from cStringIO import StringIO
+from itertools import izip
 
 class OnosCliDriver( CLI ):
 
@@ -446,13 +447,15 @@ class OnosCliDriver( CLI ):
                 main.cleanup()
                 main.exit()
 
-    def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False ):
+    def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False, dollarSign=False ):
         """
         Send a completely user specified string to
         the onos> prompt. Use this function if you have
         a very specific command to send.
 
         if noExit is True, TestON will not exit, and return None
+        if dollarSign is True, TestON will not expect for '$' as a new CLI or onos> prompt
+        since '$' can be in the output.
 
         Warning: There are no sanity checking to commands
         sent using this method.
@@ -490,7 +493,10 @@ class OnosCliDriver( CLI ):
                 logStr = "\"Sending CLI command: '" + cmdStr + "'\""
                 self.log( logStr, noExit=noExit )
             self.handle.sendline( cmdStr )
-            i = self.handle.expect( ["onos>", "\$"], timeout )
+            if dollarSign:
+                i = self.handle.expect( ["onos>"], timeout )
+            else:
+                i = self.handle.expect( ["onos>", "\$"], timeout )
             response = self.handle.before
             # TODO: do something with i
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
@@ -1172,7 +1178,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="", setVlan="", encap="" ):
+    def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="", setVlan="", encap="", bandwidth="" ):
         """
         Required:
             * hostIdOne: ONOS host id for host1
@@ -1195,6 +1201,8 @@ class OnosCliDriver( CLI ):
                 cmdStr += "--setVlan " + str( vlanId ) + " "
             if encap:
                 cmdStr += "--encapsulation " + str( encap ) + " "
+            if bandwidth:
+                cmdStr += "-b " + str( bandwidth ) + " "
             cmdStr += str( hostIdOne ) + " " + str( hostIdTwo )
             handle = self.sendline( cmdStr )
             assert handle is not None, "Error in sendline"
@@ -2057,6 +2065,36 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    #=============Function to check Bandwidth allocation========
+    def allocations( self, jsonFormat = True, dollarSign = True ):
+        """
+        Description:
+            Obtain Bandwidth Allocation Information from ONOS cli.
+        """
+        try:
+            cmdStr = "allocations"
+            if jsonFormat:
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr, timeout=300, dollarSign=True )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except ( TypeError, ValueError ):
+            main.log.exception( "{}: Object not as expected: {!r}".format( self.name, handle ) )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def intents( self, jsonFormat = True, summary = False, **intentargs):
         """
         Description:
@@ -2073,7 +2111,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -s"
             if jsonFormat:
                 cmdStr += " -j"
-            handle = self.sendline( cmdStr )
+            handle = self.sendline( cmdStr, timeout=300 )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             args = utilities.parse_args( [ "TYPE" ], **intentargs )
@@ -2122,6 +2160,7 @@ class OnosCliDriver( CLI ):
             and each dictionary maps 'id' to the Intent ID and 'state' to
             corresponding intent state.
         """
+
         try:
             state = "State is Undefined"
             if not intentsJson:
@@ -2166,13 +2205,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkIntentState( self, intentsId, expectedState='INSTALLED' ):
+    def checkIntentState( self, intentsId, bandwidthFlag=False, expectedState='INSTALLED' ):
         """
         Description:
             Check intents state
         Required:
             intentsId - List of intents ID to be checked
         Optional:
+            bandwidthFlag - Check the bandwidth allocations. If bandwidth is
+                                specified, then check for bandwidth allocations
             expectedState - Check the expected state(s) of each intents
                             state in the list.
                             *NOTE: You can pass in a list of expected state,
@@ -2189,6 +2230,34 @@ class OnosCliDriver( CLI ):
                 main.log.info( self.name + ": There is something wrong " +
                                "getting intents state" )
                 return main.FALSE
+
+            failFlag = False
+            if bandwidthFlag:
+                rawAlloc = self.allocations()
+                expectedFormat = open( os.path.dirname( main.testFile ) + main.params[ 'DEPENDENCY' ][ 'filePath' ], 'r' )
+                ONOSOutput = StringIO(rawAlloc)
+
+                for actual,expected in izip(ONOSOutput,expectedFormat):
+                    actual = actual.rstrip()
+                    expected = expected.rstrip()
+                    if actual != expected and 'allocated' in actual and 'allocated' in expected:
+                        marker1 = actual.find('allocated')
+                        m1 = actual[:marker1]
+                        marker2 = expected.find('allocated')
+                        m2 = expected[:marker2]
+                        if m1 != m2:
+                            failFlag = True
+                    elif actual != expected and 'allocated' not in actual and 'allocated' not in expected:
+                        failFlag = True
+
+                expectedFormat.close()
+                ONOSOutput.close()
+                bandwidthFlag = False
+
+            if failFlag:
+                main.log.error("Bandwidth not allocated correctly using Intents!!")
+                returnValue = main.FALSE
+                return returnValue
 
             if isinstance( expectedState, types.StringType ):
                 for intents in intentsDict:

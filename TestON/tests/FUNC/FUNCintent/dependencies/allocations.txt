@@ -1,0 +1,65 @@
+ROOT
+ of:0000000000000003
+  PortNumber:LOCAL
+  PortNumber:1
+  PortNumber:2
+  PortNumber:3
+  PortNumber:4
+ of:0000000000000004
+  PortNumber:LOCAL
+  PortNumber:1
+  PortNumber:2
+  PortNumber:3
+ of:0000000000000001
+  PortNumber:LOCAL
+  PortNumber:1
+  PortNumber:2
+  PortNumber:3
+  PortNumber:4
+ of:0000000000000002
+  PortNumber:LOCAL
+  PortNumber:1
+  PortNumber:2
+  PortNumber:3
+   100.0 allocated by
+  PortNumber:4
+   100.0 allocated by
+ of:0000000000000007
+  PortNumber:LOCAL
+  PortNumber:1
+  PortNumber:2
+  PortNumber:3
+  PortNumber:4
+  PortNumber:5
+  PortNumber:6
+  PortNumber:7
+  PortNumber:8
+  PortNumber:9
+ of:0000000000000005
+  PortNumber:LOCAL
+  PortNumber:1
+   100.0 allocated by
+  PortNumber:2
+  PortNumber:3
+  PortNumber:4
+  PortNumber:5
+  PortNumber:6
+  PortNumber:7
+  PortNumber:8
+  PortNumber:9
+  PortNumber:10
+   100.0 allocated by org.onosproject.net
+ of:0000000000000006
+  PortNumber:LOCAL
+  PortNumber:1
+   100.0 allocated by org.onosproject.net
+  PortNumber:2
+  PortNumber:3
+  PortNumber:4
+  PortNumber:5
+  PortNumber:6
+  PortNumber:7
+  PortNumber:8
+  PortNumber:9
+   100.0 allocated by org.onosproject.net
+  PortNumber:10

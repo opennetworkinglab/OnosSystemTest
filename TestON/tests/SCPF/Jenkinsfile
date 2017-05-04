@@ -1,11 +1,11 @@
 #!groovy
 // This is a Jenkinsfile for a scripted pipeline for the SCPF tests
-properties([pipelineTriggers([cron('30 19 * * *')])])
+// properties([pipelineTriggers([cron('30 19 * * *')])])
 
 // TODO: Exception handling around steps
 SCPF = [
     SCPFcbench: [ test:'SCPFcbench', table:'cbench_bm_tests', results:'cbench_bm_results', file:'CbenchDB'],
-    SCPFhostLat: [ test:'SCPFhostLat', table:'host_latency_results', results:'host_latency_results', file:'HostAddLatency'],
+    SCPFhostLat: [ test:'SCPFhostLat', table:'host_latency_tests', results:'host_latency_results', file:'HostAddLatency'],
     SCPFportLat: [ test:'SCPFportLat', table:'port_latency_details', results:'port_latency_results', file:'/tmp/portEventResultDb'],
     SCPFflowTp1g: [ test:'SCPFflowTp1g', table:'flow_tp_tests', results:'flow_tp_results', file:'flowTP1gDB'],
     SCPFscaleTopo: [ test:'SCPFscaleTopo', table:'scale_topo_latency_details', results:'scale_topo_latency_results', file:'/tmp/scaleTopoResultDb'],
@@ -48,8 +48,6 @@ try {
     echo(now.toString())
     today = now[Calendar.DAY_OF_WEEK]
     switch (today) {
-        // TODO Choose which tests to run based on day of the week for nightly run?
-        // TODO Maybe define different subsets of tests above then just add them here
         case Calendar.MONDAY:
             choices = SCPF_Basic + "\n" + SCPF_ExtraSetA
             println "Defaulting to Monday tests:" + choices
@@ -141,6 +139,10 @@ def SCPFTest( testName ) {
                         string(credentialsId: 'db_user', variable: 'user'),
                         string(credentialsId: 'db_host', variable: 'host'),
                         string(credentialsId: 'db_port', variable: 'port')]) {
+                            def database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + "','\$BUILD_NUMBER', '\$ONOSBranch', \$line);\""
+                            if (testName == "SCPFscaleTopo" || testName == "SCPFswitchLat" || testName == "SCPFportLat") {
+                                database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + "','\$BUILD_NUMBER', \$line, '\$ONOSBranch');\""
+                            }
                             sh '''#!/bin/bash
 
                             export DATE=\$(date +%F_%T)
@@ -151,11 +153,9 @@ def SCPFTest( testName ) {
                             do
 
                             echo \$line
-                            echo ''' + pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + '''','\$BUILD_NUMBER', '\$ONOSBranch', \$line );\"
+                            echo ''' + database_command + '''
 
-                            done< ''' + SCPF[testName]['file'] + '''
-                            echo 'Done'
-                            '''
+                            done< ''' + SCPF[testName]['file']
                     }
                     // Fetch Logs
                     sh '''#!/bin/bash
@@ -172,7 +172,7 @@ def SCPFTest( testName ) {
                         echo "Job name does not match any test suite name to move log!"
                     else
                         pwd
-                        for i in $OC{1..7}; do onos-fetch-logs $i; done
+                        for i in $OC{1..7}; do onos-fetch-logs $i || echo log does not exist; done
                     fi'''
                 }
             }

@@ -12,7 +12,7 @@
         </ONOSbench>
 
         <ONOScli1>
-            <host>OC1</host>
+            <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>

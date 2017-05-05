@@ -159,6 +159,15 @@ class SCPFbatchFlowResp:
                                  onfail="Failed to install ONOS package" )
         time.sleep( main.startUpSleep )
 
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for i in range( main.numCtrls ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+
+        time.sleep( main.startUpSleep )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
@@ -187,8 +196,7 @@ class SCPFbatchFlowResp:
         cliResult = main.TRUE
         for i in range( i, main.numCtrls ):
             cliResult = cliResult and \
-                        main.ONOScli1.startCellCli( )
-            main.log.info("ONOSip is: " + main.ONOScli1.ip_address)
+                        main.ONOScli1.startOnosCli( main.ONOSip[ i ] )
         stepResult = cliResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

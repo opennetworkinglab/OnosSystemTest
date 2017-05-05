@@ -49,19 +49,19 @@ try {
     today = now[Calendar.DAY_OF_WEEK]
     switch (today) {
         case Calendar.MONDAY:
-            choices = SCPF_Basic + "\n" + SCPF_ExtraSetA
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetB
             println "Defaulting to Monday tests:" + choices
             break
         case Calendar.TUESDAY:
-            choices = SCPF_Basic + "\n" + SCPF_ExtraSetB
+            choices = SCPF_Basic
             println "Defaulting to Tuesday tests:" + choices
             break
         case Calendar.WEDNESDAY:
-            choices = SCPF_Basic
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetA
             println "Defaulting to Wednesday tests:" + choices
             break
         case Calendar.THURSDAY:
-            choices = SCPF_Basic + "\n" + SCPF_ExtraSetA
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetB
             println "Defaulting to Thursday tests:" + choices
             break
         case Calendar.FRIDAY:
@@ -73,7 +73,7 @@ try {
             println "Defaulting to Saturday tests:" + choices
             break
         case Calendar.SUNDAY:
-            choices = SCPF_Basic
+            choices = SCPF_Basic + "\n" + SCPF_ExtraSetA
             println "Defaulting to Sunday tests:" + choices
             break
     }

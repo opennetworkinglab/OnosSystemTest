@@ -2035,12 +2035,12 @@ class OnosCliDriver( CLI ):
             Obtain the total IPv4 routes number in the system
         """
         try:
-            cmdStr = "routes -s -j"
+            cmdStr = "routes -j"
             handle = self.sendline( cmdStr )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             jsonResult = json.loads( handle )
-            return jsonResult['totalRoutes4']
+            return len(jsonResult['routes4'])
         except AssertionError:
             main.log.exception( "" )
             return None

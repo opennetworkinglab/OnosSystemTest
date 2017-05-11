@@ -10,6 +10,11 @@ import json
 def __init__( self ):
     self.default = ''
 
+hostIntentFailFlag = False
+pointIntentFailFlag = False
+singleToMultiFailFlag = False
+multiToSingleFailFlag = False
+
 def installHostIntent( main,
                        name,
                        host1,
@@ -24,7 +29,8 @@ def installHostIntent( main,
                        sw1="",
                        sw2="",
                        setVlan="",
-                       encap="" ):
+                       encap="",
+                       bandwidthFlag=False ):
     """
     Installs a Host Intent
 
@@ -64,6 +70,9 @@ def installHostIntent( main,
     global itemName  # The name of this run. Used for logs.
     itemName = name
 
+    global hostIntentFailFlag
+    hostIntentFailFlag = False
+
     main.log.info( itemName + ": Adding single point to multi point intents" )
     try:
         if not host1.get( "id" ):
@@ -91,7 +100,7 @@ def installHostIntent( main,
 
     # Check intents state
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=50 ):
+                        args=( main, [ intentId ], bandwidthFlag ), sleep=main.checkIntentSleep, attempts=50 ):
         main.assertReturnString += 'Install Intent State Passed\n'
 
         #Check VLAN if test encapsulation
@@ -110,6 +119,7 @@ def installHostIntent( main,
 
     else:
         main.log.error( "Host Intent did not install correctly" )
+        hostIntentFailFlag = True
         main.assertReturnString += 'Install Intent State Failed\n'
         return main.FALSE
 
@@ -174,6 +184,8 @@ def testHostIntent( main,
     global itemName
     itemName = name
 
+    global hostIntentFailFlag
+
     main.log.info( itemName + ": Testing Host Intent" )
 
     try:
@@ -197,12 +209,17 @@ def testHostIntent( main,
     main.log.info( itemName + ": Testing Host to Host intents" )
 
     # Check intent state
+    if hostIntentFailFlag:
+        attempts = 1
+    else:
+        attempts = 50
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=50 ):
+                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=attempts ):
         main.assertReturnString += 'Initial Intent State Passed\n'
     else:
         main.assertReturnString += 'Initial Intent State Failed\n'
         testResult = main.FALSE
+        attempts = 1
 
     # Check flows count in each node
     if utilities.retry( f=checkFlowsCount, retValue=main.FALSE,
@@ -215,7 +232,7 @@ def testHostIntent( main,
         testResult = main.FALSE
 
     # Check Connectivity
-    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, attempts=50, sleep=main.checkConnectionSleep,
+    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, attempts=attempts, sleep=main.checkConnectionSleep,
                         args=( main, senderNames, recipientNames, vlanId ) ):
         main.assertReturnString += 'Initial Ping Passed\n'
     else:
@@ -233,7 +250,7 @@ def testHostIntent( main,
 
         # Check intent state
         if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                            args=( main, [ intentId ] ), sleep=main.checkIntentHostSleep, attempts=5 * 20 ):
+                            args=( main, [ intentId ] ), sleep=main.checkIntentHostSleep, attempts=attempts ):
             main.assertReturnString += 'Link Down Intent State Passed\n'
         else:
             main.assertReturnString += 'Link Down Intent State Failed\n'
@@ -241,8 +258,8 @@ def testHostIntent( main,
 
         # Check flows count in each node
         if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=main.checkFlowCountSleep,
-                            attempts=200 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ],
-                                                                sleep=main.checkFlowCountSleep, attempts=200 ):
+                            attempts=attempts ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ],
+                                                                sleep=main.checkFlowCountSleep, attempts=attempts ):
             main.assertReturnString += 'Link Down Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Down Flow State Failed\n'
@@ -258,7 +275,7 @@ def testHostIntent( main,
         # Check Connection
         if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE,
                             args=( main, senderNames, recipientNames, vlanId ),
-                            sleep=main.checkConnectionSleep, attempts=5 * 20 ):
+                            sleep=main.checkConnectionSleep, attempts=attempts ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -275,7 +292,7 @@ def testHostIntent( main,
         time.sleep( main.rerouteSleep )
 
         # Check Intents
-        if utilities.retry( f=checkIntentState, retValue=main.FALSE, attempts=100,
+        if utilities.retry( f=checkIntentState, retValue=main.FALSE, attempts=attempts * 2,
                             args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
             main.assertReturnString += 'Link Up Intent State Passed\n'
         else:
@@ -329,7 +346,8 @@ def installPointIntent( main,
                         tcpSrc="",
                         tcpDst="",
                         setVlan="",
-                        encap="" ):
+                        encap="",
+                        bandwidthFlag=False ):
     """
     Installs a Single to Single Point Intent
 
@@ -373,6 +391,9 @@ def installPointIntent( main,
 
     global itemName  # The name of this run. Used for logs.
     itemName = name
+
+    global pointIntentFailFlag
+    pointIntentFailFlag = False
 
     main.log.info( itemName + ": Adding point to point intents" )
 
@@ -429,8 +450,11 @@ def installPointIntent( main,
 
     # Check intents state
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep*2, attempts=50 ):
+            args=( main, [ intentId ], bandwidthFlag ), sleep=main.checkIntentSleep*2, attempts=50 ):
         main.assertReturnString += 'Install Intent State Passed\n'
+
+        if bandwidth != "":
+            main.assertReturnString += 'Bandwidth Allocation Passed\n'
 
         # Check VLAN if test encapsulation
         if encap != "":
@@ -446,7 +470,10 @@ def installPointIntent( main,
             main.assertReturnString += 'Flow duration check failed\n'
             return main.FALSE
     else:
+        if bandwidth != "":
+            main.assertReturnString += 'Bandwidth Allocation Failed\n'
         main.log.error( "Point Intent did not install correctly" )
+        pointIntentFailFlag = True
         return main.FALSE
 
 def pointIntentTcp( main,
@@ -745,7 +772,8 @@ def installSingleToMultiIntent( main,
                                 sw2="",
                                 setVlan="",
                                 partial=False,
-                                encap="" ):
+                                encap="",
+                                bandwidthFlag=False ):
     """
     Installs a Single to Multi Point Intent
 
@@ -790,6 +818,9 @@ def installSingleToMultiIntent( main,
 
     global itemName  # The name of this run. Used for logs.
     itemName = name
+
+    global singleToMultiFailFlag
+    singleToMultiFailFlag = False
 
     main.log.info( itemName + ": Adding single point to multi point intents" )
 
@@ -840,11 +871,17 @@ def installSingleToMultiIntent( main,
         if intentId:
             errorMsg += "  There was a problem installing Singlepoint to Multipoint intent."
         main.log.error( errorMsg )
+        singleToMultiFailFlag = True
         return main.FALSE
 
     # Check intents state
+    if singleToMultiFailFlag:
+        attempts = 5
+    else:
+        attempts = 50
+
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=50 ):
+                        args=( main, [ intentId ], bandwidthFlag ), sleep=main.checkIntentSleep, attempts=attempts ):
         main.assertReturnString += 'Install Intent State Passed\n'
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
@@ -854,6 +891,7 @@ def installSingleToMultiIntent( main,
             return main.FALSE
     else:
         main.log.error( "Single to Multi Intent did not install correctly" )
+        singleToMultiFailFlag = True
         return main.FALSE
 
 def installMultiToSingleIntent( main,
@@ -871,7 +909,8 @@ def installMultiToSingleIntent( main,
                                 sw2="",
                                 setVlan="",
                                 partial=False,
-                                encap="" ):
+                                encap="",
+                                bandwidthFlag=False ):
     """
     Installs a Multi to Single Point Intent
 
@@ -916,6 +955,9 @@ def installMultiToSingleIntent( main,
 
     global itemName  # The name of this run. Used for logs.
     itemName = name
+
+    global multiToSingleFailFlag
+    multiToSingleFailFlag = False
 
     main.log.info( itemName + ": Adding mutli to single point intents" )
 
@@ -965,11 +1007,17 @@ def installMultiToSingleIntent( main,
         if intentId:
             errorMsg += "  There was a problem installing Multipoint to Singlepoint intent."
         main.log.error( errorMsg )
+        multiToSingleFailFlag = True
         return main.FALSE
 
     # Check intents state
+    if multiToSingleFailFlag:
+        attempts = 5
+    else:
+        attempts = 50
+
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=50 ):
+                        args=( main, [ intentId ], bandwidthFlag ), sleep=main.checkIntentSleep, attempts=attempts ):
         main.assertReturnString += 'Install Intent State Passed\n'
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
@@ -979,6 +1027,7 @@ def installMultiToSingleIntent( main,
             return main.FALSE
     else:
         main.log.error( "Multi to Single Intent did not install correctly" )
+        multiToSingleFailFlag = True
         return main.FALSE
 
 def testPointIntent( main,
@@ -1057,6 +1106,10 @@ def testPointIntent( main,
     global itemName
     itemName = name
 
+    global pointIntentFailFlag
+    global singleToMultiFailFlag
+    global multiToSingleFailFlag
+
     main.log.info( itemName + ": Testing Point Intent" )
 
     try:
@@ -1083,13 +1136,19 @@ def testPointIntent( main,
     testResult = main.TRUE
     main.log.info( itemName + ": Adding single point to multi point intents" )
 
+    if pointIntentFailFlag or singleToMultiFailFlag or multiToSingleFailFlag:
+        attempts = 1
+    else:
+        attempts = 50
+
     # Check intent state
     if utilities.retry( f=checkIntentState, retValue=main.FALSE, args=( main, [ intentId ] ),
-                        sleep=main.checkIntentSleep, attempts=50 ):
+                        sleep=main.checkIntentSleep, attempts=attempts ):
         main.assertReturnString += 'Initial Intent State Passed\n'
     else:
         main.assertReturnString += 'Initial Intent State Failed\n'
         testResult = main.FALSE
+        attempts = 1
 
     # Check flows count in each node
     if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ],
@@ -1103,7 +1162,7 @@ def testPointIntent( main,
     # Check Connectivity
     if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE,
                         args=( main, senderNames, recipientNames, vlanId, useTCP ),
-                        attempts=50, sleep=main.checkConnectionSleep ):
+                        attempts=attempts, sleep=main.checkConnectionSleep ):
         main.assertReturnString += 'Initial Ping Passed\n'
     else:
         main.assertReturnString += 'Initial Ping Failed\n'
@@ -1152,7 +1211,7 @@ def testPointIntent( main,
 
         # Check intent state
         if utilities.retry( f=checkIntentState, retValue=main.FALSE, args=( main, [ intentId ] ),
-                            sleep=main.checkIntentPointSleep, attempts=5 * 20 ):
+                            sleep=main.checkIntentPointSleep, attempts=attempts ):
             main.assertReturnString += 'Link Down Intent State Passed\n'
         else:
             main.assertReturnString += 'Link Down Intent State Failed\n'
@@ -1160,8 +1219,8 @@ def testPointIntent( main,
 
         # Check flows count in each node
         if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, args=[ main ], sleep=main.checkFlowCountSleep,
-                            attempts=200 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ],
-                                                                sleep=main.checkFlowCountSleep, attempts=200 ):
+                            attempts=attempts * 2 ) and utilities.retry( f=checkFlowsState, retValue=main.FALSE, args=[ main ],
+                                                                sleep=main.checkFlowCountSleep, attempts=attempts * 2 ):
             main.assertReturnString += 'Link Down Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Down Flow State Failed\n'
@@ -1177,7 +1236,7 @@ def testPointIntent( main,
         # Check Connection
         if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE,
                             args=( main, senderNames, recipientNames, vlanId, useTCP ),
-                            sleep=main.checkConnectionSleep, attempts=5 * 10 ):
+                            sleep=main.checkConnectionSleep, attempts=attempts ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -1194,7 +1253,7 @@ def testPointIntent( main,
         time.sleep( main.rerouteSleep )
 
         # Check Intents
-        if utilities.retry( f=checkIntentState, retValue=main.FALSE, attempts=100, args=( main, [ intentId ] ),
+        if utilities.retry( f=checkIntentState, retValue=main.FALSE, attempts=attempts * 2, args=( main, [ intentId ] ),
                             sleep=main.checkIntentSleep ):
             main.assertReturnString += 'Link Up Intent State Passed\n'
         else:
@@ -1268,6 +1327,9 @@ def testEndPointFail( main,
     global itemName
     itemName = name
 
+    global singleToMultiFailFlag
+    global multiToSingleFailFlag
+
     main.log.info( itemName + ": Testing Point Intent" )
 
     try:
@@ -1297,12 +1359,18 @@ def testEndPointFail( main,
     main.log.info( itemName + ": Adding multi point to single point intents" )
 
     # Check intent state
+    if singleToMultiFailFlag or multiToSingleFailFlag:
+        attempts = 1
+    else:
+        attempts = 50
+
     if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=50 ):
+                        args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=attempts ):
         main.assertReturnString += 'Initial Intent State Passed\n'
     else:
         main.assertReturnString += 'Initial Intent State Failed\n'
         testResult = main.FALSE
+        attempts = 1
 
     # Check flows count in each node
     if utilities.retry( f=checkFlowsCount, retValue=main.FALSE,
@@ -1338,7 +1406,7 @@ def testEndPointFail( main,
         testResult = main.FALSE
 
     # Check intent state
-    if utilities.retry( f=checkIntentState, retValue=main.FALSE, attempts=100,
+    if utilities.retry( f=checkIntentState, retValue=main.FALSE, attempts=attempts,
                         args=( main, [ intentId ] ), sleep=main.checkIntentSleep ):
         main.assertReturnString += 'Link Down Intent State Passed\n'
     else:
@@ -1346,9 +1414,9 @@ def testEndPointFail( main,
         testResult = main.FALSE
 
     # Check flows count in each node
-    if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, sleep=1, attempts=30,
+    if utilities.retry( f=checkFlowsCount, retValue=main.FALSE, sleep=1, attempts=attempts,
                         args=[ main ] ) and utilities.retry( f=checkFlowsState,
-                                                             retValue=main.FALSE, sleep=1, attempts=30, args=[ main ] ):
+                                                             retValue=main.FALSE, sleep=1, attempts=attempts, args=[ main ] ):
         main.assertReturnString += 'Link Down Flow State Passed\n'
     else:
         main.assertReturnString += 'Link Down Flow State Failed\n'
@@ -1379,7 +1447,7 @@ def testEndPointFail( main,
     if partial:
         # Check intent state
         if utilities.retry( f=checkIntentState, retValue=main.FALSE,
-                            args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=50 ):
+                            args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=attempts ):
             main.assertReturnString += 'Partial failure isolation link Down Intent State Passed\n'
         else:
             main.assertReturnString += 'Partial failure isolation link Down Intent State Failed\n'
@@ -1420,7 +1488,7 @@ def testEndPointFail( main,
                 testResult = main.FALSE
 
         # Next check connectivity of connected senders and recipients
-        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, attempts=50,
+        if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, attempts=attempts,
                             args=( main, connectedSenderNames , connectedRecipientNames ) ):
             main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Passed\n'
         else:
@@ -1429,7 +1497,7 @@ def testEndPointFail( main,
     else:
         # Check intent state
         if not utilities.retry( f=checkIntentState, retValue=main.TRUE,
-                            args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=50 ):
+                            args=( main, [ intentId ] ), sleep=main.checkIntentSleep, attempts=attempts ):
             main.assertReturnString += 'Isolation link Down Intent State Passed\n'
         else:
             main.assertReturnString += 'Isolation link Down Intent State Failed\n'
@@ -1503,7 +1571,7 @@ def testEndPointFail( main,
     time.sleep( main.rerouteSleep )
 
     # Check Intents
-    if utilities.retry( f=checkIntentState, retValue=main.FALSE, attempts=5 * 20,
+    if utilities.retry( f=checkIntentState, retValue=main.FALSE, attempts=attempts,
                         args=( main, [ intentId ] ), sleep=main.checkIntentHostSleep ):
         main.assertReturnString += 'Link Up Intent State Passed\n'
     else:
@@ -1514,7 +1582,7 @@ def testEndPointFail( main,
     if utilities.retry( f=checkFlowsCount, retValue=main.FALSE,
                         args=[ main ], sleep=5, attempts=5*20 ) and utilities.retry( f=checkFlowsState,
                                                                          retValue=main.FALSE,
-                                                                         args=[ main ], sleep=5, attempts=5*20 ):
+                                                                         args=[ main ], sleep=5, attempts=attempts ):
         main.assertReturnString += 'Link Up Flow State Passed\n'
     else:
         main.assertReturnString += 'Link Up Flow State Failed\n'
@@ -1528,7 +1596,7 @@ def testEndPointFail( main,
         testResult = main.FALSE
 
     # Check Connection
-    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, sleep=main.checkConnectionSleep, attempts= 100,
+    if utilities.retry( f=scapyCheckConnection, retValue=main.FALSE, sleep=main.checkConnectionSleep, attempts= attempts,
                         args=( main, senderNames, recipientNames ) ):
         main.assertReturnString += 'Link Up Scapy Packet Received Passed\n'
     else:
@@ -1699,7 +1767,7 @@ def checkTopology( main, expectedLink ):
         main.log.info( itemName + ": Topology match" )
     return statusResult
 
-def checkIntentState( main, intentsId ):
+def checkIntentState( main, intentsId, bandwidthFlag=False ):
     """
         This function will check intent state to make sure all the intents
         are in INSTALLED state
@@ -1709,7 +1777,7 @@ def checkIntentState( main, intentsId ):
     results = []
 
     for i in range( main.numCtrls ):
-        tempResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+        tempResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId, bandwidthFlag=bandwidthFlag )
         results.append( tempResult )
 
     if all( result == main.TRUE for result in results ):

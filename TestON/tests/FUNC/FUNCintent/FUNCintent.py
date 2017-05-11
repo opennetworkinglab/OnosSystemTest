@@ -1433,6 +1433,41 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
+        main.step( "BANDWIDTH ALLOCATION: Checking bandwidth allocation for point intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for BANDWIDTH ALLOCATION for point intent\n"
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1" }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1" }
+        ]
+        testResult = main.FALSE
+        installResult = main.intentFunction.installPointIntent(
+                                      main,
+                                      name="NOOPTION",
+                                      senders=senders,
+                                      recipients=recipients,
+                                      bandwidth=100,
+                                      bandwidthFlag=True )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18 )
+        else:
+            main.CLIs[ 0 ].removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
         # Testing MPLS would require kernel version of 4.1 or higher (Current version is 3.13)
         # main.step( "Add point to point intents using MPLS Encapsulation" )
         # main.assertReturnString = "Assertion Result for MPLS Encapsulation Point Intent"

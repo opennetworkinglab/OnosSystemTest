@@ -49,6 +49,7 @@
         <ONOS_Configuration>
         <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
             <useFlowObjectives>true</useFlowObjectives>
+            <defaultFlowObjectiveCompiler>org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler</defaultFlowObjectiveCompiler>
         </org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
         </ONOS_Configuration>
     </CASE10>

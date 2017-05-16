@@ -252,6 +252,16 @@
             <maxRerunNum>5</maxRerunNum>
         </BalanceMasters>
 
+        <SetFlowObjCompiler>
+            <status>on</status>
+            <typeIndex>45</typeIndex>
+            <typeString>ONOS_SET_FLOWOBJ_COMPILER</typeString>
+            <CLI>set-flowobj-compiler</CLI>
+            <CLIParamNum>1</CLIParamNum>
+            <rerunInterval>5</rerunInterval>
+            <maxRerunNum>5</maxRerunNum>
+        </SetFlowObjCompiler>
+
         <addAllChecks>
             <status>on</status>
             <typeIndex>110</typeIndex>

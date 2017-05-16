@@ -64,7 +64,6 @@ class SCPFintentEventTp:
         main.MN1Ip = main.params['MN']['ip1']
         main.maxNodes = int(main.params['max'])
         main.numSwitches = (main.params['TEST']['numSwitches']).split(",")
-        main.flowRuleBU = main.params['TEST']['flowRuleBUEnabled']
         main.skipRelRsrc = main.params['TEST']['skipReleaseResourcesOnWithdrawal']
         main.flowObj = main.params['TEST']['flowObj']
         main.startUpSleep = int(main.params['SLEEP']['startup'])
@@ -219,8 +218,6 @@ class SCPFintentEventTp:
         time.sleep( main.startUpSleep )
 
         # config apps
-        main.CLIs[0].setCfg( "org.onosproject.store.flow.impl.DistributedFlowRuleStore",
-                            "backupEnabled " + main.flowRuleBU )
         main.CLIs[0].setCfg( "org.onosproject.net.intent.impl.IntentManager",
                                   "skipReleaseResourcesOnWithdrawal " + main.skipRelRsrc )
         main.CLIs[0].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount " + str(int(main.numCtrls*10)) )

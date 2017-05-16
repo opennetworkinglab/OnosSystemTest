@@ -248,7 +248,6 @@ class SCPFintentRerouteLat:
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "topoShape", value="reroute")
         main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
-        main.CLIs[0].setCfg("org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupEnabled", value="false")
         if main.flowObj:
             main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                 "useFlowObjectives", value="true")

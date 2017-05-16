@@ -762,8 +762,8 @@ class FUNCintent:
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 host intent with mac addresses\n"
-        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
-        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+        host1 = { "name": "h1", "id": "00:00:00:00:00:01/-1" }
+        host2 = { "name": "h9", "id": "00:00:00:00:00:09/-1" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name="IPV4",
@@ -773,7 +773,7 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name="IPV4",
-                                              intentId = installResult,
+                                              intentId=installResult,
                                               onosNode=0,
                                               host1=host1,
                                               host2=host2,
@@ -790,8 +790,8 @@ class FUNCintent:
 
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
         main.assertReturnString = "Assertion Result for dualstack IPV4 with MAC addresses\n"
-        host1 = { "name":"h3","id":"00:00:00:00:00:03/-1" }
-        host2 = { "name":"h11","id":"00:00:00:00:00:0B/-1 "}
+        host1 = { "name": "h3", "id": "00:00:00:00:00:03/-1" }
+        host2 = { "name": "h11", "id": "00:00:00:00:00:0B/-1 "}
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name="DUALSTACK",
@@ -802,7 +802,7 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name="DUALSTACK",
-                                              intentId = installResult,
+                                              intentId=installResult,
                                               onosNode=0,
                                               host1=host1,
                                               host2=host2,
@@ -817,8 +817,8 @@ class FUNCintent:
 
         main.step( "DUALSTACK2: Add host intents between h1 and h11" )
         main.assertReturnString = "Assertion Result for dualstack2 host intent\n"
-        host1 = { "name":"h1" }
-        host2 = { "name":"h11" }
+        host1 = { "name": "h1" }
+        host2 = { "name": "h11" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name="DUALSTACK2",
@@ -829,7 +829,7 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name="DUALSTACK2",
-                                              intentId = installResult,
+                                              intentId=installResult,
                                               onosNode=0,
                                               host1=host1,
                                               host2=host2,
@@ -846,8 +846,8 @@ class FUNCintent:
 
         main.step( "1HOP: Add host intents between h1 and h3" )
         main.assertReturnString = "Assertion Result for 1HOP for IPV4 same switch\n"
-        host1 = { "name":"h1" }
-        host2 = { "name":"h3" }
+        host1 = { "name": "h1" }
+        host2 = { "name": "h3" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name="1HOP",
@@ -858,7 +858,7 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name="1HOP",
-                                              intentId = installResult,
+                                              intentId=installResult,
                                               onosNode=0,
                                               host1=host1,
                                               host2=host2,
@@ -875,8 +875,8 @@ class FUNCintent:
 
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
         main.assertReturnString = "Assertion Result vlan IPV4\n"
-        host1 = { "name":"h4","id":"00:00:00:00:00:04/100", "vlan":"100" }
-        host2 = { "name":"h12","id":"00:00:00:00:00:0C/100", "vlan":"100" }
+        host1 = { "name": "h4", "id": "00:00:00:00:00:04/100", "vlan": "100" }
+        host2 = { "name": "h12", "id": "00:00:00:00:00:0C/100", "vlan": "100" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name="VLAN1",
@@ -887,7 +887,7 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name="VLAN1",
-                                              intentId = installResult,
+                                              intentId=installResult,
                                               onosNode=0,
                                               host1=host1,
                                               host2=host2,
@@ -904,8 +904,8 @@ class FUNCintent:
 
         main.step( "VLAN2: Add vlan host intents between h4 and h13" )
         main.assertReturnString = "Assertion Result vlan IPV4\n"
-        host1 = { "name":"h5", "vlan":"200" }
-        host2 = { "name":"h12", "vlan":"100" }
+        host1 = { "name": "h5", "vlan": "200" }
+        host2 = { "name": "h12", "vlan": "100" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name="VLAN2",
@@ -916,7 +916,7 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name="VLAN2",
-                                              intentId = installResult,
+                                              intentId=installResult,
                                               onosNode=0,
                                               host1=host1,
                                               host2=host2,
@@ -933,8 +933,8 @@ class FUNCintent:
 
         main.step( "Encapsulation: Add host intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for VLAN Encapsulated host intent\n"
-        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
-        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+        host1 = { "name": "h1", "id": "00:00:00:00:00:01/-1" }
+        host2 = { "name": "h9", "id": "00:00:00:00:00:09/-1" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name="ENCAPSULATION",
@@ -945,7 +945,7 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                               name="ENCAPSULATION",
-                                              intentId = installResult,
+                                              intentId=installResult,
                                               onosNode=0,
                                               host1=host1,
                                               host2=host2,
@@ -1063,10 +1063,10 @@ class FUNCintent:
         main.step( "NOOPTION: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for NOOPTION point intent\n"
         senders = [
-            { "name":"h1","device":"of:0000000000000005/1" }
+            { "name": "h1", "device": "of:0000000000000005/1" }
         ]
         recipients = [
-            { "name":"h9","device":"of:0000000000000006/1" }
+            { "name": "h9", "device": "of:0000000000000006/1" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1096,10 +1096,10 @@ class FUNCintent:
         main.step( "IPV4: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 point intent\n"
         senders = [
-            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01" }
+            { "name": "h1", "device": "of:0000000000000005/1", "mac": "00:00:00:00:00:01" }
         ]
         recipients = [
-            { "name":"h9","device":"of:0000000000000006/1","mac":"00:00:00:00:00:09" }
+            { "name": "h9", "device": "of:0000000000000006/1", "mac": "00:00:00:00:00:09" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1165,10 +1165,10 @@ class FUNCintent:
         main.step( "IPV4_2: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 no mac address point intents\n"
         senders = [
-            { "name":"h1","device":"of:0000000000000005/1" }
+            { "name": "h1", "device": "of:0000000000000005/1" }
         ]
         recipients = [
-            { "name":"h9","device":"of:0000000000000006/1" }
+            { "name": "h9", "device": "of:0000000000000006/1" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1199,11 +1199,11 @@ class FUNCintent:
         main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV4 using TCP point intents\n"
         senders = [
-            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01",
+            { "name": "h1", "device": "of:0000000000000005/1", "mac": "00:00:00:00:00:01",
               "ip":( main.h1.hostIp + "/24" ) }
         ]
         recipients = [
-            { "name":"h9","device":"of:0000000000000006/1","mac":"00:00:00:00:00:09",
+            { "name": "h9", "device": "of:0000000000000006/1", "mac": "00:00:00:00:00:09",
               "ip":( main.h9.hostIp + "/24" ) }
         ]
         ipProto = main.params[ 'SDNIP' ][ 'ipPrototype' ]
@@ -1274,10 +1274,10 @@ class FUNCintent:
         main.step( "DUALSTACK1: Add point intents between h3 and h11" )
         main.assertReturnString = "Assertion Result for Dualstack1 IPV4 with mac address point intents\n"
         senders = [
-            { "name":"h3","device":"of:0000000000000005/3","mac":"00:00:00:00:00:03" }
+            { "name": "h3", "device": "of:0000000000000005/3", "mac": "00:00:00:00:00:03" }
         ]
         recipients = [
-            { "name":"h11","device":"of:0000000000000006/3","mac":"00:00:00:00:00:0B" }
+            { "name": "h11", "device": "of:0000000000000006/3", "mac": "00:00:00:00:00:0B" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1308,10 +1308,10 @@ class FUNCintent:
         main.step( "VLAN: Add point intents between h5 and h21" )
         main.assertReturnString = "Assertion Result for VLAN IPV4 with mac address point intents\n"
         senders = [
-            { "name":"h5","device":"of:0000000000000005/5","mac":"00:00:00:00:00:05", "vlan":"200" }
+            { "name": "h5", "device": "of:0000000000000005/5", "mac": "00:00:00:00:00:05", "vlan": "200" }
         ]
         recipients = [
-            { "name":"h21","device":"of:0000000000000007/5","mac":"00:00:00:00:00:15", "vlan":"200" }
+            { "name": "h21", "device": "of:0000000000000007/5", "mac": "00:00:00:00:00:15", "vlan": "200" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1339,10 +1339,10 @@ class FUNCintent:
         main.step( "VLAN: Add point intents between h5 and h21" )
         main.assertReturnString = "Assertion Result for VLAN IPV4 point intents with VLAN treatment\n"
         senders = [
-            { "name":"h4", "vlan":"100" }
+            { "name": "h4", "vlan": "100" }
         ]
         recipients = [
-            { "name":"h21", "vlan":"200" }
+            { "name": "h21", "vlan": "200" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1371,10 +1371,10 @@ class FUNCintent:
         main.step( "1HOP: Add point intents between h1 and h3" )
         main.assertReturnString = "Assertion Result for 1HOP IPV4 with no mac address point intents\n"
         senders = [
-            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01" }
+            { "name": "h1", "device": "of:0000000000000005/1", "mac": "00:00:00:00:00:01" }
         ]
         recipients = [
-            { "name":"h3","device":"of:0000000000000005/3","mac":"00:00:00:00:00:03" }
+            { "name": "h3", "device": "of:0000000000000005/3", "mac": "00:00:00:00:00:03" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1405,10 +1405,10 @@ class FUNCintent:
         main.step( "Add point to point intents using VLAN Encapsulation" )
         main.assertReturnString = "Assertion Result for VLAN Encapsulation Point Intent"
         senders = [
-            { "name":"h1","device":"of:0000000000000005/1" }
+            { "name": "h1", "device": "of:0000000000000005/1" }
         ]
         recipients = [
-            { "name":"h9","device":"of:0000000000000006/1" }
+            { "name": "h9", "device": "of:0000000000000006/1" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1439,10 +1439,10 @@ class FUNCintent:
         main.step( "BANDWIDTH ALLOCATION: Checking bandwidth allocation for point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for BANDWIDTH ALLOCATION for point intent\n"
         senders = [
-            { "name":"h1","device":"of:0000000000000005/1" }
+            { "name": "h1", "device": "of:0000000000000005/1" }
         ]
         recipients = [
-            { "name":"h9","device":"of:0000000000000006/1" }
+            { "name": "h9", "device": "of:0000000000000006/1" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installPointIntent(
@@ -1566,14 +1566,14 @@ class FUNCintent:
         main.step( "NOOPTION: Install and test single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent with no options set\n"
         senders = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
         recipients = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
-        badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h9" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h17" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
@@ -1606,14 +1606,14 @@ class FUNCintent:
         main.step( "IPV4: Install and test single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and MAC addresses\n"
         senders = [
-            { "name":"h8", "device":"of:0000000000000005/8","mac":"00:00:00:00:00:08" }
+            { "name": "h8", "device": "of:0000000000000005/8", "mac": "00:00:00:00:00:08" }
         ]
         recipients = [
-            { "name":"h16", "device":"of:0000000000000006/8", "mac":"00:00:00:00:00:10" },
-            { "name":"h24", "device":"of:0000000000000007/8", "mac":"00:00:00:00:00:18" }
+            { "name": "h16", "device": "of:0000000000000006/8", "mac": "00:00:00:00:00:10" },
+            { "name": "h24", "device": "of:0000000000000007/8", "mac": "00:00:00:00:00:18" }
         ]
-        badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h9" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h17" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
@@ -1647,14 +1647,14 @@ class FUNCintent:
         main.step( "IPV4_2: Add single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and no MAC addresses\n"
         senders = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
         recipients = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
-        badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h9" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h17" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
@@ -1688,14 +1688,14 @@ class FUNCintent:
         main.step( "VLAN: Add single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and MAC addresses in the same VLAN\n"
         senders = [
-            { "name":"h4", "device":"of:0000000000000005/4", "mac":"00:00:00:00:00:04", "vlan":"100" }
+            { "name": "h4", "device": "of:0000000000000005/4", "mac": "00:00:00:00:00:04", "vlan": "100" }
         ]
         recipients = [
-            { "name":"h12", "device":"of:0000000000000006/4", "mac":"00:00:00:00:00:0C", "vlan":"100" },
-            { "name":"h20", "device":"of:0000000000000007/4", "mac":"00:00:00:00:00:14", "vlan":"100" }
+            { "name": "h12", "device": "of:0000000000000006/4", "mac": "00:00:00:00:00:0C", "vlan": "100" },
+            { "name": "h20", "device": "of:0000000000000007/4", "mac": "00:00:00:00:00:14", "vlan": "100" }
         ]
-        badSenders=[ { "name":"h13" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h21" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h13" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h21" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
@@ -1728,14 +1728,14 @@ class FUNCintent:
         main.step( "VLAN: Add single point to multi point intents" )
         main.assertReturnString = "Assertion results for single to multi point intent with VLAN treatment\n"
         senders = [
-            { "name":"h5", "vlan":"200" }
+            { "name": "h5", "vlan": "200" }
         ]
         recipients = [
-            { "name":"h12", "device":"of:0000000000000006/4", "mac":"00:00:00:00:00:0C", "vlan":"100" },
-            { "name":"h20", "device":"of:0000000000000007/4", "mac":"00:00:00:00:00:14", "vlan":"100" }
+            { "name": "h12", "device": "of:0000000000000006/4", "mac": "00:00:00:00:00:0C", "vlan": "100" },
+            { "name": "h20", "device": "of:0000000000000007/4", "mac": "00:00:00:00:00:14", "vlan": "100" }
         ]
-        badSenders=[ { "name":"h13" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h21" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h13" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h21" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
@@ -1770,14 +1770,14 @@ class FUNCintent:
         # main.step( "ENCAPSULATION: Install and test single point to multi point intents" )
         # main.assertReturnString = "Assertion results for VLAN Encapsulation single to multi point intent\n"
         # senders = [
-        #     { "name":"h8", "device":"of:0000000000000005/8" }
+        #     { "name": "h8", "device": "of:0000000000000005/8" }
         # ]
         # recipients = [
-        #     { "name":"h16", "device":"of:0000000000000006/8" },
-        #     { "name":"h24", "device":"of:0000000000000007/8" }
+        #     { "name": "h16", "device": "of:0000000000000006/8" },
+        #     { "name": "h24", "device": "of:0000000000000007/8" }
         # ]
-        # badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
-        # badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        # badSenders = [ { "name": "h9" } ]  # Senders that are not in the intent
+        # badRecipients = [ { "name": "h17" } ]  # Recipients that are not in the intent
         # testResult = main.FALSE
         # installResult = main.intentFunction.installSingleToMultiIntent(
         #                                  main,
@@ -1868,14 +1868,14 @@ class FUNCintent:
         main.step( "NOOPTION: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for NOOPTION multi to single point intent\n"
         senders = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
         recipients = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
-        badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h9" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
@@ -1908,14 +1908,14 @@ class FUNCintent:
         main.step( "IPV4: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and MAC addresses\n"
         senders = [
-            { "name":"h16", "device":"of:0000000000000006/8", "mac":"00:00:00:00:00:10" },
-            { "name":"h24", "device":"of:0000000000000007/8", "mac":"00:00:00:00:00:18" }
+            { "name": "h16", "device": "of:0000000000000006/8", "mac": "00:00:00:00:00:10" },
+            { "name": "h24", "device": "of:0000000000000007/8", "mac": "00:00:00:00:00:18" }
         ]
         recipients = [
-            { "name":"h8", "device":"of:0000000000000005/8", "mac":"00:00:00:00:00:08" }
+            { "name": "h8", "device": "of:0000000000000005/8", "mac": "00:00:00:00:00:08" }
         ]
-        badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h9" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
@@ -1949,14 +1949,14 @@ class FUNCintent:
         main.step( "IPV4_2: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and no MAC addresses\n"
         senders = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
         recipients = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
-        badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h9" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
@@ -1990,14 +1990,14 @@ class FUNCintent:
         main.step( "VLAN: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and no MAC addresses in the same VLAN\n"
         senders = [
-            { "name":"h13", "device":"of:0000000000000006/5", "vlan":"200" },
-            { "name":"h21", "device":"of:0000000000000007/5", "vlan":"200" }
+            { "name": "h13", "device": "of:0000000000000006/5", "vlan": "200" },
+            { "name": "h21", "device": "of:0000000000000007/5", "vlan": "200" }
         ]
         recipients = [
-            { "name":"h5", "device":"of:0000000000000005/5", "vlan":"200" }
+            { "name": "h5", "device": "of:0000000000000005/5", "vlan": "200" }
         ]
-        badSenders=[ { "name":"h12" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h20" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h12" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h20" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
@@ -2031,14 +2031,14 @@ class FUNCintent:
         main.step( "VLAN: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for multi to single point intent with VLAN ID treatment\n"
         senders = [
-            { "name":"h13", "device":"of:0000000000000006/5", "vlan":"200" },
-            { "name":"h21", "device":"of:0000000000000007/5", "vlan":"200" }
+            { "name": "h13", "device": "of:0000000000000006/5", "vlan": "200" },
+            { "name": "h21", "device": "of:0000000000000007/5", "vlan": "200" }
         ]
         recipients = [
-            { "name":"h4", "vlan":"100" }
+            { "name": "h4", "vlan": "100" }
         ]
-        badSenders=[ { "name":"h12" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h20" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h12" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h20" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
@@ -2072,14 +2072,14 @@ class FUNCintent:
         main.step( "ENCAPSULATION: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for VLAN Encapsulation multi to single point intent\n"
         senders = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
         recipients = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
-        badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
-        badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h9" } ]  # Recipients that are not in the intent
         testResult = main.FALSE
         installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
@@ -2187,7 +2187,7 @@ class FUNCintent:
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
 
         main.log.info( "Moving h1 from s5 to s6" )
-        main.Mininet1.moveHost( "h1","s5","s6" )
+        main.Mininet1.moveHost( "h1", "s5", "s6" )
 
         # Send discovery ping from moved host
         # Moving the host brings down the default interfaces and creates a new one.
@@ -2212,8 +2212,8 @@ class FUNCintent:
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         main.assertReturnString = "Assert result for IPV4 host intent between h1, moved, and h9\n"
-        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
-        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+        host1 = { "name": "h1", "id": "00:00:00:00:00:01/-1" }
+        host2 = { "name": "h9", "id": "00:00:00:00:00:09/-1" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
                                               name="IPV4 Mobility IPV4",
@@ -2223,7 +2223,7 @@ class FUNCintent:
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
                                                   name="Host Mobility IPV4",
-                                                  intentId = installResult,
+                                                  intentId=installResult,
                                                   onosNode=0,
                                                   host1=host1,
                                                   host2=host2,
@@ -2275,14 +2275,14 @@ class FUNCintent:
         main.assertReturnString = "Assertion results for IPV4 multi to single " +\
                                   "point intent end point failure with no options set\n"
         senders = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
         recipients = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
         isolatedSenders = [
-            { "name":"h24" }
+            { "name": "h24" }
         ]
         isolatedRecipients = []
         testResult = main.FALSE
@@ -2323,14 +2323,14 @@ class FUNCintent:
         main.assertReturnString = "Assertion results for IPV4 multi to single " +\
                                   "with partial failures allowed\n"
         senders = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
         recipients = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
         isolatedSenders = [
-            { "name":"h24" }
+            { "name": "h24" }
         ]
         isolatedRecipients = []
         testResult = main.FALSE
@@ -2372,15 +2372,15 @@ class FUNCintent:
         main.assertReturnString = "Assertion results for IPV4 single to multi " +\
                                   "point intent with no options set\n"
         senders = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
         recipients = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
         isolatedSenders = []
         isolatedRecipients = [
-            { "name":"h24" }
+            { "name": "h24" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(
@@ -2420,15 +2420,15 @@ class FUNCintent:
         main.assertReturnString = "Assertion results for IPV4 single to multi " +\
                                   "point intent with partial failures allowed\n"
         senders = [
-            { "name":"h8", "device":"of:0000000000000005/8" }
+            { "name": "h8", "device": "of:0000000000000005/8" }
         ]
         recipients = [
-            { "name":"h16", "device":"of:0000000000000006/8" },
-            { "name":"h24", "device":"of:0000000000000007/8" }
+            { "name": "h16", "device": "of:0000000000000006/8" },
+            { "name": "h24", "device": "of:0000000000000007/8" }
         ]
         isolatedSenders = []
         isolatedRecipients = [
-            { "name":"h24" }
+            { "name": "h24" }
         ]
         testResult = main.FALSE
         installResult = main.intentFunction.installSingleToMultiIntent(

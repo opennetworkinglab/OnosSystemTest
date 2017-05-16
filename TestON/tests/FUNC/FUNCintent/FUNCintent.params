@@ -53,9 +53,9 @@
         <topoAttempts>3</topoAttempts>
         <flowDuration>10</flowDuration>
         <checkConnection>50</checkConnection>
-        <checkFlowCount>200</checkFlowCount>
-        <checkIntentHost>100</checkIntentHost>
-        <checkIntentPoint>200</checkIntentPoint>
+        <checkFlowCount>20</checkFlowCount>
+        <checkIntentHost>10</checkIntentHost>
+        <checkIntentPoint>20</checkIntentPoint>
     </SLEEP>
 
     <MININET>

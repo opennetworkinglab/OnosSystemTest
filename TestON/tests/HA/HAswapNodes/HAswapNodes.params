@@ -27,6 +27,7 @@
     <ONOS_Configuration>
         <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
             <useFlowObjectives>false</useFlowObjectives>
+            <defaultFlowObjectiveCompiler>org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler</defaultFlowObjectiveCompiler>
         </org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
         <org.onosproject.store.flow.impl.DistributedFlowRuleStore>
             <backupCount>3</backupCount>

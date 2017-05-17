@@ -344,6 +344,9 @@ class SCPFscalingMaxIntents:
         if main.flowObj:
             main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                 "useFlowObjectives", value="true")
+            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                "defaultFlowObjectiveCompiler",
+                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
         main.step('Starting mininet topology')
         mnStatus = main.Mininet1.startNet(topoFile='~/mininet/custom/rerouteTopo.py')
         utilities.assert_equals( expect=main.TRUE,

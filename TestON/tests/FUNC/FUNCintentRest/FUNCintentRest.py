@@ -736,6 +736,9 @@ class FUNCintentRest:
 
         stepResult = main.CLIs[ 0 ].setCfg( component=cmd,
                                             propName="useFlowObjectives", value="true" )
+        stepResult &= main.CLIs[ 0 ].setCfg( component=cmd,
+                                             propName="defaultFlowObjectiveCompiler",
+                                             value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

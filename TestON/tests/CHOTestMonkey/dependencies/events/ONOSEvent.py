@@ -197,3 +197,38 @@ class BalanceMasters( Event ):
                 return EventStates().FAIL
             return EventStates().PASS
 
+class SetFlowObjCompiler( CfgEvent ):
+    def __init__( self ):
+        CfgEvent.__init__( self )
+        self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
+        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+
+    def startCfgEvent( self, args ):
+        if len( args ) < 1:
+            main.log.warn( "%s - Not enough arguments: %s" % ( self.typeString, args ) )
+            return EventStates().ABORT
+        elif len( args ) > 1:
+            main.log.warn( "%s - Too many arguments: %s" % ( self.typeString, args ) )
+            return EventStates().ABORT
+        else:
+            self.component = 'org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator'
+            self.propName = 'defaultFlowObjectiveCompiler'
+            self.value = str( args[ 0 ] )
+        index = -1
+        for controller in main.controllers:
+            if controller.isUp():
+                index = controller.index
+        if index == -1:
+            main.log.warn( "%s - No available controllers" %s ( self.typeString ) )
+            return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.component, self.propName, self.value ) )
+        controller = main.controllers[ index - 1 ]
+        with controller.CLILock:
+            result = controller.CLI.setCfg( component=self.component,
+                                            propName=self.propName,
+                                            value=self.value )
+        if not result:
+            main.log.warn( "%s - failed to set configuration" % ( self.typeString ) )
+            return EventStates().FAIL
+        return EventStates().PASS
+

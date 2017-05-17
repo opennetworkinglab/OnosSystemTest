@@ -251,6 +251,9 @@ class SCPFintentRerouteLat:
         if main.flowObj:
             main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                 "useFlowObjectives", value="true")
+            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                "defaultFlowObjectiveCompiler",
+                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
         time.sleep( main.startUpSleep )
         for i in range( int( main.numCtrls ) ):
             main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.topology" )

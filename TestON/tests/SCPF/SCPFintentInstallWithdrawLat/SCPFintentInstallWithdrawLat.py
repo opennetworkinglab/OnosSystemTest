@@ -226,6 +226,9 @@ class SCPFintentInstallWithdrawLat:
         if main.flowObj:
             main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                 "useFlowObjectives", value="true")
+            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                "defaultFlowObjectiveCompiler",
+                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
         time.sleep(main.startUpSleep)
 
         # balanceMasters

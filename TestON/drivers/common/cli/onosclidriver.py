@@ -2174,23 +2174,24 @@ class OnosCliDriver( CLI ):
                         state = intent[ 'state' ]
                         return state
                 main.log.info( "Cannot find intent ID" + str( intentsId ) +
-                               " on the list" )
+                               " in the list" )
                 return state
             elif isinstance( intentsId, types.ListType ):
                 dictList = []
                 for i in xrange( len( intentsId ) ):
                     stateDict = {}
-                    for intents in parsedIntentsJson:
-                        if intentsId[ i ] == intents[ 'id' ]:
-                            stateDict[ 'state' ] = intents[ 'state' ]
+                    for intent in parsedIntentsJson:
+                        if intentsId[ i ] == intent[ 'id' ]:
+                            stateDict[ 'state' ] = intent[ 'state' ]
                             stateDict[ 'id' ] = intentsId[ i ]
                             dictList.append( stateDict )
                             break
                 if len( intentsId ) != len( dictList ):
-                    main.log.info( "Cannot find some of the intent ID state" )
+                    main.log.warn( "Could not find all intents in ONOS output" )
+                    main.log.debug( "expected ids: {} \n ONOS intents: {}".format( intentsId, parsedIntentsJson ) )
                 return dictList
             else:
-                main.log.info( "Invalid intents ID entry" )
+                main.log.info( "Invalid type for intentsId argument" )
                 return None
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, rawJson ) )
@@ -2219,8 +2220,8 @@ class OnosCliDriver( CLI ):
                             *NOTE: You can pass in a list of expected state,
                             Eg: expectedState = [ 'INSTALLED' , 'INSTALLING' ]
         Return:
-            Returns main.TRUE only if all intent are the same as expected states
-            , otherwise, returns main.FALSE.
+            Returns main.TRUE only if all intent are the same as expected states,
+            otherwise returns main.FALSE.
         """
         try:
             # Generating a dictionary: intent id as a key and state as value
@@ -2231,30 +2232,31 @@ class OnosCliDriver( CLI ):
                                "getting intents state" )
                 return main.FALSE
 
-            failFlag = False
+            bandwidthFailed = False
             if bandwidthFlag:
                 rawAlloc = self.allocations()
                 expectedFormat = open( os.path.dirname( main.testFile ) + main.params[ 'DEPENDENCY' ][ 'filePath' ], 'r' )
                 ONOSOutput = StringIO(rawAlloc)
+                main.log.debug( "ONOSOutput: {}\nexpected output: {}".format( str(ONOSOutput), str( expectedFormat ) ) )
 
-                for actual,expected in izip(ONOSOutput,expectedFormat):
+                for actual, expected in izip( ONOSOutput, expectedFormat ):
                     actual = actual.rstrip()
                     expected = expected.rstrip()
+                    main.log.debug( "Expect: {}\nactual: {}".format( expected, actual ) )
                     if actual != expected and 'allocated' in actual and 'allocated' in expected:
                         marker1 = actual.find('allocated')
                         m1 = actual[:marker1]
                         marker2 = expected.find('allocated')
                         m2 = expected[:marker2]
                         if m1 != m2:
-                            failFlag = True
+                            bandwidthFailed = True
                     elif actual != expected and 'allocated' not in actual and 'allocated' not in expected:
-                        failFlag = True
+                        bandwidthFailed = True
 
                 expectedFormat.close()
                 ONOSOutput.close()
-                bandwidthFlag = False
 
-            if failFlag:
+            if bandwidthFailed:
                 main.log.error("Bandwidth not allocated correctly using Intents!!")
                 returnValue = main.FALSE
                 return returnValue

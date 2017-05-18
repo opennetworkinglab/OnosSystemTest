@@ -13,6 +13,7 @@ def sanitizeConfig( config ):
         Makes sure encapsulation type is all uppercase
         Make sure an empty list of interfaces is formated consistently
         Sorts the list of interfaces
+        Sorts the list of networks
     """
     # Convert to same string formats
     config = json.loads( json.dumps( config ) )
@@ -27,6 +28,7 @@ def sanitizeConfig( config ):
         else:
             ifaces = sorted( ifaces )
             network['interfaces'] = ifaces
+    config = sorted( config, key=lambda k: k['name'] )
     return config
 
 def verify( main ):

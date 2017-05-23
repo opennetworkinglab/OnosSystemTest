@@ -121,6 +121,7 @@ def installHostIntent( main,
                 main.assertReturnString += 'Bandwidth Allocation check Passed\n'
             else:
                 main.assertReturnString += 'Bandwidth Allocation check Failed\n'
+                return main.FALSE
 
 
         if flowDuration( main ):
@@ -522,6 +523,7 @@ def installPointIntent( main,
                 main.assertReturnString += 'Bandwidth Allocation check Passed\n'
             else:
                 main.assertReturnString += 'Bandwidth Allocation check Failed\n'
+                return main.FALSE
 
         # Check VLAN if test encapsulation
         if encap != "":
@@ -973,6 +975,8 @@ def installSingleToMultiIntent( main,
                 main.assertReturnString += 'Bandwidth Allocation check Passed\n'
             else:
                 main.assertReturnString += 'Bandwidth Allocation check Failed\n'
+                return main.FALSE
+
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
             return intentId
@@ -1120,6 +1124,8 @@ def installMultiToSingleIntent( main,
                 main.assertReturnString += 'Bandwidth Allocation check Passed\n'
             else:
                 main.assertReturnString += 'Bandwidth Allocation check Failed\n'
+                return main.FALSE
+
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
             return intentId

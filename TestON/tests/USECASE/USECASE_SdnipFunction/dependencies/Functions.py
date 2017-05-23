@@ -21,18 +21,24 @@ def checkM2SintentNum( main, intentNumExpected ):
     import time
     main.step( "Check M2S intents installed" )
     wait = int( main.params['timers']['PathAvailable'] )
-    main.log.info( "Intent number expected:" )
-    main.log.info( intentNumExpected )
-    main.log.info( "Intent number from ONOS CLI:" )
     jsonResult = main.ONOScli.intents( jsonFormat = True, summary = True,
                                        TYPE = "multiPointToSinglePoint" )
-    intentNumActual = jsonResult['installed']
+    try:
+        intentNumActual = jsonResult['installed']
+    except TypeError as e:
+        intentNumActual = -1
+        main.log.error( e )
     if intentNumActual != intentNumExpected:
         time.sleep( wait )
         jsonResult = main.ONOScli.intents( jsonFormat = True, summary = True,
                                            TYPE = "multiPointToSinglePoint" )
-        intentNumActual = jsonResult['installed']
-    main.log.info( intentNumActual )
+        try:
+            intentNumActual = jsonResult['installed']
+        except TypeError as e:
+            intentNumActual = -1
+            main.log.error( e )
+    main.log.info( "Intent number expected: {}".format( intentNumExpected ) )
+    main.log.info( "Intent number from ONOS CLI: {}".format( intentNumActual ) )
     utilities.assertEquals( \
         expect = intentNumExpected, actual = intentNumActual,
         onpass = "M2S intent number is correct!",
@@ -42,19 +48,25 @@ def checkP2PintentNum( main, intentNumExpected ):
     import time
     main.step( "Check P2P intents installed" )
     wait = int( main.params['timers']['PathAvailable'] )
-    main.log.info( "Intent number expected:" )
-    main.log.info( intentNumExpected )
-    main.log.info( "Intent number from ONOS CLI:" )
     jsonResult = main.ONOScli.intents( jsonFormat = True, summary = True,
                                        TYPE = "pointToPoint" )
-    intentNumActual = jsonResult['installed']
+    try:
+        intentNumActual = jsonResult['installed']
+    except TypeError as e:
+        intentNumActual = -1
+        main.log.error( e )
 
     if intentNumActual != intentNumExpected:
         time.sleep( wait )
         jsonResult = main.ONOScli.intents( jsonFormat = True, summary = True,
                                            TYPE = "pointToPoint" )
-        intentNumActual = jsonResult['installed']
-    main.log.info( intentNumActual )
+        try:
+            intentNumActual = jsonResult['installed']
+        except TypeError as e:
+            intentNumActual = -1
+            main.log.error( e )
+    main.log.info( "Intent number expected: {}".format( intentNumExpected ) )
+    main.log.info( "Intent number from ONOS CLI: {}".format( intentNumActual ) )
     utilities.assertEquals( \
         expect = intentNumExpected, actual = intentNumActual,
         onpass = "P2P intent number is correct!",
@@ -64,14 +76,12 @@ def checkFlowNum( main, switch, flowNumExpected ):
     import time
     main.step( "Check flow entry number in " + switch )
     wait = int( main.params['timers']['PathAvailable'] )
-    main.log.info( "Flow number expected:" )
-    main.log.info( flowNumExpected )
-    main.log.info( "Flow number actual:" )
+    main.log.info( "Flow number expected: {}".format( flowNumExpected ) )
     flowNumActual = main.Mininet.getSwitchFlowCount( switch )
     if flowNumActual != flowNumExpected :
         time.sleep( wait )
         flowNumActual = main.Mininet.getSwitchFlowCount( switch )
-    main.log.info( flowNumActual )
+    main.log.info( "Flow number actual: {}".format( flowNumActual ) )
     utilities.assertEquals( \
         expect = flowNumExpected, actual = flowNumActual,
         onpass = "Flow number in " + switch + " is correct!",

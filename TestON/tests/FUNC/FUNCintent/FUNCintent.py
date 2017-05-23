@@ -66,7 +66,7 @@ class FUNCintent:
             main.cycle = 0 # How many times FUNCintent has run through its tests
 
             main.ONOSip = main.ONOSbench.getOnosIps()
-            print main.ONOSip
+            main.log.debug( "Found ONOS ips: {}".format( main.ONOSip ) )
 
             # Assigning ONOS cli handles to a list
             for i in range( 1,  main.maxNodes + 1 ):
@@ -163,13 +163,10 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully uninstalled ONOS package",
                                  onfail="Failed to uninstall ONOS package" )
-        main.log.info( "Sleeping {} seconds".format( main.startUpSleep ) )
-        time.sleep( main.startUpSleep )
-
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
 
-        print "NODE COUNT = ", main.numCtrls
+        main.log.debug( "NODE COUNT = " + str( main.numCtrls ) )
 
         tempOnosIp = []
         for i in range( main.numCtrls ):
@@ -218,7 +215,7 @@ class FUNCintent:
 
         main.log.info( "Sleeping {} seconds".format( main.startUpSleep ) )
         time.sleep( main.startUpSleep )
-        main.step( "Starting ONOS service" )
+        main.step( "Checking ONOS is running" )
         stopResult = main.TRUE
         startResult = main.TRUE
         onosIsUp = main.TRUE
@@ -471,7 +468,7 @@ class FUNCintent:
 
         for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
-            print( "Response is " + str( response ) )
+            main.log.debug( "Response is " + str( response ) )
             if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
                 assignResult = assignResult and main.TRUE
             else:

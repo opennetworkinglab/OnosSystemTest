@@ -2233,10 +2233,10 @@ def checkLeaderChange( leaders1, leaders2 ):
         leaders1 = json.loads( leaders1 )
         leaders2 = json.loads( leaders2 )
     except( AttributeError, TypeError ):
-        main.log.exception( self.name + ": Object not as expected" )
+        main.log.exception( "checkLeaderChange: Object not as expected" )
         return main.FALSE
     except Exception:
-        main.log.exception( self.name + ": Uncaught exception!" )
+        main.log.exception( "checkLeaderChange: Uncaught exception!" )
         main.cleanup()
         main.exit()
     main.log.info( "Checking Intent Paritions for Change in Leadership" )

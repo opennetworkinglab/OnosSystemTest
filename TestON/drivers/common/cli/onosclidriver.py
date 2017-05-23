@@ -2206,15 +2206,13 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkIntentState( self, intentsId, bandwidthFlag=False, expectedState='INSTALLED' ):
+    def checkIntentState( self, intentsId, expectedState='INSTALLED' ):
         """
         Description:
             Check intents state
         Required:
             intentsId - List of intents ID to be checked
         Optional:
-            bandwidthFlag - Check the bandwidth allocations. If bandwidth is
-                                specified, then check for bandwidth allocations
             expectedState - Check the expected state(s) of each intents
                             state in the list.
                             *NOTE: You can pass in a list of expected state,
@@ -2224,42 +2222,13 @@ class OnosCliDriver( CLI ):
             otherwise returns main.FALSE.
         """
         try:
-            # Generating a dictionary: intent id as a key and state as value
             returnValue = main.TRUE
+            # Generating a dictionary: intent id as a key and state as value
             intentsDict = self.getIntentState( intentsId )
             if len( intentsId ) != len( intentsDict ):
                 main.log.info( self.name + ": There is something wrong " +
                                "getting intents state" )
                 return main.FALSE
-
-            bandwidthFailed = False
-            if bandwidthFlag:
-                rawAlloc = self.allocations()
-                expectedFormat = open( os.path.dirname( main.testFile ) + main.params[ 'DEPENDENCY' ][ 'filePath' ], 'r' )
-                ONOSOutput = StringIO(rawAlloc)
-                main.log.debug( "ONOSOutput: {}\nexpected output: {}".format( str(ONOSOutput), str( expectedFormat ) ) )
-
-                for actual, expected in izip( ONOSOutput, expectedFormat ):
-                    actual = actual.rstrip()
-                    expected = expected.rstrip()
-                    main.log.debug( "Expect: {}\nactual: {}".format( expected, actual ) )
-                    if actual != expected and 'allocated' in actual and 'allocated' in expected:
-                        marker1 = actual.find('allocated')
-                        m1 = actual[:marker1]
-                        marker2 = expected.find('allocated')
-                        m2 = expected[:marker2]
-                        if m1 != m2:
-                            bandwidthFailed = True
-                    elif actual != expected and 'allocated' not in actual and 'allocated' not in expected:
-                        bandwidthFailed = True
-
-                expectedFormat.close()
-                ONOSOutput.close()
-
-            if bandwidthFailed:
-                main.log.error("Bandwidth not allocated correctly using Intents!!")
-                returnValue = main.FALSE
-                return returnValue
 
             if isinstance( expectedState, types.StringType ):
                 for intents in intentsDict:
@@ -2289,6 +2258,59 @@ class OnosCliDriver( CLI ):
                                str( len( intentsDict ) ) +
                                " intents are in " + str( expectedState ) +
                                " state" )
+            return returnValue
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def compareBandwidthAllocations( self, expectedAllocations ):
+        """
+        Description:
+            Compare the allocated bandwidth with the given allocations
+        Required:
+            expectedAllocations - The expected ONOS output of the allocations command
+        Return:
+            Returns main.TRUE only if all intent are the same as expected states,
+            otherwise returns main.FALSE.
+        """
+        # FIXME: Convert these string comparisons to object comparisons
+        try:
+            returnValue = main.TRUE
+            bandwidthFailed = False
+            rawAlloc = self.allocations()
+            expectedFormat = StringIO( expectedAllocations )
+            ONOSOutput = StringIO( rawAlloc )
+            main.log.debug( "ONOSOutput: {}\nexpected output: {}".format( str( ONOSOutput ),
+                                                                          str( expectedFormat ) ) )
+
+            for actual, expected in izip( ONOSOutput, expectedFormat ):
+                actual = actual.rstrip()
+                expected = expected.rstrip()
+                main.log.debug( "Expect: {}\nactual: {}".format( expected, actual ) )
+                if actual != expected and 'allocated' in actual and 'allocated' in expected:
+                    marker1 = actual.find('allocated')
+                    m1 = actual[:marker1]
+                    marker2 = expected.find('allocated')
+                    m2 = expected[:marker2]
+                    if m1 != m2:
+                        bandwidthFailed = True
+                elif actual != expected and 'allocated' not in actual and 'allocated' not in expected:
+                    bandwidthFailed = True
+            expectedFormat.close()
+            ONOSOutput.close()
+
+            if bandwidthFailed:
+                main.log.error("Bandwidth not allocated correctly using Intents!!")
+                returnValue = main.FALSE
             return returnValue
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

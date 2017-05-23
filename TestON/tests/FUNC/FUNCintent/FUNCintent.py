@@ -153,7 +153,6 @@ class FUNCintent:
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
 
-        time.sleep( main.startUpSleep )
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
         for ip in main.ONOSip:
@@ -164,6 +163,7 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully uninstalled ONOS package",
                                  onfail="Failed to uninstall ONOS package" )
+        main.log.info( "Sleeping {} seconds".format( main.startUpSleep ) )
         time.sleep( main.startUpSleep )
 
         for i in range( main.maxNodes ):
@@ -197,7 +197,6 @@ class FUNCintent:
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
 
-        time.sleep( main.startUpSleep )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
         for i in range( main.numCtrls ):
@@ -217,6 +216,7 @@ class FUNCintent:
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
 
+        main.log.info( "Sleeping {} seconds".format( main.startUpSleep ) )
         time.sleep( main.startUpSleep )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
@@ -286,6 +286,7 @@ class FUNCintent:
 
         while ( attempts >= 0 ) and\
             ( not devicesResults or not linksResults or not hostsResults ):
+            main.log.info( "Sleeping {} seconds".format( 2 ) )
             time.sleep( 2 )
             if not devicesResults:
                 devices = main.topo.getAllDevices( main )
@@ -1450,8 +1451,7 @@ class FUNCintent:
                                       name="NOOPTION",
                                       senders=senders,
                                       recipients=recipients,
-                                      bandwidth=100,
-                                      bandwidthFlag=True )
+                                      bandwidth=100 )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(

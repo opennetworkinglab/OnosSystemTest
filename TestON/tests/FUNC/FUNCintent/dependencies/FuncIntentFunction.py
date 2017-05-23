@@ -6,6 +6,7 @@
 import time
 import copy
 import json
+import os
 
 def __init__( self ):
     self.default = ''
@@ -29,8 +30,7 @@ def installHostIntent( main,
                        sw1="",
                        sw2="",
                        setVlan="",
-                       encap="",
-                       bandwidthFlag=False ):
+                       encap="" ):
     """
     Installs a Host Intent
 
@@ -101,7 +101,7 @@ def installHostIntent( main,
     # Check intents state
     if utilities.retry( f=checkIntentState,
                         retValue=main.FALSE,
-                        args=( main, [ intentId ], bandwidthFlag ),
+                        args=( main, [ intentId ] ),
                         sleep=main.checkIntentSleep,
                         attempts=50 ):
         main.assertReturnString += 'Install Intent State Passed\n'
@@ -112,12 +112,22 @@ def installHostIntent( main,
                 main.assertReturnString += 'Encapsulation intents check Passed\n'
             else:
                 main.assertReturnString += 'Encapsulation intents check failed\n'
+        if bandwidth != "":
+            allocationsFile = open( os.path.dirname( main.testFile ) + main.params[ 'DEPENDENCY' ][ 'filePath' ], 'r' )
+            expectedFormat = allocationsFile.read()
+            bandwidthCheck = checkBandwidthAllocations( main, expectedFormat )
+            allocationsFile.close()
+            if bandwidthCheck:
+                main.assertReturnString += 'Bandwidth Allocation check Passed\n'
+            else:
+                main.assertReturnString += 'Bandwidth Allocation check Failed\n'
+
 
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
             return intentId
         else:
-            main.assertReturnString += 'Flow duration check failed\n'
+            main.assertReturnString += 'Flow duration check Failed\n'
             return main.FALSE
 
     else:
@@ -231,11 +241,11 @@ def testHostIntent( main,
     if utilities.retry( f=checkFlowsCount,
                         retValue=main.FALSE,
                         args=[ main ],
-                        sleep=20,
+                        sleep=main.checkFlowCountSleep,
                         attempts=3 ) and utilities.retry( f=checkFlowsState,
                                                           retValue=main.FALSE,
                                                           args=[ main ],
-                                                          sleep=20,
+                                                          sleep=main.checkFlowCountSleep,
                                                           attempts=3 ):
         main.assertReturnString += 'Initial Flow State Passed\n'
     else:
@@ -320,6 +330,7 @@ def testHostIntent( main,
             testResult = main.FALSE
 
         # Wait for reroute
+        main.log.info( "Sleeping {} seconds".format( main.rerouteSleep ) )
         time.sleep( main.rerouteSleep )
 
         # Check Intents
@@ -337,11 +348,11 @@ def testHostIntent( main,
         if utilities.retry( f=checkFlowsCount,
                             retValue=main.FALSE,
                             args=[ main ],
-                            sleep=20,
+                            sleep=main.checkFlowCountSleep,
                             attempts=3 ) and utilities.retry( f=checkFlowsState,
                                                               retValue=main.FALSE,
                                                               args=[ main ],
-                                                              sleep=20,
+                                                              sleep=main.checkFlowCountSleep,
                                                               attempts=3 ):
             main.assertReturnString += 'Link Up Flow State Passed\n'
         else:
@@ -393,8 +404,7 @@ def installPointIntent( main,
                         tcpSrc="",
                         tcpDst="",
                         setVlan="",
-                        encap="",
-                        bandwidthFlag=False ):
+                        encap="" ):
     """
     Installs a Single to Single Point Intent
 
@@ -498,13 +508,20 @@ def installPointIntent( main,
     # Check intents state
     if utilities.retry( f=checkIntentState,
                         retValue=main.FALSE,
-                        args=( main, [ intentId ], bandwidthFlag ),
-                        sleep=main.checkIntentSleep * 2,
+                        args=( main, [ intentId ] ),
+                        sleep=main.checkIntentSleep,
                         attempts=50 ):
         main.assertReturnString += 'Install Intent State Passed\n'
 
         if bandwidth != "":
-            main.assertReturnString += 'Bandwidth Allocation Passed\n'
+            allocationsFile = open( os.path.dirname( main.testFile ) + main.params[ 'DEPENDENCY' ][ 'filePath' ], 'r' )
+            expectedFormat = allocationsFile.read()
+            bandwidthCheck = checkBandwidthAllocations( main, expectedFormat )
+            allocationsFile.close()
+            if bandwidthCheck:
+                main.assertReturnString += 'Bandwidth Allocation check Passed\n'
+            else:
+                main.assertReturnString += 'Bandwidth Allocation check Failed\n'
 
         # Check VLAN if test encapsulation
         if encap != "":
@@ -520,8 +537,6 @@ def installPointIntent( main,
             main.assertReturnString += 'Flow duration check failed\n'
             return main.FALSE
     else:
-        if bandwidth != "":
-            main.assertReturnString += 'Bandwidth Allocation Failed\n'
         main.log.error( "Point Intent did not install correctly" )
         pointIntentFailFlag = True
         return main.FALSE
@@ -680,6 +695,7 @@ def pointIntentTcp( main,
     intentsId.append( intent4 )
 
     # Check intents state
+    main.log.info( "Sleeping {} seconds".format( main.checkIntentSleep ) )
     time.sleep( main.checkIntentSleep )
     intentResult = utilities.retry( f=checkIntentState,
                                     retValue=main.FALSE,
@@ -766,6 +782,7 @@ def pointIntentTcp( main,
         else:
             main.assertReturnString += 'Link Up Failed\n'
 
+        main.log.info( "Sleeping {} seconds".format( main.rerouteSleep ) )
         time.sleep( main.rerouteSleep )
 
         # Check flows count in each node
@@ -834,8 +851,7 @@ def installSingleToMultiIntent( main,
                                 sw2="",
                                 setVlan="",
                                 partial=False,
-                                encap="",
-                                bandwidthFlag=False ):
+                                encap="" ):
     """
     Installs a Single to Multi Point Intent
 
@@ -944,10 +960,19 @@ def installSingleToMultiIntent( main,
 
     if utilities.retry( f=checkIntentState,
                         retValue=main.FALSE,
-                        args=( main, [ intentId ], bandwidthFlag ),
+                        args=( main, [ intentId ] ),
                         sleep=main.checkIntentSleep,
                         attempts=attempts ):
         main.assertReturnString += 'Install Intent State Passed\n'
+        if bandwidth != "":
+            allocationsFile = open( os.path.dirname( main.testFile ) + main.params[ 'DEPENDENCY' ][ 'filePath' ], 'r' )
+            expectedFormat = allocationsFile.read()
+            bandwidthCheck = checkBandwidthAllocations( main, expectedFormat )
+            allocationsFile.close()
+            if bandwidthCheck:
+                main.assertReturnString += 'Bandwidth Allocation check Passed\n'
+            else:
+                main.assertReturnString += 'Bandwidth Allocation check Failed\n'
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
             return intentId
@@ -974,8 +999,7 @@ def installMultiToSingleIntent( main,
                                 sw2="",
                                 setVlan="",
                                 partial=False,
-                                encap="",
-                                bandwidthFlag=False ):
+                                encap="" ):
     """
     Installs a Multi to Single Point Intent
 
@@ -1083,10 +1107,19 @@ def installMultiToSingleIntent( main,
 
     if utilities.retry( f=checkIntentState,
                         retValue=main.FALSE,
-                        args=( main, [ intentId ], bandwidthFlag ),
+                        args=( main, [ intentId ] ),
                         sleep=main.checkIntentSleep,
                         attempts=attempts ):
         main.assertReturnString += 'Install Intent State Passed\n'
+        if bandwidth != "":
+            allocationsFile = open( os.path.dirname( main.testFile ) + main.params[ 'DEPENDENCY' ][ 'filePath' ], 'r' )
+            expectedFormat = allocationsFile.read()
+            bandwidthCheck = checkBandwidthAllocations( main, expectedFormat )
+            allocationsFile.close()
+            if bandwidthCheck:
+                main.assertReturnString += 'Bandwidth Allocation check Passed\n'
+            else:
+                main.assertReturnString += 'Bandwidth Allocation check Failed\n'
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
             return intentId
@@ -1225,11 +1258,11 @@ def testPointIntent( main,
     if utilities.retry( f=checkFlowsCount,
                         retValue=main.FALSE,
                         args=[ main ],
-                        sleep=20,
+                        sleep=main.checkFlowCountSleep,
                         attempts=3 ) and utilities.retry( f=checkFlowsState,
                                                           retValue=main.FALSE,
                                                           args=[ main ],
-                                                          sleep=20,
+                                                          sleep=main.checkFlowCountSleep,
                                                           attempts=3 ):
         main.assertReturnString += 'Initial Flow State Passed\n'
     else:
@@ -1353,6 +1386,7 @@ def testPointIntent( main,
             testResult = main.FALSE
 
         # Wait for reroute
+        main.log.info( "Sleeping {} seconds".format( main.rerouteSleep ) )
         time.sleep( main.rerouteSleep )
 
         # Check Intents
@@ -1370,11 +1404,11 @@ def testPointIntent( main,
         if utilities.retry( f=checkFlowsCount,
                             retValue=main.FALSE,
                             args=[ main ],
-                            sleep=20,
+                            sleep=main.checkFlowCountSleep,
                             attempts=3 ) and utilities.retry( f=checkFlowsState,
                                                               retValue=main.FALSE,
                                                               args=[ main ],
-                                                              sleep=20,
+                                                              sleep=main.checkFlowCountSleep,
                                                               attempts=3 ):
             main.assertReturnString += 'Link Up Flow State Passed\n'
         else:
@@ -1766,6 +1800,7 @@ def testEndPointFail( main,
         testResult = main.FALSE
 
     # Wait for reroute
+    main.log.info( "Sleeping {} seconds".format( main.rerouteSleep ) )
     time.sleep( main.rerouteSleep )
 
     # Check Intents
@@ -1783,11 +1818,11 @@ def testEndPointFail( main,
     if utilities.retry( f=checkFlowsCount,
                         retValue=main.FALSE,
                         args=[ main ],
-                        sleep=5,
-                        attempts=5*20 ) and utilities.retry( f=checkFlowsState,
+                        sleep=main.checkFlowCountSleep,
+                        attempts=attempts ) and utilities.retry( f=checkFlowsState,
                                                              retValue=main.FALSE,
                                                              args=[ main ],
-                                                             sleep=5,
+                                                             sleep=main.checkFlowCountSleep,
                                                              attempts=attempts ):
         main.assertReturnString += 'Link Up Flow State Passed\n'
     else:
@@ -1843,6 +1878,7 @@ def fwdPingall( main ):
     activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
 
     # Wait for forward app activation to propagate
+    main.log.info( "Sleeping {} seconds".format( main.fwdSleep ) )
     time.sleep( main.fwdSleep )
 
     # Check that forwarding is enabled on all nodes
@@ -1980,22 +2016,40 @@ def checkTopology( main, expectedLink ):
         main.log.info( itemName + ": Topology match" )
     return statusResult
 
-def checkIntentState( main, intentsId, bandwidthFlag=False ):
+def checkIntentState( main, intentsId ):
     """
         This function will check intent state to make sure all the intents
         are in INSTALLED state
+        Returns main.TRUE or main.FALSE
     """
     intentResult = main.TRUE
-    results = []
+    stateCheckResults = []
     for i in range( main.numCtrls ):
-        output = main.CLIs[ i ].checkIntentState( intentsId=intentsId, bandwidthFlag=bandwidthFlag )
-        results.append( output )
-    if all( result == main.TRUE for result in results ):
-        main.log.info( itemName + ": Intents are installed correctly" )
+        output = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+        stateCheckResults.append( output )
+    if all( result == main.TRUE for result in stateCheckResults ):
+        main.log.info( itemName + ": Intents state check passed" )
     else:
-        main.log.warn( "Intents are not installed correctly" )
+        main.log.warn( "Intents state check failed" )
         intentResult = main.FALSE
     return intentResult
+
+def checkBandwidthAllocations( main, bandwidth ):
+    """
+        Compare the given bandwith allocation output to the cli output on each node
+        Returns main.TRUE or main.FALSE
+    """
+    bandwidthResults = []
+    for i in range( main.numCtrls ):
+        output = main.CLIs[ i ].compareBandwidthAllocations( bandwidth )
+        bandwidthResults.append( output )
+    if all( result == main.TRUE for result in bandwidthResults ):
+        main.log.info( itemName + ": bandwidth check passed" )
+        bandwidthResult = main.TRUE
+    else:
+        main.log.warn( itemName + ": bandwidth check failed" )
+        bandwidthResult = main.FALSE
+    return bandwidthResult
 
 def checkFlowsState( main ):
 
@@ -2113,6 +2167,7 @@ def removeAllIntents( main, intentsId ):
     for intent in intentsId:
         main.CLIs[ 0 ].removeIntent( intentId=intent, purge=True )
 
+    main.log.info( "Sleeping {} seconds".format( main.removeIntentSleep ) )
     time.sleep( main.removeIntentSleep )
 
     # If there is remianing intents then remove intents should fail

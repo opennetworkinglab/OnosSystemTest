@@ -48,14 +48,14 @@
         <startup>15</startup>
         <reroute>5</reroute>
         <removeintent>10</removeintent>
-        <checkintent>10</checkintent>
+        <checkintent>5</checkintent>
         <fwd>10</fwd>
         <topoAttempts>3</topoAttempts>
         <flowDuration>10</flowDuration>
-        <checkConnection>50</checkConnection>
+        <checkConnection>30</checkConnection>
         <checkFlowCount>20</checkFlowCount>
-        <checkIntentHost>10</checkIntentHost>
-        <checkIntentPoint>20</checkIntentPoint>
+        <checkIntentHost>5</checkIntentHost>
+        <checkIntentPoint>5</checkIntentPoint>
     </SLEEP>
 
     <MININET>

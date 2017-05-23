@@ -4,9 +4,9 @@
     Author: kelvin@onlab.us
 """
 import time
-import copy
 import json
 import os
+
 
 def __init__( self ):
     self.default = ''
@@ -15,6 +15,7 @@ hostIntentFailFlag = False
 pointIntentFailFlag = False
 singleToMultiFailFlag = False
 multiToSingleFailFlag = False
+
 
 def installHostIntent( main,
                        name,
@@ -62,7 +63,6 @@ def installHostIntent( main,
         ipProto - IP protocol
         tcp - TCP ports in the same order as the hosts in hostNames
     """
-
     assert main, "There is no main variable"
     assert host1, "You must specify host1"
     assert host2, "You must specify host2"
@@ -106,7 +106,7 @@ def installHostIntent( main,
                         attempts=50 ):
         main.assertReturnString += 'Install Intent State Passed\n'
 
-        #Check VLAN if test encapsulation
+        # Check VLAN if test encapsulation
         if encap != "":
             if EncapsulatedIntentCheck( main, tag=encap ):
                 main.assertReturnString += 'Encapsulation intents check Passed\n'
@@ -123,7 +123,6 @@ def installHostIntent( main,
                 main.assertReturnString += 'Bandwidth Allocation check Failed\n'
                 return main.FALSE
 
-
         if flowDuration( main ):
             main.assertReturnString += 'Flow duration check Passed\n'
             return intentId
@@ -136,6 +135,7 @@ def installHostIntent( main,
         hostIntentFailFlag = True
         main.assertReturnString += 'Install Intent State Failed\n'
         return main.FALSE
+
 
 def testHostIntent( main,
                     name,
@@ -189,7 +189,6 @@ def testHostIntent( main,
                        switches are down
 
     """
-
     # Parameter Validity Check
     assert main, "There is no main variable"
     assert host1, "You must specify host1"
@@ -390,6 +389,7 @@ def testHostIntent( main,
 
     return testResult
 
+
 def installPointIntent( main,
                         name,
                         senders,
@@ -441,7 +441,6 @@ def installPointIntent( main,
                        be two links lower than the links before the two
                        switches are down
     """
-
     assert main, "There is no main variable"
     assert senders, "You must specify a sender"
     assert recipients, "You must specify a recipient"
@@ -465,7 +464,6 @@ def installPointIntent( main,
             if not recipient.get( "device" ):
                 main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
                 recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
-
 
         ingressDevice = senders[ 0 ].get( "device" )
         egressDevice = recipients[ 0 ].get( "device" )
@@ -543,6 +541,7 @@ def installPointIntent( main,
         pointIntentFailFlag = True
         return main.FALSE
 
+
 def pointIntentTcp( main,
                     name,
                     host1,
@@ -565,7 +564,6 @@ def pointIntentTcp( main,
                     sw1="",
                     sw2="",
                     expectedLink=0 ):
-
     """
     Description:
         Verify add-point-intent only for TCP
@@ -615,7 +613,6 @@ def pointIntentTcp( main,
                        be two links lower than the links before the two
                        switches are down
     """
-
     assert main, "There is no main variable"
     assert name, "variable name is empty"
     assert host1 and host2, "You must specify hosts"
@@ -722,7 +719,7 @@ def pointIntentTcp( main,
     checkFlowsState( main )
 
     # Run iperf to both host
-    iperfTemp = main.Mininet1.iperftcp( host1, host2 ,10 )
+    iperfTemp = main.Mininet1.iperftcp( host1, host2, 10 )
     iperfResult = iperfResult and iperfTemp
     if iperfTemp:
         main.assertReturnString += 'Initial Iperf Passed\n'
@@ -838,6 +835,7 @@ def pointIntentTcp( main,
 
     return stepResult
 
+
 def installSingleToMultiIntent( main,
                                 name,
                                 senders,
@@ -890,7 +888,6 @@ def installSingleToMultiIntent( main,
                        be two links lower than the links before the two
                        switches are down
     """
-
     assert main, "There is no main variable"
     assert senders, "You must specify a sender"
     assert recipients, "You must specify a recipient"
@@ -914,7 +911,6 @@ def installSingleToMultiIntent( main,
             if not recipient.get( "device" ):
                 main.log.warn( "Device not given for recipient {0}. Loading from main.hostData".format( recipient.get( "name" ) ) )
                 recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
-
 
         ingressDevice = senders[ 0 ].get( "device" )
         egressDeviceList = [ x.get( "device" ) for x in recipients if x.get( "device" ) ]
@@ -988,6 +984,7 @@ def installSingleToMultiIntent( main,
         singleToMultiFailFlag = True
         return main.FALSE
 
+
 def installMultiToSingleIntent( main,
                                 name,
                                 senders,
@@ -1040,7 +1037,6 @@ def installMultiToSingleIntent( main,
                        be two links lower than the links before the two
                        switches are down
     """
-
     assert main, "There is no main variable"
     assert senders, "You must specify a sender"
     assert recipients, "You must specify a recipient"
@@ -1137,6 +1133,7 @@ def installMultiToSingleIntent( main,
         multiToSingleFailFlag = True
         return main.FALSE
 
+
 def testPointIntent( main,
                      name,
                      intentId,
@@ -1204,7 +1201,6 @@ def testPointIntent( main,
                        switches are down
 
     """
-
     # Parameter Validity Check
     assert main, "There is no main variable"
     assert senders, "You must specify a sender"
@@ -1265,11 +1261,11 @@ def testPointIntent( main,
                         retValue=main.FALSE,
                         args=[ main ],
                         sleep=main.checkFlowCountSleep,
-                        attempts=3 ) and utilities.retry( f=checkFlowsState,
-                                                          retValue=main.FALSE,
-                                                          args=[ main ],
-                                                          sleep=main.checkFlowCountSleep,
-                                                          attempts=3 ):
+                        attempts=attempts ) and utilities.retry( f=checkFlowsState,
+                                                                 retValue=main.FALSE,
+                                                                 args=[ main ],
+                                                                 sleep=main.checkFlowCountSleep,
+                                                                 attempts=attempts ):
         main.assertReturnString += 'Initial Flow State Passed\n'
     else:
         main.assertReturnString += 'Intial Flow State Failed\n'
@@ -1292,7 +1288,7 @@ def testPointIntent( main,
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
                             args=( main, badSenderNames, recipientNames ),
-                            kwargs={ "expectFailure":True } ):
+                            kwargs={ "expectFailure": True } ):
             main.assertReturnString += 'Bad Sender Ping Passed\n'
         else:
             main.assertReturnString += 'Bad Sender Ping Failed\n'
@@ -1303,7 +1299,7 @@ def testPointIntent( main,
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
                             args=( main, senderNames, badRecipientNames ),
-                            kwargs={ "expectFailure":True } ):
+                            kwargs={ "expectFailure": True } ):
             main.assertReturnString += 'Bad Recipient Ping Passed\n'
         else:
             main.assertReturnString += 'Bad Recipient Ping Failed\n'
@@ -1352,11 +1348,11 @@ def testPointIntent( main,
                             retValue=main.FALSE,
                             args=[ main ],
                             sleep=main.checkFlowCountSleep,
-                            attempts=attempts * 2 ) and utilities.retry( f=checkFlowsState,
+                            attempts=attempts ) and utilities.retry( f=checkFlowsState,
                                                                          retValue=main.FALSE,
                                                                          args=[ main ],
                                                                          sleep=main.checkFlowCountSleep,
-                                                                         attempts=attempts * 2 ):
+                                                                         attempts=attempts ):
             main.assertReturnString += 'Link Down Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Down Flow State Failed\n'
@@ -1411,11 +1407,11 @@ def testPointIntent( main,
                             retValue=main.FALSE,
                             args=[ main ],
                             sleep=main.checkFlowCountSleep,
-                            attempts=3 ) and utilities.retry( f=checkFlowsState,
-                                                              retValue=main.FALSE,
-                                                              args=[ main ],
-                                                              sleep=main.checkFlowCountSleep,
-                                                              attempts=3 ):
+                            attempts=attempts ) and utilities.retry( f=checkFlowsState,
+                                                                     retValue=main.FALSE,
+                                                                     args=[ main ],
+                                                                     sleep=main.checkFlowCountSleep,
+                                                                     attempts=attempts ):
             main.assertReturnString += 'Link Up Flow State Passed\n'
         else:
             main.assertReturnString += 'Link Up Flow State Failed\n'
@@ -1434,7 +1430,7 @@ def testPointIntent( main,
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
                             sleep=main.checkConnectionSleep,
-                            attempts=100,
+                            attempts=attempts,
                             args=( main, senderNames, recipientNames, vlanId, useTCP ) ):
             main.assertReturnString += 'Link Up Scapy Packet Received Passed\n'
         else:
@@ -1452,6 +1448,7 @@ def testPointIntent( main,
         testResult = main.FALSE
 
     return testResult
+
 
 def testEndPointFail( main,
                       name,
@@ -1478,7 +1475,6 @@ def testEndPointFail( main,
     """
     Test Multi point to single point intent Topology for Endpoint failures
     """
-
     # Parameter Validity Check
     assert main, "There is no main variable"
     assert senders, "You must specify a sender"
@@ -1498,8 +1494,8 @@ def testEndPointFail( main,
         recipientNames = [ x.get( "name" ) for x in recipients ]
         isolatedSenderNames = [ x.get( "name" ) for x in isolatedSenders ]
         isolatedRecipientNames = [ x.get( "name" ) for x in isolatedRecipients ]
-        connectedSenderNames = [x.get("name") for x in senders if x.get("name") not in isolatedSenderNames]
-        connectedRecipientNames = [x.get("name") for x in recipients if x.get("name") not in isolatedRecipientNames]
+        connectedSenderNames = [ x.get( "name" ) for x in senders if x.get( "name" ) not in isolatedSenderNames ]
+        connectedRecipientNames = [ x.get( "name" ) for x in recipients if x.get( "name" ) not in isolatedRecipientNames ]
 
         for sender in senders:
             if not sender.get( "device" ):
@@ -1508,7 +1504,7 @@ def testEndPointFail( main,
 
         for recipient in recipients:
             if not recipient.get( "device" ):
-                main.log.warn( "Device not given for recipient {0}. Loading from " +\
+                main.log.warn( "Device not given for recipient {0}. Loading from " +
                                 main.hostData.format( recipient.get( "name" ) ) )
                 recipient[ "device" ] = main.hostsData.get( recipient.get( "name" ) ).get( "location" )
     except( KeyError, TypeError ):
@@ -1698,7 +1694,7 @@ def testEndPointFail( main,
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
                             attempts=attempts,
-                            args=( main, connectedSenderNames , connectedRecipientNames ) ):
+                            args=( main, connectedSenderNames, connectedRecipientNames ) ):
             main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Passed\n'
         else:
             main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Failed\n'
@@ -1826,10 +1822,10 @@ def testEndPointFail( main,
                         args=[ main ],
                         sleep=main.checkFlowCountSleep,
                         attempts=attempts ) and utilities.retry( f=checkFlowsState,
-                                                             retValue=main.FALSE,
-                                                             args=[ main ],
-                                                             sleep=main.checkFlowCountSleep,
-                                                             attempts=attempts ):
+                                                                 retValue=main.FALSE,
+                                                                 args=[ main ],
+                                                                 sleep=main.checkFlowCountSleep,
+                                                                 attempts=attempts ):
         main.assertReturnString += 'Link Up Flow State Passed\n'
     else:
         main.assertReturnString += 'Link Up Flow State Failed\n'
@@ -1875,6 +1871,7 @@ def pingallHosts( main, hostList ):
     main.log.info( "Pinging: " + str( hostList ) )
     return main.Mininet1.pingallHosts( hostList )
 
+
 def fwdPingall( main ):
     """
         Use fwd app and pingall to discover all the hosts
@@ -1896,7 +1893,7 @@ def fwdPingall( main ):
 
     # Send pingall in mininet
     main.log.info( "Run Pingall" )
-    pingResult = main.Mininet1.pingall( timeout = 600 )
+    pingResult = main.Mininet1.pingall( timeout=600 )
 
     main.log.info( "Deactivating reactive forwarding app " )
     deactivateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
@@ -1907,6 +1904,7 @@ def fwdPingall( main ):
         main.log.info( "Failed to use fwd app to discover hosts" )
         getDataResult = main.FALSE
     return getDataResult
+
 
 def confirmHostDiscovery( main ):
     """
@@ -1937,7 +1935,8 @@ def confirmHostDiscovery( main ):
                     onosHostIPs = [ x.get( "ipAddresses" )[ 0 ]
                                     for x in hostData
                                     if len( x.get( "ipAddresses" ) ) > 0 ]
-                    if not set( collections.Counter( scapyHostIPs ) ).issubset( set ( collections.Counter( onosHostIPs ) ) ):
+                    if not set( collections.Counter( scapyHostIPs ) ).issubset(
+                            set( collections.Counter( onosHostIPs ) ) ):
                         main.log.warn( "Controller {0} only sees nodes with {1} IPs. It should see all of the following: {2}".format( controllerStr, onosHostIPs, scapyHostIPs ) )
                         hostFails.append( controllerStr )
             else:
@@ -1952,6 +1951,7 @@ def confirmHostDiscovery( main ):
         return main.FALSE
     else:
         return main.TRUE
+
 
 def sendDiscoveryArp( main, hosts=None ):
     """
@@ -1972,6 +1972,7 @@ def sendDiscoveryArp( main, hosts=None ):
                 break
         host.sendPacket( packet=pkt, iface=iface )
         main.log.info( "Sending ARP packet from {0}".format( host.name ) )
+
 
 def populateHostData( main ):
     """
@@ -2008,6 +2009,7 @@ def populateHostData( main ):
         main.log.error( "TypeError while populating hostsData" )
         return main.FALSE
 
+
 def checkTopology( main, expectedLink ):
     statusResult = main.TRUE
     # Check onos topology
@@ -2021,6 +2023,7 @@ def checkTopology( main, expectedLink ):
     else:
         main.log.info( itemName + ": Topology match" )
     return statusResult
+
 
 def checkIntentState( main, intentsId ):
     """
@@ -2040,6 +2043,7 @@ def checkIntentState( main, intentsId ):
         intentResult = main.FALSE
     return intentResult
 
+
 def checkBandwidthAllocations( main, bandwidth ):
     """
         Compare the given bandwith allocation output to the cli output on each node
@@ -2057,11 +2061,13 @@ def checkBandwidthAllocations( main, bandwidth ):
         bandwidthResult = main.FALSE
     return bandwidthResult
 
+
 def checkFlowsState( main ):
 
     main.log.info( itemName + ": Check flows state" )
     checkFlowsResult = main.CLIs[ 0 ].checkFlowsState( isPENDING=False )
     return checkFlowsResult
+
 
 def link( main, sw1, sw2, option ):
 
@@ -2070,6 +2076,7 @@ def link( main, sw1, sw2, option ):
                        sw1 + " and " + sw2 )
     linkResult = main.Mininet1.link( end1=sw1, end2=sw2, option=option )
     return linkResult
+
 
 def scapyCheckConnection( main,
                           senders,
@@ -2093,7 +2100,7 @@ def scapyCheckConnection( main,
     if not packetFilter:
         packetFilter = 'ether host {}'
     if useTCP:
-        packetFilter += ' ip proto \\tcp tcp port {}'.format(main.params[ 'SDNIP' ][ 'dstPort' ])
+        packetFilter += ' ip proto \\tcp tcp port {}'.format( main.params[ 'SDNIP' ][ 'dstPort' ] )
     if expectFailure:
         timeout = 1
     else:
@@ -2119,9 +2126,9 @@ def scapyCheckConnection( main,
                 continue
 
             if vlanId:
-                recipientComp.startFilter( pktFilter = ( "vlan {}".format( vlanId ) + " && " + packetFilter.format( senderComp.hostMac ) ) )
+                recipientComp.startFilter( pktFilter=( "vlan {}".format( vlanId ) + " && " + packetFilter.format( senderComp.hostMac ) ) )
             else:
-                recipientComp.startFilter( pktFilter = packetFilter.format( senderComp.hostMac ) )
+                recipientComp.startFilter( pktFilter=packetFilter.format( senderComp.hostMac ) )
 
             if not packet:
                 if vlanId:
@@ -2142,21 +2149,21 @@ def scapyCheckConnection( main,
             if vlanId:
                 senderComp.sendPacket( iface=( "{0}-eth0.{1}".format( sender, vlanId ) ), packet = pkt )
             else:
-                senderComp.sendPacket( packet = pkt )
+                senderComp.sendPacket( packet=pkt )
 
             if recipientComp.checkFilter( timeout ):
                 if expectFailure:
-                    main.log.error( "Packet from {0} successfully received by {1} when it should not have been".format( sender , recipient ) )
+                    main.log.error( "Packet from {0} successfully received by {1} when it should not have been".format( sender, recipient ) )
                     connectionsFunctional = main.FALSE
                 else:
-                    main.log.info( "Packet from {0} successfully received by {1}".format( sender , recipient ) )
+                    main.log.info( "Packet from {0} successfully received by {1}".format( sender, recipient ) )
                     connectionsFunctional = main.TRUE
             else:
                 recipientComp.killFilter()
                 if expectFailure:
-                    main.log.info( "As expected, packet from {0} was not received by {1}".format( sender , recipient ) )
+                    main.log.info( "As expected, packet from {0} was not received by {1}".format( sender, recipient ) )
                 else:
-                    main.log.error( "Packet from {0} was not received by {1}".format( sender , recipient ) )
+                    main.log.error( "Packet from {0} was not received by {1}".format( sender, recipient ) )
                     connectionsFunctional = main.FALSE
 
         return connectionsFunctional
@@ -2166,7 +2173,6 @@ def removeAllIntents( main, intentsId ):
     """
         Remove all intents in the intentsId
     """
-
     onosSummary = []
     removeIntentResult = main.TRUE
     # Remove intents
@@ -2195,6 +2201,7 @@ def removeAllIntents( main, intentsId ):
 
     return removeIntentResult
 
+
 def checkFlowsCount( main ):
     """
         Check flows count in each node
@@ -2212,7 +2219,7 @@ def checkFlowsCount( main ):
             flowsCount.append( summaryJson.get( 'flows' ) )
 
     if flowsCount:
-        if all( flows==flowsCount[ 0 ] for flows in flowsCount ):
+        if all( flows == flowsCount[ 0 ] for flows in flowsCount ):
             main.log.info( itemName + ": There are " + str( flowsCount[ 0 ] ) +
                            " flows in all ONOS node" )
         else:
@@ -2224,6 +2231,7 @@ def checkFlowsCount( main ):
         return main.FALSE
 
     return main.TRUE
+
 
 def checkLeaderChange( leaders1, leaders2 ):
     """
@@ -2250,17 +2258,18 @@ def checkLeaderChange( leaders1, leaders2 ):
     for dict1 in leaders1:
         if "intent" in dict1.get( "topic", [] ):
             for dict2 in leaders2:
-                if dict1.get( "topic", 0 ) == dict2.get( "topic", 0 ) and \
-                    dict1.get( "leader", 0 ) != dict2.get( "leader", 0 ):
+                if dict1.get( "topic", 0 ) == dict2.get( "topic", 0 ) and\
+                        dict1.get( "leader", 0 ) != dict2.get( "leader", 0 ):
                     mismatch = True
-                    main.log.error( "{0} changed leader from {1} to {2}".\
-                        format( dict1.get( "topic", "no-topic" ),\
-                            dict1.get( "leader", "no-leader" ),\
-                            dict2.get( "leader", "no-leader" ) ) )
+                    main.log.error( "%s changed leader from %s to %s",
+                                    dict1.get( "topic", "no-topic" ),
+                                    dict1.get( "leader", "no-leader" ),
+                                    dict2.get( "leader", "no-leader" ) )
     if mismatch:
         return main.FALSE
     else:
         return main.TRUE
+
 
 def report( main ):
     """
@@ -2278,26 +2287,26 @@ def report( main ):
     main.log.info( "ERROR report: \n" )
     for i in range( main.numCtrls ):
         main.ONOSbench.logReport( main.ONOSip[ i ],
-                [ "ERROR" ],
-                "d" )
+                                  [ "ERROR" ],
+                                  "d" )
 
     main.log.info( "EXCEPTIONS report: \n" )
     for i in range( main.numCtrls ):
         main.ONOSbench.logReport( main.ONOSip[ i ],
-                [ "Except" ],
-                "d" )
+                                  [ "Except" ],
+                                  "d" )
 
     main.log.info( "WARNING report: \n" )
     for i in range( main.numCtrls ):
         main.ONOSbench.logReport( main.ONOSip[ i ],
-                [ "WARN" ],
-                "d" )
+                                  [ "WARN" ],
+                                  "d" )
+
 
 def flowDuration( main ):
     """
         Check age of flows to see if flows are being overwritten
     """
-    import time
     main.log.info( "Getting current flow durations" )
     flowsJson1 = main.CLIs[ 0 ].flows( noCore=True )
     try:
@@ -2337,7 +2346,7 @@ def flowDuration( main ):
 def EncapsulatedIntentCheck( main, tag="" ):
     """
         Check encapsulated intents
-        tag: encapsulation tag (e.g. VLAN, MPLS)
+        tag: encapsulation tag ( e.g. VLAN, MPLS )
 
         Getting added flows
         Check tags on each flows
@@ -2345,7 +2354,6 @@ def EncapsulatedIntentCheck( main, tag="" ):
         else failed
 
     """
-    import json
     HostJson = []
     Jflows = main.CLIs[ 0 ].flows( noCore=True )
     try:
@@ -2355,10 +2363,10 @@ def EncapsulatedIntentCheck( main, tag="" ):
         return main.FALSE
 
     for flow in Jflows:
-        if len(flow[ "flows" ]) != 0:
+        if len( flow[ "flows" ] ) != 0:
             HostJson.append( flow[ "flows" ] )
 
-    totalflows = len( HostJson[ 0 ])
+    totalflows = len( HostJson[ 0 ] )
 
     pop = 0
     push = 0
@@ -2378,8 +2386,8 @@ def EncapsulatedIntentCheck( main, tag="" ):
     else:
         return main.FALSE
 
+
 def ProtectedIntentCheck( main ):
-    import json
     intent = main.CLIs[ 0 ].intents( jsonFormat=False )
     if "Protection" in intent:
         return main.TRUE

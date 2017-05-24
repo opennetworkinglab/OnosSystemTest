@@ -1,5 +1,6 @@
 # Testing the NETCONF protocol within ONOS
 
+
 class FUNCnetconf:
 
     def __init__( self ):
@@ -19,7 +20,6 @@ class FUNCnetconf:
             - Install ONOS package
             - Build ONOS package
         """
-
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
         main.caseExplanation = "This test case is mainly for loading " +\
@@ -55,10 +55,10 @@ class FUNCnetconf:
             main.configName = main.params[ 'CONFIGURE' ][ 'cfgName' ]
             main.configPass = main.params[ 'CONFIGURE' ][ 'cfgPass' ]
             main.configPort = main.params[ 'CONFIGURE' ][ 'cfgAppPort' ]
-            main.cycle = 0 # How many times FUNCintent has run through its tests
+            main.cycle = 0  # How many times FUNCintent has run through its tests
 
             gitPull = main.params[ 'GIT' ][ 'pull' ]
-            main.cellData = {} # for creating cell file
+            main.cellData = {}  # for creating cell file
             main.hostsData = {}
             main.CLIs = []
             main.CLIs2 = []
@@ -69,7 +69,7 @@ class FUNCnetconf:
             print main.ONOSip
 
             # Assigning ONOS cli handles to a list
-            for i in range( 1,  main.maxNodes + 1 ):
+            for i in range( 1, main.maxNodes + 1 ):
                 main.CLIs.append( getattr( main, 'ONOSrest' + str( i ) ) )
                 main.CLIs2.append( getattr( main, 'ONOScli' + str( i ) ) )
 
@@ -80,9 +80,9 @@ class FUNCnetconf:
                                             ".py" )
 
             main.netconfFunction = imp.load_source( wrapperFile2,
-                                            main.dependencyPath +
-                                            wrapperFile2 +
-                                            ".py" )
+                                                    main.dependencyPath +
+                                                    wrapperFile2 +
+                                                    ".py" )
 
             main.topo = imp.load_source( wrapperFile3,
                                          main.dependencyPath +
@@ -102,7 +102,7 @@ class FUNCnetconf:
                 main.log.error( "Did not properly created list of ONOS CLI handle" )
                 stepResult = main.FALSE
         except Exception as e:
-            main.log.exception(e)
+            main.log.exception( e )
             main.cleanup()
             main.exit()
 
@@ -139,7 +139,6 @@ class FUNCnetconf:
         - Install ONOS cluster
         - Connect to cli
         """
-
         main.cycle += 1
 
         # main.scale[ 0 ] determines the current number of ONOS controller
@@ -150,13 +149,9 @@ class FUNCnetconf:
         main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) +\
                                 " node(s) ONOS cluster"
 
-
-
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
-
-
 
         time.sleep( main.startUpSleep )
         main.step( "Uninstalling ONOS package" )
@@ -177,7 +172,7 @@ class FUNCnetconf:
 
         tempOnosIp = []
         for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[i] )
+            tempOnosIp.append( main.ONOSip[ i ] )
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp", main.Mininet1.ip_address,
@@ -189,7 +184,7 @@ class FUNCnetconf:
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
+                                 onpass="Successfully applied cell to " +
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
 
@@ -217,7 +212,7 @@ class FUNCnetconf:
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -281,14 +276,14 @@ class FUNCnetconf:
             main.node = main.CLIs2[ i ]
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip
-            scpResult = scpResult and main.ONOSbench.scp( main.node ,
-                                            "/opt/onos/log/karaf.log",
-                                            "/tmp/karaf.log",
-                                            direction="from" )
+            scpResult = scpResult and main.ONOSbench.scp( main.node,
+                                                          "/opt/onos/log/karaf.log",
+                                                          "/tmp/karaf.log",
+                                                          direction="from" )
             copyResult = copyResult and main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
                                                                     copyFileName=( "karaf.log.node{0}.cycle{1}".format( str( i + 1 ), str( main.cycle ) ) ) )
             if scpResult and copyResult:
-                stepResult =  main.TRUE and stepResult
+                stepResult = main.TRUE and stepResult
             else:
                 stepResult = main.FALSE and stepResult
         utilities.assert_equals( expect=main.TRUE,
@@ -364,7 +359,7 @@ class FUNCnetconf:
         main.testName = "Uploading the configuration"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
                    " NODES(S)" )
-        main.step( "Sending the configuration file")
+        main.step( "Sending the configuration file" )
         main.assertReturnString = "Assertion result for sending the configuration file"
         testResult = main.FALSE
 

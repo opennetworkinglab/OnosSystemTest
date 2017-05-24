@@ -7,24 +7,25 @@ import time
 import json
 import os
 
+
 def __init__( self ):
     self.default = ''
+
 
 def startApp( main ):
     """
         This function starts the netconf app in all onos nodes and ensures that
         the OF-Config server is running on the node to be configured
     """
-
     startResult = main.FALSE
     startResult = main.CLIs[ 0 ].activateApp( appName="org.onosproject.netconf" )
     return startResult
+
 
 def startOFC( main ):
     """
         This function uses pexpect pxssh class to activate the ofc-server daemon on OC2
     """
-
     startResult = main.FALSE
     try:
         main.ONOSbench.handle.sendline( "" )
@@ -46,6 +47,7 @@ def startOFC( main ):
         main.cleanup()
         main.exit()
 
+
 def createConfig( main ):
     """
         This function writes a configuration file that can later be sent to the
@@ -55,8 +57,8 @@ def createConfig( main ):
     """
     createCfgResult = main.FALSE
     # TODO, add ability to set Manufacturer, Hardware and Software versions
-    main.cfgJson = '{ "devices":{ "netconf:'+ main.configDeviceIp + ":" +\
-                    main.configDevicePort + '":' + '{ "basic":{ "driver":"'+\
+    main.cfgJson = '{ "devices":{ "netconf:' + main.configDeviceIp + ":" +\
+                    main.configDevicePort + '":' + '{ "basic":{ "driver":"' +\
                     main.configDriver + '" } } }, "apps": { "' +\
                     main.configApps + '":{ "devices":[ { "username":' +\
                     main.configName + ', "password":' + main.configPass +\
@@ -70,7 +72,7 @@ def createConfig( main ):
         # configured.
         # main.cfgJson = json.loads( main.cfgJson )
         # main.cfgJson = json.dumps( main.cfgJson, sort_keys=True,
-        #                        indent=4, separators=(',', ': '))
+        #                        indent=4, separators=( ',', ': ' ) )
         print main.cfgJson
         file.write( main.cfgJson )
         if file:
@@ -78,11 +80,12 @@ def createConfig( main ):
             file.close()
             return createCfgResult
         else:
-            main.log.error( "There was an error opening the file")
+            main.log.error( "There was an error opening the file" )
             return createCfgResult
     except:
-        main.log.exception( "There was an error opening the file")
+        main.log.exception( "There was an error opening the file" )
         return createCfgResult
+
 
 def sendConfig( main ):
     """
@@ -95,12 +98,13 @@ def sendConfig( main ):
     configResult = main.FALSE
     sendResult = main.CLIs[ 0 ].send( url=url, method=method, data=data )
     main.log.info( "Device configuration request response code: " + str( sendResult[ 0 ] ) )
-    if ( 200 <= sendResult[ 0 ] <= 299):
+    if ( 200 <= sendResult[ 0 ] <= 299 ):
         configResult = main.TRUE
     else:
         configResult = main.FALSE
 
     return configResult
+
 
 def devices( main ):
     """
@@ -123,7 +127,7 @@ def devices( main ):
 
         main.log.info( "API device availability result: " + str( apiDict[ 0 ].get( "available" ) ) )
         main.log.info( "CLI device availability result: " + str( cliDict[ 0 ].get( "available" ) ) )
-        if apiDict[ 0 ].get( "available" ) == True and cliDict[ 0 ].get( "available" ) == True:
+        if apiDict[ 0 ].get( "available" ) and cliDict[ 0 ].get( "available" ):
             availResult = main.TRUE
         main.log.info( "API device type result: " + apiDict[ 0 ].get( "type" ) )
         main.log.info( "CLI device type result: " + cliDict[ 0 ].get( "type" ) )

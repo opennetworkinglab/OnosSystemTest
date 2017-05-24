@@ -14,8 +14,6 @@ Case6: Uninstalling the app
 
 
 """
-
-
 class FUNCbgpls:
 
     def __init__( self ):
@@ -39,7 +37,6 @@ class FUNCbgpls:
         start BGPLS apps
 
         """
-
         import os
 
         main.log.info( "ONOS Single node start " +
@@ -48,21 +45,20 @@ class FUNCbgpls:
         main.caseExplanation = "Setup the test environment including " +\
                                 "installing ONOS, start ONOS."
 
-
         PULLCODE = False
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
-        scapy_ip = os.getenv(main.params ['SCAPY'] ['HOSTNAMES'] )
+        scapy_ip = os.getenv( main.params[ 'SCAPY' ][ 'HOSTNAMES' ] )
 
         main.log.info( "Removing raft logs" )
         main.ONOSbench.onosRemoveRaftLogs()
 
         main.CLIs = []
         main.nodes = []
-        main.numCtrls= 1
+        main.numCtrls = 1
 
         for i in range( 1, main.numCtrls + 1 ):
             try:
@@ -141,7 +137,7 @@ class FUNCbgpls:
                                      onfail="Test step FAIL" )
 
         main.step( "Checking if ONOS is up yet" )
-        print main.nodes[0].ip_address
+        print main.nodes[ 0 ].ip_address
         for i in range( 2 ):
             onos1Isup = main.ONOSbench.isup( main.nodes[ 0 ].ip_address )
             if onos1Isup:
@@ -160,12 +156,12 @@ class FUNCbgpls:
         main.step( "App Ids check" )
         appCheck = main.ONOScli1.appToIDCheck()
 
-        if appCheck !=main.TRUE:
+        if appCheck != main.TRUE:
             main.log.warn( main.CLIs[ 0 ].apps() )
             main.log.warn( main.CLIs[ 0 ].appIDs() )
             utilities.assert_equals( expect=main.TRUE, actual=appCheck,
-                                 onpass="App Ids seem to be correct",
-                                 onfail="Something is wrong with app Ids" )
+                                     onpass="App Ids seem to be correct",
+                                     onfail="Something is wrong with app Ids" )
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS,stopping test" )
             main.cleanup()
@@ -175,7 +171,8 @@ class FUNCbgpls:
         """
         Discovery the topology using BGPLS
         """
-        import os , sys
+        import os
+        import sys
         import re
         import time
 
@@ -195,14 +192,13 @@ class FUNCbgpls:
         app = bgplsConfig.apps()
         main.CLIs = []
         main.nodes = []
-        main.numCtrls= 1
-
+        main.numCtrls = 1
 
         ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
-        scapy_ip = os.getenv(main.params ['SCAPY'] ['HOSTNAMES'] )
-        httpport = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
-        bgplsConfig.ipValue(ipList,scapy_ip)
+        scapy_ip = os.getenv( main.params[ 'SCAPY' ][ 'HOSTNAMES' ] )
+        httpport = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
+        bgplsConfig.ipValue( ipList, scapy_ip )
 
         for i in range( 1, main.numCtrls + 1 ):
             try:
@@ -219,21 +215,19 @@ class FUNCbgpls:
         main.log.info( "Sending BGPLS information" )
         bgplsConfig.Comments()
 
-
         main.Scapy1.handle.sendline( "sudo python  OnosSystemTest/TestON/tests/FUNC/FUNCbgpls/\
         dependencies/Scapyfiles/Topo_discovery.py" )
         bgplsConfig.Comments()
         main.log.info( "Enable BGPlS plugin in ONOS" )
         bgplsConfig.Comments()
 
-
-        cliResults = main.ONOScli1.startOnosCli( main.nodes[0].ip_address)
+        cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )
 
         main.step( "Getting connected to ONOS" )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
-        installResults = main.ONOScli1.activateApp( app[0])
+        installResults = main.ONOScli1.activateApp( app[ 0 ] )
 
         main.step( "Install onos-app-bgp" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
@@ -246,10 +240,10 @@ class FUNCbgpls:
         main.log.info( "BGPLS RestConf input" )
         bgplsConfig.Comments()
 
-        print (bgpls_post)
+        print ( bgpls_post )
         main.ONOSrest.user_name = "onos"
         main.ONOSrest.pwd = "rocks"
-        Poststatus, result = main.ONOSrest.send( '/network/configuration/', method="POST", data=bgpls_post)
+        Poststatus, result = main.ONOSrest.send( '/network/configuration/', method="POST", data=bgpls_post )
         main.step( "Configure BGP through RESTCONF" )
 
         utilities.assert_equals( expect='200',
@@ -257,11 +251,10 @@ class FUNCbgpls:
                                  onpass="Post Port Success",
                                  onfail="Post Port Failed " + str( Poststatus ) + "," + str( result ) )
 
-
         bgplsConfig.Comments()
         main.step( "Check Network devices are Updated in ONOS " )
         bgplsConfig.Comments()
-        time.sleep(15)
+        time.sleep( 15 )
         response = main.ONOScli1.devices()
         responseCheck = main.FALSE
         if response:
@@ -272,21 +265,21 @@ class FUNCbgpls:
                                  onfail="Network Devices update in ONOS failed" )
 
         main.step( "Check the nodes are discovered" )
-        if response.find( Ne_id[1][0]) and response.find(Ne_id[1][1]) and response.find(Ne_id[1][2]) != -1:
+        if response.find( Ne_id[ 1 ][ 0 ] ) and response.find( Ne_id[ 1 ][ 1 ] ) and response.find( Ne_id[ 1 ][ 2 ] ) != -1:
             stepResult = main.TRUE
         else:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Node " + str( Ne_id[1][0]) + ( Ne_id[1][1]) + ( Ne_id[1][2]) + "  sucess",
-                                 onfail="Node " + str( Ne_id[1][0]) + ( Ne_id[1][1]) + ( Ne_id[1][2]) + " failed" )
+                                 onpass="Node " + str( Ne_id[ 1 ][ 0 ] ) + ( Ne_id[ 1 ][ 1 ] ) + ( Ne_id[ 1 ][ 2 ] ) + "  sucess",
+                                 onfail="Node " + str( Ne_id[ 1 ][ 0 ] ) + ( Ne_id[ 1 ][ 1 ] ) + ( Ne_id[ 1 ][ 2 ] ) + " failed" )
         main.ONOScli1.log( "\"testcase2 end\"" )
 
         main.step( "Check for Errors or Exception in testcase2" )
         startStr = "testcase2 start"
         endStr = "testcase2 end"
-        errorLog = main.ONOSbench.logReport( main.nodes[0].ip_address,
-                                             ["ERROR","EXCEPT"], "s",
+        errorLog = main.ONOSbench.logReport( main.nodes[ 0 ].ip_address,
+                                             [ "ERROR", "EXCEPT" ], "s",
                                              startStr, endStr )
         utilities.assert_equals( expect=0, actual=errorLog,
                                  onpass="No Exception or Error occured in testcase2",
@@ -296,13 +289,14 @@ class FUNCbgpls:
         bgplsConfig.Comments()
 
         main.Scapy1.handle.sendline( "\x03" )
-        time.sleep( 90 ) #This Sleep time gives time for the socket to close.
+        time.sleep( 90 )  # This Sleep time gives time for the socket to close.
 
     def CASE3( self, main ):
         """
         Addition of new Node to existing topology
         """
-        import os , sys
+        import os
+        import sys
         import re
         import time
 
@@ -321,17 +315,16 @@ class FUNCbgpls:
         app = bgplsConfig.apps()
         main.CLIs = []
         main.nodes = []
-        main.numCtrls= 1
-
+        main.numCtrls = 1
 
         ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
-        scapy_ip = os.getenv( main.params ['SCAPY'] ['HOSTNAMES'] )
+        scapy_ip = os.getenv( main.params[ 'SCAPY' ][ 'HOSTNAMES' ] )
         cellName = main.params[ 'ENV' ][ 'cellName' ]
-        cellAppString= main.params[ 'ENV' ][ 'cellApps' ]
-        httpport = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
+        httpport = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
-        bgplsConfig.ipValue(ipList,scapy_ip)
+        bgplsConfig.ipValue( ipList, scapy_ip )
 
         for i in range( 1, main.numCtrls + 1 ):
             try:
@@ -352,17 +345,16 @@ class FUNCbgpls:
         bgplsConfig.Comments()
 
         main.step( "UnInstall onos-app-bgp" )
-        installResults = main.ONOScli1.deactivateApp( app[0] )
+        installResults = main.ONOScli1.deactivateApp( app[ 0 ] )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Uninstall  onos-app-bgp successful",
                                  onfail="Uninstall  onos-app-bgp failed" )
 
-        installResults = main.ONOScli1.activateApp( app[0])
+        installResults = main.ONOScli1.activateApp( app[ 0 ] )
         main.step( "Install onos-app-bgp" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install onos-app-bgp successful",
                                  onfail="Install onos-app-bgp failed" )
-
 
         bgpls_post = bgplsConfig.DictoJson()
 
@@ -373,7 +365,7 @@ class FUNCbgpls:
         bgplsConfig.Comments()
         main.step( "Check Network devices are Updated in ONOS" )
         bgplsConfig.Comments()
-        time.sleep(120)
+        time.sleep( 120 )
         response = main.ONOScli1.devices()
         responseCheck = main.FALSE
         if response:
@@ -384,7 +376,7 @@ class FUNCbgpls:
                                  onfail="Network Devices update in ONOS failed" )
         main.step( "Check Newly added Node is getting updated" )
 
-        if response.find( Ne_id[1][3]) != -1:
+        if response.find( Ne_id[ 1 ][ 3 ] ) != -1:
             stepResult = main.TRUE
         else:
             stepResult = main.FALSE
@@ -397,8 +389,8 @@ class FUNCbgpls:
         main.step( "Check for Errors or Exception in testcase3" )
         startStr = "testcase3 start"
         endStr = "testcase3 end"
-        errorLog = main.ONOSbench.logReport( main.nodes[0].ip_address,
-                                             ["ERROR","EXCEPT"], "s",
+        errorLog = main.ONOSbench.logReport( main.nodes[ 0 ].ip_address,
+                                             [ "ERROR", "EXCEPT" ], "s",
                                              startStr, endStr )
         utilities.assert_equals( expect=0, actual=errorLog,
                                  onpass="No Exception or Error occured in testcase3",
@@ -407,7 +399,7 @@ class FUNCbgpls:
         main.log.info( "Kill Scapy process" )
         bgplsConfig.Comments()
         main.Scapy1.handle.sendline( "\x03" )
-        time.sleep( 90 ) #This Sleep time gives time for the socket to close.
+        time.sleep( 90 )  # This Sleep time gives time for the socket to close.
 
     def CASE4( self, main ):
         """
@@ -430,10 +422,10 @@ class FUNCbgpls:
         app = bgplsConfig.apps()
         main.CLIs = []
         main.nodes = []
-        main.numCtrls= 1
+        main.numCtrls = 1
         ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
-        scapy_ip = os.getenv(main.params ['SCAPY'] ['HOSTNAMES'] )
-        bgplsConfig.ipValue(ipList,scapy_ip)
+        scapy_ip = os.getenv( main.params[ 'SCAPY' ][ 'HOSTNAMES' ] )
+        bgplsConfig.ipValue( ipList, scapy_ip )
 
         for i in range( 1, main.numCtrls + 1 ):
             try:
@@ -458,7 +450,7 @@ class FUNCbgpls:
                                  onpass="Uninstall  onos-app-bgp successful",
                                  onfail="Uninstall  onos-app-bgp failed" )
 
-        installResults = main.ONOScli1.activateApp( app[ 0 ])
+        installResults = main.ONOScli1.activateApp( app[ 0 ] )
         main.step( "Install onos-app-bgp" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install onos-app-bgp successful",
@@ -471,9 +463,9 @@ class FUNCbgpls:
         linksResp = json.loads( response )
         check_link = bgplsConfig.checkLinks( linksResp )
 
-        if check_link == True:
+        if check_link:
             reply_Check_Link = main.TRUE
-        utilities.assert_equals( expect= main.TRUE, actual=reply_Check_Link,
+        utilities.assert_equals( expect=main.TRUE, actual=reply_Check_Link,
                                  onpass="Link Discovery Success.",
                                  onfail="Link Discovery Failed." )
         main.ONOScli1.log( "\"testcase4 end\"" )
@@ -481,10 +473,10 @@ class FUNCbgpls:
         main.step( "Check for Errors or Exception in testcase4 " )
         startStr = "testcase4 start"
         endStr = "testcase4 end"
-        errorLog = main.ONOSbench.logReport( main.nodes[0].ip_address,
-                                             ["ERROR","EXCEPT"], "s",
+        errorLog = main.ONOSbench.logReport( main.nodes[ 0 ].ip_address,
+                                             [ "ERROR", "EXCEPT" ], "s",
                                              startStr, endStr )
-        utilities.assert_equals( expect= 0, actual=errorLog,
+        utilities.assert_equals( expect=0, actual=errorLog,
                                  onpass="No Exception or Error occured in testcase4",
                                  onfail="Exception or Error occured in testcase4" )
         bgplsConfig.Comments()
@@ -515,10 +507,10 @@ class FUNCbgpls:
         app = bgplsConfig.apps()
         main.CLIs = []
         main.nodes = []
-        main.numCtrls= 1
+        main.numCtrls = 1
         ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
-        scapy_ip = os.getenv(main.params [ 'SCAPY' ] [ 'HOSTNAMES' ] )
-        bgplsConfig.ipValue(ipList,scapy_ip)
+        scapy_ip = os.getenv( main.params[ 'SCAPY' ][ 'HOSTNAMES' ] )
+        bgplsConfig.ipValue( ipList, scapy_ip )
 
         for i in range( 1, main.numCtrls + 1 ):
             try:
@@ -543,7 +535,7 @@ class FUNCbgpls:
                                  onpass="Uninstall  onos-app-bgp successful",
                                  onfail="Uninstall  onos-app-bgp failed" )
 
-        installResults = main.ONOScli1.activateApp( app[ 0 ])
+        installResults = main.ONOScli1.activateApp( app[ 0 ] )
         main.step( "Install onos-app-bgp" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install onos-app-bgp successful",
@@ -555,9 +547,9 @@ class FUNCbgpls:
         response = main.ONOScli1.links()
         linksResp = json.loads( response )
         check_link = bgplsConfig.checkLinks( linksResp )
-        if check_link == False:
+        if not check_link:
             reply_Check_Link = main.TRUE
-        utilities.assert_equals( expect= main.TRUE, actual=reply_Check_Link,
+        utilities.assert_equals( expect=main.TRUE, actual=reply_Check_Link,
                                  onpass="Link is Deleted Successfully.",
                                  onfail="Link is Deletion Failed." )
         main.ONOScli1.log( "\"testcase5 end\"" )
@@ -565,8 +557,8 @@ class FUNCbgpls:
         main.step( "Check for Errors or Exception in testcase5" )
         startStr = "testcase5 start"
         endStr = "testcase5 end"
-        errorLog = main.ONOSbench.logReport( main.nodes[0].ip_address,
-                                             ["ERROR","EXCEPT"], "s",
+        errorLog = main.ONOSbench.logReport( main.nodes[ 0 ].ip_address,
+                                             [ "ERROR", "EXCEPT" ], "s",
                                              startStr, endStr )
         utilities.assert_equals( expect=0, actual=errorLog,
                                  onpass="No Exception or Error occured in testcase5",
@@ -581,7 +573,8 @@ class FUNCbgpls:
         """
         Uninstalling the app
         """
-        import os,sys
+        import os
+        import sys
         import re
         import time
 
@@ -599,16 +592,15 @@ class FUNCbgpls:
         app = bgplsConfig.apps()
         main.CLIs = []
         main.nodes = []
-        main.numCtrls= 1
-
+        main.numCtrls = 1
 
         ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
-        scapy_ip = os.getenv(main.params ['SCAPY'] ['HOSTNAMES'] )
+        scapy_ip = os.getenv( main.params[ 'SCAPY' ][ 'HOSTNAMES' ] )
         cellName = main.params[ 'ENV' ][ 'cellName' ]
-        cellAppString= main.params[ 'ENV' ][ 'cellApps' ]
+        cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
 
         bgplsConfig = BgpLs()
-        bgplsConfig.ipValue(ipList,scapy_ip)
+        bgplsConfig.ipValue( ipList, scapy_ip )
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        scapy_ip,
                                        cellAppString, ipList )
@@ -629,7 +621,7 @@ class FUNCbgpls:
         main.step( "Logging into ONOS CLI " )
         bgplsConfig.Comments()
 
-        cliResults = main.ONOScli1.startOnosCli( main.nodes[0].ip_address )
+        cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
@@ -638,7 +630,7 @@ class FUNCbgpls:
         main.log.info( "Uninstall onos-app-bgp" )
         bgplsConfig.Comments()
         main.step( "UnInstall onos-app-bgp" )
-        installResults = main.ONOScli1.deactivateApp( app[0] )
+        installResults = main.ONOScli1.deactivateApp( app[ 0 ] )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Uninstall  onos-app-bgp successful",
                                  onfail="Uninstall  onos-app-bgp failed" )
@@ -647,16 +639,16 @@ class FUNCbgpls:
         main.step( "Check for Errors or Exception in testcase6" )
         startStr = "testcase6 start"
         endStr = "testcase6 end"
-        errorLog = main.ONOSbench.logReport( main.nodes[0].ip_address,
-                                             ["ERROR","EXCEPT"], "s",
+        errorLog = main.ONOSbench.logReport( main.nodes[ 0 ].ip_address,
+                                             [ "ERROR", "EXCEPT" ], "s",
                                              startStr, endStr )
         utilities.assert_equals( expect=0, actual=errorLog,
                                  onpass="No Exception or Error occured in testcase6",
                                  onfail="Exception or Error occured in testcase6" )
 
         main.step( "Check for Errors or Exception End of the Script" )
-        errorLog = main.ONOSbench.logReport( main.nodes[0].ip_address,
-                                             ["ERROR","EXCEPT"] )
+        errorLog = main.ONOSbench.logReport( main.nodes[ 0 ].ip_address,
+                                             [ "ERROR", "EXCEPT" ] )
         utilities.assert_equals( expect=0, actual=errorLog,
                                  onpass="No Exception or Error occured",
                                  onfail="Exception or Error occured" )

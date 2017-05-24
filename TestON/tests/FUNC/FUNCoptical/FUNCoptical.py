@@ -1,5 +1,6 @@
 # Testing the basic intent functionality of ONOS
 
+
 class FUNCoptical:
 
     def __init__( self ):
@@ -19,7 +20,6 @@ class FUNCoptical:
             - Install ONOS package
             - Build ONOS package
         """
-
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
         main.caseExplanation = "This test case is mainly for loading " +\
@@ -48,18 +48,18 @@ class FUNCoptical:
             main.links = int( main.params[ 'MININET' ][ 'links' ] )
             main.hosts = int( main.params[ 'MININET' ][ 'hosts' ] )
             main.opticalTopo = main.params[ 'MININET' ][ 'toponame' ]
-            main.cellData = {} # For creating cell file
+            main.cellData = {}  # For creating cell file
             main.hostsData = {}
             main.CLIs = []
             main.ONOSip = []  # List of IPs of active ONOS nodes. CASE 2
             main.activeONOSip = []
             main.assertReturnString = ''  # Assembled assert return string
-            main.cycle = 0 # How many times FUNCintent has run through its tests
+            main.cycle = 0  # How many times FUNCintent has run through its tests
 
             main.ONOSip = main.ONOSbench.getOnosIps()
 
             # Assigning ONOS cli handles to a list
-            for i in range( 1,  main.maxNodes + 1 ):
+            for i in range( 1, main.maxNodes + 1 ):
                 main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
 
             # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -73,7 +73,7 @@ class FUNCoptical:
                 main.log.error( "Did not properly created list of ONOS CLI handle" )
                 stepResult = main.FALSE
         except Exception as e:
-            main.log.exception(e)
+            main.log.exception( e )
             main.cleanup()
             main.exit()
 
@@ -110,7 +110,6 @@ class FUNCoptical:
         - Install ONOS cluster
         - Connect to cli
         """
-
         main.cycle += 1
 
         # main.scale[ 0 ] determines the current number of ONOS controller
@@ -121,8 +120,6 @@ class FUNCoptical:
                    " node(s) ONOS cluster" )
         main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) +\
                                 " node(s) ONOS cluster"
-
-
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
@@ -135,7 +132,7 @@ class FUNCoptical:
 
         tempOnosIp = []
         for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[i] )
+            tempOnosIp.append( main.ONOSip[ i ] )
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp", main.Mininet1.ip_address,
@@ -147,7 +144,7 @@ class FUNCoptical:
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
+                                 onpass="Successfully applied cell to " +
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
 
@@ -188,7 +185,7 @@ class FUNCoptical:
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -210,7 +207,7 @@ class FUNCoptical:
                 stopResult = stopResult and main.ONOSbench.onosStop( main.ONOSip[ i ] )
                 startResult = startResult and main.ONOSbench.onosStart( main.ONOSip[ i ] )
                 if not startResult or stopResult:
-                    main.log.report( "ONOS instance {0} did not start correctly.".format( i + 1) )
+                    main.log.report( "ONOS instance {0} did not start correctly.".format( i + 1 ) )
         stepResult = onosIsUp and stopResult and startResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -235,7 +232,7 @@ class FUNCoptical:
         """
             Start Mininet opticalTest Topology
         """
-        main.case( "Mininet with Linc-OE startup")
+        main.case( "Mininet with Linc-OE startup" )
         main.caseExplanation = "Start opticalTest.py topology included with ONOS"
         if main.opticalTopo:
             main.step( "Copying optical topology to $ONOS_ROOT/tools/test/topos/" )
@@ -246,13 +243,13 @@ class FUNCoptical:
         topoResult = main.TRUE
         time.sleep( 10 )
         controllerIPs = ' '.join( main.activeONOSip )
-        opticalMnScript = main.LincOE.runOpticalMnScript(ctrllerIP = controllerIPs, topology=main.opticalTopo )
+        opticalMnScript = main.LincOE.runOpticalMnScript( ctrllerIP=controllerIPs, topology=main.opticalTopo )
         topoResult = opticalMnScript
         utilities.assert_equals(
             expect=main.TRUE,
             actual=topoResult,
             onpass="Started the topology successfully ",
-            onfail="Failed to start the topology")
+            onfail="Failed to start the topology" )
 
         main.step( "Push Topology.json to ONOS through onos-netcfg" )
         pushResult = main.TRUE
@@ -263,9 +260,6 @@ class FUNCoptical:
         if not topoResult:
             main.cleanup()
             main.exit()
-
-
-
 
     def CASE14( self, main ):
         """
@@ -319,7 +313,7 @@ class FUNCoptical:
                                             propName="useFlowObjectives", value="true" )
         stepResult &= main.CLIs[ 0 ].setCfg( component=cmd,
                                              propName="defaultFlowObjectiveCompiler",
-                                             value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
+                                             value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -342,14 +336,14 @@ class FUNCoptical:
             main.node = main.CLIs[ i ]
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip
-            scpResult = scpResult and main.ONOSbench.scp( main.node ,
-                                            "/opt/onos/log/karaf.log",
-                                            "/tmp/karaf.log",
-                                            direction="from" )
+            scpResult = scpResult and main.ONOSbench.scp( main.node,
+                                                          "/opt/onos/log/karaf.log",
+                                                          "/tmp/karaf.log",
+                                                          direction="from" )
             copyResult = copyResult and main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
                                                                     copyFileName=( "karaf.log.node{0}.cycle{1}".format( str( i + 1 ), str( main.cycle ) ) ) )
             if scpResult and copyResult:
-                stepResult =  main.TRUE and stepResult
+                stepResult = main.TRUE and stepResult
             else:
                 stepResult = main.FALSE and stepResult
         utilities.assert_equals( expect=main.TRUE,
@@ -357,21 +351,21 @@ class FUNCoptical:
                                  onpass="Successfully copied remote ONOS logs",
                                  onfail="Failed to copy remote ONOS logs" )
 
-    def CASE21( self,main ):
+    def CASE21( self, main ):
         """
             Run pingall to discover all hosts
         """
         main.case( "Running Pingall" )
         main.caseExplanation = "Use pingall to discover all hosts. Pingall is expected to fail."
         main.step( "Discover Hosts through Pingall" )
-        pingResult = main.LincOE.pingall( timeout = 120 )
+        pingResult = main.LincOE.pingall( timeout=120 )
 
         utilities.assert_equals( expect=main.FALSE,
                                  actual=pingResult,
                                  onpass="Pingall Completed",
                                  onfail="Pingall did not complete or did not return fales" )
 
-    def CASE22( self,main ):
+    def CASE22( self, main ):
         """
             Send arpings to discover all hosts
         """
@@ -423,7 +417,7 @@ class FUNCoptical:
         main.step( "Comparing Mininet topology to ONOS topology" )
 
         while ( attempts >= 0 ) and\
-            ( not devicesResults or not linksResults or not hostsResults ):
+                ( not devicesResults or not linksResults or not hostsResults ):
             time.sleep( 2 )
             if not devicesResults:
                 devices = main.topo.getAllDevices( main )
@@ -444,14 +438,14 @@ class FUNCoptical:
                 controllerStr = str( controller + 1 )  # ONOS node number
                 # Compare Devices
                 if devices[ controller ] and ports[ controller ] and\
-                    "Error" not in devices[ controller ] and\
-                    "Error" not in ports[ controller ]:
+                        "Error" not in devices[ controller ] and\
+                        "Error" not in ports[ controller ]:
 
                     try:
                         deviceData = json.loads( devices[ controller ] )
                         portData = json.loads( ports[ controller ] )
-                    except (TypeError,ValueError):
-                        main.log.error("Could not load json:" + str( devices[ controller ] ) + ' or ' + str( ports[ controller ] ))
+                    except ( TypeError, ValueError ):
+                        main.log.error( "Could not load json:" + str( devices[ controller ] ) + ' or ' + str( ports[ controller ] ) )
                         currentDevicesResult = main.FALSE
                     else:
                         if mnSwitches == len( deviceData ):
@@ -459,7 +453,7 @@ class FUNCoptical:
                         else:
                             currentDevicesResult = main.FALSE
                             main.log.error( "Node {} only sees {} device(s) but {} exist".format(
-                                controllerStr,len( deviceData ),mnSwitches ) )
+                                controllerStr, len( deviceData ), mnSwitches ) )
                 else:
                     currentDevicesResult = main.FALSE
                 if not currentDevicesResult:
@@ -469,8 +463,8 @@ class FUNCoptical:
                 if links[ controller ] and "Error" not in links[ controller ]:
                     try:
                         linkData = json.loads( links[ controller ] )
-                    except (TypeError,ValueError):
-                        main.log.error("Could not load json:" + str( links[ controller ] ) )
+                    except ( TypeError, ValueError ):
+                        main.log.error( "Could not load json:" + str( links[ controller ] ) )
                         currentLinksResult = main.FALSE
                     else:
                         if mnLinks == len( linkData ):
@@ -478,7 +472,7 @@ class FUNCoptical:
                         else:
                             currentLinksResult = main.FALSE
                             main.log.error( "Node {} only sees {} link(s) but {} exist".format(
-                                controllerStr,len( linkData ),mnLinks ) )
+                                controllerStr, len( linkData ), mnLinks ) )
                 else:
                     currentLinksResult = main.FALSE
                 if not currentLinksResult:
@@ -488,8 +482,8 @@ class FUNCoptical:
                 if hosts[ controller ] and "Error" not in hosts[ controller ]:
                     try:
                         hostData = json.loads( hosts[ controller ] )
-                    except (TypeError,ValueError):
-                        main.log.error("Could not load json:" + str( hosts[ controller ] ) )
+                    except ( TypeError, ValueError ):
+                        main.log.error( "Could not load json:" + str( hosts[ controller ] ) )
                         currentHostsResult = main.FALSE
                     else:
                         if mnHosts == len( hostData ):
@@ -497,7 +491,7 @@ class FUNCoptical:
                         else:
                             currentHostsResult = main.FALSE
                             main.log.error( "Node {} only sees {} host(s) but {} exist".format(
-                                controllerStr,len( hostData ),mnHosts ) )
+                                controllerStr, len( hostData ), mnHosts ) )
                 else:
                     currentHostsResult = main.FALSE
                 if not currentHostsResult:
@@ -530,7 +524,6 @@ class FUNCoptical:
                                  onpass="ONOS correctly discovered the topology",
                                  onfail="ONOS incorrectly discovered the topology" )
 
-
     def CASE31( self, main ):
         import time
         """
@@ -558,17 +551,17 @@ class FUNCoptical:
         main.pIntentsId.append( pIntent1 )
         main.pIntentsId.append( pIntent2 )
         time.sleep( 10 )
-        main.log.info( "Checking intents state")
+        main.log.info( "Checking intents state" )
         checkStateResult = main.CLIs[ 0 ].checkIntentState(
-                                                  intentsId = main.pIntentsId )
+                                                  intentsId=main.pIntentsId )
         time.sleep( 10 )
-        main.log.info( "Checking flows state")
+        main.log.info( "Checking flows state" )
         checkFlowResult = main.CLIs[ 0 ].checkFlowsState()
         # Sleep for 10 seconds to provide time for the intent state to change
         time.sleep( 10 )
-        main.log.info( "Checking intents state one more time")
+        main.log.info( "Checking intents state one more time" )
         checkStateResult = main.CLIs[ 0 ].checkIntentState(
-                                                  intentsId = main.pIntentsId )
+                                                  intentsId=main.pIntentsId )
 
         if checkStateResult and checkFlowResult:
             addIntentsResult = main.TRUE
@@ -578,7 +571,7 @@ class FUNCoptical:
             expect=main.TRUE,
             actual=addIntentsResult,
             onpass="Successfully added point intents",
-            onfail="Failed to add point intents")
+            onfail="Failed to add point intents" )
 
         pingResult = main.FALSE
 
@@ -592,7 +585,7 @@ class FUNCoptical:
             expect=main.TRUE,
             actual=pingResult,
             onpass="Successfully pinged h1 and h2",
-            onfail="Failed to ping between h1 and h2")
+            onfail="Failed to ping between h1 and h2" )
 
         main.step( "Remove Point to Point intents" )
         removeResult = main.FALSE
@@ -615,10 +608,10 @@ class FUNCoptical:
                 else:
                     removeResult = main.TRUE
         except ( TypeError, ValueError ):
-            main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +\
-                            ".  Removing all intents.")
+            main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +
+                            ".  Removing all intents." )
             main.CLIs[ 0 ].removeAllIntents( purge=True )
-            main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.cli')
+            main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.cli' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=removeResult,
@@ -640,21 +633,21 @@ class FUNCoptical:
         try:
             hostData = json.loads( hosts[ controller ] )
         except( TypeError, ValueError ):
-            main.log.error("Could not load json:" + str( hosts[ controller ] ) )
+            main.log.error( "Could not load json:" + str( hosts[ controller ] ) )
 
         main.step( "Adding host intents to h1 and h2" )
         hostId = []
         # Listing host MAC addresses
         for host in hostData:
-            hostId.append( host.get("id") )
+            hostId.append( host.get( "id" ) )
         host1 = hostId[ 0 ]
         host2 = hostId[ 1 ]
         main.log.debug( host1 )
         main.log.debug( host2 )
 
         intentsId = []
-        intent1 = main.CLIs[ 0 ].addHostIntent( hostIdOne = host1,
-                                            hostIdTwo = host2 )
+        intent1 = main.CLIs[ 0 ].addHostIntent( hostIdOne=host1,
+                                                hostIdTwo=host2 )
         intentsId.append( intent1 )
         # Checking intents state before pinging
         main.log.info( "Checking intents state" )
@@ -679,7 +672,7 @@ class FUNCoptical:
             main.step( "Pinging h1 and h2" )
             pingResult = main.TRUE
             pingResult = main.LincOE.pingHostOptical( src="h1", target="h2" ) \
-                and main.LincOE.pingHostOptical( src="h2",target="h1" )
+                and main.LincOE.pingHostOptical( src="h2", target="h1" )
 
             utilities.assert_equals( expect=main.TRUE,
                                      actual=pingResult,
@@ -694,7 +687,7 @@ class FUNCoptical:
             intentsJson = json.loads( main.CLIs[ 0 ].intents() )
             main.CLIs[ 0 ].removeIntent( intentId=intent1, purge=True )
             #main.CLIs[ 0 ].removeIntent( intentId=intent2, purge=True )
-            main.log.debug(intentsJson)
+            main.log.debug( intentsJson )
             for intents in intentsJson:
                 main.CLIs[ 0 ].removeIntent( intentId=intents.get( 'id' ),
                                              app='org.onosproject.optical',
@@ -708,10 +701,10 @@ class FUNCoptical:
                 else:
                     removeResult = main.TRUE
         except ( TypeError, ValueError ):
-            main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +\
-                            ".  Removing all intents.")
+            main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +
+                            ".  Removing all intents." )
             main.CLIs[ 0 ].removeAllIntents( purge=True )
-            main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.optical')
+            main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.optical' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=removeResult,

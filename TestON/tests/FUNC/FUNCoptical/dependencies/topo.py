@@ -1,10 +1,10 @@
 """
     These functions can be used for topology comparisons
 """
-
 import time
 import os
 import json
+
 
 def getAllDevices( main ):
     """
@@ -13,9 +13,9 @@ def getAllDevices( main ):
     devices = []
     threads = []
     for i in range( main.numCtrls ):
-        t = main.Thread( target=main.CLIs[i].devices,
+        t = main.Thread( target=main.CLIs[ i ].devices,
                          name="devices-" + str( i ),
-                         args=[ ] )
+                         args=[] )
         threads.append( t )
         t.start()
 
@@ -23,6 +23,7 @@ def getAllDevices( main ):
         t.join()
         devices.append( t.result )
     return devices
+
 
 def getAllHosts( main ):
     """
@@ -32,9 +33,9 @@ def getAllHosts( main ):
     ipResult = main.TRUE
     threads = []
     for i in range( main.numCtrls ):
-        t = main.Thread( target=main.CLIs[i].hosts,
+        t = main.Thread( target=main.CLIs[ i ].hosts,
                          name="hosts-" + str( i ),
-                         args=[ ] )
+                         args=[] )
         threads.append( t )
         t.start()
 
@@ -43,6 +44,7 @@ def getAllHosts( main ):
         hosts.append( t.result )
     return hosts
 
+
 def getAllPorts( main ):
     """
         Return a list containing the ports output from each ONOS node
@@ -50,9 +52,9 @@ def getAllPorts( main ):
     ports = []
     threads = []
     for i in range( main.numCtrls ):
-        t = main.Thread( target=main.CLIs[i].ports,
+        t = main.Thread( target=main.CLIs[ i ].ports,
                          name="ports-" + str( i ),
-                         args=[ ] )
+                         args=[] )
         threads.append( t )
         t.start()
 
@@ -61,6 +63,7 @@ def getAllPorts( main ):
         ports.append( t.result )
     return ports
 
+
 def getAllLinks( main ):
     """
         Return a list containing the links output from each ONOS node
@@ -68,9 +71,9 @@ def getAllLinks( main ):
     links = []
     threads = []
     for i in range( main.numCtrls ):
-        t = main.Thread( target=main.CLIs[i].links,
+        t = main.Thread( target=main.CLIs[ i ].links,
                          name="links-" + str( i ),
-                         args=[ ] )
+                         args=[] )
         threads.append( t )
         t.start()
 
@@ -79,6 +82,7 @@ def getAllLinks( main ):
         links.append( t.result )
     return links
 
+
 def getAllClusters( main ):
     """
         Return a list containing the clusters output from each ONOS node
@@ -86,9 +90,9 @@ def getAllClusters( main ):
     clusters = []
     threads = []
     for i in range( main.numCtrls ):
-        t = main.Thread( target=main.CLIs[i].clusters,
+        t = main.Thread( target=main.CLIs[ i ].clusters,
                          name="clusters-" + str( i ),
-                         args=[ ] )
+                         args=[] )
         threads.append( t )
         t.start()
 
@@ -96,5 +100,3 @@ def getAllClusters( main ):
         t.join()
         clusters.append( t.result )
     return clusters
-
-

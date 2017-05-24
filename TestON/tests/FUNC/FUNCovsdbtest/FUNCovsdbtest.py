@@ -14,6 +14,7 @@ zhanghaoyu7@huawei.com
 """
 import os
 
+
 class FUNCovsdbtest:
 
     def __init__( self ):
@@ -46,8 +47,8 @@ class FUNCovsdbtest:
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
-        main.startUpSleep = int( main.params['SLEEP']['startup'] )
-        cellAppString = main.params['ENV']['cellApps']
+        main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+        cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
 
         if gitPull == 'True':
             main.step( "Building ONOS in " + gitBranch + "branch" )
@@ -56,10 +57,10 @@ class FUNCovsdbtest:
             utilities.assert_equals( expect=main.TRUE,
                                      actual=stepResult,
                                      onpass="Successfully compiled latest ONOS",
-                                     onfail="Failed to compile latest ONOS")
+                                     onfail="Failed to compile latest ONOS" )
         else:
             main.log.warn( "Did not pull new code so skipping mvn " +
-                          "clean install" )
+                           "clean install" )
         main.ONOSbench.getVersion( report=True )
 
         main.log.info( "Safety check, killing all ONOS processes" +
@@ -70,7 +71,7 @@ class FUNCovsdbtest:
 
         main.CLIs = []
         main.nodes = []
-        main.numCtrls= 1
+        main.numCtrls = 1
 
         for i in range( 1, main.numCtrls + 1 ):
             try:
@@ -115,7 +116,6 @@ class FUNCovsdbtest:
                                  onpass="Successfully applied cell to environment",
                                  onfail="Failed to apply cell to environment" )
 
-
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.buckBuild()
         utilities.assert_equals( expect=main.TRUE,
@@ -125,7 +125,7 @@ class FUNCovsdbtest:
 
         time.sleep( main.startUpSleep )
         main.step( "Installing ONOS package" )
-        onosInstallResult = main.ONOSbench.onosInstall( options="-f", node=main.nodes[0].ip_address )
+        onosInstallResult = main.ONOSbench.onosInstall( options="-f", node=main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
@@ -139,7 +139,7 @@ class FUNCovsdbtest:
                                  onfail="Test step FAIL" )
 
         time.sleep( main.startUpSleep )
-        main.step("Starting ONOS service")
+        main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
         onos1Isup = main.TRUE
@@ -150,7 +150,7 @@ class FUNCovsdbtest:
                 main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
             else:
                 main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +
-                                "start ONOS again" )
+                                 "start ONOS again" )
                 stopResult = stopResult and main.ONOSbench.onosStop( main.ONOSip[ i ] )
                 startResult = startResult and main.ONOSbench.onosStart( main.ONOSip[ i ] )
                 if not startResult or stopResult:
@@ -195,7 +195,6 @@ class FUNCovsdbtest:
                                  onfail="Install onos-app-vtn failed" )
 
     def CASE2( self, main ):
-
         """
         Test ovsdb connection and teardown
         """
@@ -226,7 +225,7 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Check ovsdb node manager is " + str( response ) ,
+                                 onpass="Check ovsdb node manager is " + str( response ),
                                  onfail="Check ovsdb node manager failed" )
 
         main.step( "Delete ovsdb node manager" )
@@ -249,7 +248,6 @@ class FUNCovsdbtest:
                                  onfail="Check ovsdb node delete manager failed" )
 
     def CASE3( self, main ):
-
         """
         Test default br-int configuration and vxlan port
         """
@@ -263,17 +261,17 @@ class FUNCovsdbtest:
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         ovsdbport = main.params[ 'CTRL' ][ 'ovsdbport' ]
         delaytime = main.params[ 'TIMER' ][ 'delaytime' ]
-        OVSDB1Ip = os.getenv( main.params['OVSDB']['ip1'] )
-        OVSDB2Ip = os.getenv( main.params['OVSDB']['ip2'] )
+        OVSDB1Ip = os.getenv( main.params[ 'OVSDB' ][ 'ip1' ] )
+        OVSDB2Ip = os.getenv( main.params[ 'OVSDB' ][ 'ip2' ] )
 
         main.step( "ovsdb node 1 set ovs manager to " + str( ctrlip ) )
         assignResult = main.OVSDB1.setManager( ip=ctrlip, port=ovsdbport, delaytime=delaytime )
         stepResult = assignResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 1 set ovs manager to  to " +\
+                                 onpass="ovsdb node 1 set ovs manager to  to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="ovsdb node 1 set ovs manager to  to " +\
+                                 onfail="ovsdb node 1 set ovs manager to  to " +
                                   str( ctrlip ) + " failed" )
 
         main.step( "ovsdb node 2 set ovs manager to " + str( ctrlip ) )
@@ -281,9 +279,9 @@ class FUNCovsdbtest:
         stepResult = assignResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 2 set ovs manager to  to " +\
+                                 onpass="ovsdb node 2 set ovs manager to  to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="ovsdb node 2 set ovs manager to  to " +\
+                                 onfail="ovsdb node 2 set ovs manager to  to " +
                                   str( ctrlip ) + " failed" )
 
         main.step( "Check ovsdb node 1 manager is " + str( ctrlip ) )
@@ -294,7 +292,7 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 1 manager is " + str( response ) ,
+                                 onpass="ovsdb node 1 manager is " + str( response ),
                                  onfail="ovsdb node 1 manager check failed" )
 
         main.step( "Check ovsdb node 2 manager is " + str( ctrlip ) )
@@ -305,7 +303,7 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 2 manager is " + str( response ) ,
+                                 onpass="ovsdb node 2 manager is " + str( response ),
                                  onfail="ovsdb node 2 manager check failed" )
 
         main.step( "Check default br-int bridge on ovsdb node " + str( OVSDB1Ip ) )
@@ -353,7 +351,6 @@ class FUNCovsdbtest:
                                  onfail="onos add default vxlan port on the node 2 failed" )
 
     def CASE4( self, main ):
-
         """
         Test default openflow configuration
         """
@@ -369,9 +366,9 @@ class FUNCovsdbtest:
         stepResult = assignResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 1 set ovs manager to  to " +\
+                                 onpass="ovsdb node 1 set ovs manager to  to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="ovsdb node 1 set ovs manager to  to " +\
+                                 onfail="ovsdb node 1 set ovs manager to  to " +
                                   str( ctrlip ) + " failed" )
 
         main.step( "ovsdb node 2 set ovs manager to " + str( ctrlip ) )
@@ -379,9 +376,9 @@ class FUNCovsdbtest:
         stepResult = assignResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 2 set ovs manager to  to " +\
+                                 onpass="ovsdb node 2 set ovs manager to  to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="ovsdb node 2 set ovs manager to  to " +\
+                                 onfail="ovsdb node 2 set ovs manager to  to " +
                                   str( ctrlip ) + " failed" )
 
         main.step( "Check ovsdb node 1 manager is " + str( ctrlip ) )
@@ -392,8 +389,8 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 1 manager is " + str( response ) ,
-                                 onfail="ovsdb node 1 manager check failed\n" +\
+                                 onpass="ovsdb node 1 manager is " + str( response ),
+                                 onfail="ovsdb node 1 manager check failed\n" +
                                  str( main.OVSDB1.show() ) )
 
         main.step( "Check ovsdb node 2 manager is " + str( ctrlip ) )
@@ -404,8 +401,8 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 2 manager is " + str( response ) ,
-                                 onfail="ovsdb node 2 manager check failed\n" +\
+                                 onpass="ovsdb node 2 manager is " + str( response ),
+                                 onfail="ovsdb node 2 manager check failed\n" +
                                  str( main.OVSDB2.show() ) )
 
         main.step( "Check ovsdb node 1 bridge br-int controller set to " + str( ctrlip ) )
@@ -416,9 +413,9 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Check ovsdb node 1 bridge br-int controller set to " +\
+                                 onpass="Check ovsdb node 1 bridge br-int controller set to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="Check ovsdb node 1 bridge br-int controller set to " +\
+                                 onfail="Check ovsdb node 1 bridge br-int controller set to " +
                                   str( ctrlip ) + " failed\n" + str( main.OVSDB1.show() ) )
 
         main.step( "Check ovsdb node 2 bridge br-int controller set to  " + str( ctrlip ) )
@@ -429,10 +426,10 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Check ovsdb node 2 bridge br-int controller set to " +\
+                                 onpass="Check ovsdb node 2 bridge br-int controller set to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="Check ovsdb node 2 bridge br-int controller set to " +\
-                                  str( ctrlip ) + " failed\n" + str( main.OVSDB2.show()) )
+                                 onfail="Check ovsdb node 2 bridge br-int controller set to " +
+                                  str( ctrlip ) + " failed\n" + str( main.OVSDB2.show() ) )
 
         main.step( "Check onoscli devices have ovs " + str( OVSDB1Ip ) )
         response = main.ONOScli1.devices()
@@ -457,7 +454,6 @@ class FUNCovsdbtest:
                                  onfail="Check onoscli devices have ovs " + str( OVSDB2Ip ) + " failed" )
 
     def CASE5( self, main ):
-
         """
         Test default flows
         """
@@ -473,9 +469,9 @@ class FUNCovsdbtest:
         stepResult = assignResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 1 set ovs manager to  to " +\
+                                 onpass="ovsdb node 1 set ovs manager to  to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="ovsdb node 1 set ovs manager to  to " +\
+                                 onfail="ovsdb node 1 set ovs manager to  to " +
                                   str( ctrlip ) + " failed" )
 
         main.step( "Check ovsdb node 1 manager is " + str( ctrlip ) )
@@ -486,7 +482,7 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 1 manager is " + str( response ) ,
+                                 onpass="ovsdb node 1 manager is " + str( response ),
                                  onfail="ovsdb node 1 manager check failed" )
 
         main.step( "Check ovsdb node 1 bridge br-int default flows on " + str( OVSDB1Ip ) )
@@ -497,7 +493,7 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully set default flows " + str( ctrlip ) ,
+                                 onpass="Successfully set default flows " + str( ctrlip ),
                                  onfail="Failed to set default flows " + str( ctrlip ) )
 
     def CASE6( self, main ):
@@ -521,9 +517,9 @@ class FUNCovsdbtest:
         main.caseExplanation = "Configure Network Subnet Port " +\
                                 "Verify post is OK"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        httpport = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        httpport = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.step( "Generate Post Data" )
         network = NetworkData()
@@ -593,7 +589,6 @@ class FUNCovsdbtest:
                 onfail="Post Port Failed " + str( Poststatus ) + "," + str( result ) )
 
     def CASE7( self, main ):
-
         """
         Test host go online and ping each other
         """
@@ -609,9 +604,9 @@ class FUNCovsdbtest:
         stepResult = assignResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 1 set ovs manager to  to " +\
+                                 onpass="ovsdb node 1 set ovs manager to  to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="ovsdb node 1 set ovs manager to  to " +\
+                                 onfail="ovsdb node 1 set ovs manager to  to " +
                                   str( ctrlip ) + " failed" )
 
         main.step( "ovsdb node 2 set ovs manager to " + str( ctrlip ) )
@@ -619,9 +614,9 @@ class FUNCovsdbtest:
         stepResult = assignResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="ovsdb node 2 set ovs manager to " +\
+                                 onpass="ovsdb node 2 set ovs manager to " +
                                   str( ctrlip ) + " sucess",
-                                 onfail="ovsdb node 2 set ovs manager to " +\
+                                 onfail="ovsdb node 2 set ovs manager to " +
                                   str( ctrlip ) + " failed" )
 
         main.step( "Create host1 on node 1 " + str( OVSDB1Ip ) )
@@ -638,38 +633,38 @@ class FUNCovsdbtest:
                                  onpass="Create host2 on node 2 " + str( OVSDB2Ip ) + " sucess",
                                  onfail="Create host2 on node 2 " + str( OVSDB2Ip ) + " failed" )
 
-        main.step( "Create port on host1 on the node " + str ( OVSDB1Ip ) )
+        main.step( "Create port on host1 on the node " + str( OVSDB1Ip ) )
         stepResult = main.OVSDB1.createHostport( hostname="host1", hostport="host1-eth0", hostportmac="000000000001" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Create port on host1 on the node " + str( OVSDB1Ip ) + " sucess",
                                  onfail="Create port on host1 on the node " + str( OVSDB1Ip ) + " failed" )
 
-        main.step( "Create port on host2 on the node " + str ( OVSDB2Ip ) )
+        main.step( "Create port on host2 on the node " + str( OVSDB2Ip ) )
         stepResult = main.OVSDB2.createHostport( hostname="host2", hostport="host2-eth0", hostportmac="000000000002" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Create port on host1 on the node " + str( OVSDB2Ip ) + " sucess",
                                  onfail="Create port on host1 on the node " + str( OVSDB2Ip ) + " failed" )
 
-        main.step( "Add port to ovs br-int and host go-online on the node " + str ( OVSDB1Ip ) )
+        main.step( "Add port to ovs br-int and host go-online on the node " + str( OVSDB1Ip ) )
         stepResult = main.OVSDB1.addPortToOvs( ovsname="br-int", ifaceId="00000000-0000-0000-0000-000000000001",
                                                attachedMac="00:00:00:00:00:01", vmuuid="10000000-0000-0000-0000-000000000001" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Add port to ovs br-int and host go-online on the node " +\
+                                 onpass="Add port to ovs br-int and host go-online on the node " +
                                   str( OVSDB1Ip ) + " sucess",
-                                 onfail="Add port to ovs br-int and host go-online on the node " +\
+                                 onfail="Add port to ovs br-int and host go-online on the node " +
                                   str( OVSDB1Ip ) + " failed" )
 
-        main.step( "Add port to ovs br-int and host go-online on the node " + str ( OVSDB2Ip ) )
+        main.step( "Add port to ovs br-int and host go-online on the node " + str( OVSDB2Ip ) )
         stepResult = main.OVSDB2.addPortToOvs( ovsname="br-int", ifaceId="00000000-0000-0000-0000-000000000002",
                                                attachedMac="00:00:00:00:00:02", vmuuid="10000000-0000-0000-0000-000000000001" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Add port to ovs br-int and host go-online on the node " +\
+                                 onpass="Add port to ovs br-int and host go-online on the node " +
                                   str( OVSDB2Ip ) + " sucess",
-                                 onfail="Add port to ovs br-int and host go-online on the node " +\
+                                 onfail="Add port to ovs br-int and host go-online on the node " +
                                   str( OVSDB2Ip ) + " failed" )
 
         main.step( "Check onos set host flows on the node " + str( OVSDB1Ip ) )
@@ -680,9 +675,9 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Check onos set host flows on the node " +\
+                                 onpass="Check onos set host flows on the node " +
                                   str( OVSDB1Ip ) + " sucess",
-                                 onfail="Check onos set host flows on the node " +\
+                                 onfail="Check onos set host flows on the node " +
                                   str( OVSDB1Ip ) + " failed" )
 
         main.step( "Check onos set host flows on the node " + str( OVSDB2Ip ) )
@@ -693,9 +688,9 @@ class FUNCovsdbtest:
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Check onos set host flows on the node " +\
+                                 onpass="Check onos set host flows on the node " +
                                   str( OVSDB2Ip ) + " sucess",
-                                 onfail="Check onos set host flows on the node " +\
+                                 onfail="Check onos set host flows on the node " +
                                   str( OVSDB2Ip ) + " failed" )
 
         main.step( "Check hosts can ping each other" )
@@ -706,13 +701,12 @@ class FUNCovsdbtest:
         stepResult = pingResult1 and pingResult2
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully host go online and ping each other,controller is " +\
+                                 onpass="Successfully host go online and ping each other,controller is " +
                                         str( ctrlip ),
-                                 onfail="Failed to host go online and ping each other,controller is " +\
+                                 onfail="Failed to host go online and ping each other,controller is " +
                                         str( ctrlip ) )
 
     def CASE8( self, main ):
-
         """
         Clear ovs configuration and host configuration
         """

@@ -16,12 +16,11 @@ class FUNCflow:
             - Install ONOS package
             - Build ONOS package
         """
-
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
 
         # Test variables
-        main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
+        main.testOnDirectory = os.path.dirname( os.getcwd() )
         main.cellName = main.params[ 'ENV' ][ 'cellName' ]
         main.apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
@@ -39,16 +38,16 @@ class FUNCflow:
         main.delFlowSleep = int( main.params[ 'SLEEP' ][ 'delFlow' ] )
         main.debug = main.params[ 'DEBUG' ]
         main.swDPID = main.params[ 'TEST' ][ 'swDPID' ]
-        main.cellData = { } # for creating cell file
-        main.CLIs = [ ]
-        main.ONOSip = [ ]
+        main.cellData = {}  # for creating cell file
+        main.CLIs = []
+        main.ONOSip = []
 
         main.debug = True if "on" in main.debug else False
 
-        main.ONOSip = main.ONOSbench.getOnosIps( )
+        main.ONOSip = main.ONOSbench.getOnosIps()
 
         # Assigning ONOS cli handles to a list
-        for i in range( 1,  main.maxNodes + 1 ):
+        for i in range( 1, main.maxNodes + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -62,7 +61,6 @@ class FUNCflow:
                                      wrapperFile2 +
                                      ".py" )
 
-
         copyResult = main.ONOSbench.scp( main.Mininet1,
                                          main.dependencyPath + main.topology,
                                          main.Mininet1.home + '/custom/',
@@ -72,7 +70,6 @@ class FUNCflow:
                                  actual=copyResult,
                                  onpass="Successfully copy " + "test variables ",
                                  onfail="Failed to copy test variables" )
-
 
         if main.CLIs:
             stepResult = main.TRUE
@@ -125,7 +122,7 @@ class FUNCflow:
 
         main.log.info( "NODE COUNT = " + str( main.numCtrls ) )
 
-        tempOnosIp = [ ]
+        tempOnosIp = []
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[ i ] )
 
@@ -137,7 +134,7 @@ class FUNCflow:
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell( )
+        verifyResult = main.ONOSbench.verifyCell()
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -178,7 +175,7 @@ class FUNCflow:
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -220,9 +217,9 @@ class FUNCflow:
                                  onfail="Failed to start ONOS cli" )
 
     def CASE10( self, main ):
-        '''
+        """
             Start Mininet
-        '''
+        """
         import json
 
         main.case( "Setup mininet and compare ONOS topology view to Mininet topology" )
@@ -231,7 +228,7 @@ class FUNCflow:
 
         main.step( "Setup Mininet Topology" )
         topology = main.Mininet1.home + '/custom/' + main.topology
-        stepResult = main.Mininet1.startNet( topoFile = topology )
+        stepResult = main.Mininet1.startNet( topoFile=topology )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -239,7 +236,7 @@ class FUNCflow:
                                  onfail="Failed to load topology" )
 
         main.step( "Assign switch to controller" )
-        stepResult = main.Mininet1.assignSwController( "s1", main.ONOSip[0] )
+        stepResult = main.Mininet1.assignSwController( "s1", main.ONOSip[ 0 ] )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -255,15 +252,15 @@ class FUNCflow:
         ports = main.topo.getAllPorts( main )
         links = main.topo.getAllLinks( main )
 
-        mnSwitches = main.Mininet1.getSwitches( )
-        mnLinks = main.Mininet1.getLinks( )
-        mnHosts = main.Mininet1.getHosts( )
+        mnSwitches = main.Mininet1.getSwitches()
+        mnLinks = main.Mininet1.getLinks()
+        mnHosts = main.Mininet1.getHosts()
 
         for controller in range( main.numCtrls ):
             controllerStr = str( controller + 1 )
             if devices[ controller ] and ports[ controller ] and\
-                "Error" not in devices[ controller ] and\
-                "Error" not in ports[ controller ]:
+                    "Error" not in devices[ controller ] and\
+                    "Error" not in ports[ controller ]:
 
                 currentDevicesResult = main.Mininet1.compareSwitches(
                         mnSwitches,
@@ -301,43 +298,42 @@ class FUNCflow:
                                      onpass="ONOS" + controllerStr +
                                             " hosts exist in Mininet",
                                      onfail="ONOS" + controllerStr +
-                                            " hosts don't match Mininet")
-
+                                            " hosts don't match Mininet" )
 
     def CASE66( self, main ):
-        '''
+        """
         Testing scapy
-        '''
+        """
         main.case( "Testing scapy" )
         main.step( "Creating Host1 component" )
         main.Scapy.createHostComponent( "h1" )
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
             main.log.debug( host.name )
             main.log.debug( host.hostIp )
             main.log.debug( host.hostMac )
 
         main.step( "Sending/Receiving Test packet - Filter doesn't match" )
         main.log.info( "Starting Filter..." )
-        main.h2.startFilter( )
+        main.h2.startFilter()
         main.log.info( "Building Ether frame..." )
         main.h1.buildEther( dst=main.h2.hostMac )
         main.log.info( "Sending Packet..." )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
         main.log.info( "Checking Filter..." )
-        finished = main.h2.checkFilter( )
+        finished = main.h2.checkFilter()
         main.log.debug( finished )
         i = ""
         if finished:
-            a = main.h2.readPackets( )
-            for i in a.splitlines( ):
+            a = main.h2.readPackets()
+            for i in a.splitlines():
                 main.log.info( i )
         else:
-            kill = main.h2.killFilter( )
+            kill = main.h2.killFilter()
             main.log.debug( kill )
             main.h2.handle.sendline( "" )
             main.h2.handle.expect( main.h2.scapyPrompt )
@@ -348,18 +344,18 @@ class FUNCflow:
                                  onfail="Fail" )
 
         main.step( "Sending/Receiving Test packet - Filter matches" )
-        main.h2.startFilter( )
+        main.h2.startFilter()
         main.h1.buildEther( dst=main.h2.hostMac )
         main.h1.buildIP( dst=main.h2.hostIp )
-        main.h1.sendPacket( )
-        finished = main.h2.checkFilter( )
+        main.h1.sendPacket()
+        finished = main.h2.checkFilter()
         i = ""
         if finished:
-            a = main.h2.readPackets( )
-            for i in a.splitlines( ):
+            a = main.h2.readPackets()
+            for i in a.splitlines():
                 main.log.info( i )
         else:
-            kill = main.h2.killFilter( )
+            kill = main.h2.killFilter()
             main.log.debug( kill )
             main.h2.handle.sendline( "" )
             main.h2.handle.expect( main.h2.scapyPrompt )
@@ -369,24 +365,22 @@ class FUNCflow:
                                  onpass="Pass",
                                  onfail="Fail" )
 
-
-
         main.step( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
     def CASE1000( self, main ):
-        '''
+        """
             Add flows with MAC selectors and verify the flows
-        '''
+        """
         import json
         import time
 
         main.case( "Verify flow MAC selectors are correctly compiled" )
         main.caseExplanation = "Install two flows with only MAC selectors " +\
-                "specified, then verify flows are added in ONOS, finally "+\
+                "specified, then verify flows are added in ONOS, finally " +\
                 "send a packet that only specifies the MAC src and dst."
 
         main.step( "Add flows with MAC addresses as the only selectors" )
@@ -396,9 +390,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
         # Add a flow that connects host1 on port1 to host2 on port2
         # send output on port2
@@ -428,7 +422,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -441,8 +435,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -482,15 +476,15 @@ class FUNCflow:
         main.h1.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h2.checkFilter( )
+        stepResult = main.h2.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h2.readPackets( ) )
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
         else:
-            main.h2.killFilter( )
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -500,9 +494,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE1400( self, main ):
-        '''
+        """
             Add flows with IPv4 selectors and verify the flows
-        '''
+        """
         import json
         import time
 
@@ -518,9 +512,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
         # Add a flow that connects host1 on port1 to host2 on port2
         # send output on port2
@@ -536,8 +530,8 @@ class FUNCflow:
                                             egressPort=egress,
                                             ingressPort=ingress,
                                             ethType=ethType,
-                                            ipSrc=( "IPV4_SRC", main.h1.hostIp+"/32" ),
-                                            ipDst=( "IPV4_DST", main.h2.hostIp+"/32" ),
+                                            ipSrc=( "IPV4_SRC", main.h1.hostIp + "/32" ),
+                                            ipDst=( "IPV4_DST", main.h2.hostIp + "/32" ),
                                             debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
@@ -552,7 +546,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -565,8 +559,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -598,20 +592,21 @@ class FUNCflow:
 
         main.log.info( "Starting filter on host2" )
         # Defaults to ip
-        main.h2.startFilter( )
+        main.h2.startFilter()
 
         main.log.info( "Sending packet to host2" )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h2.checkFilter( )
+        stepResult = main.h2.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h2.readPackets( ) )
-        else: main.h2.killFilter( )
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
+        else:
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -620,7 +615,7 @@ class FUNCflow:
                                  onpass="Successfully sent a packet",
                                  onfail="Failed to send a packet" )
 
-    def CASE1500 (self, main ):
+    def CASE1500( self, main ):
         """
         Add flow with IPv6 selector and verify the flow
         """
@@ -639,8 +634,8 @@ class FUNCflow:
         hosts = [ main.h5, main.h6 ]
 
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
+            host.startHostCli()
+            host.startScapy()
             host.updateSelf( IPv6=True )
 
         # Add a flow that connects host1 on port1 to host2 on port2
@@ -673,7 +668,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -686,8 +681,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -721,18 +716,18 @@ class FUNCflow:
         # Defaults to ip
         main.h6.startFilter( pktFilter="ip6" )
         main.log.info( "Sending packet to host6" )
-        main.h5.sendPacket( )
+        main.h5.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h6.checkFilter( )
+        stepResult = main.h6.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h6.readPackets( ) )
+            main.log.info( "Packet: %s" % main.h6.readPackets() )
         else:
-            main.h6.killFilter( )
+            main.h6.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h5" )
         main.Mininet1.removeHostComponent( "h6" )
 
@@ -741,17 +736,16 @@ class FUNCflow:
                                  onpass="Successfully sent a packet",
                                  onfail="Failed to send a packet" )
 
-
     def CASE1100( self, main ):
-        '''
+        """
             Add flow with VLAN selector and verify the flow
-        '''
+        """
         import json
         import time
 
         main.case( "Verify VLAN selector is correctly compiled" )
         main.caseExplanation = "Install one flow with only the VLAN selector " +\
-                "specified, then verify the flow is added in ONOS, and finally "+\
+                "specified, then verify the flow is added in ONOS, and finally " +\
                 "broadcast a packet with the correct VLAN tag."
 
         # We do this here to utilize the hosts information
@@ -760,10 +754,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h4" )
         hosts = [ main.h3, main.h4 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
-
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
         main.step( "Add a flow with the VLAN tag as the only selector" )
 
@@ -784,7 +777,6 @@ class FUNCflow:
                                             vlan=vlan,
                                             debug=main.debug )
 
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully added flow",
@@ -797,7 +789,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -810,8 +802,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -840,7 +832,7 @@ class FUNCflow:
         recIface = "{}-eth0.{}".format( main.h4.name, vlan )
         main.log.info( "Starting filter on host2" )
         # Filter is setup to catch any packet on the vlan interface with the correct vlan tag
-        main.h4.startFilter( ifaceName=recIface, pktFilter = "" )
+        main.h4.startFilter( ifaceName=recIface, pktFilter="" )
 
         # Broadcast the packet on the vlan interface. We only care if the flow forwards
         # the packet with the correct vlan tag, not if the mac addr is correct
@@ -850,14 +842,15 @@ class FUNCflow:
                             packet="Ether()/Dot1Q(vlan={})".format( vlan ) )
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h4.checkFilter( )
+        stepResult = main.h4.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h4.readPackets( ) )
-        else: main.h4.killFilter( )
+            main.log.info( "Packet: %s" % main.h4.readPackets() )
+        else:
+            main.h4.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h3" )
         main.Mininet1.removeHostComponent( "h4" )
 
@@ -867,9 +860,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE1300( self, main ):
-        '''
+        """
             Add flows with MPLS selector and verify the flows
-        '''
+        """
         import json
         import time
 
@@ -885,9 +878,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
+            host.startHostCli()
             host.startScapy( main.dependencyPath )
-            host.updateSelf( )
+            host.updateSelf()
 
         # ports
         egress = 2
@@ -918,7 +911,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -931,8 +924,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -965,14 +958,15 @@ class FUNCflow:
         main.h1.sendPacket( packet='Ether()/MPLS(label={})'.format( mplsLabel ) )
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h2.checkFilter( )
+        stepResult = main.h2.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h2.readPackets( ) )
-        else: main.h2.killFilter( )
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
+        else:
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -982,9 +976,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE1700( self, main ):
-        '''
+        """
             Add flows with a TCP selector and verify the flow
-        '''
+        """
         import json
         import time
 
@@ -1000,9 +994,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 2
@@ -1035,7 +1029,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -1048,8 +1042,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1085,17 +1079,18 @@ class FUNCflow:
         main.h2.startFilter( pktFilter="tcp" )
 
         main.log.info( "Sending packet to host2" )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h2.checkFilter( )
+        stepResult = main.h2.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h2.readPackets( ) )
-        else: main.h2.killFilter( )
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
+        else:
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -1105,9 +1100,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE1600( self, main ):
-        '''
+        """
             Add flows with a UDP selector and verify the flow
-        '''
+        """
         import json
         import time
 
@@ -1123,9 +1118,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 2
@@ -1158,7 +1153,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -1171,8 +1166,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1208,17 +1203,18 @@ class FUNCflow:
         main.h2.startFilter( pktFilter="udp" )
 
         main.log.info( "Sending packet to host2" )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h2.checkFilter( )
+        stepResult = main.h2.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h2.readPackets( ) )
-        else: main.h2.killFilter( )
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
+        else:
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -1228,9 +1224,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE1900( self, main ):
-        '''
+        """
             Add flows with a ICMPv4 selector and verify the flow
-        '''
+        """
         import json
         import time
 
@@ -1246,9 +1242,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 2
@@ -1278,7 +1274,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -1291,8 +1287,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1321,24 +1317,25 @@ class FUNCflow:
         # No need for the MAC src dst
         main.h1.buildEther( dst=main.h2.hostMac )
         main.h1.buildIP( dst=main.h2.hostIp )
-        main.h1.buildICMP( )
+        main.h1.buildICMP()
 
         main.log.info( "Starting filter on host2" )
         # Defaults to ip
         main.h2.startFilter( pktFilter="icmp" )
 
         main.log.info( "Sending packet to host2" )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h2.checkFilter( )
+        stepResult = main.h2.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h2.readPackets( ) )
-        else: main.h2.killFilter( )
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
+        else:
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -1348,9 +1345,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE2000( self, main ):
-        '''
+        """
             Add flows with a ICMPv6 selector and verify the flow
-        '''
+        """
         import json
         import time
 
@@ -1364,15 +1361,15 @@ class FUNCflow:
         main.log.info( "Creating host components" )
         main.Scapy.createHostComponent( "h5" )
         main.Scapy.createHostComponent( "h6" )
-        hosts =[ main.h5, main.h6 ]
+        hosts = [ main.h5, main.h6 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
+            host.startHostCli()
+            host.startScapy()
             host.updateSelf( IPv6=True )
 
         # Add a flow that connects host1 on port1 to host2 on port2
-        egress =6
-        ingress =5
+        egress = 6
+        ingress = 5
         # IPv6 etherType
         ethType = main.params[ 'TEST' ][ 'ip6Type' ]
         # IP protocol
@@ -1398,7 +1395,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -1411,8 +1408,8 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1448,17 +1445,18 @@ class FUNCflow:
         main.h6.startFilter( pktFilter="icmp6" )
 
         main.log.info( "Sending packet to host2" )
-        main.h5.sendPacket( )
+        main.h5.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h6.checkFilter( )
+        stepResult = main.h6.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h6.readPackets( ) )
-        else: main.h6.killFilter( )
+            main.log.info( "Packet: %s" % main.h6.readPackets() )
+        else:
+            main.h6.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h5" )
         main.Mininet1.removeHostComponent( "h6" )
 
@@ -1468,9 +1466,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE3000( self, main ):
-        '''
+        """
             Delete flow
-        '''
+        """
         import json
 
         main.case( "Delete flows that were added through rest" )
@@ -1478,20 +1476,21 @@ class FUNCflow:
 
         main.log.info( "Getting flows" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
                 if "rest" in f.get( "appId" ):
-                    if main.debug: main.log.debug( "Flow to be deleted:\n{}".format( main.ONOSrest.pprint( f ) ) )
+                    if main.debug:
+                        main.log.debug( "Flow to be deleted:\n{}".format( main.ONOSrest.pprint( f ) ) )
                     stepResult = stepResult and main.ONOSrest.removeFlow( f.get( "deviceId" ), f.get( "id" ) )
         except TypeError:
             main.log.error( "No Flows found by the REST API" )
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1500,11 +1499,10 @@ class FUNCflow:
 
         time.sleep( main.delFlowSleep )
 
-
-    def CASE1200(self, main ):
-        '''
+    def CASE1200( self, main ):
+        """
             Add flows with a ARP selector and verify the flow
-        '''
+        """
         import json
         import time
 
@@ -1520,9 +1518,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
         # Add a flow that connects host1 on port1 to host2 on port2
         # send output on port2
@@ -1534,12 +1532,12 @@ class FUNCflow:
 
         # Add flows that connects host1 to host2
         main.log.info( "Add flow with port ingress 1 to port egress 2" )
-        stepResult = main.ONOSrest.addFlow(deviceId=main.swDPID,
-                                           egressPort=egress,
-                                           ingressPort=ingress,
-                                           ethType=ethType,
-                                           priority=40001,
-                                           debug=main.debug )
+        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
+                                            egressPort=egress,
+                                            ingressPort=ingress,
+                                            ethType=ethType,
+                                            priority=40001,
+                                            debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1553,21 +1551,21 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
                 if "rest" in f.get( "appId" ):
                     if "ADDED" not in f.get( "state" ):
                         stepResult = main.FALSE
-                        main.log.error("Flow: %s in state: %s" % ( f.get("id"), f.get( "state" ) ) )
+                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
         except TypeError:
             main.log.error( "No Flows found by the REST API" )
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1578,10 +1576,10 @@ class FUNCflow:
 
         # get the flow IDs that were added through rest
         main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
+        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
         # convert the flowIDs to ints then hex and finally back to strings
         flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info("ONOS flow IDs: {}".format( flowIds ) )
+        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
 
         stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
 
@@ -1602,18 +1600,18 @@ class FUNCflow:
         main.h2.startFilter( pktFilter="arp" )
 
         main.log.info( "Sending packet to host2" )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h2.checkFilter( )
+        stepResult = main.h2.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h2.readPackets( ) )
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
         else:
-            main.h2.killFilter( )
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -1623,9 +1621,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE1800( self, main ):
-        '''
+        """
            Add flows with a SCTP selector and verify the flow
-        '''
+        """
         import json
         import time
 
@@ -1641,9 +1639,9 @@ class FUNCflow:
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 2
@@ -1653,7 +1651,7 @@ class FUNCflow:
         # IP protocol
         ipProto = main.params[ 'TEST' ][ 'sctpProto' ]
 
-        main.log.info("Add a flow that connects host1 on port1 to host2 on port2")
+        main.log.info( "Add a flow that connects host1 on port1 to host2 on port2" )
         stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
                                             egressPort=egress,
                                             ingressPort=ingress,
@@ -1673,21 +1671,21 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows( ) )
+            flows = json.loads( main.ONOSrest.flows() )
 
             stepResult = main.TRUE
             for f in flows:
                 if "rest" in f.get( "appId" ):
                     if "ADDED" not in f.get( "state" ):
                         stepResult = main.FALSE
-                        main.log.error("Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
+                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
         except TypeError:
             main.log.error( "No Flows found by the REST API" )
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1716,25 +1714,25 @@ class FUNCflow:
         # No need for the MAC src dst
         main.h1.buildEther( dst=main.h2.hostMac )
         main.h1.buildIP( dst=main.h2.hostIp )
-        main.h1.buildSCTP( )
+        main.h1.buildSCTP()
 
         main.log.info( "Starting filter on host2" )
         # Defaults to ip
         main.h2.startFilter( pktFilter="sctp" )
 
         main.log.info( "Sending packet to host2" )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
 
         main.log.info( "Checking filter for our packet" )
-        stepResult = main.h2.checkFilter( )
+        stepResult = main.h2.checkFilter()
         if stepResult:
-            main.log.info( "Packet: %s" % main.h2.readPackets( ) )
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
         else:
-            main.h2.killFilter( )
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -1744,9 +1742,9 @@ class FUNCflow:
                                  onfail="Failed to send a packet" )
 
     def CASE100( self, main ):
-        '''
+        """
             Report errors/warnings/exceptions
-        '''
+        """
         main.log.info( "Error report: \n" )
         main.ONOSbench.logReport( main.ONOSip[ 0 ],
                                   [ "INFO",

@@ -21,6 +21,7 @@ lanqinglong@huawei.com
 """
 import os
 
+
 class FUNCvirNetNB:
 
     def __init__( self ):
@@ -43,36 +44,35 @@ class FUNCvirNetNB:
         start cli sessions
         start vtnrsc
         """
-
         import time
         import os
-        main.log.info( "ONOS Single node Start "+
-                      "VirtualNet Northbound test - initialization" )
+        main.log.info( "ONOS Single node Start " +
+                       "VirtualNet Northbound test - initialization" )
         main.case( "Setting up test environment" )
-        main.caseExplanation  = "Setup the test environment including "+\
+        main.caseExplanation  = "Setup the test environment including " +\
                                 "installing ONOS,start ONOS."
 
         # load some variables from the params file
         PULLCODE = False
-        if main.params['GIT']['pull'] =='True':
+        if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
-        gitBranch = main.params['GIT']['branch']
-        cellName = main.params['ENV']['cellName']
-        ipList = os.getenv( main.params['CTRL']['ip1'] )
+        gitBranch = main.params[ 'GIT' ][ 'branch' ]
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
 
-        main.step("Create cell file and apply to environment")
-        cellAppString = main.params['ENV']['cellApps']
-        main.ONOSbench.createCellFile(main.ONOSbench.ip_address,cellName,
-                                      main.Mininet1.ip_address,
-                                      cellAppString,ipList )
+        main.step( "Create cell file and apply to environment" )
+        cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
+        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
+                                       main.Mininet1.ip_address,
+                                       cellAppString, ipList )
 
-        cellResult = main.ONOSbench.setCell(cellName)
+        cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
 
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
+                                 onpass="Successfully applied cell to " +
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
 
@@ -82,13 +82,13 @@ class FUNCvirNetNB:
 
         main.CLIs = []
         main.nodes = []
-        main.numCtrls=1
+        main.numCtrls = 1
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
 
-        for i in range ( 1, main.numCtrls +1):
+        for i in range( 1, main.numCtrls + 1 ):
             try:
-                main.CLIs.append( getattr( main, 'ONOScli' + str(i) ) )
-                main.nodes.append( getattr( main, 'ONOS' + str(i) ) )
+                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+                main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
                 ipList.append( main.nodes[ -1 ].ip_address )
             except AttributeError:
                 break
@@ -108,20 +108,20 @@ class FUNCvirNetNB:
         gitPullResult = main.TRUE
         main.log.info( "Git checkout and pull " + gitBranch )
         if PULLCODE:
-            main.ONOSbench.gitCheckout ( gitBranch )
+            main.ONOSbench.gitCheckout( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
             # values of 1 or 3 are good
-            utilities.assert_lesser ( expect=0, actual=gitPullResult,
+            utilities.assert_lesser( expect=0, actual=gitPullResult,
                                       onpass="Git pull successful",
-                                      onfail ="Git pull failed" )
-        main.ONOSbench.getVersion( report =True )
+                                      onfail="Git pull failed" )
+        main.ONOSbench.getVersion( report=True )
         main.step( "Using mvn clean install" )
-        cleanInstallResult= main.TRUE
+        cleanInstallResult = main.TRUE
         if PULLCODE and gitPullResult == main.TRUE:
             cleanInstallResult = main.ONOSbench.cleanInstall()
         else:
-            main.log.warn("Did not pull new code so skipping mvn "+
-                          "clean install")
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                           "clean install" )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cleanInstallResult,
@@ -138,14 +138,14 @@ class FUNCvirNetNB:
 
         main.step( "Installing ONOS package" )
         onosInstallResult = main.ONOSbench.onosInstall(
-            options="-f",node=main.nodes[0].ip_address )
+            options="-f", node=main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
-                                onpass="ONOS install successful",
-                                onfail="ONOS install failed" )
+                                 onpass="ONOS install successful",
+                                 onfail="ONOS install failed" )
         time.sleep( main.startUpSleep )
 
         main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.ONOSbench.onosSecureSSH( node=main.nodes[0].ip_address )
+        secureSshResult = main.ONOSbench.onosSecureSSH( node=main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -153,31 +153,31 @@ class FUNCvirNetNB:
         main.step( "Checking if ONOS is up yet" )
 
         for i in range( 2 ):
-            onos1Isup =  main.ONOSbench.isup( main.nodes[0].ip_address )
+            onos1Isup = main.ONOSbench.isup( main.nodes[ 0 ].ip_address )
             if onos1Isup:
                 break
         utilities.assert_equals( expect=main.TRUE, actual=onos1Isup,
-                     onpass="ONOS startup successful",
-                     onfail="ONOS startup failed" )
+                                 onpass="ONOS startup successful",
+                                 onfail="ONOS startup failed" )
         time.sleep( main.startUpSleep )
 
         main.step( "Starting ONOS CLI sessions" )
 
-        print main.nodes[0].ip_address
-        cliResults = main.ONOScli1.startOnosCli(main.nodes[0].ip_address)
+        print main.nodes[ 0 ].ip_address
+        cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                onpass="ONOS cli startup successful",
-                                onfail="ONOS cli startup failed" )
+                                 onpass="ONOS cli startup successful",
+                                 onfail="ONOS cli startup failed" )
         time.sleep( main.startUpSleep )
 
         main.step( "App Ids check" )
         appCheck = main.ONOScli1.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[ 0 ].apps() )
+            main.log.warn( main.CLIs[ 0 ].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
-                     onpass="App Ids seem to be correct",
-                     onfail="Something is wrong with app Ids" )
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
 
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )
@@ -187,13 +187,12 @@ class FUNCvirNetNB:
         main.step( "Install org.onosproject.vtn app" )
         installResults = main.ONOScli1.activateApp( "org.onosproject.vtn" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
-                     onpass="Install org.onosproject.vtn successful",
-                     onfail="Install org.onosproject.vtn app failed" )
+                                 onpass="Install org.onosproject.vtn successful",
+                                 onfail="Install org.onosproject.vtn app failed" )
 
         time.sleep( main.startUpSleep )
 
-    def CASE2 ( self,main ):
-
+    def CASE2( self, main ):
         """
         Test Post Network
         """
@@ -212,9 +211,9 @@ class FUNCvirNetNB:
         main.caseExplanation  = "Test Network Post NBI " +\
                                 "Verify Post Data same with Stored Data"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        port = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        port = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -223,8 +222,8 @@ class FUNCvirNetNB:
         postdata = network.DictoJson()
 
         main.step( "Post Data via HTTP" )
-        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path+'networks/',
-                                                'POST', None, postdata)
+        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path + 'networks/',
+                                                 'POST', None, postdata )
 
         utilities.assert_equals(
                 expect='200',
@@ -233,15 +232,15 @@ class FUNCvirNetNB:
                 onfail="Post Failed " + str( Poststatus ) + str( result ) )
 
         main.step( "Get Data via HTTP" )
-        Getstatus, result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
-                                                'GET', None, None)
+        Getstatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
+                                                'GET', None, None )
         utilities.assert_equals(
                 expect='200',
                 actual=Getstatus,
                 onpass="Get Success",
                 onfail="Get Failed " + str( Getstatus ) + str( result ) )
 
-        main.log.info("Post Network Data is :%s\nGet Network Data is:%s"%(postdata,result))
+        main.log.info( "Post Network Data is :%s\nGet Network Data is:%s" % ( postdata, result ) )
 
         main.step( "Compare Send Id and Get Id" )
         IDcmpresult = network.JsonCompare( postdata, result, 'network', 'id' )
@@ -252,22 +251,21 @@ class FUNCvirNetNB:
                 expect=True,
                 actual=Cmpresult,
                 onpass="Compare Success",
-                onfail="Compare Failed:ID compare: " + str( IDcmpresult ) + \
+                onfail="Compare Failed:ID compare: " + str( IDcmpresult ) +
                        ",Tenant id compare :" + str( TanantIDcmpresult ) )
 
-        deletestatus,result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
-                                                 'DELETE', None, None )
+        deletestatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
+                                                   'DELETE', None, None )
         utilities.assert_equals(
                 expect='200',
                 actual=deletestatus,
                 onpass="Delete Network Success",
-                onfail="Delete Network Failed")
+                onfail="Delete Network Failed" )
 
-        if Cmpresult != True:
+        if not Cmpresult:
             main.log.error( "Post Network compare failed" )
 
-    def CASE3( self,main ):
-
+    def CASE3( self, main ):
         """
         Test Update Network
         """
@@ -286,9 +284,9 @@ class FUNCvirNetNB:
         main.caseExplanation  = "Test Network Update NBI " +\
                                 "Verify Update Data same with Stored Data"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        port = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        port = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -301,7 +299,7 @@ class FUNCvirNetNB:
         postdatanew = network.DictoJson()
 
         main.step( "Post Data via HTTP" )
-        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path+'networks',
+        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path + 'networks',
                                                  'POST', None, postdata )
         utilities.assert_equals(
                 expect='200',
@@ -310,8 +308,8 @@ class FUNCvirNetNB:
                 onfail="Post Failed " + str( Poststatus ) + str( result ) )
 
         main.step( "Update Data via HTTP" )
-        Updatestatus, result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
-                                                   'PUT', None, postdatanew)
+        Updatestatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
+                                                   'PUT', None, postdatanew )
         utilities.assert_equals(
                 expect='200',
                 actual=Updatestatus,
@@ -319,7 +317,7 @@ class FUNCvirNetNB:
                 onfail="Update Failed " + str( Updatestatus ) + str( result ) )
 
         main.step( "Get Data via HTTP" )
-        Getstatus, result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
+        Getstatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
                                                 'GET', None, None )
         utilities.assert_equals(
                 expect='200',
@@ -337,12 +335,12 @@ class FUNCvirNetNB:
                 expect=True,
                 actual=Cmpresult,
                 onpass="Compare Success",
-                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) + \
-                       ",Tenant id compare:"+ str( TanantIDcmpresult ) + \
+                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) +
+                       ",Tenant id compare:" + str( TanantIDcmpresult ) +
                        ",Name compare:" + str( Shareresult ) )
 
-        deletestatus,result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
-                                                 'DELETE', None, None )
+        deletestatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
+                                                   'DELETE', None, None )
 
         utilities.assert_equals(
                 expect='200',
@@ -350,11 +348,10 @@ class FUNCvirNetNB:
                 onpass="Delete Network Success",
                 onfail="Delete Network Failed" )
 
-        if Cmpresult != True:
+        if not Cmpresult:
             main.log.error( "Update Network compare failed" )
 
-    def CASE4( self,main ):
-
+    def CASE4( self, main ):
         """
         Test Delete Network
         """
@@ -373,9 +370,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Network Delete NBI " +\
                                 "Verify Stored Data is NULL after Delete"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        port = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        port = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -393,8 +390,8 @@ class FUNCvirNetNB:
                 onfail="Post Failed " + str( Poststatus ) + str( result ) )
 
         main.step( "Delete Data via HTTP" )
-        Deletestatus, result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
-                                                'DELETE', None, None )
+        Deletestatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
+                                                   'DELETE', None, None )
         utilities.assert_equals(
                 expect='200',
                 actual=Deletestatus,
@@ -402,7 +399,7 @@ class FUNCvirNetNB:
                 onfail="Delete Failed " + str( Deletestatus ) + str( result ) )
 
         main.step( "Get Data is NULL" )
-        Getstatus, result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
+        Getstatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
                                                 'GET', None, None )
         utilities.assert_equals(
                 expect='Network is not found',
@@ -414,7 +411,6 @@ class FUNCvirNetNB:
             main.log.error( "Delete Network failed" )
 
     def CASE5( self, main ):
-
         """
         Test Post Subnet
         """
@@ -434,9 +430,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Subnet Post NBI " +\
                                 "Verify Stored Data is same with Post Data"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        port = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        port = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -487,23 +483,22 @@ class FUNCvirNetNB:
                 expect=True,
                 actual=Cmpresult,
                 onpass="Compare Success",
-                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) + \
-                       ",Tenant id compare:"+ str( TanantIDcmpresult ) + \
+                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) +
+                       ",Tenant id compare:" + str( TanantIDcmpresult ) +
                        ",Network id compare:" + str( NetoworkIDcmpresult ) )
 
-        deletestatus,result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
-                                                 'DELETE', None, None )
+        deletestatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
+                                                   'DELETE', None, None )
         utilities.assert_equals(
                 expect='200',
                 actual=deletestatus,
                 onpass="Delete Network Success",
                 onfail="Delete Network Failed" )
 
-        if Cmpresult != True:
+        if not Cmpresult:
             main.log.error( "Post Subnet compare failed" )
 
     def CASE6( self, main ):
-
         """
         Test Post Subnet
         """
@@ -523,9 +518,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Subnet Update NBI " +\
                                 "Verify Stored Data is same with Update Data"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        port = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        port = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -592,24 +587,23 @@ class FUNCvirNetNB:
                 expect=True,
                 actual=Cmpresult,
                 onpass="Compare Success",
-                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) + \
-                       ",Tenant id compare:"+ str( TanantIDcmpresult ) + \
+                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) +
+                       ",Tenant id compare:" + str( TanantIDcmpresult ) +
                        ",Pool compare:" + str( Poolcmpresult ) )
 
         main.step( "Delete Subnet via HTTP" )
-        deletestatus,result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
-                                                 'DELETE', None, None )
+        deletestatus, result = main.ONOSrest.send( ctrlip, port, network.id, path + 'networks/',
+                                                   'DELETE', None, None )
         utilities.assert_equals(
                 expect='200',
                 actual=deletestatus,
                 onpass="Delete Network Success",
                 onfail="Delete Network Failed" )
 
-        if Cmpresult != True:
+        if not Cmpresult:
             main.log.error( "Update Subnet compare failed" )
 
     def CASE7( self, main ):
-
         """
         Test Delete Subnet
         """
@@ -629,9 +623,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Subnet Delete NBI " +\
                                 "Verify Stored Data is Null after Delete"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        port = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        port = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -665,7 +659,7 @@ class FUNCvirNetNB:
 
         main.step( "Delete Subnet Data via HTTP" )
         Deletestatus, result = main.ONOSrest.send( ctrlip, port, subnet.id, path + 'subnets/',
-                                                 'DELETE', None, None )
+                                                   'DELETE', None, None )
         utilities.assert_equals(
                 expect='201',
                 actual=Deletestatus,
@@ -685,7 +679,6 @@ class FUNCvirNetNB:
             main.log.error( "Delete Subnet failed" )
 
     def CASE8( self, main ):
-
         """
         Test Post Port
         """
@@ -706,9 +699,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Port Post NBI " +\
                                 "Verify Stored Data is same with Post Data"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        httpport = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        httpport = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -775,25 +768,24 @@ class FUNCvirNetNB:
                 expect=True,
                 actual=Cmpresult,
                 onpass="Compare Success",
-                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) + \
-                       ",Tenant id compare:"+ str( TanantIDcmpresult ) + \
-                       ",Network id compare:" + str( NetoworkIDcmpresult ) +\
+                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) +
+                       ",Tenant id compare:" + str( TanantIDcmpresult ) +
+                       ",Network id compare:" + str( NetoworkIDcmpresult ) +
                        ",FixIp compare:" + str( fixedIpresult ) )
 
         main.step( "Clean Data via HTTP" )
-        deletestatus,result = main.ONOSrest.send( ctrlip, httpport, network.id, path + 'networks/',
-                                                 'DELETE', None, None )
+        deletestatus, result = main.ONOSrest.send( ctrlip, httpport, network.id, path + 'networks/',
+                                                   'DELETE', None, None )
         utilities.assert_equals(
                 expect='200',
                 actual=deletestatus,
                 onpass="Delete Network Success",
                 onfail="Delete Network Failed" )
 
-        if Cmpresult != True:
+        if not Cmpresult:
             main.log.error( "Post port compare failed" )
 
     def CASE9( self, main ):
-
         """
         Test Update Port
         """
@@ -814,9 +806,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Port Update NBI " +\
                                 "Verify Stored Data is same with New Post Data"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        httpport = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        httpport = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -898,25 +890,24 @@ class FUNCvirNetNB:
                 expect=True,
                 actual=Cmpresult,
                 onpass="Compare Success",
-                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) + \
-                       ",Tenant id compare:"+ str( TanantIDcmpresult ) + \
-                       ",Network id compare:" + str( NetoworkIDcmpresult ) + \
-                       ",Name compare:" + str(Nameresult) )
+                onfail="Compare Failed:ID compare:" + str( IDcmpresult ) +
+                       ",Tenant id compare:" + str( TanantIDcmpresult ) +
+                       ",Network id compare:" + str( NetoworkIDcmpresult ) +
+                       ",Name compare:" + str( Nameresult ) )
 
         main.step( "Clean Data via HTTP" )
-        deletestatus,result = main.ONOSrest.send( ctrlip, httpport, network.id, path + 'networks/',
-                                                 'DELETE', None, None )
+        deletestatus, result = main.ONOSrest.send( ctrlip, httpport, network.id, path + 'networks/',
+                                                   'DELETE', None, None )
         utilities.assert_equals(
                 expect='200',
                 actual=deletestatus,
                 onpass="Delete Network Success",
                 onfail="Delete Network Failed" )
 
-        if Cmpresult != True:
+        if not Cmpresult:
             main.log.error( "Update port compare failed" )
 
     def CASE10( self, main ):
-
         """
         Test Delete Port
         """
@@ -937,9 +928,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Port Delete NBI " +\
                                 "Verify port delete success"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        httpport = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        httpport = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.log.info( "Generate Post Data" )
         network = NetworkData()
@@ -1008,15 +999,15 @@ class FUNCvirNetNB:
             main.log.error( "Delete Port failed" )
 
         main.step( "Clean Data via HTTP" )
-        deletestatus,result = main.ONOSrest.send( ctrlip, httpport, network.id, path + 'networks/',
-                                                 'DELETE', None, None )
+        deletestatus, result = main.ONOSrest.send( ctrlip, httpport, network.id, path + 'networks/',
+                                                   'DELETE', None, None )
         utilities.assert_equals(
                 expect='200',
                 actual=deletestatus,
                 onpass="Delete Network Success",
-                onfail="Delete Network Failed" )            
-    def CASE11 ( self,main ):
+                onfail="Delete Network Failed" )
 
+    def CASE11( self, main ):
         """
         Test Post Error Json Create Network
         """
@@ -1035,9 +1026,9 @@ class FUNCvirNetNB:
         main.caseExplanation  = "Test Network Post With Error json " +\
                                 "The wrong Json can't post network successfully"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        port = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        port = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.step( "Generate Post Data" )
         network = NetworkData()
@@ -1052,16 +1043,16 @@ class FUNCvirNetNB:
         postdata = network.DictoJson()
 
         main.step( "Post Data via HTTP" )
-        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path+'networks/',
-                                                'POST', None, postdata)
+        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path + 'networks/',
+                                                 'POST', None, postdata )
 
         utilities.assert_equals(
                 expect='500',
                 actual=Poststatus,
                 onpass="The Json is wrong,can't post",
                 onfail="Wrong Json can post successfully " )
-    def CASE12( self, main ):
 
+    def CASE12( self, main ):
         """
         Test Post Error Json Create Subnet
         """
@@ -1081,9 +1072,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Subnet Post With Error json " +\
                                 "The wrong Json can't post network successfully"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        port = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        port = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.step( "Generate Post Data" )
         network = NetworkData()
@@ -1118,8 +1109,8 @@ class FUNCvirNetNB:
                 actual=Poststatus,
                 onpass="The Json is wrong,can't post",
                 onfail="Wrong Json can post successfully " )
-    def CASE13( self, main ):
 
+    def CASE13( self, main ):
         """
         Test Post Error Json Create Virtualport
         """
@@ -1140,9 +1131,9 @@ class FUNCvirNetNB:
         main.caseExplanation = "Test Subnet Post With Error json " +\
                                 "The wrong Json can't create port successfully"
 
-        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
-        httpport = main.params['HTTP']['port']
-        path = main.params['HTTP']['path']
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        httpport = main.params[ 'HTTP' ][ 'port' ]
+        path = main.params[ 'HTTP' ][ 'path' ]
 
         main.step( "Generate Post Data" )
         network = NetworkData()

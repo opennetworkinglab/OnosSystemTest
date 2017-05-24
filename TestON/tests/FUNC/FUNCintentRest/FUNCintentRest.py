@@ -9,6 +9,7 @@
 import time
 import json
 
+
 class FUNCintentRest:
 
     def __init__( self ):
@@ -28,7 +29,6 @@ class FUNCintentRest:
             - Install ONOS package
             - Build ONOS package
         """
-
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
         main.caseExplanation = "This test case is mainly for loading " +\
@@ -63,7 +63,7 @@ class FUNCintentRest:
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
-            main.cellData = {} # for creating cell file
+            main.cellData = {}  # for creating cell file
             main.hostsData = {}
             main.RESTs = []
             main.CLIs = []
@@ -71,14 +71,14 @@ class FUNCintentRest:
             main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
             main.scapyHosts = []  # List of scapy hosts for iterating
             main.assertReturnString = ''  # Assembled assert return string
-            main.cycle = 0 # How many times FUNCintent has run through its tests
+            main.cycle = 0  # How many times FUNCintent has run through its tests
 
             main.ONOSip = main.ONOSbench.getOnosIps()
             print main.ONOSip
 
             # Assigning ONOS cli handles to a list
             try:
-                for i in range( 1,  main.maxNodes + 1 ):
+                for i in range( 1, main.maxNodes + 1 ):
                     main.RESTs.append( getattr( main, 'ONOSrest' + str( i ) ) )
                     main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
             except AttributeError:
@@ -96,9 +96,9 @@ class FUNCintentRest:
                                             ".py" )
 
             main.intentFunction = imp.load_source( wrapperFile2,
-                                            main.dependencyPath +
-                                            wrapperFile2 +
-                                            ".py" )
+                                                   main.dependencyPath +
+                                                   wrapperFile2 +
+                                                   ".py" )
 
             main.topo = imp.load_source( wrapperFile3,
                                          main.dependencyPath +
@@ -153,7 +153,6 @@ class FUNCintentRest:
         - Install ONOS cluster
         - Connect to cli
         """
-
         main.cycle += 1
 
         # main.scale[ 0 ] determines the current number of ONOS controller
@@ -165,8 +164,6 @@ class FUNCintentRest:
                    " node(s) ONOS cluster" )
         main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) +\
                                 " node(s) ONOS cluster"
-
-
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
@@ -194,7 +191,7 @@ class FUNCintentRest:
 
         tempOnosIp = []
         for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[i] )
+            tempOnosIp.append( main.ONOSip[ i ] )
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp", main.Mininet1.ip_address,
@@ -206,7 +203,7 @@ class FUNCintentRest:
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
+                                 onpass="Successfully applied cell to " +
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
 
@@ -233,7 +230,7 @@ class FUNCintentRest:
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -385,7 +382,7 @@ class FUNCintentRest:
         main.step( "Comparing Mininet topology to ONOS topology" )
 
         while ( attempts >= 0 ) and\
-            ( not devicesResults or not linksResults or not hostsResults ):
+                ( not devicesResults or not linksResults or not hostsResults ):
             time.sleep( 2 )
             if not devicesResults:
                 devices = main.topo.getAllDevices( main )
@@ -406,19 +403,19 @@ class FUNCintentRest:
                 controllerStr = str( controller + 1 )  # ONOS node number
                 # Compare Devices
                 if devices[ controller ] and ports[ controller ] and\
-                    "Error" not in devices[ controller ] and\
-                    "Error" not in ports[ controller ]:
+                        "Error" not in devices[ controller ] and\
+                        "Error" not in ports[ controller ]:
 
                     try:
                         deviceData = json.loads( devices[ controller ] )
                         portData = json.loads( ports[ controller ] )
-                    except (TypeError,ValueError):
+                    except ( TypeError, ValueError ):
                         main.log.error( "Could not load json: {0} or {1}".format( str( devices[ controller ] ),
                                                                                   str( ports[ controller ] ) ) )
                         currentDevicesResult = main.FALSE
                     else:
                         currentDevicesResult = main.Mininet1.compareSwitches(
-                            mnSwitches,deviceData,portData )
+                            mnSwitches, deviceData, portData )
                 else:
                     currentDevicesResult = main.FALSE
                 if not currentDevicesResult:
@@ -428,12 +425,12 @@ class FUNCintentRest:
                 if links[ controller ] and "Error" not in links[ controller ]:
                     try:
                         linkData = json.loads( links[ controller ] )
-                    except (TypeError,ValueError):
-                        main.log.error("Could not load json:" + str( links[ controller ] ) )
+                    except ( TypeError, ValueError ):
+                        main.log.error( "Could not load json:" + str( links[ controller ] ) )
                         currentLinksResult = main.FALSE
                     else:
                         currentLinksResult = main.Mininet1.compareLinks(
-                            mnSwitches, mnLinks,linkData )
+                            mnSwitches, mnLinks, linkData )
                 else:
                     currentLinksResult = main.FALSE
                 if not currentLinksResult:
@@ -443,12 +440,12 @@ class FUNCintentRest:
                 if hosts[ controller ] and "Error" not in hosts[ controller ]:
                     try:
                         hostData = json.loads( hosts[ controller ] )
-                    except (TypeError,ValueError):
-                        main.log.error("Could not load json:" + str( hosts[ controller ] ) )
+                    except ( TypeError, ValueError ):
+                        main.log.error( "Could not load json:" + str( hosts[ controller ] ) )
                         currentHostsResult = main.FALSE
                     else:
                         currentHostsResult = main.Mininet1.compareHosts(
-                                mnHosts,hostData )
+                                mnHosts, hostData )
                 else:
                     currentHostsResult = main.FALSE
                 if not currentHostsResult:
@@ -456,7 +453,6 @@ class FUNCintentRest:
                 hostsResults = hostsResults and currentHostsResult
             # Decrement Attempts Remaining
             attempts -= 1
-
 
         utilities.assert_equals( expect=[],
                                  actual=deviceFails,
@@ -480,14 +476,14 @@ class FUNCintentRest:
                                  onfail="ONOS incorrectly discovered the topology" )
 
     def CASE9( self, main ):
-        '''
+        """
             Report errors/warnings/exceptions
-        '''
+        """
         main.log.info( "Error report: \n" )
         main.ONOSbench.logReport( globalONOSip[ 0 ],
-                [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR" , "Except" ],
-                "s" )
-        #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
+                                  [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR", "Except" ],
+                                  "s" )
+        #main.ONOSbench.logReport( globalONOSip[ 1 ], [ "INFO" ], "d" )
 
     def CASE10( self, main ):
         """
@@ -595,7 +591,7 @@ class FUNCintentRest:
         if not stepResult:
             main.initialized = main.FALSE
 
-    def CASE13( self,main ):
+    def CASE13( self, main ):
         """
             Create Scapy components
         """
@@ -618,7 +614,6 @@ class FUNCintentRest:
             main.log.debug( host.name )
             main.log.debug( host.hostIp )
             main.log.debug( host.hostMac )
-
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=scapyResult,
@@ -738,7 +733,7 @@ class FUNCintentRest:
                                             propName="useFlowObjectives", value="true" )
         stepResult &= main.CLIs[ 0 ].setCfg( component=cmd,
                                              propName="defaultFlowObjectiveCompiler",
-                                             value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
+                                             value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -775,14 +770,14 @@ class FUNCintentRest:
                                  onfail="Failed to stop mininet and scapy" )
 
         main.step( "Stopping Mininet Topology" )
-        mininetResult = main.Mininet1.stopNet( )
+        mininetResult = main.Mininet1.stopNet()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully stop mininet",
                                  onfail="Failed to stop mininet" )
         # Exit if topology did not load properly
-        if not (mininetResult and scapyResult ):
+        if not ( mininetResult and scapyResult ):
             main.cleanup()
             main.exit()
 
@@ -802,15 +797,15 @@ class FUNCintentRest:
             main.node = main.CLIs[ i ]
             ip = main.ONOSip[ i ]
             main.node.ip_address = ip
-            scpResult = scpResult and main.ONOSbench.scp( main.node ,
-                                            "/opt/onos/log/karaf.log",
-                                            "/tmp/karaf.log",
-                                            direction="from" )
+            scpResult = scpResult and main.ONOSbench.scp( main.node,
+                                                          "/opt/onos/log/karaf.log",
+                                                          "/tmp/karaf.log",
+                                                          direction="from" )
             copyResult = copyResult and main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
                                                                     copyFileName=( "karaf.log.node{0}.cycle{1}".format(
                                                                         str( i + 1 ), str( main.cycle ) ) ) )
             if scpResult and copyResult:
-                stepResult =  main.TRUE and stepResult
+                stepResult = main.TRUE and stepResult
             else:
                 stepResult = main.FALSE and stepResult
         utilities.assert_equals( expect=main.TRUE,
@@ -861,7 +856,7 @@ class FUNCintentRest:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in "+\
+            main.log.error( "Place the total number of switch topology in " +
                              main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
@@ -881,25 +876,25 @@ class FUNCintentRest:
 
         main.step( "IPV4: Add and test host intents between h1 and h9" )
         main.assertReturnString = "Assertion result for IPV4 host intent with mac addresses\n"
-        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
-        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+        host1 = { "name": "h1", "id": "00:00:00:00:00:01/-1" }
+        host2 = { "name": "h9", "id": "00:00:00:00:00:09/-1" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='IPV4',
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2 )
+                                                               name='IPV4',
+                                                               onosNode='0',
+                                                               host1=host1,
+                                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='IPV4',
-                                              intentId = installResult,
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                                             name='IPV4',
+                                                             intentId=installResult,
+                                                             onosNode='0',
+                                                             host1=host1,
+                                                             host2=host2,
+                                                             sw1='s5',
+                                                             sw2='s2',
+                                                             expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -908,25 +903,25 @@ class FUNCintentRest:
 
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
         main.assertReturnString = "Assertion Result for dualstack IPV4 with MAC addresses\n"
-        host1 = { "name":"h3", "id":"00:00:00:00:00:03/-1" }
-        host2 = { "name":"h11","id":"00:00:00:00:00:0B/-1" }
+        host1 = { "name": "h3", "id": "00:00:00:00:00:03/-1" }
+        host2 = { "name": "h11", "id": "00:00:00:00:00:0B/-1" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='DUALSTACK1',
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2 )
+                                                               name='DUALSTACK1',
+                                                               onosNode='0',
+                                                               host1=host1,
+                                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='DUALSTACK1',
-                                              intentId = installResult,
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                                             name='DUALSTACK1',
+                                                             intentId=installResult,
+                                                             onosNode='0',
+                                                             host1=host1,
+                                                             host2=host2,
+                                                             sw1='s5',
+                                                             sw2='s2',
+                                                             expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -935,25 +930,25 @@ class FUNCintentRest:
 
         main.step( "DUALSTACK2: Add host intents between h1 and h11" )
         main.assertReturnString = "Assertion Result for dualstack2 host intent\n"
-        host1 = { "name":"h1" }
-        host2 = { "name":"h11" }
+        host1 = { "name": "h1" }
+        host2 = { "name": "h11" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='DUALSTACK2',
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2 )
+                                                               name='DUALSTACK2',
+                                                               onosNode='0',
+                                                               host1=host1,
+                                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='DUALSTACK2',
-                                              intentId = installResult,
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                                             name='DUALSTACK2',
+                                                             intentId=installResult,
+                                                             onosNode='0',
+                                                             host1=host1,
+                                                             host2=host2,
+                                                             sw1='s5',
+                                                             sw2='s2',
+                                                             expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -962,25 +957,25 @@ class FUNCintentRest:
 
         main.step( "1HOP: Add host intents between h1 and h3" )
         main.assertReturnString = "Assertion Result for 1HOP for IPV4 same switch\n"
-        host1 = { "name":"h1" }
-        host2 = { "name":"h3" }
+        host1 = { "name": "h1" }
+        host2 = { "name": "h3" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='1HOP',
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2 )
+                                                               name='1HOP',
+                                                               onosNode='0',
+                                                               host1=host1,
+                                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='1HOP',
-                                              intentId = installResult,
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                                             name='1HOP',
+                                                             intentId=installResult,
+                                                             onosNode='0',
+                                                             host1=host1,
+                                                             host2=host2,
+                                                             sw1='s5',
+                                                             sw2='s2',
+                                                             expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -989,25 +984,25 @@ class FUNCintentRest:
 
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
         main.assertReturnString = "Assertion Result vlan IPV4\n"
-        host1 = { "name":"h4","id":"00:00:00:00:00:04/100", "vlanId":"100" }
-        host2 = { "name":"h12","id":"00:00:00:00:00:0C/100", "vlanId":"100" }
+        host1 = { "name": "h4", "id": "00:00:00:00:00:04/100", "vlanId": "100" }
+        host2 = { "name": "h12", "id": "00:00:00:00:00:0C/100", "vlanId": "100" }
         testResult = main.FALSE
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='VLAN1',
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2 )
+                                                               name='VLAN1',
+                                                               onosNode='0',
+                                                               host1=host1,
+                                                               host2=host2 )
 
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                              name='VLAN1',
-                                              intentId = installResult,
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2,
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                                             name='VLAN1',
+                                                             intentId=installResult,
+                                                             onosNode='0',
+                                                             host1=host1,
+                                                             host2=host2,
+                                                             sw1='s5',
+                                                             sw2='s2',
+                                                             expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1029,7 +1024,7 @@ class FUNCintentRest:
         # if installResult:
         #     testResult = main.intentFunction.testHostIntent( main,
         #                                       name='VLAN2',
-        #                                       intentId = installResult,
+        #                                       intentId=installResult,
         #                                       onosNode='0',
         #                                       host1=host1,
         #                                       host2=host2,
@@ -1053,7 +1048,7 @@ class FUNCintentRest:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
                                  onpass="ONOS Leaders Unchanged",
-                                 onfail="ONOS Leader Mismatch")
+                                 onfail="ONOS Leader Mismatch" )
 
         main.intentFunction.report( main )
 
@@ -1097,13 +1092,13 @@ class FUNCintentRest:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in "+\
+            main.log.error( "Place the total number of switch topology in " +
                              main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
 
         main.case( "Point Intents Test - " + str( main.numCtrls ) +
-                  " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
+                   " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test point to point" + \
                                " intents using " + str( main.numCtrls ) + \
                                " node(s) cluster;\n" + \
@@ -1191,7 +1186,7 @@ class FUNCintentRest:
         #     senders=senders,
         #     recipients=recipients,
         #     protected=True )
-        # 
+        #
         # if installResult:
         #     testResult = main.intentFunction.testPointIntent(
         #         main,
@@ -1250,11 +1245,11 @@ class FUNCintentRest:
             { "name": "h9", "device": "of:0000000000000006/1", "mac": "00:00:00:00:00:09",
               "ip": ( main.h9.hostIp + "/24" ) }
         ]
-        # ipProto = main.params['SDNIP']['icmpProto']
+        # ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
         ipProto = main.params[ 'SDNIP' ][ 'ipPrototype' ]
         # Uneccessary, not including this in the selectors
-        tcpSrc = main.params['SDNIP']['srcPort']
-        tcpDst = main.params['SDNIP']['dstPort']
+        tcpSrc = main.params[ 'SDNIP' ][ 'srcPort' ]
+        tcpDst = main.params[ 'SDNIP' ][ 'dstPort' ]
 
         installResult = main.intentFunction.installPointIntent(
             main,
@@ -1285,13 +1280,13 @@ class FUNCintentRest:
 
         main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for SDNIP-TCP IPV4 using ICMP point intents\n"
-        mac1 = main.hostsData['h1']['mac']
-        mac2 = main.hostsData['h9']['mac']
-        ip1 = str(main.hostsData['h1']['ipAddresses'][0]) + "/32"
-        ip2 = str(main.hostsData['h9']['ipAddresses'][0]) + "/32"
-        ipProto = main.params['SDNIP']['tcpProto']
-        tcp1 = main.params['SDNIP']['srcPort']
-        tcp2 = main.params['SDNIP']['dstPort']
+        mac1 = main.hostsData[ 'h1' ][ 'mac' ]
+        mac2 = main.hostsData[ 'h9' ][ 'mac' ]
+        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/32"
+        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/32"
+        ipProto = main.params[ 'SDNIP' ][ 'tcpProto' ]
+        tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
+        tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
 
         stepResult = main.intentFunction.pointIntentTcp(
             main,
@@ -1410,7 +1405,6 @@ class FUNCintentRest:
 
         main.intentFunction.report( main )
 
-
     def CASE3000( self, main ):
         """
             Add single point to multi point intents
@@ -1445,7 +1439,7 @@ class FUNCintentRest:
 
         main.testName = "Single to Multi Point Intents"
         main.case( main.testName + " Test - " + str( main.numCtrls ) +
-                  " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
+                   " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test single point to" + \
                                " multi point intents using " + \
                                str( main.numCtrls ) + " node(s) cluster;\n" + \
@@ -1493,24 +1487,24 @@ class FUNCintentRest:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        main.step("IPV4: Install and test single point to multi point intents")
+        main.step( "IPV4: Install and test single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent " \
                                   "with IPV4 type and MAC addresses\n"
         senders = [
-            {"name": "h8", "device": "of:0000000000000005/8", "mac": "00:00:00:00:00:08"}
+            { "name": "h8", "device": "of:0000000000000005/8", "mac": "00:00:00:00:00:08" }
         ]
         recipients = [
-            {"name": "h16", "device": "of:0000000000000006/8", "mac": "00:00:00:00:00:10"},
-            {"name": "h24", "device": "of:0000000000000007/8", "mac": "00:00:00:00:00:18"}
+            { "name": "h16", "device": "of:0000000000000006/8", "mac": "00:00:00:00:00:10" },
+            { "name": "h24", "device": "of:0000000000000007/8", "mac": "00:00:00:00:00:18" }
         ]
-        badSenders = [{"name": "h9"}]  # Senders that are not in the intent
-        badRecipients = [{"name": "h17"}]  # Recipients that are not in the intent
+        badSenders = [ { "name": "h9" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h17" } ]  # Recipients that are not in the intent
         installResult = main.intentFunction.installSingleToMultiIntent(
             main,
             name="IPV4",
             senders=senders,
             recipients=recipients,
-            ethType="IPV4")
+            ethType="IPV4" )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1630,7 +1624,7 @@ class FUNCintentRest:
             recipients=recipients,
             sw1="s5",
             sw2="s2" )
-            #setVlan=100 )
+        #setVlan=100 )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(
@@ -1693,7 +1687,7 @@ class FUNCintentRest:
         main.step( "NOOPTION: Add multi point to single point intents" )
         stepResult = main.TRUE
         hostNames = [ 'h8', 'h16', 'h24' ]
-        devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
+        devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8',
                     'of:0000000000000007/8' ]
         macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
         stepResult = main.intentFunction.multiToSingleIntent(
@@ -1764,7 +1758,7 @@ class FUNCintentRest:
         main.step( "VLAN: Add multi point to single point intents" )
         stepResult = main.TRUE
         hostNames = [ 'h5', 'h13', 'h21' ]
-        devices = [ 'of:0000000000000005/5', 'of:0000000000000006/5', \
+        devices = [ 'of:0000000000000005/5', 'of:0000000000000006/5',
                     'of:0000000000000007/5' ]
         macs = [ '00:00:00:00:00:05', '00:00:00:00:00:0D', '00:00:00:00:00:15' ]
         stepResult = main.intentFunction.multiToSingleIntent(
@@ -1819,7 +1813,7 @@ class FUNCintentRest:
         try:
             assert main.numSwitch
         except AssertionError:
-            main.log.error( "Place the total number of switch topology in " +\
+            main.log.error( "Place the total number of switch topology in " +
                              main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
@@ -1853,24 +1847,24 @@ class FUNCintentRest:
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         main.assertReturnString = "Assert result for IPV4 host intent between h1, moved, and h9\n"
-        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
-        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+        host1 = { "name": "h1", "id": "00:00:00:00:00:01/-1" }
+        host2 = { "name": "h9", "id": "00:00:00:00:00:09/-1" }
 
         installResult = main.intentFunction.installHostIntent( main,
-                                              name='IPV4 Mobility IPV4',
-                                              onosNode='0',
-                                              host1=host1,
-                                              host2=host2 )
+                                                               name='IPV4 Mobility IPV4',
+                                                               onosNode='0',
+                                                               host1=host1,
+                                                               host2=host2 )
         if installResult:
             testResult = main.intentFunction.testHostIntent( main,
-                                                  name='Host Mobility IPV4',
-                                                  intentId = installResult,
-                                                  onosNode='0',
-                                                  host1=host1,
-                                                  host2=host2,
-                                                  sw1="s6",
-                                                  sw2="s2",
-                                                  expectedLink=18 )
+                                                             name='Host Mobility IPV4',
+                                                             intentId=installResult,
+                                                             onosNode='0',
+                                                             host1=host1,
+                                                             host2=host2,
+                                                             sw1="s6",
+                                                             sw2="s2",
+                                                             expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,

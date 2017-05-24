@@ -22,8 +22,6 @@ CASE15: Check that Leadership Election is still functional
 CASE16: Install Distributed Primitives app
 CASE17: Check for basic functionality with distributed primitives
 """
-
-
 class HAsingleInstanceRestart:
 
     def __init__( self ):
@@ -124,7 +122,7 @@ class HAsingleInstanceRestart:
                             filePath + topoName,
                             main.Mininet1.home,
                             direction="to" )
-        mnResult = main.Mininet1.startNet( )
+        mnResult = main.Mininet1.startNet()
         utilities.assert_equals( expect=main.TRUE, actual=mnResult,
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
@@ -167,7 +165,7 @@ class HAsingleInstanceRestart:
                   'seamless="seamless"></iframe>\n'
         graphs += ']]></ac:plain-text-body>\n'
         graphs += '</ac:structured-macro>\n'
-        main.log.wiki(graphs)
+        main.log.wiki( graphs )
 
         main.CLIs = []
         main.nodes = []
@@ -224,9 +222,9 @@ class HAsingleInstanceRestart:
         cliResults = main.TRUE
         threads = []
         for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[i].startOnosCli,
+            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
                              name="startOnosCli-" + str( i ),
-                             args=[main.nodes[i].ip_address] )
+                             args=[ main.nodes[ i ].ip_address ] )
             threads.append( t )
             t.start()
 
@@ -251,7 +249,7 @@ class HAsingleInstanceRestart:
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.HA.nodesCheck,
                                        False,
-                                       args=[main.activeNodes],
+                                       args=[ main.activeNodes ],
                                        attempts=5 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,
@@ -260,7 +258,7 @@ class HAsingleInstanceRestart:
 
         if not nodeResults:
             for i in main.activeNodes:
-                cli = main.CLIs[i]
+                cli = main.CLIs[ i ]
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     cli.name,
                     cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
@@ -272,7 +270,7 @@ class HAsingleInstanceRestart:
         # get data from the params
         apps = main.params.get( 'apps' )
         if apps:
-            apps = apps.split(',')
+            apps = apps.split( ',' )
             main.log.warn( apps )
             activateResult = True
             for app in apps:
@@ -299,8 +297,8 @@ class HAsingleInstanceRestart:
             main.log.debug( config )
             checkResult = main.TRUE
             for component in config:
-                for setting in config[component]:
-                    value = config[component][setting]
+                for setting in config[ component ]:
+                    value = config[ component ][ setting ]
                     check = main.CLIs[ 0 ].setCfg( component, setting, value )
                     main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
                     checkResult = check and checkResult
@@ -315,7 +313,7 @@ class HAsingleInstanceRestart:
         appCheck = main.TRUE
         threads = []
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].appToIDCheck,
+            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -325,9 +323,9 @@ class HAsingleInstanceRestart:
             t.join()
             appCheck = appCheck and t.result
         if appCheck != main.TRUE:
-            node = main.activeNodes[0]
-            main.log.warn( main.CLIs[node].apps() )
-            main.log.warn( main.CLIs[node].appIDs() )
+            node = main.activeNodes[ 0 ]
+            main.log.warn( main.CLIs[ node ].apps() )
+            main.log.warn( main.CLIs[ node ].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -395,9 +393,9 @@ class HAsingleInstanceRestart:
         # Manually assign mastership to the controller we want
         roleCall = main.TRUE
 
-        ipList = [ ]
+        ipList = []
         deviceList = []
-        onosCli = main.CLIs[ main.activeNodes[0] ]
+        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
         try:
             # Assign mastership to specific controllers. This assignment was
             # determined for a 7 node cluser, but will work with any sized
@@ -471,8 +469,8 @@ class HAsingleInstanceRestart:
         #       atomic and is actually a multi step process
         time.sleep( 5 )
         for i in range( len( ipList ) ):
-            ip = ipList[i]
-            deviceId = deviceList[i]
+            ip = ipList[ i ]
+            deviceId = deviceList[ i ]
             # Check assignment
             master = onosCli.getRole( deviceId ).get( 'master' )
             if ip in master:
@@ -510,7 +508,7 @@ class HAsingleInstanceRestart:
 
         # install onos-app-fwd
         main.step( "Install reactive forwarding app" )
-        onosCli = main.CLIs[ main.activeNodes[0] ]
+        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
         installResults = onosCli.activateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install fwd successful",
@@ -520,7 +518,7 @@ class HAsingleInstanceRestart:
         appCheck = main.TRUE
         threads = []
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].appToIDCheck,
+            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -545,13 +543,13 @@ class HAsingleInstanceRestart:
         pingResult = main.Mininet1.pingall()
         time2 = time.time()
         if not pingResult:
-            main.log.warn("First pingall failed. Trying again...")
+            main.log.warn( "First pingall failed. Trying again..." )
             pingResult = main.Mininet1.pingall()
             passMsg += " on the second try"
         utilities.assert_equals(
             expect=main.TRUE,
             actual=pingResult,
-            onpass= passMsg,
+            onpass=passMsg,
             onfail="Reactive Pingall failed, " +
                    "one or more ping pairs failed" )
         main.log.info( "Time for pingall: %2f seconds" %
@@ -560,8 +558,8 @@ class HAsingleInstanceRestart:
         time.sleep( 11 )
         # uninstall onos-app-fwd
         main.step( "Uninstall reactive forwarding app" )
-        node = main.activeNodes[0]
-        uninstallResult = main.CLIs[node].deactivateApp( "org.onosproject.fwd" )
+        node = main.activeNodes[ 0 ]
+        uninstallResult = main.CLIs[ node ].deactivateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=uninstallResult,
                                  onpass="Uninstall fwd successful",
                                  onfail="Uninstall fwd failed" )
@@ -570,7 +568,7 @@ class HAsingleInstanceRestart:
         threads = []
         appCheck2 = main.TRUE
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].appToIDCheck,
+            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -580,9 +578,9 @@ class HAsingleInstanceRestart:
             t.join()
             appCheck2 = appCheck2 and t.result
         if appCheck2 != main.TRUE:
-            node = main.activeNodes[0]
-            main.log.warn( main.CLIs[node].apps() )
-            main.log.warn( main.CLIs[node].appIDs() )
+            node = main.activeNodes[ 0 ]
+            main.log.warn( main.CLIs[ node ].apps() )
+            main.log.warn( main.CLIs[ node ].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck2,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -610,8 +608,8 @@ class HAsingleInstanceRestart:
                 host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
                 nodeNum = ( i % len( main.activeNodes ) )
-                node = main.activeNodes[nodeNum]
-                tmpId = main.CLIs[node].addHostIntent( host1Id, host2Id )
+                node = main.activeNodes[ nodeNum ]
+                tmpId = main.CLIs[ node ].addHostIntent( host1Id, host2Id )
                 if tmpId:
                     main.log.info( "Added intent with id: " + tmpId )
                     intentIds.append( tmpId )
@@ -621,8 +619,8 @@ class HAsingleInstanceRestart:
             else:
                 main.log.error( "Error, getHost() failed for h" + str( i ) +
                                 " and/or h" + str( i + 10 ) )
-                node = main.activeNodes[0]
-                hosts = main.CLIs[node].hosts()
+                node = main.activeNodes[ 0 ]
+                hosts = main.CLIs[ node ].hosts()
                 main.log.warn( "Hosts output: " )
                 try:
                     main.log.warn( json.dumps( json.loads( hosts ),
@@ -690,7 +688,7 @@ class HAsingleInstanceRestart:
                 for i in range( 14 ):
                     topics.append( "work-partition-" + str( i ) )
                 main.log.debug( topics )
-                ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
                 for topic in topics:
                     if topic not in ONOStopics:
                         main.log.error( "Error: " + topic +
@@ -704,13 +702,13 @@ class HAsingleInstanceRestart:
         # Check all nodes
         if missing:
             for i in main.activeNodes:
-                response = main.CLIs[i].leaders( jsonFormat=False)
-                main.log.warn( str( main.CLIs[i].name ) + " leaders output: \n" +
+                response = main.CLIs[ i ].leaders( jsonFormat=False )
+                main.log.warn( str( main.CLIs[ i ].name ) + " leaders output: \n" +
                                str( response ) )
 
         partitions = onosCli.partitions()
         try:
-            if partitions :
+            if partitions:
                 parsedPartitions = json.loads( partitions )
                 main.log.warn( json.dumps( parsedPartitions,
                                            sort_keys=True,
@@ -725,7 +723,7 @@ class HAsingleInstanceRestart:
             main.log.error( repr( partitions ) )
         pendingMap = onosCli.pendingMap()
         try:
-            if pendingMap :
+            if pendingMap:
                 parsedPending = json.loads( pendingMap )
                 main.log.warn( json.dumps( parsedPending,
                                            sort_keys=True,
@@ -744,21 +742,21 @@ class HAsingleInstanceRestart:
             main.log.error( "Error in pushing host intents to ONOS" )
 
         main.step( "Intent Anti-Entropy dispersion" )
-        for j in range(100):
+        for j in range( 100 ):
             correct = True
             main.log.info( "Submitted intents: " + str( sorted( intentIds ) ) )
             for i in main.activeNodes:
                 onosIds = []
-                ids = main.CLIs[i].getAllIntentsId()
+                ids = main.CLIs[ i ].getAllIntentsId()
                 onosIds.append( ids )
-                main.log.debug( "Intents in " + main.CLIs[i].name + ": " +
+                main.log.debug( "Intents in " + main.CLIs[ i ].name + ": " +
                                 str( sorted( onosIds ) ) )
                 if sorted( ids ) != sorted( intentIds ):
                     main.log.warn( "Set of intent IDs doesn't match" )
                     correct = False
                     break
                 else:
-                    intents = json.loads( main.CLIs[i].intents() )
+                    intents = json.loads( main.CLIs[ i ].intents() )
                     for intent in intents:
                         if intent[ 'state' ] != "INSTALLED":
                             main.log.warn( "Intent " + intent[ 'id' ] +
@@ -768,14 +766,14 @@ class HAsingleInstanceRestart:
             if correct:
                 break
             else:
-                time.sleep(1)
+                time.sleep( 1 )
         if not intentStop:
             intentStop = time.time()
         global gossipTime
         gossipTime = intentStop - intentStart
         main.log.info( "It took about " + str( gossipTime ) +
                         " seconds for all intents to appear in each node" )
-        gossipPeriod = int( main.params['timers']['gossip'] )
+        gossipPeriod = int( main.params[ 'timers' ][ 'gossip' ] )
         maxGossipTime = gossipPeriod * len( main.activeNodes )
         utilities.assert_greater_equals(
                 expect=maxGossipTime, actual=gossipTime,
@@ -837,7 +835,7 @@ class HAsingleInstanceRestart:
                     # FIXME: this should only be after we start the app
                     topics.append( "org.onosproject.election" )
                     main.log.debug( topics )
-                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                    ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
                     for topic in topics:
                         if topic not in ONOStopics:
                             main.log.error( "Error: " + topic +
@@ -851,14 +849,14 @@ class HAsingleInstanceRestart:
             # Check all nodes
             if missing:
                 for i in main.activeNodes:
-                    node = main.CLIs[i]
-                    response = node.leaders( jsonFormat=False)
+                    node = main.CLIs[ i ]
+                    response = node.leaders( jsonFormat=False )
                     main.log.warn( str( node.name ) + " leaders output: \n" +
                                    str( response ) )
 
             partitions = onosCli.partitions()
             try:
-                if partitions :
+                if partitions:
                     parsedPartitions = json.loads( partitions )
                     main.log.warn( json.dumps( parsedPartitions,
                                                sort_keys=True,
@@ -873,7 +871,7 @@ class HAsingleInstanceRestart:
                 main.log.error( repr( partitions ) )
             pendingMap = onosCli.pendingMap()
             try:
-                if pendingMap :
+                if pendingMap:
                     parsedPending = json.loads( pendingMap )
                     main.log.warn( json.dumps( parsedPending,
                                                sort_keys=True,
@@ -900,7 +898,7 @@ class HAsingleInstanceRestart:
                                 "functionality and check the state of " +\
                                 "the intent"
 
-        onosCli = main.CLIs[ main.activeNodes[0] ]
+        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
         main.step( "Check Intent state" )
         installedCheck = True
         # Print the intent states
@@ -980,7 +978,7 @@ class HAsingleInstanceRestart:
                 # FIXME: topics.append( "org.onosproject.election" )
                 # Print leaders output
                 main.log.debug( topics )
-                ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
                 for topic in topics:
                     if topic not in ONOStopics:
                         main.log.error( "Error: " + topic +
@@ -997,8 +995,8 @@ class HAsingleInstanceRestart:
         # Check all nodes
         if topicCheck:
             for i in main.activeNodes:
-                node = main.CLIs[i]
-                response = node.leaders( jsonFormat=False)
+                node = main.CLIs[ i ]
+                response = node.leaders( jsonFormat=False )
                 main.log.warn( str( node.name ) + " leaders output: \n" +
                                str( response ) )
 
@@ -1008,7 +1006,7 @@ class HAsingleInstanceRestart:
         # Print partitions
         partitions = onosCli.partitions()
         try:
-            if partitions :
+            if partitions:
                 parsedPartitions = json.loads( partitions )
                 main.log.warn( json.dumps( parsedPartitions,
                                            sort_keys=True,
@@ -1024,7 +1022,7 @@ class HAsingleInstanceRestart:
         # Print Pending Map
         pendingMap = onosCli.pendingMap()
         try:
-            if pendingMap :
+            if pendingMap:
                 parsedPending = json.loads( pendingMap )
                 main.log.warn( json.dumps( parsedPending,
                                            sort_keys=True,
@@ -1078,7 +1076,7 @@ class HAsingleInstanceRestart:
                     # FIXME: this should only be after we start the app
                     topics.append( "org.onosproject.election" )
                     main.log.debug( topics )
-                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                    ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
                     for topic in topics:
                         if topic not in ONOStopics:
                             main.log.error( "Error: " + topic +
@@ -1091,14 +1089,14 @@ class HAsingleInstanceRestart:
                 main.log.error( repr( leaders ) )
             if missing:
                 for i in main.activeNodes:
-                    node = main.CLIs[i]
-                    response = node.leaders( jsonFormat=False)
+                    node = main.CLIs[ i ]
+                    response = node.leaders( jsonFormat=False )
                     main.log.warn( str( node.name ) + " leaders output: \n" +
                                    str( response ) )
 
             partitions = onosCli.partitions()
             try:
-                if partitions :
+                if partitions:
                     parsedPartitions = json.loads( partitions )
                     main.log.warn( json.dumps( parsedPartitions,
                                                sort_keys=True,
@@ -1113,7 +1111,7 @@ class HAsingleInstanceRestart:
                 main.log.error( repr( partitions ) )
             pendingMap = onosCli.pendingMap()
             try:
-                if pendingMap :
+                if pendingMap:
                     parsedPending = json.loads( pendingMap )
                     main.log.warn( json.dumps( parsedPending,
                                                sort_keys=True,
@@ -1126,8 +1124,8 @@ class HAsingleInstanceRestart:
                 main.log.exception( "Error parsing pending map" )
                 main.log.error( repr( pendingMap ) )
         # Print flowrules
-        node = main.activeNodes[0]
-        main.log.debug( main.CLIs[node].flows( jsonFormat=False ) )
+        node = main.activeNodes[ 0 ]
+        main.log.debug( main.CLIs[ node ].flows( jsonFormat=False ) )
         main.step( "Wait a minute then ping again" )
         # the wait is above
         PingResult = main.TRUE
@@ -1182,7 +1180,7 @@ class HAsingleInstanceRestart:
         rolesNotNull = main.TRUE
         threads = []
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].rolesNotNull,
+            t = main.Thread( target=main.CLIs[ i ].rolesNotNull,
                              name="rolesNotNull-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -1259,10 +1257,10 @@ class HAsingleInstanceRestart:
         main.step( "Each host has an IP address" )
         ipResult = main.TRUE
         for controller in range( 0, len( hosts ) ):
-            controllerStr = str( main.activeNodes[controller] + 1 )
+            controllerStr = str( main.activeNodes[ controller ] + 1 )
             if hosts[ controller ]:
                 for host in hosts[ controller ]:
-                    if not host.get( 'ipAddresses', [ ] ):
+                    if not host.get( 'ipAddresses', [] ):
                         main.log.error( "Error with host ips on controller" +
                                         controllerStr + ": " + str( host ) )
                         ipResult = main.FALSE
@@ -1297,14 +1295,14 @@ class HAsingleInstanceRestart:
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
         for controller in main.activeNodes:
-            controllerStr = str( main.activeNodes[controller] + 1 )
+            controllerStr = str( main.activeNodes[ controller ] + 1 )
             if devices[ controller ] and ports[ controller ] and\
-                "Error" not in devices[ controller ] and\
-                "Error" not in ports[ controller ]:
-                    currentDevicesResult = main.Mininet1.compareSwitches(
-                            mnSwitches,
-                            json.loads( devices[ controller ] ),
-                            json.loads( ports[ controller ] ) )
+                    "Error" not in devices[ controller ] and\
+                    "Error" not in ports[ controller ]:
+                currentDevicesResult = main.Mininet1.compareSwitches(
+                        mnSwitches,
+                        json.loads( devices[ controller ] ),
+                        json.loads( ports[ controller ] ) )
             else:
                 currentDevicesResult = main.FALSE
             utilities.assert_equals( expect=main.TRUE,
@@ -1390,7 +1388,7 @@ class HAsingleInstanceRestart:
             main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
 
         main.step( "Killing ONOS processes" )
-        killResult = main.ONOSbench.onosKill( main.nodes[0].ip_address )
+        killResult = main.ONOSbench.onosKill( main.nodes[ 0 ].ip_address )
         start = time.time()
         utilities.assert_equals( expect=main.TRUE, actual=killResult,
                                  onpass="ONOS Killed",
@@ -1399,7 +1397,7 @@ class HAsingleInstanceRestart:
         main.step( "Checking if ONOS is up yet" )
         count = 0
         while count < 10:
-            onos1Isup = main.ONOSbench.isup( main.nodes[0].ip_address )
+            onos1Isup = main.ONOSbench.isup( main.nodes[ 0 ].ip_address )
             if onos1Isup == main.TRUE:
                 elapsed = time.time() - start
                 break
@@ -1410,7 +1408,7 @@ class HAsingleInstanceRestart:
                                  onfail="ONOS failed to start" )
 
         main.step( "Starting ONOS CLI sessions" )
-        cliResults = main.ONOScli1.startOnosCli( main.nodes[0].ip_address )
+        cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
@@ -1440,9 +1438,9 @@ class HAsingleInstanceRestart:
         rolesNotNull = main.TRUE
         threads = []
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].rolesNotNull,
+            t = main.Thread( target=main.CLIs[ i ].rolesNotNull,
                              name="rolesNotNull-" + str( i ),
-                             args=[ ] )
+                             args=[] )
             threads.append( t )
             t.start()
 
@@ -1520,7 +1518,7 @@ class HAsingleInstanceRestart:
             for intent in json.loads( node ):
                 nodeStates.append( intent[ 'state' ] )
             intentStates.append( nodeStates )
-            out = [ (i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
+            out = [ ( i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
             main.log.info( dict( out ) )
 
         # NOTE: Store has no durability, so intents are lost across system
@@ -1553,7 +1551,7 @@ class HAsingleInstanceRestart:
                             main.log.debug( json.dumps( intent ) )
                 except ( ValueError, TypeError ):
                     main.log.exception( "Exception printing intents" )
-                    main.log.debug( repr( ONOSIntents[0] ) )
+                    main.log.debug( repr( ONOSIntents[ 0 ] ) )
                     main.log.debug( repr( intentState ) )
             if sameIntents == main.FALSE:
                 try:
@@ -1567,7 +1565,7 @@ class HAsingleInstanceRestart:
                                                 separators=( ',', ': ' ) ) )
                 except ( ValueError, TypeError ):
                     main.log.exception( "Exception printing intents" )
-                    main.log.debug( repr( ONOSIntents[0] ) )
+                    main.log.debug( repr( ONOSIntents[ 0 ] ) )
                     main.log.debug( repr( intentState ) )
             utilities.assert_equals(
                 expect=main.TRUE,
@@ -1582,7 +1580,7 @@ class HAsingleInstanceRestart:
         for i in range( 28 ):
             main.log.info( "Checking flow table on s" + str( i + 1 ) )
             tmpFlows = main.Mininet1.getFlowTable( "s" + str( i + 1 ), version="1.3", debug=False )
-            curSwitch = main.Mininet1.flowTableComp( flows[i], tmpFlows )
+            curSwitch = main.Mininet1.flowTableComp( flows[ i ], tmpFlows )
             FlowTables = FlowTables and curSwitch
             if curSwitch == main.FALSE:
                 main.log.warn( "Differences in flow table for switch: s{}".format( i + 1 ) )
@@ -1681,8 +1679,8 @@ class HAsingleInstanceRestart:
             for controller in range( main.numCtrls ):
                 controllerStr = str( controller + 1 )
                 if devices[ controller ] and ports[ controller ] and\
-                    "Error" not in devices[ controller ] and\
-                    "Error" not in ports[ controller ]:
+                        "Error" not in devices[ controller ] and\
+                        "Error" not in ports[ controller ]:
 
                     try:
                         currentDevicesResult = main.Mininet1.compareSwitches(
@@ -1734,29 +1732,29 @@ class HAsingleInstanceRestart:
                 mappings = {}
                 for i in range( 1, 29 ):  # hosts 1 through 28
                     # set up correct variables:
-                    macId = "00:" * 5 + hex( i ).split( "0x" )[1].upper().zfill(2)
+                    macId = "00:" * 5 + hex( i ).split( "0x" )[ 1 ].upper().zfill( 2 )
                     if i == 1:
-                        deviceId = "1000".zfill(16)
+                        deviceId = "1000".zfill( 16 )
                     elif i == 2:
-                        deviceId = "2000".zfill(16)
+                        deviceId = "2000".zfill( 16 )
                     elif i == 3:
-                        deviceId = "3000".zfill(16)
+                        deviceId = "3000".zfill( 16 )
                     elif i == 4:
-                        deviceId = "3004".zfill(16)
+                        deviceId = "3004".zfill( 16 )
                     elif i == 5:
-                        deviceId = "5000".zfill(16)
+                        deviceId = "5000".zfill( 16 )
                     elif i == 6:
-                        deviceId = "6000".zfill(16)
+                        deviceId = "6000".zfill( 16 )
                     elif i == 7:
-                        deviceId = "6007".zfill(16)
+                        deviceId = "6007".zfill( 16 )
                     elif i >= 8 and i <= 17:
                         dpid = '3' + str( i ).zfill( 3 )
-                        deviceId = dpid.zfill(16)
+                        deviceId = dpid.zfill( 16 )
                     elif i >= 18 and i <= 27:
                         dpid = '6' + str( i ).zfill( 3 )
-                        deviceId = dpid.zfill(16)
+                        deviceId = dpid.zfill( 16 )
                     elif i == 28:
-                        deviceId = "2800".zfill(16)
+                        deviceId = "2800".zfill( 16 )
                     mappings[ macId ] = deviceId
                 if hosts[ controller ] or "Error" not in hosts[ controller ]:
                     if hosts[ controller ] == []:
@@ -1776,7 +1774,7 @@ class HAsingleInstanceRestart:
                                 assert location, "location field could not be found for this host object"
 
                                 # Trim the protocol identifier off deviceId
-                                device = str( location.get( 'elementId' ) ).split(':')[1]
+                                device = str( location.get( 'elementId' ) ).split( ':' )[ 1 ]
                                 assert device, "elementId field could not be found for this host location object"
 
                                 port = location.get( 'port' )
@@ -1787,7 +1785,7 @@ class HAsingleInstanceRestart:
                                     if str( port ) != "1":
                                         main.log.error( "The attachment port is incorrect for " +
                                                         "host " + str( mac ) +
-                                                        ". Expected: 1 Actual: " + str( port) )
+                                                        ". Expected: 1 Actual: " + str( port ) )
                                         hostAttachment = False
                                     if device != mappings[ str( mac ) ]:
                                         main.log.error( "The attachment device is incorrect for " +
@@ -1821,7 +1819,7 @@ class HAsingleInstanceRestart:
                 numClusters = len( json.loads( clusters[ 0 ] ) )
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing clusters[0]: " +
-                                    repr( clusters[0] ) )
+                                    repr( clusters[ 0 ] ) )
                 numClusters = "ERROR"
                 clusterResults = main.FALSE
             if numClusters == 1:
@@ -1850,7 +1848,7 @@ class HAsingleInstanceRestart:
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.HA.nodesCheck,
                                        False,
-                                       args=[main.activeNodes],
+                                       args=[ main.activeNodes ],
                                        attempts=5 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,
@@ -1859,8 +1857,8 @@ class HAsingleInstanceRestart:
         if not nodeResults:
             for i in main.activeNodes:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    main.CLIs[i].name,
-                    main.CLIs[i].sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    main.CLIs[ i ].name,
+                    main.CLIs[ i ].sendline( "scr:list | grep -v ACTIVE" ) ) )
 
         if not topoResult:
             main.cleanup()
@@ -1931,7 +1929,7 @@ class HAsingleInstanceRestart:
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
         description = "Killing a switch to ensure it is discovered correctly"
-        onosCli = main.CLIs[ main.activeNodes[0] ]
+        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
         main.case( description )
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
@@ -1967,7 +1965,7 @@ class HAsingleInstanceRestart:
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
         links = main.params[ 'kill' ][ 'links' ].split()
-        onosCli = main.CLIs[ main.activeNodes[0] ]
+        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
         description = "Adding a switch to ensure it is discovered correctly"
         main.case( description )
 
@@ -2051,14 +2049,14 @@ class HAsingleInstanceRestart:
             main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
 
         try:
-            timerLog = open( main.logdir + "/Timers.csv", 'w')
+            timerLog = open( main.logdir + "/Timers.csv", 'w' )
             # Overwrite with empty line and close
             labels = "Gossip Intents, Restart"
             data = str( gossipTime ) + ", " + str( main.restartTime )
             timerLog.write( labels + "\n" + data )
             timerLog.close()
-        except NameError, e:
-            main.log.exception(e)
+        except NameError as e:
+            main.log.exception( e )
 
     def CASE14( self, main ):
         """
@@ -2068,9 +2066,9 @@ class HAsingleInstanceRestart:
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
-        main.case("Start Leadership Election app")
+        main.case( "Start Leadership Election app" )
         main.step( "Install leadership election app" )
-        onosCli = main.CLIs[ main.activeNodes[0] ]
+        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
         appResult = onosCli.activateApp( "org.onosproject.election" )
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2080,9 +2078,9 @@ class HAsingleInstanceRestart:
 
         main.step( "Run for election on each node" )
         for i in main.activeNodes:
-            main.CLIs[i].electionTestRun()
-        time.sleep(5)
-        activeCLIs = [ main.CLIs[i] for i in main.activeNodes ]
+            main.CLIs[ i ].electionTestRun()
+        time.sleep( 5 )
+        activeCLIs = [ main.CLIs[ i ] for i in main.activeNodes ]
         sameResult, leaders = main.HA.consistentLeaderboards( activeCLIs )
         utilities.assert_equals(
             expect=True,
@@ -2092,7 +2090,7 @@ class HAsingleInstanceRestart:
 
         if sameResult:
             leader = leaders[ 0 ][ 0 ]
-            if main.nodes[main.activeNodes[0]].ip_address in leader:
+            if main.nodes[ main.activeNodes[ 0 ] ].ip_address in leader:
                 correctLeader = True
             else:
                 correctLeader = False
@@ -2142,7 +2140,7 @@ class HAsingleInstanceRestart:
         electionResult = main.TRUE
 
         for i in main.activeNodes:  # run test election on each node
-            if main.CLIs[i].electionTestRun() == main.FALSE:
+            if main.CLIs[ i ].electionTestRun() == main.FALSE:
                 electionResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2157,7 +2155,7 @@ class HAsingleInstanceRestart:
 
         main.step( "Check that each node shows the same leader and candidates" )
         failMessage = "Nodes have different leaderboards"
-        activeCLIs = [ main.CLIs[i] for i in main.activeNodes ]
+        activeCLIs = [ main.CLIs[ i ] for i in main.activeNodes ]
         sameResult, oldLeaders = main.HA.consistentLeaderboards( activeCLIs )
         if sameResult:
             oldLeader = oldLeaders[ 0 ][ 0 ]
@@ -2207,7 +2205,7 @@ class HAsingleInstanceRestart:
         if newLeader == oldLeader:
             newLeaderResult = False
             main.log.error( "All nodes still see old leader: " + str( oldLeader ) +
-                " as the current leader" )
+                            " as the current leader" )
         utilities.assert_equals(
             expect=True,
             actual=newLeaderResult,
@@ -2224,7 +2222,7 @@ class HAsingleInstanceRestart:
             else:
                 main.log.info( "Expected no leader, got: " + str( newLeader ) )
                 correctCandidateResult = main.FALSE
-        elif len( oldLeaders[0] ) >= 3:
+        elif len( oldLeaders[ 0 ] ) >= 3:
             if newLeader == oldLeaders[ 0 ][ 2 ]:
                 # correct leader was elected
                 correctCandidateResult = main.TRUE
@@ -2264,10 +2262,10 @@ class HAsingleInstanceRestart:
         positionResult, reRunLeaders = main.HA.consistentLeaderboards( activeCLIs )
 
         # Check that the re-elected node is last on the candidate List
-        if not reRunLeaders[0]:
+        if not reRunLeaders[ 0 ]:
             positionResult = main.FALSE
         elif oldLeader != reRunLeaders[ 0 ][ -1 ]:
-            main.log.error( "Old Leader ({}) not in the proper position: {} ".format( str( oldLeader),
+            main.log.error( "Old Leader ({}) not in the proper position: {} ".format( str( oldLeader ),
                                                                                       str( reRunLeaders[ 0 ] ) ) )
             positionResult = main.FALSE
         utilities.assert_equals(
@@ -2291,15 +2289,15 @@ class HAsingleInstanceRestart:
         # Variables for the distributed primitives tests
         main.pCounterName = "TestON-Partitions"
         main.pCounterValue = 0
-        main.onosSet = set([])
+        main.onosSet = set( [] )
         main.onosSetName = "TestON-set"
 
         description = "Install Primitives app"
         main.case( description )
         main.step( "Install Primitives app" )
         appName = "org.onosproject.distributedprimitives"
-        node = main.activeNodes[0]
-        appResults = main.CLIs[node].activateApp( appName )
+        node = main.activeNodes[ 0 ]
+        appResults = main.CLIs[ node ].activateApp( appName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=appResults,
                                  onpass="Primitives app activated",

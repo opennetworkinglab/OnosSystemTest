@@ -1,6 +1,7 @@
 import json
 import time
 
+
 class HA():
 
     def __init__( self ):
@@ -10,7 +11,7 @@ class HA():
         """
         Checks that TestON counters are consistent across all nodes.
 
-        Returns the tuple (onosCounters, consistent)
+        Returns the tuple ( onosCounters, consistent )
         - onosCounters is the parsed json output of the counters command on
           all nodes
         - consistent is main.TRUE if all "TestON" counters are consitent across
@@ -23,8 +24,8 @@ class HA():
             for i in main.activeNodes:
                 t = main.Thread( target=utilities.retry,
                                  name="counters-" + str( i ),
-                                 args=[ main.CLIs[i].counters, [ None ] ],
-                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                 args=[ main.CLIs[ i ].counters, [ None ] ],
+                                 kwargs={ 'sleep': 5, 'attempts': 5,
                                            'randomTime': True } )
                 threads.append( t )
                 t.start()
@@ -34,10 +35,10 @@ class HA():
             onosCounters = []
             for i in range( len( main.activeNodes ) ):
                 try:
-                    onosCounters.append( json.loads( onosCountersRaw[i] ) )
+                    onosCounters.append( json.loads( onosCountersRaw[ i ] ) )
                 except ( ValueError, TypeError ):
                     main.log.error( "Could not parse counters response from ONOS" +
-                                    str( main.activeNodes[i] + 1 ) )
+                                    str( main.activeNodes[ i ] + 1 ) )
                     main.log.warn( repr( onosCountersRaw[ i ] ) )
                     onosCounters.append( [] )
 
@@ -45,20 +46,20 @@ class HA():
             # make a list of all the "TestON-*" counters in ONOS
             # lookes like a dict whose keys are the name of the ONOS node and
             # values are a list of the counters. I.E.
-            # { "ONOS1": [ { "name":"TestON-Partitions","value":56} ]
+            # { "ONOS1": [ { "name":"TestON-Partitions","value":56 } ]
             # }
             # NOTE: There is an assumtion that all nodes are active
             #        based on the above for loops
             for controller in enumerate( onosCounters ):
-                for key, value in controller[1].iteritems():
+                for key, value in controller[ 1 ].iteritems():
                     if 'TestON' in key:
-                        node = 'ONOS' + str( controller[0] + 1 )
+                        node = 'ONOS' + str( controller[ 0 ] + 1 )
                         try:
-                            testCounters[node].append( { key: value } )
+                            testCounters[ node ].append( { key: value } )
                         except KeyError:
-                            testCounters[node] = [ { key: value } ]
+                            testCounters[ node ] = [ { key: value } ]
             # compare the counters on each node
-            firstV = testCounters.values()[0]
+            firstV = testCounters.values()[ 0 ]
             tmp = [ v == firstV for k, v in testCounters.iteritems() ]
             if all( tmp ):
                 consistent = main.TRUE
@@ -83,12 +84,12 @@ class HA():
             onosCounters, consistent = self.consistentCheck()
             # Check for correct values
             for i in range( len( main.activeNodes ) ):
-                current = onosCounters[i]
+                current = onosCounters[ i ]
                 onosValue = None
                 try:
                     onosValue = current.get( counterName )
                 except AttributeError:
-                    node = str( main.activeNodes[i] + 1 )
+                    node = str( main.activeNodes[ i ] + 1 )
                     main.log.exception( "ONOS" + node + " counters result " +
                                         "is not as expected" )
                     correctResults = main.FALSE
@@ -116,13 +117,13 @@ class HA():
             for cli in nodes:
                 leaderList.append( cli.specificLeaderCandidate( TOPIC ) )
             # Compare leaderboards
-            result = all( i == leaderList[0] for i in leaderList ) and\
+            result = all( i == leaderList[ 0 ] for i in leaderList ) and\
                      leaderList is not None
             main.log.debug( leaderList )
             main.log.warn( result )
             if result:
                 return ( result, leaderList )
-            time.sleep(5)  # TODO: paramerterize
+            time.sleep( 5 )  # TODO: paramerterize
         main.log.error( "Inconsistent leaderboards:" + str( leaderList ) )
         return ( result, leaderList )
 
@@ -131,25 +132,24 @@ class HA():
         results = True
         threads = []
         for i in nodes:
-            t = main.Thread( target=main.CLIs[i].nodes,
+            t = main.Thread( target=main.CLIs[ i ].nodes,
                              name="nodes-" + str( i ),
-                             args=[ ] )
+                             args=[] )
             threads.append( t )
             t.start()
 
         for t in threads:
             t.join()
             nodesOutput.append( t.result )
-        ips = [ main.nodes[node].ip_address for node in nodes ]
-        ips.sort()
+        ips = sorted( [ main.nodes[ node ].ip_address for node in nodes ] )
         for i in nodesOutput:
             try:
                 current = json.loads( i )
                 activeIps = []
                 currentResult = False
                 for node in current:
-                    if node['state'] == 'READY':
-                        activeIps.append( node['ip'] )
+                    if node[ 'state' ] == 'READY':
+                        activeIps.append( node[ 'ip' ] )
                 activeIps.sort()
                 if ips == activeIps:
                     currentResult = True
@@ -165,7 +165,7 @@ class HA():
         threads = []
         completedValues = []
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].workQueueTotalCompleted,
+            t = main.Thread( target=main.CLIs[ i ].workQueueTotalCompleted,
                              name="WorkQueueCompleted-" + str( i ),
                              args=[ workQueueName ] )
             threads.append( t )
@@ -185,7 +185,7 @@ class HA():
         threads = []
         inProgressValues = []
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].workQueueTotalInProgress,
+            t = main.Thread( target=main.CLIs[ i ].workQueueTotalInProgress,
                              name="WorkQueueInProgress-" + str( i ),
                              args=[ workQueueName ] )
             threads.append( t )
@@ -205,7 +205,7 @@ class HA():
         threads = []
         pendingValues = []
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].workQueueTotalPending,
+            t = main.Thread( target=main.CLIs[ i ].workQueueTotalPending,
                              name="WorkQueuePending-" + str( i ),
                              args=[ workQueueName ] )
             threads.append( t )
@@ -245,7 +245,7 @@ class HA():
                 main.onosSet
             except NameError:
                 main.log.error( "main.onosSet not defined, setting to empty Set" )
-                main.onosSet = set([])
+                main.onosSet = set( [] )
             # Variables for the distributed primitives tests. These are local only
             addValue = "a"
             addAllValue = "a b c d e f"
@@ -269,7 +269,7 @@ class HA():
             threads = []
             addedPValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                t = main.Thread( target=main.CLIs[ i ].counterTestAddAndGet,
                                  name="counterAddAndGet-" + str( i ),
                                  args=[ main.pCounterName ] )
                 main.pCounterValue += 1
@@ -299,7 +299,7 @@ class HA():
             threads = []
             addedPValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                t = main.Thread( target=main.CLIs[ i ].counterTestGetAndAdd,
                                  name="counterGetAndAdd-" + str( i ),
                                  args=[ main.pCounterName ] )
                 addedPValues.append( main.pCounterValue )
@@ -336,7 +336,7 @@ class HA():
             threads = []
             addedPValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                t = main.Thread( target=main.CLIs[ i ].counterTestAddAndGet,
                                  name="counterIncrement-" + str( i ),
                                  args=[ main.pCounterName ],
                                  kwargs={ "delta": -8 } )
@@ -367,7 +367,7 @@ class HA():
             threads = []
             addedPValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                t = main.Thread( target=main.CLIs[ i ].counterTestAddAndGet,
                                  name="counterIncrement-" + str( i ),
                                  args=[ main.pCounterName ],
                                  kwargs={ "delta": 5 } )
@@ -398,7 +398,7 @@ class HA():
             threads = []
             addedPValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                t = main.Thread( target=main.CLIs[ i ].counterTestGetAndAdd,
                                  name="counterIncrement-" + str( i ),
                                  args=[ main.pCounterName ],
                                  kwargs={ "delta": 5 } )
@@ -437,7 +437,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -448,8 +448,8 @@ class HA():
 
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -479,7 +479,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -490,7 +490,7 @@ class HA():
 
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node +
@@ -507,7 +507,7 @@ class HA():
             addResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestAdd,
+                t = main.Thread( target=main.CLIs[ i ].setTestAdd,
                                  name="setTestAdd-" + str( i ),
                                  args=[ main.onosSetName, addValue ] )
                 threads.append( t )
@@ -541,7 +541,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -551,8 +551,8 @@ class HA():
                 getResponses.append( t.result )
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -574,7 +574,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -584,7 +584,7 @@ class HA():
                 sizeResponses.append( t.result )
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node +
@@ -602,7 +602,7 @@ class HA():
             addResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestAdd,
+                t = main.Thread( target=main.CLIs[ i ].setTestAdd,
                                  name="setTestAddAll-" + str( i ),
                                  args=[ main.onosSetName, addAllValue ] )
                 threads.append( t )
@@ -636,7 +636,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -646,8 +646,8 @@ class HA():
                 getResponses.append( t.result )
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -671,7 +671,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -681,7 +681,7 @@ class HA():
                 sizeResponses.append( t.result )
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node +
@@ -698,7 +698,7 @@ class HA():
             containsResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setContains-" + str( i ),
                                  args=[ main.onosSetName ],
                                  kwargs={ "values": addValue } )
@@ -725,7 +725,7 @@ class HA():
             containsAllResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setContainsAll-" + str( i ),
                                  args=[ main.onosSetName ],
                                  kwargs={ "values": addAllValue } )
@@ -753,7 +753,7 @@ class HA():
             removeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestRemove,
+                t = main.Thread( target=main.CLIs[ i ].setTestRemove,
                                  name="setTestRemove-" + str( i ),
                                  args=[ main.onosSetName, addValue ] )
                 threads.append( t )
@@ -787,7 +787,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -797,8 +797,8 @@ class HA():
                 getResponses.append( t.result )
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -822,7 +822,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -832,7 +832,7 @@ class HA():
                 sizeResponses.append( t.result )
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node +
@@ -851,7 +851,7 @@ class HA():
             threads = []
             try:
                 for i in main.activeNodes:
-                    t = main.Thread( target=main.CLIs[i].setTestRemove,
+                    t = main.Thread( target=main.CLIs[ i ].setTestRemove,
                                      name="setTestRemoveAll-" + str( i ),
                                      args=[ main.onosSetName, addAllValue ] )
                     threads.append( t )
@@ -859,8 +859,8 @@ class HA():
                 for t in threads:
                     t.join()
                     removeAllResponses.append( t.result )
-            except Exception, e:
-                main.log.exception(e)
+            except Exception as e:
+                main.log.exception( e )
 
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
@@ -887,7 +887,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -897,8 +897,8 @@ class HA():
                 getResponses.append( t.result )
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -922,7 +922,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -932,7 +932,7 @@ class HA():
                 sizeResponses.append( t.result )
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node +
@@ -950,7 +950,7 @@ class HA():
             addResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestAdd,
+                t = main.Thread( target=main.CLIs[ i ].setTestAdd,
                                  name="setTestAddAll-" + str( i ),
                                  args=[ main.onosSetName, addAllValue ] )
                 threads.append( t )
@@ -984,7 +984,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -994,8 +994,8 @@ class HA():
                 getResponses.append( t.result )
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -1019,7 +1019,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -1029,7 +1029,7 @@ class HA():
                 sizeResponses.append( t.result )
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node +
@@ -1047,9 +1047,9 @@ class HA():
             clearResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestRemove,
+                t = main.Thread( target=main.CLIs[ i ].setTestRemove,
                                  name="setTestClear-" + str( i ),
-                                 args=[ main.onosSetName, " "],  # Values doesn't matter
+                                 args=[ main.onosSetName, " " ],  # Values doesn't matter
                                  kwargs={ "clear": True } )
                 threads.append( t )
                 t.start()
@@ -1082,7 +1082,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -1092,8 +1092,8 @@ class HA():
                 getResponses.append( t.result )
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -1117,7 +1117,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -1127,7 +1127,7 @@ class HA():
                 sizeResponses.append( t.result )
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node +
@@ -1145,7 +1145,7 @@ class HA():
             addResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestAdd,
+                t = main.Thread( target=main.CLIs[ i ].setTestAdd,
                                  name="setTestAddAll-" + str( i ),
                                  args=[ main.onosSetName, addAllValue ] )
                 threads.append( t )
@@ -1179,7 +1179,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -1189,8 +1189,8 @@ class HA():
                 getResponses.append( t.result )
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -1214,7 +1214,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -1224,7 +1224,7 @@ class HA():
                 sizeResponses.append( t.result )
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node +
@@ -1242,7 +1242,7 @@ class HA():
             retainResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestRemove,
+                t = main.Thread( target=main.CLIs[ i ].setTestRemove,
                                  name="setTestRetain-" + str( i ),
                                  args=[ main.onosSetName, retainValue ],
                                  kwargs={ "retain": True } )
@@ -1277,7 +1277,7 @@ class HA():
             getResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestGet,
+                t = main.Thread( target=main.CLIs[ i ].setTestGet,
                                  name="setTestGet-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -1287,8 +1287,8 @@ class HA():
                 getResponses.append( t.result )
             getResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
-                if isinstance( getResponses[ i ], list):
+                node = str( main.activeNodes[ i ] + 1 )
+                if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
@@ -1312,7 +1312,7 @@ class HA():
             sizeResponses = []
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].setTestSize,
+                t = main.Thread( target=main.CLIs[ i ].setTestSize,
                                  name="setTestSize-" + str( i ),
                                  args=[ main.onosSetName ] )
                 threads.append( t )
@@ -1322,7 +1322,7 @@ class HA():
                 sizeResponses.append( t.result )
             sizeResults = main.TRUE
             for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[i] + 1 )
+                node = str( main.activeNodes[ i ] + 1 )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( "ONOS" + node + " expected a size of " +
@@ -1339,8 +1339,8 @@ class HA():
             tMapValue = "Testing"
             numKeys = 100
             putResult = True
-            node = main.activeNodes[0]
-            putResponses = main.CLIs[node].transactionalMapPut( numKeys, tMapValue )
+            node = main.activeNodes[ 0 ]
+            putResponses = main.CLIs[ node ].transactionalMapPut( numKeys, tMapValue )
             if putResponses and len( putResponses ) == 100:
                 for i in putResponses:
                     if putResponses[ i ][ 'value' ] != tMapValue:
@@ -1364,7 +1364,7 @@ class HA():
                 threads = []
                 valueCheck = True
                 for i in main.activeNodes:
-                    t = main.Thread( target=main.CLIs[i].transactionalMapGet,
+                    t = main.Thread( target=main.CLIs[ i ].transactionalMapGet,
                                      name="TMap-get-" + str( i ),
                                      args=[ "Key" + str( n ) ] )
                     threads.append( t )
@@ -1376,7 +1376,7 @@ class HA():
                     if node != tMapValue:
                         valueCheck = False
                 if not valueCheck:
-                    main.log.warn( "Values for key 'Key" + str( n ) + "' do not match:" )
+                    main.log.warn( "Values for key 'Key" + str(n) + "' do not match:" )
                     main.log.warn( getResponses )
                 getCheck = getCheck and valueCheck
             utilities.assert_equals( expect=True,
@@ -1389,7 +1389,7 @@ class HA():
             threads = []
             getValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].valueTestGet,
+                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
                                  name="ValueGet-" + str( i ),
                                  args=[ valueName ] )
                 threads.append( t )
@@ -1418,7 +1418,7 @@ class HA():
             threads = []
             setValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].valueTestSet,
+                t = main.Thread( target=main.CLIs[ i ].valueTestSet,
                                  name="ValueSet-" + str( i ),
                                  args=[ valueName, valueValue ] )
                 threads.append( t )
@@ -1443,7 +1443,7 @@ class HA():
             threads = []
             getValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].valueTestGet,
+                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
                                  name="ValueGet-" + str( i ),
                                  args=[ valueName ] )
                 threads.append( t )
@@ -1470,8 +1470,8 @@ class HA():
             main.step( "Atomic Value compareAndSet()" )
             oldValue = valueValue
             valueValue = "bar"
-            i = main.activeNodes[0]
-            CASValue = main.CLIs[i].valueTestCompareAndSet( valueName, oldValue, valueValue )
+            i = main.activeNodes[ 0 ]
+            CASValue = main.CLIs[ i ].valueTestCompareAndSet( valueName, oldValue, valueValue )
             main.log.debug( CASValue )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=CASValue,
@@ -1483,7 +1483,7 @@ class HA():
             threads = []
             getValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].valueTestGet,
+                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
                                  name="ValueGet-" + str( i ),
                                  args=[ valueName ] )
                 threads.append( t )
@@ -1510,8 +1510,8 @@ class HA():
             main.step( "Atomic Value getAndSet()" )
             oldValue = valueValue
             valueValue = "baz"
-            i = main.activeNodes[0]
-            GASValue = main.CLIs[i].valueTestGetAndSet( valueName, valueValue )
+            i = main.activeNodes[ 0 ]
+            GASValue = main.CLIs[ i ].valueTestGetAndSet( valueName, valueValue )
             main.log.debug( GASValue )
             expected = oldValue if oldValue is not None else "null"
             utilities.assert_equals( expect=expected,
@@ -1525,7 +1525,7 @@ class HA():
             threads = []
             getValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].valueTestGet,
+                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
                                  name="ValueGet-" + str( i ),
                                  args=[ valueName ] )
                 threads.append( t )
@@ -1552,8 +1552,8 @@ class HA():
             main.step( "Atomic Value destory()" )
             valueValue = None
             threads = []
-            i = main.activeNodes[0]
-            destroyResult = main.CLIs[i].valueTestDestroy( valueName )
+            i = main.activeNodes[ 0 ]
+            destroyResult = main.CLIs[ i ].valueTestDestroy( valueName )
             main.log.debug( destroyResult )
             # Check the results
             utilities.assert_equals( expect=main.TRUE,
@@ -1565,7 +1565,7 @@ class HA():
             threads = []
             getValues = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].valueTestGet,
+                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
                                  name="ValueGet-" + str( i ),
                                  args=[ valueName ] )
                 threads.append( t )
@@ -1592,8 +1592,8 @@ class HA():
             # WORK QUEUES
             main.step( "Work Queue add()" )
             threads = []
-            i = main.activeNodes[0]
-            addResult = main.CLIs[i].workQueueAdd( workQueueName, 'foo' )
+            i = main.activeNodes[ 0 ]
+            addResult = main.CLIs[ i ].workQueueAdd( workQueueName, 'foo' )
             workQueuePending += 1
             main.log.debug( addResult )
             # Check the results
@@ -1614,8 +1614,8 @@ class HA():
 
             main.step( "Work Queue addMultiple()" )
             threads = []
-            i = main.activeNodes[0]
-            addMultipleResult = main.CLIs[i].workQueueAddMultiple( workQueueName, 'bar', 'baz' )
+            i = main.activeNodes[ 0 ]
+            addMultipleResult = main.CLIs[ i ].workQueueAddMultiple( workQueueName, 'bar', 'baz' )
             workQueuePending += 2
             main.log.debug( addMultipleResult )
             # Check the results
@@ -1636,9 +1636,9 @@ class HA():
 
             main.step( "Work Queue takeAndComplete() 1" )
             threads = []
-            i = main.activeNodes[0]
+            i = main.activeNodes[ 0 ]
             number = 1
-            take1Result = main.CLIs[i].workQueueTakeAndComplete( workQueueName, number )
+            take1Result = main.CLIs[ i ].workQueueTakeAndComplete( workQueueName, number )
             workQueuePending -= number
             workQueueCompleted += number
             main.log.debug( take1Result )
@@ -1660,9 +1660,9 @@ class HA():
 
             main.step( "Work Queue takeAndComplete() 2" )
             threads = []
-            i = main.activeNodes[0]
+            i = main.activeNodes[ 0 ]
             number = 2
-            take2Result = main.CLIs[i].workQueueTakeAndComplete( workQueueName, number )
+            take2Result = main.CLIs[ i ].workQueueTakeAndComplete( workQueueName, number )
             workQueuePending -= number
             workQueueCompleted += number
             main.log.debug( take2Result )
@@ -1685,8 +1685,8 @@ class HA():
             main.step( "Work Queue destroy()" )
             valueValue = None
             threads = []
-            i = main.activeNodes[0]
-            destroyResult = main.CLIs[i].workQueueDestroy( workQueueName )
+            i = main.activeNodes[ 0 ]
+            destroyResult = main.CLIs[ i ].workQueueDestroy( workQueueName )
             workQueueCompleted = 0
             workQueueInProgress = 0
             workQueuePending = 0

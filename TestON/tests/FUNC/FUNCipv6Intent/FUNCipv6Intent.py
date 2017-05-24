@@ -1,5 +1,6 @@
 # Testing the basic intent for ipv6 functionality of ONOS
 
+
 class FUNCipv6Intent:
 
     def __init__( self ):
@@ -49,7 +50,7 @@ class FUNCipv6Intent:
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
-            main.cellData = {} # for creating cell file
+            main.cellData = {}  # for creating cell file
             main.hostsData = {}
             main.CLIs = []
             main.ONOSip = []
@@ -59,7 +60,7 @@ class FUNCipv6Intent:
             print main.ONOSip
 
             # Assigning ONOS cli handles to a list
-            for i in range( 1,  main.maxNodes + 1 ):
+            for i in range( 1, main.maxNodes + 1 ):
                 main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
 
             # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -69,9 +70,9 @@ class FUNCipv6Intent:
                                             ".py" )
 
             main.intentFunction = imp.load_source( wrapperFile2,
-                                            main.dependencyPath +
-                                            wrapperFile2 +
-                                            ".py" )
+                                                   main.dependencyPath +
+                                                   wrapperFile2 +
+                                                   ".py" )
 
             main.topo = imp.load_source( wrapperFile3,
                                          main.dependencyPath +
@@ -89,7 +90,7 @@ class FUNCipv6Intent:
                 main.log.error( "Did not properly created list of ONOS CLI handle" )
                 stepResult = main.FALSE
         except Exception as e:
-            main.log.exception(e)
+            main.log.exception( e )
             main.cleanup()
             main.exit()
 
@@ -135,8 +136,6 @@ class FUNCipv6Intent:
         main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) +\
                                 " node(s) ONOS cluster"
 
-
-
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
@@ -148,7 +147,7 @@ class FUNCipv6Intent:
 
         tempOnosIp = []
         for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[i] )
+            tempOnosIp.append( main.ONOSip[ i ] )
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp", main.Mininet1.ip_address,
@@ -160,7 +159,7 @@ class FUNCipv6Intent:
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
+                                 onpass="Successfully applied cell to " +
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
 
@@ -199,7 +198,7 @@ class FUNCipv6Intent:
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -257,12 +256,12 @@ class FUNCipv6Intent:
             main.exit()
 
         main.step( "setup the ipv6NeighbourDiscovery" )
-        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
-        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
+        cfgResult1 = main.CLIs[ 0 ].setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
+        cfgResult2 = main.CLIs[ 0 ].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
         cfgResult = cfgResult1 and cfgResult2
         utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
-                                onpass="ipv6NeighborDiscovery cfg is set to true",
-                                onfail="Failed to cfg set ipv6NeighborDiscovery" )
+                                 onpass="ipv6NeighborDiscovery cfg is set to true",
+                                 onfail="Failed to cfg set ipv6NeighborDiscovery" )
 
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
@@ -348,9 +347,9 @@ class FUNCipv6Intent:
         main.step( "Discover all hosts using pingall " )
         stepResult = main.intentFunction.getHostsData( main )
         utilities.assert_equals( expect=main.TRUE,
-                                actual=stepResult,
-                                onpass="Successfully discovered hosts",
-                                onfail="Failed to discover hosts" )
+                                 actual=stepResult,
+                                 onpass="Successfully discovered hosts",
+                                 onfail="Failed to discover hosts" )
 
     def CASE16( self, main ):
         """
@@ -377,7 +376,7 @@ class FUNCipv6Intent:
                                 "to start up fresh"
 
         main.step( "Stopping Mininet Topology" )
-        topoResult = main.Mininet1.stopNet( )
+        topoResult = main.Mininet1.stopNet()
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -434,33 +433,33 @@ class FUNCipv6Intent:
         main.step( "IPV6: Add host intents between h1 and h9" )
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
-                                              name='IPV6',
-                                              host1='h1',
-                                              host2='h9',
-                                              host1Id='00:00:00:00:00:01/-1',
-                                              host2Id='00:00:00:00:00:09/-1',
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                                     name='IPV6',
+                                                     host1='h1',
+                                                     host2='h9',
+                                                     host1Id='00:00:00:00:00:01/-1',
+                                                     host2Id='00:00:00:00:00:09/-1',
+                                                     sw1='s5',
+                                                     sw2='s2',
+                                                     expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="IPV6: Host intent test successful " +
                                         "between two IPV6 hosts",
                                  onfail="IPV6: Host intent test failed " +
-                                        "between two IPV6 hosts")
+                                        "between two IPV6 hosts" )
 
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
-                                              name='DUALSTACK',
-                                              host1='h3',
-                                              host2='h11',
-                                              host1Id='00:00:00:00:00:03/-1',
-                                              host2Id='00:00:00:00:00:0B/-1',
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                                     name='DUALSTACK',
+                                                     host1='h3',
+                                                     host2='h11',
+                                                     host1Id='00:00:00:00:00:03/-1',
+                                                     host2Id='00:00:00:00:00:0B/-1',
+                                                     sw1='s5',
+                                                     sw2='s2',
+                                                     expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -474,11 +473,11 @@ class FUNCipv6Intent:
         main.step( "1HOP: Add host intents between h1 and h3" )
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
-                                              name='1HOP',
-                                              host1='h1',
-                                              host2='h9',
-                                              host1Id='00:00:00:00:00:01/-1',
-                                              host2Id='00:00:00:00:00:09/-1')
+                                                     name='1HOP',
+                                                     host1='h1',
+                                                     host2='h9',
+                                                     host1Id='00:00:00:00:00:01/-1',
+                                                     host2Id='00:00:00:00:00:09/-1' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -492,14 +491,14 @@ class FUNCipv6Intent:
         main.step( "VLAN: Add vlan host intents between h5 and h24" )
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
-                                              name='VLAN1',
-                                              host1='h5',
-                                              host2='h24',
-                                              host1Id='00:00:00:00:00:05/100',
-                                              host2Id='00:00:00:00:00:18/100',
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                                     name='VLAN1',
+                                                     host1='h5',
+                                                     host2='h24',
+                                                     host1Id='00:00:00:00:00:05/100',
+                                                     host2Id='00:00:00:00:00:18/100',
+                                                     sw1='s5',
+                                                     sw2='s2',
+                                                     expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -563,7 +562,7 @@ class FUNCipv6Intent:
                                        host1="h1",
                                        host2="h9",
                                        deviceId1="of:0000000000000005/1",
-                                       deviceId2="of:0000000000000006/1")
+                                       deviceId2="of:0000000000000006/1" )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -612,7 +611,7 @@ class FUNCipv6Intent:
                                        ip2="",
                                        tcp1="",
                                        tcp2="",
-                                       expectedLink="")
+                                       expectedLink="" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
@@ -621,7 +620,7 @@ class FUNCipv6Intent:
         main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV6 using ICMP point intents\n"
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
-        main.log.debug(mac2)
+        main.log.debug( mac2 )
         ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
         ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/128"
         ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/128"
@@ -732,11 +731,11 @@ class FUNCipv6Intent:
         main.step( "1HOP: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for 1HOP IPV6 with no mac address point intents\n"
         stepResult = main.intentFunction.pointIntent( main,
-                                              name='1HOP',
-                                              host1="h1",
-                                              host2="h9",
-                                              deviceId1="of:0000000000000005/1",
-                                              deviceId2="of:0000000000000006/1")
+                                                      name='1HOP',
+                                                      host1="h1",
+                                                      host2="h9",
+                                                      deviceId1="of:0000000000000005/1",
+                                                      deviceId2="of:0000000000000006/1" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
@@ -781,7 +780,7 @@ class FUNCipv6Intent:
                                " OVS running in Mininet "
         main.step( "NOOPTION: Add single point to multi point intents" )
         hostNames = [ 'h1', 'h9', 'h17' ]
-        devices = [ 'of:0000000000000005/1','of:0000000000000006/1', 'of:0000000000000007/1' ]
+        devices = [ 'of:0000000000000005/1', 'of:0000000000000006/1', 'of:0000000000000007/1' ]
         main.assertReturnString = "Assertion results for IPV6 single to multi point intent with no options set\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.singleToMultiIntent(
@@ -791,7 +790,7 @@ class FUNCipv6Intent:
                                          devices=devices,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18)
+                                         expectedLink=18 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
@@ -800,7 +799,7 @@ class FUNCipv6Intent:
         main.assertReturnString = "Assertion results for IPV6 single to multi point intent with IPV6 type and MAC addresses\n"
         hostNames = [ 'h1', 'h9', 'h17' ]
         devices = [ 'of:0000000000000005/1', 'of:0000000000000006/1', 'of:0000000000000007/1' ]
-        macs = [ '00:00:00:00:00:01','00:00:00:00:00:09' ,'00:00:00:00:00:11' ]
+        macs = [ '00:00:00:00:00:01', '00:00:00:00:00:09', '00:00:00:00:00:11' ]
         stepResult = main.TRUE
         stepResult = main.intentFunction.singleToMultiIntent(
                                          main,
@@ -810,7 +809,7 @@ class FUNCipv6Intent:
                                          macs=macs,
                                          ethType="IPV6",
                                          sw1="",
-                                         sw2="")
+                                         sw2="" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
@@ -827,7 +826,7 @@ class FUNCipv6Intent:
                                          devices=devices,
                                          ethType="IPV6",
                                          sw1="",
-                                         sw2="")
+                                         sw2="" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
@@ -836,7 +835,7 @@ class FUNCipv6Intent:
         main.assertReturnString = "Assertion results for IPV6 single to multi point intent with IPV6 type and MAC addresses in the same VLAN\n"
         hostNames = [ 'h5', 'h24' ]
         devices = [ 'of:0000000000000005/5', 'of:0000000000000007/8' ]
-        macs = [ '00:00:00:00:00:05','00:00:00:00:00:18' ]
+        macs = [ '00:00:00:00:00:05', '00:00:00:00:00:18' ]
         stepResult = main.TRUE
         stepResult = main.intentFunction.singleToMultiIntent(
                                          main,
@@ -846,13 +845,13 @@ class FUNCipv6Intent:
                                          macs=macs,
                                          ethType="IPV6",
                                          sw1="",
-                                         sw2="")
+                                         sw2="" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
         main.intentFunction.report( main )
-      
+
     def CASE4000( self, main ):
         """
             Add multi point to single point intents
@@ -893,7 +892,7 @@ class FUNCipv6Intent:
         main.assertReturnString = "Assertion results for NOOPTION multi to single point intent\n"
         stepResult = main.TRUE
         hostNames = [ 'h17', 'h9' ]
-        devices = ['of:0000000000000007/1', 'of:0000000000000006/1' ]
+        devices = [ 'of:0000000000000007/1', 'of:0000000000000006/1' ]
         stepResult = main.intentFunction.multiToSingleIntent(
                                          main,
                                          name="NOOPTION",
@@ -910,7 +909,7 @@ class FUNCipv6Intent:
         main.assertReturnString = "Assertion results for IPV6 multi to single point intent with IPV6 type and MAC addresses\n"
         hostNames = [ 'h1', 'h9', 'h17' ]
         devices = [ 'of:0000000000000005/1', 'of:0000000000000006/1', 'of:0000000000000007/1' ]
-        macs = [ '00:00:00:00:00:01','00:00:00:00:00:09' ,'00:00:00:00:00:11' ]
+        macs = [ '00:00:00:00:00:01', '00:00:00:00:00:09', '00:00:00:00:00:11' ]
         stepResult = main.TRUE
         installResult = main.intentFunction.multiToSingleIntent(
                                          main,
@@ -939,7 +938,7 @@ class FUNCipv6Intent:
                                          ethType="IPV6",
                                          sw1="",
                                          sw2="",
-                                         expectedLink="")
+                                         expectedLink="" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
@@ -949,7 +948,7 @@ class FUNCipv6Intent:
         main.assertReturnString = "Assertion results for IPV6 multi to single point intent with IPV6 type and no MAC addresses in the same VLAN\n"
         hostNames = [ 'h5', 'h24' ]
         devices = [ 'of:0000000000000005/5', 'of:0000000000000007/8' ]
-        macs = [ '00:00:00:00:00:05','00:00:00:00:00:18' ]
+        macs = [ '00:00:00:00:00:05', '00:00:00:00:00:18' ]
         stepResult = main.TRUE
         stepResult = main.intentFunction.multiToSingleIntent(
                                          main,
@@ -960,7 +959,7 @@ class FUNCipv6Intent:
                                          ethType="IPV6",
                                          sw1="",
                                          sw2="",
-                                         expectedLink="")
+                                         expectedLink="" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.assertReturnString,
@@ -981,8 +980,8 @@ class FUNCipv6Intent:
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
         h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
-        main.log.info( "Moving h1 from s5 to s6")
-        main.Mininet1.moveHostv6( "h1","s5","s6" )
+        main.log.info( "Moving h1 from s5 to s6" )
+        main.Mininet1.moveHostv6( "h1", "s5", "s6" )
         main.intentFunction.getHostsData( main )
         h1PostMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
@@ -997,11 +996,11 @@ class FUNCipv6Intent:
         main.assertReturnString = "Assert result for IPV6 host intent between h1, moved, and h9\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
-                                              name='IPV6 Mobility IPV6',
-                                              host1='h1',
-                                              host2='h9',
-                                              host1Id='00:00:00:00:00:01/-1',
-                                              host2Id='00:00:00:00:00:09/-1')
+                                                     name='IPV6 Mobility IPV6',
+                                                     host1='h1',
+                                                     host2='h9',
+                                                     host1Id='00:00:00:00:00:01/-1',
+                                                     host2Id='00:00:00:00:00:09/-1' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1048,7 +1047,7 @@ class FUNCipv6Intent:
                                   point intent end point failure with IPV6 type and MAC addresses\n"
         hostNames = [ 'h8', 'h9', 'h17' ]
         devices = [ 'of:0000000000000005/8', 'of:0000000000000006/1', 'of:0000000000000007/1' ]
-        macs = [ '00:00:00:00:00:08','00:00:00:00:00:09' ,'00:00:00:00:00:11' ]        
+        macs = [ '00:00:00:00:00:08', '00:00:00:00:00:09', '00:00:00:00:00:11' ]
         testResult = main.TRUE
         testResult = main.intentFunction.testEndPointFail(
                                          main,
@@ -1101,7 +1100,7 @@ class FUNCipv6Intent:
                                   point intent end point failure with IPV6 type and no MAC addresses in the same VLAN\n"
         hostNames = [ 'h5', 'h24' ]
         devices = [ 'of:0000000000000005/5', 'of:0000000000000007/8' ]
-        macs = [ '00:00:00:00:00:05','00:00:00:00:00:18' ]
+        macs = [ '00:00:00:00:00:05', '00:00:00:00:00:18' ]
         testResult = main.TRUE
         testResult = main.intentFunction.testEndPointFail(
                                          main,
@@ -1151,7 +1150,7 @@ class FUNCipv6Intent:
                                   point intent end point failure with IPV6 type and MAC addresses\n"
         hostNames = [ 'h8', 'h9', 'h17' ]
         devices = [ 'of:0000000000000005/8', 'of:0000000000000006/1', 'of:0000000000000007/1' ]
-        macs = [ '00:00:00:00:00:08','00:00:00:00:00:09' ,'00:00:00:00:00:11' ]  
+        macs = [ '00:00:00:00:00:08', '00:00:00:00:00:09', '00:00:00:00:00:11' ]
         testResult = main.TRUE
         testResult = main.intentFunction.testEndPointFail(
                                          main,
@@ -1203,7 +1202,7 @@ class FUNCipv6Intent:
                                   intent endpoint failure with IPV6 type and MAC addresses in the same VLAN\n"
         hostNames = [ 'h5', 'h24' ]
         devices = [ 'of:0000000000000005/5', 'of:0000000000000007/8' ]
-        macs = [ '00:00:00:00:00:05','00:00:00:00:00:18' ]
+        macs = [ '00:00:00:00:00:05', '00:00:00:00:00:18' ]
         testResult = main.TRUE
         testResult = main.intentFunction.testEndPointFail(
                                          main,

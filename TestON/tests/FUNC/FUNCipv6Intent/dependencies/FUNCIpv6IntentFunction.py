@@ -7,8 +7,10 @@ import time
 import copy
 import json
 
+
 def __init__( self ):
     self.default = ''
+
 
 def hostIntent( main,
                 name,
@@ -66,7 +68,6 @@ def hostIntent( main,
         Returns main.TRUE if all verification passed, otherwise return
         main.FALSE; returns main.FALSE if there is a key error
     """
-
     # Assert variables
     assert main, "There is no main variable"
     assert name, "variable name is empty"
@@ -80,7 +81,7 @@ def hostIntent( main,
     h2Mac = mac2
     vlan1 = vlan1
     vlan2 = vlan2
-    hostNames = [ host1 , host2 ]
+    hostNames = [ host1, host2 ]
     intentsId = []
     stepResult = main.TRUE
     pingResult = main.TRUE
@@ -152,10 +153,10 @@ def hostIntent( main,
         main.assertReturnString += 'Initial Flow State Failed\n'
 
     # Ping hosts
-    firstPingResult = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ])
+    firstPingResult = main.Mininet1.ping6pair( SRC=hostNames[ 0 ], TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ] )
     if not firstPingResult:
         main.log.debug( "First ping failed, there must be" +
-                       " something wrong with ONOS performance" )
+                        " something wrong with ONOS performance" )
 
     # Ping hosts again...
     pingTemp = ping6allHosts( main, hostNames )
@@ -267,6 +268,7 @@ def hostIntent( main,
 
     return stepResult
 
+
 def pointIntent( main,
                  name,
                  host1,
@@ -289,7 +291,6 @@ def pointIntent( main,
                  sw1="",
                  sw2="",
                  expectedLink=0 ):
-
     """
     Description:
         Verify add-point-intent
@@ -339,7 +340,6 @@ def pointIntent( main,
                        be two links lower than the links before the two
                        switches are down
     """
-
     assert main, "There is no main variable"
     assert name, "variable name is empty"
     assert host1 and host2, "You must specify hosts"
@@ -363,35 +363,35 @@ def pointIntent( main,
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding point intents" )
     intent1 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
-                                             egressDevice=deviceId2,
-                                             portIngress=port1,
-                                             portEgress=port2,
-                                             ethType=ethType,
-                                             ethSrc=mac1,
-                                             ethDst=mac2,
-                                             bandwidth=bandwidth,
-                                             lambdaAlloc=lambdaAlloc,
-                                             ipProto=ipProto,
-                                             ipSrc=ip1,
-                                             ipDst=ip2,
-                                             tcpSrc=tcp1,
-                                             tcpDst=tcp2 )
+                                                    egressDevice=deviceId2,
+                                                    portIngress=port1,
+                                                    portEgress=port2,
+                                                    ethType=ethType,
+                                                    ethSrc=mac1,
+                                                    ethDst=mac2,
+                                                    bandwidth=bandwidth,
+                                                    lambdaAlloc=lambdaAlloc,
+                                                    ipProto=ipProto,
+                                                    ipSrc=ip1,
+                                                    ipDst=ip2,
+                                                    tcpSrc=tcp1,
+                                                    tcpDst=tcp2 )
 
     intentsId.append( intent1 )
     intent2 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
-                                             egressDevice=deviceId1,
-                                             portIngress=port2,
-                                             portEgress=port1,
-                                             ethType=ethType,
-                                             ethSrc=mac2,
-                                             ethDst=mac1,
-                                             bandwidth=bandwidth,
-                                             lambdaAlloc=lambdaAlloc,
-                                             ipProto=ipProto,
-                                             ipSrc=ip2,
-                                             ipDst=ip1,
-                                             tcpSrc=tcp2,
-                                             tcpDst=tcp1 )
+                                                    egressDevice=deviceId1,
+                                                    portIngress=port2,
+                                                    portEgress=port1,
+                                                    ethType=ethType,
+                                                    ethSrc=mac2,
+                                                    ethDst=mac1,
+                                                    bandwidth=bandwidth,
+                                                    lambdaAlloc=lambdaAlloc,
+                                                    ipProto=ipProto,
+                                                    ipSrc=ip2,
+                                                    ipDst=ip1,
+                                                    tcpSrc=tcp2,
+                                                    tcpDst=tcp1 )
     intentsId.append( intent2 )
 
     # Check intents state
@@ -527,6 +527,7 @@ def pointIntent( main,
 
     return stepResult
 
+
 def pointIntentTcp( main,
                     name,
                     host1,
@@ -549,7 +550,6 @@ def pointIntentTcp( main,
                     sw1="",
                     sw2="",
                     expectedLink=0 ):
-
     """
     Description:
         Verify add-point-intent only for TCP
@@ -599,7 +599,6 @@ def pointIntentTcp( main,
                        be two links lower than the links before the two
                        switches are down
     """
-
     assert main, "There is no main variable"
     assert name, "variable name is empty"
     assert host1 and host2, "You must specify hosts"
@@ -714,7 +713,7 @@ def pointIntentTcp( main,
         main.assertReturnString += 'Initial Flow State Failed\n'
 
         # Run iperf to both host
-    iperfTemp = main.Mininet1.iperftcpipv6( host1,host2 )
+    iperfTemp = main.Mininet1.iperftcpipv6( host1, host2 )
     iperfResult = iperfResult and iperfTemp
     if iperfTemp:
         main.assertReturnString += 'Initial Iperf6 Passed\n'
@@ -744,7 +743,7 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcpipv6( host1,host2 )
+        iperfTemp = main.Mininet1.iperftcpipv6( host1, host2 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
             main.assertReturnString += 'Link Down Iperf6 Passed\n'
@@ -788,7 +787,7 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcpipv6( host1,host2,timeout=10 )
+        iperfTemp = main.Mininet1.iperftcpipv6( host1, host2, timeout=10 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
             main.assertReturnString += 'Link Up Iperf6 Passed\n'
@@ -821,6 +820,7 @@ def pointIntentTcp( main,
 
     return stepResult
 
+
 def singleToMultiIntent( main,
                          name,
                          hostNames="",
@@ -843,8 +843,8 @@ def singleToMultiIntent( main,
     in the same order index wise. All devices in the list should have the same
     format, either all the devices have its port or it doesn't.
     eg. hostName = [ 'h1', 'h2' ,..  ]
-        devices = [ 'of:0000000000000001', 'of:0000000000000002', ...]
-        ports = [ '1', '1', ..]
+        devices = [ 'of:0000000000000001', 'of:0000000000000002', ... ]
+        ports = [ '1', '1', .. ]
         ...
     Description:
         Verify add-single-to-multi-intent iterates through the list of given
@@ -891,7 +891,6 @@ def singleToMultiIntent( main,
                        be two links lower than the links before the two
                        switches are down
     """
-
     assert main, "There is no main variable"
     assert hostNames, "You must specify hosts"
     assert devices or main.hostsData, "You must specify devices"
@@ -923,11 +922,11 @@ def singleToMultiIntent( main,
         devices = []
         main.log.info( "singleToMultiIntent function is using main.hostsData" )
         for host in hostNames:
-               devices.append( main.hostsData.get( host ).get( 'location' ) )
-               macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
-                           main.hostsData.get( host ).get( 'mac' )
-               ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
-                           main.hostsData.get( host ).get( 'ipAddresses' )
+            devices.append( main.hostsData.get( host ).get( 'location' ) )
+            macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                        main.hostsData.get( host ).get( 'mac' )
+            ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                        main.hostsData.get( host ).get( 'ipAddresses' )
 
     pingResult = main.TRUE
     intentResult = main.TRUE
@@ -961,7 +960,7 @@ def singleToMultiIntent( main,
             srcMac = ""
         else:
             srcMac = macsDict[ ingressDevice ]
-            if srcMac == None:
+            if srcMac is None:
                 main.log.debug( "There is no MAC in device - " + ingressDevice )
                 srcMac = ""
 
@@ -980,7 +979,6 @@ def singleToMultiIntent( main,
                                             ipDst="",
                                             tcpSrc="",
                                             tcpDst="" ) )
-
 
     # Check intents state
     time.sleep( main.checkIntentSleep )
@@ -1007,10 +1005,10 @@ def singleToMultiIntent( main,
     else:
         main.assertReturnString += 'Initial Flow State Failed\n'
 
-    firstPingResult = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ hostNames[1] ][ 'ipAddresses' ][0])
+    firstPingResult = main.Mininet1.ping6pair( SRC=hostNames[ 0 ], TARGET=main.hostsData[ hostNames[ 1 ] ][ 'ipAddresses' ][ 0 ] )
     if not firstPingResult:
         main.log.debug( "First ping failed, there must be" +
-                       " something wrong with ONOS performance" )
+                        " something wrong with ONOS performance" )
 
     # Ping hosts again...
     pingTemp = ping6allHosts( main, hostNames )
@@ -1119,6 +1117,7 @@ def singleToMultiIntent( main,
 
     return stepResult
 
+
 def multiToSingleIntent( main,
                          name,
                          hostNames="",
@@ -1141,8 +1140,8 @@ def multiToSingleIntent( main,
     same order index wise. All devices in the list should have the same
     format, either all the devices have its port or it doesn't.
     eg. hostName = [ 'h1', 'h2' ,..  ]
-        devices = [ 'of:0000000000000001', 'of:0000000000000002', ...]
-        ports = [ '1', '1', ..]
+        devices = [ 'of:0000000000000001', 'of:0000000000000002', ... ]
+        ports = [ '1', '1', .. ]
         ...
     Description:
         Verify add-multi-to-single-intent
@@ -1189,7 +1188,6 @@ def multiToSingleIntent( main,
                        switches are down
         Note - Don't use more than 2 hosts for MultiToSingle Intent with no mac address option.
     """
-
     assert main, "There is no main variable"
     assert hostNames, "You must specify hosts"
     assert devices or main.hostsData, "You must specify devices"
@@ -1220,11 +1218,11 @@ def multiToSingleIntent( main,
         devices = []
         main.log.info( "multiToSingleIntent function is using main.hostsData" )
         for host in hostNames:
-               devices.append( main.hostsData.get( host ).get( 'location' ) )
-               macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
-                           main.hostsData.get( host ).get( 'mac' )
-               ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
-                           main.hostsData.get( host ).get( 'ipAddresses' )
+            devices.append( main.hostsData.get( host ).get( 'location' ) )
+            macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                        main.hostsData.get( host ).get( 'mac' )
+            ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                        main.hostsData.get( host ).get( 'ipAddresses' )
 
     pingResult = main.TRUE
     intentResult = main.TRUE
@@ -1258,7 +1256,7 @@ def multiToSingleIntent( main,
             dstMac = ""
         else:
             dstMac = macsDict[ egressDevice ]
-            if dstMac == None:
+            if dstMac is None:
                 main.log.debug( "There is no MAC in device - " + egressDevice )
                 dstMac = ""
 
@@ -1409,6 +1407,7 @@ def multiToSingleIntent( main,
 
     return stepResult
 
+
 def testEndPointFail( main,
                       name,
                       test="",
@@ -1433,7 +1432,6 @@ def testEndPointFail( main,
     """
     Test Multipoint Topology for Endpoint failures
     """
-
     assert main, "There is no main variable"
     assert hostNames, "You must specify hosts"
     assert devices or main.hostsData, "You must specify devices"
@@ -1464,11 +1462,11 @@ def testEndPointFail( main,
         devices = []
         main.log.info( "multiIntent function is using main.hostsData" )
         for host in hostNames:
-               devices.append( main.hostsData.get( host ).get( 'location' ) )
-               macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
-                           main.hostsData.get( host ).get( 'mac' )
-               ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
-                           main.hostsData.get( host ).get( 'ipAddresses' )
+            devices.append( main.hostsData.get( host ).get( 'location' ) )
+            macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                        main.hostsData.get( host ).get( 'mac' )
+            ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                        main.hostsData.get( host ).get( 'ipAddresses' )
 
     pingResult = main.TRUE
     intentResult = main.TRUE
@@ -1486,7 +1484,7 @@ def testEndPointFail( main,
     # Check flows count in each node
     checkFlowsCount( main )
 
-    if test=="MultipletoSingle":
+    if test == "MultipletoSingle":
         for i in range( len( devices ) ):
             egressDevice = devicesCopy[ i ]
             ingressDeviceList = copy.copy( devicesCopy )
@@ -1502,7 +1500,7 @@ def testEndPointFail( main,
                 dstMac = ""
             else:
                 dstMac = macsDict[ egressDevice ]
-                if dstMac == None:
+                if dstMac is None:
                     main.log.debug( "There is no MAC in device - " + egressDevice )
                     dstMac = ""
 
@@ -1522,8 +1520,7 @@ def testEndPointFail( main,
                                                 tcpSrc="",
                                                 tcpDst="" ) )
 
-
-    elif test=="SingletoMultiple":
+    elif test == "SingletoMultiple":
         for i in range( len( devices ) ):
             ingressDevice = devicesCopy[ i ]
             egressDeviceList = copy.copy( devicesCopy )
@@ -1539,7 +1536,7 @@ def testEndPointFail( main,
                 srcMac = ""
             else:
                 srcMac = macsDict[ ingressDevice ]
-                if srcMac == None:
+                if srcMac is None:
                     main.log.debug( "There is no MAC in device - " + ingressDevice )
                     srcMac = ""
 
@@ -1560,7 +1557,7 @@ def testEndPointFail( main,
                                                 tcpDst="" ) )
 
     else:
-        main.log.info("Invalid test Name - Type either SingletoMultiple or MultipletoSingle")
+        main.log.info( "Invalid test Name - Type either SingletoMultiple or MultipletoSingle" )
         return main.FALSE
 
     # Check intents state
@@ -1598,7 +1595,7 @@ def testEndPointFail( main,
 
     # Test rerouting if these variables exist
     if sw1 and sw2 and sw3 and sw4 and sw5 and expectedLink1 and expectedLink2:
-    # Take two links down
+        # Take two links down
         # Take first link down
         linkDownResult1 = link( main, sw1, sw2, "down" )
         if linkDownResult1:
@@ -1678,7 +1675,7 @@ def testEndPointFail( main,
             main.assertReturnString += 'Isolation Link Down Topology State Failed\n'
 
         # Ping hosts after isolation
-        main.log.info("Ping will fail if the node is isolated correctly.It will ping only after bringing up the isolation link")
+        main.log.info( "Ping will fail if the node is isolated correctly.It will ping only after bringing up the isolation link" )
         pingIsolation = ping6allHosts( main, hostNames )
         if pingIsolation:
             main.assertReturnString += 'Isolation Link Down Ping6all Passed\n'
@@ -1686,7 +1683,7 @@ def testEndPointFail( main,
             main.assertReturnString += 'Isolation Link Down Ping6all Failed\n'
 
         # Check intent state after isolation
-        main.log.info("Intent will be in FAILED state if the node is isolated correctly.It will be in INSTALLED state only after bringing up isolation link")
+        main.log.info( "Intent will be in FAILED state if the node is isolated correctly.It will be in INSTALLED state only after bringing up isolation link" )
         intentIsolation = checkIntentState( main, intentsId )
         if intentIsolation:
             main.assertReturnString += 'Isolation Link Down Intent State Passed\n'
@@ -1779,25 +1776,26 @@ def testEndPointFail( main,
 
     return testResult
 
+
 def ping6allHosts( main, hostList ):
     # Ping all host in the hosts list variable
     main.log.info( "Pinging: " + str( hostList ) )
     return main.Mininet1.pingIpv6Hosts( hostList )
 
+
 def getHostsData( main ):
     """
         Use fwd app and pingall to discover all the hosts
     """
-
     activateResult = main.TRUE
     appCheck = main.TRUE
     getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
     activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
-    main.CLIs[ 0 ].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true")
+    main.CLIs[ 0 ].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
     main.CLIs[ 0 ].setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
-    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true")
-    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true")
+    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
     time.sleep( main.fwdSleep )
 
     for i in range( main.numCtrls ):
@@ -1806,7 +1804,7 @@ def getHostsData( main ):
             main.log.warn( main.CLIs[ i ].apps() )
             main.log.warn( main.CLIs[ i ].appIDs() )
 
-    pingResult = main.Mininet1.pingall( protocol="IPv6", timeout = 600 )
+    pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=600 )
     hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
     hosts = main.Mininet1.getHosts().keys()
     for host in hosts:
@@ -1833,10 +1831,11 @@ def getHostsData( main ):
 
     main.log.info( "Removing the automatically configured ipv6 link-local addresses in hostsData to avoid unnecessary ping with these addresses during initial ping test - link-local starts with 'fe' " )
     for host in main.hostsData.keys():
-     if main.hostsData[ host ].get( 'ipAddresses' ) != None:
-      main.hostsData[ host ][ 'ipAddresses' ] = [ v for v in main.hostsData[ host ][ 'ipAddresses' ] if not v.startswith('fe') ]
+        if main.hostsData[ host ].get( 'ipAddresses' ) is not None:
+            main.hostsData[ host ][ 'ipAddresses' ] = [ v for v in main.hostsData[ host ][ 'ipAddresses' ] if not v.startswith( 'fe' ) ]
     print main.hostsData
     return getDataResult
+
 
 def checkTopology( main, expectedLink ):
     statusResult = main.TRUE
@@ -1853,12 +1852,12 @@ def checkTopology( main, expectedLink ):
         main.log.info( itemName + ": Topology match" )
     return statusResult
 
+
 def checkIntentState( main, intentsId ):
     """
         This function will check intent state to make sure all the intents
         are in INSTALLED state
     """
-
     intentResult = main.TRUE
     results = []
 
@@ -1892,13 +1891,15 @@ def checkIntentState( main, intentsId ):
 
     return intentResult
 
+
 def checkFlowsState( main ):
 
     main.log.info( itemName + ": Check flows state" )
     checkFlowsResult = main.CLIs[ 0 ].checkFlowsState()
     return checkFlowsResult
 
-def link( main, sw1, sw2, option):
+
+def link( main, sw1, sw2, option ):
 
     # link down
     main.log.info( itemName + ": Bring link " + option + "between " +
@@ -1906,11 +1907,11 @@ def link( main, sw1, sw2, option):
     linkResult = main.Mininet1.link( end1=sw1, end2=sw2, option=option )
     return linkResult
 
+
 def removeAllIntents( main, intentsId ):
     """
         Remove all intents in the intentsId
     """
-
     onosSummary = []
     removeIntentResult = main.TRUE
     # Remove intents
@@ -1938,11 +1939,11 @@ def removeAllIntents( main, intentsId ):
 
     return removeIntentResult
 
+
 def checkFlowsCount( main ):
     """
         Check flows count in each node
     """
-
     flowsCount = []
     main.log.info( itemName + ": Checking flows count in each ONOS node" )
     for i in range( main.numCtrls ):
@@ -1956,7 +1957,7 @@ def checkFlowsCount( main ):
             flowsCount.append( summaryJson.get( 'flows' ) )
 
     if flowsCount:
-        if all( flows==flowsCount[ 0 ] for flows in flowsCount ):
+        if all( flows == flowsCount[ 0 ] for flows in flowsCount ):
             main.log.info( itemName + ": There are " + str( flowsCount[ 0 ] ) +
                            " flows in all ONOS node" )
         else:
@@ -1968,6 +1969,7 @@ def checkFlowsCount( main ):
         return main.FALSE
 
     return main.TRUE
+
 
 def checkLeaderChange( leaders1, leaders2 ):
     """
@@ -1982,7 +1984,7 @@ def checkLeaderChange( leaders1, leaders2 ):
     try:
         leaders1 = json.loads( leaders1 )
         leaders2 = json.loads( leaders2 )
-    except ( AttributeError, TypeError):
+    except ( AttributeError, TypeError ):
         main.log.exception( self.name + ": Object not as expected" )
         return main.FALSE
     except Exception:
@@ -1995,22 +1997,22 @@ def checkLeaderChange( leaders1, leaders2 ):
         if "intent" in dict1.get( "topic", [] ):
             for dict2 in leaders2:
                 if dict1.get( "topic", 0 ) == dict2.get( "topic", 0 ) and \
-                    dict1.get( "leader", 0 ) != dict2.get( "leader", 0 ):
+                        dict1.get( "leader", 0 ) != dict2.get( "leader", 0 ):
                     mismatch = True
-                    main.log.error( "{0} changed leader from {1} to {2}".\
-                        format( dict1.get( "topic", "no-topic" ),\
-                            dict1.get( "leader", "no-leader" ),\
-                            dict2.get( "leader", "no-leader" ) ) )
+                    main.log.error( "{0} changed leader from {1} to {2}".
+                                    format( dict1.get( "topic", "no-topic" ),
+                                            dict1.get( "leader", "no-leader" ),
+                                            dict2.get( "leader", "no-leader" ) ) )
     if mismatch:
         return main.FALSE
     else:
         return main.TRUE
 
+
 def report( main ):
     """
     Report errors/warnings/exceptions
     """
-
     main.ONOSbench.logReport( main.ONOSip[ 0 ],
                               [ "INFO",
                                 "FOLLOWER",
@@ -2023,17 +2025,17 @@ def report( main ):
     main.log.info( "ERROR report: \n" )
     for i in range( main.numCtrls ):
         main.ONOSbench.logReport( main.ONOSip[ i ],
-                [ "ERROR" ],
-                "d" )
+                                  [ "ERROR" ],
+                                  "d" )
 
     main.log.info( "EXCEPTIONS report: \n" )
     for i in range( main.numCtrls ):
         main.ONOSbench.logReport( main.ONOSip[ i ],
-                [ "Except" ],
-                "d" )
+                                  [ "Except" ],
+                                  "d" )
 
     main.log.info( "WARNING report: \n" )
     for i in range( main.numCtrls ):
         main.ONOSbench.logReport( main.ONOSip[ i ],
-                [ "WARN" ],
-                "d" )
+                                  [ "WARN" ],
+                                  "d" )

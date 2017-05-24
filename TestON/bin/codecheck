@@ -1,7 +1,10 @@
 #!/bin/bash
 
-#These are from the Mininet coding style
-P8IGN=E251,E201,E302,E202,E126,E127,E203,E226,W391
+# See http://pep8.readthedocs.io/en/release-1.7.x/intro.html#error-codes
+# These are from the Mininet coding style and modified slightly
+P8INDENT=E126,E127  # Ignoring overindenting of continuing lines to allow for readability
+P8IGN=E251,E201,E302,E202,E126,E127,E203,E226,W391  # Turned off on second pass, corrected by unpep8 script
+EXCLUDE=$P8INDENT,E501,E265  # Always exclude these
 
 # help text function
 help ()
@@ -12,6 +15,7 @@ help ()
     echo -e "\nOptions include:"
     echo -e "   --fix\tRun the automatic style scripts on a file and save the output to FILE.fixed"
     echo -e "   --reason\tShow a short snippit for each PEP8 violation"
+    echo -e "   --relaxed\tIgnore some rules such as line length"
     echo -e "   --help\tDisplays this help text and exits"
 }
 
@@ -22,10 +26,9 @@ elif [ "$2" = "--fix" ]; then
     file=$1.fixed
     echo "Fixing PEP8 errors. WARNING: This may be harmful to your code."
     echo "For safety, the new code is written to $file"
-    #autopep8 -a -a $1
-    autopep8 -a -a $1 --ignore=E501 | $(dirname "${BASH_SOURCE}")/unpep8 > $file
-    autopep8 --in-place -a -a $file --ignore=$P8IGN
-elif [ -z "$2" ] || [ "$2" = "--reason" ]; then
+    autopep8 -a -a $1 --ignore=$EXCLUDE | $(dirname "${BASH_SOURCE}")/unpep8 > $file
+    autopep8 --in-place -a -a $file --ignore=$EXCLUDE,$P8IGN
+elif [ -z "$2" ] || [ "$2" = "--reason" ] || [ "$2" = "--relaxed" ]; then
     echo "Running pyflakes..."
     #Pyflakes is a source checker. It doesn't run the code so it is safer than other programs
     #ignoring some errors due to TestON
@@ -37,10 +40,12 @@ elif [ -z "$2" ] || [ "$2" = "--reason" ]; then
 
     echo "Running PEP8..."
     #PEP8 is a the most common python coding style standard
-    if [ -z "$2"]; then
-        pep8 --repeat --show-source --ignore=$P8IGN $1
-    else
+    if [ "$2" = "--reason" ]; then
         pep8 --repeat --show-source --show-pep8 --ignore=$P8IGN $1
+    elif [ "$2" = "--relaxed" ]; then
+        pep8 --repeat --show-source --ignore=$P8IGN,$EXCLUDE $1
+    else
+        pep8 --repeat --show-source --ignore=$P8IGN $1
     fi
 else
     help

@@ -20,7 +20,7 @@ class FUNCgroup:
         main.step( "Constructing test variables" )
 
         # Test variables
-        main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
+        main.testOnDirectory = os.path.dirname( os.getcwd() )
         main.cellName = main.params[ 'ENV' ][ 'cellName' ]
         main.apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
@@ -52,16 +52,16 @@ class FUNCgroup:
         priority = main.params[ 'TEST' ][ 'priority' ]
         deviceId = main.params[ 'TEST' ][ 'swDPID' ]
 
-        main.cellData = { } # for creating cell file
-        main.CLIs = [ ]
-        main.ONOSip = [ ]
+        main.cellData = {}  # for creating cell file
+        main.CLIs = []
+        main.ONOSip = []
 
         main.debug = True if "on" in main.debug else False
 
-        main.ONOSip = main.ONOSbench.getOnosIps( )
+        main.ONOSip = main.ONOSbench.getOnosIps()
 
         # Assigning ONOS cli handles to a list
-        for i in range( 1,  main.maxNodes + 1 ):
+        for i in range( 1, main.maxNodes + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -141,7 +141,7 @@ class FUNCgroup:
 
         main.log.info( "NODE COUNT = " + str( main.numCtrls ) )
 
-        tempOnosIp = [ ]
+        tempOnosIp = []
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[ i ] )
 
@@ -153,7 +153,7 @@ class FUNCgroup:
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell( )
+        verifyResult = main.ONOSbench.verifyCell()
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -219,7 +219,7 @@ class FUNCgroup:
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -236,9 +236,9 @@ class FUNCgroup:
                                  onfail="Failed to start ONOS cli" )
 
     def CASE3( self, main ):
-        '''
+        """
             Start Mininet
-        '''
+        """
         import json
 
         main.case( "Setup mininet and compare ONOS topology view to Mininet topology" )
@@ -247,7 +247,7 @@ class FUNCgroup:
 
         main.step( "Setup Mininet Topology" )
         topology = main.Mininet1.home + '/custom/' + main.topology
-        stepResult = main.Mininet1.startNet( topoFile = topology )
+        stepResult = main.Mininet1.startNet( topoFile=topology )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -255,7 +255,7 @@ class FUNCgroup:
                                  onfail="Failed to load topology" )
 
         main.step( "Assign switch to controller" )
-        stepResult = main.Mininet1.assignSwController( "s1", main.ONOSip[0] )
+        stepResult = main.Mininet1.assignSwController( "s1", main.ONOSip[ 0 ] )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -271,15 +271,15 @@ class FUNCgroup:
         ports = main.topo.getAllPorts( main )
         links = main.topo.getAllLinks( main )
 
-        mnSwitches = main.Mininet1.getSwitches( )
-        mnLinks = main.Mininet1.getLinks( )
-        mnHosts = main.Mininet1.getHosts( )
+        mnSwitches = main.Mininet1.getSwitches()
+        mnLinks = main.Mininet1.getLinks()
+        mnHosts = main.Mininet1.getHosts()
 
         for controller in range( main.numCtrls ):
             controllerStr = str( controller + 1 )
             if devices[ controller ] and ports[ controller ] and\
-                "Error" not in devices[ controller ] and\
-                "Error" not in ports[ controller ]:
+                    "Error" not in devices[ controller ] and\
+                    "Error" not in ports[ controller ]:
 
                 currentDevicesResult = main.Mininet1.compareSwitches(
                         mnSwitches,
@@ -317,43 +317,42 @@ class FUNCgroup:
                                      onpass="ONOS" + controllerStr +
                                             " hosts exist in Mininet",
                                      onfail="ONOS" + controllerStr +
-                                            " hosts don't match Mininet")
-
+                                            " hosts don't match Mininet" )
 
     def CASE4( self, main ):
-        '''
+        """
         Testing scapy
-        '''
+        """
         main.case( "Testing scapy" )
         main.step( "Creating Host1 component" )
         main.Scapy.createHostComponent( "h1" )
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
             main.log.debug( host.name )
             main.log.debug( host.hostIp )
             main.log.debug( host.hostMac )
 
         main.step( "Sending/Receiving Test packet - Filter doesn't match" )
         main.log.info( "Starting Filter..." )
-        main.h2.startFilter( )
+        main.h2.startFilter()
         main.log.info( "Building Ether frame..." )
         main.h1.buildEther( dst=main.h2.hostMac )
         main.log.info( "Sending Packet..." )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
         main.log.info( "Checking Filter..." )
-        finished = main.h2.checkFilter( )
+        finished = main.h2.checkFilter()
         main.log.debug( finished )
         i = ""
         if finished:
-            a = main.h2.readPackets( )
-            for i in a.splitlines( ):
+            a = main.h2.readPackets()
+            for i in a.splitlines():
                 main.log.info( i )
         else:
-            kill = main.h2.killFilter( )
+            kill = main.h2.killFilter()
             main.log.debug( kill )
             main.h2.handle.sendline( "" )
             main.h2.handle.expect( main.h2.scapyPrompt )
@@ -364,18 +363,18 @@ class FUNCgroup:
                                  onfail="Fail" )
 
         main.step( "Sending/Receiving Test packet - Filter matches" )
-        main.h2.startFilter( )
+        main.h2.startFilter()
         main.h1.buildEther( dst=main.h2.hostMac )
         main.h1.buildIP( dst=main.h2.hostIp )
-        main.h1.sendPacket( )
-        finished = main.h2.checkFilter( )
+        main.h1.sendPacket()
+        finished = main.h2.checkFilter()
         i = ""
         if finished:
-            a = main.h2.readPackets( )
-            for i in a.splitlines( ):
+            a = main.h2.readPackets()
+            for i in a.splitlines():
                 main.log.info( i )
         else:
-            kill = main.h2.killFilter( )
+            kill = main.h2.killFilter()
             main.log.debug( kill )
             main.h2.handle.sendline( "" )
             main.h2.handle.expect( main.h2.scapyPrompt )
@@ -385,18 +384,16 @@ class FUNCgroup:
                                  onpass="Pass",
                                  onfail="Fail" )
 
-
-
         main.step( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
     def CASE5( self, main ):
-        '''
+        """
            Adding Group of type "ALL" using Rest api
-        '''
+        """
         import json
         import time
         isAdded = main.FALSE
@@ -408,17 +405,17 @@ class FUNCgroup:
 
         main.step( "Add Group using Rest api" )
         bucketList = []
-        bucket = main.buckets.addBucket( main, egressPort = egressPort1 )
+        bucket = main.buckets.addBucket( main, egressPort=egressPort1 )
         bucketList.append( bucket )
-        bucket = main.buckets.addBucket( main, egressPort = egressPort2 )
+        bucket = main.buckets.addBucket( main, egressPort=egressPort2 )
         bucketList.append( bucket )
-        bucket = main.buckets.addBucket( main, egressPort = egressPort3 )
+        bucket = main.buckets.addBucket( main, egressPort=egressPort3 )
         bucketList.append( bucket )
-        response = main.ONOSrest.addGroup( deviceId = deviceId,
-                                           groupType = type1,
-                                           bucketList = bucketList,
-                                           appCookie = appCookie,
-                                           groupId = groupId )
+        response = main.ONOSrest.addGroup( deviceId=deviceId,
+                                           groupType=type1,
+                                           bucketList=bucketList,
+                                           appCookie=appCookie,
+                                           groupId=groupId )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=response,
@@ -430,11 +427,11 @@ class FUNCgroup:
 
         main.step( "Check groups are in ADDED state" )
 
-        response = main.ONOSrest.getGroups( deviceId = deviceId,
-                                            appCookie = appCookie )
+        response = main.ONOSrest.getGroups( deviceId=deviceId,
+                                            appCookie=appCookie )
         responsejson = json.loads( response )
-        for item in responsejson :
-            if item["state"] == "ADDED" :
+        for item in responsejson:
+            if item[ "state" ] == "ADDED":
                 isAdded = main.TRUE
 
         utilities.assert_equals( expect=main.TRUE,
@@ -442,16 +439,16 @@ class FUNCgroup:
                                  onpass="All Group is in Added State",
                                  onfail="All Group is not in Added State" )
 
-        '''
+        """
            Adding flow using rest api
-        '''
+        """
         isAdded = main.FALSE
 
         main.step( "Adding flow with Group using rest api" )
-        response = main.ONOSrest.addFlow( deviceId = deviceId,
-                                          priority = priority,
-                                          ingressPort = ingressPort,
-                                          groupId = groupId )
+        response = main.ONOSrest.addFlow( deviceId=deviceId,
+                                          priority=priority,
+                                          ingressPort=ingressPort,
+                                          groupId=groupId )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=response,
                                  onpass="Successfully Added Flows",
@@ -460,10 +457,10 @@ class FUNCgroup:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        response = main.ONOSrest.getFlows( deviceId = deviceId )
+        response = main.ONOSrest.getFlows( deviceId=deviceId )
         responsejson = json.loads( response )
-        for item in responsejson :
-            if item["priority"] == int( priority ) and item["state"] == "ADDED" :
+        for item in responsejson:
+            if item[ "priority" ] == int( priority ) and item[ "state" ] == "ADDED":
                 isAdded = main.TRUE
 
         utilities.assert_equals( expect=main.TRUE,
@@ -471,9 +468,9 @@ class FUNCgroup:
                                  onpass="Flow is in Added State",
                                  onfail="Flow is not in Added State" )
 
-        '''
+        """
         Sends a packet using  scapy
-        '''
+        """
         main.step( "Testing Group by sending packet using  Scapy" )
         main.log.info( "Creating host components" )
         main.Scapy.createHostComponent( "h1" )
@@ -481,11 +478,11 @@ class FUNCgroup:
         main.Scapy.createHostComponent( "h3" )
         main.Scapy.createHostComponent( "h4" )
 
-        hosts = [main.h1, main.h2, main.h3, main.h4]
+        hosts = [ main.h1, main.h2, main.h3, main.h4 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
         main.log.info( "Constructing Packet" )
         main.h1.buildEther( dst=main.h1.hostMac )
         main.h1.buildIP( dst=main.h1.hostIp )
@@ -494,28 +491,28 @@ class FUNCgroup:
         main.h3.startFilter( pktFilter="ether host %s and ip host %s" % ( main.h1.hostMac, main.h1.hostIp ) )
         main.h4.startFilter( pktFilter="ether host %s and ip host %s" % ( main.h1.hostMac, main.h1.hostIp ) )
         main.log.info( "sending packet to Host" )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
         main.log.info( "Checking filter for our packet" )
-        stepResultH2 = main.h2.checkFilter( )
-        stepResultH3 = main.h3.checkFilter( )
-        stepResultH4 = main.h4.checkFilter( )
+        stepResultH2 = main.h2.checkFilter()
+        stepResultH3 = main.h3.checkFilter()
+        stepResultH4 = main.h4.checkFilter()
 
         if stepResultH2:
-            main.log.info( "Packet : %s" % main.h2.readPackets( ) )
+            main.log.info( "Packet : %s" % main.h2.readPackets() )
         else:
-            main.h2.killFilter( )
+            main.h2.killFilter()
 
         if stepResultH3:
-            main.log.info( "Packet : %s" % main.h3.readPackets( ) )
+            main.log.info( "Packet : %s" % main.h3.readPackets() )
         else:
-            main.h2.killFilter( )
+            main.h2.killFilter()
 
         if stepResultH4:
-            main.log.info( "Packet : %s" % main.h4.readPackets( ) )
+            main.log.info( "Packet : %s" % main.h4.readPackets() )
         else:
-            main.h4.killFilter( )
+            main.h4.killFilter()
 
-        if stepResultH2 and stepResultH3 and stepResultH4 :
+        if stepResultH2 and stepResultH3 and stepResultH4:
             main.log.info( "Success!!!Packet sent to port 1 is received at port 2,3 and 4" )
             stepResult = main.TRUE
         else:
@@ -524,7 +521,7 @@ class FUNCgroup:
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
         main.Mininet1.removeHostComponent( "h3" )
@@ -536,9 +533,9 @@ class FUNCgroup:
                                  onfail="Packet sent to port 1 is not received at port 2,3,4 " )
 
     def CASE6( self, main ):
-        '''
+        """
          Deleting the Group and Flow
-        '''
+        """
         import json
         import time
         respFlowId = 1
@@ -547,15 +544,15 @@ class FUNCgroup:
         main.step( "Deleting Group and Flows" )
 
         #Get Flow ID
-        response = main.ONOSrest.getFlows( deviceId = deviceId )
+        response = main.ONOSrest.getFlows( deviceId=deviceId )
         responsejson = json.loads( response )
-        for item in responsejson :
-            if item["priority"] == int( priority ) :
-                respFlowId = item["id"]
+        for item in responsejson:
+            if item[ "priority" ] == int( priority ):
+                respFlowId = item[ "id" ]
 
         main.step( "Deleting the created flow by deviceId and flowId" )
-        flowResponse = main.ONOSrest.removeFlow( deviceId = deviceId,
-                                          flowId = respFlowId )
+        flowResponse = main.ONOSrest.removeFlow( deviceId=deviceId,
+                                                 flowId=respFlowId )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowResponse,
@@ -566,8 +563,8 @@ class FUNCgroup:
         time.sleep( main.delFlowSleep )
 
         main.step( "Deleting the created group by deviceId and appCookie" )
-        groupResponse = main.ONOSrest.removeGroup( deviceId = deviceId,
-                                                   appCookie = appCookie )
+        groupResponse = main.ONOSrest.removeGroup( deviceId=deviceId,
+                                                   appCookie=appCookie )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=groupResponse,
@@ -578,9 +575,9 @@ class FUNCgroup:
         time.sleep( main.delGroupSleep )
 
     def CASE7( self, main ):
-        '''
+        """
            Adding Group of type "INDIRECT" using Rest api.
-        '''
+        """
         import json
         import time
         isAdded = main.FALSE
@@ -593,13 +590,13 @@ class FUNCgroup:
 
         main.step( "Add Group using Rest api" )
         bucketList = []
-        bucket = main.buckets.addBucket( main, egressPort = egressPort1 )
+        bucket = main.buckets.addBucket( main, egressPort=egressPort1 )
         bucketList.append( bucket )
-        response = main.ONOSrest.addGroup( deviceId = deviceId,
-                                           groupType = type2,
-                                           bucketList = bucketList,
-                                           appCookie = appCookie,
-                                           groupId = groupId )
+        response = main.ONOSrest.addGroup( deviceId=deviceId,
+                                           groupType=type2,
+                                           bucketList=bucketList,
+                                           appCookie=appCookie,
+                                           groupId=groupId )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=response,
@@ -611,11 +608,11 @@ class FUNCgroup:
 
         main.step( "Check groups are in ADDED state" )
 
-        response = main.ONOSrest.getGroups( deviceId = deviceId,
-                                            appCookie = appCookie )
+        response = main.ONOSrest.getGroups( deviceId=deviceId,
+                                            appCookie=appCookie )
         responsejson = json.loads( response )
-        for item in responsejson :
-            if item["state"] == "ADDED" :
+        for item in responsejson:
+            if item[ "state" ] == "ADDED":
                 isAdded = main.TRUE
 
         utilities.assert_equals( expect=main.TRUE,
@@ -623,16 +620,16 @@ class FUNCgroup:
                                  onpass="INDIRECT Group is in Added State",
                                  onfail="INDIRECT Group is not in Added State" )
 
-        '''
+        """
            Adding flows using rest api
-        '''
+        """
         isAdded = main.FALSE
 
         main.step( "Adding flow with Group using rest api" )
-        response = main.ONOSrest.addFlow( deviceId = deviceId,
-                                          priority = priority,
-                                          ingressPort = ingressPort,
-                                          groupId = groupId )
+        response = main.ONOSrest.addFlow( deviceId=deviceId,
+                                          priority=priority,
+                                          ingressPort=ingressPort,
+                                          groupId=groupId )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=response,
                                  onpass="Successfully Added Flows",
@@ -641,10 +638,10 @@ class FUNCgroup:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        response = main.ONOSrest.getFlows( deviceId = deviceId )
+        response = main.ONOSrest.getFlows( deviceId=deviceId )
         responsejson = json.loads( response )
-        for item in responsejson :
-            if item["priority"] == int( priority ) and item["state"] == "ADDED" :
+        for item in responsejson:
+            if item[ "priority" ] == int( priority ) and item[ "state" ] == "ADDED":
                 isAdded = main.TRUE
 
         utilities.assert_equals( expect=main.TRUE,
@@ -652,37 +649,37 @@ class FUNCgroup:
                                  onpass="Flow is in Added State",
                                  onfail="Flow is not in Added State" )
 
-        '''
+        """
         Sends a packet using scapy
-        '''
+        """
         main.step( "Testing Group by sending packet using  Scapy" )
         main.log.info( "Creating host components" )
         main.Scapy.createHostComponent( "h1" )
         main.Scapy.createHostComponent( "h2" )
 
-        hosts = [main.h1, main.h2]
+        hosts = [ main.h1, main.h2 ]
         for host in hosts:
-            host.startHostCli( )
-            host.startScapy( )
-            host.updateSelf( )
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
         main.log.info( "Constructing Packet" )
         main.h1.buildEther( dst=main.h1.hostMac )
         main.h1.buildIP( dst=main.h1.hostIp )
         main.log.info( "Start Filter on host2" )
         main.h2.startFilter( pktFilter="ether host %s and ip host %s" % ( main.h1.hostMac, main.h1.hostIp ) )
         main.log.info( "sending packet to Host" )
-        main.h1.sendPacket( )
+        main.h1.sendPacket()
         main.log.info( "Checking filter for our packet" )
-        stepResultH2 = main.h2.checkFilter( )
+        stepResultH2 = main.h2.checkFilter()
 
         if stepResultH2:
-            main.log.info( "Packet : %s" % main.h2.readPackets( ) )
+            main.log.info( "Packet : %s" % main.h2.readPackets() )
         else:
-            main.h2.killFilter( )
+            main.h2.killFilter()
 
         main.log.info( "Clean up host components" )
         for host in hosts:
-            host.stopScapy( )
+            host.stopScapy()
         main.Mininet1.removeHostComponent( "h1" )
         main.Mininet1.removeHostComponent( "h2" )
 
@@ -692,9 +689,9 @@ class FUNCgroup:
                                  onfail="Failure!!!Packet sent to port 1 is not received at port 2" )
 
     def CASE8( self, main ):
-        '''
+        """
          Deleting the Group and Flow
-        '''
+        """
         import json
         import time
         respFlowId = 1
@@ -703,15 +700,15 @@ class FUNCgroup:
         main.step( "Deleting Group and Flows" )
 
         #Getting Flow ID
-        response = main.ONOSrest.getFlows( deviceId = deviceId )
+        response = main.ONOSrest.getFlows( deviceId=deviceId )
         responsejson = json.loads( response )
-        for item in responsejson :
-            if item["priority"] == int( priority ) :
-                respFlowId = item["id"]
+        for item in responsejson:
+            if item[ "priority" ] == int( priority ):
+                respFlowId = item[ "id" ]
 
         main.step( "Deleting the created flow by deviceId and flowId" )
-        flowResponse = main.ONOSrest.removeFlow( deviceId = deviceId,
-                                          flowId = respFlowId )
+        flowResponse = main.ONOSrest.removeFlow( deviceId=deviceId,
+                                                 flowId=respFlowId )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowResponse,
@@ -721,8 +718,8 @@ class FUNCgroup:
         # Giving ONOS time to delete the flow
         time.sleep( main.delFlowSleep )
 
-        groupResponse = main.ONOSrest.removeGroup( deviceId = deviceId,
-                                          appCookie = appCookie )
+        groupResponse = main.ONOSrest.removeGroup( deviceId=deviceId,
+                                                   appCookie=appCookie )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=groupResponse,
@@ -733,9 +730,9 @@ class FUNCgroup:
         time.sleep( main.delGroupSleep )
 
     def CASE100( self, main ):
-        '''
+        """
             Report errors/warnings/exceptions
-        '''
+        """
         main.log.info( "Error report: \n" )
         main.ONOSbench.logReport( main.ONOSip[ 0 ],
                                   [ "INFO",

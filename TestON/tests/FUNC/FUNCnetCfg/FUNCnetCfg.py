@@ -1,6 +1,7 @@
 
 # Testing the basic intent functionality of ONOS
 
+
 class FUNCnetCfg:
 
     def __init__( self ):
@@ -19,7 +20,6 @@ class FUNCnetCfg:
             - Install ONOS package
             - Build ONOS package
         """
-
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
         main.caseExplanation = "This test case is mainly for loading " +\
@@ -42,7 +42,7 @@ class FUNCnetCfg:
             wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
             wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-            main.gossipTime = int( main.params[ 'SLEEP'][ 'cfgGossip' ] )
+            main.gossipTime = int( main.params[ 'SLEEP' ][ 'cfgGossip' ] )
             main.SetNetCfgSleep = int( main.params[ 'SLEEP' ][ 'SetNetCfgSleep' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.cellData = {}  # for creating cell file
@@ -142,7 +142,7 @@ class FUNCnetCfg:
 
         tempOnosIp = []
         for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[i] )
+            tempOnosIp.append( main.ONOSip[ i ] )
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
                                        "temp", main.Mininet1.ip_address,
@@ -285,15 +285,15 @@ class FUNCnetCfg:
                                      " hosts don't match Mininet" )
 
     def CASE9( self, main ):
-        '''
+        """
             Report errors/warnings/exceptions
-        '''
+        """
         main.log.info( "Error report: \n" )
         main.ONOSbench.logReport(
-                globalONOSip[0],
-                [ "INFO", "WARN", "ERROR" , "Except" ],
+                globalONOSip[ 0 ],
+                [ "INFO", "WARN", "ERROR", "Except" ],
                 "s" )
-        # main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
+        # main.ONOSbench.logReport( globalONOSip[ 1 ], [ "INFO" ], "d" )
 
     def CASE10( self, main ):
         """
@@ -308,9 +308,9 @@ class FUNCnetCfg:
 
         main.step( "Starting Mininet topology with OF 1.0 switches" )
         args = "--controller none --switch ovs,protocols=OpenFlow10"
-        switches = int( main.params['MININET']['switch'] )
+        switches = int( main.params[ 'MININET' ][ 'switch' ] )
         cmd = "mn --topo linear,{} {}".format( switches, args )
-        topoResult = main.Mininet1.startNet( mnCmd = cmd )
+        topoResult = main.Mininet1.startNet( mnCmd=cmd )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -337,7 +337,7 @@ class FUNCnetCfg:
         args = "--controller none --switch ovs,protocols=OpenFlow13"
         switches = int( main.params[ 'MININET' ][ 'switch' ] )
         cmd = "mn --topo linear,{} {}".format( switches, args )
-        topoResult = main.Mininet1.startNet( mnCmd = cmd )
+        topoResult = main.Mininet1.startNet( mnCmd=cmd )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -387,7 +387,7 @@ class FUNCnetCfg:
                                 "to start up fresh"
 
         main.step( "Stopping Mininet Topology" )
-        topoResult = main.Mininet1.stopNet( )
+        topoResult = main.Mininet1.stopNet()
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -410,7 +410,7 @@ class FUNCnetCfg:
         main.caseExplanation = "Add Network Configurations for devices" +\
                                " not discovered yet. One device is allowed" +\
                                ", the other disallowed."
-        pprint = main.nodes[0].pprint
+        pprint = main.nodes[ 0 ].pprint
 
         main.step( "Add Net Cfg for switch1" )
 
@@ -460,7 +460,7 @@ class FUNCnetCfg:
             main.log.exception( "s3Json File not found" )
             main.cleanup()
             main.exit()
-        main.log.info( "s3Json:" + str( s3Json) )
+        main.log.info( "s3Json:" + str( s3Json ) )
 
         main.s3Json = s3Json
         setS3Disallow = main.ONOSrest1.setNetCfg( s3Json,
@@ -477,7 +477,7 @@ class FUNCnetCfg:
             onosCfg = pprint( getS3 )
             sentCfg = pprint( s3Json )
             if onosCfg == sentCfg:
-                main.log.info("ONOS NetCfg match what was sent")
+                main.log.info( "ONOS NetCfg match what was sent" )
                 s3Result = True
             else:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
@@ -513,7 +513,7 @@ class FUNCnetCfg:
         onosDevices = []
         try:
             for sw in json.loads( devices ):
-                onosDevices.append( str( sw['id'] ) )
+                onosDevices.append( str( sw[ 'id' ] ) )
             onosDevices.sort()
             main.log.debug( onosDevices )
         except( TypeError, ValueError ):
@@ -527,10 +527,10 @@ class FUNCnetCfg:
         keys = [ 'name', 'owner', 'rackAddress' ]
         try:
             for sw in json.loads( devices ):
-                if "of:0000000000000001" in sw['id']:
+                if "of:0000000000000001" in sw[ 'id' ]:
                     s1Correct = True
                     for k in keys:
-                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[k] ):
+                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[ k ] ):
                             s1Correct = False
                             main.log.debug( "{} is wrong on s1".format( k ) )
                     if not s1Correct:
@@ -557,7 +557,7 @@ class FUNCnetCfg:
         main.caseExplanation = "Add Network Configurations for discovered " +\
                                "devices. One device is allowed" +\
                                ", the other disallowed."
-        pprint = main.nodes[0].pprint
+        pprint = main.nodes[ 0 ].pprint
 
         main.step( "Add Net Cfg for switch2" )
         try:
@@ -673,15 +673,15 @@ class FUNCnetCfg:
                 if "of:0000000000000001" in sw.get( 'id' ):
                     s1Correct = True
                     for k in keys:
-                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[k] ):
+                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[ k ] ):
                             s1Correct = False
                             main.log.debug( "{} is wrong on s1".format( k ) )
                     if not s1Correct:
                         main.log.error( "Annotations for s1 are incorrect: {}".format( sw ) )
-                elif "of:0000000000000002" in sw['id']:
+                elif "of:0000000000000002" in sw[ 'id' ]:
                     s2Correct = True
                     for k in keys:
-                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s2Json[k] ):
+                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s2Json[ k ] ):
                             s2Correct = False
                             main.log.debug( "{} is wrong on s2".format( k ) )
                     if not s2Correct:
@@ -718,7 +718,7 @@ class FUNCnetCfg:
 
         s1Json = main.s1Json  # NOTE: This is a reference
         try:
-            del s1Json['allowed']
+            del s1Json[ 'allowed' ]
         except KeyError:
             main.log.exception( "Key not found" )
         setS1 = main.ONOSrest1.setNetCfg( s1Json,
@@ -729,7 +729,7 @@ class FUNCnetCfg:
         s2Json = main.s2Json  # NOTE: This is a reference
         try:
             time.sleep( main.gossipTime )
-            del s2Json['allowed']
+            del s2Json[ 'allowed' ]
         except KeyError:
             main.log.exception( "Key not found" )
         setS2 = main.ONOSrest2.setNetCfg( s2Json,
@@ -740,7 +740,7 @@ class FUNCnetCfg:
         s3Json = main.s3Json  # NOTE: This is a reference
         try:
             time.sleep( main.gossipTime )
-            del s3Json['allowed']
+            del s3Json[ 'allowed' ]
         except KeyError:
             main.log.exception( "Key not found" )
         setS3 = main.ONOSrest3.setNetCfg( s3Json,
@@ -751,7 +751,7 @@ class FUNCnetCfg:
         s4Json = main.s4Json  # NOTE: This is a reference
         try:
             time.sleep( main.gossipTime )
-            del s4Json['allowed']
+            del s4Json[ 'allowed' ]
         except KeyError:
             main.log.exception( "Key not found" )
         setS4 = main.ONOSrest3.setNetCfg( s4Json,
@@ -829,15 +829,15 @@ class FUNCnetCfg:
         import json
         main.case( "Check to see if the pre-startup configurations were set, then remove their allowed status" )
         main.step( "Checking configurations for Switches 5 and 6" )
-        main.step( "ONOS should only show devices S1, S2, S4, and S5" ) #and S6
+        main.step( "ONOS should only show devices S1, S2, S4, and S5" )  # and S6
         devices = main.ONOSrest1.devices()
         main.log.debug( main.ONOSrest1.pprint( devices ) )
-        allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5 ] ] #6
+        allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5 ] ]  # 6
         main.log.debug( allowedDevices )
         onosDevices = []
         try:
             for sw in json.loads( devices ):
-                onosDevices.append( str( sw['id'] ) )
+                onosDevices.append( str( sw[ 'id' ] ) )
             onosDevices.sort()
             main.log.debug( onosDevices )
         except( TypeError, ValueError ):
@@ -881,32 +881,32 @@ class FUNCnetCfg:
 
     def CASE27( self, main ):
         """
-        1) A = get /network/configuration
-        2) Post A
-        3) Compare A with ONOS
-        4) Modify A so S6 is disallowed
-        5) Check
+        1 ) A = get /network/configuration
+        2 ) Post A
+        3 ) Compare A with ONOS
+        4 ) Modify A so S6 is disallowed
+        5 ) Check
 
         """
         import json
-        pprint = main.nodes[0].pprint
+        pprint = main.nodes[ 0 ].pprint
         main.case( "Posting network configurations to the top level web resource" )
         main.step( "Get json object from Net Cfg" )
-        getinfo = main.ONOSrest1.getNetCfg( )
+        getinfo = main.ONOSrest1.getNetCfg()
         main.log.debug( getinfo )
         main.step( "Posting json object to Net Cfg" )
         postinfo = main.ONOSrest1.setNetCfg( json.loads( getinfo ) )
         main.step( "Compare device with ONOS" )
         main.netCfg.compareCfg( main )
-        main.step ( "ONOS should only show devices S1, S2, S4, S5 and S6" )
-        devices = main.ONOSrest1.devices( )
+        main.step( "ONOS should only show devices S1, S2, S4, S5 and S6" )
+        devices = main.ONOSrest1.devices()
         main.log.debug( main.ONOSrest1.pprint( devices ) )
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5, 6 ] ]
         onosDevices = []
         try:
             for sw in json.loads( devices ):
                 onosDevices.append( str( sw.get( 'id' ) ) )
-            onosDevices.sort( )
+            onosDevices.sort()
             failMsg = "ONOS devices doesn't match the list of allowed devices. \n"
             failMsg += "Expected devices: {}\nActual devices: {}".format( allowedDevices, onosDevices )
         except( TypeError, ValueError ):

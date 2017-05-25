@@ -4,6 +4,7 @@ Functions for the vpls tests
 import time
 import json
 
+
 def sanitizeConfig( config ):
     """
     Take a python json object for vpls config and normalize it.
@@ -23,13 +24,14 @@ def sanitizeConfig( config ):
             encap = "NONE"
         network[ 'encapsulation' ] = encap.upper()
         ifaces = network.get( 'interfaces' )
-        if ifaces == ['']:
+        if ifaces == [ '' ]:
             ifaces = []
         else:
             ifaces = sorted( ifaces )
-            network['interfaces'] = ifaces
-    config = sorted( config, key=lambda k: k['name'] )
+            network[ 'interfaces' ] = ifaces
+    config = sorted( config, key=lambda k: k[ 'name' ] )
     return config
+
 
 def verify( main ):
     """
@@ -43,9 +45,9 @@ def verify( main ):
           application be stored in main.vplsConfig
     """
     # Variables
-    app = main.params['vpls']['name']
+    app = main.params[ 'vpls' ][ 'name' ]
     pprint = main.ONOSrest1.pprint
-    SLEEP = int( main.params['SLEEP']['netcfg'] )
+    SLEEP = int( main.params[ 'SLEEP' ][ 'netcfg' ] )
 
     main.step( "Check network configurations for vpls application" )
     clusterResult = True
@@ -96,7 +98,7 @@ def verify( main ):
     """
     main.step( "Check intent states" )
     # Print the intent states
-    intents = main.CLIs[0].intents()
+    intents = main.CLIs[ 0 ].intents()
     count = 0
     while count <= 5:
         installedCheck = True
@@ -115,10 +117,9 @@ def verify( main ):
                              onpass="All Intents in installed state",
                              onfail="Not all Intents in installed state" )
     """
-
     main.step( "Check connectivity" )
     connectivityCheck = True
-    hosts = int( main.params['vpls']['hosts'] )
+    hosts = int( main.params[ 'vpls' ][ 'hosts' ] )
     networks = []
     for network in main.vplsConfig:
         nodes = network.get( 'interfaces', None )

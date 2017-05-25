@@ -2,7 +2,9 @@
 # CASE2: Load vpls topology and configurations from demo script
 # CASE3: Test CLI commands
 
+
 class VPLSBasic:
+
     def __init__( self ):
         self.default = ''
 
@@ -138,9 +140,9 @@ class VPLSBasic:
         cliResults = main.TRUE
         threads = []
         for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[i].startOnosCli,
+            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
                              name="startOnosCli-" + str( i ),
-                             args=[main.nodes[i].ip_address] )
+                             args=[ main.nodes[ i ].ip_address ] )
             threads.append( t )
             t.start()
 
@@ -157,7 +159,7 @@ class VPLSBasic:
         # get data from the params
         apps = main.params.get( 'apps' )
         if apps:
-            apps = apps.split(',')
+            apps = apps.split( ',' )
             main.log.warn( apps )
             activateResult = True
             for app in apps:
@@ -184,8 +186,8 @@ class VPLSBasic:
             main.log.debug( config )
             checkResult = main.TRUE
             for component in config:
-                for setting in config[component]:
-                    value = config[component][setting]
+                for setting in config[ component ]:
+                    value = config[ component ][ setting ]
                     check = main.CLIs[ 0 ].setCfg( component, setting, value )
                     main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
                     checkResult = check and checkResult
@@ -200,7 +202,7 @@ class VPLSBasic:
         appCheck = main.TRUE
         threads = []
         for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[i].appToIDCheck,
+            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -210,8 +212,8 @@ class VPLSBasic:
             t.join()
             appCheck = appCheck and t.result
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[ 0 ].apps() )
+            main.log.warn( main.CLIs[ 0 ].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -224,8 +226,8 @@ class VPLSBasic:
         from tests.USECASE.VPLS.dependencies import vpls
 
         pprint = main.ONOSrest1.pprint
-        hosts = int( main.params['vpls']['hosts'] )
-        SLEEP = int( main.params['SLEEP']['netcfg'] )
+        hosts = int( main.params[ 'vpls' ][ 'hosts' ] )
+        SLEEP = int( main.params[ 'SLEEP' ][ 'netcfg' ] )
 
         main.step( "Discover hosts using pings" )
         for i in range( 1, hosts + 1 ):
@@ -238,8 +240,8 @@ class VPLSBasic:
 
         main.step( "Load VPLS configurations" )
         # TODO: load from params
-        fileName = main.params['DEPENDENCY']['topology']
-        app = main.params['vpls']['name']
+        fileName = main.params[ 'DEPENDENCY' ][ 'topology' ]
+        app = main.params[ 'vpls' ][ 'name' ]
         # TODO make this a function?
         main.ONOSbench.handle.sendline( "onos-netcfg $OC1 " + fileName )
         # Time for netcfg to load data
@@ -248,7 +250,7 @@ class VPLSBasic:
         try:
             with open( os.path.expanduser( fileName ) ) as dataFile:
                 originalCfg = json.load( dataFile )
-                main.vplsConfig = originalCfg['apps'].get( app ).get( 'vpls' ).get( 'vplsList')
+                main.vplsConfig = originalCfg[ 'apps' ].get( app ).get( 'vpls' ).get( 'vplsList' )
         except Exception as e:
             main.log.error( "Error loading config file: {}".format( e ) )
         if main.vplsConfig:
@@ -295,37 +297,37 @@ class VPLSBasic:
             list?
         """
         from tests.USECASE.VPLS.dependencies import vpls
-        SLEEP = int( main.params['SLEEP']['netcfg'] )
+        SLEEP = int( main.params[ 'SLEEP' ][ 'netcfg' ] )
         pprint = main.ONOSrest1.pprint
 
         main.step( "Remove an interface from a vpls network" )
-        main.CLIs[0].vplsRemIface( 'VPLS1', 'h1' )
+        main.CLIs[ 0 ].vplsRemIface( 'VPLS1', 'h1' )
         time.sleep( SLEEP )
         #update master config json
         for network in main.vplsConfig:
             if network.get( 'name' ) == 'VPLS1':
                 ifaces = network.get( 'interfaces' )
-                ifaces.remove('h1')
+                ifaces.remove( 'h1' )
         vpls.verify( main )
 
         main.step( "Clean all vpls configurations" )
-        main.CLIs[0].vplsClean()
+        main.CLIs[ 0 ].vplsClean()
         time.sleep( SLEEP )
         main.vplsConfig = []
         vpls.verify( main )
 
         main.step( "Create a new vpls network" )
         name = "Network1"
-        main.CLIs[0].vplsCreate( name )
+        main.CLIs[ 0 ].vplsCreate( name )
         time.sleep( SLEEP )
         network1 = { 'name': name, 'interfaces': [], 'encapsulation': 'NONE' }
         main.vplsConfig.append( network1 )
         vpls.verify( main )
 
         main.step( "Add interfaces to the network" )
-        main.CLIs[0].vplsAddIface( name, "h1" )
-        main.CLIs[0].vplsAddIface( name, "h5" )
-        main.CLIs[0].vplsAddIface( name, "h4" )
+        main.CLIs[ 0 ].vplsAddIface( name, "h1" )
+        main.CLIs[ 0 ].vplsAddIface( name, "h5" )
+        main.CLIs[ 0 ].vplsAddIface( name, "h4" )
         time.sleep( SLEEP )
         for network in main.vplsConfig:
             if network.get( 'name' ) == name:
@@ -338,33 +340,33 @@ class VPLSBasic:
 
         main.step( "Add MPLS encapsulation to a vpls network" )
         encapType = "MPLS"
-        main.CLIs[0].vplsSetEncap( name, encapType )
+        main.CLIs[ 0 ].vplsSetEncap( name, encapType )
         for network in main.vplsConfig:
             if network.get( 'name' ) == name:
-                network['encapsulation'] = encapType
+                network[ 'encapsulation' ] = encapType
         time.sleep( SLEEP )
         vpls.verify( main )
 
         main.step( "Change an encapsulation type" )
         encapType = "VLAN"
-        main.CLIs[0].vplsSetEncap( name, encapType )
+        main.CLIs[ 0 ].vplsSetEncap( name, encapType )
         for network in main.vplsConfig:
             if network.get( 'name' ) == name:
-                network['encapsulation'] = encapType
+                network[ 'encapsulation' ] = encapType
         time.sleep( SLEEP )
         vpls.verify( main )
 
         main.step( "Remove encapsulation" )
         encapType = "NONE"
-        main.CLIs[0].vplsSetEncap( name, encapType )
+        main.CLIs[ 0 ].vplsSetEncap( name, encapType )
         for network in main.vplsConfig:
             if network.get( 'name' ) == name:
-                network['encapsulation'] = encapType
+                network[ 'encapsulation' ] = encapType
         time.sleep( SLEEP )
         vpls.verify( main )
 
         main.step( "Clean all vpls configurations" )
-        main.CLIs[0].vplsClean()
+        main.CLIs[ 0 ].vplsClean()
         time.sleep( SLEEP )
         main.vplsConfig = []
         vpls.verify( main )

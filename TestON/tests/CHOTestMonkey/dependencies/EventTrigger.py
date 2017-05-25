@@ -6,6 +6,7 @@ import time
 import random
 from multiprocessing.connection import Client
 
+
 def triggerEvent( type, scheduleMethod, *args ):
     """
     This function inserts an event into CHOTestMonkey
@@ -42,6 +43,7 @@ def triggerEvent( type, scheduleMethod, *args ):
         print "Unknown response from server:", response
     conn.close()
 
+
 def testLoop( sleepTime=5 ):
     downLinkNum = 0
     downDeviceNum = 0
@@ -65,6 +67,7 @@ def testLoop( sleepTime=5 ):
             time.sleep( sleepTime * 2 )
         else:
             pass
+
 
 def replayFromFile( filePath='/home/admin/event-list', sleepTime=1 ):
     try:

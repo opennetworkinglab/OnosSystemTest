@@ -6,7 +6,9 @@ from threading import Lock, Condition
 from tests.CHOTestMonkey.dependencies.events.Event import EventType, EventStates, Event
 from tests.CHOTestMonkey.dependencies.EventScheduler import EventScheduleMethod
 
+
 class MessageType:
+
     def __init__( self ):
         self.map = {}
         # This message type is used for requesting an event injection from outside CHOTestMonkey
@@ -32,7 +34,9 @@ class MessageType:
         self.NOT_ENOUGH_ARGUMENT = 23
         self.map[ 23 ] = 'NOT_ENOUGH_ARGUMENT'
 
+
 class EventGenerator:
+
     def __init__( self ):
         self.default = ''
         self.eventGeneratorLock = Lock()
@@ -50,12 +54,12 @@ class EventGenerator:
         listener = Listener( address )
         main.log.info( "Event Generator - Event listener start listening on %s:%s" % ( host, port ) )
 
-        while 1:
+        while True:
             conn = listener.accept()
             t = main.Thread( target=self.handleConnection,
                              threadID=main.threadID,
                              name="handleConnection",
-                             args=[ conn ])
+                             args=[ conn ] )
             t.start()
             with main.variableLock:
                 main.threadID += 1
@@ -124,7 +128,7 @@ class EventGenerator:
                 main.log.warn( "Event Generator - event type %s not enabled" % ( typeIndex ) )
                 return
             function = getattr( self, main.enabledEvents[ typeIndex ] )
-            assert function != None, "Event Generator - funtion for group event " + typeIndex + " not found"
+            assert function is not None, "Event Generator - funtion for group event " + typeIndex + " not found"
             function( scheduleMethod, args )
         else:
             # Add individual events to the scheduler
@@ -156,7 +160,7 @@ class EventGenerator:
         The function randomly adds a link down-up event pair into the scheduler
         After each individual link event, all checks are inserted into the scheduler
         param:
-            args[0] is the average interval between link down and link up events
+            args[ 0 ] is the average interval between link down and link up events
             blocking means blocking other events from being scheduled between link down and link up
         """
         import random
@@ -199,9 +203,9 @@ class EventGenerator:
         The function randomly adds a group of link down-up events into the scheduler
         After each link down or up, all checks are inserted into the scheduler
         param:
-            args[0] is the number of links that are to be brought down
-            args[1] is the average interval between link down events
-            args[2] is the average interval between link group down and group up events
+            args[ 0 ] is the number of links that are to be brought down
+            args[ 1 ] is the average interval between link down events
+            args[ 2 ] is the average interval between link group down and group up events
             blocking means blocking other events from being scheduled between link events
         """
         import random
@@ -265,7 +269,7 @@ class EventGenerator:
         The function randomly removes a device and then adds it back
         After each individual device event, all checks are inserted into the scheduler
         param:
-            args[0] is the average interval between device down and device up events
+            args[ 0 ] is the average interval between device down and device up events
             blocking means blocking other events from being scheduled between device down and device up
         """
         import random
@@ -308,9 +312,9 @@ class EventGenerator:
         The function randomly adds a group of device down-up events into the scheduler
         After each device down or up, all checks are inserted into the scheduler
         param:
-            args[0] is the number of devices that are to be brought down
-            args[1] is the average interval between device down events
-            args[2] is the average interval between device group down and group up events
+            args[ 0 ] is the number of devices that are to be brought down
+            args[ 1 ] is the average interval between device down events
+            args[ 2 ] is the average interval between device group down and group up events
             blocking means blocking other events from being scheduled between device events
         """
         import random

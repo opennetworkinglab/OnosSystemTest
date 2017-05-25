@@ -10,7 +10,9 @@ from tests.CHOTestMonkey.dependencies.events.NetworkEvent import *
 from tests.CHOTestMonkey.dependencies.events.AppEvent import *
 from tests.CHOTestMonkey.dependencies.events.ONOSEvent import *
 
+
 class EventScheduleMethod:
+
     def __init__( self ):
         self.map = {}
         self.RUN_NON_BLOCK = 1
@@ -18,7 +20,9 @@ class EventScheduleMethod:
         self.RUN_BLOCK = -1
         self.map[ -1 ] = 'RUN_BLOCK'
 
+
 class EventTuple:
+
     def __init__( self, id, className, typeString, typeIndex, scheduleMethod, args, rerunInterval, maxRerunNum ):
         self.default = ''
         self.id = 0
@@ -35,7 +39,9 @@ class EventTuple:
         event = globals()[ self.className ]
         return event().startEvent( self.args )
 
+
 class EventScheduler:
+
     def __init__( self ):
         self.default = ''
         self.pendingEvents = []
@@ -68,8 +74,8 @@ class EventScheduler:
         with main.variableLock:
             main.eventID += 1
         main.log.debug( "Event Scheduler - Event added: %s, %s, %s" % ( typeIndex,
-                                                                       scheduleMethod,
-                                                                       args ) )
+                                                                        scheduleMethod,
+                                                                        args ) )
         with self.pendingEventsCondition:
             if index == -1:
                 self.pendingEvents.append( eventTuple )
@@ -86,14 +92,14 @@ class EventScheduler:
         """
         import time
 
-        while 1:
+        while True:
             with self.pendingEventsCondition:
                 while len( self.pendingEvents ) == 0:
                     self.pendingEventsCondition.wait()
                 eventTuple = self.pendingEvents[ 0 ]
             main.log.debug( "Event Scheduler - Scheduling event: %s, %s, %s" % ( eventTuple.typeIndex,
-                                                                                eventTuple.scheduleMethod,
-                                                                                eventTuple.args ) )
+                                                                                 eventTuple.scheduleMethod,
+                                                                                 eventTuple.args ) )
             if eventTuple.scheduleMethod == EventScheduleMethod().RUN_NON_BLOCK:
                 # Run NON_BLOCK events using threads
                 with self.pendingEventsCondition:
@@ -101,7 +107,7 @@ class EventScheduler:
                 t = main.Thread( target=self.startEvent,
                                  threadID=main.threadID,
                                  name="startEvent",
-                                 args=[ eventTuple ])
+                                 args=[ eventTuple ] )
                 t.start()
                 with main.variableLock:
                     main.threadID += 1
@@ -192,6 +198,5 @@ class EventScheduler:
         self.pendingEventsCapacity = capacity
 
     def setRunningState( self, state ):
-        assert state == True or state == False
+        assert state or state == False
         self.isRunning = state
-

@@ -2,13 +2,13 @@
 CHOTestMonkey class
 Author: you@onlab.us
 """
-
 import sys
 import os
 import re
 import time
 import json
 import itertools
+
 
 class CHOTestMonkey:
 
@@ -49,7 +49,7 @@ class CHOTestMonkey:
         main.AllONOSip = main.ONOSbench.getOnosIps()
         main.controllers = []
         for i in range( 1, main.numCtrls + 1 ):
-            main.ONOSip.append( main.AllONOSip[ i-1 ] )
+            main.ONOSip.append( main.AllONOSip[ i - 1 ] )
             newController = Controller( i )
             newController.setCLI( getattr( main, 'ONOScli' + str( i ) ) )
             main.controllers.append( newController )
@@ -131,8 +131,8 @@ class CHOTestMonkey:
         main.step( "Uninstall ONOS package on all Nodes" )
         uninstallResult = main.TRUE
         for i in range( main.numCtrls ):
-            main.log.info( "Uninstalling package on ONOS Node IP: " + main.ONOSip[i] )
-            uResult = main.ONOSbench.onosUninstall( main.ONOSip[i] )
+            main.log.info( "Uninstalling package on ONOS Node IP: " + main.ONOSip[ i ] )
+            uResult = main.ONOSbench.onosUninstall( main.ONOSip[ i ] )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=uResult,
                                      onpass="Test step PASS",
@@ -142,8 +142,8 @@ class CHOTestMonkey:
         main.step( "Install ONOS package on all Nodes" )
         installResult = main.TRUE
         for i in range( main.numCtrls ):
-            main.log.info( "Installing package on ONOS Node IP: " + main.ONOSip[i] )
-            iResult = main.ONOSbench.onosInstall( node=main.ONOSip[i] )
+            main.log.info( "Installing package on ONOS Node IP: " + main.ONOSip[ i ] )
+            iResult = main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=iResult,
                                      onpass="Test step PASS",
@@ -153,7 +153,7 @@ class CHOTestMonkey:
         main.step( "Set up ONOS secure SSH" )
         secureSshResult = main.TRUE
         for i in range( main.numCtrls ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
         utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -184,14 +184,14 @@ class CHOTestMonkey:
 
         main.step( "Start ONOS CLI on all nodes" )
         cliResult = main.TRUE
-        startCliResult  = main.TRUE
+        startCliResult = main.TRUE
         pool = []
         for controller in main.controllers:
             t = main.Thread( target=controller.startCLI,
                              threadID=main.threadID,
                              name="startOnosCli",
-                             args=[ ] )
-            pool.append(t)
+                             args=[] )
+            pool.append( t )
             t.start()
             main.threadID = main.threadID + 1
         for t in pool:
@@ -268,7 +268,7 @@ class CHOTestMonkey:
         import time
         import copy
 
-        main.topoIndex = "topo" + str ( main.params[ 'TEST' ][ 'topo' ] )
+        main.topoIndex = "topo" + str( main.params[ 'TEST' ][ 'topo' ] )
 
         main.log.report( "Load Mininet topology and Balance all Mininet switches across controllers" )
         main.log.report( "________________________________________________________________________" )
@@ -277,10 +277,10 @@ class CHOTestMonkey:
         main.step( "Start Mininet topology" )
         newTopo = main.params[ 'TOPO' ][ main.topoIndex ][ 'fileName' ]
         mininetDir = main.Mininet1.home + "/custom/"
-        topoPath = main.testDir + "/" + main.TEST  + "/dependencies/topologies/" + newTopo
+        topoPath = main.testDir + "/" + main.TEST + "/dependencies/topologies/" + newTopo
         main.ONOSbench.secureCopy( main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to" )
         topoPath = mininetDir + newTopo
-        startStatus = main.Mininet1.startNet( topoFile = topoPath )
+        startStatus = main.Mininet1.startNet( topoFile=topoPath )
         main.mininetSwitches = main.Mininet1.getSwitches()
         main.mininetHosts = main.Mininet1.getHosts()
         main.mininetLinks = main.Mininet1.getLinks( timeout=60 )
@@ -366,7 +366,7 @@ class CHOTestMonkey:
                         deviceA = device
                     elif device.dpid == link[ 'dst' ][ 'device' ]:
                         deviceB = device
-                assert deviceA != None and deviceB != None
+                assert deviceA is not None and deviceB is not None
                 newLink = Link( linkInitIndex, deviceA, link[ 'src' ][ 'port' ], deviceB, link[ 'dst' ][ 'port' ] )
                 print newLink
                 main.links.append( newLink )
@@ -374,15 +374,15 @@ class CHOTestMonkey:
             # Set backward links and outgoing links of devices
             for linkA in main.links:
                 linkA.deviceA.outgoingLinks.append( linkA )
-                if linkA.backwardLink != None:
+                if linkA.backwardLink is not None:
                     continue
                 for linkB in main.links:
-                    if linkB.backwardLink != None:
+                    if linkB.backwardLink is not None:
                         continue
                     if linkA.deviceA == linkB.deviceB and\
-                    linkA.deviceB == linkB.deviceA and\
-                    linkA.portA == linkB.portB and\
-                    linkA.portB == linkB.portA:
+                            linkA.deviceB == linkB.deviceA and\
+                            linkA.portA == linkB.portB and\
+                            linkA.portB == linkB.portA:
                         linkA.setBackwardLink( linkB )
                         linkB.setBackwardLink( linkA )
             utilities.assert_equals( expect=main.TRUE,
@@ -401,7 +401,7 @@ class CHOTestMonkey:
                                  onfail="Saving ONOS topology data test FAIL" )
 
         if not caseResult:
-            main.log.info("Topology does not match, exiting test...")
+            main.log.info( "Topology does not match, exiting test..." )
             main.cleanup()
             main.exit()
 
@@ -877,7 +877,7 @@ class CHOTestMonkey:
                 main.eventGenerator.triggerEvent( EventType().NETWORK_DEVICE_UP, EventScheduleMethod().RUN_BLOCK, 'random' )
                 downDeviceNum -= 1
             elif event == 'toggle-flowobj':
-                if flowObj == False:
+                if not flowObj:
                     main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'true' )
                 else:
                     main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'false' )
@@ -921,9 +921,9 @@ class CHOTestMonkey:
                     eventName = line[ 10 ]
                     args = line[ 11: ]
                     assert eventName.startswith( 'CHECK' )\
-                    or eventName.startswith( 'NETWORK' )\
-                    or eventName.startswith( 'APP' )\
-                    or eventName.startswith( 'ONOS' )
+                        or eventName.startswith( 'NETWORK' )\
+                        or eventName.startswith( 'APP' )\
+                        or eventName.startswith( 'ONOS' )
                     if main.params[ 'CASE80' ][ 'skipChecks' ] == 'on' and eventName.startswith( 'CHECK' ):
                         continue
                     with main.eventScheduler.idleCondition:

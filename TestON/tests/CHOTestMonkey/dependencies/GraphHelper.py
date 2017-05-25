@@ -3,10 +3,11 @@ Graph algorithm implementations for CHOTestMonkey
 Author: you@onlab.us
 """
 class GraphHelper:
+
     """
     This class implements graph algorithms for CHOTestMonkey.
     It reads main.devices and main.links as vertices and edges.
-    Currently it offers functions for finding (non-)cut-edges and vertices,
+    Currently it offers functions for finding ( non- )cut-edges and vertices,
     which is realized based on chain-decomposition algorithm
     """
     def __init__( self ):
@@ -50,13 +51,13 @@ class GraphHelper:
                 key = self.DFI[ neighbor.index ]
                 if key in self.backEdges.keys():
                     if not link in self.backEdges[ key ] and\
-                    not backwardLink in self.backEdges[ key ]:
+                            not backwardLink in self.backEdges[ key ]:
                         self.backEdges[ key ].append( backwardLink )
                 else:
                     tempKey = self.DFI[ device.index ]
                     if tempKey in self.backEdges.keys():
                         if not link in self.backEdges[ tempKey ] and\
-                        not backwardLink in self.backEdges[ tempKey ]:
+                                not backwardLink in self.backEdges[ tempKey ]:
                             self.backEdges[ key ] = [ backwardLink ]
                     else:
                         self.backEdges[ key ] = [ backwardLink ]
@@ -65,8 +66,7 @@ class GraphHelper:
         """
         This function finds all the 'chains' for chain-decomposition algorithm
         """
-        keyList = self.backEdges.keys()
-        keyList.sort()
+        keyList = sorted( self.backEdges.keys() )
         deviceIsVisited = []
         for i in range( len( main.devices ) ):
             deviceIsVisited.append( 0 )

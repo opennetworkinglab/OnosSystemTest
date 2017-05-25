@@ -5,7 +5,9 @@ Author: you@onlab.us
 from tests.CHOTestMonkey.dependencies.events.Event import EventType, EventStates, Event
 from tests.CHOTestMonkey.dependencies.elements.NetworkElement import NetworkElement, Device, Host, Link
 
+
 class LinkEvent( Event ):
+
     def __init__( self ):
         Event.__init__( self )
         self.linkA = None
@@ -16,7 +18,7 @@ class LinkEvent( Event ):
 
     def startEvent( self, args ):
         """
-        args are the names of the two link ends, e.g. ['s1', 's2']
+        args are the names of the two link ends, e.g. [ 's1', 's2' ]
         """
         with self.eventLock:
             #main.log.info( "%s - starting event" % ( self.typeString ) )
@@ -30,7 +32,7 @@ class LinkEvent( Event ):
                 if self.typeIndex == EventType().NETWORK_LINK_DOWN:
                     with main.mininetLock:
                         linkRandom = main.Mininet1.getLinkRandom()
-                    if linkRandom == None:
+                    if linkRandom is None:
                         main.log.warn( "No link available, aborting event" )
                         return EventStates().ABORT
                     args[ 0 ] = linkRandom[ 0 ]
@@ -51,21 +53,23 @@ class LinkEvent( Event ):
             elif args[ 0 ] == args[ 1 ]:
                 main.log.warn( "%s - invalid arguments: %s" % ( self.typeString, args ) )
                 return EventStates().ABORT
-            if self.linkA == None or self.linkB == None:
+            if self.linkA is None or self.linkB is None:
                 for link in main.links:
                     if link.deviceA.name == args[ 0 ] and link.deviceB.name == args[ 1 ]:
                         self.linkA = link
                     elif link.deviceA.name == args[ 1 ] and link.deviceB.name == args[ 0 ]:
                         self.linkB = link
-                    if self.linkA != None and self.linkB != None:
+                    if self.linkA is not None and self.linkB is not None:
                         break
-                if self.linkA == None or self.linkB == None:
+                if self.linkA is None or self.linkB is None:
                     main.log.warn( "Bidirectional link %s - %s does not exist: " % ( args[ 0 ], args[ 1 ] ) )
                     return EventStates().ABORT
             main.log.debug( "%s - %s" % ( self.typeString, self.linkA ) )
             return self.startLinkEvent()
 
+
 class LinkDown( LinkEvent ):
+
     """
     Generate a link down event giving the two ends of the link
     """
@@ -76,7 +80,7 @@ class LinkDown( LinkEvent ):
 
     def startLinkEvent( self ):
         # TODO: do we need to handle a unidirectional link?
-        assert self.linkA != None and self.linkB != None
+        assert self.linkA is not None and self.linkB is not None
         with main.variableLock:
             if self.linkA.isDown() or self.linkB.isDown():
                 main.log.warn( "Link Down - link already down" )
@@ -86,11 +90,11 @@ class LinkDown( LinkEvent ):
                 return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.linkA.deviceA.name, self.linkA.deviceB.name ) )
         with main.mininetLock:
-            '''
+            """
             result = main.Mininet1.link( END1=self.linkA.deviceA.name,
                                          END2=self.linkA.deviceB.name,
-                                         OPTION="down")
-            '''
+                                         OPTION="down" )
+            """
             result = main.Mininet1.delLink( self.linkA.deviceA.name,
                                             self.linkA.deviceB.name )
         if not result:
@@ -101,7 +105,9 @@ class LinkDown( LinkEvent ):
             self.linkB.bringDown()
         return EventStates().PASS
 
+
 class LinkUp( LinkEvent ):
+
     """
     Generate a link up event giving the two ends of the link
     """
@@ -111,7 +117,7 @@ class LinkUp( LinkEvent ):
         self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startLinkEvent( self ):
-        assert self.linkA != None and self.linkB != None
+        assert self.linkA is not None and self.linkB is not None
         with main.variableLock:
             if self.linkA.isUp() or self.linkB.isUp():
                 main.log.warn( "Link Up - link already up" )
@@ -121,11 +127,11 @@ class LinkUp( LinkEvent ):
                 return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.linkA.deviceA.name, self.linkA.deviceB.name ) )
         with main.mininetLock:
-            '''
+            """
             result = main.Mininet1.link( END1=self.linkA.deviceA.name,
                                          END2=self.linkA.deviceB.name,
-                                         OPTION="up")
-            '''
+                                         OPTION="up" )
+            """
             result = main.Mininet1.addLink( self.linkA.deviceA.name,
                                             self.linkA.deviceB.name )
         if not result:
@@ -136,7 +142,9 @@ class LinkUp( LinkEvent ):
             self.linkB.bringUp()
         return EventStates().PASS
 
+
 class DeviceEvent( Event ):
+
     def __init__( self ):
         Event.__init__( self )
         self.device = None
@@ -161,7 +169,7 @@ class DeviceEvent( Event ):
                 if self.typeIndex == EventType().NETWORK_DEVICE_DOWN:
                     with main.mininetLock:
                         switchRandom = main.Mininet1.getSwitchRandom()
-                    if switchRandom == None:
+                    if switchRandom is None:
                         main.log.warn( "No switch available, aborting event" )
                         return EventStates().ABORT
                     args[ 0 ] = switchRandom
@@ -176,19 +184,21 @@ class DeviceEvent( Event ):
                             return EventStates().ABORT
                         deviceList = random.sample( removedDevices, 1 )
                         self.device = deviceList[ 0 ]
-            if self.device == None:
+            if self.device is None:
                 for device in main.devices:
                     if device.name == args[ 0 ]:
                         self.device = device
-                if self.device == None:
+                if self.device is None:
                     main.log.warn( "Device %s does not exist: " % ( args[ 0 ] ) )
                     return EventStates().ABORT
             main.log.debug( "%s - %s" % ( self.typeString, self.device ) )
             return self.startDeviceEvent()
 
+
 class DeviceDown( DeviceEvent ):
+
     """
-    Generate a device down event (which actually removes this device for now) giving its name
+    Generate a device down event ( which actually removes this device for now ) giving its name
     """
     def __init__( self ):
         DeviceEvent.__init__( self )
@@ -196,7 +206,7 @@ class DeviceDown( DeviceEvent ):
         self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startDeviceEvent( self ):
-        assert self.device != None
+        assert self.device is not None
         with main.variableLock:
             if self.device.isRemoved():
                 main.log.warn( "Device Down - device has been removed" )
@@ -219,9 +229,11 @@ class DeviceDown( DeviceEvent ):
                     intent.setFailed()
         return EventStates().PASS
 
+
 class DeviceUp( DeviceEvent ):
+
     """
-    Generate a device up event (which re-adds this device in case the device is removed) giving its name
+    Generate a device up event ( which re-adds this device in case the device is removed ) giving its name
     """
     def __init__( self ):
         DeviceEvent.__init__( self )
@@ -229,7 +241,7 @@ class DeviceUp( DeviceEvent ):
         self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startDeviceEvent( self ):
-        assert self.device != None
+        assert self.device is not None
         with main.variableLock:
             if self.device.isUp():
                 main.log.warn( "Device Up - device already up" )
@@ -237,7 +249,7 @@ class DeviceUp( DeviceEvent ):
         # Re-add the device
         main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.device.name ) )
         with main.mininetLock:
-            result = main.Mininet1.addSwitch( self.device.name, dpid=self.device.dpid[3:] )
+            result = main.Mininet1.addSwitch( self.device.name, dpid=self.device.dpid[ 3: ] )
         if not result:
             main.log.warn( "%s - failed to re-add device" % ( self.typeString ) )
             return EventStates().FAIL
@@ -269,7 +281,7 @@ class DeviceUp( DeviceEvent ):
                 for intent in main.intents:
                     if intent.isFailed():
                         if intent.deviceA == self.device and intent.deviceB.isUp() or\
-                        intent.deviceB == self.device and intent.deviceA.isUp():
+                                intent.deviceB == self.device and intent.deviceA.isUp():
                             intent.setInstalled()
         # Re-assign mastership for the device
         with main.mininetLock:
@@ -281,7 +293,7 @@ class DeviceUp( DeviceEvent ):
                 if h.isUp() and h != host:
                     correspondent = h
                     break
-            if correspondent == None:
+            if correspondent is None:
                 with main.mininetLock:
                     main.Mininet1.pingall()
                     if main.enableIPv6:
@@ -290,14 +302,14 @@ class DeviceUp( DeviceEvent ):
                 ipv4Addr = None
                 ipv6Addr = None
                 for ipAddress in correspondent.ipAddresses:
-                    if ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv6Prefix' ] ) ) and ipv6Addr == None:
+                    if ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv6Prefix' ] ) ) and ipv6Addr is None:
                         ipv6Addr = ipAddress
-                    elif ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv4Prefix' ] ) ) and ipv4Addr == None:
+                    elif ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv4Prefix' ] ) ) and ipv4Addr is None:
                         ipv4Addr = ipAddress
-                assert ipv4Addr != None
+                assert ipv4Addr is not None
                 host.handle.pingHostSetAlternative( [ ipv4Addr ], 1 )
                 if main.enableIPv6:
-                    assert ipv6Addr != None
+                    assert ipv6Addr is not None
                     host.handle.pingHostSetAlternative( [ ipv6Addr ], 1, True )
             with main.variableLock:
                 host.bringUp()

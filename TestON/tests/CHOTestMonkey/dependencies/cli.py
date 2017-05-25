@@ -7,6 +7,7 @@ from multiprocessing.connection import Client
 commandMap = {}
 paramNum = {}
 
+
 def triggerEvent( debugMode, name, scheduleMethod, args ):
     """
     This function inserts an event from CLI to CHOTestMonkey
@@ -28,14 +29,15 @@ def triggerEvent( debugMode, name, scheduleMethod, args ):
     response = conn.recv()
     return response
 
+
 def startCLI():
     debugMode = False
-    while 1:
+    while True:
         try:
             if debugMode:
-                cmd = raw_input("CHOTestMonkey-debug>")
+                cmd = raw_input( "CHOTestMonkey-debug>" )
             else:
-                cmd = raw_input("CHOTestMonkey>")
+                cmd = raw_input( "CHOTestMonkey>" )
         except EOFError:
             print "exit"
             return
@@ -64,13 +66,13 @@ def startCLI():
             if cmdList[ 0 ] in commandMap.keys():
                 num = paramNum[ cmdList[ 0 ] ]
                 name = commandMap[ cmdList[ 0 ] ]
-                '''
+                """
                 if len( cmdList ) < num + 1:
                     print 'not enough arguments'
                 elif len( cmdList ) > num + 1:
                     print 'Too many arguments'
                 else:
-                '''
+                """
                 result = triggerEvent( debugMode, name, 'RUN_BLOCK', cmdList[ 1: ] )
                 if result == 10:
                     pass
@@ -108,4 +110,3 @@ if __name__ == '__main__':
                 commandMap[ CLI ] = name
                 paramNum[ CLI ] = num
     startCLI()
-

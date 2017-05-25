@@ -4,10 +4,12 @@ Author: you@onlab.us
 """
 from threading import Lock
 
+
 class EventType:
+
     def __init__( self ):
         self.map = {}
-        # Group events (>100) should be divided into individual events by the generator before going to the scheduler
+        # Group events ( >100 ) should be divided into individual events by the generator before going to the scheduler
         self.NULL = 0
         for eventName in main.params[ 'EVENT' ].keys():
             typeString = main.params[ 'EVENT' ][ eventName ][ 'typeString' ]
@@ -15,7 +17,9 @@ class EventType:
             setattr( self, typeString, typeIndex )
             self.map[ typeIndex ] = typeString
 
+
 class EventStates:
+
     def __init__( self ):
         self.map = {}
         self.FAIL = 0
@@ -25,7 +29,9 @@ class EventStates:
         self.ABORT = -1
         self.map[ -1 ] = 'ABORT'
 
+
 class Event:
+
     """
     Event class for CHOTestMonkey
     It is the super class for CheckEvent and NetworkEvent

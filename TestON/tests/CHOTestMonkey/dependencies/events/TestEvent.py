@@ -4,7 +4,9 @@ Author: you@onlab.us
 """
 from tests.CHOTestMonkey.dependencies.events.Event import EventType, EventStates, Event
 
+
 class TestEvent( Event ):
+
     def __init__( self ):
         Event.__init__( self )
 
@@ -17,7 +19,9 @@ class TestEvent( Event ):
             result = self.startTestEvent( args )
             return result
 
+
 class TestPause( TestEvent ):
+
     def __init__( self ):
         TestEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
@@ -28,7 +32,9 @@ class TestPause( TestEvent ):
         main.eventScheduler.setRunningState( False )
         return result
 
+
 class TestResume( TestEvent ):
+
     def __init__( self ):
         TestEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
@@ -39,7 +45,9 @@ class TestResume( TestEvent ):
         main.eventScheduler.setRunningState( True )
         return result
 
+
 class TestSleep( TestEvent ):
+
     def __init__( self ):
         TestEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]

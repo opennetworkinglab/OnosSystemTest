@@ -4,7 +4,9 @@ Author: you@onlab.us
 """
 from tests.CHOTestMonkey.dependencies.events.Event import EventType, EventStates, Event
 
+
 class CheckEvent( Event ):
+
     def __init__( self ):
         Event.__init__( self )
 
@@ -17,7 +19,9 @@ class CheckEvent( Event ):
             result = self.startCheckEvent()
             return result
 
+
 class IntentCheck( CheckEvent ):
+
     def __init__( self ):
         CheckEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
@@ -37,7 +41,9 @@ class IntentCheck( CheckEvent ):
                     checkResult = EventStates().FAIL
         return checkResult
 
+
 class FlowCheck( CheckEvent ):
+
     def __init__( self ):
         CheckEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
@@ -58,7 +64,7 @@ class FlowCheck( CheckEvent ):
                         if device.isRemoved():
                             continue
                         coreFlowNumOnos = controller.CLI.flowAddedCount( device.dpid, core=True )
-                        if coreFlowNumOnos == None:
+                        if coreFlowNumOnos is None:
                             main.log.warn( "Flow Check - error when trying to get flow number of %s on ONOS%s" % ( device.dpid, controller.index ) )
                             checkResult = EventStates().FAIL
                         else:
@@ -94,7 +100,9 @@ class FlowCheck( CheckEvent ):
                         checkResult = EventStates().FAIL
         return checkResult
 
+
 class TopoCheck( CheckEvent ):
+
     def __init__( self ):
         CheckEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
@@ -144,7 +152,7 @@ class TopoCheck( CheckEvent ):
                         devices = json.loads( devices )
                         availableDeviceNum = 0
                         for device in devices:
-                            if device[ 'available' ] == True:
+                            if device[ 'available' ]:
                                 availableDeviceNum += 1
                         if not availableDeviceNum == upDeviceNum:
                             checkResult = EventStates().FAIL
@@ -166,11 +174,13 @@ class TopoCheck( CheckEvent ):
                         return EventStates().FAIL
         return checkResult
 
+
 class ONOSCheck( CheckEvent ):
+
     def __init__( self ):
         CheckEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
-        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startCheckEvent( self, args=None ):
         import json
@@ -209,7 +219,7 @@ class ONOSCheck( CheckEvent ):
                     with controller.CLILock:
                         leaders = controller.CLI.leaders()
                     leaders = json.loads( leaders )
-                    ONOSTopics = [ j['topic'] for j in leaders ]
+                    ONOSTopics = [ j[ 'topic' ] for j in leaders ]
                     for topic in topics:
                         if topic not in ONOSTopics:
                             checkResult = EventStates().FAIL
@@ -235,11 +245,13 @@ class ONOSCheck( CheckEvent ):
                     return EventStates().FAIL
         return checkResult
 
+
 class TrafficCheck( CheckEvent ):
+
     def __init__( self ):
         CheckEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
-        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startCheckEvent( self, args=None ):
         checkResult = EventStates().PASS
@@ -256,7 +268,7 @@ class TrafficCheck( CheckEvent ):
             dstIPv4List[ host.index ] = []
             dstIPv6List[ host.index ] = []
             for correspondent in host.correspondents:
-                if not correspondent in upHosts:
+                if correspondent not in upHosts:
                     continue
                 for ipAddress in correspondent.ipAddresses:
                     if ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv6Prefix' ] ) ):
@@ -295,4 +307,3 @@ class TrafficCheck( CheckEvent ):
                 checkResult = EventStates().FAIL
                 main.log.warn( "Traffic Check - ping6 failed" )
         return checkResult
-

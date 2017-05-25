@@ -4,7 +4,9 @@ Author: you@onlab.us
 """
 from tests.CHOTestMonkey.dependencies.events.Event import EventType, EventStates, Event
 
+
 class ONOSEvent( Event ):
+
     def __init__( self ):
         Event.__init__( self )
         self.ONOSIndex = -1
@@ -30,11 +32,13 @@ class ONOSEvent( Event ):
                         result = self.startONOSEvent()
             return result
 
+
 class ONOSDown( ONOSEvent ):
+
     def __init__( self ):
         ONOSEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
-        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startONOSEvent( self ):
         assert self.ONOSIndex != -1
@@ -52,11 +56,13 @@ class ONOSDown( ONOSEvent ):
             main.controllers[ self.ONOSIndex - 1 ].bringDown()
         return EventStates().PASS
 
+
 class ONOSUp( ONOSEvent ):
+
     def __init__( self ):
         ONOSEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
-        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startONOSEvent( self ):
         assert self.ONOSIndex != -1
@@ -85,7 +91,9 @@ class ONOSUp( ONOSEvent ):
                         main.controllers[ self.ONOSIndex - 1 ].bringUp()
         return EventStates().PASS
 
+
 class CfgEvent( Event ):
+
     def __init__( self ):
         Event.__init__( self )
         self.component = ''
@@ -98,11 +106,13 @@ class CfgEvent( Event ):
             result = self.startCfgEvent( args )
             return result
 
+
 class SetCfg( CfgEvent ):
+
     def __init__( self ):
         CfgEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
-        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startCfgEvent( self, args ):
         if len( args ) < 3:
@@ -121,7 +131,7 @@ class SetCfg( CfgEvent ):
             if controller.isUp():
                 index = controller.index
         if index == -1:
-            main.log.warn( "%s - No available controllers" %s ( self.typeString ) )
+            main.log.warn( "%s - No available controllers" % s( self.typeString ) )
             return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.component, self.propName, self.value ) )
         controller = main.controllers[ index - 1 ]
@@ -134,11 +144,13 @@ class SetCfg( CfgEvent ):
             return EventStates().FAIL
         return EventStates().PASS
 
+
 class SetFlowObj( CfgEvent ):
+
     def __init__( self ):
         CfgEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
-        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startCfgEvent( self, args ):
         if len( args ) < 1:
@@ -159,7 +171,7 @@ class SetFlowObj( CfgEvent ):
             if controller.isUp():
                 index = controller.index
         if index == -1:
-            main.log.warn( "%s - No available controllers" %s ( self.typeString ) )
+            main.log.warn( "%s - No available controllers" % s( self.typeString ) )
             return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.component, self.propName, self.value ) )
         controller = main.controllers[ index - 1 ]
@@ -172,11 +184,13 @@ class SetFlowObj( CfgEvent ):
             return EventStates().FAIL
         return EventStates().PASS
 
+
 class BalanceMasters( Event ):
+
     def __init__( self ):
         Event.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
-        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startEvent( self, args=None ):
         with self.eventLock:
@@ -186,7 +200,7 @@ class BalanceMasters( Event ):
                 if controller.isUp():
                     index = controller.index
             if index == -1:
-                main.log.warn( "%s - No available controllers" %s ( self.typeString ) )
+                main.log.warn( "%s - No available controllers" % s( self.typeString ) )
                 return EventStates().ABORT
             main.log.info( "Event recorded: {} {}".format( self.typeIndex, self.typeString ) )
             controller = main.controllers[ index - 1 ]
@@ -197,11 +211,13 @@ class BalanceMasters( Event ):
                 return EventStates().FAIL
             return EventStates().PASS
 
+
 class SetFlowObjCompiler( CfgEvent ):
+
     def __init__( self ):
         CfgEvent.__init__( self )
         self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
-        self.typeIndex= int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
 
     def startCfgEvent( self, args ):
         if len( args ) < 1:
@@ -219,7 +235,7 @@ class SetFlowObjCompiler( CfgEvent ):
             if controller.isUp():
                 index = controller.index
         if index == -1:
-            main.log.warn( "%s - No available controllers" %s ( self.typeString ) )
+            main.log.warn( "%s - No available controllers" % s( self.typeString ) )
             return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {} {}".format( self.typeIndex, self.typeString, self.component, self.propName, self.value ) )
         controller = main.controllers[ index - 1 ]
@@ -231,4 +247,3 @@ class SetFlowObjCompiler( CfgEvent ):
             main.log.warn( "%s - failed to set configuration" % ( self.typeString ) )
             return EventStates().FAIL
         return EventStates().PASS
-

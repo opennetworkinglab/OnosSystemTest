@@ -2,8 +2,8 @@
 This file contains device, host and link class for CHOTestMonkey
 Author: you@onlab.us
 """
-
 class NetworkElement:
+
     def __init__( self, index ):
         self.default = ''
         self.index = index
@@ -27,7 +27,9 @@ class NetworkElement:
     def bringUp( self ):
         self.status = 'up'
 
+
 class Device( NetworkElement ):
+
     def __init__( self, index, name, dpid ):
         NetworkElement.__init__( self, index )
         self.name = name
@@ -39,7 +41,9 @@ class Device( NetworkElement ):
     def __str__( self ):
         return "name: " + self.name + ", dpid: " + self.dpid + ", status: " + self.status
 
+
 class Host( NetworkElement ):
+
     def __init__( self, index, name, id, mac, device, devicePort, vlan, ipAddresses ):
         NetworkElement.__init__( self, index )
         self.name = name
@@ -58,7 +62,9 @@ class Host( NetworkElement ):
     def setHandle( self, handle ):
         self.handle = handle
 
+
 class Link( NetworkElement ):
+
     """
     Unidirectional link
     """

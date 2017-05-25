@@ -4,7 +4,9 @@ Author: you@onlab.us
 """
 from threading import Lock
 
+
 class Controller:
+
     def __init__( self, index ):
         self.default = ''
         self.index = index
@@ -28,7 +30,9 @@ class Controller:
     def bringUp( self ):
         self.status = 'up'
 
+
 class Intent:
+
     def __init__( self, id ):
         self.default = ''
         self.type = 'INTENT'
@@ -47,7 +51,9 @@ class Intent:
     def isInstalled( self ):
         return self.expectedState == 'INSTALLED'
 
+
 class HostIntent( Intent ):
+
     def __init__( self, id, hostA, hostB ):
         Intent.__init__( self, id )
         self.type = 'INTENT_HOST'
@@ -75,7 +81,9 @@ class HostIntent( Intent ):
     def __str__( self ):
         return "ID: " + self.id
 
+
 class PointIntent( Intent ):
+
     def __init__( self, id, deviceA, deviceB ):
         Intent.__init__( self, id )
         self.type = 'INTENT_POINT'

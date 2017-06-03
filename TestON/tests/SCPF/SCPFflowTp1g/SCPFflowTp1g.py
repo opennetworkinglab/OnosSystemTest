@@ -209,6 +209,7 @@ class SCPFflowTp1g:
                 if i < int(main.maxNodes):
                     ipCSV +=","
 
+            main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.store.flow.impl.DistributedFlowRuleStore", "backupCount 1")
             for i in range(3):
                 main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "deviceCount 35")
                 main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "topoShape linear")

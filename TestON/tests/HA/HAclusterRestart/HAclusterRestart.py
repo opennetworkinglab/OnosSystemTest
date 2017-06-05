@@ -113,7 +113,7 @@ class HAclusterRestart:
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        main.Mininet1.ip_address,
-                                       cellAppString, ipList )
+                                       cellAppString, ipList, main.ONOScli1.user_name )
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()

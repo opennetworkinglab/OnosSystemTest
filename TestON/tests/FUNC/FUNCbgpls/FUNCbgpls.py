@@ -77,7 +77,7 @@ class FUNCbgpls:
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        scapy_ip,
-                                       cellAppString, ipList )
+                                       cellAppString, ipList, main.ONOScli1.user_name )
 
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
@@ -603,7 +603,7 @@ class FUNCbgpls:
         bgplsConfig.ipValue( ipList, scapy_ip )
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        scapy_ip,
-                                       cellAppString, ipList )
+                                       cellAppString, ipList, main.ONOScli1.user_name )
 
         for i in range( 1, main.numCtrls + 1 ):
             try:

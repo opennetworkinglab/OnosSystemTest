@@ -759,6 +759,7 @@ class OnosDriver( CLI ):
             ~/<self.home>/tools/test/cells/
         """
         try:
+
             # Variable initialization
             cellDirectory = self.home + "/tools/test/cells/"
             # We want to create the cell file in the dependencies directory
@@ -2431,7 +2432,7 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( "Uncaught exception" )
 
-    def startBasicONOS( self, nodeList, opSleep=60, onosStartupSleep=30 ):
+    def startBasicONOS( self, nodeList, opSleep=60, onosStartupSleep=30, onosUser="sdn" ):
         '''
         Start onos cluster with defined nodes, but only with drivers app
         '''
@@ -2441,7 +2442,7 @@ class OnosDriver( CLI ):
                                        "temp",
                                        self.ip_address,
                                        "drivers",
-                                       nodeList )
+                                       nodeList, onosUser )
 
         main.log.info( self.name + ": Apply cell to environment" )
         cellResult = self.setCell( "temp" )

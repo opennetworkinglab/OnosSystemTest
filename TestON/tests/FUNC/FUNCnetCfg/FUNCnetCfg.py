@@ -16,9 +16,6 @@ class FUNCnetCfg:
         - GIT ( optional )
             - Checkout ONOS master branch
             - Pull latest ONOS code
-        - Building ONOS ( optional )
-            - Install ONOS package
-            - Build ONOS package
         """
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
@@ -122,8 +119,8 @@ class FUNCnetCfg:
             - Verify cell file
         - Kill ONOS process
         - Uninstall ONOS cluster
-        - Verify ONOS start up
         - Install ONOS cluster
+        - Verify ONOS start up
         - Connect to cli
         """
         import time
@@ -165,7 +162,6 @@ class FUNCnetCfg:
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
 
-        time.sleep( main.startUpSleep )
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
         for ip in main.ONOSip:
@@ -188,6 +184,15 @@ class FUNCnetCfg:
                                  actual=stepResult,
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
+
+        time.sleep( main.startUpSleep )
+        main.step( "Set up ONOS secure SSH" )
+        secureSshResult = main.TRUE
+        for i in range( int( main.numCtrls ) ):
+            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
+        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
 
         time.sleep( main.startUpSleep )
         main.step( "Starting ONOS service" )

@@ -24,7 +24,6 @@ class BgpLs:
         self.bgpPeer = []
         self.routerId = ''
         self.peerIp = ''
-        #self.org_bgp = []
 
     def ipValue( self, localip, remoteip ):
         self.routerId = localip
@@ -79,7 +78,7 @@ class BgpLs:
         return self.list1
 
     def checkLinks( self, linksResp ):
-        #Declaring the links values
+        # Declaring the links values
         links = { 'link1_src': "1650.5555.0055", 'link1_dst': "1660.6666.0066",
                   'link2_src': "1630.3333.0033", 'link2_dst': "1620.2222.0022",
                   'link3_src': "1660.6666.0066", 'link3_dst': "1650.5555.0055",
@@ -104,7 +103,7 @@ class BgpLs:
                   'link22_src': "1660.6666.0066", 'link4_dst': "1640.4444.0044"
                   }
 
-        #Comparing the Links
+        # Comparing the Links
         for x in xrange( 22 ):
             link_src_info = linksResp[ x ][ 'src' ][ 'device' ]
             link_dst_info = linksResp[ x ][ 'dst' ][ 'device' ]

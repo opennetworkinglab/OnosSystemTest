@@ -18,7 +18,7 @@
 
     <ENV>
         <cellName>bgp_ls</cellName>
-        <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
+        <cellApps>drivers,openflow,proxyarp,mobility,pcep-api</cellApps>
     </ENV>
 
     <CTRL>

@@ -5389,6 +5389,7 @@ class OnosCliDriver( CLI ):
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             assert " not found" not in output, output
+            assert "still updating" not in output, output
             return main.TRUE
         except AssertionError:
             main.log.exception( "" )
@@ -5426,6 +5427,7 @@ class OnosCliDriver( CLI ):
             assert "Error executing command" not in output, output
             assert "already associated to network" not in output, output
             assert "Interface cannot be added." not in output, output
+            assert "still updating" not in output, output
             return main.TRUE
         except AssertionError:
             main.log.exception( "" )
@@ -5461,6 +5463,7 @@ class OnosCliDriver( CLI ):
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
             assert "is not configured" not in output, output
+            assert "still updating" not in output, output
             return main.TRUE
         except AssertionError:
             main.log.exception( "" )
@@ -5488,6 +5491,7 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmdStr )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
+            assert "still updating" not in handle, handle
             return handle
         except AssertionError:
             main.log.exception( "" )
@@ -5526,6 +5530,7 @@ class OnosCliDriver( CLI ):
             assert "Error executing command" not in output, output
             assert "already associated to network" not in output, output
             assert "Encapsulation type " not in output, output
+            assert "still updating" not in output, output
             return main.TRUE
         except AssertionError:
             main.log.exception( "" )

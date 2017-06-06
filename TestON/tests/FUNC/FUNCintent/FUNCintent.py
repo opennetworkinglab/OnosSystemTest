@@ -1054,7 +1054,6 @@ class FUNCintent:
                                " OVS running in Mininet and compile intents" +\
                                " using " + main.flowCompiler
 
-        """
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for NOOPTION point intent\n"
@@ -1432,7 +1431,6 @@ class FUNCintent:
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
-        """
         main.step( "BANDWIDTH ALLOCATION: Checking bandwidth allocation for point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for BANDWIDTH ALLOCATION for point intent\n"
         senders = [

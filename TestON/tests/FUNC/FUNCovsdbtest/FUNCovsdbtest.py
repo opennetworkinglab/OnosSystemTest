@@ -105,7 +105,7 @@ class FUNCovsdbtest:
         main.step( "Create cell file" )
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        main.OVSDB1.ip_address,
-                                       cellAppString, ipList )
+                                       cellAppString, ipList, main.ONOScli1.user_name )
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( cellName )

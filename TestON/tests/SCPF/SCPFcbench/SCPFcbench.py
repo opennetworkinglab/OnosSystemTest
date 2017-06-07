@@ -96,7 +96,8 @@ class SCPFcbench:
 
 
         print "Cellname is: "+ cellName + "ONOS IP is: " + str(ONOSIp)
-        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,cellApps,[ONOSIp[1]])
+        main.ONOSbench.createCellFile(BENCHIp, cellName, MN1Ip,
+                                      cellApps, [ONOSIp[1]], main.ONOScli1.user_name)
 
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)

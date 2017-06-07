@@ -153,7 +153,7 @@ class SCPFscalingMaxIntents:
                                        "temp",
                                        main.Mininet1.ip_address,
                                        main.apps,
-                                       tempOnosIp )
+                                       tempOnosIp, main.ONOScli1.user_name )
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )

@@ -103,7 +103,8 @@ class SCPFflowTp1g:
         for node in range (1, clusterCount + 1):
             cellIp.append(ONOSIp[node])
 
-        main.ONOSbench.createCellFile(BENCHIp,cellName,"localhost",str(Apps), cellIp)
+        main.ONOSbench.createCellFile(BENCHIp, cellName, "localhost",
+                                      str(Apps), cellIp, main.ONOScli1.user_name)
         main.log.info("Cell Ip list: " + str(cellIp))
 
         main.step( "Set Cell" )

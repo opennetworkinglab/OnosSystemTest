@@ -11,6 +11,36 @@
             </COMPONENTS>
         </ONOSbench>
 
+        <ONOScli1>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOScli1>
+
+        <ONOScli2>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOScli2>
+
+         <ONOScli3>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOScli3>
+
         <ONOSrest1>
             <host>OC1</host>
             <port>8181</port>

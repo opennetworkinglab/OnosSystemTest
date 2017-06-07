@@ -128,7 +128,8 @@ class SCPFintentEventTp:
                                       main.cellName,
                                       main.MN1Ip,
                                       main.Apps,
-                                      main.ONOSip)
+                                      main.ONOSip,
+                                      main.ONOScli1.user_name )
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( main.cellName )
         verifyResult = main.ONOSbench.verifyCell()

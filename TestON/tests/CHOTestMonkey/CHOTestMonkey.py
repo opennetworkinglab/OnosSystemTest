@@ -20,7 +20,6 @@ class CHOTestMonkey:
         Startup sequence:
         apply cell <name>
         git pull
-        mvn clean install
         onos-package
         onos-verify-cell
         onos-uninstall
@@ -105,16 +104,6 @@ class CHOTestMonkey:
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
 
-        main.step( "mvn clean & install" )
-        if gitPull == 'on':
-            mvnResult = main.ONOSbench.cleanInstall()
-        else:
-            mvnResult = main.TRUE
-            main.log.info( "Skipped mvn clean install as it is disabled in params file" )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=mvnResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
         main.ONOSbench.getVersion( report=True )
 
         main.step( "Create ONOS package" )

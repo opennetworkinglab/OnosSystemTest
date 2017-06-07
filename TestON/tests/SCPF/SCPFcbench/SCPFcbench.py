@@ -35,7 +35,6 @@ class SCPFcbench:
         CBENCHuser = main.params[ 'CBENCH'][ 'user' ]
         MN1Ip = os.environ[ main.params[ 'MN' ][ 'ip1' ] ]
         maxNodes = int(main.params[ 'availableNodes' ])
-        skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         cellApps = main.params[ 'ENV' ][ 'cellApps' ]
 
@@ -55,10 +54,6 @@ class SCPFcbench:
             for i in range(1, maxNodes + 1):
                 ipString = os.environ[main.params['CTRL']['ip1']]
                 ONOSIp.append(ipString)
-
-            #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
-            if skipMvn != "yes":
-                mvnResult = main.ONOSbench.cleanInstall()
 
             #git
             main.step( "Git checkout and pull " + checkoutBranch )

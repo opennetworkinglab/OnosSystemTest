@@ -90,14 +90,6 @@ class SCPFhostLat:
         main.commit = main.ONOSbench.getVersion(report=True)
         main.commit = main.commit.split(" ")[1]
 
-        if gitPull == 'True':
-            if not main.startUp.onosBuild( main, gitBranch ):
-                main.log.error( "Failed to build ONOS" )
-                main.cleanup()
-                main.exit()
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
         with open(main.dbFileName, "a") as dbFile:
             temp = "'" + main.commit + "',"
             temp += "'" + nic + "',"

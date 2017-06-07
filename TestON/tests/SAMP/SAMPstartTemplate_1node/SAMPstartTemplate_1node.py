@@ -37,16 +37,8 @@ class SAMPstartTemplate_1node:
                                      onfail="Failed to pull onos. Exiting test ..." )
             if not stepResult: main.exit()
 
-            main.step( "Building ONOS branch: " + gitBranch )
-            stepResult = main.ONOSbench.cleanInstall( skipTest = True )
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully build onos.",
-                                     onfail="Failed to build onos. Exiting test..." )
-            if not stepResult: main.exit()
-
         else:
-            main.log.warn( "Skipped pulling onos and Skipped building ONOS" )
+            main.log.warn( "Skipped pulling onos" )
 
 
     def CASE1( self, main ):

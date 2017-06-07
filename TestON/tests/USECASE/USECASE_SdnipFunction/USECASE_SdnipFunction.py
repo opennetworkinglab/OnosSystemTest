@@ -126,18 +126,6 @@ class USECASE_SdnipFunction:
                                  actual=gitPullResult2,
                                  onpass="Git pull ONOS succeeded",
                                  onfail="Git pull ONOS failed" )
-
-        main.step( "Using mvn clean install" )
-        if gitPullResult == main.TRUE:
-            mciResult = main.ONOSbench.cleanInstall( mciTimeout=1000 )
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=mciResult,
-                                     onpass="Maven clean install ONOS succeeded",
-                                     onfail="Maven clean install ONOS failed" )
-        else:
-             main.log.warn( "Did not pull new code so skipping mvn " +
-                            "clean install" )
-             mciResult = main.TRUE
         '''
 
         main.ONOSbench.getVersion( report=True )

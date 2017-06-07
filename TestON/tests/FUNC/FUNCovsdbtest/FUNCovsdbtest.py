@@ -50,17 +50,6 @@ class FUNCovsdbtest:
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
         cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
 
-        if gitPull == 'True':
-            main.step( "Building ONOS in " + gitBranch + "branch" )
-            onosBuildResult = main.startUp.onosBuild( main, gitBranch )
-            stepResult = onosBuildResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully compiled latest ONOS",
-                                     onfail="Failed to compile latest ONOS" )
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
         main.ONOSbench.getVersion( report=True )
 
         main.log.info( "Safety check, killing all ONOS processes" +

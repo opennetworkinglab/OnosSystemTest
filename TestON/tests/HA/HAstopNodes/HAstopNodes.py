@@ -135,7 +135,6 @@ class HAstopNodes:
             killed = main.ONOSbench.onosKill( node.ip_address )
             killResults = killResults and killed
 
-        cleanInstallResult = main.TRUE
         gitPullResult = main.TRUE
 
         main.step( "Starting Mininet" )
@@ -162,17 +161,6 @@ class HAstopNodes:
                                       onfail="Git pull failed" )
         main.ONOSbench.getVersion( report=True )
 
-        main.step( "Using mvn clean install" )
-        cleanInstallResult = main.TRUE
-        if PULLCODE and gitPullResult == main.TRUE:
-            cleanInstallResult = main.ONOSbench.cleanInstall()
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=cleanInstallResult,
-                                 onpass="MCI successful",
-                                 onfail="MCI failed" )
         # GRAPHS
         # NOTE: important params here:
         #       job = name of Jenkins job

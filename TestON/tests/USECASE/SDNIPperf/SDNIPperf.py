@@ -32,21 +32,11 @@ class SDNIPperf:
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
-        cleanInstallResult = main.TRUE
-        gitPullResult = main.TRUE
-
         main.step( "Git pull" )
         gitPullResult = main.FALSE
         #Need to push some new code to ONOS before using the git pull
         #gitPullResult = main.ONOSbench.gitPull()
 
-        main.step( "Using mvn clean install" )
-        if gitPullResult == main.TRUE:
-            #cleanInstallResult = main.ONOSbench.cleanInstall()
-            cleanInstallResult = main.ONOSbench.cleanInstall( skipTest=True)
-        else:
-             main.log.warn( "Did not pull new code so skipping mvn " +
-                             "clean install" )
         main.ONOSbench.getVersion( report=True )
 
         main.step( "Creating ONOS package" )
@@ -70,9 +60,8 @@ class SDNIPperf:
         cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
                 commandlineTimeout=100, onosStartTimeout=600)
 
-        case1Result = ( cleanInstallResult and packageResult and
-                        cellResult and verifyResult and
-                        onos1InstallResult and
+        case1Result = ( packageResult and cellResult and
+                        verifyResult and onos1InstallResult and
                         onos1Isup and secureSshResult and
                         cliResult )
 

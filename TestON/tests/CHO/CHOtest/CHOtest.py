@@ -16,7 +16,6 @@ class CHOtest:
         Startup sequence:
         apply cell <name>
         git pull
-        mvn clean install
         onos-package
         onos-verify-cell
         onos-uninstall
@@ -95,16 +94,6 @@ class CHOtest:
         utilities.assert_equals( expect=main.TRUE, actual=cp_result,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
-
-        main.step( "mvn clean & install" )
-        if git_pull == 'on':
-            mvn_result = main.ONOSbench.cleanInstall()
-            utilities.assert_equals( expect=main.TRUE, actual=mvn_result,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-        else:
-            mvn_result = main.TRUE
-            main.log.info( "Skipped mvn clean install as git pull is disabled in params file" )
 
         main.ONOSbench.getVersion( report=True )
 

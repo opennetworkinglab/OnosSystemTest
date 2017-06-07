@@ -31,7 +31,6 @@ class SCPFflowTp1g:
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         main.maxNodes = int(main.params[ 'max' ])
-        skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
         main.log.info("==========DEBUG VERSION 3===========")
@@ -56,10 +55,6 @@ class SCPFflowTp1g:
 
             ONOSIp = [0]
             ONOSIp.extend(main.ONOSbench.getOnosIps())
-
-            #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
-            if skipMvn != "yes":
-                mvnResult = main.ONOSbench.cleanInstall()
 
             #git
             main.step( "Git checkout and pull " + checkoutBranch )

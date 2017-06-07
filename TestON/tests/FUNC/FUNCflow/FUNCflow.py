@@ -82,17 +82,7 @@ class FUNCflow:
                                  onpass="Successfully construct " + "test variables ",
                                  onfail="Failed to construct test variables" )
 
-        if gitPull == 'True':
-            main.step( "Building ONOS in " + gitBranch + " branch" )
-            onosBuildResult = main.startUp.onosBuild( main, gitBranch )
-            stepResult = onosBuildResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully compiled " + "latest ONOS",
-                                     onfail="Failed to compile " + "latest ONOS" )
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
+
 
     def CASE2( self, main ):
         """

@@ -115,14 +115,6 @@ class SCPFscalingMaxIntents:
         commit = main.ONOSbench.getVersion(report=True)
         commit = commit.split(" ")[1]
 
-        if gitPull == 'True':
-            if not main.startUp.onosBuild( main, gitBranch ):
-                main.log.error( "Failed to build ONOS" )
-                main.cleanup()
-                main.exit()
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
         with open(main.dbFileName, "a") as dbFile:
             temp = "'" + commit + "',"
             temp += "'" + nic + "',"

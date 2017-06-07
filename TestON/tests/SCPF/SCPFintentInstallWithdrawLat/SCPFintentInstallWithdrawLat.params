@@ -11,7 +11,6 @@
     </ENV>
 
     <TEST>
-        <skipCleanInstall>yes</skipCleanInstall>
         <warmUp>5</warmUp>
         <sampleSize>20</sampleSize>
         <intents>1,100,1000</intents>                       #list format, will be split on ','

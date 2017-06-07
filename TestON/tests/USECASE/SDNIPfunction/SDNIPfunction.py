@@ -34,19 +34,11 @@ class SDNIPfunction:
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
-        # cleanInstallResult = main.TRUE
         # gitPullResult = main.TRUE
 
         main.step( "Git pull" )
         gitPullResult = main.ONOSbench.gitPull()
 
-        main.step( "Using mvn clean install" )
-        if gitPullResult == main.TRUE:
-            cleanInstallResult = main.ONOSbench.cleanInstall( mciTimeout = 1000 )
-        else:
-             main.log.warn( "Did not pull new code so skipping mvn " +
-                            "clean install" )
-             cleanInstallResult = main.TRUE
 
         main.ONOSbench.getVersion( report = True )
 
@@ -71,9 +63,8 @@ class SDNIPfunction:
         cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
                 commandlineTimeout = 100, onosStartTimeout = 600 )
 
-        case1Result = ( cleanInstallResult and packageResult and
-                        cellResult and verifyResult and
-                        onos1InstallResult and
+        case1Result = ( packageResult and cellResult and
+                        verifyResult and onos1InstallResult and
                         onos1Isup and secureSshResult and
                         cliResult )
 

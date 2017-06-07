@@ -264,7 +264,10 @@ class VPLSBasic:
 
         main.step( "Check interface configurations" )
         result = False
-        getPorts = main.ONOSrest1.getNetCfg( subjectClass="ports" )
+        getPorts = utilities.retry( f=main.ONOSrest1.getNetCfg,
+                                    retValue=False,
+                                    kwargs={"subjectClass":"ports"},
+                                    sleep=SLEEP )
         onosCfg = pprint( getPorts )
         sentCfg = pprint( originalCfg.get( "ports" ) )
 

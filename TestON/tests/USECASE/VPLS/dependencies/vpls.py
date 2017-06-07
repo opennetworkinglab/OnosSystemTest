@@ -53,8 +53,10 @@ def verify( main ):
     clusterResult = True
     for node in main.RESTs:
         result = False
-        getVPLS = node.getNetCfg( subjectClass="apps",
-                                  subjectKey=app )
+        getVPLS = utilities.retry( f=node.getNetCfg,
+                                   retValue=False,
+                                   kwargs={"subjectClass":"apps", "subjectKey":app},
+                                   sleep=SLEEP )
         onosCfg = json.loads( getVPLS ).get( 'vpls' ).get( 'vplsList' )
         onosCfg = pprint( sanitizeConfig( onosCfg ) )
         sentCfg = pprint( sanitizeConfig( main.vplsConfig ) )

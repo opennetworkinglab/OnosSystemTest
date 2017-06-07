@@ -46,7 +46,7 @@ class FUNCnetCfg:
             main.hostsData = {}
             main.nodes = []
             main.ONOSip = []
-            main.retrytimes = main.params[ 'RETRY' ]
+            main.retrytimes = int( main.params[ 'RETRY' ] )
             main.retrysleep = main.params[ 'RetrySleep' ]
             main.ONOSip = main.ONOSbench.getOnosIps()
 
@@ -437,10 +437,13 @@ class FUNCnetCfg:
         #Wait 5 secs after set up netCfg
         time.sleep( main.SetNetCfgSleep )
         if setS1Allow:
-            # Check what we set is what is in ONOS
-            getS1 = main.ONOSrest1.getNetCfg( subjectClass="devices",
-                                              subjectKey="of:0000000000000001",
-                                              configKey="basic" )
+            getS1 = utilities.retry( f=main.ONOSrest1.getNetCfg,
+                                     retValue=False,
+                                     kwargs={"subjectClass":"devices",
+                                             "subjectKey" : "of:0000000000000001",
+                                             "configKey" : "basic"},
+                                     attempts=main.retrytimes,
+                                     sleep=main.retrysleep )
             onosCfg = pprint( getS1 )
             sentCfg = pprint( s1Json )
             if onosCfg == sentCfg:
@@ -476,9 +479,13 @@ class FUNCnetCfg:
         time.sleep( main.SetNetCfgSleep )
         if setS3Disallow:
             # Check what we set is what is in ONOS
-            getS3 = main.ONOSrest1.getNetCfg( subjectClass="devices",
-                                              subjectKey="of:0000000000000003",
-                                              configKey="basic" )
+            getS3 = utilities.retry( f=main.ONOSrest1.getNetCfg,
+                                     retValue=False,
+                                     kwargs={"subjectClass": "devices",
+                                            "subjectKey": "of:0000000000000003",
+                                            "configKey": "basic"},
+                                     attempts=main.retrytimes,
+                                     sleep=main.retrysleep )
             onosCfg = pprint( getS3 )
             sentCfg = pprint( s3Json )
             if onosCfg == sentCfg:
@@ -581,9 +588,13 @@ class FUNCnetCfg:
         s2Result = False
         if setS2Allow:
             # Check what we set is what is in ONOS
-            getS2 = main.ONOSrest2.getNetCfg( subjectClass="devices",
-                                              subjectKey="of:0000000000000002",
-                                              configKey="basic" )
+            getS2 = utilities.retry( f=main.ONOSrest2.getNetCfg,
+                                     retValue=False,
+                                     kwargs={"subjectClass": "devices",
+                                            "subjectKey": "of:0000000000000002",
+                                            "configKey": "basic"},
+                                     attempts=main.retrytimes,
+                                     sleep=main.retrysleep )
             onosCfg = pprint( getS2 )
             sentCfg = pprint( s2Json )
             if onosCfg == sentCfg:
@@ -616,9 +627,14 @@ class FUNCnetCfg:
         s4Result = False
         if setS4Disallow:
             # Check what we set is what is in ONOS
-            getS4 = main.ONOSrest3.getNetCfg( subjectClass="devices",
-                                              subjectKey="of:0000000000000004",
-                                              configKey="basic" )
+            getS4 = utilities.retry( f=main.ONOSrest3.getNetCfg,
+                                     retValue=False,
+                                     kwargs={"subjectClass": "devices",
+                                            "subjectKey": "of:0000000000000004",
+                                            "configKey": "basic"},
+                                     attempts=main.retrytimes,
+                                     sleep=main.retrysleep )
+
             onosCfg = pprint( getS4 )
             sentCfg = pprint( s4Json )
             if onosCfg == sentCfg:
@@ -633,7 +649,6 @@ class FUNCnetCfg:
                                  actual=s4Result,
                                  onpass="Net Cfg added for device s4",
                                  onfail="Net Cfg for device s4 not correctly set" )
-
         main.netCfg.compareCfg( main, main.gossipTime )
 
     def CASE23( self, main ):
@@ -806,7 +821,13 @@ class FUNCnetCfg:
         main.netCfg.compareCfg( main, main.gossipTime )
 
         main.step( "Assert the net config for devices is empty" )
-        get = main.ONOSrest3.getNetCfg( subjectClass="devices" )
+
+        get = utilities.retry( f=main.ONOSrest3.getNetCfg,
+                               retValue = False,
+                               kwargs={"subjectClass":"devices"},
+                               sleep=main.retrysleep,
+                               attempts=main.retrytimes )
+
         utilities.assert_equals( expect='{}',
                                  actual=get,
                                  onpass="Successfully removed device config",
@@ -897,7 +918,11 @@ class FUNCnetCfg:
         pprint = main.nodes[ 0 ].pprint
         main.case( "Posting network configurations to the top level web resource" )
         main.step( "Get json object from Net Cfg" )
-        getinfo = main.ONOSrest1.getNetCfg()
+        getinfo = utilities.retry( f=main.ONOSrest1.getNetCfg,
+                                   retValue=False,
+                                   sleep=main.retrysleep,
+                                   attempts=main.retrytimes )
+
         main.log.debug( getinfo )
         main.step( "Posting json object to Net Cfg" )
         postinfo = main.ONOSrest1.setNetCfg( json.loads( getinfo ) )
@@ -926,8 +951,13 @@ class FUNCnetCfg:
                                                   subjectKey="of:0000000000000006", configKey="basic" )
         s6Result = False
         if setS6Disallow:
-            getS6 = main.ONOSrest1.getNetCfg( subjectClass="devices",
-                                              subjectKey="of:0000000000000006", configKey="basic" )
+            getS6 = utilities.retry( f=main.ONOSrest1.getNetCfg,
+                                     retValue=False,
+                                     kwargs={"subjectClass":"devices",
+                                            "subjectKey" : "of:0000000000000006",
+                                            "configKey" : "basic"},
+                                     sleep=main.retrysleep,
+                                     attempts=main.retrytimes )
             onosCfg = pprint( getS6 )
             sentCfg = pprint( s6Json )
             if onosCfg == sentCfg:

@@ -13,21 +13,34 @@ def compareCfg( main, gossipTime=None ):
     if gossipTime:
         time.sleep( gossipTime * len( main.nodes ) )
     responses = []
-    failMsg = "Net Cfg is different on some nodes."
-    failed = False
+    result = utilities.retry( f=checkNodeResponses,
+                              retValue=False,
+                              kwargs={'main' : main,'responses' : responses},
+                              sleep = main.retrysleep,
+                              attempts = main.retrytimes )
+    utilities.assert_equals( expect=True,
+                             actual=result,
+                             onpass="Net Cfg is the same on all nodes",
+                             onfail="Check Net Cfg failed. Check above messages." )
+
+
+def checkNodeResponses ( main, responses ):
+    numberOfFailedNodes = 0  # Tracks the number of nodes that failed to get net configuration
     for node in main.nodes:
-        response = node.getNetCfg()
+        response = node.getNetCfg( )
         responses.append( node.pprint( response ) )
         if response == main.FALSE:
-            failed = True
+            numberOfFailedNodes += 1
+
     compare = [ i == responses[ 0 ] for i in responses ]
-    if failed:
-        failMsg += " Some nodes failed to GET netCfg."
-    utilities.assert_equals( expect=True,
-                             actual=all( compare ),
-                             onpass="Net Cfg is the same on all nodes",
-                             onfail=failMsg )
+    if numberOfFailedNodes == 0 and all( compare ):
+        return True
+
+    # Failed, providing feedback on cli
+    if numberOfFailedNodes > 0:
+        main.log.warn( numberOfFailedNodes + " node(s) failed to GET Net Config" )
     if not all( compare ):
-        main.log.debug( "Net Config results:" )
+        main.log.debug( "Net Cfg is different on some nodes. Net Config results:" )
         for i in responses:
             main.log.debug( i )
+    return False

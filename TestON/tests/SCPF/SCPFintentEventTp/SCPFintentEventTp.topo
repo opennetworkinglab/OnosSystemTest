@@ -14,68 +14,68 @@
             </COMPONENTS>
         </ONOSbench>
 
-        <ONOS1cli>
+        <ONOScli1>
             <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOS1cli>
+        </ONOScli1>
 
-        <ONOS2cli>
+        <ONOScli2>
             <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOS2cli>
+        </ONOScli2>
 
-        <ONOS3cli>
+        <ONOScli3>
             <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOS3cli>
+        </ONOScli3>
 
-        <ONOS4cli>
+        <ONOScli4>
             <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOS4cli>
+        </ONOScli4>
 
-        <ONOS5cli>
+        <ONOScli5>
             <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>6</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOS5cli>
+        </ONOScli5>
 
-        <ONOS6cli>
+        <ONOScli6>
             <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>7</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOS6cli>
+        </ONOScli6>
 
-        <ONOS7cli>
+        <ONOScli7>
             <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>8</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOS7cli>
+        </ONOScli7>
 
         <ONOS1>
             <host>OC1</host>
@@ -113,7 +113,6 @@
             <COMPONENTS> </COMPONENTS>
         </ONOS4>
 
-    
         <ONOS5>
             <host>OC5</host>
             <user>sdn</user>

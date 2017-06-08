@@ -104,7 +104,7 @@ class SCPFswitchLat:
         main.CLIs = []
         main.log.info("Creating list of ONOS cli handles")
         for i in range(main.numCtrls):
-            main.CLIs.append(getattr(main, 'ONOS%scli' % (i + 1)))
+            main.CLIs.append(getattr(main, 'ONOScli%s' % (i + 1)))
 
         if not main.CLIs:
             main.log.error("Failed to create the list of ONOS cli handles")

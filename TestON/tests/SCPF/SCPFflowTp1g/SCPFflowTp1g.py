@@ -129,7 +129,7 @@ class SCPFflowTp1g:
                 main.log.report( "ONOS " + str(node) + " didn't start!" )
 
         for node in range(1, clusterCount + 1):
-            exec "a = main.ONOS%scli.startOnosCli" %str(node)
+            exec "a = main.ONOScli%s.startOnosCli" %str(node)
             a(ONOSIp[node])
 
         main.log.info("Startup sequence complete")

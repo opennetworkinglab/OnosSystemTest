@@ -74,8 +74,6 @@ class VPLSBasic:
             killed = main.ONOSbench.onosKill( node.ip_address )
             killResults = killResults and killed
 
-        cleanInstallResult = main.TRUE
-
         main.step( "Starting Mininet" )
         # scp topo file to mininet
         # TODO: move to params?

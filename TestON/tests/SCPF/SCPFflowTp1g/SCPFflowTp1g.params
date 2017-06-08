@@ -14,7 +14,6 @@
 
     <TEST>
         <enableFlowRuleStoreBackup>true</enableFlowRuleStoreBackup>
-        <skipCleanInstall>yes</skipCleanInstall>
         <warmUp>5</warmUp>                              #number of runs to warm up the system
         <sampleSize>20</sampleSize>                     #number of runs to take data from
         <neighbors>0,a</neighbors>                      #list of number of neighbors, a = all

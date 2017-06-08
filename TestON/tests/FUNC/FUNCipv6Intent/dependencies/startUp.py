@@ -27,7 +27,7 @@ def onosBuild( main, gitBranch ):
     else:
         main.log.info( "Successfully pulled " + gitBranch + " branch" )
 
-    # Maven clean install
-    buildResult = main.ONOSbench.cleanInstall()
+    # buck build
+    buildResult = main.ONOSbench.buckBuild()
 
     return buildResult

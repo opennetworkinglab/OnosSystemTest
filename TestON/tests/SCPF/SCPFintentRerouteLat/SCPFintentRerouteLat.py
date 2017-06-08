@@ -54,15 +54,6 @@ class SCPFintentRerouteLat:
                                     onfail="Failed to pull onos. Exiting test ...")
             if not stepResult: main.exit()
 
-            main.step("Building ONOS branch: " + gitBranch)
-            stepResult = main.ONOSbench.cleanInstall(skipTest=True)
-            utilities.assert_equals(expect=main.TRUE,
-                                    actual=stepResult,
-                                    onpass="Successfully build onos.",
-                                    onfail="Failed to build onos. Exiting test...")
-            if not stepResult:
-                main.exit()
-
         else:
             main.log.warn("Skipped pulling onos and Skipped building ONOS")
         main.onosIp = main.ONOSbench.getOnosIps()
@@ -71,7 +62,6 @@ class SCPFintentRerouteLat:
         main.BENCHIp = main.params['BENCH']['ip1']
         main.MN1Ip = main.params['MN']['ip1']
         main.maxNodes = int(main.params['max'])
-        main.skipMvn = main.params['TEST']['skipCleanInstall']
         main.cellName = main.params['ENV']['cellName']
         main.scale = (main.params['SCALE']).split(",")
         main.timeout = int(main.params['SLEEP']['timeout'])

@@ -60,7 +60,6 @@
     <TEST>
         <loadFrom>1,1,1,1,1,1,1</loadFrom>                                     #generate load on server, 1 = generator on
         <numSwitches>10,10,10,10,10,10,10</numSwitches>
-        <skipCleanInstall>yes</skipCleanInstall>
         <duration>400</duration>
         <log_interval>20</log_interval>
         <numKeys>40000</numKeys>

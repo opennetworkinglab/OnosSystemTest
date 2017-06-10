@@ -35,7 +35,7 @@ class OnosRestDriver( Controller ):
     def __init__( self ):
         self.pwd = None
         self.user_name = "user"
-        super( Controller, self ).__init__()
+        super( OnosRestDriver, self ).__init__()
         self.ip_address = "localhost"
         self.port = "8080"
         self.wrapped = sys.modules[ __name__ ]

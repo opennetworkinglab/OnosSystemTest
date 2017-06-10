@@ -9,6 +9,7 @@
             <connect_order>1</connect_order>
             <COMPONENTS>
                 <nodes>3</nodes>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSbench>
 
@@ -19,6 +20,9 @@
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
+                <karaf_username></karaf_username>
+                <karaf_password></karaf_password>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOScli1>
 
@@ -28,7 +32,9 @@
             <password>rocks</password>
             <type>MininetCliDriver</type>
             <connect_order>5</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </Mininet1>
 
         <ONOSrest>
@@ -39,6 +45,7 @@
             <type>OnosRestDriver</type>
             <connect_order>6</connect_order>
             <COMPONENTS>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSrest>
 
@@ -48,6 +55,9 @@
             <password>rocks</password>
             <type>ScapyCliDriver</type>
             <connect_order>7</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </Scapy>
 
     </COMPONENT>

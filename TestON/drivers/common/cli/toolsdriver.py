@@ -31,4 +31,4 @@ class Tools( CLI ):
     # The common functions for Tools included in toolsdriver
 
     def __init__( self ):
-        super( CLI, self ).__init__()
+        super( Tools, self ).__init__()

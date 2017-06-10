@@ -34,7 +34,7 @@ class API( Component ):
         This will define common functions for CLI included.
     """
     def __init__( self ):
-        super( Component, self ).__init__()
+        super( API, self ).__init__()
 
     def connect( self ):
         """

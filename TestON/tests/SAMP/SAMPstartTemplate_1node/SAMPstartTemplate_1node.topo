@@ -13,6 +13,7 @@
             <connect_order>1</connect_order>
             <COMPONENTS>
                 <home></home> #defines where onos home is
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSbench>
 
@@ -23,6 +24,7 @@
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOScli1>
 
@@ -34,6 +36,7 @@
             <connect_order>5</connect_order>
             <COMPONENTS>
                 <home>~/mininet/custom/</home>
+                <prompt></prompt>
             </COMPONENTS>
         </Mininet1>
 
@@ -45,6 +48,7 @@
             <type>OnosRestDriver</type>
             <connect_order>6</connect_order>
             <COMPONENTS>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSrest1>
 

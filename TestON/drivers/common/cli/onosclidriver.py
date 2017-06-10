@@ -41,9 +41,15 @@ class OnosCliDriver( CLI ):
         self.name = None
         self.home = None
         self.handle = None
+        self.karafUser = None
+        self.karafPass = None
         self.graph = Graph()
-        super( CLI, self ).__init__()
+        super( OnosCliDriver, self ).__init__()
 
+    def checkOptions(self, var, defaultVar):
+        if var is None or var == "":
+            return defaultVar
+        return var
     def connect( self, **connectargs ):
         """
         Creates ssh handle for ONOS cli.
@@ -54,10 +60,15 @@ class OnosCliDriver( CLI ):
             self.home = "~/onos"
             for key in self.options:
                 if key == "home":
-                    self.home = self.options[ 'home' ]
-                    break
-            if self.home is None or self.home == "":
-                self.home = "~/onos"
+                    self.home = self.options[ key ]
+                elif key == "karaf_username":
+                    self.karafUser = self.options[ key ]
+                elif key == "karaf_password":
+                    self.karafPass = self.options[ key ]
+
+            self.home = self.checkOptions(self.home, "~/onos")
+            self.karafUser = self.checkOptions(self.karafUser, self.user_name)
+            self.karafPass = self.checkOptions(self.karafPass, self.pwd )
 
             for key in self.options:
                 if key == 'onosIp':
@@ -89,7 +100,7 @@ class OnosCliDriver( CLI ):
                 home=self.home )
 
             self.handle.sendline( "cd " + self.home )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             if self.handle:
                 return self.handle
             else:
@@ -118,7 +129,7 @@ class OnosCliDriver( CLI ):
                 i = self.logout()
                 if i == main.TRUE:
                     self.handle.sendline( "" )
-                    self.handle.expect( "\$" )
+                    self.handle.expect( self.prompt )
                     self.handle.sendline( "exit" )
                     self.handle.expect( "closed" )
         except TypeError:
@@ -146,11 +157,11 @@ class OnosCliDriver( CLI ):
         try:
             if self.handle:
                 self.handle.sendline( "" )
-                i = self.handle.expect( [ "onos>", "\$", pexpect.TIMEOUT ],
+                i = self.handle.expect( [ "onos>", self.prompt, pexpect.TIMEOUT ],
                                         timeout=10 )
                 if i == 0:  # In ONOS CLI
                     self.handle.sendline( "logout" )
-                    j = self.handle.expect( [ "\$",
+                    j = self.handle.expect( [ self.prompt,
                                               "Command not found:",
                                               pexpect.TIMEOUT ] )
                     if j == 0:  # Successfully logged out
@@ -160,7 +171,7 @@ class OnosCliDriver( CLI ):
                         # or the command timed out
                         self.handle.send( "\x04" )  # send ctrl-d
                         try:
-                            self.handle.expect( "\$" )
+                            self.handle.expect( self.prompt )
                         except pexpect.TIMEOUT:
                             main.log.error( "ONOS did not respond to 'logout' or CTRL-d" )
                         return main.TRUE
@@ -211,7 +222,7 @@ class OnosCliDriver( CLI ):
                 handleAfter = self.handle.after
                 # Get the rest of the handle
                 self.handle.sendline("")
-                self.handle.expect("\$")
+                self.handle.expect(self.prompt)
                 handleMore = self.handle.before
 
                 main.log.info( "Cell call returned: " + handleBefore +
@@ -253,7 +264,7 @@ class OnosCliDriver( CLI ):
             # Check if we are already in the cli
             self.handle.sendline( "" )
             x = self.handle.expect( [
-                "\$", "onos>" ], commandlineTimeout)
+                self.prompt, "onos>" ], commandlineTimeout)
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
                 return main.TRUE
@@ -276,7 +287,7 @@ class OnosCliDriver( CLI ):
                         "config:property-set -p org.apache.karaf.shell\
                                  sshIdleTimeout " +
                         karafTimeout )
-                    self.handle.expect( "\$" )
+                    self.handle.expect( self.prompt )
                     self.handle.sendline( startCliCommand + str( ONOSIp ) )
                     self.handle.expect( "onos>" )
                 return main.TRUE
@@ -295,7 +306,7 @@ class OnosCliDriver( CLI ):
                             "config:property-set -p org.apache.karaf.shell\
                                     sshIdleTimeout " +
                             karafTimeout )
-                        self.handle.expect( "\$" )
+                        self.handle.expect( self.prompt )
                         self.handle.sendline( startCliCommand + str( ONOSIp ) )
                         self.handle.expect( "onos>" )
                     return main.TRUE
@@ -338,7 +349,7 @@ class OnosCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             x = self.handle.expect( [
-                "\$", "onos>" ], commandlineTimeout)
+                self.prompt, "onos>" ], commandlineTimeout)
 
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
@@ -357,7 +368,7 @@ class OnosCliDriver( CLI ):
                         "config:property-set -p org.apache.karaf.shell\
                                  sshIdleTimeout " +
                         karafTimeout )
-                    self.handle.expect( "\$" )
+                    self.handle.expect( self.prompt )
                     self.handle.sendline( "/opt/onos/bin/onos" )
                     self.handle.expect( "onos>" )
                 return main.TRUE
@@ -376,7 +387,7 @@ class OnosCliDriver( CLI ):
                             "config:property-set -p org.apache.karaf.shell\
                                     sshIdleTimeout " +
                             karafTimeout )
-                        self.handle.expect( "\$" )
+                        self.handle.expect( self.prompt )
                         self.handle.sendline( "/opt/onos/bin/onos" )
                         self.handle.expect( "onos>" )
                     return main.TRUE
@@ -464,7 +475,7 @@ class OnosCliDriver( CLI ):
         try:
             # Try to reconnect if disconnected from cli
             self.handle.sendline( "" )
-            i = self.handle.expect( [ "onos>", "\$", pexpect.TIMEOUT ] )
+            i = self.handle.expect( [ "onos>", self.prompt, pexpect.TIMEOUT ] )
             if i == 1:
                 main.log.error( self.name + ": onos cli session closed. ")
                 if self.onosIp:
@@ -496,7 +507,7 @@ class OnosCliDriver( CLI ):
             if dollarSign:
                 i = self.handle.expect( ["onos>"], timeout )
             else:
-                i = self.handle.expect( ["onos>", "\$"], timeout )
+                i = self.handle.expect( ["onos>", self.prompt], timeout )
             response = self.handle.before
             # TODO: do something with i
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "

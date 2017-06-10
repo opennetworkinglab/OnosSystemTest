@@ -94,7 +94,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        main.Mininet.ip_address,
-                                       cellAppString, ipList, main.ONOScli1.user_name )
+                                       cellAppString, ipList, main.ONOScli1.karafUser )
 
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )

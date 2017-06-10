@@ -32,7 +32,12 @@ class CLI( Component ):
         This will define common functions for CLI included.
     """
     def __init__( self ):
-        super( Component, self ).__init__()
+        super( CLI, self ).__init__()
+    def checkPrompt(self):
+        for key in self.options:
+            if key == "prompt" and self.options['prompt'] is not None:
+                self.prompt = self.options['prompt']
+                break
 
     def connect( self, **connectargs ):
         """
@@ -42,6 +47,7 @@ class CLI( Component ):
         """
         for key in connectargs:
             vars( self )[ key ] = connectargs[ key ]
+        self.checkPrompt()
 
         connect_result = super( CLI, self ).connect()
         ssh_newkey = 'Are you sure you want to continue connecting'
@@ -80,7 +86,7 @@ class CLI( Component ):
                                     pexpect.TIMEOUT,
                                     refused,
                                     'teston>',
-                                    '>|#|\$' ],
+                                    self.prompt ],
                             120 )
             if i == 0:  # Accept key, then expect either a password prompt or access
                 main.log.info( "ssh key confirmation received, send yes" )
@@ -98,7 +104,7 @@ class CLI( Component ):
                     self.pwd = ""
                 self.handle.sendline( self.pwd )
                 j = self.handle.expect( [
-                                        '>|#|\$',
+                                        self.prompt,
                                         'password:|Password:',
                                         pexpect.EOF,
                                         pexpect.TIMEOUT ],
@@ -126,7 +132,7 @@ class CLI( Component ):
                 main.log.info( "Password not required logged in" )
 
         self.handle.sendline( "" )
-        self.handle.expect( '>|#|\$' )
+        self.handle.expect( self.prompt )
         return self.handle
 
     def disconnect( self ):
@@ -292,7 +298,7 @@ class CLI( Component ):
                                 refused,
                                 "No such file or directory",
                                 "Permission denied",
-                                "\$",
+                                self.prompt,
                                 pexpect.EOF,
                                 pexpect.TIMEOUT ],
                                 120 )
@@ -330,7 +336,7 @@ class CLI( Component ):
                     "@" +
                     ipAddress )
                 returnVal = main.FALSE
-        self.handle.expect( "\$" )
+        self.handle.expect( self.prompt )
         return returnVal
 
     def scp( self, remoteHost, filePath, dstPath, direction="from" ):

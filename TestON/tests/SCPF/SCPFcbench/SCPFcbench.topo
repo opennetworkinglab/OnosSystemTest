@@ -11,6 +11,7 @@
             <COMPONENTS>
                 <home>~/onos</home>
                 <nodes>1</nodes>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSbench>
 
@@ -20,9 +21,10 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>9</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli1>
-
     </COMPONENT>
 
 </TOPOLOGY>

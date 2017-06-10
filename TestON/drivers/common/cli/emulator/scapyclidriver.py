@@ -38,7 +38,7 @@ class ScapyCliDriver( Emulator ):
        ScapyCliDriver is the basic driver which will handle
        the Scapy functions"""
     def __init__( self ):
-        super( Emulator, self ).__init__()
+        super( ScapyCliDriver, self ).__init__()
         self.handle = self
         self.name = None
         self.home = None
@@ -147,7 +147,7 @@ class ScapyCliDriver( Emulator ):
             try:
                 self.handle.sendline( "" )
                 i = self.handle.expect( [ '>>>',
-                                          '\$',
+                                          self.prompt,
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
                                         timeout )
@@ -171,7 +171,7 @@ class ScapyCliDriver( Emulator ):
 
                 if fileName:
                     self.handle.sendline( "" )
-                    self.handle.expect( '\$' )
+                    self.handle.expect( self.prompt )
                     self.handle.sendline(
                         "sudo kill -9 \`ps -ef | grep \"" +
                         fileName +

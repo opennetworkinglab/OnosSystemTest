@@ -31,7 +31,7 @@ class LincOEDriver( Emulator ):
     LincOEDriver class will handle all emulator functions
     """
     def __init__( self ):
-        super( Emulator, self ).__init__()
+        super( LincOEDriver, self ).__init__()
         self.handle = self
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
@@ -103,12 +103,12 @@ class LincOEDriver( Emulator ):
             self.handle.sendline( "make rel" )
             i = self.handle.expect( [
                 "ERROR",
-                "\$" ] )
+                self.prompt ] )
 
             if i == 0:
                 self.handle.sendline( "sudo pkill -9 epmd" )
                 self.handle.sendline( "make rel" )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
 
                 handle = self.handle.before
                 return handle
@@ -222,7 +222,7 @@ class LincOEDriver( Emulator ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             self.handle.sendline( "sudo ~/linc-oe/rel/linc/bin/linc attach" )
             self.handle.expect( ">" )
             return main.TRUE
@@ -317,19 +317,19 @@ class LincOEDriver( Emulator ):
             # Send CTRL+C twice to exit CLI
             self.handle.send( "\x03" )
             self.handle.send( "\x03" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             handle1 = self.handle.before
             cmd = "pgrep -f linc"
             self.handle.sendline( cmd )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             handle2 = self.handle.before
             main.log.info( "pid's = " + handle2 )
             cmd = "sudo kill -9 `pgrep -f linc`"
             self.handle.sendline( cmd )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             # Close the ssh connection
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             self.handle.sendline( "exit" )
             self.handle.expect( "closed" )
         except pexpect.EOF:

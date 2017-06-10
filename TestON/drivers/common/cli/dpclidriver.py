@@ -13,7 +13,7 @@ from drivers.common.clidriver import CLI
 class DPCliDriver( CLI ):
 
     def __init__( self ):
-        super( CLI, self ).__init__()
+        super( DPCliDriver, self ).__init__()
 
     def connect( self, **connectargs ):
         for key in connectargs:
@@ -46,12 +46,12 @@ class DPCliDriver( CLI ):
         and false if a single interface has issues
         """
         self.handle.sendline( "" )
-        self.handle.expect( "\$" )
+        self.handle.expect( self.prompt )
 
         self.handle.sendline( "rm /tmp/local_ip.txt" )
-        self.handle.expect( "\$" )
+        self.handle.expect( self.prompt )
         self.handle.sendline( "touch /tmp/local_ip.txt" )
-        self.handle.expect( "\$" )
+        self.handle.expect( self.prompt )
 
         main.log.info( "Creating interfaces" )
         k = 0
@@ -69,7 +69,7 @@ class DPCliDriver( CLI ):
                     intf ) + " " + ip + " netmask 255.255.255.0" )
 
             i = self.handle.expect( [
-                                    "\$",
+                                    self.prompt,
                                     "password",
                                     pexpect.TIMEOUT,
                                     pexpect.EOF ],
@@ -78,11 +78,11 @@ class DPCliDriver( CLI ):
             if i == 0:
                 self.handle.sendline(
                     "echo " + str( ip ) + " >> /tmp/local_ip.txt" )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
             elif i == 1:
                 main.log.info( "Sending sudo password" )
                 self.handle.sendline( self.pwd )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
             else:
                 main.log.error( "INTERFACES NOT CREATED" )
                 return main.FALSE
@@ -98,7 +98,7 @@ class DPCliDriver( CLI ):
         this function will install fping then run the same command
         """
         self.handle.sendline( "" )
-        self.handle.expect( "\$" )
+        self.handle.expect( self.prompt )
 
         self.handle.sendline( "scp " + str( destlogin ) + "@" +
                               str( destip ) +
@@ -123,7 +123,7 @@ class DPCliDriver( CLI ):
             return result
 
         self.handle.sendline( "" )
-        self.handle.expect( "\$" )
+        self.handle.expect( self.prompt )
 
         main.log.info( "Pinging interfaces on the " + str( netdst ) +
                        " network from " + str( netsrc ) + "." +
@@ -135,7 +135,7 @@ class DPCliDriver( CLI ):
             i = self.handle.expect( [
                                     "reachable",
                                     "unreachable",
-                                    "\$",
+                                    self.prompt,
                                     "password",
                                     pexpect.TIMEOUT,
                                     "not installed" ],
@@ -160,12 +160,12 @@ class DPCliDriver( CLI ):
                 main.log.info( "fping not installed, installing fping" )
                 self.handle.sendline( "sudo apt-get install fping" )
                 i = self.handle.expect( [ "password",
-                                          "\$",
+                                          self.prompt,
                                           pexpect.TIMEOUT ],
                                         timeout=60 )
                 if i == 0:
                     self.handle.sendline( self.pwd )
-                    self.handle.expect( "\$", timeout=30 )
+                    self.handle.expect( self.prompt, timeout=30 )
                     main.log.info( "fping installed, now pinging interfaces" )
                     self.handle.sendline(
                         "sudo fping -S " + str(

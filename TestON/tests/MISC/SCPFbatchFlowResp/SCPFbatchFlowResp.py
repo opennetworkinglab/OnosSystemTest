@@ -95,7 +95,7 @@ class SCPFbatchFlowResp:
             main.step( "Create onos cell file with: " + main.apps )
             main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "temp",
                                            main.Mininet1.ip_address, main.apps,
-                                           tempOnosIp, main.ONOScli1.user_name )
+                                           tempOnosIp, main.ONOScli1.karafUser )
 
             main.step( "Apply cell to environment" )
             cellResult = main.ONOSbench.setCell( "temp" )

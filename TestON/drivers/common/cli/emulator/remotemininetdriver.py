@@ -39,7 +39,7 @@ class RemoteMininetDriver( Emulator ):
     mininet running on the target.
     """
     def __init__( self ):
-        super( Emulator, self ).__init__()
+        super( RemoteMininetDriver, self ).__init__()
         self.handle = self
         self.name = None
         self.wrapped = sys.modules[ __name__ ]
@@ -103,12 +103,12 @@ class RemoteMininetDriver( Emulator ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             self.handle.sendline( "cat " + pingList )
             self.handle.expect( pingList )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             outputs = self.handle.before + self.handle.after
             if re.search( " 0% packet loss", outputs ):
                 return main.FALSE
@@ -140,7 +140,7 @@ class RemoteMininetDriver( Emulator ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             args = utilities.parse_args(
                 [ "SRC", "TARGET", "PINGTIME" ], **pingParams )
             precmd = "sudo rm /tmp/ping." + args[ "SRC" ]
@@ -152,7 +152,7 @@ class RemoteMininetDriver( Emulator ):
             main.log.info( command )
             self.execute( cmd=command, prompt="(.*)", timeout=10 )
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             return main.TRUE
         except TypeError:
             main.log.exception(self.name + ": Object not as expected")
@@ -179,14 +179,14 @@ class RemoteMininetDriver( Emulator ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             args = utilities.parse_args( [ "SRC" ], **pingParams )
             self.handle.sendline( "tail /tmp/ping." + args[ "SRC" ] )
             self.handle.expect( "tail" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             result = self.handle.before + self.handle.after
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             if re.search( 'Unreachable', result ):
                 main.log.info( "Unreachable found in ping logs..." )
                 return main.FALSE
@@ -220,7 +220,7 @@ class RemoteMininetDriver( Emulator ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             command = "sudo kill -SIGINT `pgrep ping`"
             main.log.info( command )
             self.execute( cmd=command, prompt="(.*)", timeout=10 )
@@ -231,11 +231,11 @@ class RemoteMininetDriver( Emulator ):
             self.execute( cmd=command, prompt="100%", timeout=20 )
             # Make sure the output is cleared
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             self.handle.sendline( "" )
-            i = self.handle.expect( [ "password", "\$" ] )
+            i = self.handle.expect( [ "password", self.prompt ] )
             if i == 0:
                 main.log.error( "Error, sudo asking for password" )
                 main.log.error( self.handle.before )
@@ -260,12 +260,12 @@ class RemoteMininetDriver( Emulator ):
     def pingLongKill( self ):
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             command = "sudo kill -SIGING `pgrep ping`"
             main.log.info( command )
             self.execute( cmd=command, prompt="(.*)", timeout=10 )
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found in pingLongKill" )
@@ -330,7 +330,7 @@ class RemoteMininetDriver( Emulator ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
             command = "mininet/util/m " + \
                 args[ "SRC" ] + " ping " + args[ "TARGET" ] + " -c 4 -W 1 -i .2"
@@ -365,15 +365,15 @@ class RemoteMininetDriver( Emulator ):
         try:
             if self.handle:
                 self.handle.sendline( "" )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
                 self.handle.sendline( 'ifconfig -a | grep "sw.. " | wc -l' )
                 self.handle.expect( "wc" )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
                 response = self.handle.before
                 self.handle.sendline(
                     'ps -ef | grep "bash -ms mininet:sw" | grep -v color | wc -l' )
                 self.handle.expect( "color" )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
                 response2 = self.handle.before
 
                 if re.search( num, response ):
@@ -424,7 +424,7 @@ class RemoteMininetDriver( Emulator ):
             self.handle.sendline( "" )
             self.handle.sendline( "" )
             i = self.handle.expect( [ 'No\ssuch\device', 'listening\son',
-                                    pexpect.TIMEOUT, "\$" ], timeout=10 )
+                                    pexpect.TIMEOUT, self.prompt ], timeout=10 )
             main.log.info( self.handle.before + self.handle.after )
             if i == 0:
                 main.log.error( self.name + ": tcpdump - No such device exists.\
@@ -459,7 +459,7 @@ class RemoteMininetDriver( Emulator ):
         try:
             self.handle.sendline( "sudo pkill tcpdump" )
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -487,9 +487,9 @@ class RemoteMininetDriver( Emulator ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             self.handle.sendline( "cd ~/" + name + "/tools/test/topos" )
-            self.handle.expect( "topos\$" )
+            self.handle.expect( "topos"+ self.prompt )
             if ctrllerIP == None:
                 main.log.info( "You need to specify the IP" )
                 return main.FALSE
@@ -531,7 +531,7 @@ class RemoteMininetDriver( Emulator ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( self.prompt )
             self.handle.sendline( "sudo ~/linc-oe/rel/linc/bin/linc attach" )
             self.handle.expect( ">" )
             return main.TRUE
@@ -548,8 +548,8 @@ class RemoteMininetDriver( Emulator ):
             if self.handle:
                 # Close the ssh connection
                 self.handle.sendline( "" )
-                # self.handle.expect( "\$" )
-                i = self.handle.expect( [ '\$', 'mininet>', pexpect.TIMEOUT,
+                # self.handle.expect( self.prompt )
+                i = self.handle.expect( [ self.prompt, 'mininet>', pexpect.TIMEOUT,
                                           pexpect.EOF ], timeout=2 )
                 if i == 0:
                     self.handle.sendline( "exit" )
@@ -557,7 +557,7 @@ class RemoteMininetDriver( Emulator ):
                 elif i == 1:
                     self.handle.sendline( "exit" )
                     self.handle.expect( "exit" )
-                    self.handle.expect('\$')
+                    self.handle.expect(self.prompt)
                     self.handle.sendline( "exit" )
                     self.handle.expect( "exit" )
                     self.handle.expect( "closed" )
@@ -637,7 +637,7 @@ class RemoteMininetDriver( Emulator ):
                 # at the time of writing this function )
                 # Check for existing rules on current input
                 self.handle.sendline( "" )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
                 self.handle.sendline(
                     "sudo iptables -C OUTPUT -p " +
                     str( packetType ) +
@@ -647,7 +647,7 @@ class RemoteMininetDriver( Emulator ):
                     str( dstPort ) +
                     " -j " +
                     str( rule ) )
-                i = self.handle.expect( [ "iptables:", "\$" ] )
+                i = self.handle.expect( [ "iptables:", self.prompt ] )
                 print i
                 print self.handle.before
                 print "after: "
@@ -656,7 +656,7 @@ class RemoteMininetDriver( Emulator ):
             elif actionType == 'remove':
                 # Check for existing rules on current input
                 self.handle.sendline( "" )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
                 self.handle.sendline(
                     "sudo iptables -C OUTPUT -p " +
                     str( packetType ) +
@@ -666,7 +666,7 @@ class RemoteMininetDriver( Emulator ):
                     str( dstPort ) +
                     " -j " +
                     str( rule ) )
-                self.handle.expect( "\$" )
+                self.handle.expect( self.prompt )
             print "before: "
             print self.handle.before
             actualString = self.handle.after
@@ -710,7 +710,7 @@ class RemoteMininetDriver( Emulator ):
                         main.log.info( infoString )
 
                         self.handle.expect(
-                            [ "\$", pexpect.EOF, pexpect.TIMEOUT ] )
+                            [ self.prompt, pexpect.EOF, pexpect.TIMEOUT ] )
                     except pexpect.TIMEOUT:
                         main.log.error(
                             self.name +
@@ -754,7 +754,7 @@ class RemoteMininetDriver( Emulator ):
                         main.log.info( infoString )
 
                         self.handle.expect(
-                            [ "\$", pexpect.EOF, pexpect.TIMEOUT ] )
+                            [ self.prompt, pexpect.EOF, pexpect.TIMEOUT ] )
                     except pexpect.TIMEOUT:
                         main.log.error(
                             self.name +

@@ -7,7 +7,9 @@
             <password>rocks</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOSbench>
 
         <ONOScli>
@@ -16,7 +18,11 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <karaf_username></karaf_username>
+                <karaf_password></karaf_password>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli>
 
         <ONOS1>
@@ -25,7 +31,9 @@
             <password>rocks</password>
             <type>OnosDriver</type>
             <connect_order>3</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOS1>
 
         <QuaggaCliHost3>
@@ -34,23 +42,31 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>4</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost3>
+
         <QuaggaCliHost4>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>5</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost4>
+
         <QuaggaCliHost5>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>6</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost5>
 
         <QuaggaCliHost>
@@ -59,7 +75,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>7</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost>
 
         <QuaggaCliHost101>
@@ -68,55 +86,75 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>101</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost101>
+
         <QuaggaCliHost102>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>102</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost102>
+
         <QuaggaCliHost103>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>103</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost103>
+
         <QuaggaCliHost104>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>104</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost104>
+
         <QuaggaCliHost105>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>105</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost105>
+
         <QuaggaCliHost106>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>106</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost106>
+
         <QuaggaCliHost107>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>107</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost107>
         <QuaggaCliHost108>
             <host>127.0.0.1</host>
@@ -124,7 +162,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>108</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost108>
         <QuaggaCliHost109>
             <host>127.0.0.1</host>
@@ -132,7 +172,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>109</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost109>
         <QuaggaCliHost110>
             <host>127.0.0.1</host>
@@ -140,7 +182,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>110</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost110>
         <QuaggaCliHost111>
             <host>127.0.0.1</host>
@@ -148,7 +192,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>111</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost111>
         <QuaggaCliHost112>
             <host>127.0.0.1</host>
@@ -156,7 +202,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>112</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost112>
         <QuaggaCliHost113>
             <host>127.0.0.1</host>
@@ -164,7 +212,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>113</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost113>
         <QuaggaCliHost114>
             <host>127.0.0.1</host>
@@ -172,7 +222,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>114</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost114>
         <QuaggaCliHost115>
             <host>127.0.0.1</host>
@@ -180,7 +232,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>115</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost115>
         <QuaggaCliHost116>
             <host>127.0.0.1</host>
@@ -188,7 +242,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>116</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost116>
         <QuaggaCliHost117>
             <host>127.0.0.1</host>
@@ -196,7 +252,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>117</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost117>
         <QuaggaCliHost118>
             <host>127.0.0.1</host>
@@ -204,7 +262,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>118</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost118>
         <QuaggaCliHost119>
             <host>127.0.0.1</host>
@@ -212,7 +272,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>119</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost119>
         <QuaggaCliHost120>
             <host>127.0.0.1</host>
@@ -220,7 +282,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>120</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost120>
         <QuaggaCliHost121>
             <host>127.0.0.1</host>
@@ -228,7 +292,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>121</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost121>
         <QuaggaCliHost122>
             <host>127.0.0.1</host>
@@ -236,7 +302,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>122</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost122>
         <QuaggaCliHost123>
             <host>127.0.0.1</host>
@@ -244,7 +312,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>123</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost123>
         <QuaggaCliHost124>
             <host>127.0.0.1</host>
@@ -252,7 +322,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>124</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost124>
         <QuaggaCliHost125>
             <host>127.0.0.1</host>
@@ -260,7 +332,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>125</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost125>
         <QuaggaCliHost126>
             <host>127.0.0.1</host>
@@ -268,7 +342,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>126</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost126>
         <QuaggaCliHost127>
             <host>127.0.0.1</host>
@@ -276,7 +352,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>127</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost127>
         <QuaggaCliHost128>
             <host>127.0.0.1</host>
@@ -284,7 +362,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>128</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost128>
         <QuaggaCliHost129>
             <host>127.0.0.1</host>
@@ -292,7 +372,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>129</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost129>
         <QuaggaCliHost130>
             <host>127.0.0.1</host>
@@ -300,7 +382,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>130</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost130>
         <QuaggaCliHost131>
             <host>127.0.0.1</host>
@@ -308,7 +392,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>131</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost131>
         <QuaggaCliHost132>
             <host>127.0.0.1</host>
@@ -316,7 +402,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>132</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost132>
         <QuaggaCliHost133>
             <host>127.0.0.1</host>
@@ -324,7 +412,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>133</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost133>
         <QuaggaCliHost134>
             <host>127.0.0.1</host>
@@ -332,7 +422,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>134</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost134>
         <QuaggaCliHost135>
             <host>127.0.0.1</host>
@@ -340,7 +432,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>135</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost135>
         <QuaggaCliHost136>
             <host>127.0.0.1</host>
@@ -348,7 +442,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>136</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost136>
         <QuaggaCliHost137>
             <host>127.0.0.1</host>
@@ -356,7 +452,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>137</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost137>
         <QuaggaCliHost138>
             <host>127.0.0.1</host>
@@ -364,7 +462,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>138</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost138>
         <QuaggaCliHost139>
             <host>127.0.0.1</host>
@@ -372,7 +472,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>139</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost139>
         <QuaggaCliHost140>
             <host>127.0.0.1</host>
@@ -380,7 +482,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>140</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost140>
         <QuaggaCliHost141>
             <host>127.0.0.1</host>
@@ -388,7 +492,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>141</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost141>
         <QuaggaCliHost142>
             <host>127.0.0.1</host>
@@ -396,7 +502,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>142</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost142>
         <QuaggaCliHost143>
             <host>127.0.0.1</host>
@@ -404,7 +512,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>143</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost143>
         <QuaggaCliHost144>
             <host>127.0.0.1</host>
@@ -412,7 +522,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>144</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost144>
         <QuaggaCliHost145>
             <host>127.0.0.1</host>
@@ -420,7 +532,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>145</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost145>
         <QuaggaCliHost146>
             <host>127.0.0.1</host>
@@ -428,7 +542,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>146</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost146>
         <QuaggaCliHost147>
             <host>127.0.0.1</host>
@@ -436,7 +552,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>147</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost147>
         <QuaggaCliHost148>
             <host>127.0.0.1</host>
@@ -444,7 +562,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>148</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost148>
         <QuaggaCliHost149>
             <host>127.0.0.1</host>
@@ -452,7 +572,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>149</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost149>
         <QuaggaCliHost150>
             <host>127.0.0.1</host>
@@ -460,7 +582,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>150</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost150>
         <QuaggaCliHost151>
             <host>127.0.0.1</host>
@@ -468,7 +592,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>151</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost151>
         <QuaggaCliHost152>
             <host>127.0.0.1</host>
@@ -476,7 +602,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>152</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost152>
         <QuaggaCliHost153>
             <host>127.0.0.1</host>
@@ -484,7 +612,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>153</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost153>
         <QuaggaCliHost154>
             <host>127.0.0.1</host>
@@ -492,7 +622,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>154</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost154>
         <QuaggaCliHost155>
             <host>127.0.0.1</host>
@@ -500,7 +632,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>155</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost155>
         <QuaggaCliHost156>
             <host>127.0.0.1</host>
@@ -508,7 +642,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>156</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost156>
         <QuaggaCliHost157>
             <host>127.0.0.1</host>
@@ -516,7 +652,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>157</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost157>
         <QuaggaCliHost158>
             <host>127.0.0.1</host>
@@ -524,7 +662,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>158</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost158>
         <QuaggaCliHost159>
             <host>127.0.0.1</host>
@@ -532,7 +672,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>159</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost159>
         <QuaggaCliHost160>
             <host>127.0.0.1</host>
@@ -540,7 +682,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>160</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost160>
         <QuaggaCliHost161>
             <host>127.0.0.1</host>
@@ -548,7 +692,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>161</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost161>
         <QuaggaCliHost162>
             <host>127.0.0.1</host>
@@ -556,7 +702,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>162</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost162>
         <QuaggaCliHost163>
             <host>127.0.0.1</host>
@@ -564,7 +712,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>163</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost163>
         <QuaggaCliHost164>
             <host>127.0.0.1</host>
@@ -572,7 +722,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>164</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost164>
         <QuaggaCliHost165>
             <host>127.0.0.1</host>
@@ -580,7 +732,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>165</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost165>
         <QuaggaCliHost166>
             <host>127.0.0.1</host>
@@ -588,7 +742,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>166</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost166>
         <QuaggaCliHost167>
             <host>127.0.0.1</host>
@@ -596,7 +752,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>167</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost167>
         <QuaggaCliHost168>
             <host>127.0.0.1</host>
@@ -604,7 +762,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>168</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost168>
         <QuaggaCliHost169>
             <host>127.0.0.1</host>
@@ -612,7 +772,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>169</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost169>
         <QuaggaCliHost170>
             <host>127.0.0.1</host>
@@ -620,7 +782,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>170</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost170>
         <QuaggaCliHost171>
             <host>127.0.0.1</host>
@@ -628,7 +792,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>171</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost171>
         <QuaggaCliHost172>
             <host>127.0.0.1</host>
@@ -636,7 +802,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>172</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost172>
         <QuaggaCliHost173>
             <host>127.0.0.1</host>
@@ -644,7 +812,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>173</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost173>
         <QuaggaCliHost174>
             <host>127.0.0.1</host>
@@ -652,7 +822,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>174</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost174>
         <QuaggaCliHost175>
             <host>127.0.0.1</host>
@@ -660,7 +832,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>175</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost175>
         <QuaggaCliHost176>
             <host>127.0.0.1</host>
@@ -668,7 +842,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>176</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost176>
         <QuaggaCliHost177>
             <host>127.0.0.1</host>
@@ -676,7 +852,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>177</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost177>
         <QuaggaCliHost178>
             <host>127.0.0.1</host>
@@ -684,7 +862,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>178</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost178>
         <QuaggaCliHost179>
             <host>127.0.0.1</host>
@@ -692,7 +872,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>179</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost179>
         <QuaggaCliHost180>
             <host>127.0.0.1</host>
@@ -700,7 +882,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>180</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost180>
         <QuaggaCliHost181>
             <host>127.0.0.1</host>
@@ -708,7 +892,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>181</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost181>
         <QuaggaCliHost182>
             <host>127.0.0.1</host>
@@ -716,7 +902,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>182</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost182>
         <QuaggaCliHost183>
             <host>127.0.0.1</host>
@@ -724,7 +912,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>183</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost183>
         <QuaggaCliHost184>
             <host>127.0.0.1</host>
@@ -732,7 +922,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>184</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost184>
         <QuaggaCliHost185>
             <host>127.0.0.1</host>
@@ -740,7 +932,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>185</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost185>
         <QuaggaCliHost186>
             <host>127.0.0.1</host>
@@ -748,7 +942,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>186</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost186>
         <QuaggaCliHost187>
             <host>127.0.0.1</host>
@@ -756,7 +952,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>187</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost187>
         <QuaggaCliHost188>
             <host>127.0.0.1</host>
@@ -764,7 +962,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>188</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost188>
         <QuaggaCliHost189>
             <host>127.0.0.1</host>
@@ -772,7 +972,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>189</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost189>
         <QuaggaCliHost190>
             <host>127.0.0.1</host>
@@ -780,7 +982,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>190</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost190>
         <QuaggaCliHost191>
             <host>127.0.0.1</host>
@@ -788,7 +992,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>191</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost191>
         <QuaggaCliHost192>
             <host>127.0.0.1</host>
@@ -796,7 +1002,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>192</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost192>
         <QuaggaCliHost193>
             <host>127.0.0.1</host>
@@ -804,7 +1012,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>193</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost193>
 
         <QuaggaCliHost194>
@@ -813,7 +1023,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>194</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost194>
         <QuaggaCliHost195>
             <host>127.0.0.1</host>
@@ -821,7 +1033,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>195</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost195>
         <QuaggaCliHost196>
             <host>127.0.0.1</host>
@@ -829,7 +1043,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>196</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost196>
         <QuaggaCliHost197>
             <host>127.0.0.1</host>
@@ -837,7 +1053,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>197</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost197>
         <QuaggaCliHost198>
             <host>127.0.0.1</host>
@@ -845,7 +1063,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>198</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost198>
         <QuaggaCliHost199>
             <host>127.0.0.1</host>
@@ -853,7 +1073,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>199</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost199>
         <QuaggaCliHost200>
             <host>127.0.0.1</host>
@@ -861,7 +1083,9 @@
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
             <connect_order>200</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </QuaggaCliHost200>
 
 

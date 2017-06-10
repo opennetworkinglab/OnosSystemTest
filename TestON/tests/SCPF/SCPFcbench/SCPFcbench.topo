@@ -14,16 +14,16 @@
             </COMPONENTS>
         </ONOSbench>
 
-        <ONOS1>
-            <host>OC1</host>
+        <ONOScli1>
+            <host>localhost</host>
             <user>sdn</user>
             <password>rocks</password>
-            <type>OnosDriver</type>
+            <type>OnosCliDriver</type>
             <connect_order>9</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOS1>
+        </ONOScli1>
 
     </COMPONENT>
 
 </TOPOLOGY>
- 
+

@@ -85,10 +85,6 @@ class SCPFcbench:
             main.ONOSbench.onosUninstall( ONOSIp[i] )
 
         time.sleep(10)
-        main.ONOSbench.handle.sendline(" ")
-        main.ONOSbench.handle.expect(":~")
-        print "pexpect: \n" + main.ONOSbench.handle.before
-
 
         print "Cellname is: "+ cellName + "ONOS IP is: " + str(ONOSIp)
         main.ONOSbench.createCellFile(BENCHIp, cellName, MN1Ip,
@@ -96,10 +92,6 @@ class SCPFcbench:
 
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
-
-        #main.ONOSbench.handle.sendline(" ")
-        #main.ONOSbench.handle.expect(":~")
-        #print "pexpect: \n" + main.ONOSbench.handle.before
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.buckBuild()
@@ -111,6 +103,7 @@ class SCPFcbench:
         for node in range(1, clusterCount + 1):
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
             main.ONOSbench.onosInstall( ONOSIp[node])
+            main.ONOSbench.onosSecureSSH( node=ONOSIp[node] )
 
         for node in range(1, clusterCount + 1):
             for i in range( 2 ):
@@ -142,8 +135,6 @@ class SCPFcbench:
                                  actual=stepResult,
                                  onpass="Successfully configure onos for cbench test ",
                                  onfail="Failed to configure onos for cbench test" )
-
-
 
 
     def CASE2( self, main ):
@@ -210,9 +201,4 @@ class SCPFcbench:
                                  actual=stepResult,
                                  onpass="Successfully tested onos for cbench. ",
                                  onfail="Failed to obtain valid onos cbench result!" )
-
-
-
-
-
 

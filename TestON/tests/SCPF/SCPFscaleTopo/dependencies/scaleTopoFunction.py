@@ -384,8 +384,8 @@ def getHostsData( main ):
                 main.hostsData[ host ][ 'id' ] = hostj[ 'id' ]
                 main.hostsData[ host ][ 'vlan' ] = hostj[ 'vlan' ]
                 main.hostsData[ host ][ 'location' ] = \
-                            hostj[ 'location' ][ 'elementId' ] + '/' + \
-                            hostj[ 'location' ][ 'port' ]
+                            hostj[ 'locations' ][ 0 ][ 'elementId' ] + '/' + \
+                            hostj[ 'locations' ][ 0 ][ 'port' ]
                 main.hostsData[ host ][ 'ipAddresses' ] = hostj[ 'ipAddresses' ]
 
     if activateResult and main.hostsData:

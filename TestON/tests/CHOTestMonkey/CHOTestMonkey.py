@@ -455,11 +455,11 @@ class CHOTestMonkey:
         hostInitIndex = 0
         for host in hosts:
             name = macToName[ host[ 'mac' ] ]
-            dpid = host[ 'location' ][ 'elementId' ]
+            dpid = host[ 'locations' ][ 0 ][ 'elementId' ]
             device = dpidToDevice[ dpid ]
             newHost = Host( hostInitIndex,
                             name, host[ 'id' ], host[ 'mac' ],
-                            device, host[ 'location' ][ 'port' ],
+                            device, host[ 'locations' ][ 0 ][ 'port' ],
                             host[ 'vlan' ], host[ 'ipAddresses' ] )
             print newHost
             main.hosts.append( newHost )

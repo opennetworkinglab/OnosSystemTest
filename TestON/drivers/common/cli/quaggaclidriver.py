@@ -17,7 +17,7 @@ from drivers.common.clidriver import CLI
 class QuaggaCliDriver( CLI ):
 
     def __init__( self ):
-        super( CLI, self ).__init__()
+        super( QuaggaCliDriver, self ).__init__()
 
     # TODO: simplify this method
     def connect( self, **connectargs ):
@@ -51,7 +51,7 @@ class QuaggaCliDriver( CLI ):
 
         if self.handle:
             # self.handle.expect( "",timeout=10 )
-            # self.handle.expect( "\$",timeout=10 )
+            # self.handle.expect( self.prompt,timeout=10 )
             self.handle.sendline( "telnet localhost 2605" )
             # self.handle.expect( "Password:", timeout=5 )
             self.handle.expect( "Password:" )
@@ -77,7 +77,7 @@ class QuaggaCliDriver( CLI ):
 
         if self.handle:
             # self.handle.expect( "" )
-            # self.handle.expect( "\$" )
+            # self.handle.expect( self.prompt )
             self.handle.sendline( "telnet localhost 2605" )
             # self.handle.expect( "Password:", timeout=5 )
             self.handle.expect( "Password:" )
@@ -460,7 +460,7 @@ class QuaggaCliDriver( CLI ):
 
         if self.handle:
             # self.handle.expect( "" )
-            # self.handle.expect( "\$" )
+            # self.handle.expect( self.prompt )
             main.log.info( "I in host " + str( ip_address ) )
             main.log.info( pingTestFile + " > " + pingTestResultFile + " &" )
             self.handle.sendline(
@@ -468,7 +468,7 @@ class QuaggaCliDriver( CLI ):
                 " > " +
                 pingTestResultFile +
                 " &" )
-            self.handle.expect( "\$", timeout=60 )
+            self.handle.expect( self.prompt, timeout=60 )
             handle = self.handle.before
 
             return handle

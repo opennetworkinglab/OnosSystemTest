@@ -9,6 +9,7 @@
             <connect_order>1</connect_order>
             <COMPONENTS>
                 <nodes>1</nodes>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSbench>
 
@@ -18,7 +19,11 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <karaf_username></karaf_username>
+                <karaf_password></karaf_password>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli1>
 
         <ONOScli2>
@@ -27,7 +32,9 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>3</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli2>
 
         <ONOScli3>
@@ -36,7 +43,9 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>4</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli3>
 
         <ONOS1>
@@ -45,7 +54,9 @@
             <password>rocks</password>
             <type>OnosDriver</type>
             <connect_order>9</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOS1>
 
         <ONOS2>
@@ -54,7 +65,9 @@
             <password>rocks</password>
             <type>OnosDriver</type>
             <connect_order>10</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOS2>
 
         <ONOS3>
@@ -63,7 +76,9 @@
             <password>rocks</password>
             <type>OnosDriver</type>
             <connect_order>11</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOS3>
 
         <ONOSrest1>
@@ -74,6 +89,7 @@
             <type>OnosRestDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSrest1>
 
@@ -85,6 +101,7 @@
             <type>OnosRestDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSrest2>
 
@@ -96,6 +113,7 @@
             <type>OnosRestDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSrest3>
 
@@ -108,6 +126,7 @@
             <connect_order>7</connect_order>
             <COMPONENTS>
                 <home>~/mininet/custom/</home>
+                <prompt></prompt>
             </COMPONENTS>
         </Mininet1>
 

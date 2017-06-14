@@ -34,7 +34,7 @@ class FloodLightCliDriver( RemoteTestBedDriver ):
         FloodLightCliDriver is the basic driver which will handle the Mininet functions
     """
     def __init__( self ):
-        super( RemoteTestBedDriver, self ).__init__()
+        super( FloodLightCliDriver, self ).__init__()
 
     def connect( self, **connectargs ):
         for key in connectargs:
@@ -51,16 +51,16 @@ class FloodLightCliDriver( RemoteTestBedDriver ):
             pwd=self.pwd )
         if self.handle:
             main.log.info( "Connected " + self.name )
-            self.execute( cmd="\r", prompt="\$", timeout=10 )
+            self.execute( cmd="\r", prompt=self.prompt, timeout=10 )
             self.execute(
                 cmd="cd /home/openflow/floodlight/",
-                prompt="floodlight\$",
+                prompt="floodlight" + self.prompt,
                 timeout=3 )
             self.execute(
                 cmd="java -jar target/floodlight.jar &",
-                prompt="\$",
+                prompt=self.prompt,
                 timeout=3 )
-            self.execute( cmd="\r", prompt="\$", timeout=10 )
+            self.execute( cmd="\r", prompt=self.prompt, timeout=10 )
             return self.handle
         else:
             return main.FALSE

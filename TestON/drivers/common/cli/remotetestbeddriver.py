@@ -31,7 +31,7 @@ class RemoteTestBedDriver( CLI ):
     # The common functions for emulator included in RemoteTestBedDriver
 
     def __init__( self ):
-        super( CLI, self ).__init__()
+        super( RemoteTestBedDriver, self ).__init__()
 
     def connect( self, **connectargs ):
         for key in connectargs:
@@ -53,9 +53,9 @@ class RemoteTestBedDriver( CLI ):
             pwd=remote_pwd )
 
         if self.handle:
-            self.execute( cmd="\n", prompt="\$|>|#", timeout=10 )
-            self.execute( cmd="SET CYGWIN=notty", prompt="\$|>|#", timeout=10 )
-            self.execute( cmd="\n", prompt="\$|>|#", timeout=10 )
+            self.execute( cmd="\n", prompt=self.prompt, timeout=10 )
+            self.execute( cmd="SET CYGWIN=notty", prompt=self.prompt, timeout=10 )
+            self.execute( cmd="\n", prompt=self.prompt, timeout=10 )
             main.log.info(
                 "ssh " +
                 self.vm_user_name +
@@ -68,8 +68,8 @@ class RemoteTestBedDriver( CLI ):
                 self.vm_ip_address,
                 prompt="(.*)",
                 timeout=10 )
-            self.execute( cmd="\n", prompt="assword:", timeout=10 )
-            self.execute( cmd=self.vm_pwd, prompt="\$", timeout=10 )
+            self.execute( cmd="\n", prompt="password:", timeout=10 )
+            self.execute( cmd=self.vm_pwd, prompt=self.prompt, timeout=10 )
 
             return self.handle
         else:

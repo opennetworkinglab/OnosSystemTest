@@ -98,7 +98,7 @@ def test_set_init( config ):
 class FvtApiDriver( API, templatetest.TemplateTest ):
 
     def __init__( self ):
-        super( API, self ).__init__()
+        super( FvtApiDriver, self ).__init__()
         print 'init'
 
     def connect( self, **connectargs ):

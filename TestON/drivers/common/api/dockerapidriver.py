@@ -24,7 +24,7 @@ class DockerApiDriver( API ):
         self.name = None
         self.home = None
         self.handle = None
-        super( API, self ).__init__()
+        super( DockerApiDriver, self ).__init__()
 
     def connect( self, **connectargs ):
         """

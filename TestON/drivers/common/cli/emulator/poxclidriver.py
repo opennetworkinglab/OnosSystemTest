@@ -41,7 +41,7 @@ class PoxCliDriver( Emulator ):
         PoxCliDriver driver provides the basic functions of POX controller
     """
     def __init__( self ):
-        super( Emulator, self ).__init__()
+        super( PoxCliDriver, self ).__init__()
         self.handle = self
         self.wrapped = sys.modules[ __name__ ]
 
@@ -80,12 +80,12 @@ class PoxCliDriver( Emulator ):
                 self.execute(
                     cmd="cd " +
                     self.options[ 'pox_lib_location' ],
-                    prompt="/pox\$",
+                    prompt="/pox" + self.prompt,
                     timeout=120 )
             else:
                 self.execute(
                     cmd="cd ~/TestON/lib/pox/",
-                    prompt="/pox\$",
+                    prompt="/pox" + self.prompt,
                     timeout=120 )
             # launching pox with components
             main.log.info( "launching POX controller with given components" )
@@ -102,7 +102,7 @@ class PoxCliDriver( Emulator ):
 
     def disconnect( self, handle ):
         if self.handle:
-            self.execute( cmd="exit()", prompt="/pox\$", timeout=120 )
+            self.execute( cmd="exit()", prompt="/pox" + self.prompt, timeout=120 )
         else:
             main.log.error( "Connection failed to the host" )
 

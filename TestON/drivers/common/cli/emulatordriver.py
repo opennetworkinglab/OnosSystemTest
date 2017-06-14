@@ -26,10 +26,8 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 """
 from drivers.common.clidriver import CLI
 
-
 class Emulator( CLI ):
     # The common functions for emulator included in emulatordriver
 
     def __init__( self ):
-        super( CLI, self ).__init__()
-
+        super( Emulator, self ).__init__()

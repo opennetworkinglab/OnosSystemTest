@@ -90,7 +90,7 @@ class HAsingleInstanceRestart:
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        main.Mininet1.ip_address,
-                                       cellAppString, ipList, main.ONOScli1.user_name )
+                                       cellAppString, ipList, main.ONOScli1.karafUser )
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
@@ -165,7 +165,7 @@ class HAsingleInstanceRestart:
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "SingleHA",
                                        main.Mininet1.ip_address,
-                                       cellAppString, ipList[ 0 ], main.ONOScli1.user_name )
+                                       cellAppString, ipList[ 0 ], main.ONOScli1.karafUser )
         cellResult = main.ONOSbench.setCell( "SingleHA" )
         verifyResult = main.ONOSbench.verifyCell()
         main.step( "Creating ONOS package" )

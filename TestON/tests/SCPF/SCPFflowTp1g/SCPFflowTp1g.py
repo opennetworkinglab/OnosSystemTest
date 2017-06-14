@@ -99,7 +99,7 @@ class SCPFflowTp1g:
             cellIp.append(ONOSIp[node])
 
         main.ONOSbench.createCellFile(BENCHIp, cellName, "localhost",
-                                      str(Apps), cellIp, main.ONOScli1.user_name)
+                                      str(Apps), cellIp, main.ONOScli1.karafUser)
         main.log.info("Cell Ip list: " + str(cellIp))
 
         main.step( "Set Cell" )

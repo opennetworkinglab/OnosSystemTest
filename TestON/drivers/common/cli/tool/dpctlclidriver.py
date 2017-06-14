@@ -84,7 +84,7 @@ class DpctlCliDriver( Tools ):
         cmd = cmd + tcpIP + ":" + tcpPort + " in_port=" + \
             str( args[ "INPORT" ] ) + ",idle_timeout=" + str(
                 args[ "TIMEOUT" ] ) + ",actions=" + args[ "ACTION" ]
-        response = self.execute( cmd=cmd, prompt="\~\$", timeout=60 )
+        response = self.execute( cmd=cmd, prompt="\~" + self.prompt, timeout=60 )
         if utilities.assert_matches( expect="openflow", actual=response, onpass="Flow Added Successfully", onfail="Adding Flow Failed!!!" ):
             return main.TRUE
         else:

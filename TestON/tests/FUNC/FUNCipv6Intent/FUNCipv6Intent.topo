@@ -8,6 +8,7 @@
             <connect_order>1</connect_order>
             <COMPONENTS>
                 <nodes>5</nodes>
+                <prompt></prompt>
             </COMPONENTS>
         </ONOSbench>
 
@@ -17,7 +18,11 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <karaf_username></karaf_username>
+                <karaf_password></karaf_password>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli1>
 
         <ONOScli2>
@@ -26,7 +31,9 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>3</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli2>
 
          <ONOScli3>
@@ -35,7 +42,9 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>4</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli3>
 
          <ONOScli4>
@@ -44,7 +53,9 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>5</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli4>
 
          <ONOScli5>
@@ -53,7 +64,9 @@
             <password>rocks</password>
             <type>OnosCliDriver</type>
             <connect_order>6</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOScli5>
 
 
@@ -63,7 +76,9 @@
             <password>rocks</password>
             <type>OnosDriver</type>
             <connect_order>7</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
         </ONOS1>
 
         <Mininet1>
@@ -74,6 +89,7 @@
             <connect_order>8</connect_order>
             <COMPONENTS>
                 <home>~/mininet/custom/</home>
+                <prompt></prompt>
             </COMPONENTS>
         </Mininet1>
 

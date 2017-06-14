@@ -35,7 +35,7 @@ class RemotePoxDriver( RemoteTestBedDriver ):
         RemoteVMDriver is the basic driver which will handle the Mininet functions
     """
     def __init__( self ):
-        super( RemoteTestBedDriver, self ).__init__()
+        super( RemotePoxDriver, self ).__init__()
 
     def connect( self, **connectargs ):
         for key in connectargs:
@@ -56,7 +56,7 @@ class RemotePoxDriver( RemoteTestBedDriver ):
             self.execute(
                 cmd="cd " +
                 self.options[ 'pox_lib_location' ],
-                prompt="/pox\$",
+                prompt="/pox" + self.prompt,
                 timeout=120 )
             self.execute(
                 cmd='./pox.py samples.of_tutorial',
@@ -67,6 +67,6 @@ class RemotePoxDriver( RemoteTestBedDriver ):
 
     def disconnect( self, handle ):
         if self.handle:
-            self.execute( cmd="exit()", prompt="/pox\$", timeout=120 )
+            self.execute( cmd="exit()", prompt="/pox" + self.prompt, timeout=120 )
         else:
             main.log.error( "Connection failed to the host" )

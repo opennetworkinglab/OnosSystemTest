@@ -24,7 +24,7 @@ class OvsdbDriver( CLI ):
         self.name = None
         self.home = None
         self.handle = None
-        super( CLI, self ).__init__()
+        super( OvsdbDriver, self ).__init__()
 
     def connect( self, **connectargs ):
         try:

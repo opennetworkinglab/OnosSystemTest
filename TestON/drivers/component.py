@@ -32,6 +32,7 @@ class Component( object ):
         self.default = ''
         self.wrapped = sys.modules[ __name__ ]
         self.count = 0
+        self.prompt = "\$"
 
     def __getattr__( self, name ):
         """

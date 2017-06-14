@@ -37,7 +37,7 @@ class RemoteVMDriver( RemoteTestBedDriver ):
         RemoteVMDriver is the basic driver which will handle the Mininet functions
     """
     def __init__( self ):
-        super( RemoteTestBedDriver, self ).__init__()
+        super( RemoteVMDriver, self ).__init__()
 
     def connect( self, **connectargs ):
         for key in connectargs:
@@ -102,7 +102,7 @@ class RemoteVMDriver( RemoteTestBedDriver ):
         if i == 1:
             main.log.info( "ssh connection asked for password, gave password" )
             self.handle.sendline( self.pwd )
-            self.handle.expect( '>|#|$' )
+            self.handle.expect( self.prompt )
 
         elif i == 2:
             main.log.error( "Connection timeout" )

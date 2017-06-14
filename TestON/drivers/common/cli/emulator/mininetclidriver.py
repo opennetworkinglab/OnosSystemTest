@@ -44,12 +44,11 @@ from core.graph import Graph
 
 
 class MininetCliDriver( Emulator ):
-
     """
        MininetCliDriver is the basic driver which will handle
        the Mininet functions"""
     def __init__( self ):
-        super( Emulator, self ).__init__()
+        super( MininetCliDriver, self ).__init__()
         self.handle = self
         self.name = None
         self.home = None
@@ -155,7 +154,7 @@ class MininetCliDriver( Emulator ):
                     main.log.info( self.name + ": Sending sudo password" )
                     self.handle.sendline( self.pwd )
                     i = self.handle.expect( [ '%s:' % self.user,
-                                              '\$',
+                                              self.prompt,
                                               pexpect.EOF,
                                               pexpect.TIMEOUT ],
                                             timeout )
@@ -197,7 +196,7 @@ class MininetCliDriver( Emulator ):
                     cmdString += mnCmd
                 # Send the command and check if network started
                 self.handle.sendline( "" )
-                self.handle.expect( '\$' )
+                self.handle.expect( self.prompt )
                 main.log.info( "Sending '" + cmdString + "' to " + self.name )
                 self.handle.sendline( cmdString )
                 while True:
@@ -213,7 +212,7 @@ class MininetCliDriver( Emulator ):
                     elif i == 1:
                         response = str( self.handle.before +
                                         self.handle.after )
-                        self.handle.expect( '\$' )
+                        self.handle.expect( self.prompt )
                         response += str( self.handle.before +
                                          self.handle.after )
                         main.log.error(
@@ -2370,7 +2369,7 @@ class MininetCliDriver( Emulator ):
             try:
                 self.handle.sendline( "" )
                 i = self.handle.expect( [ 'mininet>',
-                                          '\$',
+                                          self.prompt,
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
                                         timeout )
@@ -2395,7 +2394,7 @@ class MininetCliDriver( Emulator ):
 
                 if fileName:
                     self.handle.sendline( "" )
-                    self.handle.expect( '\$' )
+                    self.handle.expect( self.prompt )
                     self.handle.sendline(
                         "sudo kill -9 \`ps -ef | grep \"" +
                         fileName +

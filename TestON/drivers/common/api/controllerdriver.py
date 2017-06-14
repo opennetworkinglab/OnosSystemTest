@@ -31,5 +31,5 @@ class Controller( API ):
     # The common functions for emulator included in emulatordriver
 
     def __init__( self ):
-        super( API, self ).__init__()
+        super( Controller, self ).__init__()
 

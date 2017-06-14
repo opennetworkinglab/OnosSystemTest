@@ -98,7 +98,7 @@ class SAMPstartTemplate_1node:
         main.case( "Start up " + str( main.numCtrls ) + "-node onos cluster.")
         main.step( "Start ONOS cluster with basic (drivers) app.")
         stepResult = main.ONOSbench.startBasicONOS( nodeList=main.ONOSip, opSleep=200,
-                                                    onosUser=main.ONOScli1.user_name )
+                                                    onosUser=main.ONOScli1.karafUser )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully started basic ONOS cluster ",

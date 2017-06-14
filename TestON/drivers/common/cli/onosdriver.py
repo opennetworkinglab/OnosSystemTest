@@ -40,8 +40,7 @@ class OnosDriver( CLI ):
         self.home = None
         self.handle = None
         self.nicAddr = None
-        self.prompt = "\$"
-        super( CLI, self ).__init__()
+        super( OnosDriver, self ).__init__()
 
     def connect( self, **connectargs ):
         """
@@ -52,6 +51,7 @@ class OnosDriver( CLI ):
         the ip address needed to ssh to the "bench"
         """
         try:
+
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
             self.home = "~/onos"
@@ -182,7 +182,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( 'date +%s.%N' )
             self.handle.expect( 'date \+\%s\.\%N' )
-            self.handle.expect( '\$' )
+            self.handle.expect( self.prompt )
             epochMs = self.handle.before
             return epochMs
         except Exception:
@@ -311,8 +311,8 @@ class OnosDriver( CLI ):
                     'Runtime\sEnvironment\sto\scontinue',
                     'BUILD\sFAILURE',
                     'BUILD\sSUCCESS',
-                    'onos\$',  #TODO: fix this to be more generic?
-                    'ONOS\$',
+                    'onos' + self.prompt,  #TODO: fix this to be more generic?
+                    'ONOS' + self.prompt,
                     pexpect.TIMEOUT ], mciTimeout )
                 if i == 0:
                     main.log.error( self.name + ":There is insufficient memory \
@@ -449,7 +449,7 @@ class OnosDriver( CLI ):
             if i == 0:
                 main.log.error( self.name + ": Git pull had some issue" )
                 output = self.handle.after
-                self.handle.expect( '\$' )
+                self.handle.expect( self.prompt )
                 output += self.handle.before
                 main.log.warn( output )
                 return main.ERROR
@@ -1733,7 +1733,7 @@ class OnosDriver( CLI ):
                 cmd += " old"
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
-            self.handle.expect( "\$ " )
+            self.handle.expect( self.prompt + " " )
             response = self.handle.before
             return response
         except pexpect.EOF:

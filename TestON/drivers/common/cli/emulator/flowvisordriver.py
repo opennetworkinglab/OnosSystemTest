@@ -37,7 +37,7 @@ class FlowVisorDriver( Emulator ):
         FlowVisorDriver is the basic driver which will handle the Mininet functions
     """
     def __init__( self ):
-        super( Emulator, self ).__init__()
+        super( FlowVisorDriver, self ).__init__()
         self.handle = self
         self.wrapped = sys.modules[ __name__ ]
 
@@ -61,13 +61,13 @@ class FlowVisorDriver( Emulator ):
 
         # Copying the readme file to process the
         if self.handle:
-            self.execute( cmd='\r', prompt='\$', timeout=10 )
+            self.execute( cmd='\r', prompt=self.prompt, timeout=10 )
             self.options[ 'path' ] = '/home/openflow/flowvisor/scripts/'
             #self.handle.logfile = sys.stdout
             self.execute(
                 cmd='cd ' +
                 self.options[ 'path' ],
-                prompt='\$',
+                prompt=self.prompt,
                 timeout=10 )
             main.log.info( "Starting FlowVisor " )
 
@@ -92,7 +92,7 @@ class FlowVisorDriver( Emulator ):
             main.log.info( response )
             #import time
             # time.sleep( 10 )
-            #response = self.execute( cmd='./start_visualizer.sh & \r',prompt='\$',timeout=10 )
+            #response = self.execute( cmd='./start_visualizer.sh & \r',prompt=self.prompt,timeout=10 )
 
             return main.TRUE
         else:
@@ -111,13 +111,13 @@ class FlowVisorDriver( Emulator ):
             for id in flow_ids:
                 self.removeFlowSpace( id )
         else:
-            self.execute( cmd="clear", prompt="\$", timeout=10 )
+            self.execute( cmd="clear", prompt=self.prompt, timeout=10 )
             self.execute(
                 cmd="./fvctl.sh removeFlowSpace " +
                 id,
                 prompt="passwd:",
                 timeout=10 )
-            self.execute( cmd="\n", prompt="\$", timeout=10 )
+            self.execute( cmd="\n", prompt=self.prompt, timeout=10 )
             main.log.info( "Removed flowSpace which is having id :" + id )
 
         return main.TRUE
@@ -155,13 +155,13 @@ class FlowVisorDriver( Emulator ):
                 except Exception:
                     main.log.error( "Please specify flowspace properly" )
         """
-        # self.execute( cmd="clear",prompt="\$",timeout=10 )
+        # self.execute( cmd="clear",prompt=self.prompt,timeout=10 )
         self.execute(
             cmd="./fvctl.sh addFlowSpace " +
             flowspace,
             prompt="passwd:",
             timeout=10 )
-        self.execute( cmd="\n", prompt="\$", timeout=10 )
+        self.execute( cmd="\n", prompt=self.prompt, timeout=10 )
         sucess_match = re.search( "success\:\s+(\d+)", main.last_response )
         if sucess_match:
             main.log.info(
@@ -172,12 +172,12 @@ class FlowVisorDriver( Emulator ):
             return main.FALSE
 
     def listFlowSpace( self ):
-        self.execute( cmd="clear", prompt="\$", timeout=10 )
+        self.execute( cmd="clear", prompt=self.prompt, timeout=10 )
         self.execute(
             cmd="./fvctl.sh listFlowSpace ",
             prompt="passwd:",
             timeout=10 )
-        self.execute( cmd="\n", prompt="\$", timeout=10 )
+        self.execute( cmd="\n", prompt=self.prompt, timeout=10 )
         flow_space = main.last_response
         flow_space = self.remove_contol_chars( flow_space )
         flow_space = re.sub(
@@ -191,9 +191,9 @@ class FlowVisorDriver( Emulator ):
         return flow_space
 
     def listDevices( self ):
-        # self.execute( cmd="clear",prompt="\$",timeout=10 )
+        # self.execute( cmd="clear",prompt=self.prompt,timeout=10 )
         #self.execute( cmd="./fvctl.sh listDevices ",prompt="passwd:",timeout=10 )
-        # self.execute( cmd="\n",prompt="\$",timeout=10 )
+        # self.execute( cmd="\n",prompt=self.prompt,timeout=10 )
         devices_list = ''
         last_response = re.findall(
             "(Device\s\d+\:\s((\d|[a-z])(\d|[a-z])\:)+(\d|[a-z])(\d|[a-z]))",

@@ -122,7 +122,7 @@ class SCPFhostLat:
                                        main.Mininet1.ip_address,
                                        main.apps,
                                        tempOnosIp,
-                                       main.ONOScli1.user_name )
+                                       main.ONOScli1.karafUser )
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )

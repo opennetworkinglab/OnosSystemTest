@@ -3171,7 +3171,7 @@ class MininetCliDriver( Emulator ):
                                 '' ) == mnSwitch[ 'dpid' ]:
                             for port in onosSwitch[ 'ports' ]:
                                 if port[ 'isEnabled' ]:
-                                    if port[ 'port' ] == 'local':
+                                    if port[ 'port' ].lower() == 'local':
                                         # onosPorts.append( 'local' )
                                         onosPorts.append( long( uint64( -2 ) ) )
                                     else:

@@ -38,83 +38,34 @@ class ONOSSetup:
         else:
             main.log.info( "Skipped git checkout and pull as they are disabled in params file" )
 
-        return main.TRUE
-
-    def setRest( self, hasRest, i ):
-        if hasRest:
-            main.RESTs.append( getattr( main, "ONOSrest" + str( i ) ) )
-
-    def setNode( self, hasNode, i ):
-        if hasNode:
-            main.nodes.append( getattr( main, 'ONOS' + str(i)) )
-
-    def setCli( self, hasCli, i ):
-        if hasCli:
-            main.CLIs.append( getattr ( main, "ONOScli" + str( i ) ) )
-
-    def getNumNode( self, hasCli, hasNode, hasRest ):
-        if hasCli:
-            return len( main.CLIs )
-        if hasNode:
-            return len( main.nodes )
-        if hasRest:
-            return len( main.RESTs )
-
-    def envSetup ( self, hasMultiNodeRounds=False, hasRest=False, hasNode=False,
-                   hasCli=True, specificIp="", includeGitPull=True, makeMaxNodes=True ):
+    def envSetup( self, cluster, hasMultiNodeRounds=False, hasRest=False, hasNode=False,
+                  hasCli=True, specificIp="", includeGitPull=True ):
         if includeGitPull :
             self.gitPulling()
-        if main.ONOSbench.maxNodes:
-            main.maxNodes = int( main.ONOSbench.maxNodes )
+
+        ONOSbench = cluster.controllers[0].Bench
+        if ONOSbench.maxNodes:
+            main.maxNodes = int( ONOSbench.maxNodes )
         else:
             main.maxNodes = 0
         main.cellData = {}  # For creating cell file
-        if hasCli:
-            main.CLIs = []
-        if hasRest:
-            main.RESTs = []
-        if hasNode:
-            main.nodes = []
-        main.ONOSip = []  # List of IPs of active ONOS nodes. CASE 2
+        main.ONOSip = cluster.getIps()  # List of IPs of active ONOS nodes. CASE 2
 
-        if specificIp == "":
-            if makeMaxNodes:
-                main.ONOSip = main.ONOSbench.getOnosIps()
-        else:
+        # FIXME: Do we need this?
+        #        We should be able to just use Cluster.getIps()
+        if specificIp != "":
             main.ONOSip.append( specificIp )
 
         # Assigning ONOS cli handles to a list
-        try:
-            for i in range( 1, ( main.maxNodes if makeMaxNodes else main.numCtrls ) + 1 ):
-                self.setCli( hasCli, i )
-                self.setRest( hasRest, i )
-                self.setNode( hasNode, i )
-                if not makeMaxNodes:
-                    main.ONOSip.append( main.ONOSbench.getOnosIps()[ i - 1 ] )
-        except AttributeError:
-            numNode = self.getNumNode( hasCli, hasNode, hasRest )
-            main.log.warn( "A " + str( main.maxNodes ) + " node cluster " +
-                          "was defined in env variables, but only " +
-                          str( numNode ) +
-                          " nodes were defined in the .topo file. " +
-                          "Using " + str( numNode ) +
-                          " nodes for the test." )
-            main.maxNodes = numNode
+        main.maxNodes = len( cluster.controllers )
+        return main.TRUE
 
-        main.log.debug( "Found ONOS ips: {}".format( main.ONOSip ) )
-        if ( not hasCli or main.CLIs ) and ( not hasRest or main.RESTs )\
-                and ( not hasNode or main.nodes ):
-            return main.TRUE
-        else:
-            main.log.error( "Did not properly created list of ONOS CLI handle" )
-            return main.FALSE
-
-    def envSetupException ( self, e ):
+    def envSetupException( self, e ):
         main.log.exception( e )
         main.cleanup()
         main.exit()
 
-    def evnSetupConclusion ( self, stepResult ):
+    def evnSetupConclusion( self, stepResult ):
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully construct " +
@@ -244,22 +195,9 @@ class ONOSSetup:
                                  onfail="ONOS service did not start properly on all nodes" )
         return stepResult
 
-    def startOnosClis( self ):
-        startCliResult = main.TRUE
+    def startOnosClis( self, cluster ):
         main.step( "Starting ONOS CLI sessions" )
-        pool = []
-        main.threadID = 0
-        for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
-                            threadID=main.threadID,
-                            name="startOnosCli-" + str( i ),
-                            args=[ main.ONOSip[ i ] ] )
-            pool.append( t )
-            t.start()
-            main.threadID = main.threadID + 1
-        for t in pool:
-            t.join()
-            startCliResult = startCliResult and t.result
+        startCliResult = cluster.startCLIs()
         if not startCliResult:
             main.log.info( "ONOS CLI did not start up properly" )
             main.cleanup()
@@ -272,7 +210,7 @@ class ONOSSetup:
                                  onfail="Failed to start ONOS cli" )
         return startCliResult
 
-    def ONOSSetUp( self, Mininet, hasMultiNodeRounds=False, hasCli=True, newCell=True,
+    def ONOSSetUp( self, Mininet, cluster, hasMultiNodeRounds=False, hasCli=True, newCell=True,
                    cellName="temp", removeLog=False, extraApply=None, arg=None, extraClean=None,
                    skipPack=False, installMax=False, useSSH=True, killRemoveMax=True,
                    CtrlsSet=True, stopOnos=False ):
@@ -315,7 +253,7 @@ class ONOSSetup:
         onosServiceResult = self.checkOnosService()
 
         if hasCli:
-            onosCliResult = self.startOnosClis()
+            onosCliResult = self.startOnosClis( cluster )
 
         return cellResult and packageResult and onosUninstallResult and \
                onosInstallResult and secureSshResult and onosServiceResult and onosCliResult

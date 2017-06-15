@@ -1,26 +1,12 @@
 <PARAMS>
     <!--
         CASE0: pull onos code - this case should be skipped on Jenkins-driven prod test
-    -->
-    <!--
         CASE1: setup and clean test env
-    -->
-    <!--
         CASE2: get onos warnings, errors from log
-    -->
-    <!--
         CASE10: start a 3-node ONOS Cluster
-    -->
-    <!--
         CASE11: Start Mininet and assign controllers
-    -->
-    <!--
         CASE12: Sample case of using onos cli
-    -->
-    <!--
         CASE22: Sample case of using onos rest
-    -->
-   <!--
         CASE32: Configure fwd apps
    -->
 
@@ -36,7 +22,6 @@
     </CASE0>
 
     <CASE1>
-        <NodeList>OC1,OC2,OC3</NodeList>
         <SleepTimers>
             <onosStartup>60</onosStartup>
             <onosCfg>5</onosCfg>
@@ -46,7 +31,6 @@
     </CASE1>
 
     <CASE10>
-        <numNodes>3</numNodes>
         <Apps>
             org.onosproject.openflow,org.onosproject.fwd
         </Apps>

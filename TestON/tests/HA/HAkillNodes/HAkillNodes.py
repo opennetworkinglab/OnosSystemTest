@@ -67,13 +67,8 @@ class HAkillNodes:
         start cli sessions
         start tcpdump
         """
-        import imp
-        import pexpect
-        import time
-        import json
         main.log.info( "ONOS HA test: Restart a minority of ONOS nodes - " +
                          "initialization" )
-                # set global variables
         # These are for csv plotting in jenkins
         main.HAlabels = []
         main.HAdata = []
@@ -85,31 +80,27 @@ class HAkillNodes:
             main.exit()
         main.testSetUp.envSetupDescription()
         try:
+            from dependencies.Cluster import Cluster
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-            # load some variables from the params file
+            main.Cluster = Cluster( main.ONOScell.nodes )
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            main.numCtrls = int( main.params[ 'num_controllers' ] )
-            if main.ONOSbench.maxNodes and\
-                        main.ONOSbench.maxNodes < main.numCtrls:
-                main.numCtrls = int( main.ONOSbench.maxNodes )
-            main.maxNodes = main.numCtrls
-            stepResult = main.testSetUp.envSetup( hasNode=True )
+            stepResult = main.testSetUp.envSetup( main.Cluster, hasNode=True )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAkillNodes" )
 
         main.step( "Make sure ONOS service doesn't automatically respawn" )
-        handle = main.ONOSbench.handle
+        handle = main.Cluster.controllers[0].Bench.handle
         handle.sendline( "sed -i -e 's/^respawn$/#respawn/g' tools/package/init/onos.conf" )
         handle.expect( "\$" )  # $ from the command
         handle.sendline( "sed -i -e 's/^Restart=always/Restart=no/g' tools/package/init/onos.service" )
         handle.expect( "\$" )  # $ from the command
         handle.expect( "\$" )  # $ from the prompt
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
                                  extraApply=main.HA.customizeOnosGenPartitions,
                                  extraClean=main.HA.cleanUpGenPartition )
 
@@ -137,7 +128,7 @@ class HAkillNodes:
         """
         Ping across added host intents
         """
-        main.HA.pingAcrossHostIntent( main, True, False )
+        main.HA.pingAcrossHostIntent( main )
 
     def CASE5( self, main ):
         """
@@ -152,28 +143,26 @@ class HAkillNodes:
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         main.case( "Kill minority of ONOS nodes" )
 
         main.step( "Checking ONOS Logs for errors" )
-        for node in main.nodes:
-            main.log.debug( "Checking logs for errors on " + node.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
+        for ctrl in main.Cluster.active():
+            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
+            main.log.warn( ctrl.checkLogs( ctrl.ipAddress ) )
 
-        n = len( main.nodes )  # Number of nodes
+        n = len( main.Cluster.controllers )  # Number of nodes
         p = ( ( n + 1 ) / 2 ) + 1  # Number of partitions
-        main.kill = [ 0 ]  # ONOS node to kill, listed by index in main.nodes
+        main.kill = [ main.Cluster.controllers[ 0 ] ]  # ONOS node to kill, listed by index in main.nodes
         if n > 3:
-            main.kill.append( p - 1 )
+            main.kill.append( main.Cluster.controllers[ p - 1 ] )
             # NOTE: This only works for cluster sizes of 3,5, or 7.
 
-        main.step( "Kill " + str( len( main.kill ) ) + " ONOS nodes" )
+        main.step( "Killing nodes: " + str( main.kill ) )
         killResults = main.TRUE
-        for i in main.kill:
+        for ctrl in main.kill:
             killResults = killResults and\
-                          main.ONOSbench.onosKill( main.nodes[ i ].ip_address )
-            main.activeNodes.remove( i )
+                          ctrl.onosKill( ctrl.ipAddress )
+            ctrl.active = False
         utilities.assert_equals( expect=main.TRUE, actual=killResults,
                                  onpass="ONOS nodes killed successfully",
                                  onfail="ONOS nodes NOT successfully killed" )
@@ -181,7 +170,7 @@ class HAkillNodes:
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.HA.nodesCheck,
                                        False,
-                                       args=[ main.activeNodes ],
+                                       args=[ main.Cluster.active() ],
                                        sleep=15,
                                        attempts=5 )
 
@@ -190,11 +179,10 @@ class HAkillNodes:
                                  onfail="Nodes check NOT successful" )
 
         if not nodeResults:
-            for i in main.activeNodes:
-                cli = main.CLIs[ i ]
+            for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    cli.name,
-                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
@@ -203,7 +191,6 @@ class HAkillNodes:
         """
         The bring up stopped nodes
         """
-
         main.HA.bringUpStoppedNode( main )
 
     def CASE7( self, main ):
@@ -221,13 +208,12 @@ class HAkillNodes:
         leaderList = []
 
         restarted = []
-        for i in main.kill:
-            restarted.append( main.nodes[ i ].ip_address )
+        for ctrl in main.kill:
+            restarted.append( ctrl.ipAddress )
         leaderResult = main.TRUE
 
-        for i in main.activeNodes:
-            cli = main.CLIs[ i ]
-            leaderN = cli.electionTestLeader()
+        for ctrl in main.Cluster.active():
+            leaderN = ctrl.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
                 # error in response
@@ -236,12 +222,12 @@ class HAkillNodes:
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leaderN is None:
-                main.log.error( cli.name +
+                main.log.error( ctrl.name +
                                  " shows no leader for the election-app was" +
                                  " elected after the old one died" )
                 leaderResult = main.FALSE
             elif leaderN in restarted:
-                main.log.error( cli.name + " shows " + str( leaderN ) +
+                main.log.error( ctrl.name + " shows " + str( leaderN ) +
                                  " as leader for the election-app, but it " +
                                  "was restarted" )
                 leaderResult = main.FALSE

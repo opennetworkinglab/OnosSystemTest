@@ -15,10 +15,10 @@ class Topology:
         """
         devices = []
         threads = []
-        for i in ( range ( numNode ) if isinstance( numNode, int ) else numNode ):
-            t = main.Thread( target=utilities.retry if needRetry else main.CLIs[ i ].devices,
-                             name="devices-" + str( i ),
-                             args=[main.CLIs[ i ].devices, [ None ] ] if needRetry else [],
+        for ctrl in main.Cluster.active():
+            t = main.Thread( target=utilities.retry if needRetry else ctrl.devices,
+                             name="devices-" + str( ctrl ),
+                             args=[ ctrl.devices, [ None ] ] if needRetry else [],
                              kwargs=kwargs )
             threads.append( t )
             t.start()
@@ -35,10 +35,10 @@ class Topology:
         hosts = []
         ipResult = main.TRUE
         threads = []
-        for i in ( range ( numNode ) if isinstance( numNode, int ) else numNode ):
-            t = main.Thread( target=utilities.retry if needRetry else main.CLIs[ i ].hosts,
-                             name="hosts-" + str( i ),
-                             args=[main.CLIs[ i ].hosts, [ None ] ] if needRetry else [],
+        for ctrl in main.Cluster.active():
+            t = main.Thread( target=utilities.retry if needRetry else ctrl.hosts,
+                             name="hosts-" + str( ctrl ),
+                             args=[ ctrl.hosts, [ None ] ] if needRetry else [],
                              kwargs=kwargs )
             threads.append( t )
             t.start()
@@ -62,10 +62,10 @@ class Topology:
         """
         ports = []
         threads = []
-        for i in ( range ( numNode ) if isinstance( numNode, int ) else numNode ):
-            t = main.Thread( target=utilities.retry if needRetry else main.CLIs[ i ].ports,
-                             name="ports-" + str( i ),
-                             args=[ main.CLIs[ i ].ports, [ None ] ] if needRetry else [],
+        for ctrl in main.Cluster.active():
+            t = main.Thread( target=utilities.retry if needRetry else ctrl.ports,
+                             name="ports-" + str( ctrl ),
+                             args=[ ctrl.ports, [ None ] ] if needRetry else [],
                              kwargs=kwargs )
             threads.append( t )
             t.start()
@@ -81,11 +81,10 @@ class Topology:
         """
         links = []
         threads = []
-        print numNode
-        for i in ( range ( numNode ) if isinstance( numNode, int ) else numNode ):
-            t = main.Thread( target=utilities.retry if needRetry else main.CLIs[ i ].links,
-                             name="links-" + str( i ),
-                             args=[main.CLIs[ i ].links, [ None ] ] if needRetry else [],
+        for ctrl in main.Cluster.active():
+            t = main.Thread( target=utilities.retry if needRetry else ctrl.links,
+                             name="links-" + str( ctrl ),
+                             args=[ ctrl.links, [ None ] ] if needRetry else [],
                              kwargs=kwargs )
             threads.append( t )
             t.start()
@@ -102,10 +101,10 @@ class Topology:
         """
         clusters = []
         threads = []
-        for i in ( range ( numNode ) if isinstance( numNode, int ) else numNode ):
-            t = main.Thread( target=utilities.retry if needRetry else main.CLIs[ i ].clusters,
-                             name="clusters-" + str( i ),
-                             args=[main.CLIs[ i ].clusters, [ None ] ] if needRetry else [],
+        for ctrl in main.Cluster.active():
+            t = main.Thread( target=utilities.retry if needRetry else ctrl.clusters,
+                             name="clusters-" + str( ctrl ),
+                             args=[ ctrl.clusters, [ None ] ] if needRetry else [],
                              kwargs=kwargs )
             threads.append( t )
             t.start()
@@ -124,10 +123,10 @@ class Topology:
                     mnSwitches,
                     json.loads( devices[ controller ] ),
                     json.loads( ports[ controller ] ) )
-            except(TypeError, ValueError):
+            except ( TypeError, ValueError ):
                 main.log.error(
-                    "Could not load json: {0} or {1}".format( str( devices[ controller ] )
-                                                            , str( ports[ controller ] ) ) )
+                    "Could not load json: {0} or {1}".format( str( devices[ controller ] ),
+                                                              str( ports[ controller ] ) ) )
                 currentDevicesResult = main.FALSE
         else:
             currentDevicesResult = main.FALSE
@@ -193,15 +192,15 @@ class Topology:
                 controllerStr = str( controller + 1 )  # ONOS node number
                 # Compare Devices
                 currentDevicesResult = self.compareDevicePort( Mininet, controller,
-                                                          mnSwitches,
-                                                          devices, ports )
+                                                               mnSwitches,
+                                                               devices, ports )
                 if not currentDevicesResult:
                     deviceFails.append( controllerStr )
                 devicesResults = devicesResults and currentDevicesResult
                 # Compare Links
                 currentLinksResult = self.compareBase( links, controller,
-                                                        Mininet.compareLinks,
-                                                        [ mnSwitches, mnLinks ] )
+                                                       Mininet.compareLinks,
+                                                       [ mnSwitches, mnLinks ] )
                 if not currentLinksResult:
                     linkFails.append( controllerStr )
                 linksResults = linksResults and currentLinksResult

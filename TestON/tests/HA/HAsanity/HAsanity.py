@@ -67,9 +67,6 @@ class HAsanity:
         start cli sessions
         start tcpdump
         """
-        import imp
-        import time
-        import json
         main.log.info( "ONOS HA Sanity test - initialization" )
         # These are for csv plotting in jenkins
         main.HAlabels = []
@@ -78,27 +75,23 @@ class HAsanity:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
         except ImportError:
-            main.log.error( "ONOSSetup not found exiting the test" )
+            main.log.error( "ONOSSetup not found. exiting the test" )
             main.exit()
         main.testSetUp.envSetupDescription()
         try:
+            from dependencies.Cluster import Cluster
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-            # load some variables from the params file
+            main.Cluster = Cluster( main.ONOScell.nodes )
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            main.numCtrls = int( main.params[ 'num_controllers' ] )
-            if main.ONOSbench.maxNodes and \
-                            main.ONOSbench.maxNodes < main.numCtrls:
-                main.numCtrls = int( main.ONOSbench.maxNodes )
-            main.maxNodes = main.numCtrls
-            stepResult = main.testSetUp.envSetup( hasNode=True )
+            stepResult = main.testSetUp.envSetup( main.Cluster, hasNode=True )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAsanity" )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=main.HA.startingMininet )
 
         main.HA.initialSetUp()
@@ -125,8 +118,7 @@ class HAsanity:
         """
         Ping across added host intents
         """
-
-        main.HA.pingAcrossHostIntent( main, True, True )
+        main.HA.pingAcrossHostIntent( main )
 
     def CASE5( self, main ):
         """
@@ -142,8 +134,6 @@ class HAsanity:
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         main.case( "Wait 60 seconds instead of inducing a failure" )
         time.sleep( 60 )
         utilities.assert_equals(
@@ -164,12 +154,11 @@ class HAsanity:
 
         # NOTE: this only works for the sanity test. In case of failures,
         #       leader will likely change
-        leader = main.nodes[ main.activeNodes[ 0 ] ].ip_address
+        leader = main.Cluster.testLeader
         leaderResult = main.TRUE
 
-        for i in main.activeNodes:
-            cli = main.CLIs[ i ]
-            leaderN = cli.electionTestLeader()
+        for ctrl in main.Cluster.active():
+            leaderN = ctrl.electionTestLeader()
             leaderList.append( leaderN )
             # verify leader is ONOS1
             if leaderN == leader:
@@ -192,7 +181,7 @@ class HAsanity:
             leaderResult = main.FALSE
             main.log.error(
                 "Inconsistent view of leader for the election test app" )
-            # TODO: print the list
+            main.log.debug( leaderList )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=leaderResult,

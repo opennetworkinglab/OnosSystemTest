@@ -55,6 +55,9 @@ sys.path.append( tests_path )
 from core.utilities import Utilities
 from core.Thread import Thread
 
+class SkipCase( Exception ):
+    pass
+
 class TestON:
     '''
     TestON will initiate the specified test.
@@ -197,6 +200,7 @@ class TestON:
 
         vars( self )[component] = driverObject
         self.initiated = True
+        return driverObject
 
     def run( self ):
         '''
@@ -328,7 +332,7 @@ class TestON:
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
                 self.parseStepResults( testCaseNumber )
-            except StopIteration:  # Raised in self.skipCase()
+            except SkipCase:  # Raised in self.skipCase()
                 self.log.warn( "Skipping the rest of CASE" +
                                str( testCaseNumber ) )
                 self.parseStepResults( testCaseNumber )
@@ -426,7 +430,7 @@ class TestON:
         self.onFailMsg = "Skipping the rest of this case. "
         if msg:
             self.onFailMsg += str( msg )
-        raise StopIteration
+        raise SkipCase
 
     def addCaseHeader( self ):
         caseHeader = "\n" + "*" * 30 + "\n Result summary for Testcase" +\

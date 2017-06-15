@@ -21,6 +21,7 @@ class Utils:
         """
             Copy the karaf.log files after each testcase cycle
         """
+        # TODO: Also grab the rotated karaf logs
         main.log.report( "Copy karaf logs" )
         main.case( "Copy karaf logs" )
         main.caseExplanation = "Copying the karaf logs to preserve them through" +\
@@ -29,17 +30,14 @@ class Utils:
         stepResult = main.TRUE
         scpResult = main.TRUE
         copyResult = main.TRUE
-        for i in range( main.numCtrls ):
-            main.node = main.CLIs[ i ]
-            ip = main.ONOSip[ i ]
-            main.node.ip_address = ip
-            scpResult = scpResult and main.ONOSbench.scp( main.node,
+        for ctrl in main.Cluster.controllers:
+            scpResult = scpResult and main.ONOSbench.scp( ctrl.node,
                                                           "/opt/onos/log/karaf.log",
                                                           "/tmp/karaf.log",
                                                           direction="from" )
             copyResult = copyResult and main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
-                                                                    copyFileName=( "karaf.log.node{0}.cycle{1}".format(
-                                                                        str( i + 1 ), str( main.cycle ) ) ) )
+                                                                    copyFileName=( "karaf.log.{0}.cycle{1}".format(
+                                                                        str( ctrl ), str( main.cycle ) ) ) )
             if scpResult and copyResult:
                 stepResult = main.TRUE and stepResult
             else:

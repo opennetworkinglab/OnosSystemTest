@@ -28,18 +28,27 @@ class Component( object ):
     """
     This is the tempalte class for components
     """
+    def __str__( self ):
+        try:
+            assert self.name
+        except AttributeError:
+            return repr( self )
+        return str( self.name )
+
     def __init__( self ):
         self.default = ''
+        self.name = ''
         self.wrapped = sys.modules[ __name__ ]
         self.count = 0
         self.prompt = "\$"
 
     def __getattr__( self, name ):
         """
-         This will invoke, if the attribute wasn't found the usual ways.
-         Here it will look for assert_attribute and will execute when
-         AttributeError occurs.
-         It will return the result of the assert_attribute.
+         Called when an attribute lookup has not found the attribute
+         in the usual places (i.e. it is not an instance attribute nor
+         is it found in the class tree for self). name is the attribute
+         name. This method should return the (computed) attribute value
+         or raise an AttributeError exception.
         """
         try:
             return getattr( self.wrapped, name )
@@ -48,22 +57,7 @@ class Component( object ):
             if "'module' object has no attribute '__path__'" in error:
                 pass
             else:
-                main.log.error( str(error.__class__) + " " + str(error) )
-            try:
-                def experimentHandling( *args, **kwargs ):
-                    if main.EXPERIMENTAL_MODE == main.TRUE:
-                        result = self.experimentRun( *args, **kwargs )
-                        main.log.info( "EXPERIMENTAL MODE. API " +
-                                       str( name ) +
-                                       " not yet implemented. " +
-                                       "Returning dummy values" )
-                        return result
-                    else:
-                        return main.FALSE
-                return experimentHandling
-            except TypeError as e:
-                main.log.error( "Arguments for experimental mode does not" +
-                                " have key 'retruns'" + e )
+                raise error
 
     def connect( self ):
 

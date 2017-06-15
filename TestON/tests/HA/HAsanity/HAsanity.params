@@ -38,7 +38,6 @@
         <pull>False</pull>
         <branch>master</branch>
     </GIT>
-    <num_controllers> 7 </num_controllers>
     <tcpdump> False </tcpdump>
 
     <CTRL>

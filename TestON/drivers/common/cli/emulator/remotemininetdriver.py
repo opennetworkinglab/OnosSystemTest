@@ -470,7 +470,7 @@ class RemoteMininetDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def runOpticalMnScript( self,name = 'onos', ctrllerIP = None ):
+    def runOpticalMnScript( self, name='onos', ctrllerIP=None ):
         import time
         import types
         """

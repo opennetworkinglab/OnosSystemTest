@@ -241,7 +241,7 @@ class HAsingleInstanceRestart:
         """
         Ping across added host intents
         """
-        main.HA.pingAcrossHostIntent( main, False, True )
+        main.HA.pingAcrossHostIntent( main )
 
     def CASE5( self, main ):
         """

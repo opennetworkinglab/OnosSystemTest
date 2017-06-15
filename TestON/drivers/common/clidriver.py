@@ -33,6 +33,7 @@ class CLI( Component ):
     """
     def __init__( self ):
         super( CLI, self ).__init__()
+
     def checkPrompt(self):
         for key in self.options:
             if key == "prompt" and self.options['prompt'] is not None:

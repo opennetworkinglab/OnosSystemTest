@@ -56,10 +56,12 @@ class SAMPstartTemplate_3node:
         '''
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
+            from dependencies.Cluster import Cluster
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
             main.exit()
         try:
+            main.Cluster = Cluster( main.ONOScell.nodes )
             main.testSetUp
         except ( NameError, AttributeError ):
             main.testSetUp = ONOSSetup()
@@ -79,12 +81,14 @@ class SAMPstartTemplate_3node:
         main.testSetUp.evnSetupConclusion( stepResult )
 
 
+
     def CASE2( self, main ):
         '''
             Report errors/warnings/exceptions
         '''
         main.log.info("Error report: \n" )
-        main.ONOSbench.logReport( main.ONOSip[0],
+        ONOSbench = main.ONOScell.nodes[0].Bench
+        ONOSbench.logReport( main.Cluster.controllers[0].ipAddress,
                                   [ "INFO",
                                     "FOLLOWER",
                                     "WARN",
@@ -112,10 +116,12 @@ class SAMPstartTemplate_3node:
 
         import time
 
-        main.case( "Start up " + str( main.numCtrls ) + "-node onos cluster.")
+        size = len( main.Cluster.controllers )
+        main.case( "Start up " + str( size ) + "-node onos cluster." )
+
         main.step( "Start ONOS cluster with basic (drivers) app.")
-        stepResult = main.ONOSbench.startBasicONOS( nodeList=main.ONOSip, opSleep=200,
-                                                    onosUser=main.ONOScli1.karafUser )
+        stepResult = ONOSbench.startBasicONOS( nodeList=main.Cluster.getIps(), opSleep=200,
+                                               onosUser=main.ONOScell.karafUser )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully started basic ONOS cluster ",
@@ -135,9 +141,9 @@ class SAMPstartTemplate_3node:
         else:
             main.log.warn( "No configurations were specified to be changed after startup" )
         utilities.assert_equals( expect=main.TRUE,
-                                     actual=activateResult,
-                                     onpass="Successfully set config",
-                                     onfail="Failed to set config" )
+                                 actual=activateResult,
+                                 onpass="Successfully set config",
+                                 onfail="Failed to set config" )
 
         main.step( "Set ONOS configurations" )
         config = main.params['CASE10'].get( 'ONOS_Configuration' )
@@ -147,7 +153,7 @@ class SAMPstartTemplate_3node:
             for component in config:
                 for setting in config[component]:
                     value = config[component][setting]
-                    check = main.ONOScli1.setCfg( component, setting, value )
+                    check = main.Cluster.controllers[0].setCfg( component, setting, value )
                     main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
                     checkResult = check and checkResult
             utilities.assert_equals( expect=main.TRUE,
@@ -183,8 +189,8 @@ class SAMPstartTemplate_3node:
         assignResult = main.TRUE
         for i in range(1, 8):
             assignResult = assignResult & main.Mininet1.assignSwController( sw="s" + str( i ),
-                                                         ip=main.ONOSip,
-                                                         port='6653' )
+                                                                            ip=main.Cluster.getIps(),
+                                                                            port='6653' )
         time.sleep(main.mnCfgSleep)
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -198,8 +204,8 @@ class SAMPstartTemplate_3node:
         """
 
         main.case( "Test some onos commands through CLI. ")
-        main.log.debug( main.ONOScli1.sendline("summary") )
-        main.log.debug( main.ONOScli3.sendline("devices") )
+        main.log.debug( main.Cluster.controllers[1].sendline("summary") )
+        main.log.debug( main.Cluster.controllers[2].sendline("devices") )
 
     def CASE22( self, main ):
         """
@@ -207,8 +213,8 @@ class SAMPstartTemplate_3node:
         """
 
         main.case( " Sample tests using ONOS REST API handles. ")
-        main.log.debug( main.ONOSrest1.send("/devices") )
-        main.log.debug( main.ONOSrest2.apps() )
+        main.log.debug( main.Cluster.controllers[2].send("/devices") )
+        main.log.debug( main.Cluster.controllers[-1].apps() )
 
     def CASE32( self, main ):
         """
@@ -219,7 +225,7 @@ class SAMPstartTemplate_3node:
         """
         main.case( "Configure onos-app-fwd and check if configuration successful. " )
         main.step( "Install reactive forwarding app." )
-        installResults = main.ONOScli1.activateApp( "org.onosproject.fwd" )
+        installResults = main.Cluster.controllers[0].activateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass= "Configure fwd successful", onfail= "Configure fwd failed" )
         main.step( "Run pingall to check connectivity. " )

@@ -130,7 +130,7 @@ class HAcontinuousStopNodes:
         """
         Ping across added host intents
         """
-        main.HA.pingAcrossHostIntent( main, True, False )
+        main.HA.pingAcrossHostIntent( main )
 
     def CASE5( self, main ):
         """

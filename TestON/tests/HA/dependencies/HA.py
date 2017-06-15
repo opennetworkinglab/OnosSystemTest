@@ -40,6 +40,7 @@ class HA():
                                               dstDir,
                                               pwd=main.ONOSbench.pwd,
                                               direction="from" )
+
     def cleanUpGenPartition( self ):
         # clean up gen-partitions file
         try:
@@ -54,6 +55,7 @@ class HA():
                                 main.ONOSbench.handle.before )
             main.cleanup()
             main.exit()
+
     def startingMininet( self ):
         main.step( "Starting Mininet" )
         # scp topo file to mininet
@@ -68,6 +70,7 @@ class HA():
         utilities.assert_equals( expect=main.TRUE, actual=mnResult,
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
+
     def scalingMetadata( self ):
         import re
         main.scaling = main.params[ 'scaling' ].split( "," )
@@ -84,6 +87,7 @@ class HA():
         utilities.assert_equals( expect=main.TRUE, actual=genResult,
                                  onpass="New cluster metadata file generated",
                                  onfail="Failled to generate new metadata file" )
+
     def swapNodeMetadata( self ):
         if main.numCtrls >= 5:
             main.numCtrls -= 2
@@ -93,6 +97,7 @@ class HA():
         utilities.assert_equals( expect=main.TRUE, actual=genResult,
                                  onpass="New cluster metadata file generated",
                                  onfail="Failled to generate new metadata file" )
+
     def customizeOnosService( self, metadataMethod ):
         import os
         main.step( "Setup server for cluster metadata file" )
@@ -148,6 +153,7 @@ class HA():
                             main.onosServicepath + ".backup",
                             main.onosServicepath,
                             direction="to" )
+
     def consistentCheck( self ):
         """
         Checks that TestON counters are consistent across all nodes.
@@ -162,10 +168,10 @@ class HA():
             # Get onos counters results
             onosCountersRaw = []
             threads = []
-            for i in main.activeNodes:
+            for ctrl in main.Cluster.active():
                 t = main.Thread( target=utilities.retry,
-                                 name="counters-" + str( i ),
-                                 args=[ main.CLIs[ i ].counters, [ None ] ],
+                                 name="counters-" + str( ctrl ),
+                                 args=[ ctrl.counters, [ None ] ],
                                  kwargs={ 'sleep': 5, 'attempts': 5,
                                            'randomTime': True } )
                 threads.append( t )
@@ -174,12 +180,12 @@ class HA():
                 t.join()
                 onosCountersRaw.append( t.result )
             onosCounters = []
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( onosCountersRaw ) ):
                 try:
                     onosCounters.append( json.loads( onosCountersRaw[ i ] ) )
                 except ( ValueError, TypeError ):
-                    main.log.error( "Could not parse counters response from ONOS" +
-                                    str( main.activeNodes[ i ] + 1 ) )
+                    main.log.error( "Could not parse counters response from " +
+                                    str( main.Cluster.active()[ i ] ) )
                     main.log.warn( repr( onosCountersRaw[ i ] ) )
                     onosCounters.append( [] )
 
@@ -194,7 +200,7 @@ class HA():
             for controller in enumerate( onosCounters ):
                 for key, value in controller[ 1 ].iteritems():
                     if 'TestON' in key:
-                        node = 'ONOS' + str( controller[ 0 ] + 1 )
+                        node = str( main.Cluster.active()[ controller[ 0 ] ] )
                         try:
                             testCounters[ node ].append( { key: value } )
                         except KeyError:
@@ -224,14 +230,14 @@ class HA():
             # Get onos counters results and consistentCheck
             onosCounters, consistent = self.consistentCheck()
             # Check for correct values
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 current = onosCounters[ i ]
                 onosValue = None
                 try:
                     onosValue = current.get( counterName )
                 except AttributeError:
-                    node = str( main.activeNodes[ i ] + 1 )
-                    main.log.exception( "ONOS" + node + " counters result " +
+                    node = str( main.Cluster.active()[ i ] )
+                    main.log.exception( node + " counters result " +
                                         "is not as expected" )
                     correctResults = main.FALSE
                 if onosValue == counterValue:
@@ -272,9 +278,9 @@ class HA():
         nodesOutput = []
         results = True
         threads = []
-        for i in nodes:
-            t = main.Thread( target=main.CLIs[ i ].nodes,
-                             name="nodes-" + str( i ),
+        for node in nodes:
+            t = main.Thread( target=node.nodes,
+                             name="nodes-" + str( node ),
                              args=[] )
             threads.append( t )
             t.start()
@@ -282,7 +288,7 @@ class HA():
         for t in threads:
             t.join()
             nodesOutput.append( t.result )
-        ips = sorted( [ main.nodes[ node ].ip_address for node in nodes ] )
+        ips = sorted( main.Cluster.getIps( activeOnly=True ) )
         for i in nodesOutput:
             try:
                 current = json.loads( i )
@@ -300,6 +306,7 @@ class HA():
                 currentResult = False
             results = results and currentResult
         return results
+
     def generateGraph( self, testName, plotName="Plot-HA", index=2 ):
         # GRAPHS
         # NOTE: important params here:
@@ -317,13 +324,12 @@ class HA():
         graphs += ']]></ac:plain-text-body>\n'
         graphs += '</ac:structured-macro>\n'
         main.log.wiki( graphs )
+
     def initialSetUp( self, serviceClean=False ):
         """
         rest of initialSetup
         """
 
-        # Create a list of active nodes for use when some nodes are stopped
-        main.activeNodes = [ i for i in range( 0, main.numCtrls ) ]
 
         if main.params[ 'tcpdump' ].lower() == "true":
             main.step( "Start Packet Capture MN" )
@@ -335,14 +341,16 @@ class HA():
 
         if serviceClean:
             main.step( "Clean up ONOS service changes" )
-            main.ONOSbench.handle.sendline( "git checkout -- tools/package/init/onos.conf" )
-            main.ONOSbench.handle.sendline( "git checkout -- tools/package/init/onos.service" )
-            main.ONOSbench.handle.expect( "\$" )
+            ONOSbench = main.Cluster.contollers[0].Bench
+            ONOSbench.handle.sendline( "git checkout -- tools/package/init/onos.conf" )
+            ONOSbench.handle.expect( "\$" )
+            ONOSbench.handle.sendline( "git checkout -- tools/package/init/onos.service" )
+            ONOSbench.handle.expect( "\$" )
 
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( self.nodesCheck,
                                        False,
-                                       args=[ main.activeNodes ],
+                                       args=[ main.Cluster.active() ],
                                        attempts=5 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,
@@ -350,11 +358,10 @@ class HA():
                                  onfail="Nodes check NOT successful" )
 
         if not nodeResults:
-            for i in main.activeNodes:
-                cli = main.CLIs[ i ]
+            for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    cli.name,
-                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
@@ -364,14 +371,14 @@ class HA():
         apps = main.params.get( 'apps' )
         if apps:
             apps = apps.split( ',' )
-            main.log.warn( apps )
+            main.log.debug( "Apps: " + str( apps ) )
             activateResult = True
             for app in apps:
-                main.CLIs[ 0 ].app( app, "Activate" )
+                main.Cluster.active()[0].app( app, "Activate" )
             # TODO: check this worked
             time.sleep( 10 )  # wait for apps to activate
             for app in apps:
-                state = main.CLIs[ 0 ].appStatus( app )
+                state = main.Cluster.active()[0].appStatus( app )
                 if state == "ACTIVE":
                     activateResult = activateResult and True
                 else:
@@ -385,6 +392,7 @@ class HA():
             main.log.warn( "No apps were specified to be loaded after startup" )
 
         main.step( "Set ONOS configurations" )
+        # FIXME: This shoudl be part of the general startup sequence
         config = main.params.get( 'ONOS_Configuration' )
         if config:
             main.log.debug( config )
@@ -392,7 +400,7 @@ class HA():
             for component in config:
                 for setting in config[ component ]:
                     value = config[ component ][ setting ]
-                    check = main.CLIs[ 0 ].setCfg( component, setting, value )
+                    check = main.Cluster.next().setCfg( component, setting, value )
                     main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
                     checkResult = check and checkResult
             utilities.assert_equals( expect=main.TRUE,
@@ -402,83 +410,133 @@ class HA():
         else:
             main.log.warn( "No configurations were specified to be changed after startup" )
 
-        main.step( "App Ids check" )
-        appCheck = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            appCheck = appCheck and t.result
-        if appCheck != main.TRUE:
-            node = main.activeNodes[ 0 ]
-            main.log.warn( main.CLIs[ node ].apps() )
-            main.log.warn( main.CLIs[ node ].appIDs() )
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+        main.step( "Check app ids" )
+        appCheck = self.appCheck()
+        utilities.assert_equals( expect=True, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
+    def commonChecks( self ):
+        # TODO: make this assertable or assert in here?
+        self.topicsCheck()
+        self.partitionsCheck()
+        self.pendingMapCheck()
+        self.appCheck()
+
+    def topicsCheck( self, extraTopics=[] ):
+        """
+        Check for work partition topics in leaders output
+        """
+        leaders = main.Cluster.next().leaders()
+        missing = False
+        try:
+            if leaders:
+                parsedLeaders = json.loads( leaders )
+                output = json.dumps( parsedLeaders,
+                                     sort_keys=True,
+                                     indent=4,
+                                     separators=( ',', ': ' ) )
+                main.log.debug( "Leaders: " + output )
+                # check for all intent partitions
+                topics = []
+                for i in range( 14 ):
+                    topics.append( "work-partition-" + str( i ) )
+                topics += extraTopics
+                main.log.debug( topics )
+                ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
+                for topic in topics:
+                    if topic not in ONOStopics:
+                        main.log.error( "Error: " + topic +
+                                        " not in leaders" )
+                        missing = True
+            else:
+                main.log.error( "leaders() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing leaders" )
+            main.log.error( repr( leaders ) )
+        if missing:
+            #NOTE Can we refactor this into the Cluster class? Maybe an option to print the output of a command from each node?
+            for ctrl in main.Cluster.active():
+                response = ctrl.CLI.leaders( jsonFormat=False )
+                main.log.debug( str( ctrl.name ) + " leaders output: \n" +
+                                str( response ) )
+        return missing
+
+    def partitionsCheck( self ):
+        # TODO: return something assertable
+        partitions = main.Cluster.next().partitions()
+        try:
+            if partitions:
+                parsedPartitions = json.loads( partitions )
+                output = json.dumps( parsedPartitions,
+                                     sort_keys=True,
+                                     indent=4,
+                                     separators=( ',', ': ' ) )
+                main.log.debug( "Partitions: " + output )
+                # TODO check for a leader in all paritions
+                # TODO check for consistency among nodes
+            else:
+                main.log.error( "partitions() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing partitions" )
+            main.log.error( repr( partitions ) )
+
+    def pendingMapCheck( self ):
+        pendingMap = main.Cluster.next().pendingMap()
+        try:
+            if pendingMap:
+                parsedPending = json.loads( pendingMap )
+                output = json.dumps( parsedPending,
+                                     sort_keys=True,
+                                     indent=4,
+                                     separators=( ',', ': ' ) )
+                main.log.debug( "Pending map: " + output )
+                # TODO check something here?
+            else:
+                main.log.error( "pendingMap() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing pending map" )
+            main.log.error( repr( pendingMap ) )
+
+    def appCheck( self ):
+        """
+        Check App IDs on all nodes
+        """
+        # FIXME: Rename this to appIDCheck? or add a check for isntalled apps
+        appResults = main.Cluster.command( "appToIDCheck" )
+        appCheck = all( i == main.TRUE for i in appResults )
+        if not appCheck:
+            ctrl = main.Cluster.active()[0]
+            main.log.debug( "%s apps: %s" % ( ctrl.name, ctrl.apps() ) )
+            main.log.debug( "%s appIDs: %s" % ( ctrl.name, ctrl.appIDs() ) )
+        return appCheck
+
     def workQueueStatsCheck( self, workQueueName, completed, inProgress, pending ):
         # Completed
-        threads = []
-        completedValues = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].workQueueTotalCompleted,
-                             name="WorkQueueCompleted-" + str( i ),
-                             args=[ workQueueName ] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            completedValues.append( int( t.result ) )
+        completedValues = main.Cluster.command( "workQueueTotalCompleted",
+                                                args=[ workQueueName ] )
         # Check the results
-        completedResults = [ x == completed for x in completedValues ]
+        completedResults = [ int( x ) == completed for x in completedValues ]
         completedResult = all( completedResults )
         if not completedResult:
             main.log.warn( "Expected Work Queue {} to have {} completed, found {}".format(
                 workQueueName, completed, completedValues ) )
 
         # In Progress
-        threads = []
-        inProgressValues = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].workQueueTotalInProgress,
-                             name="WorkQueueInProgress-" + str( i ),
-                             args=[ workQueueName ] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            inProgressValues.append( int( t.result ) )
+        inProgressValues = main.Cluster.command( "workQueueTotalInProgress",
+                                                 args=[ workQueueName ] )
         # Check the results
-        inProgressResults = [ x == inProgress for x in inProgressValues ]
+        inProgressResults = [ int( x ) == inProgress for x in inProgressValues ]
         inProgressResult = all( inProgressResults )
         if not inProgressResult:
             main.log.warn( "Expected Work Queue {} to have {} inProgress, found {}".format(
                 workQueueName, inProgress, inProgressValues ) )
 
         # Pending
-        threads = []
-        pendingValues = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].workQueueTotalPending,
-                             name="WorkQueuePending-" + str( i ),
-                             args=[ workQueueName ] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            pendingValues.append( int( t.result ) )
+        pendingValues = main.Cluster.command( "workQueueTotalPending",
+                                              args=[ workQueueName ] )
         # Check the results
-        pendingResults = [ x == pending for x in pendingValues ]
+        pendingResults = [ int( x ) == pending for x in pendingValues ]
         pendingResult = all( pendingResults )
         if not pendingResult:
             main.log.warn( "Expected Work Queue {} to have {} pending, found {}".format(
@@ -493,8 +551,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
 
         main.case( "Assigning devices to controllers" )
         main.caseExplanation = "Assign switches to ONOS using 'ovs-vsctl' " + \
@@ -502,9 +558,7 @@ class HA():
                                "master of the device."
         main.step( "Assign switches to controllers" )
 
-        ipList = []
-        for i in range( main.ONOSbench.maxNodes ):
-            ipList.append( main.nodes[ i ].ip_address )
+        ipList = main.Cluster.getIps()
         swList = []
         for i in range( 1, 29 ):
             swList.append( "s" + str( i ) )
@@ -517,11 +571,11 @@ class HA():
                 main.log.info( str( response ) )
             except Exception:
                 main.log.info( repr( response ) )
-            for node in main.nodes:
-                if re.search( "tcp:" + node.ip_address, response ):
+            for ctrl in main.Cluster.controllers:
+                if re.search( "tcp:" + ctrl.ipAddress, response ):
                     mastershipCheck = mastershipCheck and main.TRUE
                 else:
-                    main.log.error( "Error, node " + node.ip_address + " is " +
+                    main.log.error( "Error, node " + repr( ctrl )+ " is " +
                                     "not in the list of controllers s" +
                                     str( i ) + " is connecting to." )
                     mastershipCheck = main.FALSE
@@ -530,6 +584,7 @@ class HA():
             actual=mastershipCheck,
             onpass="Switch mastership assigned correctly",
             onfail="Switches not assigned correctly to controllers" )
+
     def assignIntents( self, main ):
         """
         Assign intents
@@ -539,8 +594,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         try:
             main.HAlabels
         except ( NameError, AttributeError ):
@@ -560,29 +613,15 @@ class HA():
 
         # install onos-app-fwd
         main.step( "Install reactive forwarding app" )
-        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
+        onosCli = main.Cluster.next()
         installResults = onosCli.activateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install fwd successful",
                                  onfail="Install fwd failed" )
 
         main.step( "Check app ids" )
-        appCheck = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            appCheck = appCheck and t.result
-        if appCheck != main.TRUE:
-            main.log.warn( onosCli.apps() )
-            main.log.warn( onosCli.appIDs() )
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+        appCheck = self.appCheck()
+        utilities.assert_equals( expect=True, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
@@ -606,34 +645,21 @@ class HA():
                    "one or more ping pairs failed" )
         main.log.info( "Time for pingall: %2f seconds" %
                        ( time2 - time1 ) )
+        if not pingResult:
+            main.cleanup()
+            main.exit()
         # timeout for fwd flows
         time.sleep( 11 )
         # uninstall onos-app-fwd
         main.step( "Uninstall reactive forwarding app" )
-        node = main.activeNodes[ 0 ]
-        uninstallResult = main.CLIs[ node ].deactivateApp( "org.onosproject.fwd" )
+        uninstallResult = onosCli.deactivateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=uninstallResult,
                                  onpass="Uninstall fwd successful",
                                  onfail="Uninstall fwd failed" )
 
         main.step( "Check app ids" )
-        threads = []
-        appCheck2 = main.TRUE
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            appCheck2 = appCheck2 and t.result
-        if appCheck2 != main.TRUE:
-            node = main.activeNodes[ 0 ]
-            main.log.warn( main.CLIs[ node ].apps() )
-            main.log.warn( main.CLIs[ node ].appIDs() )
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck2,
+        appCheck2 = self.appCheck()
+        utilities.assert_equals( expect=True, actual=appCheck2,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
@@ -651,17 +677,17 @@ class HA():
             host2 = "00:00:00:00:00:" + \
                 str( hex( i + 10 )[ 2: ] ).zfill( 2 ).upper()
             # NOTE: getHost can return None
-            host1Dict = onosCli.getHost( host1 )
-            host2Dict = onosCli.getHost( host2 )
+            host1Dict = onosCli.CLI.getHost( host1 )
+            host2Dict = onosCli.CLI.getHost( host2 )
             host1Id = None
             host2Id = None
             if host1Dict and host2Dict:
                 host1Id = host1Dict.get( 'id', None )
                 host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
-                nodeNum = ( i % len( main.activeNodes ) )
-                node = main.activeNodes[ nodeNum ]
-                tmpId = main.CLIs[ node ].addHostIntent( host1Id, host2Id )
+                nodeNum = len( main.Cluster.active() )
+                ctrl = main.Cluster.active()[ i % nodeNum ]
+                tmpId = ctrl.CLI.addHostIntent( host1Id, host2Id )
                 if tmpId:
                     main.log.info( "Added intent with id: " + tmpId )
                     intentIds.append( tmpId )
@@ -671,16 +697,15 @@ class HA():
             else:
                 main.log.error( "Error, getHost() failed for h" + str( i ) +
                                 " and/or h" + str( i + 10 ) )
-                node = main.activeNodes[ 0 ]
-                hosts = main.CLIs[ node ].hosts()
-                main.log.warn( "Hosts output: " )
+                hosts = main.Cluster.next().hosts()
                 try:
-                    main.log.warn( json.dumps( json.loads( hosts ),
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
+                    output = json.dumps( json.loads( hosts ),
+                                         sort_keys=True,
+                                         indent=4,
+                                         separators=( ',', ': ' ) )
                 except ( ValueError, TypeError ):
-                    main.log.warn( repr( hosts ) )
+                    output = repr( hosts )
+                main.log.debug( "Hosts output: %s" % output )
                 hostResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE, actual=hostResult,
                                  onpass="Found a host id for each host",
@@ -726,67 +751,7 @@ class HA():
             count += 1
             main.log.info( "%-6s%-15s%-15s" %
                            ( str( count ), str( i ), str( s ) ) )
-        leaders = onosCli.leaders()
-        try:
-            missing = False
-            if leaders:
-                parsedLeaders = json.loads( leaders )
-                main.log.warn( json.dumps( parsedLeaders,
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
-                # check for all intent partitions
-                topics = []
-                for i in range( 14 ):
-                    topics.append( "work-partition-" + str( i ) )
-                main.log.debug( topics )
-                ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
-                for topic in topics:
-                    if topic not in ONOStopics:
-                        main.log.error( "Error: " + topic +
-                                        " not in leaders" )
-                        missing = True
-            else:
-                main.log.error( "leaders() returned None" )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing leaders" )
-            main.log.error( repr( leaders ) )
-        # Check all nodes
-        if missing:
-            for i in main.activeNodes:
-                response = main.CLIs[ i ].leaders( jsonFormat=False )
-                main.log.warn( str( main.CLIs[ i ].name ) + " leaders output: \n" +
-                               str( response ) )
-
-        partitions = onosCli.partitions()
-        try:
-            if partitions:
-                parsedPartitions = json.loads( partitions )
-                main.log.warn( json.dumps( parsedPartitions,
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
-                # TODO check for a leader in all paritions
-                # TODO check for consistency among nodes
-            else:
-                main.log.error( "partitions() returned None" )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing partitions" )
-            main.log.error( repr( partitions ) )
-        pendingMap = onosCli.pendingMap()
-        try:
-            if pendingMap:
-                parsedPending = json.loads( pendingMap )
-                main.log.warn( json.dumps( parsedPending,
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
-                # TODO check something here?
-            else:
-                main.log.error( "pendingMap() returned None" )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing pending map" )
-            main.log.error( repr( pendingMap ) )
+        self.commonChecks()
 
         intentAddResult = bool( intentAddResult and not missingIntents and
                                 installedCheck )
@@ -797,18 +762,18 @@ class HA():
         for j in range( 100 ):
             correct = True
             main.log.info( "Submitted intents: " + str( sorted( intentIds ) ) )
-            for i in main.activeNodes:
+            for ctrl in main.Cluster.active():
                 onosIds = []
-                ids = main.CLIs[ i ].getAllIntentsId()
+                ids = ctrl.getAllIntentsId()
                 onosIds.append( ids )
-                main.log.debug( "Intents in " + main.CLIs[ i ].name + ": " +
+                main.log.debug( "Intents in " + ctrl.name + ": " +
                                 str( sorted( onosIds ) ) )
                 if sorted( ids ) != sorted( intentIds ):
                     main.log.warn( "Set of intent IDs doesn't match" )
                     correct = False
                     break
                 else:
-                    intents = json.loads( main.CLIs[ i ].intents() )
+                    intents = json.loads( ctrl.intents() )
                     for intent in intents:
                         if intent[ 'state' ] != "INSTALLED":
                             main.log.warn( "Intent " + intent[ 'id' ] +
@@ -837,7 +802,7 @@ class HA():
             else:
                 count += 1
         gossipPeriod = int( main.params[ 'timers' ][ 'gossip' ] )
-        maxGossipTime = gossipPeriod * len( main.activeNodes )
+        maxGossipTime = gossipPeriod * len( main.Cluster.controllers )
         utilities.assert_greater_equals(
                 expect=maxGossipTime, actual=gossipTime,
                 onpass="ECM anti-entropy for intents worked within " +
@@ -848,6 +813,7 @@ class HA():
         if gossipTime <= maxGossipTime:
             intentAddResult = True
 
+        pendingMap = main.Cluster.next().pendingMap()
         if not intentAddResult or "key" in pendingMap:
             import time
             installedCheck = True
@@ -881,72 +847,11 @@ class HA():
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            leaders = onosCli.leaders()
-            try:
-                missing = False
-                if leaders:
-                    parsedLeaders = json.loads( leaders )
-                    main.log.warn( json.dumps( parsedLeaders,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # check for all intent partitions
-                    # check for election
-                    topics = []
-                    for i in range( 14 ):
-                        topics.append( "work-partition-" + str( i ) )
-                    # FIXME: this should only be after we start the app
-                    topics.append( "org.onosproject.election" )
-                    main.log.debug( topics )
-                    ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
-                    for topic in topics:
-                        if topic not in ONOStopics:
-                            main.log.error( "Error: " + topic +
-                                            " not in leaders" )
-                            missing = True
-                else:
-                    main.log.error( "leaders() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing leaders" )
-                main.log.error( repr( leaders ) )
-            # Check all nodes
-            if missing:
-                for i in main.activeNodes:
-                    node = main.CLIs[ i ]
-                    response = node.leaders( jsonFormat=False )
-                    main.log.warn( str( node.name ) + " leaders output: \n" +
-                                   str( response ) )
+            self.topicsCheck( [ "org.onosproject.election" ] )
+            self.partitionsCheck()
+            self.pendingMapCheck()
 
-            partitions = onosCli.partitions()
-            try:
-                if partitions:
-                    parsedPartitions = json.loads( partitions )
-                    main.log.warn( json.dumps( parsedPartitions,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # TODO check for a leader in all paritions
-                    # TODO check for consistency among nodes
-                else:
-                    main.log.error( "partitions() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing partitions" )
-                main.log.error( repr( partitions ) )
-            pendingMap = onosCli.pendingMap()
-            try:
-                if pendingMap:
-                    parsedPending = json.loads( pendingMap )
-                    main.log.warn( json.dumps( parsedPending,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # TODO check something here?
-                else:
-                    main.log.error( "pendingMap() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing pending map" )
-                main.log.error( repr( pendingMap ) )
-    def pingAcrossHostIntent( self, main, multiIntentCheck, activateNode ):
+    def pingAcrossHostIntent( self, main ):
         """
         Ping across added host intents
         """
@@ -955,21 +860,19 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         main.case( "Verify connectivity by sending traffic across Intents" )
         main.caseExplanation = "Ping across added host intents to check " +\
                                 "functionality and check the state of " +\
                                 "the intent"
 
-        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
+        onosCli = main.Cluster.next()
         main.step( "Check Intent state" )
         installedCheck = False
         loopCount = 0
         while not installedCheck and loopCount < 40:
             installedCheck = True
             # Print the intent states
-            intents = onosCli.intents() if multiIntentCheck else main.ONOScli1.intents()
+            intents = onosCli.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
@@ -989,8 +892,6 @@ class HA():
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            if not multiIntentCheck:
-                break
             if not installedCheck:
                 time.sleep( 1 )
                 loopCount += 1
@@ -1015,15 +916,15 @@ class HA():
             main.log.error(
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
-            main.log.warn( "ONOS1 intents: " )
             try:
                 tmpIntents = onosCli.intents()
-                main.log.warn( json.dumps( json.loads( tmpIntents ),
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
+                output = json.dumps( json.loads( tmpIntents ),
+                                     sort_keys=True,
+                                     indent=4,
+                                     separators=( ',', ': ' ) )
             except ( ValueError, TypeError ):
-                main.log.warn( repr( tmpIntents ) )
+               output = repr( tmpIntents )
+            main.log.debug( "ONOS1 intents: " + output )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=PingResult,
@@ -1031,81 +932,12 @@ class HA():
             onfail="Intents have not been installed correctly, pings failed." )
 
         main.step( "Check leadership of topics" )
-        leaders = onosCli.leaders()
-        topicCheck = main.TRUE
-        try:
-            if leaders:
-                parsedLeaders = json.loads( leaders )
-                main.log.warn( json.dumps( parsedLeaders,
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
-                # check for all intent partitions
-                # check for election
-                # TODO: Look at Devices as topics now that it uses this system
-                topics = []
-                for i in range( 14 ):
-                    topics.append( "work-partition-" + str( i ) )
-                # FIXME: this should only be after we start the app
-                # FIXME: topics.append( "org.onosproject.election" )
-                # Print leaders output
-                main.log.debug( topics )
-                ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
-                for topic in topics:
-                    if topic not in ONOStopics:
-                        main.log.error( "Error: " + topic +
-                                        " not in leaders" )
-                        topicCheck = main.FALSE
-            else:
-                main.log.error( "leaders() returned None" )
-                topicCheck = main.FALSE
-        except ( ValueError, TypeError ):
-            topicCheck = main.FALSE
-            main.log.exception( "Error parsing leaders" )
-            main.log.error( repr( leaders ) )
-            # TODO: Check for a leader of these topics
-        # Check all nodes
-        if topicCheck:
-            for i in main.activeNodes:
-                node = main.CLIs[ i ]
-                response = node.leaders( jsonFormat=False )
-                main.log.warn( str( node.name ) + " leaders output: \n" +
-                               str( response ) )
-
-        utilities.assert_equals( expect=main.TRUE, actual=topicCheck,
+        topicsCheck = self.topicsCheck()
+        utilities.assert_equals( expect=False, actual=topicsCheck,
                                  onpass="intent Partitions is in leaders",
-                                 onfail="Some topics were lost " )
-        # Print partitions
-        partitions = onosCli.partitions()
-        try:
-            if partitions:
-                parsedPartitions = json.loads( partitions )
-                main.log.warn( json.dumps( parsedPartitions,
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
-                # TODO check for a leader in all paritions
-                # TODO check for consistency among nodes
-            else:
-                main.log.error( "partitions() returned None" )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing partitions" )
-            main.log.error( repr( partitions ) )
-        # Print Pending Map
-        pendingMap = onosCli.pendingMap()
-        try:
-            if pendingMap:
-                parsedPending = json.loads( pendingMap )
-                main.log.warn( json.dumps( parsedPending,
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
-                # TODO check something here?
-            else:
-                main.log.error( "pendingMap() returned None" )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing pending map" )
-            main.log.error( repr( pendingMap ) )
+                                 onfail="Some topics were lost" )
+        self.partitionsCheck()
+        self.pendingMapCheck()
 
         if not installedCheck:
             main.log.info( "Waiting 60 seconds to see if the state of " +
@@ -1131,72 +963,10 @@ class HA():
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            leaders = onosCli.leaders()
-            try:
-                missing = False
-                if leaders:
-                    parsedLeaders = json.loads( leaders )
-                    main.log.warn( json.dumps( parsedLeaders,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # check for all intent partitions
-                    # check for election
-                    topics = []
-                    for i in range( 14 ):
-                        topics.append( "work-partition-" + str( i ) )
-                    # FIXME: this should only be after we start the app
-                    topics.append( "org.onosproject.election" )
-                    main.log.debug( topics )
-                    ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
-                    for topic in topics:
-                        if topic not in ONOStopics:
-                            main.log.error( "Error: " + topic +
-                                            " not in leaders" )
-                            missing = True
-                else:
-                    main.log.error( "leaders() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing leaders" )
-                main.log.error( repr( leaders ) )
-            if missing:
-                for i in main.activeNodes:
-                    node = main.CLIs[ i ]
-                    response = node.leaders( jsonFormat=False )
-                    main.log.warn( str( node.name ) + " leaders output: \n" +
-                                   str( response ) )
+        self.commonChecks()
 
-            partitions = onosCli.partitions()
-            try:
-                if partitions:
-                    parsedPartitions = json.loads( partitions )
-                    main.log.warn( json.dumps( parsedPartitions,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # TODO check for a leader in all paritions
-                    # TODO check for consistency among nodes
-                else:
-                    main.log.error( "partitions() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing partitions" )
-                main.log.error( repr( partitions ) )
-            pendingMap = onosCli.pendingMap()
-            try:
-                if pendingMap:
-                    parsedPending = json.loads( pendingMap )
-                    main.log.warn( json.dumps( parsedPending,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # TODO check something here?
-                else:
-                    main.log.error( "pendingMap() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing pending map" )
-                main.log.error( repr( pendingMap ) )
         # Print flowrules
-        main.log.debug( main.CLIs[ main.activeNodes[0] ].flows( jsonFormat=False ) if activateNode else onosCli.flows( jsonFormat=False ) )
+        main.log.debug( onosCli.flows() )
         main.step( "Wait a minute then ping again" )
         # the wait is above
         PingResult = main.TRUE
@@ -1214,7 +984,7 @@ class HA():
             main.log.error(
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
-            main.log.warn( "ONOS1 intents: " )
+            main.log.warn( str( onosCli.name ) + " intents: " )
             try:
                 tmpIntents = onosCli.intents()
                 main.log.warn( json.dumps( json.loads( tmpIntents ),
@@ -1238,8 +1008,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         try:
             from tests.dependencies.topology import Topology
         except ImportError:
@@ -1259,45 +1027,23 @@ class HA():
         mastershipState = '[]'
 
         # Assert that each device has a master
-        rolesNotNull = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].rolesNotNull,
-                             name="rolesNotNull-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            rolesNotNull = rolesNotNull and t.result
+        rolesNotNull = all( [ i == main.TRUE for i in main.Cluster.command( "rolesNotNull" ) ] )
         utilities.assert_equals(
-            expect=main.TRUE,
+            expect=True,
             actual=rolesNotNull,
             onpass="Each device has a master",
             onfail="Some devices don't have a master assigned" )
 
         main.step( "Get the Mastership of each switch from each controller" )
-        ONOSMastership = []
+        ONOSMastership = main.Cluster.command( "roles" )
+        mastershipCheck = main.FALSE
         consistentMastership = True
         rolesResults = True
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].roles,
-                             name="roles-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            ONOSMastership.append( t.result )
-
         for i in range( len( ONOSMastership ) ):
-            node = str( main.activeNodes[ i ] + 1 )
+            node = str( main.Cluster.active()[ i ] )
             if not ONOSMastership[ i ] or "Error" in ONOSMastership[ i ]:
-                main.log.error( "Error in getting ONOS" + node + " roles" )
-                main.log.warn( "ONOS" + node + " mastership response: " +
+                main.log.error( "Error in getting " + node + " roles" )
+                main.log.warn( node + " mastership response: " +
                                repr( ONOSMastership[ i ] ) )
                 rolesResults = False
         utilities.assert_equals(
@@ -1319,11 +1065,11 @@ class HA():
             onfail="ONOS nodes have different views of switch roles" )
 
         if rolesResults and not consistentMastership:
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = str( main.Cluster.active()[ i ] )
                 try:
                     main.log.warn(
-                        "ONOS" + node + " roles: ",
+                        node + " roles: ",
                         json.dumps(
                             json.loads( ONOSMastership[ i ] ),
                             sort_keys=True,
@@ -1332,32 +1078,21 @@ class HA():
                 except ( ValueError, TypeError ):
                     main.log.warn( repr( ONOSMastership[ i ] ) )
         elif rolesResults and consistentMastership:
+            mastershipCheck = main.TRUE
             mastershipState = ONOSMastership[ 0 ]
 
         main.step( "Get the intents from each controller" )
         global intentState
         intentState = []
-        ONOSIntents = []
-        consistentIntents = True  # Are Intents consistent across nodes?
-        intentsResults = True  # Could we read Intents from ONOS?
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].intents,
-                             name="intents-" + str( i ),
-                             args=[],
-                             kwargs={ 'jsonFormat': True } )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            ONOSIntents.append( t.result )
-
+        ONOSIntents = main.Cluster.command( "intents" )
+        intentCheck = main.FALSE
+        consistentIntents = True
+        intentsResults = True
         for i in range( len( ONOSIntents ) ):
-            node = str( main.activeNodes[ i ] + 1 )
+            node = str( main.Cluster.active()[ i ] )
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.error( "Error in getting ONOS" + node + " intents" )
-                main.log.warn( "ONOS" + node + " intents response: " +
+                main.log.error( "Error in getting " + node + " intents" )
+                main.log.warn( node + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
                 intentsResults = False
         utilities.assert_equals(
@@ -1387,8 +1122,8 @@ class HA():
             #  ...        ...         ...
             #  ...        ...         ...
             title = "   Id"
-            for n in main.activeNodes:
-                title += " " * 10 + "ONOS" + str( n + 1 )
+            for ctrl in main.Cluster.active():
+                title += " " * 10 + ctrl.name
             main.log.warn( title )
             # get all intent keys in the cluster
             keys = []
@@ -1415,55 +1150,38 @@ class HA():
 
         if intentsResults and not consistentIntents:
             # print the json objects
-            n = str( main.activeNodes[ -1 ] + 1 )
-            main.log.debug( "ONOS" + n + " intents: " )
+            main.log.debug( ctrl.name + " intents: " )
             main.log.debug( json.dumps( json.loads( ONOSIntents[ -1 ] ),
                                         sort_keys=True,
                                         indent=4,
                                         separators=( ',', ': ' ) ) )
             for i in range( len( ONOSIntents ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+                node = str( main.Cluster.active()[ i ] )
                 if ONOSIntents[ i ] != ONOSIntents[ -1 ]:
-                    main.log.debug( "ONOS" + node + " intents: " )
+                    main.log.debug( node + " intents: " )
                     main.log.debug( json.dumps( json.loads( ONOSIntents[ i ] ),
                                                 sort_keys=True,
                                                 indent=4,
                                                 separators=( ',', ': ' ) ) )
                 else:
-                    main.log.debug( "ONOS" + node + " intents match ONOS" +
-                                    n + " intents" )
+                    main.log.debug( node + " intents match " + ctrl.name + " intents" )
         elif intentsResults and consistentIntents:
+            intentCheck = main.TRUE
             intentState = ONOSIntents[ 0 ]
 
         main.step( "Get the flows from each controller" )
         global flowState
         flowState = []
-        ONOSFlows = []
+        ONOSFlows = main.Cluster.command( "flows" ) # TODO: Possible arg: sleep = 30
         ONOSFlowsJson = []
         flowCheck = main.FALSE
         consistentFlows = True
         flowsResults = True
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].flows,
-                             name="flows-" + str( i ),
-                             args=[],
-                             kwargs={ 'jsonFormat': True } )
-            threads.append( t )
-            t.start()
-
-        # NOTE: Flows command can take some time to run
-        time.sleep( 30 )
-        for t in threads:
-            t.join()
-            result = t.result
-            ONOSFlows.append( result )
-
         for i in range( len( ONOSFlows ) ):
-            num = str( main.activeNodes[ i ] + 1 )
+            node = str( main.Cluster.active()[ i ] )
             if not ONOSFlows[ i ] or "Error" in ONOSFlows[ i ]:
-                main.log.error( "Error in getting ONOS" + num + " flows" )
-                main.log.warn( "ONOS" + num + " flows response: " +
+                main.log.error( "Error in getting " + node + " flows" )
+                main.log.warn( node + " flows response: " +
                                repr( ONOSFlows[ i ] ) )
                 flowsResults = False
                 ONOSFlowsJson.append( None )
@@ -1472,7 +1190,7 @@ class HA():
                     ONOSFlowsJson.append( json.loads( ONOSFlows[ i ] ) )
                 except ( ValueError, TypeError ):
                     # FIXME: change this to log.error?
-                    main.log.exception( "Error in parsing ONOS" + num +
+                    main.log.exception( "Error in parsing " + node +
                                         " response as json." )
                     main.log.error( repr( ONOSFlows[ i ] ) )
                     ONOSFlowsJson.append( None )
@@ -1497,14 +1215,14 @@ class HA():
 
         if flowsResults and not consistentFlows:
             for i in range( len( ONOSFlows ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+                node = str( main.Cluster.active()[ i ] )
                 try:
                     main.log.warn(
-                        "ONOS" + node + " flows: " +
+                        node + " flows: " +
                         json.dumps( json.loads( ONOSFlows[ i ] ), sort_keys=True,
                                     indent=4, separators=( ',', ': ' ) ) )
                 except ( ValueError, TypeError ):
-                    main.log.warn( "ONOS" + node + " flows: " +
+                    main.log.warn( node + " flows: " +
                                    repr( ONOSFlows[ i ] ) )
         elif flowsResults and consistentFlows:
             flowCheck = main.TRUE
@@ -1563,33 +1281,33 @@ class HA():
             pingTime=500 )
 
         main.step( "Collecting topology information from ONOS" )
-        devices = main.topoRelated.getAllDevices( main.activeNodes, False )
-        hosts = main.topoRelated.getAllHosts( main.activeNodes, False, inJson=True )
-        ports = main.topoRelated.getAllPorts( main.activeNodes, False )
-        links = main.topoRelated.getAllLinks( main.activeNodes, False )
-        clusters = main.topoRelated.getAllClusters( main.activeNodes, False )
+        devices = main.topoRelated.getAllDevices( main.Cluster.active(), False )
+        hosts = main.topoRelated.getAllHosts( main.Cluster.active(), False, inJson=True )
+        ports = main.topoRelated.getAllPorts( main.Cluster.active(), False )
+        links = main.topoRelated.getAllLinks( main.Cluster.active(), False )
+        clusters = main.topoRelated.getAllClusters( main.Cluster.active(), False )
         # Compare json objects for hosts and dataplane clusters
 
         # hosts
         main.step( "Host view is consistent across ONOS nodes" )
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
-            controllerStr = str( main.activeNodes[ controller ] + 1 )
+            controllerStr = str( main.Cluster.active()[ controller ] )
             if hosts[ controller ] and "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
                 else:  # hosts not consistent
-                    main.log.error( "hosts from ONOS" +
+                    main.log.error( "hosts from " +
                                      controllerStr +
                                      " is inconsistent with ONOS1" )
                     main.log.warn( repr( hosts[ controller ] ) )
                     consistentHostsResult = main.FALSE
 
             else:
-                main.log.error( "Error in getting ONOS hosts from ONOS" +
+                main.log.error( "Error in getting ONOS hosts from " +
                                  controllerStr )
                 consistentHostsResult = main.FALSE
-                main.log.warn( "ONOS" + controllerStr +
+                main.log.warn( controllerStr +
                                " hosts response: " +
                                repr( hosts[ controller ] ) )
         utilities.assert_equals(
@@ -1601,11 +1319,11 @@ class HA():
         main.step( "Each host has an IP address" )
         ipResult = main.TRUE
         for controller in range( 0, len( hosts ) ):
-            controllerStr = str( main.activeNodes[ controller ] + 1 )
+            controllerStr = str( main.Cluster.active()[ controller ] )
             if hosts[ controller ]:
                 for host in hosts[ controller ]:
                     if not host.get( 'ipAddresses', [] ):
-                        main.log.error( "Error with host ips on controller" +
+                        main.log.error( "Error with host ips on " +
                                         controllerStr + ": " + str( host ) )
                         ipResult = main.FALSE
         utilities.assert_equals(
@@ -1618,20 +1336,20 @@ class HA():
         main.step( "Cluster view is consistent across ONOS nodes" )
         consistentClustersResult = main.TRUE
         for controller in range( len( clusters ) ):
-            controllerStr = str( main.activeNodes[ controller ] + 1 )
+            controllerStr = str( main.Cluster.active()[ controller ] )
             if "Error" not in clusters[ controller ]:
                 if clusters[ controller ] == clusters[ 0 ]:
                     continue
                 else:  # clusters not consistent
-                    main.log.error( "clusters from ONOS" + controllerStr +
+                    main.log.error( "clusters from " + controllerStr +
                                      " is inconsistent with ONOS1" )
                     consistentClustersResult = main.FALSE
 
             else:
                 main.log.error( "Error in getting dataplane clusters " +
-                                 "from ONOS" + controllerStr )
+                                 "from " + controllerStr )
                 consistentClustersResult = main.FALSE
-                main.log.warn( "ONOS" + controllerStr +
+                main.log.warn( controllerStr +
                                " clusters response: " +
                                repr( clusters[ controller ] ) )
         utilities.assert_equals(
@@ -1663,16 +1381,16 @@ class HA():
         mnSwitches = main.Mininet1.getSwitches()
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
-        for controller in main.activeNodes:
-            controllerStr = str( main.activeNodes[ controller ] + 1 )
+        for controller in range( len( main.Cluster.active() ) ):
+            controllerStr = str( main.Cluster.active()[ controller ] )
             currentDevicesResult = main.topoRelated.compareDevicePort(
                                                 main.Mininet1, controller,
                                                 mnSwitches, devices, ports )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=currentDevicesResult,
-                                     onpass="ONOS" + controllerStr +
+                                     onpass=controllerStr +
                                      " Switches view is correct",
-                                     onfail="ONOS" + controllerStr +
+                                     onfail=controllerStr +
                                      " Switches view is incorrect" )
 
             currentLinksResult = main.topoRelated.compareBase( links, controller,
@@ -1680,9 +1398,9 @@ class HA():
                                                                    [ mnSwitches, mnLinks ] )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=currentLinksResult,
-                                     onpass="ONOS" + controllerStr +
+                                     onpass=controllerStr +
                                      " links view is correct",
-                                     onfail="ONOS" + controllerStr +
+                                     onfail=controllerStr +
                                      " links view is incorrect" )
 
             if hosts[ controller ] and "Error" not in hosts[ controller ]:
@@ -1693,9 +1411,9 @@ class HA():
                 currentHostsResult = main.FALSE
             utilities.assert_equals( expect=main.TRUE,
                                      actual=currentHostsResult,
-                                     onpass="ONOS" + controllerStr +
+                                     onpass=controllerStr +
                                      " hosts exist in Mininet",
-                                     onfail="ONOS" + controllerStr +
+                                     onfail=controllerStr +
                                      " hosts don't match Mininet" )
 
             devicesResults = devicesResults and currentDevicesResult
@@ -1732,8 +1450,6 @@ class HA():
             # Make sure variables are defined/set
             assert main.numCtrls, "main.numCtrls not defined"
             assert utilities.assert_equals, "utilities.assert_equals not defined"
-            assert main.CLIs, "main.CLIs not defined"
-            assert main.nodes, "main.nodes not defined"
             assert main.pCounterName, "main.pCounterName not defined"
             assert main.onosSetName, "main.onosSetName not defined"
             # NOTE: assert fails if value is 0/None/Empty/False
@@ -1766,22 +1482,13 @@ class HA():
             # DISTRIBUTED ATOMIC COUNTERS
             # Partitioned counters
             main.step( "Increment then get a default counter on each node" )
-            pCounters = []
-            threads = []
+            pCounters = main.Cluster.command( "counterTestAddAndGet",
+                                              args=[ main.pCounterName ] )
             addedPValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].counterTestAddAndGet,
-                                 name="counterAddAndGet-" + str( i ),
-                                 args=[ main.pCounterName ] )
+            for i in main.Cluster.active():
                 main.pCounterValue += 1
                 addedPValues.append( main.pCounterValue )
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                pCounters.append( t.result )
-            # Check that counter incremented numController times
+            # Check that counter incremented once per controller
             pCounterResults = True
             for i in addedPValues:
                 tmpResult = i in pCounters
@@ -1796,21 +1503,12 @@ class HA():
                                             " counter" )
 
             main.step( "Get then Increment a default counter on each node" )
-            pCounters = []
-            threads = []
+            pCounters = main.Cluster.command( "counterTestGetAndAdd",
+                                              args=[ main.pCounterName ] )
             addedPValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].counterTestGetAndAdd,
-                                 name="counterGetAndAdd-" + str( i ),
-                                 args=[ main.pCounterName ] )
+            for i in main.Cluster.active():
                 addedPValues.append( main.pCounterValue )
                 main.pCounterValue += 1
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                pCounters.append( t.result )
             # Check that counter incremented numController times
             pCounterResults = True
             for i in addedPValues:
@@ -1833,22 +1531,13 @@ class HA():
                                      onfail="Added counters are incorrect" )
 
             main.step( "Add -8 to then get a default counter on each node" )
-            pCounters = []
-            threads = []
+            pCounters = main.Cluster.command( "counterTestAddAndGet",
+                                              args=[ main.pCounterName ],
+                                              kwargs={ "delta": -8 } )
             addedPValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].counterTestAddAndGet,
-                                 name="counterIncrement-" + str( i ),
-                                 args=[ main.pCounterName ],
-                                 kwargs={ "delta": -8 } )
+            for ctrl in main.Cluster.active():
                 main.pCounterValue += -8
                 addedPValues.append( main.pCounterValue )
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                pCounters.append( t.result )
             # Check that counter incremented numController times
             pCounterResults = True
             for i in addedPValues:
@@ -1864,22 +1553,14 @@ class HA():
                                             " counter" )
 
             main.step( "Add 5 to then get a default counter on each node" )
-            pCounters = []
-            threads = []
+            pCounters = main.Cluster.command( "counterTestAddAndGet",
+                                              args=[ main.pCounterName ],
+                                              kwargs={ "delta": 5 } )
             addedPValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].counterTestAddAndGet,
-                                 name="counterIncrement-" + str( i ),
-                                 args=[ main.pCounterName ],
-                                 kwargs={ "delta": 5 } )
+            for ctrl in main.Cluster.active():
                 main.pCounterValue += 5
                 addedPValues.append( main.pCounterValue )
-                threads.append( t )
-                t.start()
 
-            for t in threads:
-                t.join()
-                pCounters.append( t.result )
             # Check that counter incremented numController times
             pCounterResults = True
             for i in addedPValues:
@@ -1895,22 +1576,13 @@ class HA():
                                             " counter" )
 
             main.step( "Get then add 5 to a default counter on each node" )
-            pCounters = []
-            threads = []
+            pCounters = main.Cluster.command( "counterTestGetAndAdd",
+                                              args=[ main.pCounterName ],
+                                              kwargs={ "delta": 5 } )
             addedPValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].counterTestGetAndAdd,
-                                 name="counterIncrement-" + str( i ),
-                                 args=[ main.pCounterName ],
-                                 kwargs={ "delta": 5 } )
+            for ctrl in main.Cluster.active():
                 addedPValues.append( main.pCounterValue )
                 main.pCounterValue += 5
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                pCounters.append( t.result )
             # Check that counter incremented numController times
             pCounterResults = True
             for i in addedPValues:
@@ -1935,27 +1607,17 @@ class HA():
             # DISTRIBUTED SETS
             main.step( "Distributed Set get" )
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
-
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node +
+                            main.log.error( node +
                                             " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
@@ -1964,7 +1626,7 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node +
+                        main.log.error( node +
                                         " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -1977,24 +1639,14 @@ class HA():
                                      onfail="Set elements are incorrect" )
 
             main.step( "Distributed Set size" )
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
-
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node +
+                    main.log.error( node +
                                     " expected a size of " + str( size ) +
                                     " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
@@ -2005,23 +1657,13 @@ class HA():
 
             main.step( "Distributed Set add()" )
             main.onosSet.add( addValue )
-            addResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestAdd,
-                                 name="setTestAdd-" + str( i ),
-                                 args=[ main.onosSetName, addValue ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                addResponses.append( t.result )
-
+            addResponses = main.Cluster.command( "setTestAdd",
+                                                 args=[ main.onosSetName, addValue ] )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
             addResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if addResponses[ i ] == main.TRUE:
                     # All is well
                     pass
@@ -2039,26 +1681,17 @@ class HA():
 
             # Check if set is still correct
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node + " has incorrect view" +
+                            main.log.error( node + " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
                             main.log.debug( "Expected: " + str( main.onosSet ) )
@@ -2066,31 +1699,21 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node + " has repeat elements in" +
+                        main.log.error( node + " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         getResults = main.FALSE
                 elif getResponses[ i ] == main.ERROR:
                     getResults = main.FALSE
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node +
-                                    " expected a size of " + str( size ) +
-                                    " for set " + main.onosSetName +
+                    main.log.error( node + " expected a size of " +
+                                    str( size ) + " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
             addResults = addResults and getResults and sizeResults
             utilities.assert_equals( expect=main.TRUE,
@@ -2100,23 +1723,13 @@ class HA():
 
             main.step( "Distributed Set addAll()" )
             main.onosSet.update( addAllValue.split() )
-            addResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestAdd,
-                                 name="setTestAddAll-" + str( i ),
-                                 args=[ main.onosSetName, addAllValue ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                addResponses.append( t.result )
-
+            addResponses = main.Cluster.command( "setTestAdd",
+                                                 args=[ main.onosSetName, addAllValue ] )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
             addAllResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if addResponses[ i ] == main.TRUE:
                     # All is well
                     pass
@@ -2134,27 +1747,17 @@ class HA():
 
             # Check if set is still correct
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node +
-                                            " has incorrect view" +
+                            main.log.error( node + " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
                             main.log.debug( "Expected: " + str( main.onosSet ) )
@@ -2162,31 +1765,20 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node +
-                                        " has repeat elements in" +
+                        main.log.error( node + " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         getResults = main.FALSE
                 elif getResponses[ i ] == main.ERROR:
                     getResults = main.FALSE
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node +
-                                    " expected a size of " + str( size ) +
+                    main.log.error( node + " expected a size of " + str( size ) +
                                     " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
             addAllResults = addAllResults and getResults and sizeResults
@@ -2196,22 +1788,11 @@ class HA():
                                      onfail="Set addAll was incorrect" )
 
             main.step( "Distributed Set contains()" )
-            containsResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setContains-" + str( i ),
-                                 args=[ main.onosSetName ],
-                                 kwargs={ "values": addValue } )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                # NOTE: This is the tuple
-                containsResponses.append( t.result )
-
+            containsResponses = main.Cluster.command( "setTestGet",
+                                                      args=[ main.onosSetName ],
+                                                      kwargs={ "values": addValue } )
             containsResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if containsResponses[ i ] == main.ERROR:
                     containsResults = main.FALSE
                 else:
@@ -2223,22 +1804,11 @@ class HA():
                                      onfail="Set contains failed" )
 
             main.step( "Distributed Set containsAll()" )
-            containsAllResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setContainsAll-" + str( i ),
-                                 args=[ main.onosSetName ],
-                                 kwargs={ "values": addAllValue } )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                # NOTE: This is the tuple
-                containsAllResponses.append( t.result )
-
+            containsAllResponses = main.Cluster.command( "setTestGet",
+                                                         args=[ main.onosSetName ],
+                                                         kwargs={ "values": addAllValue } )
             containsAllResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if containsResponses[ i ] == main.ERROR:
                     containsResults = main.FALSE
                 else:
@@ -2251,23 +1821,13 @@ class HA():
 
             main.step( "Distributed Set remove()" )
             main.onosSet.remove( addValue )
-            removeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestRemove,
-                                 name="setTestRemove-" + str( i ),
-                                 args=[ main.onosSetName, addValue ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                removeResponses.append( t.result )
-
+            removeResponses = main.Cluster.command( "setTestRemove",
+                                                    args=[ main.onosSetName, addValue ] )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
             removeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if removeResponses[ i ] == main.TRUE:
                     # All is well
                     pass
@@ -2285,27 +1845,17 @@ class HA():
 
             # Check if set is still correct
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node +
-                                            " has incorrect view" +
+                            main.log.error( node + " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
                             main.log.debug( "Expected: " + str( main.onosSet ) )
@@ -2313,31 +1863,20 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node +
-                                        " has repeat elements in" +
+                        main.log.error( node + " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         getResults = main.FALSE
                 elif getResponses[ i ] == main.ERROR:
                     getResults = main.FALSE
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node +
-                                    " expected a size of " + str( size ) +
+                    main.log.error( node + " expected a size of " + str( size ) +
                                     " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
             removeResults = removeResults and getResults and sizeResults
@@ -2348,26 +1887,13 @@ class HA():
 
             main.step( "Distributed Set removeAll()" )
             main.onosSet.difference_update( addAllValue.split() )
-            removeAllResponses = []
-            threads = []
-            try:
-                for i in main.activeNodes:
-                    t = main.Thread( target=main.CLIs[ i ].setTestRemove,
-                                     name="setTestRemoveAll-" + str( i ),
-                                     args=[ main.onosSetName, addAllValue ] )
-                    threads.append( t )
-                    t.start()
-                for t in threads:
-                    t.join()
-                    removeAllResponses.append( t.result )
-            except Exception as e:
-                main.log.exception( e )
-
+            removeAllResponses = main.Cluster.command( "setTestRemove",
+                                                       args=[ main.onosSetName, addAllValue ] )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
             removeAllResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if removeAllResponses[ i ] == main.TRUE:
                     # All is well
                     pass
@@ -2385,27 +1911,17 @@ class HA():
 
             # Check if set is still correct
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node +
-                                            " has incorrect view" +
+                            main.log.error( node + " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
                             main.log.debug( "Expected: " + str( main.onosSet ) )
@@ -2413,31 +1929,20 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node +
-                                        " has repeat elements in" +
+                        main.log.error( node + " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         getResults = main.FALSE
                 elif getResponses[ i ] == main.ERROR:
                     getResults = main.FALSE
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node +
-                                    " expected a size of " + str( size ) +
+                    main.log.error( node + " expected a size of " + str( size ) +
                                     " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
             removeAllResults = removeAllResults and getResults and sizeResults
@@ -2448,23 +1953,13 @@ class HA():
 
             main.step( "Distributed Set addAll()" )
             main.onosSet.update( addAllValue.split() )
-            addResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestAdd,
-                                 name="setTestAddAll-" + str( i ),
-                                 args=[ main.onosSetName, addAllValue ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                addResponses.append( t.result )
-
+            addResponses = main.Cluster.command( "setTestAdd",
+                                                 args=[ main.onosSetName, addAllValue ] )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
             addAllResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if addResponses[ i ] == main.TRUE:
                     # All is well
                     pass
@@ -2482,27 +1977,17 @@ class HA():
 
             # Check if set is still correct
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node +
-                                            " has incorrect view" +
+                            main.log.error( node + " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
                             main.log.debug( "Expected: " + str( main.onosSet ) )
@@ -2510,31 +1995,20 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node +
-                                        " has repeat elements in" +
+                        main.log.error( node + " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         getResults = main.FALSE
                 elif getResponses[ i ] == main.ERROR:
                     getResults = main.FALSE
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node +
-                                    " expected a size of " + str( size ) +
+                    main.log.error( node + " expected a size of " + str( size ) +
                                     " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
             addAllResults = addAllResults and getResults and sizeResults
@@ -2545,24 +2019,14 @@ class HA():
 
             main.step( "Distributed Set clear()" )
             main.onosSet.clear()
-            clearResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestRemove,
-                                 name="setTestClear-" + str( i ),
-                                 args=[ main.onosSetName, " " ],  # Values doesn't matter
-                                 kwargs={ "clear": True } )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                clearResponses.append( t.result )
-
+            clearResponses = main.Cluster.command( "setTestRemove",
+                    args=[ main.onosSetName, " " ],  # Values doesn't matter
+                    kwargs={ "clear": True } )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
             clearResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if clearResponses[ i ] == main.TRUE:
                     # All is well
                     pass
@@ -2580,27 +2044,17 @@ class HA():
 
             # Check if set is still correct
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node +
-                                            " has incorrect view" +
+                            main.log.error( node + " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
                             main.log.debug( "Expected: " + str( main.onosSet ) )
@@ -2608,31 +2062,20 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node +
-                                        " has repeat elements in" +
+                        main.log.error( node + " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         getResults = main.FALSE
                 elif getResponses[ i ] == main.ERROR:
                     getResults = main.FALSE
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node +
-                                    " expected a size of " + str( size ) +
+                    main.log.error( node + " expected a size of " + str( size ) +
                                     " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
             clearResults = clearResults and getResults and sizeResults
@@ -2643,23 +2086,13 @@ class HA():
 
             main.step( "Distributed Set addAll()" )
             main.onosSet.update( addAllValue.split() )
-            addResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestAdd,
-                                 name="setTestAddAll-" + str( i ),
-                                 args=[ main.onosSetName, addAllValue ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                addResponses.append( t.result )
-
+            addResponses = main.Cluster.command( "setTestAdd",
+                                                 args=[ main.onosSetName, addAllValue ] )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
             addAllResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if addResponses[ i ] == main.TRUE:
                     # All is well
                     pass
@@ -2677,27 +2110,17 @@ class HA():
 
             # Check if set is still correct
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node +
-                                            " has incorrect view" +
+                            main.log.error( node + " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
                             main.log.debug( "Expected: " + str( main.onosSet ) )
@@ -2705,31 +2128,20 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node +
-                                        " has repeat elements in" +
+                        main.log.error( node + " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         getResults = main.FALSE
                 elif getResponses[ i ] == main.ERROR:
                     getResults = main.FALSE
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node +
-                                    " expected a size of " + str( size ) +
+                    main.log.error( node + " expected a size of " + str( size ) +
                                     " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
             addAllResults = addAllResults and getResults and sizeResults
@@ -2740,24 +2152,14 @@ class HA():
 
             main.step( "Distributed Set retain()" )
             main.onosSet.intersection_update( retainValue.split() )
-            retainResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestRemove,
-                                 name="setTestRetain-" + str( i ),
-                                 args=[ main.onosSetName, retainValue ],
-                                 kwargs={ "retain": True } )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                retainResponses.append( t.result )
-
+            retainResponses = main.Cluster.command( "setTestRemove",
+                                                    args=[ main.onosSetName, retainValue ],
+                                                    kwargs={ "retain": True } )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
             retainResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
+            for i in range( len( main.Cluster.active() ) ):
                 if retainResponses[ i ] == main.TRUE:
                     # All is well
                     pass
@@ -2775,27 +2177,17 @@ class HA():
 
             # Check if set is still correct
             size = len( main.onosSet )
-            getResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestGet,
-                                 name="setTestGet-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                getResponses.append( t.result )
+            getResponses = main.Cluster.command( "setTestGet",
+                                                 args=[ main.onosSetName ] )
             getResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
                         # no repeats
                         if main.onosSet != current:
-                            main.log.error( "ONOS" + node +
-                                            " has incorrect view" +
+                            main.log.error( node + " has incorrect view" +
                                             " of set " + main.onosSetName + ":\n" +
                                             str( getResponses[ i ] ) )
                             main.log.debug( "Expected: " + str( main.onosSet ) )
@@ -2803,30 +2195,20 @@ class HA():
                             getResults = main.FALSE
                     else:
                         # error, set is not a set
-                        main.log.error( "ONOS" + node +
-                                        " has repeat elements in" +
+                        main.log.error( node + " has repeat elements in" +
                                         " set " + main.onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         getResults = main.FALSE
                 elif getResponses[ i ] == main.ERROR:
                     getResults = main.FALSE
-            sizeResponses = []
-            threads = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].setTestSize,
-                                 name="setTestSize-" + str( i ),
-                                 args=[ main.onosSetName ] )
-                threads.append( t )
-                t.start()
-            for t in threads:
-                t.join()
-                sizeResponses.append( t.result )
+            sizeResponses = main.Cluster.command( "setTestSize",
+                                                  args=[ main.onosSetName ] )
             sizeResults = main.TRUE
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
+            for i in range( len( main.Cluster.active() ) ):
+                node = main.Cluster.active()[ i ]
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
-                    main.log.error( "ONOS" + node + " expected a size of " +
+                    main.log.error( node + " expected a size of " +
                                     str( size ) + " for set " + main.onosSetName +
                                     " but got " + str( sizeResponses[ i ] ) )
             retainResults = retainResults and getResults and sizeResults
@@ -2840,8 +2222,8 @@ class HA():
             tMapValue = "Testing"
             numKeys = 100
             putResult = True
-            node = main.activeNodes[ 0 ]
-            putResponses = main.CLIs[ node ].transactionalMapPut( numKeys, tMapValue )
+            ctrl = main.Cluster.next()
+            putResponses = ctrl.transactionalMapPut( numKeys, tMapValue )
             if putResponses and len( putResponses ) == 100:
                 for i in putResponses:
                     if putResponses[ i ][ 'value' ] != tMapValue:
@@ -2861,18 +2243,9 @@ class HA():
 
             getCheck = True
             for n in range( 1, numKeys + 1 ):
-                getResponses = []
-                threads = []
+                getResponses = main.Cluster.command( "transactionalMapGet",
+                                                     args=[ "Key" + str( n ) ] )
                 valueCheck = True
-                for i in main.activeNodes:
-                    t = main.Thread( target=main.CLIs[ i ].transactionalMapGet,
-                                     name="TMap-get-" + str( i ),
-                                     args=[ "Key" + str( n ) ] )
-                    threads.append( t )
-                    t.start()
-                for t in threads:
-                    t.join()
-                    getResponses.append( t.result )
                 for node in getResponses:
                     if node != tMapValue:
                         valueCheck = False
@@ -2887,18 +2260,8 @@ class HA():
 
             # DISTRIBUTED ATOMIC VALUE
             main.step( "Get the value of a new value" )
-            threads = []
-            getValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
-                                 name="ValueGet-" + str( i ),
-                                 args=[ valueName ] )
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                getValues.append( t.result )
+            getValues = main.Cluster.command( "valueTestGet",
+                                              args=[ valueName ] )
             main.log.debug( getValues )
             # Check the results
             atomicValueGetResult = True
@@ -2916,18 +2279,8 @@ class HA():
 
             main.step( "Atomic Value set()" )
             valueValue = "foo"
-            threads = []
-            setValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].valueTestSet,
-                                 name="ValueSet-" + str( i ),
-                                 args=[ valueName, valueValue ] )
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                setValues.append( t.result )
+            setValues = main.Cluster.command( "valueTestSet",
+                                              args=[ valueName, valueValue ] )
             main.log.debug( setValues )
             # Check the results
             atomicValueSetResults = True
@@ -2941,18 +2294,8 @@ class HA():
                                             str( setValues ) )
 
             main.step( "Get the value after set()" )
-            threads = []
-            getValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
-                                 name="ValueGet-" + str( i ),
-                                 args=[ valueName ] )
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                getValues.append( t.result )
+            getValues = main.Cluster.command( "valueTestGet",
+                                              args=[ valueName ] )
             main.log.debug( getValues )
             # Check the results
             atomicValueGetResult = True
@@ -2971,8 +2314,8 @@ class HA():
             main.step( "Atomic Value compareAndSet()" )
             oldValue = valueValue
             valueValue = "bar"
-            i = main.activeNodes[ 0 ]
-            CASValue = main.CLIs[ i ].valueTestCompareAndSet( valueName, oldValue, valueValue )
+            ctrl = main.Cluster.next()
+            CASValue = ctrl.valueTestCompareAndSet( valueName, oldValue, valueValue )
             main.log.debug( CASValue )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=CASValue,
@@ -2981,18 +2324,8 @@ class HA():
                                             str( CASValue ) )
 
             main.step( "Get the value after compareAndSet()" )
-            threads = []
-            getValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
-                                 name="ValueGet-" + str( i ),
-                                 args=[ valueName ] )
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                getValues.append( t.result )
+            getValues = main.Cluster.command( "valueTestGet",
+                                              args=[ valueName ] )
             main.log.debug( getValues )
             # Check the results
             atomicValueGetResult = True
@@ -3011,8 +2344,8 @@ class HA():
             main.step( "Atomic Value getAndSet()" )
             oldValue = valueValue
             valueValue = "baz"
-            i = main.activeNodes[ 0 ]
-            GASValue = main.CLIs[ i ].valueTestGetAndSet( valueName, valueValue )
+            ctrl = main.Cluster.next()
+            GASValue = ctrl.valueTestGetAndSet( valueName, valueValue )
             main.log.debug( GASValue )
             expected = oldValue if oldValue is not None else "null"
             utilities.assert_equals( expect=expected,
@@ -3023,18 +2356,8 @@ class HA():
                                             str( GASValue ) )
 
             main.step( "Get the value after getAndSet()" )
-            threads = []
-            getValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
-                                 name="ValueGet-" + str( i ),
-                                 args=[ valueName ] )
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                getValues.append( t.result )
+            getValues = main.Cluster.command( "valueTestGet",
+                                              args=[ valueName ] )
             main.log.debug( getValues )
             # Check the results
             atomicValueGetResult = True
@@ -3052,9 +2375,8 @@ class HA():
 
             main.step( "Atomic Value destory()" )
             valueValue = None
-            threads = []
-            i = main.activeNodes[ 0 ]
-            destroyResult = main.CLIs[ i ].valueTestDestroy( valueName )
+            ctrl = main.Cluster.next()
+            destroyResult = ctrl.valueTestDestroy( valueName )
             main.log.debug( destroyResult )
             # Check the results
             utilities.assert_equals( expect=main.TRUE,
@@ -3063,18 +2385,8 @@ class HA():
                                      onfail="Error destroying atomic Value" )
 
             main.step( "Get the value after destroy()" )
-            threads = []
-            getValues = []
-            for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[ i ].valueTestGet,
-                                 name="ValueGet-" + str( i ),
-                                 args=[ valueName ] )
-                threads.append( t )
-                t.start()
-
-            for t in threads:
-                t.join()
-                getValues.append( t.result )
+            getValues = main.Cluster.command( "valueTestGet",
+                                              args=[ valueName ] )
             main.log.debug( getValues )
             # Check the results
             atomicValueGetResult = True
@@ -3092,9 +2404,8 @@ class HA():
 
             # WORK QUEUES
             main.step( "Work Queue add()" )
-            threads = []
-            i = main.activeNodes[ 0 ]
-            addResult = main.CLIs[ i ].workQueueAdd( workQueueName, 'foo' )
+            ctrl = main.Cluster.next()
+            addResult = ctrl.workQueueAdd( workQueueName, 'foo' )
             workQueuePending += 1
             main.log.debug( addResult )
             # Check the results
@@ -3114,9 +2425,8 @@ class HA():
                                      onfail="Work Queue stats incorrect " )
 
             main.step( "Work Queue addMultiple()" )
-            threads = []
-            i = main.activeNodes[ 0 ]
-            addMultipleResult = main.CLIs[ i ].workQueueAddMultiple( workQueueName, 'bar', 'baz' )
+            ctrl = main.Cluster.next()
+            addMultipleResult = ctrl.workQueueAddMultiple( workQueueName, 'bar', 'baz' )
             workQueuePending += 2
             main.log.debug( addMultipleResult )
             # Check the results
@@ -3136,10 +2446,9 @@ class HA():
                                      onfail="Work Queue stats incorrect " )
 
             main.step( "Work Queue takeAndComplete() 1" )
-            threads = []
-            i = main.activeNodes[ 0 ]
+            ctrl = main.Cluster.next()
             number = 1
-            take1Result = main.CLIs[ i ].workQueueTakeAndComplete( workQueueName, number )
+            take1Result = ctrl.workQueueTakeAndComplete( workQueueName, number )
             workQueuePending -= number
             workQueueCompleted += number
             main.log.debug( take1Result )
@@ -3160,10 +2469,9 @@ class HA():
                                      onfail="Work Queue stats incorrect " )
 
             main.step( "Work Queue takeAndComplete() 2" )
-            threads = []
-            i = main.activeNodes[ 0 ]
+            ctrl = main.Cluster.next()
             number = 2
-            take2Result = main.CLIs[ i ].workQueueTakeAndComplete( workQueueName, number )
+            take2Result = ctrl.workQueueTakeAndComplete( workQueueName, number )
             workQueuePending -= number
             workQueueCompleted += number
             main.log.debug( take2Result )
@@ -3186,8 +2494,8 @@ class HA():
             main.step( "Work Queue destroy()" )
             valueValue = None
             threads = []
-            i = main.activeNodes[ 0 ]
-            destroyResult = main.CLIs[ i ].workQueueDestroy( workQueueName )
+            ctrl = main.Cluster.next()
+            destroyResult = ctrl.workQueueDestroy( workQueueName )
             workQueueCompleted = 0
             workQueueInProgress = 0
             workQueuePending = 0
@@ -3219,8 +2527,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
 
         # printing colors to terminal
         colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
@@ -3245,9 +2551,9 @@ class HA():
             logFiles = [ "karaf.log", "karaf.log.1" ]
             # NOTE: must end in /
             for f in logFiles:
-                for node in main.nodes:
-                    dstName = main.logdir + "/" + node.name + "-" + f
-                    main.ONOSbench.secureCopy( node.user_name, node.ip_address,
+                for ctrl in main.Cluster.controllers:
+                    dstName = main.logdir + "/" + ctrl.name + "-" + f
+                    main.ONOSbench.secureCopy( ctrl.user_name, ctrl.ipAddress,
                                                logFolder + f, dstName )
             # std*.log's
             # NOTE: must end in /
@@ -3255,9 +2561,9 @@ class HA():
             logFiles = [ "stderr.log", "stdout.log" ]
             # NOTE: must end in /
             for f in logFiles:
-                for node in main.nodes:
-                    dstName = main.logdir + "/" + node.name + "-" + f
-                    main.ONOSbench.secureCopy( node.user_name, node.ip_address,
+                for ctrl in main.Cluster.controllers:
+                    dstName = main.logdir + "/" + ctrl.name + "-" + f
+                    main.ONOSbench.secureCopy( ctrl.user_name, ctrl.ipAddress,
                                                logFolder + f, dstName )
         else:
             main.log.debug( "skipping saving log files" )
@@ -3269,9 +2575,9 @@ class HA():
                                  onfail="MN cleanup NOT successful" )
 
         main.step( "Checking ONOS Logs for errors" )
-        for node in main.nodes:
-            main.log.debug( "Checking logs for errors on " + node.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
+        for ctrl in main.Cluster.controllers:
+            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
         try:
             timerLog = open( main.logdir + "/Timers.csv", 'w' )
@@ -3280,6 +2586,7 @@ class HA():
             timerLog.close()
         except NameError as e:
             main.log.exception( e )
+
     def assignMastership( self, main ):
         """
         Assign mastership to controllers
@@ -3288,8 +2595,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
 
         main.case( "Assigning Controller roles for switches" )
         main.caseExplanation = "Check that ONOS is connected to each " +\
@@ -3302,7 +2607,7 @@ class HA():
 
         ipList = []
         deviceList = []
-        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
+        onosCli = main.Cluster.next()
         try:
             # Assign mastership to specific controllers. This assignment was
             # determined for a 7 node cluser, but will work with any sized
@@ -3311,45 +2616,45 @@ class HA():
                 # set up correct variables:
                 if i == 1:
                     c = 0
-                    ip = main.nodes[ c ].ip_address  # ONOS1
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS1
                     deviceId = onosCli.getDevice( "1000" ).get( 'id' )
                 elif i == 2:
                     c = 1 % main.numCtrls
-                    ip = main.nodes[ c ].ip_address  # ONOS2
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS2
                     deviceId = onosCli.getDevice( "2000" ).get( 'id' )
                 elif i == 3:
                     c = 1 % main.numCtrls
-                    ip = main.nodes[ c ].ip_address  # ONOS2
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS2
                     deviceId = onosCli.getDevice( "3000" ).get( 'id' )
                 elif i == 4:
                     c = 3 % main.numCtrls
-                    ip = main.nodes[ c ].ip_address  # ONOS4
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS4
                     deviceId = onosCli.getDevice( "3004" ).get( 'id' )
                 elif i == 5:
                     c = 2 % main.numCtrls
-                    ip = main.nodes[ c ].ip_address  # ONOS3
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS3
                     deviceId = onosCli.getDevice( "5000" ).get( 'id' )
                 elif i == 6:
                     c = 2 % main.numCtrls
-                    ip = main.nodes[ c ].ip_address  # ONOS3
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS3
                     deviceId = onosCli.getDevice( "6000" ).get( 'id' )
                 elif i == 7:
                     c = 5 % main.numCtrls
-                    ip = main.nodes[ c ].ip_address  # ONOS6
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS6
                     deviceId = onosCli.getDevice( "6007" ).get( 'id' )
                 elif i >= 8 and i <= 17:
                     c = 4 % main.numCtrls
-                    ip = main.nodes[ c ].ip_address  # ONOS5
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS5
                     dpid = '3' + str( i ).zfill( 3 )
                     deviceId = onosCli.getDevice( dpid ).get( 'id' )
                 elif i >= 18 and i <= 27:
                     c = 6 % main.numCtrls
-                    ip = main.nodes[ c ].ip_address  # ONOS7
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS7
                     dpid = '6' + str( i ).zfill( 3 )
                     deviceId = onosCli.getDevice( dpid ).get( 'id' )
                 elif i == 28:
                     c = 0
-                    ip = main.nodes[ c ].ip_address  # ONOS1
+                    ip = main.Cluster.active()[ c ].ip_address  # ONOS1
                     deviceId = onosCli.getDevice( "2800" ).get( 'id' )
                 else:
                     main.log.error( "You didn't write an else statement for " +
@@ -3394,6 +2699,7 @@ class HA():
             onpass="Switches were successfully reassigned to designated " +
                    "controller",
             onfail="Switches were not successfully reassigned" )
+
     def bringUpStoppedNode( self, main ):
         """
         The bring up stopped nodes
@@ -3402,17 +2708,15 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         assert main.kill, "main.kill not defined"
         main.case( "Restart minority of ONOS nodes" )
 
         main.step( "Restarting " + str( len( main.kill ) ) + " ONOS nodes" )
         startResults = main.TRUE
         restartTime = time.time()
-        for i in main.kill:
+        for ctrl in main.kill:
             startResults = startResults and\
-                           main.ONOSbench.onosStart( main.nodes[ i ].ip_address )
+                           ctrl.onosStart( ctrl.ipAddress )
         utilities.assert_equals( expect=main.TRUE, actual=startResults,
                                  onpass="ONOS nodes started successfully",
                                  onfail="ONOS nodes NOT successfully started" )
@@ -3422,31 +2726,23 @@ class HA():
         onosIsupResult = main.FALSE
         while onosIsupResult == main.FALSE and count < 10:
             onosIsupResult = main.TRUE
-            for i in main.kill:
+            for ctrl in main.kill:
                 onosIsupResult = onosIsupResult and\
-                                 main.ONOSbench.isup( main.nodes[ i ].ip_address )
+                                 ctrl.isup( ctrl.ipAddress )
             count = count + 1
         utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
                                  onpass="ONOS restarted successfully",
                                  onfail="ONOS restart NOT successful" )
 
-        main.step( "Restarting ONOS main.CLIs" )
+        main.step( "Restarting ONOS nodes" )
         cliResults = main.TRUE
-        for i in main.kill:
+        for ctrl in main.kill:
             cliResults = cliResults and\
-                         main.CLIs[ i ].startOnosCli( main.nodes[ i ].ip_address )
-            main.activeNodes.append( i )
+                         ctrl.startOnosCli( ctrl.ipAddress )
+            ctrl.active = True
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli restarted",
-                                 onfail="ONOS cli did not restart" )
-        main.activeNodes.sort()
-        try:
-            assert list( set( main.activeNodes ) ) == main.activeNodes,\
-                   "List of active nodes has duplicates, this likely indicates something was run out of order"
-        except AssertionError:
-            main.log.exception( "" )
-            main.cleanup()
-            main.exit()
+                                 onpass="ONOS node(s) restarted",
+                                 onfail="ONOS node(s) did not restart" )
 
         # Grab the time of restart so we chan check how long the gossip
         # protocol has had time to work
@@ -3456,7 +2752,7 @@ class HA():
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( self.nodesCheck,
                                        False,
-                                       args=[ main.activeNodes ],
+                                       args=[ main.Cluster.active() ],
                                        sleep=15,
                                        attempts=5 )
 
@@ -3465,35 +2761,29 @@ class HA():
                                  onfail="Nodes check NOT successful" )
 
         if not nodeResults:
-            for i in main.activeNodes:
-                cli = main.CLIs[ i ]
+            for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    cli.name,
-                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
 
-        node = main.activeNodes[ 0 ]
-        main.log.debug( main.CLIs[ node ].nodes( jsonFormat=False ) )
-        main.log.debug( main.CLIs[ node ].leaders( jsonFormat=False ) )
-        main.log.debug( main.CLIs[ node ].partitions( jsonFormat=False ) )
-        main.log.debug(main.CLIs[node].apps(jsonFormat=False))
+        self.commonChecks()
 
         main.step( "Rerun for election on the node(s) that were killed" )
         runResults = main.TRUE
-        for i in main.kill:
+        for ctrl in main.kill:
             runResults = runResults and\
-                         main.CLIs[ i ].electionTestRun()
+                         ctrl.electionTestRun()
         utilities.assert_equals( expect=main.TRUE, actual=runResults,
                                  onpass="ONOS nodes reran for election topic",
                                  onfail="Errror rerunning for election" )
 
-
     def checkStateAfterONOS( self, main, afterWhich, compareSwitch=False, isRestart=False ):
         """
         afterWhich :
-            0: failture
+            0: failure
             1: scaling
         """
         """
@@ -3503,53 +2793,29 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         main.case( "Running ONOS Constant State Tests" )
 
         OnosAfterWhich = [ "failure" , "scaliing" ]
 
         main.step( "Check that each switch has a master" )
         # Assert that each device has a master
-        rolesNotNull = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].rolesNotNull,
-                             name="rolesNotNull-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            rolesNotNull = rolesNotNull and t.result
+        rolesNotNull = all( [ i == main.TRUE for i in main.Cluster.command( "rolesNotNull" ) ] )
         utilities.assert_equals(
-            expect=main.TRUE,
+            expect=True,
             actual=rolesNotNull,
             onpass="Each device has a master",
             onfail="Some devices don't have a master assigned" )
 
         main.step( "Read device roles from ONOS" )
-        ONOSMastership = []
+        ONOSMastership = main.Cluster.command( "roles" )
+        mastershipCheck = main.FALSE
         consistentMastership = True
         rolesResults = True
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].roles,
-                             name="roles-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            ONOSMastership.append( t.result )
-
         for i in range( len( ONOSMastership ) ):
-            node = str( main.activeNodes[ i ] + 1 )
+            node = str( main.Cluster.active()[ i ] )
             if not ONOSMastership[ i ] or "Error" in ONOSMastership[ i ]:
-                main.log.error( "Error in getting ONOS" + node + " roles" )
-                main.log.warn( "ONOS" + node + " mastership response: " +
+                main.log.error( "Error in getting " + node + " roles" )
+                main.log.warn( node + " mastership response: " +
                                repr( ONOSMastership[ i ] ) )
                 rolesResults = False
         utilities.assert_equals(
@@ -3572,8 +2838,8 @@ class HA():
 
         if rolesResults and not consistentMastership:
             for i in range( len( ONOSMastership ) ):
-                node = str( main.activeNodes[ i ] + 1 )
-                main.log.warn( "ONOS" + node + " roles: ",
+                node = str( main.Cluster.active()[ i ] )
+                main.log.warn( node + " roles: ",
                                json.dumps( json.loads( ONOSMastership[ i ] ),
                                            sort_keys=True,
                                            indent=4,
@@ -3588,8 +2854,8 @@ class HA():
             except ( ValueError, TypeError ):
                 main.log.exception( "Something is wrong with parsing " +
                                     "ONOSMastership[0] or mastershipState" )
-                main.log.error( "ONOSMastership[0]: " + repr( ONOSMastership[ 0 ] ) )
-                main.log.error( "mastershipState" + repr( mastershipState ) )
+                main.log.debug( "ONOSMastership[0]: " + repr( ONOSMastership[ 0 ] ) )
+                main.log.debug( "mastershipState" + repr( mastershipState ) )
                 main.cleanup()
                 main.exit()
             mastershipCheck = main.TRUE
@@ -3613,28 +2879,15 @@ class HA():
 
         # NOTE: we expect mastership to change on controller failure/scaling down
         main.step( "Get the intents and compare across all nodes" )
-        ONOSIntents = []
+        ONOSIntents = main.Cluster.command( "intents" )
         intentCheck = main.FALSE
         consistentIntents = True
         intentsResults = True
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].intents,
-                             name="intents-" + str( i ),
-                             args=[],
-                             kwargs={ 'jsonFormat': True } )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            ONOSIntents.append( t.result )
-
         for i in range( len( ONOSIntents ) ):
-            node = str( main.activeNodes[ i ] + 1 )
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.error( "Error in getting ONOS" + node + " intents" )
-                main.log.warn( "ONOS" + node + " intents response: " +
+                ctrl = main.Cluster.active()[ i ]
+                main.log.error( "Error in getting " + ctrl.name + " intents" )
+                main.log.warn( ctrl.name + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
                 intentsResults = False
         utilities.assert_equals(
@@ -3657,8 +2910,8 @@ class HA():
         #  ...        ...         ...
         #  ...        ...         ...
         title = "   ID"
-        for n in main.activeNodes:
-            title += " " * 10 + "ONOS" + str( n + 1 )
+        for ctrl in main.Cluster.active():
+            title += " " * 10 + ctrl.name
         main.log.warn( title )
         # get all intent keys in the cluster
         keys = []
@@ -3697,9 +2950,9 @@ class HA():
             main.log.info( dict( out ) )
 
         if intentsResults and not consistentIntents:
-            for i in range( len( main.activeNodes ) ):
-                node = str( main.activeNodes[ i ] + 1 )
-                main.log.warn( "ONOS" + node + " intents: " )
+            for i in range( len( main.Cluster.active() ) ):
+                ctrl = main.Cluster.contoller[ i ]
+                main.log.warn( ctrl.name + " intents: " )
                 main.log.warn( json.dumps(
                     json.loads( ONOSIntents[ i ] ),
                     sort_keys=True,
@@ -3777,8 +3030,7 @@ class HA():
                 onpass="No changes were found in the flow tables",
                 onfail="Changes were found in the flow tables" )
 
-            main.Mininet2.pingLongKill()
-
+        main.Mininet2.pingLongKill()
         """
         main.step( "Check the continuous pings to ensure that no packets " +
                    "were dropped during component failure" )
@@ -3819,8 +3071,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         try:
             from tests.dependencies.topology import Topology
         except ImportError:
@@ -3847,18 +3097,18 @@ class HA():
             hostAttachmentResults = True
             count += 1
             cliStart = time.time()
-            devices = main.topoRelated.getAllDevices( main.activeNodes, True,
-                                                       kwargs={ 'sleep': 5, 'attempts': 5,
-                                                                'randomTime': True } )
+            devices = main.topoRelated.getAllDevices( main.Cluster.active(), True,
+                                                      kwargs={ 'sleep': 5, 'attempts': 5,
+                                                               'randomTime': True } )
             ipResult = main.TRUE
 
-            hosts = main.topoRelated.getAllHosts( main.activeNodes, True,
-                                                    kwargs={ 'sleep': 5, 'attempts': 5,
-                                                                'randomTime': True },
-                                                    inJson=True )
+            hosts = main.topoRelated.getAllHosts( main.Cluster.active(), True,
+                                                  kwargs={ 'sleep': 5, 'attempts': 5,
+                                                           'randomTime': True },
+                                                  inJson=True )
 
             for controller in range( 0, len( hosts ) ):
-                controllerStr = str( main.activeNodes[ controller ] + 1 )
+                controllerStr = str( main.Cluster.active()[ controller ] )
                 if hosts[ controller ]:
                     for host in hosts[ controller ]:
                         if host is None or host.get( 'ipAddresses', [] ) == []:
@@ -3866,15 +3116,15 @@ class HA():
                                 "Error with host ipAddresses on controller" +
                                 controllerStr + ": " + str( host ) )
                             ipResult = main.FALSE
-            ports = main.topoRelated.getAllPorts( main.activeNodes , True,
-                                        kwargs={ 'sleep': 5, 'attempts': 5,
-                                                    'randomTime': True } )
-            links = main.topoRelated.getAllLinks( main.activeNodes, True,
-                                        kwargs={ 'sleep': 5, 'attempts': 5,
-                                                    'randomTime': True } )
-            clusters = main.topoRelated.getAllClusters( main.activeNodes , True,
-                                        kwargs={ 'sleep': 5, 'attempts': 5,
-                                                    'randomTime': True } )
+            ports = main.topoRelated.getAllPorts( main.Cluster.active() , True,
+                                                  kwargs={ 'sleep': 5, 'attempts': 5,
+                                                           'randomTime': True } )
+            links = main.topoRelated.getAllLinks( main.Cluster.active(), True,
+                                                  kwargs={ 'sleep': 5, 'attempts': 5,
+                                                           'randomTime': True } )
+            clusters = main.topoRelated.getAllClusters( main.Cluster.active(), True,
+                                                        kwargs={ 'sleep': 5, 'attempts': 5,
+                                                                 'randomTime': True } )
 
             elapsed = time.time() - startTime
             cliTime = time.time() - cliStart
@@ -3893,16 +3143,16 @@ class HA():
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks()
             mnHosts = main.Mininet1.getHosts()
-            for controller in range( len( main.activeNodes ) ):
-                controllerStr = str( main.activeNodes[ controller ] + 1 )
+            for controller in range( len( main.Cluster.active() ) ):
+                controllerStr = str( main.Cluster.active()[ controller ] )
                 currentDevicesResult = main.topoRelated.compareDevicePort( main.Mininet1, controller,
                                                           mnSwitches,
                                                           devices, ports )
                 utilities.assert_equals( expect=main.TRUE,
                                          actual=currentDevicesResult,
-                                         onpass="ONOS" + controllerStr +
+                                         onpass=controllerStr +
                                          " Switches view is correct",
-                                         onfail="ONOS" + controllerStr +
+                                         onfail=controllerStr +
                                          " Switches view is incorrect" )
 
 
@@ -3911,9 +3161,9 @@ class HA():
                                                         [mnSwitches, mnLinks] )
                 utilities.assert_equals( expect=main.TRUE,
                                          actual=currentLinksResult,
-                                         onpass="ONOS" + controllerStr +
+                                         onpass=controllerStr +
                                          " links view is correct",
-                                         onfail="ONOS" + controllerStr +
+                                         onfail=controllerStr +
                                          " links view is incorrect" )
                 if hosts[ controller ] and "Error" not in hosts[ controller ]:
                     currentHostsResult = main.Mininet1.compareHosts(
@@ -3925,9 +3175,9 @@ class HA():
                     currentHostsResult = main.FALSE
                 utilities.assert_equals( expect=main.TRUE,
                                          actual=currentHostsResult,
-                                         onpass="ONOS" + controllerStr +
+                                         onpass=controllerStr +
                                          " hosts exist in Mininet",
-                                         onfail="ONOS" + controllerStr +
+                                         onfail=controllerStr +
                                          " hosts don't match Mininet" )
                 # CHECKING HOST ATTACHMENT POINTS
                 hostAttachment = True
@@ -4034,23 +3284,23 @@ class HA():
         main.step( "Hosts view is consistent across all ONOS nodes" )
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
-            controllerStr = str( main.activeNodes[ controller ] + 1 )
+            controllerStr = str( main.Cluster.active()[ controller ] )
             if hosts[ controller ] is not None and "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
                 else:  # hosts not consistent
-                    main.log.error( "hosts from ONOS" + controllerStr +
+                    main.log.error( "hosts from " + controllerStr +
                                      " is inconsistent with ONOS1" )
-                    main.log.warn( repr( hosts[ controller ] ) )
+                    main.log.debug( repr( hosts[ controller ] ) )
                     consistentHostsResult = main.FALSE
 
             else:
-                main.log.error( "Error in getting ONOS hosts from ONOS" +
+                main.log.error( "Error in getting ONOS hosts from " +
                                  controllerStr )
                 consistentHostsResult = main.FALSE
-                main.log.warn( "ONOS" + controllerStr +
-                               " hosts response: " +
-                               repr( hosts[ controller ] ) )
+                main.log.debug( controllerStr +
+                                " hosts response: " +
+                                repr( hosts[ controller ] ) )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=consistentHostsResult,
@@ -4076,22 +3326,22 @@ class HA():
         main.step( "Clusters view is consistent across all ONOS nodes" )
         consistentClustersResult = main.TRUE
         for controller in range( len( clusters ) ):
-            controllerStr = str( main.activeNodes[ controller ] + 1 )
+            controllerStr = str( main.Cluster.active()[ controller ] )
             if "Error" not in clusters[ controller ]:
                 if clusters[ controller ] == clusters[ 0 ]:
                     continue
                 else:  # clusters not consistent
-                    main.log.error( "clusters from ONOS" +
+                    main.log.error( "clusters from " +
                                      controllerStr +
                                      " is inconsistent with ONOS1" )
                     consistentClustersResult = main.FALSE
             else:
                 main.log.error( "Error in getting dataplane clusters " +
-                                 "from ONOS" + controllerStr )
+                                 "from " + controllerStr )
                 consistentClustersResult = main.FALSE
-                main.log.warn( "ONOS" + controllerStr +
-                               " clusters response: " +
-                               repr( clusters[ controller ] ) )
+                main.log.debug( controllerStr +
+                                " clusters response: " +
+                                repr( clusters[ controller ] ) )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=consistentClustersResult,
@@ -4100,7 +3350,7 @@ class HA():
         if not consistentClustersResult:
             main.log.debug( clusters )
             for x in links:
-                main.log.warn( "{}: {}".format( len( x ), x ) )
+                main.log.debug( "{}: {}".format( len( x ), x ) )
 
         main.step( "There is only one SCC" )
         # there should always only be one cluster
@@ -4158,20 +3408,21 @@ class HA():
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( self.nodesCheck,
                                        False,
-                                       args=[ main.activeNodes ],
+                                       args=[ main.Cluster.active() ],
                                        attempts=5 )
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
         if not nodeResults:
-            for i in main.activeNodes:
+            for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    main.CLIs[ i ].name,
-                    main.CLIs[ i ].sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
 
         if not topoResult:
             main.cleanup()
             main.exit()
+
     def linkDown( self, main, fromS="s3", toS="s28" ):
         """
         Link fromS-toS down
@@ -4180,8 +3431,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         # NOTE: You should probably run a topology check after this
 
         linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -4208,8 +3457,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         # NOTE: You should probably run a topology check after this
 
         linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -4236,13 +3483,11 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
 
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
         description = "Killing a switch to ensure it is discovered correctly"
-        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
+        onosCli = main.Cluster.next()
         main.case( description )
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
@@ -4256,13 +3501,14 @@ class HA():
         time.sleep( switchSleep )
         device = onosCli.getDevice( dpid=switchDPID )
         # Peek at the deleted switch
-        main.log.warn( str( device ) )
+        main.log.warn( "Bringing down switch " + str( device ) )
         result = main.FALSE
         if device and device[ 'available' ] is False:
             result = main.TRUE
         utilities.assert_equals( expect=main.TRUE, actual=result,
                                  onpass="Kill switch successful",
                                  onfail="Failed to kill switch?" )
+
     def switchUp( self, main ):
         """
         Switch Up
@@ -4272,14 +3518,12 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
 
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
         links = main.params[ 'kill' ][ 'links' ].split()
-        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
+        onosCli = main.Cluster.next()
         description = "Adding a switch to ensure it is discovered correctly"
         main.case( description )
 
@@ -4287,14 +3531,14 @@ class HA():
         main.Mininet1.addSwitch( switch, dpid=switchDPID )
         for peer in links:
             main.Mininet1.addLink( switch, peer )
-        ipList = [ node.ip_address for node in main.nodes ]
+        ipList = main.Cluster.getIps()
         main.Mininet1.assignSwController( sw=switch, ip=ipList )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch up to be discovered" )
         time.sleep( switchSleep )
         device = onosCli.getDevice( dpid=switchDPID )
         # Peek at the deleted switch
-        main.log.warn( str( device ) )
+        main.log.debug( "Added device: " + str( device ) )
         result = main.FALSE
         if device and device[ 'available' ]:
             result = main.TRUE
@@ -4309,12 +3553,10 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
 
         main.case( "Start Leadership Election app" )
         main.step( "Install leadership election app" )
-        onosCli = main.CLIs[ main.activeNodes[ 0 ] ]
+        onosCli = main.Cluster.next()
         appResult = onosCli.activateApp( "org.onosproject.election" )
         utilities.assert_equals(
             expect=main.TRUE,
@@ -4323,11 +3565,10 @@ class HA():
             onfail="Something went wrong with installing Leadership election" )
 
         main.step( "Run for election on each node" )
-        for i in main.activeNodes:
-            main.CLIs[ i ].electionTestRun()
+        onosCli.electionTestRun()
+        main.Cluster.command( "electionTestRun" )
         time.sleep( 5 )
-        activeCLIs = [ main.CLIs[ i ] for i in main.activeNodes ]
-        sameResult, leaders = self.consistentLeaderboards( activeCLIs )
+        sameResult, leaders = main.HA.consistentLeaderboards( main.Cluster.active() )
         utilities.assert_equals(
             expect=True,
             actual=sameResult,
@@ -4336,7 +3577,7 @@ class HA():
 
         if sameResult:
             leader = leaders[ 0 ][ 0 ]
-            if main.nodes[ main.activeNodes[ 0 ] ].ip_address in leader:
+            if onosCli.ipAddress in leader:
                 correctLeader = True
             else:
                 correctLeader = False
@@ -4346,6 +3587,8 @@ class HA():
                 actual=correctLeader,
                 onpass="Correct leader was elected",
                 onfail="Incorrect leader" )
+            main.Cluster.testLeader = leader
+
     def isElectionFunctional( self, main ):
         """
         Check that Leadership Election is still functional
@@ -4365,8 +3608,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
 
         description = "Check that Leadership Election is still functional"
         main.case( description )
@@ -4378,17 +3619,13 @@ class HA():
         newLeader = ''  # the new leaders fron newLoeaders, None if not same
         oldLeaderCLI = None  # the CLI of the old leader used for re-electing
         expectNoLeader = False  # True when there is only one leader
-        if main.numCtrls == 1:
+        if len( main.Cluster.controllers ) == 1:
             expectNoLeader = True
 
         main.step( "Run for election on each node" )
-        electionResult = main.TRUE
-
-        for i in main.activeNodes:  # run test election on each node
-            if main.CLIs[ i ].electionTestRun() == main.FALSE:
-                electionResult = main.FALSE
+        electionResult = all( [ i == main.TRUE for i in main.Cluster.command( "electionTestRun" ) ] )
         utilities.assert_equals(
-            expect=main.TRUE,
+            expect=True,
             actual=electionResult,
             onpass="All nodes successfully ran for leadership",
             onfail="At least one node failed to run for leadership" )
@@ -4400,11 +3637,11 @@ class HA():
 
         main.step( "Check that each node shows the same leader and candidates" )
         failMessage = "Nodes have different leaderboards"
-        activeCLIs = [ main.CLIs[ i ] for i in main.activeNodes ]
-        sameResult, oldLeaders = self.consistentLeaderboards( activeCLIs )
+        activeCLIs = main.Cluster.active()
+        sameResult, oldLeaders = main.HA.consistentLeaderboards( activeCLIs )
         if sameResult:
             oldLeader = oldLeaders[ 0 ][ 0 ]
-            main.log.warn( oldLeader )
+            main.log.info( "Old leader: " + oldLeader )
         else:
             oldLeader = None
         utilities.assert_equals(
@@ -4420,9 +3657,9 @@ class HA():
             main.log.error( "Leadership isn't consistent." )
             withdrawResult = main.FALSE
         # Get the CLI of the oldLeader
-        for i in main.activeNodes:
-            if oldLeader == main.nodes[ i ].ip_address:
-                oldLeaderCLI = main.CLIs[ i ]
+        for ctrl in main.Cluster.active():
+            if oldLeader == ctrl.ipAddress:
+                oldLeaderCLI = ctrl
                 break
         else:  # FOR/ELSE statement
             main.log.error( "Leader election, could not find current leader" )
@@ -4519,6 +3756,7 @@ class HA():
             onpass="Old leader successfully re-ran for election",
             onfail="Something went wrong with Leadership election after " +
                    "the old leader re-ran for election" )
+
     def installDistributedPrimitiveApp( self, main ):
         """
         Install Distributed Primitives app
@@ -4527,8 +3765,6 @@ class HA():
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
 
         # Variables for the distributed primitives tests
         main.pCounterName = "TestON-Partitions"
@@ -4540,8 +3776,7 @@ class HA():
         main.case( description )
         main.step( "Install Primitives app" )
         appName = "org.onosproject.distributedprimitives"
-        node = main.activeNodes[ 0 ]
-        appResults = main.CLIs[ node ].activateApp( appName )
+        appResults = main.Cluster.next().activateApp( appName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=appResults,
                                  onpass="Primitives app activated",

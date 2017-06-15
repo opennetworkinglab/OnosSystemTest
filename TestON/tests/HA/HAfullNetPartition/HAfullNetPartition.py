@@ -2436,7 +2436,7 @@ class HAfullNetPartition:
                                 mac = host.get( 'mac' )
                                 assert mac, "mac field could not be found for this host object"
 
-                                location = host.get( 'location' )
+                                location = host.get( 'locations' )[ 0 ]
                                 assert location, "location field could not be found for this host object"
 
                                 # Trim the protocol identifier off deviceId

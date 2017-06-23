@@ -133,6 +133,8 @@ class CLI( Component ):
 
         self.handle.sendline( "" )
         self.handle.expect( self.prompt )
+        self.handle.sendline( "cd" )
+        self.handle.expect( self.prompt )
         return self.handle
 
     def disconnect( self ):

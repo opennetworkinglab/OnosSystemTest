@@ -251,6 +251,9 @@ class ScapyCliDriver( Emulator ):
             if not host:
                 host = self.name
             self.handle.sendline( self.home + "/util/m " + host )
+            self.handle.sendline( "cd" )
+            self.handle.expect( self.hostPrompt )
+            self.handle.sendline( "" )
             self.handle.expect( self.hostPrompt )
             return main.TRUE
         except pexpect.TIMEOUT:

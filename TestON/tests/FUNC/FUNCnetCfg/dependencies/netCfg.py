@@ -44,3 +44,34 @@ def checkNodeResponses ( main, responses ):
         for i in responses:
             main.log.debug( i )
     return False
+
+def checkDeviceAnnotations( main, jsonObj, sw ):
+    id = str( sw.get( 'id' ) )
+    keys = [ 'name', 'owner', 'rackAddress' ]
+    correct = True
+    for k in keys:
+        if str( sw.get( 'annotations', {} ).get( k ) ) != str( jsonObj[ k ] ) :
+            correct = False
+            main.log.debug( "{} is wrong on switch: ".format( k ) + id )
+    if not correct:
+        main.log.error( "Annotations for switch " + id  + " are incorrect: {}".format( sw ) )
+    return correct
+
+
+def checkAllDeviceAnnotations( main, json ):
+    devices = main.ONOSrest1.devices( )
+    id = "of:0000000000000001"
+    i = 1
+    result = [ ]
+    try:
+        for sw in json.loads( devices ):
+            if id in sw.get( 'id' ):
+                jsonObj = getattr( main, "s" + str( i ) + "Json" )
+                isDeviceAnnotationCorrect = checkDeviceAnnotations( main, jsonObj, sw )
+                result.append( isDeviceAnnotationCorrect )
+                i += 1
+                id = "of:000000000000000" + str( i )
+    except( TypeError, ValueError ):
+        main.log.error( "Problem loading device" )
+        return False
+    return all( result )

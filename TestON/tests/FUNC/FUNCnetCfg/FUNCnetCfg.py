@@ -47,7 +47,7 @@ class FUNCnetCfg:
             main.nodes = []
             main.ONOSip = []
             main.retrytimes = int( main.params[ 'RETRY' ] )
-            main.retrysleep = main.params[ 'RetrySleep' ]
+            main.retrysleep = int( main.params[ 'RetrySleep' ] )
             main.ONOSip = main.ONOSbench.getOnosIps()
 
             # Assigning ONOS cli handles to a list
@@ -402,6 +402,8 @@ class FUNCnetCfg:
         main.caseExplanation = "Add Network Configurations for devices" +\
                                " not discovered yet. One device is allowed" +\
                                ", the other disallowed."
+
+
         pprint = main.nodes[ 0 ].pprint
 
         main.step( "Add Net Cfg for switch1" )
@@ -595,7 +597,6 @@ class FUNCnetCfg:
                                  actual=s2Result,
                                  onpass="Net Cfg added for device s2",
                                  onfail="Net Cfg for device s2 not correctly set" )
-
         main.step( "Add Net Cfg for switch4" )
 
         try:
@@ -636,6 +637,7 @@ class FUNCnetCfg:
                                  actual=s4Result,
                                  onpass="Net Cfg added for device s4",
                                  onfail="Net Cfg for device s4 not correctly set" )
+
         main.netCfg.compareCfg( main, main.gossipTime )
 
     def CASE23( self, main ):
@@ -674,37 +676,17 @@ class FUNCnetCfg:
                                  onfail=failMsg )
 
         main.step( "Check device annotations" )
-        keys = [ 'name', 'owner', 'rackAddress' ]
-        try:
-            for sw in json.loads( devices ):
-                if "of:0000000000000001" in sw.get( 'id' ):
-                    s1Correct = True
-                    for k in keys:
-                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[ k ] ):
-                            s1Correct = False
-                            main.log.debug( "{} is wrong on s1".format( k ) )
-                    if not s1Correct:
-                        main.log.error( "Annotations for s1 are incorrect: {}".format( sw ) )
-                elif "of:0000000000000002" in sw[ 'id' ]:
-                    s2Correct = True
-                    for k in keys:
-                        if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s2Json[ k ] ):
-                            s2Correct = False
-                            main.log.debug( "{} is wrong on s2".format( k ) )
-                    if not s2Correct:
-                        main.log.error( "Annotations for s2 are incorrect: {}".format( sw ) )
-        except( TypeError, ValueError ):
-            main.log.error( "Problem loading devices" )
-            stepResult = False
-        try:
-            stepResult = s1Correct and s2Correct
-        except NameError:
-            stepResult = False
-            main.log.error( "s1 and/or s2 not found in devices" )
+        stepResult = utilities.retry( f=main.netCfg.checkAllDeviceAnnotations,
+                                      args=( main, json ),
+                                      retValue=False,
+                                      attempts=main.retrytimes,
+                                      sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=stepResult,
-                                 onpass="Configured device's annotations are correct",
+                                 onpass="Configured devices' annotations are correct",
                                  onfail="Incorrect annotations for configured devices." )
+
+
 
     def CASE24( self, main ):
         """

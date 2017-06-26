@@ -42,6 +42,6 @@
     <MININET>
         <switch>6</switch>
     </MININET>
-    <RETRY>10</RETRY>
+    <RETRY>30</RETRY>
     <RetrySleep>2</RetrySleep>
 </PARAMS>

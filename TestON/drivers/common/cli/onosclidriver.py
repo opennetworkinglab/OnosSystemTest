@@ -2235,8 +2235,18 @@ class OnosCliDriver( CLI ):
         try:
             returnValue = main.TRUE
             # Generating a dictionary: intent id as a key and state as value
-            intentsDict = self.getIntentState( intentsId )
-            if len( intentsId ) != len( intentsDict ):
+
+            #intentsDict = self.getIntentState( intentsId )
+            intentsDict = []
+            for intent in json.loads( self.intents() ):
+                if isinstance ( intentsId, types.StringType) \
+                        and intent.get('id') == intentsId:
+                    intentsDict.append(intent)
+                elif isinstance ( intentsId, types.ListType ) \
+                        and any( intent.get( 'id' ) == ids for ids in intentsId ):
+                            intentsDict.append(intent)
+
+            if not intentsDict:
                 main.log.info( self.name + ": There is something wrong " +
                                "getting intents state" )
                 return main.FALSE
@@ -2251,7 +2261,6 @@ class OnosCliDriver( CLI ):
                                         + " does not equal expected state = "
                                         + expectedState )
                         returnValue = main.FALSE
-
             elif isinstance( expectedState, types.ListType ):
                 for intents in intentsDict:
                     if not any( state == intents.get( 'state' ) for state in

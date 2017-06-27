@@ -158,6 +158,7 @@ class FUNCoptical:
         time.sleep( main.startUpSleep )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
+        del main.activeONOSip[:]
         for i in range( main.numCtrls ):
             onosInstallResult = onosInstallResult and \
                     main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
@@ -220,33 +221,28 @@ class FUNCoptical:
             Start Mininet opticalTest Topology
         """
         main.case( "Mininet with Linc-OE startup" )
+        main.step( "Push TopoDDriver.json to ONOS through onos-netcfg" )
+        topoResult = main.ONOSbench.onosNetCfg( controllerIps=main.activeONOSip, path=main.dependencyPath,
+                                   fileName="TopoDDriver" )
+        #Exit if topology did not load properly
+        if not topoResult:
+            main.cleanup()
+            main.exit()
+
         main.caseExplanation = "Start opticalTest.py topology included with ONOS"
-        if main.opticalTopo:
-            main.step( "Copying optical topology to $ONOS_ROOT/tools/test/topos/" )
-            main.ONOSbench.scp( main.ONOSbench,
-                                "{0}{1}.py".format( main.dependencyPath, main.opticalTopo ),
-                                "~/onos/tools/test/topos/{0}.py".format( main.opticalTopo ) )
         main.step( "Starting mininet and LINC-OE" )
-        topoResult = main.TRUE
         time.sleep( 10 )
-        controllerIPs = ' '.join( main.activeONOSip )
-        opticalMnScript = main.LincOE.runOpticalMnScript( ctrllerIP=controllerIPs, topology=main.opticalTopo )
+        controllerIPs = ','.join( main.activeONOSip )
+        cIps = ""
+        for i in range(0,4):
+            cIps += controllerIPs + ' '
+        opticalMnScript = main.LincOE.runOpticalMnScript( ctrllerIP=cIps, topology=main.opticalTopo )
         topoResult = opticalMnScript
         utilities.assert_equals(
             expect=main.TRUE,
             actual=topoResult,
             onpass="Started the topology successfully ",
             onfail="Failed to start the topology" )
-
-        main.step( "Push Topology.json to ONOS through onos-netcfg" )
-        pushResult = main.TRUE
-        time.sleep( 20 )
-        main.ONOSbench.onosNetCfg( controllerIps=controllerIPs, path=main.dependencyPath, fileName="Topology" )
-
-        # Exit if topology did not load properly
-        if not topoResult:
-            main.cleanup()
-            main.exit()
 
     def CASE14( self, main ):
         """
@@ -367,7 +363,7 @@ class FUNCoptical:
 
         arpingHostResults = main.TRUE
         for host in hosts:
-            if main.LincOE.arping( host ):
+            if main.LincOE.arping( host, ethDevice=host+"-eth0" ):
                 main.log.info( "Successfully reached host {} with arping".format( host ) )
             else:
                 main.log.error( "Could not reach host {} with arping".format( host ) )
@@ -529,12 +525,12 @@ class FUNCoptical:
         checkFlowResult = main.TRUE
         main.pIntentsId = []
         pIntent1 = main.CLIs[ 0 ].addPointIntent(
-            "of:0000000000000001/1",
-            "of:0000000000000002/1" )
+            "of:0000000000000015/1",
+            "of:000000000000000b/2" )
         time.sleep( 10 )
         pIntent2 = main.CLIs[ 0 ].addPointIntent(
-            "of:0000000000000002/1",
-            "of:0000000000000001/1" )
+            "of:000000000000000b/2",
+            "of:0000000000000015/1" )
         main.pIntentsId.append( pIntent1 )
         main.pIntentsId.append( pIntent2 )
         time.sleep( 10 )
@@ -542,6 +538,9 @@ class FUNCoptical:
         checkStateResult = main.CLIs[ 0 ].checkIntentState(
                                                   intentsId=main.pIntentsId )
         time.sleep( 10 )
+        checkStateResult = utilities.retry( f=main.CLIs[0].checkIntentState,
+                                           retValue=main.FALSE, args=( main.pIntentsId, "INSTALLED" ),
+                                           sleep=main.checkIntentSleep, attempts=10 )
         main.log.info( "Checking flows state" )
         checkFlowResult = main.CLIs[ 0 ].checkFlowsState()
         # Sleep for 10 seconds to provide time for the intent state to change
@@ -575,7 +574,7 @@ class FUNCoptical:
             onfail="Failed to ping between h1 and h2" )
 
         main.step( "Remove Point to Point intents" )
-        removeResult = main.FALSE
+        removeResult = main.TRUE
         # Check remaining intents
         try:
             intentsJson = json.loads( main.CLIs[ 0 ].intents() )
@@ -589,9 +588,11 @@ class FUNCoptical:
                 time.sleep( 15 )
 
             for i in range( main.numCtrls ):
-                if len( json.loads( main.CLIs[ i ].intents() ) ):
-                    print json.loads( main.CLIs[ i ].intents() )
-                    removeResult = main.FALSE
+                if not any ( intent.get('state') == 'WITHDRAWING' for intent
+                         in json.loads( main.CLIs[i].intents() ) ):
+                        main.log.debug( json.loads( main.CLIs[i].intents ) )
+                        removeResult = main.FALSE
+                        break
                 else:
                     removeResult = main.TRUE
         except ( TypeError, ValueError ):
@@ -682,9 +683,11 @@ class FUNCoptical:
             time.sleep( 15 )
 
             for i in range( main.numCtrls ):
-                if len( json.loads( main.CLIs[ i ].intents() ) ):
-                    print json.loads( main.CLIs[ i ].intents() )
-                    removeResult = main.FALSE
+                if not any ( intent.get('state') == 'WITHDRAWING' for intent
+                         in json.loads( main.CLIs[i].intents() ) ):
+                        main.log.debug( json.loads( main.CLIs[i].intents ) )
+                        removeResult = main.FALSE
+                        break
                 else:
                     removeResult = main.TRUE
         except ( TypeError, ValueError ):

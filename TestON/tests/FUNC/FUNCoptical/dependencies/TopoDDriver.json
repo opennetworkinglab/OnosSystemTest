@@ -1,0 +1,14 @@
+{
+    "devices": {
+        "of:000000000000000b": {
+            "basic": {
+                "driver" : "default"
+            }
+        },
+        "of:0000000000000015": {
+            "basic": {
+                "driver" : "default"
+            }
+        }
+    }
+}

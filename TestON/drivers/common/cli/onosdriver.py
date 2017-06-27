@@ -2487,17 +2487,17 @@ class OnosDriver( CLI ):
         there is an error.
         """
         try:
-            cmd = "onos-netcfg {0} {1}{2}.json".format( controllerIps, path, fileName )
-            main.log.info( "Sending: " + cmd )
-            main.ONOSbench.handle.sendline( cmd )
-            handle = self.handle.before
-            print handle
-            if "Error" in handle:
-                main.log.error( self.name + ":    " + self.handle.before )
-                return main.FALSE
-            else:
-                self.handle.expect( self.prompt )
-                return main.TRUE
+            for ip in controllerIps:
+                cmd = "onos-netcfg {0} {1}{2}.json".format( ip, path, fileName )
+                main.log.info( "Sending: " + cmd )
+                main.ONOSbench.handle.sendline( cmd )
+                handle = self.handle.before
+                if "Error" in handle:
+                    main.log.error( self.name + ":    " + self.handle.before )
+                    return main.FALSE
+                else:
+                    self.handle.expect( self.prompt )
+            return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

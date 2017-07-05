@@ -15,7 +15,10 @@
 
     <!-- <testcases>1,10,100,1000,100,2000,100,110</testcases> -->
     <testcases>1,2,10,100,1000,2100,100,3100,100,110,210</testcases>
-
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
     <GLOBAL>
         <maxNodes>1</maxNodes> # currently only runs in single node onos
         <numSw>63</numSw> # Number of devices used in topology
@@ -34,8 +37,6 @@
     <CASE1>
         <cellName>temp</cellName>
         <cellApps>drivers</cellApps>
-        <gitPull>False</gitPull>
-        <gitBranch>master</gitBranch>
     </CASE1>
 
     <CASE2>

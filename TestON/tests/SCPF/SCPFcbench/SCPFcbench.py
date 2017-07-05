@@ -27,96 +27,41 @@ class SCPFcbench:
         except NameError:
             init = False
 
-        #Load values from params file
-        checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
-        gitPull = main.params[ 'GIT' ][ 'autopull' ]
-        BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
-        BENCHUser = main.params[ 'BENCH' ][ 'user' ]
-        CBENCHuser = main.params[ 'CBENCH'][ 'user' ]
-        MN1Ip = os.environ[ main.params[ 'MN' ][ 'ip1' ] ]
-        maxNodes = int(main.params[ 'availableNodes' ])
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        cellApps = main.params[ 'ENV' ][ 'cellApps' ]
-
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
-            global clusterCount             #number of nodes running
-            global ONOSIp                   #list of ONOS IP addresses
-            global scale
+            try:
+                from tests.dependencies.ONOSSetup import ONOSSetup
+                main.testSetUp = ONOSSetup()
+            except ImportError:
+                main.log.error( "ONOSSetup not found. exiting the test" )
+                main.exit()
+            main.testSetUp.envSetupDescription()
+            stepResult = main.FALSE
+            try:
+                # Load values from params file
+                BENCHIp = main.params['BENCH']['ip1']
+                BENCHUser = main.params['BENCH']['user']
+                CBENCHuser = main.params['CBENCH']['user']
+                MN1Ip = os.environ[main.params['MN']['ip1']]
+                main.maxNodes = int(main.params['availableNodes'])
+                main.cellName = main.params['ENV']['cellName']
+                main.apps = main.params['ENV']['cellApps']
+                main.scale = (main.params['SCALE']).split(",")
 
-            clusterCount = 0
-            ONOSIp = [ 0 ]
-            scale = (main.params[ 'SCALE' ]).split(",")
-            clusterCount = int(scale[0])
+                stepResult = main.testSetUp.envSetup( hasCli=False )
+            except Exception as e:
+                main.testSetUp.envSetupException( e )
+            main.testSetUp.evnSetupConclusion( stepResult )
 
-            #Populate ONOSIp with ips from params
-            for i in range(1, maxNodes + 1):
-                ipString = os.environ[main.params['CTRL']['ip1']]
-                ONOSIp.append(ipString)
-
-            #git
-            main.step( "Git checkout and pull " + checkoutBranch )
-            if gitPull == 'on':
-                checkoutResult = main.ONOSbench.gitCheckout( checkoutBranch )
-                pullResult = main.ONOSbench.gitPull()
-
-            else:
-                checkoutResult = main.TRUE
-                pullResult = main.TRUE
-                main.log.info( "Skipped git checkout and pull" )
-
+            main.commit = ( main.commit.split( " " ) )[ 1 ]
         # -- END OF INIT SECTION --#
 
-        clusterCount = int(scale[0])
-        scale.remove(scale[0])
-
-        #kill off all onos processes
-        main.step("Safety check, killing all ONOS processes")
-        main.step("before initiating environment setup")
-        for node in range(1, maxNodes + 1):
-            main.ONOSbench.onosStop(ONOSIp[node])
-            main.ONOSbench.onosKill(ONOSIp[node])
-
-        #Uninstall everywhere
-        main.step( "Cleaning Enviornment..." )
-        for i in range(1, maxNodes + 1):
-            main.log.info(" Uninstalling ONOS " + str(i) )
-            main.ONOSbench.onosUninstall( ONOSIp[i] )
-
-        time.sleep(10)
-
-        print "Cellname is: "+ cellName + "ONOS IP is: " + str(ONOSIp)
-        main.ONOSbench.createCellFile(BENCHIp, cellName, MN1Ip,
-                                      cellApps, [ONOSIp[1]], main.ONOScli1.karafUser)
-
-        main.step( "Set Cell" )
-        main.ONOSbench.setCell(cellName)
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-
-        main.step( "verify cells" )
-        verifyCellResult = main.ONOSbench.verifyCell()
-
-        main.log.report( "Initializing " + str( clusterCount ) + " node cluster." )
-        for node in range(1, clusterCount + 1):
-            main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
-            main.ONOSbench.onosInstall( ONOSIp[node])
-            main.ONOSbench.onosSecureSSH( node=ONOSIp[node] )
-
-        for node in range(1, clusterCount + 1):
-            for i in range( 2 ):
-                isup = main.ONOSbench.isup( ONOSIp[node] )
-                if isup:
-                    main.log.info("ONOS " + str(node) + " is up\n")
-                    break
-            if not isup:
-                main.log.report( "ONOS " + str(node) + " didn't start!" )
-        main.log.info("Startup sequence complete")
+        main.testSetUp.ONOSSetUp( MN1Ip, True, hasCli=False,
+                                  cellName=main.cellName )
 
         for i in range(5):
-            main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.fwd.ReactiveForwarding","packetOutOnly true")
+            main.ONOSbench.onosCfgSet(main.ONOSip[0], "org.onosproject.fwd.ReactiveForwarding","packetOutOnly true")
             time.sleep(5)
             main.ONOSbench.handle.sendline("onos $OC1 cfg get|grep packetOutOnly")
             main.ONOSbench.handle.expect(":~")
@@ -146,7 +91,7 @@ class SCPFcbench:
         if mode != "t":
             mode = " "
 
-        runCbench = ( "ssh " + CBENCHuser + "@" + ONOSIp[1] + " " + cbenchCMD + mode )
+        runCbench = ( "ssh " + CBENCHuser + "@" + main.ONOSip[0] + " " + cbenchCMD + mode )
         main.ONOSbench.handle.sendline(runCbench)
         time.sleep(30)
         main.ONOSbench.handle.expect(":~")
@@ -174,20 +119,16 @@ class SCPFcbench:
                 main.log.info("Average: \t\t\t" + avg)
                 main.log.info("Standard Deviation: \t" + stdev)
 
-
-                commit = main.ONOSbench.getVersion()
-                commit = (commit.split(" "))[1]
-
                 try:
                     dbFileName="/tmp/CbenchDB"
                     dbfile = open(dbFileName, "w+")
-                    temp = "'" + commit + "',"
+                    temp = "'" + main.commit + "',"
                     temp += "'" + mode + "',"
                     temp += "'" + avg + "',"
                     temp += "'" + stdev + "'\n"
                     dbfile.write(temp)
                     dbfile.close()
-                    main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
+                    main.ONOSbench.logReport(main.ONOSip[0], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
                 except IOError:
                     main.log.warn("Error opening " + dbFileName + " to write results.")
 

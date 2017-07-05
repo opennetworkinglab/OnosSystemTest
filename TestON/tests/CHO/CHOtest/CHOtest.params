@@ -22,13 +22,13 @@
     </testcases>
 
     <DEPENDENCY>
-        <path>/tests/CHOtest/dependencies/</path>
+        <path>/tests/CHO/CHOtest/dependencies/</path>
         <wrapper>CHOtestFunctions</wrapper>
     </DEPENDENCY>
 
     <GIT>
-        #autoPull 'on' or 'off'
-        <autoPull>off</autoPull>
+        #autoPull 'True' or 'False'
+        <pull>False</pull>
         <branch>master</branch>
     </GIT>
 

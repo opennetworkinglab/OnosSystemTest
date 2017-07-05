@@ -15,30 +15,17 @@ class SAMPstartTemplate_3node:
             test env. We want Jenkins jobs to pull&build for flexibility to handle
             different versions of ONOS.
         '''
-        gitPull = main.params['CASE0']['gitPull']
-        gitBranch = main.params['CASE0']['gitBranch']
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        try:
+            main.testSetUp
+        except ( NameError, AttributeError ):
+            main.testSetUp = ONOSSetup()
 
-        main.case("Pull onos branch and build onos on Teststation.")
-
-        if gitPull == 'True':
-            main.step( "Git Checkout ONOS branch: " + gitBranch)
-            stepResult = main.ONOSbench.gitCheckout( branch = gitBranch )
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully checkout onos branch.",
-                                     onfail="Failed to checkout onos branch. Exiting test..." )
-            if not stepResult: main.exit()
-
-            main.step( "Git Pull on ONOS branch:" + gitBranch)
-            stepResult = main.ONOSbench.gitPull( )
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully pull onos. ",
-                                     onfail="Failed to pull onos. Exiting test ..." )
-            if not stepResult: main.exit()
-
-        else:
-            main.log.warn( "Skipped pulling onos and Skipped building ONOS" )
+        main.testSetUp.gitPulling()
 
 
     def CASE1( self, main ):
@@ -47,29 +34,30 @@ class SAMPstartTemplate_3node:
             Uninstall all running cells in test env defined in .topo file
 
         '''
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        try:
+            main.testSetUp
+        except ( NameError, AttributeError ):
+            main.testSetUp = ONOSSetup()
 
-        main.case( "Constructing global test variables and clean cluster env." )
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
+            main.nodeList = main.params['CASE1']['NodeList'].split(",")
+            main.onosStartupSleep = float(main.params['CASE1']['SleepTimers']['onosStartup'])
+            main.onosCfgSleep = float(main.params['CASE1']['SleepTimers']['onosCfg'])
+            main.mnStartupSleep = float(main.params['CASE1']['SleepTimers']['mnStartup'])
+            main.mnCfgSleep = float(main.params['CASE1']['SleepTimers']['mnCfg'])
+            main.numCtrls = int( main.params['CASE10']['numNodes'] )
+            stepResult = main.testSetUp.envSetup( includeGitPull=False )
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.step( "Constructing test variables" )
-        main.branch = main.ONOSbench.getBranchName()
-        main.log.info( "Running onos branch: " + main.branch )
-        main.commitNum = main.ONOSbench.getVersion().split(' ')[1]
-        main.log.info( "Running onos commit Number: " + main.commitNum)
-        main.nodeList = main.params['CASE1']['NodeList'].split(",")
-        main.onosStartupSleep = float( main.params['CASE1']['SleepTimers']['onosStartup'] )
-        main.onosCfgSleep = float( main.params['CASE1']['SleepTimers']['onosCfg'] )
-        main.mnStartupSleep = float( main.params['CASE1']['SleepTimers']['mnStartup'] )
-        main.mnCfgSleep = float( main.params['CASE1']['SleepTimers']['mnCfg'] )
-        main.numCtrls = int( main.params['CASE10']['numNodes'] )
-        main.AllONOSip = main.ONOSbench.getOnosIps()
-        main.ONOSip = []
-        for i in range( main.numCtrls ):
-            main.ONOSip.append( main.AllONOSip[i] )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=main.TRUE,
-                                 onpass="Successfully construct " +
-                                        "test variables ",
-                                 onfail="Failed to construct test variables" )
 
     def CASE2( self, main ):
         '''
@@ -92,6 +80,15 @@ class SAMPstartTemplate_3node:
         2) activate apps via ONOSCliDriver;
         3) configure onos via ONOSCliDriver;
         """
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        try:
+            main.testSetUp
+        except ( NameError, AttributeError ):
+            main.testSetUp = ONOSSetup()
 
         import time
 
@@ -104,22 +101,14 @@ class SAMPstartTemplate_3node:
                                  onpass="Successfully started basic ONOS cluster ",
                                  onfail="Failed to start basic ONOS Cluster " )
 
-        main.step( "Establishing Handles on ONOS CLIs.")
-        cliResult = main.TRUE
-        for n in range( 1, main.numCtrls + 1 ):
-            handle = "main.ONOScli" + str( n )
-            cliResult = cliResult & ( eval( handle ).startOnosCli( main.ONOSip[ n-1 ] ) )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=cliResult,
-                                 onpass="Successfully started onos cli's ",
-                                 onfail="Failed to start onos cli's " )
+        main.testSetUp.startOnosClis()
 
         main.step( "Activate onos apps.")
-        apps = main.params['CASE10'].get( 'Apps' )
-        if apps:
-            main.log.info( "Apps to activate: " + apps )
+        main.apps = main.params['CASE10'].get( 'Apps' )
+        if main.apps:
+            main.log.info( "Apps to activate: " + main.apps )
             activateResult = main.TRUE
-            for a in apps.split(","):
+            for a in main.apps.split(","):
                 activateResult = activateResult & main.ONOScli1.activateApp(a)
             # TODO: check this worked
             time.sleep( main.onosCfgSleep )  # wait for apps to activate

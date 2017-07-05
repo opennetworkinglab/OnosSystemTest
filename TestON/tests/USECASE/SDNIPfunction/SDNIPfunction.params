@@ -14,8 +14,8 @@
     </CTRL>
 
     <GIT>
-        <autoPull>on</autoPull>
-        <branch1>master</branch1>
+        <pull>False</pull>
+        <branch>master</branch>
         <branch2>onos-1.2</branch2>
     </GIT>
 

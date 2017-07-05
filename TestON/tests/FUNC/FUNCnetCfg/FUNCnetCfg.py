@@ -10,93 +10,47 @@ class FUNCnetCfg:
     def CASE1( self, main ):
         import imp
         import re
-
         """
         - Construct tests variables
         - GIT ( optional )
             - Checkout ONOS master branch
             - Pull latest ONOS code
         """
-        main.case( "Constructing test variables and building ONOS package" )
-        main.step( "Constructing test variables" )
-        main.caseExplanation = "This test case is mainly for loading " +\
-                               "from params file, and pull and build the " +\
-                               " latest ONOS package"
+
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
 
         # Test variables
         try:
-            main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-            gitBranch = main.params[ 'GIT' ][ 'branch' ]
             main.dependencyPath = main.testOnDirectory + \
                                   main.params[ 'DEPENDENCY' ][ 'path' ]
-            if main.ONOSbench.maxNodes:
-                main.maxNodes = int( main.ONOSbench.maxNodes )
-            else:
-                main.maxNodes = 0
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
             wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
             wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.gossipTime = int( main.params[ 'SLEEP' ][ 'cfgGossip' ] )
             main.SetNetCfgSleep = int( main.params[ 'SLEEP' ][ 'SetNetCfgSleep' ] )
-            gitPull = main.params[ 'GIT' ][ 'pull' ]
-            main.cellData = {}  # for creating cell file
             main.hostsData = {}
-            main.nodes = []
-            main.ONOSip = []
             main.retrytimes = int( main.params[ 'RETRY' ] )
             main.retrysleep = int( main.params[ 'RetrySleep' ] )
-            main.ONOSip = main.ONOSbench.getOnosIps()
-
-            # Assigning ONOS cli handles to a list
-            try:
-                for i in range( 1, main.maxNodes + 1 ):
-                    main.nodes.append( getattr( main, 'ONOSrest' + str( i ) ) )
-            except AttributeError:
-                main.log.warn( "A " + str( main.maxNodes ) + " node cluster " +
-                               "was defined in env variables, but only " +
-                               str( len( main.nodes ) ) +
-                               " nodes were defined in the .topo file. " +
-                               "Using " + str( len( main.nodes ) ) +
-                               " nodes for the test." )
-
-            main.numCtrls = len( main.nodes )
 
             # -- INIT SECTION, SHOULD ONLY BE RUN ONCE -- #
-            main.startUp = imp.load_source( wrapperFile1,
-                                            main.dependencyPath +
-                                            wrapperFile1 +
-                                            ".py" )
-
             main.netCfg = imp.load_source( wrapperFile2,
                                            main.dependencyPath +
                                            wrapperFile2 +
                                            ".py" )
 
-            main.topo = imp.load_source( wrapperFile3,
-                                         main.dependencyPath +
-                                         wrapperFile3 +
-                                         ".py" )
-
-            if main.nodes:
-                stepResult = main.TRUE
-            else:
-                main.log.error( "Did not properly created list of ONOS handle" )
-                stepResult = main.FALSE
+            stepResult = main.testSetUp.envSetup( hasRest=True, hasCli=False )
         except Exception as e:
-            main.log.exception( e )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully construct " +
-                                        "test variables ",
-                                 onfail="Failed to construct test variables" )
-
-        main.ONOSbench.getVersion( report=True )
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
     def CASE2( self, main ):
         """
@@ -111,170 +65,22 @@ class FUNCnetCfg:
         - Connect to cli
         """
         import time
-        main.case( "Starting up " + str( main.numCtrls ) +
-                   " node(s) ONOS cluster" )
-        main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) +\
-                                " node(s) ONOS cluster"
-
-        # kill off all onos processes
-        main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating environment setup" )
-
-        for i in range( main.maxNodes ):
-            main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
-
-        tempOnosIp = []
-        for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[ i ] )
-
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
-                                       "temp", main.Mininet1.ip_address,
-                                       main.apps, tempOnosIp, main.ONOScli1.karafUser )
-
-        main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to environment",
-                                 onfail="Failed to apply cell to environment " )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        stepResult = packageResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully created ONOS package",
-                                 onfail="Failed to create ONOS package" )
-
-        main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = main.TRUE
-        for ip in main.ONOSip:
-            onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=ip )
-        stepResult = onosUninstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully uninstalled ONOS package",
-                                 onfail="Failed to uninstall ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.TRUE
-        for i in range( main.numCtrls ):
-            onosInstallResult = onosInstallResult and \
-                    main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
-        stepResult = onosInstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully installed ONOS package",
-                                 onfail="Failed to install ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-
-        for i in range( main.numCtrls ):
-            isUp = main.ONOSbench.isup( main.ONOSip[ i ] )
-            onosIsUp = onosIsUp and isUp
-            if isUp == main.TRUE:
-                main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
-            else:
-                main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +
-                                 "start ONOS again " )
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-            stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
+        main.testSetUp.ONOSSetUp( main.Mininet1, hasCli=False )
 
     def CASE8( self, main ):
         """
         Compare Topo
         """
-        import json
-
-        main.case( "Compare ONOS Topology view to Mininet topology" )
-        main.caseExplanation = "Compare topology elements between Mininet" +\
-                                " and ONOS"
-
-        main.step( "Gathering topology information" )
-        # TODO: add a parameterized sleep here
-        devicesResults = main.TRUE
-        linksResults = main.TRUE
-        hostsResults = main.TRUE
-        devices = main.topo.getAllDevices( main )
-        hosts = main.topo.getAllHosts( main )
-        ports = main.topo.getAllPorts( main )
-        links = main.topo.getAllLinks( main )
-        clusters = main.topo.getAllClusters( main )
-
-        mnSwitches = main.Mininet1.getSwitches()
-        mnLinks = main.Mininet1.getLinks()
-        mnHosts = main.Mininet1.getHosts()
-
-        main.step( "Comparing MN topology to ONOS topology" )
-        for controller in range( main.numCtrls ):
-            controllerStr = str( controller + 1 )
-            if devices[ controller ] and ports[ controller ] and\
-               "Error" not in devices[ controller ] and\
-               "Error" not in ports[ controller ]:
-
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
-            else:
-                currentDevicesResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentDevicesResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " Switches view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " Switches view is incorrect" )
-
-            if links[ controller ] and "Error" not in links[ controller ]:
-                currentLinksResult = main.Mininet1.compareLinks(
-                        mnSwitches, mnLinks,
-                        json.loads( links[ controller ] ) )
-            else:
-                currentLinksResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentLinksResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " links view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " links view is incorrect" )
-
-            if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                currentHostsResult = main.Mininet1.compareHosts(
-                        mnHosts,
-                        json.loads( hosts[ controller ] ) )
-            else:
-                currentHostsResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentHostsResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " hosts exist in Mininet",
-                                     onfail="ONOS" + controllerStr +
-                                     " hosts don't match Mininet" )
+        try:
+            from tests.dependencies.topology import Topology
+        except ImportError:
+            main.log.error( "Topology not found exiting the test" )
+            main.exit()
+        try:
+            main.topoRelated
+        except ( NameError, AttributeError ):
+            main.topoRelated = Topology()
+        main.topoRelated.compareTopos( main.Mininet1 )
 
     def CASE9( self, main ):
         """
@@ -373,18 +179,17 @@ class FUNCnetCfg:
         """
             Stop mininet
         """
-        main.log.report( "Stop Mininet topology" )
-        main.case( "Stop Mininet topology" )
-        main.caseExplanation = "Stopping the current mininet topology " +\
-                                "to start up fresh"
-
-        main.step( "Stopping Mininet Topology" )
-        topoResult = main.Mininet1.stopNet()
-        stepResult = topoResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully stop mininet",
-                                 onfail="Failed to stop mininet" )
+        try:
+            from tests.dependencies.utils import Utils
+        except ImportError:
+            main.log.error( "Utils not found exiting the test" )
+            main.exit()
+        try:
+            main.Utils
+        except ( NameError, AttributeError ):
+            main.Utils = Utils()
+        main.Utils.mininetCleanIntro()
+        topoResult = main.Utils.mininetCleanup( main.Mininet1 )
         # Exit if topology did not load properly
         if not topoResult:
             main.cleanup()
@@ -404,7 +209,7 @@ class FUNCnetCfg:
                                ", the other disallowed."
 
 
-        pprint = main.nodes[ 0 ].pprint
+        pprint = main.RESTs[ 0 ].pprint
 
         main.step( "Add Net Cfg for switch1" )
 
@@ -558,7 +363,7 @@ class FUNCnetCfg:
         main.caseExplanation = "Add Network Configurations for discovered " +\
                                "devices. One device is allowed" +\
                                ", the other disallowed."
-        pprint = main.nodes[ 0 ].pprint
+        pprint = main.RESTs[ 0 ].pprint
 
         main.step( "Add Net Cfg for switch2" )
         try:
@@ -884,7 +689,7 @@ class FUNCnetCfg:
 
         """
         import json
-        pprint = main.nodes[ 0 ].pprint
+        pprint = main.RESTs[ 0 ].pprint
         main.case( "Posting network configurations to the top level web resource" )
         main.step( "Get json object from Net Cfg" )
         getinfo = utilities.retry( f=main.ONOSrest1.getNetCfg,

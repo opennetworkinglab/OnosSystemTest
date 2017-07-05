@@ -1911,7 +1911,16 @@ def confirmHostDiscovery( main ):
         Confirms that all ONOS nodes have discovered all scapy hosts
     """
     import collections
-    hosts = main.topo.getAllHosts( main )  # Get host data from each ONOS node
+    try:
+        from tests.dependencies.topology import Topology
+    except Exception:
+        main.log.error( "Topology not found exiting the test" )
+        main.exit()
+    try:
+        main.topoRelated
+    except Exception:
+        main.topoRelated = Topology()
+    hosts = main.topoRelated.getAllHosts( main.numCtrls, False )  # Get host data from each ONOS node
     hostFails = []  # Reset for each failed attempt
 
     #  Check for matching hosts on each node

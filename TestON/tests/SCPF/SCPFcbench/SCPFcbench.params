@@ -16,8 +16,8 @@
     </TEST>
 
     <GIT>
-        <autopull>off</autopull>
-        <checkout>master</checkout>
+        <pull>False</pull>
+        <branch>master</branch>
     </GIT>
 
     <CTRL>

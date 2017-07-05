@@ -18,53 +18,37 @@ class SCPFbatchFlowResp:
         - GIT ( optional )
             - Checkout ONOS master branch
             - Pull latest ONOS code
-        - Building ONOS ( optional )
-            - Install ONOS package
-            - Build ONOS package
         """
-        main.case( "Constructing test variables and building ONOS package" )
-        main.step( "Constructing test variables" )
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
+            # Test variables
+            main.testOnDirectory = os.path.dirname( os.getcwd() )
+            main.cellName = main.params[ 'CASE1' ][ 'cellName' ]
+            main.apps = main.params[ 'CASE1' ][ 'cellApps' ]
+            main.maxNodes = int( main.params[ 'GLOBAL' ][ 'maxNodes' ] )
+            main.startUpSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'startup' ] )
+            main.startMNSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'startMN' ] )
+            main.addFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'addFlow' ] )
+            main.delFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'delFlow' ] )
+            main.chkFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'chkFlow' ] )
+            main.onosPackaging = main.params[ 'CASE2' ][ 'incPackaging' ] == "true"
+            main.cfgSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'cfg' ] )
+            main.numSw = int( main.params[ 'GLOBAL' ][ 'numSw' ] )
+            main.numThreads = int( main.params[ 'GLOBAL' ][ 'numThreads' ] )
+            main.cluster = main.params[ 'GLOBAL' ][ 'cluster' ]
 
-        # Test variables
-        main.testOnDirectory = os.path.dirname( os.getcwd() )
-        main.cellName = main.params[ 'CASE1' ][ 'cellName' ]
-        main.apps = main.params[ 'CASE1' ][ 'cellApps' ]
-        gitBranch = main.params[ 'CASE1' ][ 'gitBranch' ]
-        gitPull = main.params[ 'CASE1' ][ 'gitPull' ]
-        main.maxNodes = int( main.params[ 'GLOBAL' ][ 'maxNodes' ] )
-        main.startUpSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'startup' ] )
-        main.startMNSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'startMN' ] )
-        main.addFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'addFlow' ] )
-        main.delFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'delFlow' ] )
-        main.chkFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'chkFlow' ] )
-        main.cfgSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'cfg' ] )
-        main.numSw = int( main.params[ 'GLOBAL' ][ 'numSw' ] )
-        main.numThreads = int( main.params[ 'GLOBAL' ][ 'numThreads' ] )
-        main.cellData = {}  # for creating cell file
-        main.CLIs = []
-        main.ONOSip = []
-
-        main.ONOSip = main.ONOSbench.getOnosIps()
-        main.commit = main.ONOSbench.getVersion()
+            stepResult = main.testSetUp.envSetup()
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
-
-        main.cluster = main.params[ 'GLOBAL' ][ 'cluster' ]
-
-        # Assigning ONOS cli handles to a list
-        for i in range( 1, main.maxNodes + 1 ):
-            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-
-        if main.CLIs:
-            stepResult = main.TRUE
-        else:
-            main.log.error( "Did not properly created list of ONOS CLI handle" )
-            stepResult = main.FALSE
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully construct " +
-                                        "test variables ",
-                                 onfail="Failed to construct test variables" )
 
 
     def CASE2( self, main ):
@@ -79,113 +63,7 @@ class SCPFbatchFlowResp:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.numCtrls = int( main.maxNodes )
-
-        main.case( "Starting up " + str( main.numCtrls ) +
-                   " node( s ) ONOS cluster" )
-
-        main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating environment setup" )
-
-        tempOnosIp = []
-        for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[ i ] )
-
-        if main.params[ 'CASE2' ][ 'incPackaging' ] == "true":
-            main.step( "Create onos cell file with: " + main.apps )
-            main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "temp",
-                                           main.Mininet1.ip_address, main.apps,
-                                           tempOnosIp, main.ONOScli1.karafUser )
-
-            main.step( "Apply cell to environment" )
-            cellResult = main.ONOSbench.setCell( "temp" )
-            verifyResult = main.ONOSbench.verifyCell()
-            stepResult = cellResult and verifyResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully applied cell to " +
-                                        "environment",
-                                     onfail="Failed to apply cell to environment " )
-
-            main.step( "Creating ONOS package" )
-            packageResult = main.ONOSbench.buckBuild()
-            stepResult = packageResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully created ONOS package",
-                                     onfail="Failed to create ONOS package" )
-            time.sleep( main.startUpSleep )
-
-            main.step( "Uninstalling ONOS package" )
-            onosUninstallResult = main.TRUE
-            for i in range( main.numCtrls ):
-                onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
-            stepResult = onosUninstallResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully uninstalled ONOS package",
-                                     onfail="Failed to uninstall ONOS package" )
-            time.sleep( main.startUpSleep )
-
-        else:
-            main.log.info( "onos Packaging Skipped!" )
-
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.TRUE
-        for i in range( main.numCtrls ):
-            onosInstallResult = onosInstallResult and \
-                    main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
-        stepResult = onosInstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully installed ONOS package",
-                                 onfail="Failed to install ONOS package" )
-        time.sleep( main.startUpSleep )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( main.numCtrls ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
-
-        main.step( "Start ONOS cli" )
-        cliResult = main.TRUE
-        for i in range( i, main.numCtrls ):
-            cliResult = cliResult and \
-                        main.ONOScli1.startOnosCli( main.ONOSip[ i ] )
-        stepResult = cliResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully start ONOS cli",
-                                 onfail="Failed to start ONOS cli" )
+        main.testSetUp.ONOSSetUp( main.Mininet1, skipPack=main.onosPackaging )
 
     def CASE10( self, main ):
         """

@@ -23,7 +23,10 @@
     <testcases>
         0,1,2,3,70
     </testcases>
-
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
     <TEST>
         <topo>1</topo>
         <IPv6>on</IPv6>
@@ -37,8 +40,6 @@
         <karafCliTimeout>7200000</karafCliTimeout>
         <testDuration>86400</testDuration>
         <package>on</package>
-        <autoPull>off</autoPull>
-        <branch>master</branch>
     </TEST>
 
     <EVENT>

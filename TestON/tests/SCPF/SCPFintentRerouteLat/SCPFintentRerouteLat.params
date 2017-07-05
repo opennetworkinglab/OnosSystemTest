@@ -46,8 +46,8 @@
     </DATABASE>
 
     <GIT>
-        <gitPull>False</gitPull>
-        <gitBranch>master</gitBranch>
+        <pull>False</pull>
+        <branch>master</branch>
     </GIT>
 
     <ATTEMPTS>

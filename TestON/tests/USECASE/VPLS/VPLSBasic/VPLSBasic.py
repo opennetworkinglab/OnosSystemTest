@@ -29,50 +29,29 @@ class VPLSBasic:
         import imp
         import time
         import json
-        main.case( "Setting up test environment" )
-        main.caseExplanation = "Setup the test environment including " +\
-                                "installing ONOS, starting Mininet and ONOS" +\
-                                "cli sessions."
 
-        # load some variables from the params file
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
+            # load some variables from the params file
+            cellName = main.params[ 'ENV' ][ 'cellName' ]
 
-        main.numCtrls = int( main.params[ 'num_controllers' ] )
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.numCtrls = int( main.params[ 'num_controllers' ] )
 
-        ofPort = main.params[ 'CTRL' ][ 'port' ]
+            ofPort = main.params[ 'CTRL' ][ 'port' ]
+            stepResult = main.testSetUp.envSetup( hasRest=True, hasNode=True )
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.CLIs = []
-        main.RESTs = []
-        main.nodes = []
-        ipList = []
-        for i in range( 1, main.numCtrls + 1 ):
-            try:
-                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-                main.RESTs.append( getattr( main, 'ONOSrest' + str( i ) ) )
-                main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
-                ipList.append( main.nodes[ -1 ].ip_address )
-            except AttributeError:
-                break
-
-        main.step( "Create cell file" )
-        cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
-                                       main.Mininet1.ip_address,
-                                       cellAppString, ipList, main.ONOScli1.karafUser )
-        main.step( "Applying cell variable to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        main.log.info( "Uninstalling ONOS" )
-        for node in main.nodes:
-            main.ONOSbench.onosUninstall( node.ip_address )
-
-        # Make sure ONOS is DEAD
-        main.log.info( "Killing any ONOS processes" )
-        killResults = main.TRUE
-        for node in main.nodes:
-            killed = main.ONOSbench.onosKill( node.ip_address )
-            killResults = killResults and killed
+        main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName )
 
         main.step( "Starting Mininet" )
         # scp topo file to mininet
@@ -93,63 +72,6 @@ class VPLSBasic:
         utilities.assert_equals( expect=main.TRUE, actual=mnResult,
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
-
-        main.ONOSbench.getVersion( report=True )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        utilities.assert_equals( expect=main.TRUE, actual=packageResult,
-                                 onpass="ONOS package successful",
-                                 onfail="ONOS package failed" )
-
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.TRUE
-        for node in main.nodes:
-            tmpResult = main.ONOSbench.onosInstall( options="-f",
-                                                    node=node.ip_address )
-            onosInstallResult = onosInstallResult and tmpResult
-        utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
-                                 onpass="ONOS install successful",
-                                 onfail="ONOS install failed" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for node in main.nodes:
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=node.ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        main.step( "Checking if ONOS is up yet" )
-        for i in range( 2 ):
-            onosIsupResult = main.TRUE
-            for node in main.nodes:
-                started = main.ONOSbench.isup( node.ip_address )
-                if not started:
-                    main.log.error( node.name + " hasn't started" )
-                onosIsupResult = onosIsupResult and started
-            if onosIsupResult == main.TRUE:
-                break
-        utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
-                                 onpass="ONOS startup successful",
-                                 onfail="ONOS startup failed" )
-
-        main.step( "Starting ONOS CLI sessions" )
-        cliResults = main.TRUE
-        threads = []
-        for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
-                             name="startOnosCli-" + str( i ),
-                             args=[ main.nodes[ i ].ip_address ] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            cliResults = cliResults and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli startup successful",
-                                 onfail="ONOS cli startup failed" )
 
         main.activeNodes = [ i for i in range( 0, len( main.CLIs ) ) ]
 

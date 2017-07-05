@@ -25,10 +25,12 @@
     -->
 
     <testcases>0,1,10,11,12,22,2,32</testcases>
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
 
     <CASE0>
-        <gitPull>False</gitPull> # False or True
-        <gitBranch>master</gitBranch>
     </CASE0>
 
     <CASE1>

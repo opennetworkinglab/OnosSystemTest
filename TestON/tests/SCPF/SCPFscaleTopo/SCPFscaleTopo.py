@@ -19,106 +19,88 @@ class SCPFscaleTopo:
             - Install ONOS package
             - Build ONOS package
         """
-        main.case( "Constructing test variables" )
-        main.step( "Constructing test variables" )
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
-        # The variable to decide if the data should be written into data base.
-        # 1 means Yes and -1 means No.
-        main.writeData = 1
-        main.searchTerm = main.params[ 'SearchTerm' ]
-        main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
-        main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-        gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        main.dependencyPath = main.testOnDirectory + \
-                              main.params[ 'DEPENDENCY' ][ 'path' ]
-        main.tsharkResultPath = main.params[ 'TsharkPath' ]
-        main.roleRequest = main.params[ 'SearchTerm' ]['roleRequest']
-        main.multiovs = main.params[ 'DEPENDENCY' ][ 'multiovs' ]
-        main.topoName = main.params[ 'TOPOLOGY' ][ 'topology' ]
-        main.numCtrls = int( main.params[ 'CTRL' ][ 'numCtrls' ] )
-        main.topoScale = ( main.params[ 'TOPOLOGY' ][ 'scale' ] ).split( "," )
-        main.topoScaleSize = len( main.topoScale )
-        wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
-        wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
-        wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
-        main.topoCmpAttempts = int( main.params[ 'ATTEMPTS' ][ 'topoCmp' ] )
-        main.pingallAttempts = int( main.params[ 'ATTEMPTS' ][ 'pingall' ] )
-        main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-        main.balanceSleep = int( main.params[ 'SLEEP' ][ 'balance' ] )
-        main.nodeSleep = int( main.params[ 'SLEEP' ][ 'nodeSleep' ] )
-        main.pingallSleep = int( main.params[ 'SLEEP' ][ 'pingall' ] )
-        main.MNSleep = int( main.params[ 'SLEEP' ][ 'MNsleep' ] )
-        main.pingTimeout = float( main.params[ 'TIMEOUT' ][ 'pingall' ] )
-        main.hostDiscover = main.params[ 'TOPOLOGY' ][ 'host' ]
-        main.hostDiscoverSleep = float( main.params['SLEEP']['host'] )
-        if main.hostDiscover == 'True':
-            main.hostDiscover = True
-        else:
-            main.hostDiscover = False
-        gitPull = main.params[ 'GIT' ][ 'pull' ]
-        main.homeDir = os.path.expanduser('~')
-        main.cellData = {} # for creating cell file
-        main.hostsData = {}
-        main.CLIs = []
-        main.ONOSip = []
-        main.activeNodes = []
-        main.ONOSip = main.ONOSbench.getOnosIps()
-
-        for i in range(main.numCtrls):
-                main.CLIs.append( getattr( main, 'ONOScli%s' % (i+1) ) )
-
-        main.allinfo = {} # The dictionary to record all the data from karaf.log
-
-        for i in range( 2 ):
-            main.allinfo[ i ]={}
-            for w in range ( 3 ):
-                # Totaltime: the time from the new switchConnection to its end
-                # swConnection: the time from the first new switchConnection to the last new switchConnection
-                # lastSwToLastRr: the time from the last new switchConnection to the last role request
-                # lastRrToLastTopology: the time form the last role request to the last topology
-                # disconnectRate: the rate that shows how many switch disconnect after connection
-                main.allinfo[ i ][ 'info' + str( w ) ]= { 'totalTime': 0, 'swConnection': 0, 'lastSwToLastRr': 0, 'lastRrToLastTopology': 0, 'disconnectRate': 0 }
-
-        main.dbFilePath = main.params[ 'DATABASE' ][ 'dbPath' ]
-        main.log.info( "Create Database file " + main.dbFilePath )
-        resultDB = open(main.dbFilePath, 'w+' )
-        resultDB.close()
+        try:
+            # The variable to decide if the data should be written into data base.
+            # 1 means Yes and -1 means No.
+            main.writeData = 1
+            main.searchTerm = main.params[ 'SearchTerm' ]
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.dependencyPath = main.testOnDirectory + \
+                                  main.params[ 'DEPENDENCY' ][ 'path' ]
+            main.tsharkResultPath = main.params[ 'TsharkPath' ]
+            main.roleRequest = main.params[ 'SearchTerm' ]['roleRequest']
+            main.multiovs = main.params[ 'DEPENDENCY' ][ 'multiovs' ]
+            main.topoName = main.params[ 'TOPOLOGY' ][ 'topology' ]
+            main.numCtrls = int( main.params[ 'CTRL' ][ 'numCtrls' ] )
+            main.topoScale = ( main.params[ 'TOPOLOGY' ][ 'scale' ] ).split( "," )
+            main.topoScaleSize = len( main.topoScale )
+            wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+            wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
+            wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
+            main.topoCmpAttempts = int( main.params[ 'ATTEMPTS' ][ 'topoCmp' ] )
+            main.pingallAttempts = int( main.params[ 'ATTEMPTS' ][ 'pingall' ] )
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            main.balanceSleep = int( main.params[ 'SLEEP' ][ 'balance' ] )
+            main.nodeSleep = int( main.params[ 'SLEEP' ][ 'nodeSleep' ] )
+            main.pingallSleep = int( main.params[ 'SLEEP' ][ 'pingall' ] )
+            main.MNSleep = int( main.params[ 'SLEEP' ][ 'MNsleep' ] )
+            main.pingTimeout = float( main.params[ 'TIMEOUT' ][ 'pingall' ] )
+            main.hostDiscover = main.params[ 'TOPOLOGY' ][ 'host' ]
+            main.hostDiscoverSleep = float( main.params['SLEEP']['host'] )
+            if main.hostDiscover == 'True':
+                main.hostDiscover = True
+            else:
+                main.hostDiscover = False
+            main.homeDir = os.path.expanduser('~')
+            main.hostsData = {}
+            main.activeNodes = []
 
 
-        main.startUp = imp.load_source( wrapperFile1,
-                                        main.dependencyPath +
-                                        wrapperFile1 +
-                                        ".py" )
+            stepResult = main.testSetUp.envSetup()
+            main.allinfo = {} # The dictionary to record all the data from karaf.log
 
-        main.scaleTopoFunction = imp.load_source( wrapperFile2,
-                                                  main.dependencyPath +
-                                                  wrapperFile2 +
-                                                  ".py" )
+            for i in range( 2 ):
+                main.allinfo[ i ]={}
+                for w in range ( 3 ):
+                    # Totaltime: the time from the new switchConnection to its end
+                    # swConnection: the time from the first new switchConnection to the last new switchConnection
+                    # lastSwToLastRr: the time from the last new switchConnection to the last role request
+                    # lastRrToLastTopology: the time form the last role request to the last topology
+                    # disconnectRate: the rate that shows how many switch disconnect after connection
+                    main.allinfo[ i ][ 'info' + str( w ) ]= { 'totalTime': 0, 'swConnection': 0, 'lastSwToLastRr': 0, 'lastRrToLastTopology': 0, 'disconnectRate': 0 }
 
-        main.topo = imp.load_source( wrapperFile3,
-                                     main.dependencyPath +
-                                     wrapperFile3 +
-                                     ".py" )
+            main.dbFilePath = main.params[ 'DATABASE' ][ 'dbPath' ]
+            main.log.info( "Create Database file " + main.dbFilePath )
+            resultDB = open(main.dbFilePath, 'w+' )
+            resultDB.close()
 
-        main.ONOSbench.scp( main.Mininet1,
-                            main.dependencyPath +
-                            main.multiovs,
-                            main.Mininet1.home,
-                            direction="to" )
+            main.scaleTopoFunction = imp.load_source( wrapperFile2,
+                                                      main.dependencyPath +
+                                                      wrapperFile2 +
+                                                      ".py" )
 
-        if main.CLIs:
-                stepResult = main.TRUE
-        else:
-            main.log.error( "Did not properly created list of " +
-                            "ONOS CLI handle" )
-            stepResult = main.FALSE
+            main.topo = imp.load_source( wrapperFile3,
+                                         main.dependencyPath +
+                                         wrapperFile3 +
+                                         ".py" )
 
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully construct " +
-                                        "test variables ",
-                                 onfail="Failed to construct test variables" )
-
+            main.ONOSbench.scp( main.Mininet1,
+                                main.dependencyPath +
+                                main.multiovs,
+                                main.Mininet1.home,
+                                direction="to" )
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
+        main.commit = main.commit.split( " " )[ 1 ]
 
     def CASE2( self, main):
         """
@@ -133,127 +115,20 @@ class SCPFscaleTopo:
         - Connect to cli
         """
         import time
-        main.log.info( "Checking if mininet is already running" )
-        if len( main.topoScale ) < main.topoScaleSize:
-            main.log.info( "Mininet is already running. Stopping mininet." )
-            main.Mininet1.stopNet()
-            time.sleep(main.MNSleep)
-        else:
-            main.log.info( "Mininet was not running" )
-
-        main.commit = main.ONOSbench.getVersion(report=True)
-        main.commit = main.commit.split(" ")[1]
-
-        main.case( "Starting up " + str( main.numCtrls ) +
-                   " node(s) ONOS cluster" )
-        main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) +\
-                                " node(s) ONOS cluster"
-
-        #kill off all onos processes
-        main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating environment setup" )
-
-        for i in range( main.numCtrls ):
-            main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            main.ONOSbench.onosKill( main.ONOSip[ i ] )
-
-        tempOnosIp = []
-        for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[i] )
-
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
-                                       "temp", main.Mininet1.ip_address,
-                                       main.apps, tempOnosIp, main.ONOScli1.karafUser )
-
-        main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
-                                        "environment",
-                                 onfail="Failed to apply cell to environment " )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        stepResult = packageResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully created ONOS package",
-                                 onfail="Failed to create ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = main.TRUE
-        for ip in main.ONOSip:
-            onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=ip )
-        stepResult = onosUninstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully uninstalled ONOS package",
-                                 onfail="Failed to uninstall ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.TRUE
-        for i in range( main.numCtrls ):
-            onosInstallResult = onosInstallResult and \
-                    main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
-        stepResult = onosInstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully installed ONOS package",
-                                 onfail="Failed to install ONOS package" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
-
-        main.step( "Start ONOS cli" )
-        cliResult = main.TRUE
+        try:
+            from tests.dependencies.utils import Utils
+        except ImportError:
+            main.log.error( "Utils not found exiting the test" )
+            main.exit()
+        try:
+            main.Utils
+        except ( NameError, AttributeError ):
+            main.Utils = Utils()
+        main.Utils.mininetCleanup( main.Mininet1 )
+        main.testSetUp.ONOSSetUp( main.Mininet1 )
         main.activeNodes = []
         for i in range( main.numCtrls ):
-            cliResult = cliResult and \
-                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
             main.activeNodes.append( i )
-        stepResult = cliResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully start ONOS cli",
-                                 onfail="Failed to start ONOS cli" )
-        time.sleep( main.startUpSleep )
 
     def CASE10( self, main ):
         """
@@ -303,6 +178,15 @@ class SCPFscaleTopo:
         """
         import json
         import time
+        try:
+            from tests.dependencies.topology import Topology
+        except ImportError:
+            main.log.error( "Topology not found exiting the test" )
+            main.exit()
+        try:
+            main.topoRelated
+        except ( NameError, AttributeError ):
+            main.topoRelated = Topology()
         # First capture
         for i in range( 3 ):
             # Calculate total time
@@ -328,30 +212,22 @@ class SCPFscaleTopo:
         compareRetry = 0
         while compareRetry < 3:
             #While loop for retry
-            devices = main.topo.getAllDevices( main )
-            ports = main.topo.getAllPorts( main )
-            links = main.topo.getAllLinks( main)
+            devices = main.topoRelated.getAllDevices( main.numCtrls, False )
+            ports = main.topoRelated.getAllPorts( main.numCtrls, False )
+            links = main.topoRelated.getAllLinks( main.numCtrls, False)
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks(timeout=180)
 
             for controller in range(len(main.activeNodes)):
                 # controllerStr = str( main.activeNodes[controller] + 1 )
-                if devices[ controller ] and ports[ controller ] and \
-                                "Error" not in devices[ controller ] and \
-                                "Error" not in ports[ controller ]:
-                    currentDevicesResult = main.Mininet1.compareSwitches(
-                            mnSwitches,
-                            json.loads( devices[ controller ] ),
-                            json.loads( ports[ controller ] ) )
-                else:
-                    currentDevicesResult = main.FALSE
+                currentDevicesResult = main.topoRelated.compareDevicePort(
+                                                            main.Mininet1, controller,
+                                                            mnSwitches,
+                                                            devices, ports )
 
-                if links[ controller ] and "Error" not in links[ controller ]:
-                    currentLinksResult = main.Mininet1.compareLinks(
-                            mnSwitches, mnLinks,
-                            json.loads( links[ controller ] ) )
-                else:
-                    currentLinksResult = main.FALSE
+                currentLinksResult = main.topoRelated.compareBase( links, controller,
+                                                        main.Mininet1.compareLinks,
+                                                        [ mnSwitches, mnLinks ] )
 
                 stepResult = stepResult and currentDevicesResult and currentLinksResult
             if stepResult:

@@ -10,7 +10,7 @@
     # 7    - Testing GROUP with type "INDIRECT"
     # 8    - Deleting the group and flow
     # 100  - Check logs for Errors and Warnings
-    <testcases>1,2,3,5,6,7,8,100</testcases>
+    <testcases>1,2,3,5,6,7,6,100</testcases>
 
     <SCALE>
         <max>1</max>

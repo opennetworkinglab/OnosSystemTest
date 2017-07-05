@@ -54,7 +54,6 @@ sys.path.append( tests_path )
 from core.utilities import Utilities
 from core.Thread import Thread
 
-
 class TestON:
     '''
     TestON will initiate the specified test.
@@ -860,20 +859,23 @@ def verifyOnosCell( options ):
     # Verifying onoscell option
     if options.onoscell:
         main.onoscell = options.onoscell
-        main.onosIPs = []
+        main.ONOSip = []
         main.mnIP = ""
-        cellCMD = ". ~/.profile; cell " + main.onoscell
+        cellCMD = ". ~/onos/tools/dev/bash_profile; cell " + main.onoscell
         output = subprocess.check_output( ["bash", '-c', cellCMD] )
         splitOutput = output.splitlines()
+        main.apps = ""
         for i in range( len( splitOutput ) ):
             if re.match( "OCN", splitOutput[i] ):
                 mnNode = splitOutput[i].split( "=" )
                 main.mnIP = mnNode[1]
             # cell already sorts OC variables in bash, so no need to
             # sort in TestON
-            if re.match( "OC[1-9]", splitOutput[i] ):
+            elif re.match( "OC[1-9]", splitOutput[i] ):
                 onosNodes = splitOutput[i].split( "=" )
-                main.onosIPs.append( onosNodes[1] )
+                main.ONOSip.append( onosNodes[1] )
+            elif re.match( "ONOS_APPS", splitOutput[i] ):
+                main.apps = ( splitOutput[i].split( "=" ) )[1]
     else:
         main.onoscell = main.FALSE
 

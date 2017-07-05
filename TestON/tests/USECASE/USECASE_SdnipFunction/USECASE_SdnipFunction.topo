@@ -12,7 +12,7 @@
             </COMPONENTS>
         </ONOSbench>
 
-        <ONOScli>
+        <ONOScli1>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
@@ -23,7 +23,7 @@
                 <karaf_password></karaf_password>
                 <prompt></prompt>
             </COMPONENTS>
-        </ONOScli>
+        </ONOScli1>
 
         <ONOS1>
             <host>OC1</host>

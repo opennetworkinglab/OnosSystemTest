@@ -1490,7 +1490,16 @@ def confirmHostDiscovery( main ):
     """
     import collections
     scapyHostCount = len( main.scapyHosts )
-    hosts = main.topo.getAllHosts( main )  # Get host data from each ONOS node
+    try:
+        from tests.dependencies.topology import Topology
+    except Exception:
+        main.log.error( "Topology not found exiting the test" )
+        main.exit()
+    try:
+        main.topoRelated
+    except ( NameError, AttributeError ):
+        main.topoRelated = Topology()
+    hosts = main.topoRelated.getAllHosts( main.numCtrls, False )  # Get host data from each ONOS node
     hostFails = []  # Reset for each failed attempt
 
     #  Check for matching hosts on each node

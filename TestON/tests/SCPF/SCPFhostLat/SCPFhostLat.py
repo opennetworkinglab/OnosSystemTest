@@ -18,83 +18,69 @@ class SCPFhostLat:
         import time
         import os
         import imp
-
-        main.case( "Constructing test variables and building ONOS package" )
-        main.step( "Constructing test variables" )
-        stepResult = main.FALSE
-
-        # Test variables
-        main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
-        main.cellName = main.params[ 'ENV' ][ 'cellName' ]
-        main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-        main.scale = ( main.params[ 'SCALE' ] ).split( "," )
-        main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
-        main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-        main.installSleep = int( main.params[ 'SLEEP' ][ 'install' ] )
-        main.measurementSleep = int( main.params['SLEEP']['measurement'])
-        main.timeout = int( main.params['SLEEP']['timeout'] )
-        main.dbFileName = main.params['DATABASE']['file']
-        main.cellData = {} # for creating cell file
-
-        # Tshark params
-        main.tsharkResultPath = main.params['TSHARK']['tsharkPath']
-        main.tsharkPacketIn = main.params['TSHARK']['tsharkPacketIn']
-
-        main.numlter = main.params['TEST']['numIter']
-        main.iterIgnore = int(main.params['TEST']['iterIgnore'])
-        main.hostTimestampKey = main.params['TEST']['hostTimestamp']
-        main.thresholdStr = main.params['TEST']['singleSwThreshold']
-        main.thresholdObj = main.thresholdStr.split(',')
-        main.thresholdMin = int(main.thresholdObj[0])
-        main.thresholdMax = int(main.thresholdObj[1])
-        main.threadID = 0
-
-        main.CLIs = []
-        main.ONOSip = []
-        main.maxNumBatch = 0
-        main.ONOSip = main.ONOSbench.getOnosIps()
-        main.log.info(main.ONOSip)
-        main.setupSkipped = False
-
-        gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        gitPull = main.params[ 'GIT' ][ 'pull' ]
-        nic = main.params['DATABASE']['nic']
-        node = main.params['DATABASE']['node']
-        nic = main.params['DATABASE']['nic']
-        node = main.params['DATABASE']['node']
-        stepResult = main.TRUE
-
-        main.log.info("Cresting DB file")
-        with open(main.dbFileName, "w+") as dbFile:
-            dbFile.write("")
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="environment set up successfull",
-                                 onfail="environment set up Failed" )
-
-    def CASE1( self ):
-        # main.scale[ 0 ] determines the current number of ONOS controller
-        main.CLIs = []
-        main.numCtrls = int( main.scale[ 0 ] )
-        main.log.info( "Creating list of ONOS cli handles" )
-        for i in range(main.numCtrls):
-            main.CLIs.append( getattr( main, 'ONOScli%s' % (i+1) ) )
-
-        main.log.info(main.CLIs)
-        if not main.CLIs:
-            main.log.error( "Failed to create the list of ONOS cli handles" )
-            main.cleanup()
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
             main.exit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
 
-        main.commit = main.ONOSbench.getVersion(report=True)
-        main.commit = main.commit.split(" ")[1]
+            # Test variables
+            main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.scale = ( main.params[ 'SCALE' ] ).split( "," )
+            main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            main.installSleep = int( main.params[ 'SLEEP' ][ 'install' ] )
+            main.measurementSleep = int( main.params[ 'SLEEP' ][ 'measurement' ] )
+            main.timeout = int( main.params[ 'SLEEP' ][ 'timeout' ] )
+            main.dbFileName = main.params[ 'DATABASE' ][ 'file' ]
 
-        with open(main.dbFileName, "a") as dbFile:
+            # Tshark params
+            main.tsharkResultPath = main.params[ 'TSHARK' ][ 'tsharkPath' ]
+            main.tsharkPacketIn = main.params[ 'TSHARK' ][ 'tsharkPacketIn' ]
+
+            main.numlter = main.params[ 'TEST' ][ 'numIter' ]
+            main.iterIgnore = int( main.params[ 'TEST' ][ 'iterIgnore' ] )
+            main.hostTimestampKey = main.params[ 'TEST' ][ 'hostTimestamp' ]
+            main.thresholdStr = main.params[ 'TEST' ][ 'singleSwThreshold' ]
+            main.thresholdObj = main.thresholdStr.split( ',' )
+            main.thresholdMin = int( main.thresholdObj[ 0 ] )
+            main.thresholdMax = int( main.thresholdObj[ 1 ] )
+            main.threadID = 0
+
+            main.maxNumBatch = 0
+            main.setupSkipped = False
+
+            nic = main.params[ 'DATABASE' ][ 'nic' ]
+            node = main.params[ 'DATABASE' ][ 'node' ]
+            nic = main.params[ 'DATABASE' ][ 'nic' ]
+            node = main.params[ 'DATABASE' ][ 'node' ]
+            stepResult = main.TRUE
+
+            main.log.info( "Cresting DB file" )
+            with open( main.dbFileName, "w+" ) as dbFile:
+                dbFile.write( "" )
+
+            stepResult = main.testSetUp.gitPulling()
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
+
+        main.commit = main.commit.split( " " )[ 1 ]
+
+        with open( main.dbFileName, "a" ) as dbFile:
             temp = "'" + main.commit + "',"
             temp += "'" + nic + "',"
-            dbFile.write(temp)
+            dbFile.write( temp )
             dbFile.close()
+    def CASE1( self ):
+        # main.scale[ 0 ] determines the current number of ONOS controller
+        main.testSetUp.getNumCtrls( True )
+        main.testSetUp.envSetup( includeGitPull=False, makeMaxNodes=False )
 
     def CASE2( self, main ):
         """
@@ -103,118 +89,9 @@ class SCPFhostLat:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.log.info( "Starting up %s node(s) ONOS cluster" % main.numCtrls)
-        main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating environment setup" )
-
-        for i in range( main.numCtrls ):
-            main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            main.ONOSbench.onosKill( main.ONOSip[ i ] )
-
-        main.log.info( "NODE COUNT = %s" % main.numCtrls)
-
-        tempOnosIp = []
-        for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[i] )
-
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
-                                       "temp",
-                                       main.Mininet1.ip_address,
-                                       main.apps,
-                                       tempOnosIp,
-                                       main.ONOScli1.karafUser )
-
-        main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
-                                        "environment",
-                                 onfail="Failed to apply cell to environment " )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        stepResult = packageResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully created ONOS package",
-                                 onfail="Failed to create ONOS package" )
-
-        main.step( "Uninstall ONOS package on all Nodes" )
-        uninstallResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            main.log.info( "Uninstalling package on ONOS Node IP: " + main.ONOSip[i] )
-            u_result = main.ONOSbench.onosUninstall( main.ONOSip[i] )
-            utilities.assert_equals( expect=main.TRUE, actual=u_result,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            uninstallResult = ( uninstallResult and u_result )
-
-        main.step( "Install ONOS package on all Nodes" )
-        installResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            main.log.info( "Installing package on ONOS Node IP: " + main.ONOSip[i] )
-            i_result = main.ONOSbench.onosInstall( node=main.ONOSip[i] )
-            utilities.assert_equals( expect=main.TRUE, actual=i_result,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            installResult = installResult and i_result
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
-
-        main.step( "Start ONOS CLI on all nodes" )
-        cliResult = main.TRUE
-        main.step(" Start ONOS cli using thread ")
-        time.sleep( main.startUpSleep )
-        startCliResult  = main.TRUE
-        pool = []
-
-        for i in range( int( main.numCtrls) ):
-            t = main.Thread( target=main.CLIs[i].startOnosCli,
-                             threadID=main.threadID,
-                             name="startOnosCli",
-                             args=[ main.ONOSip[i] ],
-                             kwargs = {"onosStartTimeout":main.timeout} )
-            pool.append(t)
-            t.start()
-            main.threadID = main.threadID + 1
-        for t in pool:
-            t.join()
-            startCliResult = startCliResult and t.result
-        time.sleep( main.startUpSleep )
+        main.testSetUp.ONOSSetUp( main.Mininet1, True,
+                                  cellName=main.cellName, killRemoveMax=False,
+                                  CtrlsSet=False )
 
     def CASE11( self, main ):
         main.log.info( "set and configure Application" )
@@ -224,7 +101,7 @@ class SCPFhostLat:
         main.step( "Activating org.onosproject.proxyarp" )
         appStatus = utilities.retry( main.ONOSrest1.activateApp,
                                      main.FALSE,
-                                     ['org.onosproject.proxyarp'],
+                                     [ 'org.onosproject.proxyarp' ],
                                      sleep=3,
                                      attempts=3 )
         utilities.assert_equals( expect=main.TRUE,
@@ -246,7 +123,7 @@ class SCPFhostLat:
                                  onpass="Successfully set DefaultTopologyProvider",
                                  onfail="Failed to set DefaultTopologyProvider" )
 
-        time.sleep(main.startUpSleep)
+        time.sleep( main.startUpSleep)
         main.step('Starting mininet topology')
         mnStatus = main.Mininet1.startNet(args='--topo=linear,1')
         utilities.assert_equals( expect=main.TRUE,
@@ -261,7 +138,7 @@ class SCPFhostLat:
                                  onpass="Successfully assigned switches to masters",
                                  onfail="Failed assign switches to masters" )
 
-        time.sleep(main.startUpSleep)
+        time.sleep( main.startUpSleep)
 
     def CASE20(self, main):
         """
@@ -278,72 +155,80 @@ class SCPFhostLat:
         import requests
         import os
         import numpy
-
+        try:
+            from tests.dependencies.utils import Utils
+        except ImportError:
+            main.log.error( "Utils not found exiting the test" )
+            main.exit()
+        try:
+            main.Utils
+        except ( NameError, AttributeError ):
+            main.Utils = Utils()
         # Host adding measurement
         assertion = main.TRUE
 
         main.log.report('Latency of adding one host to ONOS')
-        main.log.report('First ' + str(main.iterIgnore) + ' iterations ignored' + ' for jvm warmup time')
-        main.log.report('Total iterations of test: ' + str(main.numlter))
+        main.log.report('First ' + str( main.iterIgnore ) + ' iterations ignored' + ' for jvm warmup time')
+        main.log.report('Total iterations of test: ' + str( main.numlter ) )
 
         addingHostTime = []
         metricsResultList = []
-        for i in range(0, int(main.numlter)):
-            main.log.info('Clean up data file')
-            with open(main.tsharkResultPath, "w") as dbFile:
-                dbFile.write("")
+        for i in range( 0, int( main.numlter ) ):
+            main.log.info( 'Clean up data file' )
+            with open( main.tsharkResultPath, "w" ) as dbFile:
+                dbFile.write( "" )
 
             main.log.info('Starting tshark capture')
-            main.ONOSbench.tsharkGrep(main.tsharkPacketIn, main.tsharkResultPath)
-            time.sleep(main.measurementSleep)
+            main.ONOSbench.tsharkGrep( main.tsharkPacketIn, main.tsharkResultPath )
+            time.sleep( main.measurementSleep )
 
             main.log.info('host 1 arping...')
             main.Mininet1.arping(srcHost='h1', dstHost='10.0.0.2')
 
-            time.sleep(main.measurementSleep)
+            time.sleep( main.measurementSleep )
 
             main.log.info('Stopping all Tshark processes')
             main.ONOSbench.tsharkStop()
 
-            time.sleep(main.measurementSleep)
+            time.sleep( main.measurementSleep )
 
             # Get tshark output
-            with open(main.tsharkResultPath, "r") as resultFile:
+            with open( main.tsharkResultPath, "r" ) as resultFile:
                 resultText = resultFile.readline()
-                main.log.info('Capture result:' + resultText)
+                main.log.info( 'Capture result:' + resultText )
                 resultText = resultText.split(' ')
-                if len(resultText) > 1:
-                    tsharkResultTime = float(resultText[1]) * 1000.0
+                if len( resultText ) > 1:
+                    tsharkResultTime = float( resultText[ 1 ] ) * 1000.0
                 else:
-                    main.log.error('Tshark output file for packet_in' + ' returned unexpected results')
+                    main.log.error( 'Tshark output file for packet_in' + ' returned unexpected results' )
                     hostTime = 0
                     caseResult = main.FALSE
                 resultFile.close()
             # Compare the timestemps, and get the lowest one.
             temp = 0;
             # Get host event timestamps from each nodes
-            for node in range (0, main.numCtrls):
-                metricsResult = json.loads(main.CLIs[node].topologyEventsMetrics())
-                metricsResult = metricsResult.get(main.hostTimestampKey).get("value")
-                main.log.info("ONOS topology event matrics timestemp: {}".format(str(metricsResult)) )
+            for node in range ( 0, main.numCtrls ):
+                metricsResult = json.loads( main.CLIs[ node ].topologyEventsMetrics() )
+                metricsResult = metricsResult.get( main.hostTimestampKey ).get( "value" )
+                main.log.info( "ONOS topology event matrics timestemp: {}".format( str( metricsResult ) ) )
 
                 if temp < metricsResult:
                     temp = metricsResult
                 metricsResult = temp
 
-            addingHostTime.append(float(metricsResult) - tsharkResultTime)
-            main.log.info("Result of this iteration: {}".format( str( float(metricsResult) - tsharkResultTime) ))
+            addingHostTime.append( float( metricsResult ) - tsharkResultTime )
+            main.log.info( "Result of this iteration: {}".format( str( float( metricsResult ) - tsharkResultTime) ) )
             # gethost to remove
             gethost = main.ONOSrest1.hosts()
             HosttoRemove = []
-            HosttoRemove.append( json.loads( gethost[1:len(gethost)-1] ).get('id') )
-            main.CLIs[0].removeHost(HosttoRemove)
+            HosttoRemove.append( json.loads( gethost[ 1:len( gethost )-1 ] ).get( 'id' ) )
+            main.CLIs[0].removeHost( HosttoRemove )
 
-        main.log.info("Result List: {}".format(addingHostTime))
+        main.log.info( "Result List: {}".format( addingHostTime ) )
 
         # calculate average latency from each nodes
-        averageResult = numpy.average(addingHostTime)
-        main.log.info("Average Latency: {}".format(averageResult))
+        averageResult = numpy.average( addingHostTime )
+        main.log.info( "Average Latency: {}".format( averageResult ) )
 
         # calculate std
         stdResult = numpy.std(addingHostTime)
@@ -368,5 +253,4 @@ class SCPFhostLat:
                 onpass='Host latency test successful',
                 onfail='Host latency test failed')
 
-        main.Mininet1.stopNet()
-        del main.scale[0]
+        main.Utils.mininetCleanup( main.Mininet1 )

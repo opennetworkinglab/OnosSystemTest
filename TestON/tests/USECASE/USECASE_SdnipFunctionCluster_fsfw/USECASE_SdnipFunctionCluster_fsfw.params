@@ -19,7 +19,10 @@
         <fsfwPort>6633</fsfwPort>
         <port1>6653</port1>
     </CTRL>
-
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
     <DEPENDENCY>
         <path>/USECASE/USECASE_SdnipFunctionCluster_fsfw/dependencies/</path>
         <topology>USECASE_SdnipI2MN_Cluster.py</topology>

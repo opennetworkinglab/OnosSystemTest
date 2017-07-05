@@ -38,8 +38,10 @@
         <cellName>HA</cellName>
         <appString>drivers,openflow,proxyarp,mobility</appString>
     </ENV>
-    <Git> False </Git>
-    <branch> master </branch>
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
     <num_controllers> 7 </num_controllers>
     <tcpdump> False </tcpdump>
 

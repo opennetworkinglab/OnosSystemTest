@@ -48,114 +48,31 @@ class FUNCvirNetNB:
         import os
         main.log.info( "ONOS Single node Start " +
                        "VirtualNet Northbound test - initialization" )
-        main.case( "Setting up test environment" )
-        main.caseExplanation  = "Setup the test environment including " +\
-                                "installing ONOS,start ONOS."
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
+            main.apps = main.params['ENV']['cellApps']
+            cellName = main.params['ENV']['cellName']
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            stepResult = main.testSetUp.envSetup( hasNode=True )
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
-        # load some variables from the params file
-        PULLCODE = False
-        if main.params[ 'GIT' ][ 'pull' ] == 'True':
-            PULLCODE = True
-        gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        main.maxNodes = 1
 
-        main.step( "Create cell file and apply to environment" )
-        cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
-                                       main.Mininet1.ip_address,
-                                       cellAppString, ipList, main.ONOScli1.karafUser )
+        cliResults = main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName, removeLog=True )
 
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to " +
-                                        "environment",
-                                 onfail="Failed to apply cell to environment " )
-
-        #FIXME:this is short term fix
-        main.log.info( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-
-        main.CLIs = []
-        main.nodes = []
-        main.numCtrls = 1
-        main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-
-        for i in range( 1, main.numCtrls + 1 ):
-            try:
-                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-                main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
-                ipList.append( main.nodes[ -1 ].ip_address )
-            except AttributeError:
-                break
-
-        main.log.info( "Uninstalling ONOS" )
-        for node in main.nodes:
-            main.ONOSbench.onosUninstall( node.ip_address )
-
-        #Make sure ONOS is DEAD
-        main.log.info( "Killing any ONOS processes" )
-        killResults = main.TRUE
-        for node in main.nodes:
-            killed = main.ONOSbench.onosKill( node.ip_address )
-            killResults = killResults and killed
-
-        gitPullResult = main.TRUE
-        main.log.info( "Git checkout and pull " + gitBranch )
-        if PULLCODE:
-            main.ONOSbench.gitCheckout( gitBranch )
-            gitPullResult = main.ONOSbench.gitPull()
-            # values of 1 or 3 are good
-            utilities.assert_lesser( expect=0, actual=gitPullResult,
-                                      onpass="Git pull successful",
-                                      onfail="Git pull failed" )
-        main.ONOSbench.getVersion( report=True )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=packageResult,
-                                 onpass="Successfully created ONOS package",
-                                 onfail="Failed to create ONOS package " )
-        time.sleep( main.startUpSleep )
-
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=main.nodes[ 0 ].ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
-                                 onpass="ONOS install successful",
-                                 onfail="ONOS install failed" )
-        time.sleep( main.startUpSleep )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.ONOSbench.onosSecureSSH( node=main.nodes[ 0 ].ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        main.step( "Checking if ONOS is up yet" )
-
-        for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( main.nodes[ 0 ].ip_address )
-            if onos1Isup:
-                break
-        utilities.assert_equals( expect=main.TRUE, actual=onos1Isup,
-                                 onpass="ONOS startup successful",
-                                 onfail="ONOS startup failed" )
-        time.sleep( main.startUpSleep )
-
-        main.step( "Starting ONOS CLI sessions" )
-
-        print main.nodes[ 0 ].ip_address
-        cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli startup successful",
-                                 onfail="ONOS cli startup failed" )
-        time.sleep( main.startUpSleep )
+        if cliResults == main.FALSE:
+            main.log.error( "Failed to start ONOS, stopping test" )
+            main.cleanup()
+            main.exit()
 
         main.step( "App Ids check" )
         appCheck = main.ONOScli1.appToIDCheck()
@@ -165,11 +82,6 @@ class FUNCvirNetNB:
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
-
-        if cliResults == main.FALSE:
-            main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanup()
-            main.exit()
 
         main.step( "Install org.onosproject.vtn app" )
         installResults = main.ONOScli1.activateApp( "org.onosproject.vtn" )

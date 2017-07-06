@@ -831,6 +831,14 @@ def verifyMail( options ):
     # Mail-From account password
     main.senderPwd = main.config['config'].get( 'mail_pass' )
 
+def evalTestCase( tempList ):
+    tList = []
+    for tcase in tempList:
+        if isinstance( tcase, list ):
+            tList.extend( evalTestCase( tcase ) )
+        else:
+            tList.extend( [tcase] )
+    return tList
 
 def verifyTestCases( options ):
     # Getting Test cases list
@@ -842,20 +850,7 @@ def verifyTestCases( options ):
     else:
         if 'testcases' in main.params.keys():
             temp = eval( main.params['testcases'] + "," )
-            list1 = []
-            if isinstance( temp[0], list ):
-                for test in temp:
-                    for testcase in test:
-                        if isinstance( testcase, int ):
-                            testcase = [testcase]
-                        list1.extend( testcase )
-            else:
-                temp = list( temp )
-                for testcase in temp:
-                    if isinstance( testcase, int ):
-                        testcase = [testcase]
-                    list1.extend( testcase )
-            main.testcases_list = list1
+            main.testcases_list = evalTestCase( list( temp ) )
         else:
             print "Testcases not specifed in params, please provide in " +\
                   "params file or 'testcases' commandline argument"

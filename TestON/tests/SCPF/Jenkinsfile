@@ -126,7 +126,9 @@ def SCPFTest( testName ) {
                     cd ~
                     export PATH=$PATH:onos/tools/test/bin
 
-                    stc teardown
+                    timeout 240 stc shutdown
+                    timeout 240 stc teardown
+                    timeout 240 stc shutdown
 
                     cd ~/OnosSystemTest/TestON/bin
                     git log |head

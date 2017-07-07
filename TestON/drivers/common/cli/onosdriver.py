@@ -2490,12 +2490,11 @@ class OnosDriver( CLI ):
             cmd = "onos-netcfg {0} {1}{2}".format( controllerIp, path, fileName )
             main.log.info( "Sending: " + cmd )
             main.ONOSbench.handle.sendline( cmd )
+            main.ONOSbench.handle.expect( self.prompt )
             handle = self.handle.before
-            if "Error" in handle:
-                main.log.error( self.name + ":    " + self.handle.before )
+            if "Error" in handle or "No such file or directory" in handle or "curl: " in handle:
+                main.log.error( self.name + ":    " + handle + self.handle.after )
                 return main.FALSE
-            else:
-                self.handle.expect( self.prompt )
             return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

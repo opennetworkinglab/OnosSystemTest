@@ -1,0 +1,47 @@
+<PARAMS>
+
+    <testcases>1,2,50,100,200,300,310,400</testcases>
+
+    <num_controllers>3</num_controllers>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <path>/tests/USECASE/VPLS/VPLSfailsafe/dependencies/</path>
+
+    <wrapper2>vpls</wrapper2>
+
+    <DEPENDENCY>
+        <wrapper1>startUp</wrapper1>
+        <topology>~/onos/tools/test/topos/vpls.json</topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>vpls</cellName>
+        <cellApps>drivers,openflow,vpls</cellApps>
+        <cellUser>sdn</cellUser>
+    </ENV>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <vpls>
+        <name>org.onosproject.vpls</name>
+        <hosts>6</hosts>
+    </vpls>
+
+    <SLEEP>
+        <startup>10</startup>
+        <netcfg>10</netcfg>
+        <killnode>10</killnode>
+    </SLEEP>
+
+    <RETRY>
+        <sleep>2</sleep>
+        <attempts>6</attempts>
+    </RETRY>
+
+</PARAMS>

@@ -1,0 +1,134 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <nodes>1</nodes>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOScli1>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <karaf_username></karaf_username>
+                <karaf_password></karaf_password>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOScli1>
+
+        <ONOScli2>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOScli2>
+
+        <ONOScli3>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOScli3>
+
+        <ONOS1>
+            <host>OC1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>9</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOS1>
+
+        <ONOS2>
+            <host>OC2</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>10</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOS2>
+
+        <ONOS3>
+            <host>OC3</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>11</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOS3>
+
+        <ONOSrest1>
+            <host>OC1</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOSrest1>
+
+        <ONOSrest2>
+            <host>OC2</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOSrest2>
+
+        <ONOSrest3>
+            <host>OC3</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </ONOSrest3>
+
+
+        <Mininet1>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>MininetCliDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS>
+                <home>~/mininet/custom/</home>
+                <prompt></prompt>
+            </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

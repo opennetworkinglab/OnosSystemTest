@@ -85,9 +85,9 @@ class VPLSBasic:
                             main.Mininet1.home,
                             direction="to" )
         topo = " --custom " + main.Mininet1.home + topoFile + " --topo " + topoName
-        args = " --switch ovs,protocols=OpenFlow13 --controller=remote"
+        args = " --switch ovs,protocols=OpenFlow13"
         for node in main.nodes:
-            args += ",ip=" + node.ip_address
+            args += " --controller=remote,ip=" + node.ip_address
         mnCmd = "sudo mn" + topo + args
         mnResult = main.Mininet1.startNet( mnCmd=mnCmd )
         utilities.assert_equals( expect=main.TRUE, actual=mnResult,
@@ -223,6 +223,7 @@ class VPLSBasic:
         import os.path
         from tests.USECASE.VPLS.dependencies import vpls
 
+        main.vpls = vpls
         pprint = main.ONOSrest1.pprint
         hosts = int( main.params[ 'vpls' ][ 'hosts' ] )
         SLEEP = int( main.params[ 'SLEEP' ][ 'netcfg' ] )
@@ -237,14 +238,19 @@ class VPLSBasic:
             pingResult = main.Mininet1.pingHost( SRC=src, TARGET=dst )
 
         main.step( "Load VPLS configurations" )
-        # TODO: load from params
         fileName = main.params[ 'DEPENDENCY' ][ 'topology' ]
         app = main.params[ 'vpls' ][ 'name' ]
-        # TODO make this a function?
-        main.ONOSbench.handle.sendline( "onos-netcfg $OC1 " + fileName )
+
+        loadVPLSResult = main.ONOSbench.onosNetCfg( main.nodes[ 0 ].ip_address, "", fileName )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=loadVPLSResult,
+                                 onpass="Loaded vpls configuration.",
+                                 onfail="Failed to load vpls configuration." )
+
         # Time for netcfg to load data
         time.sleep( SLEEP )
         # 'Master' copy of test configuration
+
         try:
             with open( os.path.expanduser( fileName ) ) as dataFile:
                 originalCfg = json.load( dataFile )
@@ -283,6 +289,13 @@ class VPLSBasic:
 
         # Run a bunch of checks to verify functionality based on configs
         vpls.verify( main )
+
+        main.step( "Loading vpls configuration in case any configuration was missed." )
+        loadVPLSResult = main.ONOSbench.onosNetCfg( main.nodes[ 0 ].ip_address, "", fileName )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=loadVPLSResult,
+                                 onpass="Loaded vpls configuration.",
+                                 onfail="Failed to load vpls configuration." )
 
     def CASE3( self, main ):
         """

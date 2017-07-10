@@ -2474,12 +2474,12 @@ class OnosDriver( CLI ):
 
         return main.TRUE if onosStatus else main.FALSE
 
-    def onosNetCfg( self, controllerIps, path, fileName ):
+    def onosNetCfg( self, controllerIp, path, fileName ):
         """
         Push a specified json file to ONOS through the onos-netcfg service
 
         Required:
-        controllerIps - the Ips of the ONOS nodes in the cluster
+        controllerIp - the Ip of the ONOS node in the cluster
         path - the location of the file to be sent
         fileName - name of the json file to be sent
 
@@ -2487,16 +2487,15 @@ class OnosDriver( CLI ):
         there is an error.
         """
         try:
-            for ip in controllerIps:
-                cmd = "onos-netcfg {0} {1}{2}.json".format( ip, path, fileName )
-                main.log.info( "Sending: " + cmd )
-                main.ONOSbench.handle.sendline( cmd )
-                handle = self.handle.before
-                if "Error" in handle:
-                    main.log.error( self.name + ":    " + self.handle.before )
-                    return main.FALSE
-                else:
-                    self.handle.expect( self.prompt )
+            cmd = "onos-netcfg {0} {1}{2}".format( controllerIp, path, fileName )
+            main.log.info( "Sending: " + cmd )
+            main.ONOSbench.handle.sendline( cmd )
+            handle = self.handle.before
+            if "Error" in handle:
+                main.log.error( self.name + ":    " + self.handle.before )
+                return main.FALSE
+            else:
+                self.handle.expect( self.prompt )
             return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

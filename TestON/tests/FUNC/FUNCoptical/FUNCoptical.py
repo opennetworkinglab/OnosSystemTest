@@ -222,8 +222,12 @@ class FUNCoptical:
         """
         main.case( "Mininet with Linc-OE startup" )
         main.step( "Push TopoDDriver.json to ONOS through onos-netcfg" )
-        topoResult = main.ONOSbench.onosNetCfg( controllerIps=main.activeONOSip, path=main.dependencyPath,
-                                   fileName="TopoDDriver" )
+        topoResult = True
+        for ip in main.activeONOSip:
+            topoResult = topoResult and \
+                         main.ONOSbench.onosNetCfg(controllerIp=ip, path=main.dependencyPath,
+                                                   fileName="TopoDDriver.json")
+
         #Exit if topology did not load properly
         if not topoResult:
             main.cleanup()

@@ -44,6 +44,8 @@ def verify( main ):
     NOTE: This requires the expected/sent network config json for the vpls
           application be stored in main.vplsConfig
     """
+
+
     # Variables
     app = main.params[ 'vpls' ][ 'name' ]
     pprint = main.ONOSrest1.pprint
@@ -94,31 +96,8 @@ def verify( main ):
                              onpass="VPLS successfully configured",
                              onfail="VPLS not configured correctly" )
 
-    # FIXME This doesn't work, some will be withdrawn if interfaces are removed
-    # TODO: if encapsulation is set, look for that
-    # TODO: can we look at the intent keys?
-    """
-    main.step( "Check intent states" )
-    # Print the intent states
-    intents = main.CLIs[ 0 ].intents()
-    count = 0
-    while count <= 5:
-        installedCheck = True
-        try:
-            for intent in json.loads( intents ):
-                state = intent.get( 'state', None )
-                if "INSTALLED" not in state:
-                    installedCheck = False
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing intents" )
-        if installedCheck:
-            break
-        count += 1
-    utilities.assert_equals( expect=True,
-                             actual=installedCheck ,
-                             onpass="All Intents in installed state",
-                             onfail="Not all Intents in installed state" )
-    """
+    checkIntentState( main )
+
     main.step( "Check connectivity" )
     connectivityCheck = True
     hosts = int( main.params[ 'vpls' ][ 'hosts' ] )
@@ -147,3 +126,90 @@ def verify( main ):
                              actual=connectivityCheck,
                              onpass="Connectivity is as expected",
                              onfail="Connectivity is not as expected" )
+
+
+
+# TODO: if encapsulation is set, look for that
+# TODO: can we look at the intent keys?
+
+def checkIntentState( main , bl=[] ):
+    # Print the intent states
+    intents = main.CLIs[ 0 ].intents()
+    count = 0
+    while count <= 5:
+        installedCheck = True
+        try:
+            i = 1
+            for intent in json.loads( intents ):
+                state = intent.get( 'state', None )
+                if "INSTALLED" not in state or ( "WITHDRAWN" not in state and "h" + str( i ) in bl ):
+                    installedCheck = False
+                i += 1
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing intents" )
+        if installedCheck:
+            break
+        count += 1
+    return installedCheck
+
+
+def getVplsHashtable( main, bl=[] ):
+    """
+    Returns a hashtable of vpls to hosts
+    """
+    result = {}
+    vplsConfig = main.vplsConfig
+    for v in vplsConfig:
+        interfaces = v[ 'interfaces' ][:]
+        for i in bl:
+            if i in interfaces:
+                interfaces.remove( i )
+        result[ v[ 'name' ] ] = interfaces
+    return result
+
+
+def testConnectivityVpls( main, blacklist=[], isNodeUp=True ):
+
+    # Can't do intent check when onos node is stopped/killed yet
+    if isNodeUp:
+        main.step( "Check intent states" )
+        intentsCheck = utilities.retry( f=checkIntentState,
+                                        retValue=False,
+                                        args=( main, blacklist ),
+                                        sleep=main.timeSleep,
+                                        attempts=main.numAttempts )
+
+        utilities.assert_equals( expect=True,
+                                 actual=intentsCheck,
+                                 onpass="All Intents in installed state",
+                                 onfail="Not all Intents in installed state" )
+
+    main.step( "Testing connectivity..." )
+
+    vplsHashtable = getVplsHashtable( main, blacklist )
+    main.log.debug( "vplsHashtable: " + str( vplsHashtable ) )
+    result = True
+    for key in vplsHashtable:
+        pingResult = utilities.retry( f=main.Mininet1.pingallHosts,
+                                      retValue=False,
+                                      args=( vplsHashtable[ key ], ),
+                                      sleep=main.timeSleep,
+                                      attempts=main.numAttempts )
+        result = result and pingResult
+
+    utilities.assert_equals( expect=main.TRUE, actual=result,
+                             onpass="Connectivity succeeded.",
+                             onfail="Connectivity failed." )
+    return result
+
+
+def compareApps( main ):
+    result = True
+    first = None
+    for cli in main.CLIs:
+        currentApps = cli.apps( summary=True, active=True )
+        if not result:
+            first = currentApps
+        else:
+            result = result and ( currentApps == first )
+    return result

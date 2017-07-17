@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
 Created on 22-Oct-2012
-Modified 2016 by ON.Lab
+Modified 2017 by ON.Lab
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -35,6 +35,7 @@ import new
 import xmldict
 import importlib
 import threading
+import pdb
 module = new.module( "test" )
 import openspeak
 import subprocess
@@ -747,7 +748,9 @@ class TestON:
                     # threads as well
                     print str( thread.getName() ) +\
                           ' could not be terminated'
+        os.system( "stty sane" )  # fix format if necessary
         sys.exit()
+
 
     def stop( self, email=False ):
         """
@@ -763,13 +766,13 @@ class TestON:
                 if '@' in email:
                     main.mail = email
                 utilities.send_warning_email()
-            self.log.error( "Test execution suspended. Press Ctrl-D to "
-                            "resume or Ctrl-C to exit the test" )
-            # NOTE: Ctrl-D needs to be entered on a new line
-            while True:
-                # TODO: we could give the user an interactive prompt where
-                #       they could call functions
-                raw_input()
+            self.log.debug( "Test execution suspended. \n"
+                            "- Type 'c' to resume the test.\n"
+                            "- Type Ctrl-C to exit the test.\n"
+                            "- Enter interactive python interpreter commands.\n"
+                            "\t- ie: main.Mininet1.pingall()\n"
+                            "- Type 'help' for help with pdb." )
+            pdb.set_trace()
         except EOFError:
             return
         # Pass all other exceptions up to caller

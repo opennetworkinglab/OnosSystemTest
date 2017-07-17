@@ -1,7 +1,7 @@
 #/usr/bin/env python
 '''
 Created on 07-Jan-2013
-Modified 2015 by ON.Lab
+Copyright 2013 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,

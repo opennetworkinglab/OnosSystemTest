@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 '''
 Created on 26-Nov-2012
+Copyright 2012 Open Networking Foundation (ONF)
 
 @author: Raghav Kashyap(raghavkashyap@paxterrasolutions.com)
 
+Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

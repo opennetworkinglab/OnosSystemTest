@@ -27,160 +27,59 @@ class CHOtest:
         import imp
 
         global intentState
-        main.threadID = 0
-        main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
-        main.dependencyPath = main.testOnDirectory + \
-                              main.params[ 'DEPENDENCY' ][ 'path' ]
-        wrapperFile = main.params[ 'DEPENDENCY' ][ 'wrapper' ]
-        main.numCtrls = main.params[ 'CTRL' ][ 'numCtrl' ]
-        git_pull = main.params[ 'GIT' ][ 'autoPull' ]
-        git_branch = main.params[ 'GIT' ][ 'branch' ]
-        karafTimeout = main.params[ 'CTRL' ][ 'karafCliTimeout' ]
-        main.linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        main.checkIntentsDelay = int( main.params[ 'timers' ][ 'CheckIntentDelay' ] )
-        main.pingSleep = int( main.params[ 'timers' ][ 'pingSleep' ] )
-        main.topoCheckDelay = int( main.params[ 'timers' ][ 'topoCheckDelay' ] )
-        main.pingTimeoutSmallTopo = int( main.params[ 'timers' ][ 'pingTimeoutSmallTopo' ] )
-        main.pingTimeoutLargeTopo = int( main.params[ 'timers' ][ 'pingTimeoutLargeTopo' ] )
-        main.remHostDelay = int( main.params[ 'timers' ][ 'remHostDelay' ] )
-        main.remDevDelay = int( main.params[ 'timers' ][ 'remDevDelay' ] )
-        main.failSwitch = main.params[ 'TEST' ][ 'pauseTest' ]
-        main.emailOnStop = main.params[ 'TEST' ][ 'email' ]
-        main.intentCheck = int( main.params[ 'TEST' ][ 'intentChecks' ] )
-        main.linkCheck = int( main.params[ 'TEST' ][ 'linkChecks' ] )
-        main.topoCheck = int( main.params[ 'TEST' ][ 'topoChecks' ] )
-        main.numPings = int( main.params[ 'TEST' ][ 'numPings' ] )
-        main.newTopo = ""
-        main.CLIs = []
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
 
-        main.failSwitch = True if main.failSwitch == "on" else False
-        main.emailOnStop = True if main.emailOnStop == "on" else False
+        try:
+            time1 = time.time()
+            main.dependencyPath = main.testOnDirectory + \
+                                  main.params[ 'DEPENDENCY' ][ 'path' ]
+            wrapperFile = main.params[ 'DEPENDENCY' ][ 'wrapper' ]
+            main.numCtrls = int ( main.params[ 'CTRL' ][ 'numCtrl' ] )
+            main.maxNodes = main.numCtrls
+            karafTimeout = main.params[ 'CTRL' ][ 'karafCliTimeout' ]
+            main.linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+            main.checkIntentsDelay = int( main.params[ 'timers' ][ 'CheckIntentDelay' ] )
+            main.pingSleep = int( main.params[ 'timers' ][ 'pingSleep' ] )
+            main.topoCheckDelay = int( main.params[ 'timers' ][ 'topoCheckDelay' ] )
+            main.pingTimeoutSmallTopo = int( main.params[ 'timers' ][ 'pingTimeoutSmallTopo' ] )
+            main.pingTimeoutLargeTopo = int( main.params[ 'timers' ][ 'pingTimeoutLargeTopo' ] )
+            main.remHostDelay = int( main.params[ 'timers' ][ 'remHostDelay' ] )
+            main.remDevDelay = int( main.params[ 'timers' ][ 'remDevDelay' ] )
+            main.failSwitch = main.params[ 'TEST' ][ 'pauseTest' ]
+            main.emailOnStop = main.params[ 'TEST' ][ 'email' ]
+            main.intentCheck = int( main.params[ 'TEST' ][ 'intentChecks' ] )
+            main.linkCheck = int( main.params[ 'TEST' ][ 'linkChecks' ] )
+            main.topoCheck = int( main.params[ 'TEST' ][ 'topoChecks' ] )
+            main.numPings = int( main.params[ 'TEST' ][ 'numPings' ] )
+            main.newTopo = ""
 
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            main.failSwitch = True if main.failSwitch == "on" else False
+            main.emailOnStop = True if main.emailOnStop == "on" else False
 
-        main.CHOtestFunctions = imp.load_source( wrapperFile,
-                                                 main.dependencyPath +
-                                                 wrapperFile +
-                                                 ".py" )
+            main.CHOtestFunctions = imp.load_source( wrapperFile,
+                                                     main.dependencyPath +
+                                                     wrapperFile +
+                                                     ".py" )
 
-        main.case( "Set up test environment" )
-        main.log.report( "Set up test environment" )
-        main.log.report( "_______________________" )
+            stepResult = main.testSetUp.envSetup()
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
 
-        main.step( "Apply Cell environment for ONOS" )
-        if ( main.onoscell ):
-            cellName = main.onoscell
-            cell_result = main.ONOSbench.setCell( cellName )
-            utilities.assert_equals( expect=main.TRUE, actual=cell_result,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-        else:
-            main.log.error( "Please provide onoscell option at TestON CLI to run CHO tests" )
-            main.log.error( "Example: ~/TestON/bin/cli.py run OnosCHO onoscell <cellName>" )
+        main.testSetUp.evnSetupConclusion( stepResult )
+
+        if not main.onoscell :
+            main.log.error("Please provide onoscell option at TestON CLI to run CHO tests")
+            main.log.error("Example: ~/TestON/bin/cli.py run CHOtest onoscell <cellName>")
             main.cleanup()
             main.exit()
 
-        main.step( "Git checkout and pull " + git_branch )
-        if git_pull == 'on':
-            checkout_result = main.ONOSbench.gitCheckout( git_branch )
-            pull_result = main.ONOSbench.gitPull()
-            cp_result = ( checkout_result and pull_result )
-        else:
-            checkout_result = main.TRUE
-            pull_result = main.TRUE
-            main.log.info( "Skipped git checkout and pull" )
-            cp_result = ( checkout_result and pull_result )
-        utilities.assert_equals( expect=main.TRUE, actual=cp_result,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        main.ONOSbench.getVersion( report=True )
-
-        main.step( "Create ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        utilities.assert_equals( expect=main.TRUE, actual=packageResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        main.step( "Uninstall ONOS package on all Nodes" )
-        uninstallResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            main.log.info( "Uninstalling package on ONOS Node IP: " + main.onosIPs[ i ] )
-            u_result = main.ONOSbench.onosUninstall( main.onosIPs[ i ] )
-            utilities.assert_equals( expect=main.TRUE, actual=u_result,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            uninstallResult = ( uninstallResult and u_result )
-
-        main.step( "Install ONOS package on all Nodes" )
-        installResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            main.log.info( "Installing package on ONOS Node IP: " + main.onosIPs[ i ] )
-            i_result = main.ONOSbench.onosInstall( node=main.onosIPs[ i ] )
-            utilities.assert_equals( expect=main.TRUE, actual=i_result,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            installResult = ( installResult and i_result )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( 5 )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
-
-        main.step( "Start ONOS CLI on all nodes" )
-        cliResult = main.TRUE
-        main.step( " Start ONOS cli using thread " )
-        startCliResult = main.TRUE
-        pool = []
-        time1 = time.time()
-        for i in range( int( main.numCtrls ) ):
-            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
-                             threadID=main.threadID,
-                             name="startOnosCli",
-                             args=[ main.onosIPs[ i ], karafTimeout ] )
-            pool.append( t )
-            t.start()
-            main.threadID = main.threadID + 1
-        for t in pool:
-            t.join()
-            startCliResult = startCliResult and t.result
-        time2 = time.time()
-
-        if not startCliResult:
-            main.log.info( "ONOS CLI did not start up properly" )
-            main.cleanup()
-            main.exit()
-        else:
-            main.log.info( "Successful CLI startup" )
-            startCliResult = main.TRUE
+        setupResult = main.testSetUp.ONOSSetUp( Mininet=main.Mininet1, newCell=False, cellName=main.onoscell )
 
         main.step( "Set IPv6 cfg parameters for Neighbor Discovery" )
         time.sleep( 30 )
@@ -191,8 +90,8 @@ class CHOtest:
                                  onpass="ipv6NeighborDiscovery cfg is set to true",
                                  onfail="Failed to cfg set ipv6NeighborDiscovery" )
 
-        case1Result = installResult and uninstallResult and statusResult and startCliResult and cfgResult
-        main.log.info( "Time for connecting to CLI: %2f seconds" % ( time2 - time1 ) )
+        case1Result = setupResult and cfgResult
+        main.log.info( "Time for connecting to CLI: %2f seconds" % ( time.time() - time1 ) )
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Set up test environment PASS",
                                  onfail="Set up test environment FAIL" )
@@ -221,7 +120,7 @@ class CHOtest:
         main.step( "Start Mininet with Att topology" )
         main.newTopo = main.params[ 'TOPO1' ][ 'topo' ]
         mininetDir = main.Mininet1.home + "/custom/"
-        topoPath = main.testDir + "/" + main.TEST + "/dependencies/" + main.newTopo
+        topoPath = main.dependencyPath + main.newTopo
         main.ONOSbench.secureCopy( main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to" )
         topoPath = mininetDir + main.newTopo
         startStatus = main.Mininet1.startNet( topoFile=topoPath )
@@ -230,13 +129,13 @@ class CHOtest:
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
                 sw="s" + str( i ),
-                ip=main.onosIPs )
+                ip=main.ONOSip )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.onosIPs[ 0 ], response ):
+            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
                 switch_mastership = switch_mastership and main.TRUE
             else:
                 switch_mastership = main.FALSE
@@ -286,7 +185,7 @@ class CHOtest:
 
         main.step( "Start Mininet with Chordal topology" )
         mininetDir = main.Mininet1.home + "/custom/"
-        topoPath = main.testDir + "/" + main.TEST + "/dependencies/" + main.newTopo
+        topoPath = main.dependencyPath + main.newTopo
         main.ONOSbench.secureCopy( main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to" )
         topoPath = mininetDir + main.newTopo
         startStatus = main.Mininet1.startNet( topoFile=topoPath )
@@ -296,13 +195,13 @@ class CHOtest:
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
                 sw="s" + str( i ),
-                ip=main.onosIPs )
+                ip=main.ONOSip )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.onosIPs[ 0 ], response ):
+            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
                 switch_mastership = switch_mastership and main.TRUE
             else:
                 switch_mastership = main.FALSE
@@ -348,7 +247,7 @@ class CHOtest:
 
         main.step( "Start Mininet with Spine topology" )
         mininetDir = main.Mininet1.home + "/custom/"
-        topoPath = main.testDir + "/" + main.TEST + "/dependencies/" + main.newTopo
+        topoPath = main.dependencyPath + main.newTopo
         main.ONOSbench.secureCopy( main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to" )
         topoPath = mininetDir + main.newTopo
         startStatus = main.Mininet1.startNet( topoFile=topoPath )
@@ -356,13 +255,13 @@ class CHOtest:
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
                 sw="s" + str( i ),
-                ip=main.onosIPs )
+                ip=main.ONOSip )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.onosIPs[ 0 ], response ):
+            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
                 switch_mastership = switch_mastership and main.TRUE
             else:
                 switch_mastership = main.FALSE
@@ -374,7 +273,7 @@ class CHOtest:
         time.sleep( 5 )
 
         main.step( "Balance devices across controllers" )
-        for i in range( int( main.numCtrls ) ):
+        for i in range( main.numCtrls ):
             balanceResult = main.ONOScli1.balanceMasters()
             # giving some breathing time for ONOS to complete re-balance
             time.sleep( 3 )
@@ -442,7 +341,7 @@ class CHOtest:
 
                 main.step( "Collect and store each Device ports enabled Count" )
                 time1 = time.time()
-                for i in xrange( 1, ( main.numMNswitches + 1 ), int( main.numCtrls ) ):
+                for i in xrange( 1, ( main.numMNswitches + 1 ), main.numCtrls ):
                     pool = []
                     for cli in main.CLIs:
                         if i >= main.numMNswitches + 1:
@@ -464,7 +363,7 @@ class CHOtest:
                 main.step( "Collect and store each Device active links Count" )
                 time1 = time.time()
 
-                for i in xrange( 1, ( main.numMNswitches + 1 ), int( main.numCtrls ) ):
+                for i in xrange( 1, ( main.numMNswitches + 1 ), main.numCtrls ):
                     pool = []
                     for cli in main.CLIs:
                         if i >= main.numMNswitches + 1:
@@ -507,14 +406,20 @@ class CHOtest:
     def CASE200( self, main ):
 
         import time
+        try:
+            from tests.dependencies.utils import Utils
+        except ImportError:
+            main.log.error( "Utils not found. exiting the test" )
+            main.exit()
+        try:
+            main.Utils
+        except ( NameError, AttributeError ):
+            main.Utils = Utils()
+
         main.log.report( "Clean up ONOS" )
         main.case( "Stop topology and remove hosts and devices" )
 
-        main.step( "Stop Topology" )
-        stopStatus = main.Mininet1.stopNet()
-        utilities.assert_equals( expect=main.TRUE, actual=stopStatus,
-                                 onpass="Stopped mininet",
-                                 onfail="Failed to stop mininet" )
+        main.Utils.mininetCleanup( False )
 
         main.log.info( "Constructing host id list" )
         hosts = []
@@ -1232,7 +1137,7 @@ class CHOtest:
 
         for check in range( main.topoCheck ):
             time1 = time.time()
-            for i in xrange( 1, ( main.numMNswitches + 1 ), int( main.numCtrls ) ):
+            for i in xrange( 1, ( main.numMNswitches + 1 ), main.numCtrls ):
                 pool = []
                 for cli in main.CLIs:
                     if i >= main.numMNswitches + 1:
@@ -1270,7 +1175,7 @@ class CHOtest:
 
             main.step( "Compare Device active links with reference" )
             time1 = time.time()
-            for i in xrange( 1, ( main.numMNswitches + 1 ), int( main.numCtrls ) ):
+            for i in xrange( 1, ( main.numMNswitches + 1 ), main.numCtrls ):
                 pool = []
                 for cli in main.CLIs:
                     if i >= main.numMNswitches + 1:
@@ -1319,7 +1224,7 @@ class CHOtest:
                                  onpass="Compare Topology test PASS",
                                  onfail="Compare Topology test FAIL" )
 
-    def CASE60( self ):
+    def CASE60( self, main ):
         """
         Install 300 host intents and verify ping all ( Att Topology )
         """
@@ -1359,7 +1264,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE61( self ):
+    def CASE61( self, main ):
         """
         Install 300 host intents and verify ping all for Chordal Topology
         """
@@ -1398,7 +1303,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE62( self ):
+    def CASE62( self, main ):
         """
         Install 2278 host intents and verify ping all for Spine Topology
         """
@@ -1437,7 +1342,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE160( self ):
+    def CASE160( self, main ):
         """
         Verify IPv6 ping across 300 host intents ( Att Topology )
         """
@@ -1463,7 +1368,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE161( self ):
+    def CASE161( self, main ):
         """
         Verify IPv6 ping across 300 host intents ( Chordal Topology )
         """
@@ -1488,7 +1393,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE162( self ):
+    def CASE162( self, main ):
         """
         Verify IPv6 ping across 2278 host intents ( Spine Topology )
         """
@@ -2385,7 +2290,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE170( self ):
+    def CASE170( self, main ):
         """
         IPv6 ping all with some core links down( Host Intents-Att Topo )
         """
@@ -2411,7 +2316,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE180( self ):
+    def CASE180( self, main ):
         """
         IPv6 ping all with after core links back up( Host Intents-Att Topo )
         """
@@ -2437,7 +2342,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE171( self ):
+    def CASE171( self, main ):
         """
         IPv6 ping all with some core links down( Point Intents-Att Topo )
         """
@@ -2463,7 +2368,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE181( self ):
+    def CASE181( self, main ):
         """
         IPv6 ping all with after core links back up( Point Intents-Att Topo )
         """
@@ -2489,7 +2394,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE172( self ):
+    def CASE172( self, main ):
         """
         IPv6 ping all with some core links down( Host Intents-Chordal Topo )
         """
@@ -2511,7 +2416,7 @@ class CHOtest:
             onpass="IPv6 Ping across 300 host intents test PASS",
             onfail="IPv6 Ping across 300 host intents test FAIL" )
 
-    def CASE182( self ):
+    def CASE182( self, main ):
         """
         IPv6 ping all with after core links back up( Host Intents-Chordal Topo )
         """
@@ -2537,7 +2442,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE173( self ):
+    def CASE173( self, main ):
         """
         IPv6 ping all with some core links down( Point Intents-Chordal Topo )
         """
@@ -2563,7 +2468,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE183( self ):
+    def CASE183( self, main ):
         """
         IPv6 ping all with after core links back up( Point Intents-Chordal Topo )
         """
@@ -2589,7 +2494,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE174( self ):
+    def CASE174( self, main ):
         """
         IPv6 ping all with some core links down( Host Intents-Spine Topo )
         """
@@ -2615,7 +2520,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE184( self ):
+    def CASE184( self, main ):
         """
         IPv6 ping all with after core links back up( Host Intents-Spine Topo )
         """
@@ -2641,7 +2546,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE175( self ):
+    def CASE175( self, main ):
         """
         IPv6 ping all with some core links down( Point Intents-Spine Topo )
         """
@@ -2667,7 +2572,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE185( self ):
+    def CASE185( self, main ):
         """
         IPv6 ping all with after core links back up( Point Intents-Spine Topo )
         """
@@ -2693,7 +2598,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE90( self ):
+    def CASE90( self, main ):
         """
         Install 600 point intents and verify ping all ( Att Topology )
         """
@@ -2735,7 +2640,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE91( self ):
+    def CASE91( self, main ):
         """
         Install 600 point intents and verify ping all ( Chordal Topology )
         """
@@ -2777,7 +2682,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE92( self ):
+    def CASE92( self, main ):
         """
         Install 4556 point intents and verify ping all ( Spine Topology )
         """
@@ -2819,7 +2724,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE93( self ):
+    def CASE93( self, main ):
         """
         Install multi-single point intents and verify Ping all works
         for att topology
@@ -2835,7 +2740,7 @@ class CHOtest:
         intentIdList = []
         main.log.info( "MACsDict" + str( main.MACsDict ) )
         time1 = time.time()
-        for i in xrange( 0, len( deviceDPIDsCopy ), int( main.numCtrls ) ):
+        for i in xrange( 0, len( deviceDPIDsCopy ), main.numCtrls ):
             pool = []
             for cli in main.CLIs:
                 egressDevice = deviceDPIDsCopy[ i ]
@@ -2866,7 +2771,7 @@ class CHOtest:
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            for e in range( int( main.numCtrls ) ):
+            for e in range( main.numCtrls ):
                 main.log.info( "Checking intents on CLI %s" % ( e + 1 ) )
                 IntentStateIndividual = main.CLIs[ e ].checkIntentState( intentsId=intentIdList )
                 if not IntentStateIndividual:
@@ -2940,7 +2845,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE94( self ):
+    def CASE94( self, main ):
         """
         Install multi-single point intents and verify Ping all works
         for Chordal topology
@@ -2955,7 +2860,7 @@ class CHOtest:
         intentIdList = []
         main.log.info( "MACsDict" + str( main.MACsDict ) )
         time1 = time.time()
-        for i in xrange( 0, len( deviceDPIDsCopy ), int( main.numCtrls ) ):
+        for i in xrange( 0, len( deviceDPIDsCopy ), main.numCtrls ):
             pool = []
             for cli in main.CLIs:
                 egressDevice = deviceDPIDsCopy[ i ]
@@ -2986,7 +2891,7 @@ class CHOtest:
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            for e in range( int( main.numCtrls ) ):
+            for e in range( main.numCtrls ):
                 main.log.info( "Checking intents on CLI %s" % ( e + 1 ) )
                 IntentStateIndividual = main.CLIs[ e ].checkIntentState( intentsId=intentIdList )
                 if not IntentStateIndividual:
@@ -3060,7 +2965,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE95( self ):
+    def CASE95( self, main ):
         """
         Install multi-single point intents and verify Ping all works
         for Spine topology
@@ -3075,7 +2980,7 @@ class CHOtest:
         intentIdList = []
         main.log.info( "MACsDict" + str( main.MACsDict ) )
         time1 = time.time()
-        for i in xrange( 0, len( deviceDPIDsCopy ), int( main.numCtrls ) ):
+        for i in xrange( 0, len( deviceDPIDsCopy ), main.numCtrls ):
             pool = []
             for cli in main.CLIs:
                 egressDevice = deviceDPIDsCopy[ i ]
@@ -3106,7 +3011,7 @@ class CHOtest:
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            for e in range( int( main.numCtrls ) ):
+            for e in range( main.numCtrls ):
                 main.log.info( "Checking intents on CLI %s" % ( e + 1 ) )
                 IntentStateIndividual = main.CLIs[ e ].checkIntentState( intentsId=intentIdList )
                 if not IntentStateIndividual:
@@ -3180,7 +3085,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE96( self ):
+    def CASE96( self, main ):
         """
         Install single-multi point intents and verify Ping all works
         for att topology
@@ -3194,7 +3099,7 @@ class CHOtest:
         intentIdList = []
         main.log.info( "MACsDict" + str( main.MACsDict ) )
         time1 = time.time()
-        for i in xrange( 0, len( deviceDPIDsCopy ), int( main.numCtrls ) ):
+        for i in xrange( 0, len( deviceDPIDsCopy ), main.numCtrls ):
             pool = []
             for cli in main.CLIs:
                 ingressDevice = deviceDPIDsCopy[ i ]
@@ -3225,7 +3130,7 @@ class CHOtest:
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            for e in range( int( main.numCtrls ) ):
+            for e in range( main.numCtrls ):
                 main.log.info( "Checking intents on CLI %s" % ( e + 1 ) )
                 IntentStateIndividual = main.CLIs[ e ].checkIntentState( intentsId=intentIdList )
                 if not IntentStateIndividual:
@@ -3299,7 +3204,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE97( self ):
+    def CASE97( self, main ):
         """
         Install single-multi point intents and verify Ping all works
         for Chordal topology
@@ -3313,7 +3218,7 @@ class CHOtest:
         intentIdList = []
         main.log.info( "MACsDict" + str( main.MACsDict ) )
         time1 = time.time()
-        for i in xrange( 0, len( deviceDPIDsCopy ), int( main.numCtrls ) ):
+        for i in xrange( 0, len( deviceDPIDsCopy ), main.numCtrls ):
             pool = []
             for cli in main.CLIs:
                 ingressDevice = deviceDPIDsCopy[ i ]
@@ -3344,7 +3249,7 @@ class CHOtest:
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            for e in range( int( main.numCtrls ) ):
+            for e in range( main.numCtrls ):
                 main.log.info( "Checking intents on CLI %s" % ( e + 1 ) )
                 IntentStateIndividual = main.CLIs[ e ].checkIntentState( intentsId=intentIdList )
                 if not IntentStateIndividual:
@@ -3418,7 +3323,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE98( self ):
+    def CASE98( self, main ):
         """
         Install single-multi point intents and verify Ping all works
         for Spine topology
@@ -3438,7 +3343,7 @@ class CHOtest:
         main.log.info( "deviceDPIDsCopy" + str( deviceDPIDsCopy ) )
         main.log.info( "MACsDictCopy" + str( MACsDictCopy ) )
         time1 = time.time()
-        for i in xrange( 0, len( deviceDPIDsCopy ), int( main.numCtrls ) ):
+        for i in xrange( 0, len( deviceDPIDsCopy ), main.numCtrls ):
             pool = []
             for cli in main.CLIs:
                 if i >= len( deviceDPIDsCopy ):
@@ -3469,7 +3374,7 @@ class CHOtest:
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            for e in range( int( main.numCtrls ) ):
+            for e in range( main.numCtrls ):
                 main.log.info( "Checking intents on CLI %s" % ( e + 1 ) )
                 IntentStateIndividual = main.CLIs[ e ].checkIntentState( intentsId=intentIdList )
                 if not IntentStateIndividual:
@@ -3543,7 +3448,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE190( self ):
+    def CASE190( self, main ):
         """
         Verify IPv6 ping across 600 Point intents ( Att Topology )
         """
@@ -3569,7 +3474,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE191( self ):
+    def CASE191( self, main ):
         """
         Verify IPv6 ping across 600 Point intents ( Chordal Topology )
         """
@@ -3595,7 +3500,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE192( self ):
+    def CASE192( self, main ):
         """
         Verify IPv6 ping across 4556 Point intents ( Spine Topology )
         """
@@ -3621,7 +3526,7 @@ class CHOtest:
             main.log.report( "Stopping test" )
             main.stop( email=main.emailOnStop )
 
-    def CASE10( self ):
+    def CASE10( self, main ):
         import time
         import re
         """
@@ -3684,7 +3589,7 @@ class CHOtest:
                     main.log.info( "Leftover Intent IDs: " + str( intentIdList1 ) )
                     main.log.info( "Length of Leftover Intents list: " + str( len( intentIdList1 ) ) )
                     time1 = time.time()
-                    for i in xrange( 0, len( intentIdList1 ), int( main.numCtrls ) ):
+                    for i in xrange( 0, len( intentIdList1 ), main.numCtrls ):
                         pool = []
                         for cli in main.CLIs:
                             if i >= len( intentIdList1 ):

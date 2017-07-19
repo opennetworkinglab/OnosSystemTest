@@ -9,7 +9,6 @@ class FUNCipv6Intent:
     def CASE1( self, main ):
         import imp
         import re
-
         """
         - Construct tests variables
         - GIT ( optional )
@@ -19,25 +18,21 @@ class FUNCipv6Intent:
             - Install ONOS package
             - Build ONOS package
         """
-        main.case( "Constructing test variables and building ONOS package" )
-        main.step( "Constructing test variables" )
-        main.caseExplanation = "This test case is mainly for loading " +\
-                               "from params file, and pull and build the " +\
-                               " latest ONOS package"
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         # Test variables
         try:
-            main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-            gitBranch = main.params[ 'GIT' ][ 'branch' ]
             main.dependencyPath = main.testOnDirectory + \
                                   main.params[ 'DEPENDENCY' ][ 'path' ]
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
-            if main.ONOSbench.maxNodes:
-                main.maxNodes = int( main.ONOSbench.maxNodes )
-            else:
-                main.maxNodes = 0
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
             wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
             wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
@@ -47,60 +42,27 @@ class FUNCipv6Intent:
             main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
             main.checkTopoAttempts = int( main.params[ 'SLEEP' ][ 'topoAttempts' ] )
-            gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
-            main.cellData = {}  # for creating cell file
             main.hostsData = {}
-            main.CLIs = []
-            main.ONOSip = []
             main.assertReturnString = ''  # Assembled assert return string
 
-            main.ONOSip = main.ONOSbench.getOnosIps()
-            print main.ONOSip
-
-            # Assigning ONOS cli handles to a list
-            for i in range( 1, main.maxNodes + 1 ):
-                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-
             # -- INIT SECTION, ONLY RUNS ONCE -- #
-            main.startUp = imp.load_source( wrapperFile1,
-                                            main.dependencyPath +
-                                            wrapperFile1 +
-                                            ".py" )
 
             main.intentFunction = imp.load_source( wrapperFile2,
                                                    main.dependencyPath +
                                                    wrapperFile2 +
                                                    ".py" )
 
-            main.topo = imp.load_source( wrapperFile3,
-                                         main.dependencyPath +
-                                         wrapperFile3 +
-                                         ".py" )
-
             copyResult1 = main.ONOSbench.scp( main.Mininet1,
                                               main.dependencyPath +
                                               main.topology,
                                               main.Mininet1.home,
                                               direction="to" )
-            if main.CLIs:
-                stepResult = main.TRUE
-            else:
-                main.log.error( "Did not properly created list of ONOS CLI handle" )
-                stepResult = main.FALSE
+            stepResult = main.testSetUp.envSetup( True )
         except Exception as e:
-            main.log.exception( e )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully construct " +
-                                        "test variables ",
-                                 onfail="Failed to construct test variables" )
-
-        main.ONOSbench.getVersion( report=True )
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
     def CASE2( self, main ):
         """
@@ -115,122 +77,13 @@ class FUNCipv6Intent:
         - Connect to cli
         """
         import time
-        # main.scale[ 0 ] determines the current number of ONOS controller
-        main.numCtrls = int( main.scale[ 0 ] )
 
-        main.case( "Starting up " + str( main.numCtrls ) +
-                   " node(s) ONOS cluster" )
-        main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) +\
-                                " node(s) ONOS cluster"
-
-        #kill off all onos processes
-        main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating environment setup" )
-
-        for i in range( main.maxNodes ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
-
-        print "NODE COUNT = ", main.numCtrls
-
-        tempOnosIp = []
-        for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[ i ] )
-
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
-                                       "temp", main.Mininet1.ip_address,
-                                       main.apps, tempOnosIp, main.ONOScli1.karafUser )
-
-        main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to " +
-                                        "environment",
-                                 onfail="Failed to apply cell to environment " )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        stepResult = packageResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully created ONOS package",
-                                 onfail="Failed to create ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = main.TRUE
-        for ip in main.ONOSip:
-            onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=ip )
-        stepResult = onosUninstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully uninstalled ONOS package",
-                                 onfail="Failed to uninstall ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.TRUE
-        for i in range( main.numCtrls ):
-            onosInstallResult = onosInstallResult and \
-                    main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
-        stepResult = onosInstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully installed ONOS package",
-                                 onfail="Failed to install ONOS package" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
-
-        main.step( "Start ONOS cli" )
-        cliResult = main.TRUE
-        for i in range( main.numCtrls ):
-            cliResult = cliResult and \
-                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
-        stepResult = cliResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully start ONOS cli",
-                                 onfail="Failed to start ONOS cli" )
+        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, True )
 
         main.step( "Checking that ONOS is ready" )
         for i in range( 3 ):
             ready = True
-            for i in range( int( main.scale[ 0 ] ) ):
+            for i in range ( main.numCtrls ):
                 output = main.CLIs[ i ].summary()
                 if not output:
                     ready = False
@@ -249,9 +102,6 @@ class FUNCipv6Intent:
         utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
                                  onpass="ipv6NeighborDiscovery cfg is set to true",
                                  onfail="Failed to cfg set ipv6NeighborDiscovery" )
-
-        # Remove the first element in main.scale list
-        main.scale.remove( main.scale[ 0 ] )
 
         main.intentFunction.report( main )
 
@@ -357,18 +207,17 @@ class FUNCipv6Intent:
         """
             Stop mininet
         """
-        main.log.report( "Stop Mininet topology" )
-        main.case( "Stop Mininet topology" )
-        main.caseExplanation = "Stopping the current mininet topology " +\
-                                "to start up fresh"
-
-        main.step( "Stopping Mininet Topology" )
-        topoResult = main.Mininet1.stopNet()
-        stepResult = topoResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully stop mininet",
-                                 onfail="Failed to stop mininet" )
+        try:
+            from tests.dependencies.utils import Utils
+        except ImportError:
+            main.log.error( "Utils not found exiting the test" )
+            main.exit()
+        try:
+            main.Utils
+        except ( NameError, AttributeError ):
+            main.Utils = Utils()
+        main.Utils.mininetCleanIntro()
+        topoResult = main.Utils.mininetCleanup( main.Mininet1 )
         # Exit if topology did not load properly
         if not topoResult:
             main.cleanup()

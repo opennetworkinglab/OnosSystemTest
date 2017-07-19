@@ -11,7 +11,7 @@ def compareCfg( main, gossipTime=None ):
     """
     main.step( "Check net config" )
     if gossipTime:
-        time.sleep( gossipTime * len( main.nodes ) )
+        time.sleep( gossipTime * len( main.RESTs ) )
     responses = []
     result = utilities.retry( f=checkNodeResponses,
                               retValue=False,
@@ -26,7 +26,7 @@ def compareCfg( main, gossipTime=None ):
 
 def checkNodeResponses ( main, responses ):
     numberOfFailedNodes = 0  # Tracks the number of nodes that failed to get net configuration
-    for node in main.nodes:
+    for node in main.RESTs:
         response = node.getNetCfg( )
         responses.append( node.pprint( response ) )
         if response == main.FALSE:

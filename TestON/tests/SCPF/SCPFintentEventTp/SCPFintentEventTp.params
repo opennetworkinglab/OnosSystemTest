@@ -13,8 +13,8 @@
     <max>7</max>
 
     <GIT>
-        <gitPull>off</gitPull>
-        <gitBranch>master</gitBranch>
+        <pull>False</pull>
+        <branch>master</branch>
     </GIT>
 
     <CTRL>

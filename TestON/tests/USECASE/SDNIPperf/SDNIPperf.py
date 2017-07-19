@@ -17,57 +17,24 @@ class SDNIPperf:
            onos-install -f
            onos-wait-for-start
         """
-        main.case( "Setting up test environment" )
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        try:
+            cellName = main.params[ 'ENV' ][ 'cellName' ]
+            ONOS1Ip = main.params['CTRL']['ip1']
+            stepResult = main.testSetUp.envSetup( specificIp=ONOS1Ip )
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.step( "Applying cell variable to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        branchName = main.ONOSbench.getBranchName()
-        main.log.info( "ONOS is on branch: " + branchName )
-
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        main.step( "Git pull" )
-        gitPullResult = main.FALSE
-        #Need to push some new code to ONOS before using the git pull
-        #gitPullResult = main.ONOSbench.gitPull()
-
-        main.ONOSbench.getVersion( report=True )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall( options="-f",
-                                                           node=ONOS1Ip )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
-
-        main.step( "Checking if ONOS is up yet" )
-        for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( ONOS1Ip, timeout=420 )
-            if onos1Isup:
-                break
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
-                commandlineTimeout=100, onosStartTimeout=600)
-
-        case1Result = ( packageResult and cellResult and
-                        verifyResult and onos1InstallResult and
-                        onos1Isup and secureSshResult and
-                        cliResult )
-
-        utilities.assert_equals( expect=main.TRUE, actual=case1Result,
-                                 onpass="ONOS startup successful",
-                                 onfail="ONOS startup NOT successful" )
+        case1Result = main.testSetUp.ONOSSetUp( "", newCell=False, cellname=cellName )
 
         if case1Result == main.FALSE:
             main.cleanup()
@@ -97,15 +64,15 @@ class SDNIPperf:
         time.sleep( 10 )
 
         main.step( "Get devices in the network" )
-        listResult = main.ONOScli.devices( jsonFormat=False )
+        listResult = main.ONOScli1.devices( jsonFormat=False )
         main.log.info( listResult )
 
         main.step( "Get links in the network" )
-        listResult = main.ONOScli.links ( jsonFormat=False )
+        listResult = main.ONOScli1.links ( jsonFormat=False )
         main.log.info( listResult )
 
         main.log.info( "Activate sdn-ip application" )
-        main.ONOScli.activateApp( "org.onosproject.sdnip" )
+        main.ONOScli1.activateApp( "org.onosproject.sdnip" )
 
         main.step("Sleep 1200 seconds")
         # wait until SDN-IP receives all routes and ONOS installs all intents
@@ -116,7 +83,7 @@ class SDNIPperf:
         main.log.info( "Total route number expected is:" )
         main.log.info( routeNumberExpected )
 
-        routeNumberActual = main.ONOScli.ipv4RouteNumber()
+        routeNumberActual = main.ONOScli1.ipv4RouteNumber()
         main.log.info("Total route  number actual is: ")
         main.log.info(routeNumberActual)
 
@@ -131,7 +98,7 @@ class SDNIPperf:
         main.log.info( "MultiPointToSinglePoint intent number expected is:" )
         main.log.info( m2SIntentsNumberExpected )
 
-        m2SIntentsNumberActual = main.ONOScli.m2SIntentInstalledNumber()
+        m2SIntentsNumberActual = main.ONOScli1.m2SIntentInstalledNumber()
         main.log.info( "MultiPointToSinglePoint intent number actual is:" )
         main.log.info(m2SIntentsNumberActual)
 

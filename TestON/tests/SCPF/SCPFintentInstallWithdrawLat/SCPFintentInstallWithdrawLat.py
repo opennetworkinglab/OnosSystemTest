@@ -4,7 +4,7 @@ SCPFintentInstallWithdrawLat:
     - Use Push-test-intents command to push intents
     - Use Null provider with 7 devices and linear topology
     - Always push intents between 1/6 and 7/5
-    - The batch size is defined in parm file. (default 1,100,1000)
+    - The batch size is defined in parm file. ( default 1,100,1000)
 
     yunpeng@onlab.us
 """
@@ -22,220 +22,91 @@ class SCPFintentInstallWithdrawLat:
             different versions of ONOS.
         - Construct tests variables
         '''
-        gitPull = main.params['GIT']['gitPull']
-        gitBranch = main.params['GIT']['gitBranch']
 
-        main.case("Pull onos branch and build onos on Teststation.")
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
 
-        if gitPull == 'True':
-            main.step("Git Checkout ONOS branch: " + gitBranch)
-            stepResult = main.ONOSbench.gitCheckout(branch=gitBranch)
-            utilities.assert_equals(expect=main.TRUE,
-                                    actual=stepResult,
-                                    onpass="Successfully checkout onos branch.",
-                                    onfail="Failed to checkout onos branch. Exiting test...")
-            if not stepResult: main.exit()
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.BENCHUser = main.params[ 'BENCH' ][ 'user' ]
+            main.BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
+            main.MN1Ip = main.params[ 'MN' ][ 'ip1' ]
+            main.maxNodes = int( main.params[ 'max' ] )
+            main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.scale = ( main.params[ 'SCALE' ] ).split( "," )
+            main.timeout = int( main.params[ 'SLEEP' ][ 'timeout' ] )
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            main.installSleep = int( main.params[ 'SLEEP' ][ 'install' ] )
+            main.verifySleep = int( main.params[ 'SLEEP' ][ 'verify' ] )
+            main.verifyAttempts = int( main.params[ 'ATTEMPTS' ][ 'verify' ] )
+            main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
+            main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
+            main.intentsList = ( main.params[ 'TEST' ][ 'intents' ] ).split( "," )
+            main.ingress = main.params[ 'TEST' ][ 'ingress' ]
+            main.egress = main.params[ 'TEST' ][ 'egress' ]
+            main.debug = main.params[ 'TEST' ][ 'debug' ]
+            main.flowObj = main.params[ 'TEST' ][ 'flowObj' ]
 
-            main.step("Git Pull on ONOS branch:" + gitBranch)
-            stepResult = main.ONOSbench.gitPull()
-            utilities.assert_equals(expect=main.TRUE,
-                                    actual=stepResult,
-                                    onpass="Successfully pull onos. ",
-                                    onfail="Failed to pull onos. Exiting test ...")
-            if not stepResult: main.exit()
+            if main.flowObj == "True":
+                main.flowObj = True
+                main.dbFileName = main.params[ 'DATABASE' ][ 'dbFlowObj' ]
+            else:
+                main.flowObj = False
+                main.dbFileName = main.params[ 'DATABASE' ][ 'dbName' ]
 
+            for i in range( 0, len( main.intentsList ) ):
+                main.intentsList[ i ] = int( main.intentsList[ i ] )
 
-        else:
-            main.log.warn("Skipped pulling onos and Skipped building ONOS")
-
-        main.apps = main.params['ENV']['cellApps']
-        main.BENCHUser = main.params['BENCH']['user']
-        main.BENCHIp = main.params['BENCH']['ip1']
-        main.MN1Ip = main.params['MN']['ip1']
-        main.maxNodes = int(main.params['max'])
-        main.cellName = main.params['ENV']['cellName']
-        main.scale = (main.params['SCALE']).split(",")
-        main.timeout = int(main.params['SLEEP']['timeout'])
-        main.startUpSleep = int(main.params['SLEEP']['startup'])
-        main.installSleep = int(main.params['SLEEP']['install'])
-        main.verifySleep = int(main.params['SLEEP']['verify'])
-        main.verifyAttempts = int(main.params['ATTEMPTS']['verify'])
-        main.sampleSize = int(main.params['TEST']['sampleSize'])
-        main.warmUp = int(main.params['TEST']['warmUp'])
-        main.intentsList = (main.params['TEST']['intents']).split(",")
-        main.ingress = main.params['TEST']['ingress']
-        main.egress = main.params['TEST']['egress']
-        main.debug = main.params['TEST']['debug']
-        main.flowObj = main.params['TEST']['flowObj']
-
-        if main.flowObj == "True":
-            main.flowObj = True
-            main.dbFileName = main.params['DATABASE']['dbFlowObj']
-        else:
-            main.flowObj = False
-            main.dbFileName = main.params['DATABASE']['dbName']
-
-        for i in range(0, len(main.intentsList)):
-            main.intentsList[i] = int(main.intentsList[i])
-        # Create DataBase file
-        main.log.info("Create Database file " + main.dbFileName)
-        resultsDB = open(main.dbFileName, "w+")
-        resultsDB.close()
-
+            stepResult = main.testSetUp.gitPulling()
+            # Create DataBase file
+            main.log.info( "Create Database file " + main.dbFileName )
+            resultsDB = open( main.dbFileName, "w+" )
+            resultsDB.close()
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
+        main.commit = main.commit.split( " " )[ 1 ]
     def CASE1( self, main ):
         # Clean up test environment and set up
         import time
-        main.log.info("Get ONOS cluster IP")
-        print(main.scale)
-        main.numCtrls = int(main.scale[0])
-        main.ONOSip = []
+
         main.maxNumBatch = 0
-        main.AllONOSip = main.ONOSbench.getOnosIps()
-        for i in range(main.numCtrls):
-            main.ONOSip.append(main.AllONOSip[i])
-        main.log.info(main.ONOSip)
-        main.CLIs = []
-        main.log.info("Creating list of ONOS cli handles")
-        for i in range(main.numCtrls):
-            main.CLIs.append(getattr(main, 'ONOScli%s' %(i + 1)))
-
-        if not main.CLIs:
-            main.log.error("Failed to create the list of ONOS cli handles")
-            main.cleanup()
-            main.exit()
-
-        main.commit = main.ONOSbench.getVersion(report=True)
-        main.commit = main.commit.split(" ")[1]
-        main.log.info("Starting up %s node(s) ONOS cluster" % main.numCtrls)
-        main.log.info("Safety check, killing all ONOS processes" +
-                      " before initiating environment setup")
-
-        for i in range(main.numCtrls):
-            main.ONOSbench.onosStop(main.ONOSip[i])
-            main.ONOSbench.onosKill(main.ONOSip[i])
-
-        main.log.info("NODE COUNT = %s" % main.numCtrls)
-        main.ONOSbench.createCellFile(main.ONOSbench.ip_address,
-                                      main.cellName,
-                                      main.MN1Ip,
-                                      main.apps,
-                                      main.ONOSip,
-                                      main.ONOScli1.karafUser )
-        main.step("Apply cell to environment")
-        cellResult = main.ONOSbench.setCell(main.cellName)
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals(expect=main.TRUE,
-                                actual=stepResult,
-                                onpass="Successfully applied cell to " + \
-                                       "environment",
-                                onfail="Failed to apply cell to environment ")
-
-        main.step("Creating ONOS package")
-        packageResult = main.ONOSbench.buckBuild()
-        stepResult = packageResult
-        utilities.assert_equals(expect=main.TRUE,
-                                actual=stepResult,
-                                onpass="Successfully created ONOS package",
-                                onfail="Failed to create ONOS package")
-
-        main.step("Uninstall ONOS package on all Nodes")
-        uninstallResult = main.TRUE
-        for i in range(int(main.numCtrls)):
-            main.log.info("Uninstalling package on ONOS Node IP: " + main.ONOSip[i])
-            u_result = main.ONOSbench.onosUninstall(main.ONOSip[i])
-            utilities.assert_equals(expect=main.TRUE, actual=u_result,
-                                    onpass="Test step PASS",
-                                    onfail="Test step FAIL")
-            uninstallResult = (uninstallResult and u_result)
-
-        main.step("Install ONOS package on all Nodes")
-        installResult = main.TRUE
-        for i in range(int(main.numCtrls)):
-            main.log.info("Installing package on ONOS Node IP: " + main.ONOSip[i])
-            i_result = main.ONOSbench.onosInstall(node=main.ONOSip[i])
-            utilities.assert_equals(expect=main.TRUE, actual=i_result,
-                                    onpass="Test step PASS",
-                                    onfail="Test step FAIL")
-            installResult = installResult and i_result
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[i] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
-
-        time.sleep(2)
-        main.step("Start ONOS CLI on all nodes")
-        cliResult = main.TRUE
-        main.step(" Start ONOS cli using thread ")
-        startCliResult = main.TRUE
-        pool = []
-        main.threadID = 0
-        for i in range(int(main.numCtrls)):
-            t = main.Thread(target=main.CLIs[i].startOnosCli,
-                            threadID=main.threadID,
-                            name="startOnosCli",
-                            args=[main.ONOSip[i]],
-                            kwargs={"onosStartTimeout": main.timeout})
-            pool.append(t)
-            t.start()
-            main.threadID = main.threadID + 1
-        for t in pool:
-            t.join()
-            startCliResult = startCliResult and t.result
-        time.sleep(main.startUpSleep)
+        main.testSetUp.getNumCtrls( True )
+        main.testSetUp.envSetup( includeGitPull=False, makeMaxNodes=False )
+        main.testSetUp.ONOSSetUp( main.MN1Ip, True,
+                                  cellName=main.cellName, killRemoveMax=False,
+                                  CtrlsSet=False )
 
         # configure apps
-        main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=7)
-        main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "topoShape", value="linear")
-        main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
-        main.CLIs[0].setCfg("org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal", value="true")
+        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount", value=7 )
+        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "topoShape", value="linear" )
+        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "enabled", value="true" )
+        main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal", value="true" )
         if main.flowObj:
-            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
-                                "useFlowObjectives", value="true")
-            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+            main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                "useFlowObjectives", value="true" )
+            main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                 "defaultFlowObjectiveCompiler",
-                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
-        time.sleep(main.startUpSleep)
+                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
+        time.sleep( main.startUpSleep )
 
         # balanceMasters
-        main.CLIs[0].balanceMasters()
-        time.sleep(main.startUpSleep)
+        main.CLIs[ 0 ].balanceMasters()
+        time.sleep( main.startUpSleep )
 
     def CASE2( self, main ):
         import time
         import numpy
         import json
-        print(main.intentsList)
+        print( main.intentsList )
         for batchSize in main.intentsList:
-            main.log.report("Intent Batch size: {}".format(batchSize))
+            main.log.report( "Intent Batch size: {}".format( batchSize ) )
             main.installLatList = []
             main.withdrawLatList = []
             validrun = 0
@@ -243,20 +114,20 @@ class SCPFintentInstallWithdrawLat:
             # we use two variables to control the iteration
             while validrun <= main.warmUp + main.sampleSize and invalidrun < 20:
                 if validrun >= main.warmUp:
-                    main.log.info("================================================")
-                    main.log.info("Starting test iteration " + str(validrun - main.warmUp))
-                    main.log.info("Total test iteration: " + str(invalidrun + validrun))
-                    main.log.info("================================================")
+                    main.log.info( "================================================" )
+                    main.log.info( "Starting test iteration " + str( validrun - main.warmUp ) )
+                    main.log.info( "Total test iteration: " + str( invalidrun + validrun ) )
+                    main.log.info( "================================================" )
                 else:
-                    main.log.info("====================Warm Up=====================")
+                    main.log.info( "====================Warm Up=====================" )
 
                 # push intents
-                installResult = main.CLIs[0].pushTestIntents(main.ingress, main.egress, batchSize,
+                installResult = main.CLIs[ 0 ].pushTestIntents( main.ingress, main.egress, batchSize,
                                                              offset=1, options="-i", timeout=main.timeout,
-                                                             getResponse=True)
-                if type(installResult) is str:
+                                                             getResponse=True )
+                if type( installResult ) is str:
                     if "Failure" in installResult:
-                        main.log.error("Install Intents failure, ignore this iteration.")
+                        main.log.error( "Install Intents failure, ignore this iteration." )
                         if validrun < main.warmUp:
                             validrun += 1
                             continue
@@ -265,12 +136,12 @@ class SCPFintentInstallWithdrawLat:
                             continue
 
                     try:
-                        latency = int(installResult.split()[5])
-                        main.log.info(installResult)
+                        latency = int( installResult.split()[ 5 ] )
+                        main.log.info( installResult )
                     except:
-                        main.log.error("Failed to get latency, ignore this iteration.")
-                        main.log.error("Response from ONOS:")
-                        print(installResult)
+                        main.log.error( "Failed to get latency, ignore this iteration." )
+                        main.log.error( "Response from ONOS:" )
+                        print( installResult )
                         if validrun < main.warmUp:
                             validrun += 1
                             continue
@@ -279,19 +150,19 @@ class SCPFintentInstallWithdrawLat:
                             continue
 
                     if validrun >= main.warmUp:
-                        main.installLatList.append(latency)
+                        main.installLatList.append( latency )
                 else:
                     invalidrun += 1
                     continue
-                time.sleep(2)
+                time.sleep( 2 )
                 # Withdraw Intents
-                withdrawResult = main.CLIs[0].pushTestIntents(main.ingress, main.egress, batchSize,
+                withdrawResult = main.CLIs[ 0 ].pushTestIntents( main.ingress, main.egress, batchSize,
                                                               offset=1, options="-w", timeout=main.timeout,
-                                                              getResponse=True)
+                                                              getResponse=True )
 
-                if type(withdrawResult) is str:
+                if type( withdrawResult ) is str:
                     if "Failure" in withdrawResult:
-                        main.log.error("withdraw Intents failure, ignore this iteration.")
+                        main.log.error( "withdraw Intents failure, ignore this iteration." )
                         if validrun < main.warmUp:
                             validrun += 1
                             continue
@@ -300,12 +171,12 @@ class SCPFintentInstallWithdrawLat:
                             continue
 
                     try:
-                        latency = int(withdrawResult.split()[5])
-                        main.log.info(withdrawResult)
+                        latency = int( withdrawResult.split()[ 5 ] )
+                        main.log.info( withdrawResult )
                     except:
-                        main.log.error("Failed to get latency, ignore this iteration.")
-                        main.log.error("Response from ONOS:")
-                        print(withdrawResult)
+                        main.log.error( "Failed to get latency, ignore this iteration." )
+                        main.log.error( "Response from ONOS:" )
+                        print( withdrawResult )
                         if validrun < main.warmUp:
                             validrun += 1
                             continue
@@ -314,34 +185,33 @@ class SCPFintentInstallWithdrawLat:
                             continue
 
                     if validrun >= main.warmUp:
-                        main.withdrawLatList.append(latency)
+                        main.withdrawLatList.append( latency )
                 else:
                     invalidrun += 1
                     continue
-                time.sleep(2)
-                main.CLIs[0].purgeWithdrawnIntents()
+                time.sleep( 2 )
+                main.CLIs[ 0 ].purgeWithdrawnIntents()
                 validrun += 1
-            installave = numpy.average(main.installLatList)
-            installstd = numpy.std(main.installLatList)
-            withdrawave = numpy.average(main.withdrawLatList)
-            withdrawstd = numpy.std(main.withdrawLatList)
+            installave = numpy.average( main.installLatList )
+            installstd = numpy.std( main.installLatList )
+            withdrawave = numpy.average( main.withdrawLatList )
+            withdrawstd = numpy.std( main.withdrawLatList )
             # log report
-            main.log.report("----------------------------------------------------")
-            main.log.report("Scale: " + str(main.numCtrls))
-            main.log.report("Intent batch: " + str(batchSize))
-            main.log.report("Install average: {}    std: {}".format(installave, installstd))
-            main.log.report("Withdraw average: {}   std: {}".format(withdrawave, withdrawstd))
+            main.log.report( "----------------------------------------------------" )
+            main.log.report( "Scale: " + str( main.numCtrls ) )
+            main.log.report( "Intent batch: " + str( batchSize ) )
+            main.log.report( "Install average: {}    std: {}".format( installave, installstd ) )
+            main.log.report( "Withdraw average: {}   std: {}".format( withdrawave, withdrawstd ) )
             # write result to database file
-            if not (numpy.isnan(installave) or numpy.isnan(installstd) or\
-                    numpy.isnan(withdrawstd) or numpy.isnan(withdrawave)):
+            if not ( numpy.isnan( installave ) or numpy.isnan( installstd ) or\
+                    numpy.isnan( withdrawstd ) or numpy.isnan( withdrawave ) ):
                 databaseString = "'" + main.commit + "',"
-                databaseString += str(main.numCtrls) + ","
-                databaseString += str(batchSize) + ","
-                databaseString += str(installave) + ","
-                databaseString += str(installstd) + ","
-                databaseString += str(withdrawave) + ","
-                databaseString += str(withdrawstd) + "\n"
-                resultsDB = open(main.dbFileName, "a")
-                resultsDB.write(databaseString)
+                databaseString += str( main.numCtrls ) + ","
+                databaseString += str( batchSize ) + ","
+                databaseString += str( installave ) + ","
+                databaseString += str( installstd ) + ","
+                databaseString += str( withdrawave ) + ","
+                databaseString += str( withdrawstd ) + "\n"
+                resultsDB = open( main.dbFileName, "a" )
+                resultsDB.write( databaseString )
                 resultsDB.close()
-        del main.scale[0]

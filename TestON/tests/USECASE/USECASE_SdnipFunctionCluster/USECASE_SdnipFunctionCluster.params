@@ -14,7 +14,10 @@
         <ip3>OC3</ip3>
         <port1>6653</port1>
     </CTRL>
-
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
     <DEPENDENCY>
         <path>/USECASE/USECASE_SdnipFunctionCluster/dependencies/</path>
         <topology>USECASE_SdnipI2MN_Cluster.py</topology>

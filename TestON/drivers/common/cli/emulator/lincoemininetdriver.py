@@ -32,7 +32,7 @@ from drivers.common.cli.emulator.mininetclidriver import MininetCliDriver
 
 
 class LincOEMininetDriver( MininetCliDriver ):
-    def runOpticalMnScript( self,onosDirectory = 'onos', ctrllerIP = None, topology = 'opticalTest' ):
+    def runOpticalMnScript( self, onosDirectory = 'onos', ctrllerIP = None, topology = 'opticalTest' ):
         import time
         import types
         """

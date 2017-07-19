@@ -14,7 +14,10 @@
         <ip1>OC1</ip1>
         <port1>6653</port1>
     </CTRL>
-
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
     <DEPENDENCY>
         <path>/USECASE/USECASE_SdnipFunction/dependencies/</path>
         <topology>USECASE_SdnipI2MN.py</topology>

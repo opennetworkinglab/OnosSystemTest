@@ -36,167 +36,61 @@ class CHOTestMonkey:
         from tests.CHOTestMonkey.dependencies.EventGenerator import EventGenerator
         from tests.CHOTestMonkey.dependencies.EventScheduler import EventScheduler
 
-        gitPull = main.params[ 'TEST' ][ 'autoPull' ]
-        onosPackage = main.params[ 'TEST' ][ 'package' ]
-        gitBranch = main.params[ 'TEST' ][ 'branch' ]
-        karafTimeout = main.params[ 'TEST' ][ 'karafCliTimeout' ]
-        main.enableIPv6 = main.params[ 'TEST' ][ 'IPv6' ]
-        main.enableIPv6 = True if main.enableIPv6 == "on" else False
-        main.caseSleep = int( main.params[ 'TEST' ][ 'caseSleep' ] )
-        main.numCtrls = int( main.params[ 'TEST' ][ 'numCtrl' ] )
-        main.ONOSip = []
-        main.AllONOSip = main.ONOSbench.getOnosIps()
-        main.controllers = []
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+
+        try:
+            onosPackage = main.params[ 'TEST' ][ 'package' ]
+            karafTimeout = main.params[ 'TEST' ][ 'karafCliTimeout' ]
+            main.enableIPv6 = main.params[ 'TEST' ][ 'IPv6' ]
+            main.enableIPv6 = True if main.enableIPv6 == "on" else False
+            main.caseSleep = int( main.params[ 'TEST' ][ 'caseSleep' ] )
+            main.numCtrls = int( main.params[ 'TEST' ][ 'numCtrl' ] )
+            main.maxNodes = main.numCtrls
+            main.controllers = []
+
+            main.devices = []
+            main.links = []
+            main.hosts = []
+            main.intents = []
+            main.enabledEvents = {}
+            for eventName in main.params[ 'EVENT' ].keys():
+                if main.params[ 'EVENT' ][ eventName ][ 'status' ] == 'on':
+                    main.enabledEvents[ int( main.params[ 'EVENT' ][ eventName ][ 'typeIndex' ] ) ] = eventName
+            print main.enabledEvents
+            main.graph = Graph()
+            main.eventScheduler = EventScheduler()
+            main.eventGenerator = EventGenerator()
+            main.variableLock = Lock()
+            main.mininetLock = Lock()
+            main.ONOSbenchLock = Lock()
+            main.threadID = 0
+            main.eventID = 0
+            main.caseResult = main.TRUE
+            stepResult = main.testSetUp.envSetup()
+        except Exception as e:
+            main.testSetUp.envSetupException(e)
+
+        main.testSetUp.evnSetupConclusion( stepResult )
+
+
         for i in range( 1, main.numCtrls + 1 ):
-            main.ONOSip.append( main.AllONOSip[ i - 1 ] )
             newController = Controller( i )
-            newController.setCLI( getattr( main, 'ONOScli' + str( i ) ) )
+            newController.setCLI( main.CLIs[i - 1] )
             main.controllers.append( newController )
-        main.devices = []
-        main.links = []
-        main.hosts = []
-        main.intents = []
-        main.enabledEvents = {}
-        for eventName in main.params[ 'EVENT' ].keys():
-            if main.params[ 'EVENT' ][ eventName ][ 'status' ] == 'on':
-                main.enabledEvents[ int( main.params[ 'EVENT' ][ eventName ][ 'typeIndex' ] ) ] = eventName
-        print main.enabledEvents
-        main.graph = Graph()
-        main.eventScheduler = EventScheduler()
-        main.eventGenerator = EventGenerator()
-        main.variableLock = Lock()
-        main.mininetLock = Lock()
-        main.ONOSbenchLock = Lock()
-        main.threadID = 0
-        main.eventID = 0
-        main.caseResult = main.TRUE
 
-        main.case( "Set up test environment" )
-        main.log.report( "Set up test environment" )
-        main.log.report( "_______________________" )
-
-        main.step( "Apply Cell environment for ONOS" )
-        if ( main.onoscell ):
-            cellName = main.onoscell
-            cellResult = main.ONOSbench.setCell( cellName )
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=cellResult,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-        else:
-            main.log.error( "Please provide onoscell option at TestON CLI to run CHO tests" )
-            main.log.error( "Example: ~/TestON/bin/cli.py run CHOTestMonkey onoscell <cellName>" )
+        if not main.onoscell :
+            main.log.error("Please provide onoscell option at TestON CLI to run CHO tests")
+            main.log.error("Example: ~/TestON/bin/cli.py run CHOTestMonkey onoscell <cellName>")
             main.cleanup()
             main.exit()
 
-        main.step( "Git checkout and pull " + gitBranch )
-        if gitPull == 'on':
-            checkoutResult = main.ONOSbench.gitCheckout( gitBranch )
-            pullResult = main.ONOSbench.gitPull()
-            cpResult = ( checkoutResult and pullResult )
-        else:
-            checkoutResult = main.TRUE
-            pullResult = main.TRUE
-            main.log.info( "Skipped git checkout and pull as they are disabled in params file" )
-            cpResult = ( checkoutResult and pullResult )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=cpResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        main.ONOSbench.getVersion( report=True )
-
-        main.step( "Create ONOS package" )
-        if onosPackage == 'on':
-            packageResult = main.ONOSbench.buckBuild()
-        else:
-            packageResult = main.TRUE
-            main.log.info( "Skipped onos package as it is disabled in params file" )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=packageResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        main.step( "Uninstall ONOS package on all Nodes" )
-        uninstallResult = main.TRUE
-        for i in range( main.numCtrls ):
-            main.log.info( "Uninstalling package on ONOS Node IP: " + main.ONOSip[ i ] )
-            uResult = main.ONOSbench.onosUninstall( main.ONOSip[ i ] )
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=uResult,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            uninstallResult = ( uninstallResult and uResult )
-
-        main.step( "Install ONOS package on all Nodes" )
-        installResult = main.TRUE
-        for i in range( main.numCtrls ):
-            main.log.info( "Installing package on ONOS Node IP: " + main.ONOSip[ i ] )
-            iResult = main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=iResult,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            installResult = ( installResult and iResult )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( main.numCtrls ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( 5 )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
-
-        main.step( "Start ONOS CLI on all nodes" )
-        cliResult = main.TRUE
-        startCliResult = main.TRUE
-        pool = []
-        for controller in main.controllers:
-            t = main.Thread( target=controller.startCLI,
-                             threadID=main.threadID,
-                             name="startOnosCli",
-                             args=[] )
-            pool.append( t )
-            t.start()
-            main.threadID = main.threadID + 1
-        for t in pool:
-            t.join()
-            startCliResult = startCliResult and t.result
-        if not startCliResult:
-            main.log.info( "ONOS CLI did not start up properly" )
-            main.cleanup()
-            main.exit()
-        else:
-            main.log.info( "Successful CLI startup" )
-            startCliResult = main.TRUE
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=startCliResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
+        setupResult = main.testSetUp.ONOSSetUp( Mininet=main.Mininet1, newCell=False, cellName=main.onoscell )
 
         main.step( "Set IPv6 cfg parameters for Neighbor Discovery" )
         setIPv6CfgSleep = int( main.params[ 'TEST' ][ 'setIPv6CfgSleep' ] )
@@ -243,7 +137,7 @@ class CHOTestMonkey:
         with main.variableLock:
             main.threadID = main.threadID + 1
 
-        caseResult = installResult and uninstallResult and startCliResult and cfgResult
+        caseResult = setupResult and cfgResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=caseResult,
                                  onpass="Set up test environment PASS",

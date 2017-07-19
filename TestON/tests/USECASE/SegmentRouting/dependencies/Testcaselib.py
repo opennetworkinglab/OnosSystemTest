@@ -21,52 +21,41 @@ class Testcaselib:
             - Install ONOS package
             - Build ONOS package
         """
-        main.step( "Constructing test variables" )
-        # Test variables
-        main.cellName = main.params[ 'ENV' ][ 'cellName' ]
-        main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-        main.diff = main.params[ 'ENV' ][ 'diffApps' ]
-        gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        main.path = os.path.dirname( main.testFile )
-        main.dependencyPath = main.path + "/../dependencies/"
-        main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
-        wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
-        main.scale = (main.params[ 'SCALE' ][ 'size' ]).split( "," )
-        main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
-        # main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
-        main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-        main.cellData = { }  # for creating cell file
-        main.CLIs = [ ]
-        main.ONOSip = [ ]
-        main.RESTs = [ ]
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
+            main.step( "Constructing test variables" )
+            # Test variables
+            main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.diff = main.params[ 'ENV' ][ 'diffApps' ]
+            main.path = os.path.dirname( main.testFile )
+            main.dependencyPath = main.path + "/../dependencies/"
+            main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+            wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+            main.scale = (main.params[ 'SCALE' ][ 'size' ]).split( "," )
+            main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
+            # main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            # -- INIT SECTION, ONLY RUNS ONCE -- #
 
-        # Assigning ONOS cli handles to a list
-        for i in range( 1, main.maxNodes + 1 ):
-            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-            main.RESTs.append( getattr( main, 'ONOSrest' + str( i ) ) )
-            main.ONOSip.append( main.CLIs[ i - 1 ].ip_address )
-        # -- INIT SECTION, ONLY RUNS ONCE -- #
-        main.startUp = imp.load_source( wrapperFile1,
-                                        main.dependencyPath +
-                                        wrapperFile1 +
-                                        ".py" )
+            copyResult1 = main.ONOSbench.scp( main.Mininet1,
+                                              main.dependencyPath +
+                                              main.topology,
+                                              main.Mininet1.home,
+                                              direction="to" )
+            stepResult = main.testSetUp.envSetup( hasRest=True )
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
-        copyResult1 = main.ONOSbench.scp( main.Mininet1,
-                                          main.dependencyPath +
-                                          main.topology,
-                                          main.Mininet1.home,
-                                          direction="to" )
-        if main.CLIs:
-            stepResult = main.TRUE
-        else:
-            main.log.error( "Did not properly created list of ONOS CLI handle" )
-            stepResult = main.FALSE
 
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully construct " +
-                                        "test variables ",
-                                 onfail="Failed to construct test variables" )
 
     @staticmethod
     def installOnos( main, vlanCfg=True ):
@@ -82,83 +71,29 @@ class Testcaselib:
         - Connect to cli
         """
         # main.scale[ 0 ] determines the current number of ONOS controller
-        apps = main.apps
         if main.diff:
-            apps = main.apps + "," + main.diff
+            main.apps = main.apps + "," + main.diff
         else:
             main.log.error( "App list is empty" )
         print "NODE COUNT = ", main.numCtrls
         print main.ONOSip
-        tempOnosIp = [ ]
         main.dynamicHosts = [ 'in1', 'out1' ]
-        for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[ i ] )
-        onosUser = main.params[ 'ENV' ][ 'cellUser' ]
-        main.step( "Create and Apply cell file" )
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
-                                       "temp",
-                                       main.Mininet1.ip_address,
-                                       apps,
-                                       tempOnosIp,
-                                       onosUser,
-                                       useSSH=Testcaselib.useSSH )
-        cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell( )
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
-                                        "environment",
-                                 onfail="Failed to apply cell to environment " )
+        main.testSetUp.createApplyCell( newCell=True, cellName=main.cellName,
+                                        Mininet=main.Mininet1, useSSH=Testcaselib.useSSH )
         # kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
-        main.step( "Create and Install ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
 
-        onosInstallResult = main.TRUE
-        for i in range( main.numCtrls ):
-            onosInstallResult = onosInstallResult and \
-                                main.ONOSbench.onosInstall(
-                                        node=main.ONOSip[ i ] )
-        stepResult = onosInstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully installed ONOS package",
-                                 onfail="Failed to install ONOS package" )
-        if Testcaselib.useSSH:
-            for i in range( main.numCtrls ):
-                onosInstallResult = onosInstallResult and \
-                                    main.ONOSbench.onosSecureSSH(
-                                            node=main.ONOSip[ i ] )
-            stepResult = onosInstallResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully secure SSH",
-                                     onfail="Failed to secure SSH" )
-        main.step( "Starting ONOS service" )
-        stopResult, startResult, onosIsUp = main.TRUE, main.TRUE, main.TRUE,
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                             main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                              main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
+        main.testSetUp.buildOnos()
 
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
+        main.testSetUp.installOnos( False )
+
+        main.testSetUp.setupSsh()
+
+        main.testSetUp.checkOnosService()
+
         main.step( "Checking if ONOS CLI is ready" )
         for i in range( main.numCtrls ):
             main.CLIs[ i ].startCellCli( )
@@ -172,7 +107,7 @@ class Testcaselib:
         main.active = 0
         for i in range( 10 ):
             ready = True
-            output = main.CLIs[ main.active ].summary( )
+            output = main.CLIs[ main.active ].summary()
             if not output:
                 ready = False
             if ready:
@@ -437,11 +372,20 @@ class Testcaselib:
         Stops Mininet
         Copies ONOS log
         """
-        main.Mininet1.stopNet( )
-        main.ONOSbench.scp( main.ONOScli1, "/opt/onos/log/karaf.log",
-                            "/tmp/karaf.log", direction="from" )
-        main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
-                                    copyFileName="karaf.log." + main.cfgName )
+        try:
+            from tests.dependencies.utils import Utils
+        except ImportError:
+            main.log.error( "Utils not found exiting the test" )
+            main.exit()
+        try:
+            main.Utils
+        except ( NameError, AttributeError ):
+            main.Utils = Utils()
+
+        main.utils.mininetCleanup( main.Mininet1 )
+
+        main.utils.copyKarafLog()
+
         for i in range( main.numCtrls ):
             main.ONOSbench.onosStop( main.ONOSip[ i ] )
 

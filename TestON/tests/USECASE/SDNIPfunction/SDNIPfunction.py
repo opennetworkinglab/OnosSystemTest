@@ -19,58 +19,24 @@ class SDNIPfunction:
            onos-install -f
            onos-wait-for-start
         """
-        main.case( "Setting up test environment" )
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        try:
+            cellName = main.params[ 'ENV' ][ 'cellName' ]
+            ONOS1Ip = main.params['CTRL']['ip1']
+            stepResult = main.testSetUp.envSetup( specificIp=ONOS1Ip )
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.step( "Applying cell variable to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        branchName = main.ONOSbench.getBranchName()
-        main.log.info( "ONOS is on branch: " + branchName )
-
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # gitPullResult = main.TRUE
-
-        main.step( "Git pull" )
-        gitPullResult = main.ONOSbench.gitPull()
-
-
-        main.ONOSbench.getVersion( report = True )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall( options = "-f",
-                                                           node = ONOS1Ip )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.ONOSbench.onosSecureSSH( node=ONOS1Ip )
-
-        main.step( "Checking if ONOS is up yet" )
-        for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( ONOS1Ip, timeout = 420 )
-            if onos1Isup:
-                break
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
-                commandlineTimeout = 100, onosStartTimeout = 600 )
-
-        case1Result = ( packageResult and cellResult and
-                        verifyResult and onos1InstallResult and
-                        onos1Isup and secureSshResult and
-                        cliResult )
-
-        utilities.assert_equals( expect = main.TRUE, actual = case1Result,
-                                 onpass = "ONOS startup successful",
-                                 onfail = "ONOS startup NOT successful" )
+        case1Result = main.testSetUp.ONOSSetUp( "", newCell=False, cellname=cellName )
 
         if case1Result == main.FALSE:
             main.cleanup()
@@ -136,10 +102,10 @@ class SDNIPfunction:
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
 
         main.step( "Get links in the network" )
-        listResult = main.ONOScli.links( jsonFormat = False )
+        listResult = main.ONOScli1.links( jsonFormat = False )
         main.log.info( listResult )
         main.log.info( "Activate sdn-ip application" )
-        main.ONOScli.activateApp( "org.onosproject.sdnip" )
+        main.ONOScli1.activateApp( "org.onosproject.sdnip" )
         # wait sdn-ip to finish installing connectivity intents, and the BGP
         # paths in data plane are ready.
         time.sleep( int( main.params[ 'timers' ][ 'SdnIpSetup' ] ) )
@@ -194,7 +160,7 @@ class SDNIPfunction:
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
         time.sleep( int( main.params[ 'timers' ][ 'PathAvailable' ] ) )
         # get routes inside SDN-IP
-        getRoutesResult = main.ONOScli.routes( jsonFormat = True )
+        getRoutesResult = main.ONOScli1.routes( jsonFormat = True )
 
         allRoutesActual = \
             main.QuaggaCliHost3.extractActualRoutesMaster( getRoutesResult )
@@ -211,7 +177,7 @@ class SDNIPfunction:
             onpass = "***Routes in SDN-IP are correct!***",
             onfail = "***Routes in SDN-IP are wrong!***" )
 
-        getIntentsResult = main.ONOScli.intents( jsonFormat = True )
+        getIntentsResult = main.ONOScli1.intents( jsonFormat = True )
 
         main.step( "Check MultiPointToSinglePointIntent intents installed" )
         # routeIntentsExpected are generated when generating routes
@@ -273,7 +239,7 @@ class SDNIPfunction:
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
         time.sleep( int( main.params[ 'timers' ][ 'PathAvailable' ] ) )
 
-        getRoutesResult = main.ONOScli.routes( jsonFormat = True )
+        getRoutesResult = main.ONOScli1.routes( jsonFormat = True )
         allRoutesActual = \
             main.QuaggaCliHost3.extractActualRoutesMaster( getRoutesResult )
         main.log.info( "allRoutes_actual = " )
@@ -285,7 +251,7 @@ class SDNIPfunction:
             onfail = "***Routes number in SDN-IP is not 0, wrong!***" )
 
         main.step( "Check intents after deleting routes" )
-        getIntentsResult = main.ONOScli.intents( jsonFormat = True )
+        getIntentsResult = main.ONOScli1.intents( jsonFormat = True )
         routeIntentsActualNum = \
             main.QuaggaCliHost3.extractActualRouteIntentNum( 
                 getIntentsResult )

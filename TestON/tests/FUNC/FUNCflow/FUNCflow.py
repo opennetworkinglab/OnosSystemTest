@@ -6,82 +6,68 @@ class FUNCflow:
     def CASE1( self, main ):
         import os
         import imp
-
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+        except ImportError:
+            main.log.error( "SetUp not found exiting the test" )
+            main.exit()
+        try:
+            main.testSetUp
+        except ( NameError, AttributeError ):
+            main.testSetUp = ONOSSetup()
         """
         - Construct tests variables
         - GIT ( optional )
             - Checkout ONOS master branch
             - Pull latest ONOS code
-        - Building ONOS ( optional )
-            - Install ONOS package
-            - Build ONOS package
         """
-        main.case( "Constructing test variables and building ONOS package" )
-        main.step( "Constructing test variables" )
 
-        # Test variables
-        main.testOnDirectory = os.path.dirname( os.getcwd() )
-        main.cellName = main.params[ 'ENV' ][ 'cellName' ]
-        main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-        gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        gitPull = main.params[ 'GIT' ][ 'pull' ]
-        main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
-        main.dependencyPath = main.testOnDirectory + \
-                              main.params[ 'DEPENDENCY' ][ 'path' ]
-        wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
-        wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
-        main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
-        main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
-        main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-        main.startMNSleep = int( main.params[ 'SLEEP' ][ 'startMN' ] )
-        main.addFlowSleep = int( main.params[ 'SLEEP' ][ 'addFlow' ] )
-        main.delFlowSleep = int( main.params[ 'SLEEP' ][ 'delFlow' ] )
-        main.debug = main.params[ 'DEBUG' ]
-        main.swDPID = main.params[ 'TEST' ][ 'swDPID' ]
-        main.cellData = {}  # for creating cell file
-        main.CLIs = []
-        main.ONOSip = []
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
+            # Test variables
+            main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
+            main.dependencyPath = main.testOnDirectory + \
+                                  main.params[ 'DEPENDENCY' ][ 'path' ]
+            wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+            wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
+            main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+            main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            main.startMNSleep = int( main.params[ 'SLEEP' ][ 'startMN' ] )
+            main.addFlowSleep = int( main.params[ 'SLEEP' ][ 'addFlow' ] )
+            main.delFlowSleep = int( main.params[ 'SLEEP' ][ 'delFlow' ] )
+            main.debug = main.params[ 'DEBUG' ]
+            main.swDPID = main.params[ 'TEST' ][ 'swDPID' ]
 
-        main.debug = True if "on" in main.debug else False
+            main.debug = True if "on" in main.debug else False
 
-        main.ONOSip = main.ONOSbench.getOnosIps()
+            # -- INIT SECTION, ONLY RUNS ONCE -- #
 
-        # Assigning ONOS cli handles to a list
-        for i in range( 1, main.maxNodes + 1 ):
-            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            try:
+                from tests.FUNC.FUNCflow.dependencies.checkingFlow import CheckingFlow
+                main.checkingFlow = CheckingFlow()
+            except ImportError as e:
+                print e
+                main.log.error("CheckingFlow not found exiting the test")
+                main.exit()
+            copyResult = main.ONOSbench.scp( main.Mininet1,
+                                             main.dependencyPath + main.topology,
+                                             main.Mininet1.home + '/custom/',
+                                             direction="to" )
 
-        # -- INIT SECTION, ONLY RUNS ONCE -- #
-        main.startUp = imp.load_source( wrapperFile1,
-                                        main.dependencyPath +
-                                        wrapperFile1 +
-                                        ".py" )
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=copyResult,
+                                     onpass="Successfully copy " + "test variables ",
+                                     onfail="Failed to copy test variables" )
 
-        main.topo = imp.load_source( wrapperFile2,
-                                     main.dependencyPath +
-                                     wrapperFile2 +
-                                     ".py" )
+            stepResult = main.testSetUp.envSetup()
 
-        copyResult = main.ONOSbench.scp( main.Mininet1,
-                                         main.dependencyPath + main.topology,
-                                         main.Mininet1.home + '/custom/',
-                                         direction="to" )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=copyResult,
-                                 onpass="Successfully copy " + "test variables ",
-                                 onfail="Failed to copy test variables" )
-
-        if main.CLIs:
-            stepResult = main.TRUE
-        else:
-            main.log.error( "Did not properly created list of ONOS CLI handle" )
-            stepResult = main.FALSE
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully construct " + "test variables ",
-                                 onfail="Failed to construct test variables" )
-
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
 
     def CASE2( self, main ):
@@ -90,127 +76,32 @@ class FUNCflow:
             - Create cell file
             - Set cell file
             - Verify cell file
+        - Building ONOS
+            - Install ONOS package
+            - Build ONOS package
         - Kill ONOS process
         - Uninstall ONOS cluster
         - Verify ONOS start up
         - Install ONOS cluster
         - Connect to cli
         """
-        import time
-
-        main.numCtrls = int( main.maxNodes )
-
-        main.case( "Starting up " + str( main.numCtrls ) +
-                   " node(s) ONOS cluster" )
-
-        #kill off all onos processes
-        main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating environment setup" )
-
-        for i in range( main.maxNodes ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
-
-        main.log.info( "NODE COUNT = " + str( main.numCtrls ) )
-
-        tempOnosIp = []
-        for i in range( main.numCtrls ):
-            tempOnosIp.append( main.ONOSip[ i ] )
-
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
-                                       "temp",
-                                       main.Mininet1.ip_address,
-                                       main.apps,
-                                       tempOnosIp, main.ONOScli1.karafUser )
-
-        main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( "temp" )
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to " + "environment",
-                                 onfail="Failed to apply cell to environment " )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        stepResult = packageResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully created ONOS package",
-                                 onfail="Failed to create ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = main.TRUE
-        for ip in main.ONOSip:
-            onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=ip )
-        stepResult = onosUninstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully uninstalled ONOS package",
-                                 onfail="Failed to uninstall ONOS package" )
-        time.sleep( main.startUpSleep )
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.TRUE
-        for i in range( main.numCtrls ):
-            onosInstallResult = onosInstallResult and \
-                    main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
-        stepResult = onosInstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully installed ONOS package",
-                                 onfail="Failed to install ONOS package" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( int( main.numCtrls ) ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Starting ONOS service" )
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-        if onosIsUp == main.TRUE:
-            main.log.report( "ONOS instance is up and ready" )
-        else:
-            main.log.report( "ONOS instance may not be up, stop and " +
-                             "start ONOS again " )
-            for i in range( main.numCtrls ):
-                stopResult = stopResult and \
-                        main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            for i in range( main.numCtrls ):
-                startResult = startResult and \
-                        main.ONOSbench.onosStart( main.ONOSip[ i ] )
-        stepResult = onosIsUp and stopResult and startResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="ONOS service is ready",
-                                 onfail="ONOS service did not start properly" )
-
-        main.step( "Start ONOS cli" )
-        cliResult = main.TRUE
-        for i in range( main.numCtrls ):
-            cliResult = cliResult and \
-                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
-        stepResult = cliResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully start ONOS cli",
-                                 onfail="Failed to start ONOS cli" )
+        main.testSetUp.ONOSSetUp( main.Mininet1 )
 
     def CASE10( self, main ):
         """
             Start Mininet
         """
         import json
+        import time
+        try:
+            from tests.dependencies.topology import Topology
+        except ImportError:
+            main.log.error( "Topology not found exiting the test" )
+            main.exit()
+        try:
+            main.topoRelated
+        except ( NameError, AttributeError ):
+            main.topoRelated = Topology()
 
         main.case( "Setup mininet and compare ONOS topology view to Mininet topology" )
         main.caseExplanation = "Start mininet with custom topology and compare topology " +\
@@ -235,60 +126,7 @@ class FUNCflow:
 
         time.sleep( main.startMNSleep )
 
-        main.step( "Comparing MN topology to ONOS topology" )
-        main.log.info( "Gathering topology information" )
-        devices = main.topo.getAllDevices( main )
-        hosts = main.topo.getAllHosts( main )
-        ports = main.topo.getAllPorts( main )
-        links = main.topo.getAllLinks( main )
-
-        mnSwitches = main.Mininet1.getSwitches()
-        mnLinks = main.Mininet1.getLinks()
-        mnHosts = main.Mininet1.getHosts()
-
-        for controller in range( main.numCtrls ):
-            controllerStr = str( controller + 1 )
-            if devices[ controller ] and ports[ controller ] and\
-                    "Error" not in devices[ controller ] and\
-                    "Error" not in ports[ controller ]:
-
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
-            else:
-                currentDevicesResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentDevicesResult,
-                                     onpass="ONOS" + controllerStr +
-                                            " Switches view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                            " Switches view is incorrect" )
-            if links[ controller ] and "Error" not in links[ controller ]:
-                currentLinksResult = main.Mininet1.compareLinks(
-                        mnSwitches, mnLinks,
-                        json.loads( links[ controller ] ) )
-            else:
-                currentLinksResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentLinksResult,
-                                     onpass="ONOS" + controllerStr +
-                                            " links view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                            " links view is incorrect" )
-
-            if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                currentHostsResult = main.Mininet1.compareHosts(
-                        mnHosts,
-                        json.loads( hosts[ controller ] ) )
-            else:
-                currentHostsResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentHostsResult,
-                                     onpass="ONOS" + controllerStr +
-                                            " hosts exist in Mininet",
-                                     onfail="ONOS" + controllerStr +
-                                            " hosts don't match Mininet" )
+        main.topoRelated.compareTopos( main.Mininet1 )
 
     def CASE66( self, main ):
         """
@@ -532,46 +370,7 @@ class FUNCflow:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flow is in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow is correct" )
 
@@ -654,46 +453,7 @@ class FUNCflow:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flow is in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow is correct" )
 
@@ -1015,46 +775,7 @@ class FUNCflow:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flow is in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow is correct" )
 
@@ -1139,46 +860,7 @@ class FUNCflow:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flow is in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow is correct" )
 
@@ -1260,46 +942,7 @@ class FUNCflow:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flow is in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow is correct" )
 
@@ -1381,46 +1024,7 @@ class FUNCflow:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flow is in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow is correct" )
 
@@ -1537,46 +1141,7 @@ class FUNCflow:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flow is in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow is correct" )
 
@@ -1657,46 +1222,7 @@ class FUNCflow:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flow is in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow is correct" )
 

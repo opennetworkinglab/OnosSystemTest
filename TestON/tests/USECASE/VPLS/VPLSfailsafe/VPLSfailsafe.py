@@ -92,7 +92,7 @@ class VPLSfailsafe:
         # scp topo file to mininet
         # TODO: move to params?
         topoName = "vpls"
-        topoFile = "vplsfailsafe-topo.py"
+        topoFile = "vpls.py"
         filePath = main.ONOSbench.home + "/tools/test/topos/"
         main.ONOSbench.scp( main.Mininet1,
                             filePath + topoFile,

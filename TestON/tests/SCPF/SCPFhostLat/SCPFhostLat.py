@@ -76,16 +76,13 @@ class SCPFhostLat:
             main.maxNumBatch = 0
             main.setupSkipped = False
 
-            nic = main.params[ 'DATABASE' ][ 'nic' ]
-            node = main.params[ 'DATABASE' ][ 'node' ]
-            nic = main.params[ 'DATABASE' ][ 'nic' ]
+            main.nic = main.params[ 'DATABASE' ][ 'nic' ]
             node = main.params[ 'DATABASE' ][ 'node' ]
             stepResult = main.TRUE
 
             main.log.info( "Cresting DB file" )
             with open( main.dbFileName, "w+" ) as dbFile:
                 dbFile.write( "" )
-
             stepResult = main.testSetUp.gitPulling()
         except Exception as e:
             main.testSetUp.envSetupException( e )
@@ -93,11 +90,6 @@ class SCPFhostLat:
 
         main.commit = main.commit.split( " " )[ 1 ]
 
-        with open( main.dbFileName, "a" ) as dbFile:
-            temp = "'" + main.commit + "',"
-            temp += "'" + nic + "',"
-            dbFile.write( temp )
-            dbFile.close()
     def CASE1( self ):
         # main.scale[ 0 ] determines the current number of ONOS controller
         main.testSetUp.getNumCtrls( True )
@@ -258,8 +250,10 @@ class SCPFhostLat:
         # write to DB file
         main.log.info("Writing results to DS file")
         with open(main.dbFileName, "a") as dbFile:
+            temp = "'" + main.commit + "',"
+            temp += "'" + main.nic + "',"
             # Scale number
-            temp = str(main.numCtrls)
+            temp += str( main.numCtrls )
             temp += ",'" + "baremetal1" + "'"
             # average latency
             temp += "," + str( averageResult )

@@ -84,7 +84,7 @@ class SCPFscalingMaxIntents:
             main.setupSkipped = False
 
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
-            nic = main.params[ 'DATABASE' ][ 'nic' ]
+            main.nic = main.params[ 'DATABASE' ][ 'nic' ]
             node = main.params[ 'DATABASE' ][ 'node' ]
             stepResult = main.testSetUp.gitPulling()
             main.log.info( "Cresting DB file" )
@@ -94,10 +94,6 @@ class SCPFscalingMaxIntents:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
-        with open( main.dbFileName, "a" ) as dbFile:
-            temp = "'" + main.commit + "',"
-            temp += "'" + nic + "',"
-            dbFile.write( temp )
     def CASE1( self ):
         main.testSetUp.getNumCtrls( True )
         main.testSetUp.envSetup( includeGitPull=False, makeMaxNodes=False )
@@ -437,7 +433,9 @@ class SCPFscalingMaxIntents:
         main.log.info("Writing results to DS file")
         with open(main.dbFileName, "a") as dbFile:
             # Scale number
-            temp = str(main.numCtrls)
+            temp = "'" + main.commit + "',"
+            temp += "'" + main.nic + "',"
+            temp += str(main.numCtrls)
             temp += ",'" + "baremetal1" + "'"
             # how many intents we installed before crash
             temp += "," + str(verifyTotalIntents)

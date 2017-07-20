@@ -53,7 +53,6 @@ class SCPFcbench:
             except Exception as e:
                 main.testSetUp.envSetupException( e )
             main.testSetUp.evnSetupConclusion( stepResult )
-
             main.commit = ( main.commit.split( " " ) )[ 1 ]
         # -- END OF INIT SECTION --#
 

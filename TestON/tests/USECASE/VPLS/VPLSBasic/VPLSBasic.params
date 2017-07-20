@@ -4,6 +4,15 @@
 
     <num_controllers>3</num_controllers>
 
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <path>/tests/USECASE/VPLS/VPLSfailsafe/dependencies/</path>
+
+    <wrapper2>vpls</wrapper2>
+
     <DEPENDENCY>
         <wrapper1>startUp</wrapper1>
         <topology>~/onos/tools/test/topos/vpls.json</topology>

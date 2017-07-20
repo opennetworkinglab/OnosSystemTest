@@ -1,116 +1,32 @@
 <TOPOLOGY>
-
     <COMPONENT>
 
-        <ONOSbench>
-            <host>localhost</host>
+        <ONOScell>
+            <host>localhost</host>  # ONOS "bench" machine
             <user>sdn</user>
             <password>rocks</password>
-            <type>OnosDriver</type>
+            <type>OnosClusterDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
-                <home>~/onos</home>
-                <nodes>7</nodes>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOSbench>
-
-        <ONOSrest1>
-            <host>OC1</host>
-            <port>8181</port>
-            <user>onos</user>
-            <password>rocks</password>
-            <type>OnosRestDriver</type>
-            <connect_order>3</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOSrest1>
-        <ONOScli1>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>2</connect_order>
-            <COMPONENTS>
+                <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost></diff_clihost>  # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
                 <karaf_username></karaf_username>
                 <karaf_password></karaf_password>
-                <prompt></prompt>
+                <web_user></web_user>
+                <web_pass></web_pass>
+                <rest_port></rest_port>
+                <prompt></prompt>  # TODO: we technically need a few of these, one per component
+                <onos_home></onos_home>  # defines where onos home is
+                <nodes> 7 </nodes>  # number of nodes in the cluster
             </COMPONENTS>
-        </ONOScli1>
-
-        <ONOScli2>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>3</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOScli2>
-
-        <ONOScli3>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>4</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOScli3>
-
-        <ONOScli4>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>5</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOScli4>
-
-        <ONOScli5>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>6</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOScli5>
-
-        <ONOScli6>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>7</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOScli6>
-
-        <ONOScli7>
-            <host>localhost</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>8</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOScli7>
+        </ONOScell>
 
         <Mininet1>
             <host>OCN</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>MininetCliDriver</type>
-            <connect_order>5</connect_order>
+            <connect_order>2</connect_order>
             <COMPONENTS>
                 <prompt></prompt>
             </COMPONENTS>

@@ -56,12 +56,10 @@ class SAMPstartTemplate_3node:
         '''
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
-            from dependencies.Cluster import Cluster
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
             main.exit()
         try:
-            main.Cluster = Cluster( main.ONOScell.nodes )
             main.testSetUp
         except ( NameError, AttributeError ):
             main.testSetUp = ONOSSetup()
@@ -69,12 +67,10 @@ class SAMPstartTemplate_3node:
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
-            main.nodeList = main.params['CASE1']['NodeList'].split(",")
             main.onosStartupSleep = float(main.params['CASE1']['SleepTimers']['onosStartup'])
             main.onosCfgSleep = float(main.params['CASE1']['SleepTimers']['onosCfg'])
             main.mnStartupSleep = float(main.params['CASE1']['SleepTimers']['mnStartup'])
             main.mnCfgSleep = float(main.params['CASE1']['SleepTimers']['mnCfg'])
-            main.numCtrls = int( main.params['CASE10']['numNodes'] )
             stepResult = main.testSetUp.envSetup( includeGitPull=False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
@@ -87,8 +83,7 @@ class SAMPstartTemplate_3node:
             Report errors/warnings/exceptions
         '''
         main.log.info("Error report: \n" )
-        ONOSbench = main.ONOScell.nodes[0].Bench
-        ONOSbench.logReport( main.Cluster.controllers[0].ipAddress,
+        main.ONOSbench.logReport( main.Cluster.runningNodes[0].ipAddress,
                                   [ "INFO",
                                     "FOLLOWER",
                                     "WARN",
@@ -116,11 +111,10 @@ class SAMPstartTemplate_3node:
 
         import time
 
-        size = len( main.Cluster.controllers )
-        main.case( "Start up " + str( size ) + "-node onos cluster." )
+        main.case( "Start up " + str( main.Cluster.numCtrls ) + "-node onos cluster." )
 
         main.step( "Start ONOS cluster with basic (drivers) app.")
-        stepResult = ONOSbench.startBasicONOS( nodeList=main.Cluster.getIps(), opSleep=200,
+        stepResult = main.ONOSbench.startBasicONOS( nodeList=main.Cluster.getIps(), opSleep=200,
                                                onosUser=main.ONOScell.karafUser )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -135,7 +129,7 @@ class SAMPstartTemplate_3node:
             main.log.info( "Apps to activate: " + main.apps )
             activateResult = main.TRUE
             for a in main.apps.split(","):
-                activateResult = activateResult & main.ONOScli1.activateApp(a)
+                activateResult = activateResult & main.Cluster.active( 0 ).CLI.activateApp(a)
             # TODO: check this worked
             time.sleep( main.onosCfgSleep )  # wait for apps to activate
         else:
@@ -153,7 +147,7 @@ class SAMPstartTemplate_3node:
             for component in config:
                 for setting in config[component]:
                     value = config[component][setting]
-                    check = main.Cluster.controllers[0].setCfg( component, setting, value )
+                    check = main.Cluster.runningNodes[0].setCfg( component, setting, value )
                     main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
                     checkResult = check and checkResult
             utilities.assert_equals( expect=main.TRUE,
@@ -204,8 +198,8 @@ class SAMPstartTemplate_3node:
         """
 
         main.case( "Test some onos commands through CLI. ")
-        main.log.debug( main.Cluster.controllers[1].sendline("summary") )
-        main.log.debug( main.Cluster.controllers[2].sendline("devices") )
+        main.log.debug( main.Cluster.active( 0 ).CLI.sendline( "summary" ) )
+        main.log.debug( main.Cluster.active( 1 ).CLI.sendline( "devices" ) )
 
     def CASE22( self, main ):
         """
@@ -213,8 +207,8 @@ class SAMPstartTemplate_3node:
         """
 
         main.case( " Sample tests using ONOS REST API handles. ")
-        main.log.debug( main.Cluster.controllers[2].send("/devices") )
-        main.log.debug( main.Cluster.controllers[-1].apps() )
+        main.log.debug( main.Cluster.active( 0 ).REST.send( "/devices" ) )
+        main.log.debug( main.Cluster.active( 2 ).REST.apps() )
 
     def CASE32( self, main ):
         """
@@ -225,9 +219,11 @@ class SAMPstartTemplate_3node:
         """
         main.case( "Configure onos-app-fwd and check if configuration successful. " )
         main.step( "Install reactive forwarding app." )
-        installResults = main.Cluster.controllers[0].activateApp( "org.onosproject.fwd" )
-        utilities.assert_equals( expect=main.TRUE, actual=installResults,
-                                 onpass= "Configure fwd successful", onfail= "Configure fwd failed" )
+        installResults = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=installResults,
+                                 onpass= "Configure fwd successful",
+                                 onfail= "Configure fwd failed" )
         main.step( "Run pingall to check connectivity. " )
         pingResult = main.FALSE
         passMsg = "Reactive Pingall test passed"
@@ -236,4 +232,7 @@ class SAMPstartTemplate_3node:
            main.log.warn("First pingall failed. Trying again...")
            pingResult = main.Mininet1.pingall()
            passMsg += "on the second try"
-        utilities.assert_equals( expect=main.TRUE, actual=pingResult, onpass=passMsg, onfail= "Reactive Pingall failed, " + "one or more ping pairs failed" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=pingResult,
+                                 onpass=passMsg,
+                                 onfail= "Reactive Pingall failed, " + "one or more ping pairs failed" )

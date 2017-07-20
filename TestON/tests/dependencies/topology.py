@@ -1,3 +1,23 @@
+"""
+Copyright 2016 Open Networking Foundation (ONF)
+
+Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+
+    TestON is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    TestON is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+"""
 import time
 import re
 import imp
@@ -6,39 +26,29 @@ class Topology:
 
     def __init__( self ):
         self.default = ''
+
     """
         These functions can be used for topology comparisons
     """
-    def getAllDevices( self, numNode, needRetry, kwargs={} ):
+    def getAll( self, function, needRetry=False, kwargs={}, inJson=False ):
         """
-            Return a list containing the devices output from each ONOS node
+        Description:
+            get all devices/links/hosts/ports of the onosCli
+        Required:
+            * function - name of the function
+            * needRetry - it will retry if this is true.
+            * kwargs - kwargs of the function
+            * inJson - True if want it in Json form
+        Returns:
+            Returns the list of the result.
         """
-        devices = []
+        returnList = []
         threads = []
         for ctrl in main.Cluster.active():
-            t = main.Thread( target=utilities.retry if needRetry else ctrl.devices,
-                             name="devices-" + str( ctrl ),
-                             args=[ ctrl.devices, [ None ] ] if needRetry else [],
-                             kwargs=kwargs )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            devices.append( t.result )
-        return devices
-
-    def getAllHosts( self, numNode, needRetry, kwargs={}, inJson=False ):
-        """
-            Return a list containing the hosts output from each ONOS node
-        """
-        hosts = []
-        ipResult = main.TRUE
-        threads = []
-        for ctrl in main.Cluster.active():
-            t = main.Thread( target=utilities.retry if needRetry else ctrl.hosts,
-                             name="hosts-" + str( ctrl ),
-                             args=[ ctrl.hosts, [ None ] ] if needRetry else [],
+            func = getattr( ctrl.CLI, function )
+            t = main.Thread( target=utilities.retry if needRetry else func,
+                             name= function + "-" + str( ctrl ),
+                             args=[ func, [ None ] ] if needRetry else [],
                              kwargs=kwargs )
             threads.append( t )
             t.start()
@@ -47,74 +57,29 @@ class Topology:
             t.join()
             if inJson:
                 try:
-                    hosts.append( json.loads( t.result ) )
+                    returnList.append( json.loads( t.result ) )
                 except ( ValueError, TypeError ):
                     main.log.exception( "Error parsing hosts results" )
                     main.log.error( repr( t.result ) )
-                    hosts.append( None )
+                    returnList.append( None )
             else:
-                hosts.append( t.result )
-        return hosts
-
-    def getAllPorts( self, numNode, needRetry, kwargs={} ):
-        """
-            Return a list containing the ports output from each ONOS node
-        """
-        ports = []
-        threads = []
-        for ctrl in main.Cluster.active():
-            t = main.Thread( target=utilities.retry if needRetry else ctrl.ports,
-                             name="ports-" + str( ctrl ),
-                             args=[ ctrl.ports, [ None ] ] if needRetry else [],
-                             kwargs=kwargs )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            ports.append( t.result )
-        return ports
-
-    def getAllLinks( self, numNode, needRetry, kwargs={} ):
-        """
-            Return a list containing the links output from each ONOS node
-        """
-        links = []
-        threads = []
-        for ctrl in main.Cluster.active():
-            t = main.Thread( target=utilities.retry if needRetry else ctrl.links,
-                             name="links-" + str( ctrl ),
-                             args=[ ctrl.links, [ None ] ] if needRetry else [],
-                             kwargs=kwargs )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            links.append( t.result )
-        print links
-        return links
-
-    def getAllClusters( self, numNode, needRetry, kwargs={} ):
-        """
-            Return a list containing the clusters output from each ONOS node
-        """
-        clusters = []
-        threads = []
-        for ctrl in main.Cluster.active():
-            t = main.Thread( target=utilities.retry if needRetry else ctrl.clusters,
-                             name="clusters-" + str( ctrl ),
-                             args=[ ctrl.clusters, [ None ] ] if needRetry else [],
-                             kwargs=kwargs )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            clusters.append( t.result )
-        return clusters
+                returnList.append( t.result )
+        return returnList
 
     def compareDevicePort( self, Mininet, controller, mnSwitches, devices, ports ):
+        """
+        Description:
+            compares the devices and port of the onos to the mininet.
+        Required:
+            * Mininet - mininet driver to use
+            * controller - controller position of the devices
+            * mnSwitches - switches of mininet
+            * devices - devices of the onos
+            * ports - ports of the onos
+        Returns:
+            Returns main.TRUE if the results are matching else
+            Returns main.FALSE
+        """
         if devices[ controller ] and ports[ controller ] and \
                         "Error" not in devices[ controller ] and \
                         "Error" not in ports[ controller ]:
@@ -133,6 +98,19 @@ class Topology:
         return currentDevicesResult
 
     def compareBase( self, compareElem, controller, compareF, compareArg ):
+        """
+        Description:
+            compares the links/hosts of the onos to the mininet.
+        Required:
+            * compareElem - list of links/hosts of the onos
+            * controller - controller position of the devices
+            * compareF - function of the mininet that will compare the
+            results
+            * compareArg - arg of the compareF.
+        Returns:
+            Returns main.TRUE if the results are matching else
+            Returns main.FALSE
+        """
         if compareElem[ controller ] and "Error" not in compareElem[ controller ]:
             try:
                 if isinstance( compareArg, list ):
@@ -151,7 +129,17 @@ class Topology:
         return currentCompareResult
 
     def compareTopos( self, Mininet, attempts=1 ):
-
+        """
+        Description:
+            compares the links and hosts and switches of the onos to the mininet.
+        Required:
+            * Mininet - Mininet driver to use.
+            * attempts - number of attempts to compare in case
+            the result is different after a certain time.
+        Returns:
+            Returns main.TRUE if the results are matching else
+            Returns main.FALSE
+        """
         main.case( "Compare ONOS Topology view to Mininet topology" )
         main.caseExplanation = "Compare topology elements between Mininet" +\
                                 " and ONOS"
@@ -174,21 +162,21 @@ class Topology:
             main.log.info( "Sleeping {} seconds".format( 2 ) )
             time.sleep( 2 )
             if not devicesResults:
-                devices = self.getAllDevices( main.numCtrls, False )
-                ports = self.getAllPorts( main.numCtrls, False )
+                devices = self.getAll( "devices", False )
+                ports = self.getAll( "ports", False )
                 devicesResults = main.TRUE
                 deviceFails = []  # Reset for each failed attempt
             if not linksResults:
-                links = self.getAllLinks( main.numCtrls, False )
+                links = self.getAll( "links", False )
                 linksResults = main.TRUE
                 linkFails = []  # Reset for each failed attempt
             if not hostsResults:
-                hosts = self.getAllHosts( main.numCtrls, False )
+                hosts = self.getAll( "hosts", False )
                 hostsResults = main.TRUE
                 hostFails = []  # Reset for each failed attempt
 
             #  Check for matching topology on each node
-            for controller in range( main.numCtrls ):
+            for controller in main.Cluster.getRunningPos():
                 controllerStr = str( controller + 1 )  # ONOS node number
                 # Compare Devices
                 currentDevicesResult = self.compareDevicePort( Mininet, controller,
@@ -234,3 +222,4 @@ class Topology:
                                  actual=topoResults,
                                  onpass="ONOS correctly discovered the topology",
                                  onfail="ONOS incorrectly discovered the topology" )
+        return topoResults

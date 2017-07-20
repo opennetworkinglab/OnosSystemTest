@@ -88,7 +88,8 @@ class SCPFbatchFlowResp:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, skipPack=main.skipPackaging )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+                                  skipPack=main.skipPackaging )
 
     def CASE10( self, main ):
         """
@@ -100,7 +101,7 @@ class SCPFbatchFlowResp:
 
         main.step( "Activate openflow-base App" )
         app = main.params[ 'CASE10' ][ 'app' ]
-        stepResult = main.ONOScli1.activateApp( app )
+        stepResult = main.Cluster.active( 0 ).CLI.activateApp( app )
         time.sleep( main.cfgSleep )
         main.log.info( stepResult )
         utilities.assert_equals( expect=main.TRUE,
@@ -111,7 +112,7 @@ class SCPFbatchFlowResp:
         time.sleep( main.cfgSleep )
 
         main.step( "Configure AdaptiveFlowSampling " )
-        stepResult = main.ONOScli1.setCfg( component="org.onosproject.provider.of.flow.impl.OpenFlowRuleProvider",
+        stepResult = main.Cluster.active( 0 ).CLI.setCfg( component=main.params[ 'CASE10' ][ 'cfg' ],
                                            propName="adaptiveFlowSampling ", value=main.params[ 'CASE10' ][ 'adaptiveFlowenabled' ] )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -132,7 +133,8 @@ class SCPFbatchFlowResp:
 
         main.step( "Assign switches to controller" )
         for i in range( 1, main.numSw + 1 ):
-            main.Mininet1.assignSwController( "s" + str( i ), main.ONOSip[ 0 ] )
+            main.Mininet1.assignSwController( "s" + str( i ),
+                                              main.Cluster.active( 0 ).ipAddress )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -152,18 +154,24 @@ class SCPFbatchFlowResp:
         main.case( "Setup Null Provider for linear Topology" )
 
         main.step( "Activate Null Provider App" )
-        stepResult = main.ONOSbench.onosCli( ONOSIp=main.ONOSip[ 0 ],
+        stepResult = main.ONOSbench.onosCli( ONOSIp=main.Cluster.active( 0 ).ipAddress,
                                              cmdstr="app activate org.onosproject.null" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully activated org.onosproject.null",
                                  onfail="Failed to activate org.onosproject.null" )
         time.sleep( main.cfgSleep )
-
+        cfgs = main.params[ 'CASE11' ][ 'cfg' ]
         main.step( "Setup Null Provider Linear Topology with " + str( main.numSw ) + " devices." )
-        r1 = main.ONOSbench.onosCfgSet( main.ONOSip[ 0 ], "org.onosproject.provider.nil.NullProviders", "deviceCount " + str( main.numSw ) )
-        r2 = main.ONOSbench.onosCfgSet( main.ONOSip[ 0 ], "org.onosproject.provider.nil.NullProviders", "topoShape " + main.params[ 'CASE11' ][ 'nullTopo' ] )
-        r3 = main.ONOSbench.onosCfgSet( main.ONOSip[ 0 ], "org.onosproject.provider.nil.NullProviders", "enabled " + main.params[ 'CASE11' ][ 'nullStart' ] )
+        r1 = main.ONOSbench.onosCfgSet( main.Cluster.active( 0 ).ipAddress,
+                                        cfgs,
+                                        "deviceCount " + str( main.numSw ) )
+        r2 = main.ONOSbench.onosCfgSet( main.Cluster.active( 0 ).ipAddress,
+                                        cfgs,
+                                        "topoShape " + main.params[ 'CASE11' ][ 'nullTopo' ] )
+        r3 = main.ONOSbench.onosCfgSet( main.Cluster.active( 0 ).ipAddress,
+                                        cfgs,
+                                        "enabled " + main.params[ 'CASE11' ][ 'nullStart' ] )
         stepResult = r1 & r2 & r3
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -206,7 +214,7 @@ class SCPFbatchFlowResp:
                 ind = startSw
 
             main.log.info( "Creating batch: " + str( index ) )
-            flowJsonBatch = main.ONOSrest.createFlowBatch( numSw=main.numSw,
+            flowJsonBatch = main.Cluster.active( 0 ).REST.createFlowBatch( numSw=main.numSw,
                                                            swIndex=ind,
                                                            batchSize=main.batchSize,
                                                            batchIndex=index,
@@ -240,7 +248,7 @@ class SCPFbatchFlowResp:
             while True:
                 item = q.get()
                 #print json.dumps( item )
-                status, response = main.ONOSrest.sendFlowBatch( batch=item )
+                status, response = main.Cluster.active( 0 ).REST.sendFlowBatch( batch=item )
                 if status == main.TRUE:
                     main.log.info( "Thread {} is working on posting. ".format( id ) )
                     #print json.dumps( response )
@@ -272,9 +280,9 @@ class SCPFbatchFlowResp:
         resp = main.FALSE
         while resp != main.TRUE and ( tAllAdded - tLastPostEnd < int( main.params[ 'CASE2100' ][ 'chkFlowTO' ] ) ):
             if main.params[ 'CASE2100' ][ 'RESTchkFlow' ] == 'main.TRUE':
-                resp = main.ONOSrest.checkFlowsState()
+                resp = main.Cluster.active( 0 ).REST.checkFlowsState()
             else:
-                handle = main.CLIs[ 0 ].flows( state=" |grep PEND|wc -l", jsonFormat=False )
+                handle = main.Cluster.active( 0 ).CLI.flows( state=" |grep PEND|wc -l", jsonFormat=False )
                 main.log.info( "handle returns PENDING flows: " + handle )
                 if handle == "0":
                     resp = main.TRUE
@@ -321,7 +329,7 @@ class SCPFbatchFlowResp:
         def removeWorker( id ):
             while True:
                 item = q.get()
-                response = main.ONOSrest.removeFlowBatch( batch=json.loads( item ) )
+                response = main.Cluster.active( 0 ).REST.removeFlowBatch( batch=json.loads( item ) )
                 main.log.info( "Thread {} is working on deleting. ".format( id ) )
                 q.task_done()
 
@@ -344,9 +352,9 @@ class SCPFbatchFlowResp:
         resp = main.FALSE
         while resp != main.TRUE and ( tAllRemoved - tLastDeleteEnd < int( main.params[ 'CASE3100' ][ 'chkFlowTO' ] ) ):
             if main.params[ 'CASE3100' ][ 'RESTchkFlow' ] == 'main.TRUE':
-                resp = main.ONOSrest.checkFlowsState()
+                resp = main.Cluster.active( 0 ).REST.checkFlowsState()
             else:
-                handle = main.CLIs[ 0 ].flows( state=" |grep PEND|wc -l", jsonFormat=False )
+                handle = main.Cluster.active( 0 ).CLI.flows( state=" |grep PEND|wc -l", jsonFormat=False )
                 main.log.info( "handle returns PENDING flows: " + handle )
                 if handle == "0":
                     resp = main.TRUE
@@ -373,7 +381,7 @@ class SCPFbatchFlowResp:
 
         main.case( "Check to ensure onos flows." )
 
-        resp = main.ONOSrest.checkFlowsState()
+        resp = main.Cluster.active( 0 ).REST.checkFlowsState()
         #pprint( resp )
 
     def CASE210( self, main ):
@@ -412,7 +420,7 @@ class SCPFbatchFlowResp:
         Report errors/warnings/exceptions
         """
         main.log.info( "Error report: \n" )
-        main.ONOSbench.logReport( main.ONOSip[ 0 ],
+        main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress,
                                   [ "INFO",
                                     "FOLLOWER",
                                     "WARN",

@@ -54,20 +54,32 @@ class Controller():
 
         We will look into each of the node's component handles to try to find the attreibute, looking at REST first
         """
+        usedDriver = False
         if hasattr( self.REST, name ):
-            main.log.debug( "Using Rest driver's attribute for '%s'" % ( name ) )
-            return getattr( self.REST, name)
+            main.log.warn( "Rest driver has attribute '%s'" % ( name ) )
+            if not usedDriver:
+                usedDriver = True
+                main.log.debug("Using Rest driver's attribute for '%s'" % (name))
+                f = getattr( self.REST, name)
         if hasattr( self.CLI, name ):
-            main.log.debug( "Using CLI driver's attribute for '%s'" % ( name ) )
-            return getattr( self.CLI, name)
+            main.log.warn( "CLI driver has attribute '%s'" % ( name ) )
+            if not usedDriver:
+                usedDriver = True
+                main.log.debug("Using CLI driver's attribute for '%s'" % (name))
+                f = getattr( self.CLI, name)
         if hasattr( self.Bench, name ):
-            main.log.debug( "Using Bench driver's attribute for '%s'" % ( name ) )
-            return getattr( self.Bench, name)
-        raise AttributeError( "Could not find the attribute %s in %s or it's component handles" % ( name, self ) )
+            main.log.warn( "Bench driver has attribute '%s'" % ( name ) )
+            if not usedDriver:
+                usedDriver = True
+                main.log.debug("Using Bench driver's attribute for '%s'" % (name))
+                f = getattr( self.Bench, name)
+        if usedDriver:
+            return f
+        raise AttributeError( "Could not find the attribute %s in %r or it's component handles" % ( name, self ) )
 
 
 
-    def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None ):
+    def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None, userName=None ):
         #TODO: validate these arguments
         self.name = str( name )
         self.ipAddress = ipAddress
@@ -75,7 +87,9 @@ class Controller():
         self.REST = REST
         self.Bench = Bench
         self.active = False
-
+        self.pos = pos
+        self.ip_address = ipAddress
+        self.user_name = userName
 
 class OnosClusterDriver( CLI ):
 
@@ -229,16 +243,19 @@ class OnosClusterDriver( CLI ):
             response = main.FALSE
         return response
 
-    def setCliOptions( self, name ):
+    def setCliOptions( self, name, host ):
         """
         Parse the cluster options to create an ONOS cli component with the given name
         """
         main.componentDictionary[name] = main.componentDictionary[self.name].copy()
+        clihost = main.componentDictionary[ name ][ 'COMPONENTS' ].get( "diff_clihost", "" )
+        if clihost == "True":
+            main.componentDictionary[ name ][ 'host' ] = host
         main.componentDictionary[name]['type'] = "OnosCliDriver"
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
         main.log.debug( main.componentDictionary[name] )
 
-    def createCliComponent( self, name ):
+    def createCliComponent( self, name, host ):
         """
         Creates a new onos cli component.
 
@@ -252,7 +269,7 @@ class OnosClusterDriver( CLI ):
             getattr( main, name )
         except AttributeError:
             # namespace is clear, creating component
-            self.setCliOptions( name )
+            self.setCliOptions( name, host )
             return main.componentInit( name )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -377,10 +394,10 @@ class OnosClusterDriver( CLI ):
             # Even if it is just the entire possible cluster size
             ip = self.onosIps[ 'OC' + str( i ) ]
 
-            cli = self.createCliComponent( cliName )
+            cli = self.createCliComponent( cliName, ip )
             rest = self.createRestComponent( restName, ip )
             bench = self.createBenchComponent( benchName )
-            self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench ) )
+            self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1, self.user_name ) )
 
         ## DEBUG ########################################################################
         print "Prininting NODES::"

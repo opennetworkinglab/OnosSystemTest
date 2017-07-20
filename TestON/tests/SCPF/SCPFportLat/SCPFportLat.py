@@ -69,6 +69,7 @@ class SCPFportLat:
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.measurementSleep = int( main.params[ 'SLEEP' ][ 'measure' ] )
             main.maxScale = int( main.params[ 'max' ] )
+            main.defaultTopoCfg = main.params[ 'CFG' ][ 'defaultTopo' ]
             main.interface = main.params[ 'TEST' ][ 'interface' ]
             main.timeout = int( main.params[ 'TIMEOUT' ][ 'timeout' ] )
             main.MNSleep = int( main.params[ 'SLEEP' ][ 'mininet' ] )
@@ -80,7 +81,7 @@ class SCPFportLat:
             else:
                 main.debug = False
 
-            stepResult = main.testSetUp.gitPulling()
+            stepResult = main.testSetUp.envSetup()
             main.log.info( "Create Database file " + main.dbFileName )
             resultsDB = open( main.dbFileName, "w+" )
             resultsDB.close()
@@ -97,25 +98,22 @@ class SCPFportLat:
     def CASE1( self, main ):
         # Clean up test environment and set up
         import time
-        main.testSetUp.getNumCtrls( True )
-        main.testSetUp.envSetup( includeGitPull=False, makeMaxNodes=False )
-        main.testSetUp.ONOSSetUp( main.Mininet1, True,
-                                  cellName=main.cellName, killRemoveMax=False,
-                                  CtrlsSet=False )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True,
+                                  cellName=main.cellName, killRemoveMax=False )
 
         main.log.info( "Configure apps" )
-        main.CLIs[0].setCfg( "org.onosproject.net.topology.impl.DefaultTopologyProvider",
-                            "maxEvents 1" )
-        main.CLIs[0].setCfg( "org.onosproject.net.topology.impl.DefaultTopologyProvider",
-                            "maxBatchMs 0" )
-        main.CLIs[0].setCfg( "org.onosproject.net.topology.impl.DefaultTopologyProvider",
-                            "maxIdleMs 0" )
-        time.sleep(1)
+        main.Cluster.active( 0 ).CLI.setCfg( main.defaultTopoCfg,
+                                                  "maxEvents 1" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.defaultTopoCfg,
+                                                  "maxBatchMs 0" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.defaultTopoCfg,
+                                                  "maxIdleMs 0" )
+        time.sleep( 1 )
         main.log.info( "Copy topology file to Mininet" )
         main.ONOSbench.copyMininetFile( main.topoName,
                                        main.dependencyPath,
                                        main.Mininet1.user_name,
-                                       main.Mininet1.ip_address)
+                                       main.Mininet1.ip_address )
         try:
             from tests.dependencies.utils import Utils
         except ImportError:
@@ -130,39 +128,61 @@ class SCPFportLat:
         main.log.info( "Start new mininet topology" )
         main.Mininet1.startNet()
         main.log.info( "Assign switch to controller to ONOS node 1" )
-        time.sleep(1)
-        main.Mininet1.assignSwController( sw='s1', ip=main.ONOSip[0] )
-        main.Mininet1.assignSwController( sw='s2', ip=main.ONOSip[0] )
+        time.sleep( 1 )
+        main.Mininet1.assignSwController( sw='s1',
+                                          ip=main.Cluster.active( 0 ).ipAddress )
+        main.Mininet1.assignSwController( sw='s2',
+                                          ip=main.Cluster.active( 0 ).ipAddress )
 
-        time.sleep(2)
+        time.sleep( 2 )
 
     def CASE2( self, main ):
         import time
         import numpy
         # dictionary for each node and each timestamps
-        resultDict = {'up' : {}, 'down' : {}}
+        resultDict = { 'up' : {}, 'down' : {} }
         for d in resultDict:
-            for i in range( 1, main.numCtrls + 1 ):
-                resultDict[d][ 'node' + str(i) ] = {}
-                resultDict[d][ 'node' + str(i) ][ 'Ave' ] = {}
-                resultDict[d][ 'node' + str(i) ][ 'Std' ] = {}
-                resultDict[d][ 'node' + str(i) ][ 'EtoE' ] = []
-                resultDict[d][ 'node' + str(i) ][ 'PtoD' ] = []
-                resultDict[d][ 'node' + str(i) ][ 'DtoL' ] = []
-                resultDict[d][ 'node' + str(i) ][ 'LtoG' ] = []
+            for i in range( 1, main.Cluster.numCtrls + 1 ):
+                resultDict[ d ][ 'node' + str( i ) ] = {}
+                resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ] = {}
+                resultDict[ d ][ 'node' + str( i ) ][ 'Std' ] = {}
+                resultDict[ d ][ 'node' + str( i ) ][ 'EtoE' ] = []
+                resultDict[ d ][ 'node' + str( i ) ][ 'PtoD' ] = []
+                resultDict[ d ][ 'node' + str( i ) ][ 'DtoL' ] = []
+                resultDict[ d ][ 'node' + str( i ) ][ 'LtoG' ] = []
         for i in range( 1, main.sampleSize + main.warmUp ):
             main.log.info( "==========================================" )
-            main.log.info( "================iteration:{}==============".format(str (i) ) )
+            main.log.info( "================iteration:{}==============".format( str ( i ) ) )
             if i > main.warmUp:
                 # Portdown iteration
-                main.portFunc.capturePortStatusPack( main, main.device, main.interface, "down", resultDict, False )
-                time.sleep(2)
+                main.portFunc.capturePortStatusPack( main,
+                                                     main.device,
+                                                     main.interface,
+                                                     "down",
+                                                     resultDict,
+                                                     False )
+                time.sleep( 2 )
                 # PortUp iteration
-                main.portFunc.capturePortStatusPack( main, main.device, main.interface, "up", resultDict, False )
+                main.portFunc.capturePortStatusPack( main,
+                                                     main.device,
+                                                     main.interface,
+                                                     "up",
+                                                     resultDict,
+                                                     False )
             else:
                 # if warm up, keep old result dictionary
-                main.portFunc.capturePortStatusPack( main, main.device, main.interface, "down", resultDict, True)
-                main.portFunc.capturePortStatusPack( main, main.device, main.interface, "up", resultDict, True)
+                main.portFunc.capturePortStatusPack( main,
+                                                     main.device,
+                                                     main.interface,
+                                                     "down",
+                                                     resultDict,
+                                                     True )
+                main.portFunc.capturePortStatusPack( main,
+                                                     main.device,
+                                                     main.interface,
+                                                     "up",
+                                                     resultDict,
+                                                     True )
 
         # Dictionary for result
         maxDict  = {}
@@ -174,45 +194,45 @@ class SCPFportLat:
         maxDict[ 'up' ][ 'node' ] = 0
         EtoEtemp = 0
         for d in resultDict:
-            for i in range( 1, main.numCtrls + 1 ):
+            for i in range( 1, main.Cluster.numCtrls + 1 ):
                 # calculate average and std for result, and grep the max End to End data
-                EtoEtemp = numpy.average( resultDict[d][ 'node' + str(i) ][ 'EtoE' ] )
-                resultDict[d][ 'node' + str(i) ][ 'Ave' ][ 'EtoE' ] = EtoEtemp
-                if maxDict[d][ 'max' ] < EtoEtemp:
+                EtoEtemp = numpy.average( resultDict[ d ][ 'node' + str( i ) ][ 'EtoE' ] )
+                resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ][ 'EtoE' ] = EtoEtemp
+                if maxDict[ d ][ 'max' ] < EtoEtemp:
                     # get max End to End latency
-                    maxDict[d][ 'max' ] = EtoEtemp
-                    maxDict[d][ 'node' ] = i
-                resultDict[d][ 'node' + str(i)][ 'Ave' ][ 'PtoD' ] = numpy.average(resultDict[d][ 'node' + str(i)][ 'PtoD' ] )
-                resultDict[d][ 'node' + str(i)][ 'Ave' ][ 'DtoL' ] = numpy.average(resultDict[d][ 'node' + str(i)][ 'DtoL' ] )
-                resultDict[d][ 'node' + str(i)][ 'Ave' ][ 'LtoG' ] = numpy.average(resultDict[d][ 'node' + str(i)][ 'LtoG' ] )
+                    maxDict[ d ][ 'max' ] = EtoEtemp
+                    maxDict[ d ][ 'node' ] = i
+                resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ][ 'PtoD' ] = numpy.average( resultDict[ d ][ 'node' + str( i ) ][ 'PtoD' ] )
+                resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ][ 'DtoL' ] = numpy.average( resultDict[ d ][ 'node' + str( i ) ][ 'DtoL' ] )
+                resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ][ 'LtoG' ] = numpy.average( resultDict[ d ][ 'node' + str( i ) ][ 'LtoG' ] )
 
-                resultDict[d][ 'node' + str(i)][ 'Std' ][ 'EtoE' ] = numpy.std(resultDict[d][ 'node' + str(i)][ 'EtoE' ] )
-                resultDict[d][ 'node' + str(i)][ 'Std' ][ 'PtoD' ] = numpy.std(resultDict[d][ 'node' + str(i)][ 'PtoD' ] )
-                resultDict[d][ 'node' + str(i)][ 'Std' ][ 'DtoL' ] = numpy.std(resultDict[d][ 'node' + str(i)][ 'DtoL' ] )
-                resultDict[d][ 'node' + str(i)][ 'Std' ][ 'LtoG' ] = numpy.std(resultDict[d][ 'node' + str(i)][ 'LtoG' ] )
+                resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'EtoE' ] = numpy.std( resultDict[ d ][ 'node' + str( i ) ][ 'EtoE' ] )
+                resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'PtoD' ] = numpy.std( resultDict[ d ][ 'node' + str( i ) ][ 'PtoD' ] )
+                resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'DtoL' ] = numpy.std( resultDict[ d ][ 'node' + str( i ) ][ 'DtoL' ] )
+                resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'LtoG' ] = numpy.std( resultDict[ d ][ 'node' + str( i ) ][ 'LtoG' ] )
 
-                main.log.report( "=====node{} Summary:=====".format( str(i) ) )
-                main.log.report( "=============Port {}=======".format( str(d) ) )
+                main.log.report( "=====node{} Summary:=====".format( str( i ) ) )
+                main.log.report( "=============Port {}=======".format( str( d ) ) )
                 main.log.report(
-                    "End to End average: {}".format( str(resultDict[d][ 'node' + str(i) ][ 'Ave' ][ 'EtoE' ] ) ) )
+                    "End to End average: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ][ 'EtoE' ] ) ) )
                 main.log.report(
-                    "End to End Std: {}".format( str(resultDict[d][ 'node' + str(i) ][ 'Std' ][ 'EtoE' ] ) ) )
+                    "End to End Std: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'EtoE' ] ) ) )
                 main.log.report(
-                    "Package to Device average: {}".format( str(resultDict[d][ 'node' + str(i)][ 'Ave' ][ 'PtoD' ] ) ) )
+                    "Package to Device average: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ][ 'PtoD' ] ) ) )
                 main.log.report(
-                    "Package to Device Std: {}".format( str( resultDict[d][ 'node' + str(i)][ 'Std' ][ 'PtoD' ] ) ))
+                    "Package to Device Std: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'PtoD' ] ) ) )
                 main.log.report(
-                    "Device to Link average: {}".format( str( resultDict[d][ 'node' + str(i)][ 'Ave' ][ 'DtoL' ] ) ) )
+                    "Device to Link average: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ][ 'DtoL' ] ) ) )
                 main.log.report(
-                    "Device to Link Std: {}".format( str( resultDict[d][ 'node' + str(i)][ 'Std' ][ 'DtoL' ] ) ))
+                    "Device to Link Std: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'DtoL' ] ) ) )
                 main.log.report(
-                    "Link to Grapg average: {}".format( str( resultDict[d][ 'node' + str(i)][ 'Ave' ][ 'LtoG' ] ) ) )
+                    "Link to Grapg average: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Ave' ][ 'LtoG' ] ) ) )
                 main.log.report(
-                    "Link to Grapg Std: {}".format( str( resultDict[d][ 'node' + str(i)][ 'Std' ][ 'LtoG' ] ) ) )
+                    "Link to Grapg Std: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'LtoG' ] ) ) )
 
         with open( main.dbFileName, "a" ) as dbFile:
             # Scale number
-            temp = str( main.numCtrls )
+            temp = str( main.Cluster.numCtrls )
             temp += ",'baremetal1'"
             # put result
             temp += "," + str( resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'EtoE' ] )

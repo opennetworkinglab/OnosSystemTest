@@ -56,7 +56,9 @@
             <ACK>openflow\ \[ACK\]</ACK>
         </down>
     </TSHARK>
-
+    <CFG>
+        <defaultTopo>org.onosproject.net.topology.impl.DefaultTopologyProvider</defaultTopo>
+    </CFG>
     <TEST>
         #'on' or 'off' debug mode.
         #If on, logging will be more verbose and

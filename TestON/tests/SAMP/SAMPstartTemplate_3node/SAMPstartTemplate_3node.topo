@@ -13,6 +13,7 @@
             <connect_order>1</connect_order>
             <COMPONENTS>
                 <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost></diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
                 <karaf_username></karaf_username>
                 <karaf_password></karaf_password>
                 <web_user></web_user>
@@ -29,7 +30,7 @@
             <user>sdn</user>
             <password>rocks</password>
             <type>MininetCliDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>2</connect_order>
             <COMPONENTS>
                 <home>~/mininet/custom/</home>
             </COMPONENTS>

@@ -38,7 +38,7 @@ def startApp( main ):
         the OF-Config server is running on the node to be configured
     """
     startResult = main.FALSE
-    startResult = main.RESTs[ 0 ].activateApp( appName="org.onosproject.netconf" )
+    startResult = main.Cluster.active( 0 ).REST.activateApp( appName="org.onosproject.netconf" )
     return startResult
 
 
@@ -116,7 +116,7 @@ def sendConfig( main ):
     method = "POST"
     data = main.cfgJson
     configResult = main.FALSE
-    sendResult = main.RESTs[ 0 ].send( url=url, method=method, data=data )
+    sendResult = main.Cluster.active( 0 ).REST.send( url=url, method=method, data=data )
     main.log.info( "Device configuration request response code: " + str( sendResult[ 0 ] ) )
     if ( 200 <= sendResult[ 0 ] <= 299 ):
         configResult = main.TRUE
@@ -137,8 +137,8 @@ def devices( main ):
     addressResult = main.FALSE
     driverResult = main.FALSE
     try:
-        apiResult = main.RESTs[ 0 ].devices()
-        cliResult = main.CLIs[ 0 ].devices()
+        apiResult = main.Cluster.active( 0 ).REST.devices()
+        cliResult = main.Cluster.active( 0 ).CLI.devices()
 
         apiDict = json.loads( apiResult )
         cliDict = json.loads( cliResult )

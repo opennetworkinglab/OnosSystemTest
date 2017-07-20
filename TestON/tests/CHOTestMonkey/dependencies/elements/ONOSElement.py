@@ -31,7 +31,7 @@ class Controller:
     def __init__( self, index ):
         self.default = ''
         self.index = index
-        self.ip = main.ONOSip[ index - 1 ]
+        self.ip = main.Cluster.getIps()[ index - 1 ]
         self.CLI = None
         self.CLILock = Lock()
         self.status = 'up'

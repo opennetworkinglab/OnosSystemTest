@@ -56,10 +56,9 @@ class SCPFscaleTopo:
             main.dependencyPath = main.testOnDirectory + \
                                   main.params[ 'DEPENDENCY' ][ 'path' ]
             main.tsharkResultPath = main.params[ 'TsharkPath' ]
-            main.roleRequest = main.params[ 'SearchTerm' ]['roleRequest']
+            main.roleRequest = main.params[ 'SearchTerm' ][ 'roleRequest' ]
             main.multiovs = main.params[ 'DEPENDENCY' ][ 'multiovs' ]
             main.topoName = main.params[ 'TOPOLOGY' ][ 'topology' ]
-            main.numCtrls = int( main.params[ 'CTRL' ][ 'numCtrls' ] )
             main.topoScale = ( main.params[ 'TOPOLOGY' ][ 'scale' ] ).split( "," )
             main.topoScaleSize = len( main.topoScale )
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
@@ -74,14 +73,13 @@ class SCPFscaleTopo:
             main.MNSleep = int( main.params[ 'SLEEP' ][ 'MNsleep' ] )
             main.pingTimeout = float( main.params[ 'TIMEOUT' ][ 'pingall' ] )
             main.hostDiscover = main.params[ 'TOPOLOGY' ][ 'host' ]
-            main.hostDiscoverSleep = float( main.params['SLEEP']['host'] )
+            main.hostDiscoverSleep = float( main.params[ 'SLEEP' ][ 'host' ] )
             if main.hostDiscover == 'True':
                 main.hostDiscover = True
             else:
                 main.hostDiscover = False
-            main.homeDir = os.path.expanduser('~')
+            main.homeDir = os.path.expanduser( '~' )
             main.hostsData = {}
-            main.activeNodes = []
 
 
             stepResult = main.testSetUp.envSetup()
@@ -99,7 +97,7 @@ class SCPFscaleTopo:
 
             main.dbFilePath = main.params[ 'DATABASE' ][ 'dbPath' ]
             main.log.info( "Create Database file " + main.dbFilePath )
-            resultDB = open(main.dbFilePath, 'w+' )
+            resultDB = open( main.dbFilePath, 'w+' )
             resultDB.close()
 
             main.scaleTopoFunction = imp.load_source( wrapperFile2,
@@ -122,7 +120,7 @@ class SCPFscaleTopo:
         main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
 
-    def CASE2( self, main):
+    def CASE2( self, main ):
         """
         - Set up cell
             - Create cell file
@@ -145,10 +143,7 @@ class SCPFscaleTopo:
         except ( NameError, AttributeError ):
             main.Utils = Utils()
         main.Utils.mininetCleanup( main.Mininet1 )
-        main.testSetUp.ONOSSetUp( main.Mininet1 )
-        main.activeNodes = []
-        for i in range( main.numCtrls ):
-            main.activeNodes.append( i )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
 
     def CASE10( self, main ):
         """
@@ -159,15 +154,15 @@ class SCPFscaleTopo:
         main.caseExplanation = "Starting Mininet with a scalling topology and " +\
                 "comparing topology elements between Mininet and ONOS"
         if main.topoScale:
-            main.currScale = main.topoScale.pop(0)
+            main.currScale = main.topoScale.pop( 0 )
         else: main.log.error( "topology scale is empty" )
-        main.step( "Starting up TORUS %sx%s topology" % (main.currScale, main.currScale) )
+        main.step( "Starting up TORUS %sx%s topology" % ( main.currScale, main.currScale ) )
 
         main.log.info( "Constructing Mininet command" )
         mnCmd = " mn --custom " + main.Mininet1.home + main.multiovs + \
                 " --switch ovsm --topo " + main.topoName + "," + main.currScale + "," + main.currScale
-        for i in range( main.numCtrls ):
-                mnCmd += " --controller remote,ip=" + main.ONOSip[ i ]
+        for ctrl in main.Cluster.runningNodes:
+                mnCmd += " --controller remote,ip=" + ctrl.ipAddress
         stepResult = main.Mininet1.startNet( mnCmd=mnCmd )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -178,11 +173,11 @@ class SCPFscaleTopo:
 
         time.sleep( main.MNSleep )
         main.log.info( "Clean up Tshark" )
-        with open(main.tsharkResultPath, "w" ) as tshark:
+        with open( main.tsharkResultPath, "w" ) as tshark:
             tshark.write( "" )
         main.log.info( "Starting Tshark capture" )
         main.ONOSbench.tsharkGrep( main.roleRequest, main.tsharkResultPath, grepOptions='-E' )
-        main.CLIs[ 0 ].activateApp( "org.onosproject.openflow" )
+        main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.openflow" )
         time.sleep( main.MNSleep )
         main.log.info( "Stop Tshark" )
         main.ONOSbench.tsharkStop()
@@ -210,36 +205,35 @@ class SCPFscaleTopo:
         # First capture
         for i in range( 3 ):
             # Calculate total time
-            main.allinfo[ 0 ][ 'info' + str( i )][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'end' ], 'last', index=i, funcMode='TD' )
+            main.allinfo[ 0 ][ 'info' + str( i ) ][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'end' ], 'last', index=i, funcMode='TD' )
             # Calculate switch connection time
-            main.allinfo[ 0 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
+            main.allinfo[ 0 ][ 'info' + str( i ) ][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
             # Calculate the time from last switch connection to the last role request
-            main.allinfo[ 0 ][ 'info' + str( i )][ 'lastSwToLastRr' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'start' ], 'last', index=i )
+            main.allinfo[ 0 ][ 'info' + str( i ) ][ 'lastSwToLastRr' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'start' ], 'last', index=i )
             # Calculate the time from the last role request to the last topology
-            main.allinfo[ 0 ][ 'info' + str( i )][ 'lastRrToLastTopology' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'end' ], 'last', index=i )
+            main.allinfo[ 0 ][ 'info' + str( i ) ][ 'lastRrToLastTopology' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'end' ], 'last', index=i )
             # Calculate the disconnecti rate
-            main.allinfo[ 0 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ], 'num', index=i, funcMode='DR' )
+            main.allinfo[ 0 ][ 'info' + str( i ) ][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ], 'num', index=i, funcMode='DR' )
         main.log.debug( "The data is " + str( main.allinfo[ 0 ] ) )
 
         main.case( "Verifying topology: TORUS %sx%s" % ( main.currScale, main.currScale ) )
         main.caseExplanation = "Pinging all hosts and comparing topology " +\
                 "elements between Mininet and ONOS"
 
-        main.log.info( "Gathering topology information")
+        main.log.info( "Gathering topology information" )
         time.sleep( main.MNSleep )
         stepResult = main.TRUE
         main.step( "Comparing MN topology to ONOS topology" )
         compareRetry = 0
         while compareRetry < 3:
             #While loop for retry
-            devices = main.topoRelated.getAllDevices( main.numCtrls, False )
-            ports = main.topoRelated.getAllPorts( main.numCtrls, False )
-            links = main.topoRelated.getAllLinks( main.numCtrls, False)
+            devices = main.topoRelated.getAll( "devices" )
+            ports = main.topoRelated.getAll( "ports" )
+            links = main.topoRelated.getAll( "links" )
             mnSwitches = main.Mininet1.getSwitches()
-            mnLinks = main.Mininet1.getLinks(timeout=180)
+            mnLinks = main.Mininet1.getLinks( timeout=180 )
 
-            for controller in range(len(main.activeNodes)):
-                # controllerStr = str( main.activeNodes[controller] + 1 )
+            for controller in range( len( main.Cluster.active() ) ):
                 currentDevicesResult = main.topoRelated.compareDevicePort(
                                                             main.Mininet1, controller,
                                                             mnSwitches,
@@ -253,10 +247,10 @@ class SCPFscaleTopo:
             if stepResult:
                 break
             compareRetry += 1
-        utilities.assert_equals(expect=main.TRUE,
-                                actual=stepResult,
-                                onpass=" Topology match Mininet",
-                                onfail="ONOS Topology doesn't match Mininet")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=" Topology match Mininet",
+                                 onfail="ONOS Topology doesn't match Mininet")
 
         if stepResult:
             if main.hostDiscover:
@@ -279,10 +273,10 @@ class SCPFscaleTopo:
                 else:
                     main.log.warn( "Some hosts ware not discovered by ONOS... Topology doesn't match!" )
                     stepResult = main.FALSE
-                utilities.assert_equals(expect=main.TRUE,
-                                        actual=stepResult,
-                                        onpass=" Topology match Mininet",
-                                        onfail="ONOS Topology doesn't match Mininet")
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=stepResult,
+                                         onpass=" Topology match Mininet",
+                                         onfail="ONOS Topology doesn't match Mininet")
             main.log.info( "Finished this iteration, continue to scale next topology." )
         else:
             main.log.info( "Clean up and exit TestON. Finished this test." )
@@ -306,9 +300,9 @@ class SCPFscaleTopo:
         # Printing purposes
         node = main.deadNode + 1
         main.log.info( "Stopping node %s" % node )
-        stepResult = main.ONOSbench.onosStop( main.ONOSip[ main.deadNode ] )
+        stepResult = main.ONOSbench.onosStop( main.Cluster.active( main.deadNode ).ipAddress )
         main.log.info( "Removing dead node from list of active nodes" )
-        main.activeNodes.pop( main.deadNode )
+        main.Cluster.runningNodes[ main.deadNode ].active = False
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -322,15 +316,15 @@ class SCPFscaleTopo:
 
         main.case("Bring ONOS node 3 up: TORUS %sx%s" % (main.currScale, main.currScale))
         main.caseExplanation = "Bring node 3 back up and balance the masters"
-
+        ctrl = main.Cluster.runningNodes[ main.deadNode ]
         node = main.deadNode + 1
         main.log.info( "Starting node %s" % node )
-        stepResult = main.ONOSbench.onosStart( main.ONOSip[ main.deadNode ] )
+        stepResult = main.ONOSbench.onosStart( ctrl.ipAddress )
         main.log.info( "Starting onos cli" )
-        stepResult = stepResult and main.CLIs[ main.deadNode ].startOnosCli( main.ONOSip[ main.deadNode ] )
-
+        stepResult = stepResult and \
+                     ctrl.CLI.startOnosCli( ctrl.ipAddress )
         main.log.info( "Adding previously dead node to list of active nodes" )
-        main.activeNodes.append( main.deadNode )
+        ctrl.active = True
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -349,21 +343,19 @@ class SCPFscaleTopo:
         main.step( "Balancing Masters" )
 
         stepResult = main.FALSE
-        if main.activeNodes:
-            controller = main.activeNodes[0]
-            stepResult = utilities.retry( main.CLIs[controller].balanceMasters,
+        if main.Cluster.active():
+            stepResult = utilities.retry( main.Cluster.next().CLI.balanceMasters,
                                           main.FALSE,
                                           [],
                                           sleep=3,
                                           attempts=3 )
-
         else:
             main.log.error( "List of active nodes is empty" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Balance masters was successfull",
                                  onfail="Failed to balance masters")
-        time.sleep(main.balanceSleep)
+        time.sleep( main.balanceSleep )
 
     def CASE1000( self, main ):
         '''
@@ -375,19 +367,43 @@ class SCPFscaleTopo:
         # Second capture
         for i in range( 3 ):
             # Calculate total time
-            main.allinfo[ 1 ][ 'info' + str( i )][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'end' ], 'last', index=i, funcMode='TD' )
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main,
+                                                                                                          main.searchTerm[ 'start' ],
+                                                                                                          'first',
+                                                                                                          main.searchTerm[ 'end' ],
+                                                                                                          'last',
+                                                                                                          index=i,
+                                                                                                          funcMode='TD' )
             # Compare the total time
             if main.allinfo[ 1 ][ 'info' + str( i ) ][ 'totalTime' ] > slowestTotalTime:
                 slowestTotalTime = main.allinfo[ 1 ][ 'info' + str( i ) ][ 'totalTime' ]
                 slowestNode = i
             # Calculate switch connection time
-            main.allinfo[ 1 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'start' ], 'last', index=i, funcMode='TD' )
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'swConnection' ] = main.scaleTopoFunction.getInfoFromLog( main,
+                                                                                                             main.searchTerm[ 'start' ],
+                                                                                                             'first',
+                                                                                                             main.searchTerm[ 'start' ],
+                                                                                                             'last',
+                                                                                                             index=i,
+                                                                                                             funcMode='TD' )
             # Calculate the time from last switch connection to the last role request
-            main.allinfo[ 1 ][ 'info' + str( i )][ 'lastSwToLastRr' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'start' ], 'last', index=i )
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'lastSwToLastRr' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main,
+                                                                                                                               main.searchTerm[ 'start' ],
+                                                                                                                               'last',
+                                                                                                                               index=i )
             # Calculate the time from the last role request to the last topology
-            main.allinfo[ 1 ][ 'info' + str( i )][ 'lastRrToLastTopology' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main, main.searchTerm[ 'end' ], 'last', index=i )
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'lastRrToLastTopology' ] = main.scaleTopoFunction.compareTimeDiffWithRoleRequest( main,
+                                                                                                                                     main.searchTerm[ 'end' ],
+                                                                                                                                     'last',
+                                                                                                                                     index=i )
             # Calculate the disconnecti rate
-            main.allinfo[ 1 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ],'num', index=i, funcMode='DR' )
+            main.allinfo[ 1 ][ 'info' + str( i )][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main,
+                                                                                                               main.searchTerm[ 'Disconnect' ],
+                                                                                                               'num',
+                                                                                                               main.searchTerm[ 'start' ],
+                                                                                                               'num',
+                                                                                                               index=i,
+                                                                                                               funcMode='DR' )
 
         if ( main.allinfo[ 0 ] != main.allinfo[ 1 ] ):
             main.log.error( "The results of two capture are different!" )
@@ -411,7 +427,7 @@ class SCPFscaleTopo:
         main.writeData = 1
         main.case( "Checking logs for errors, warnings, and exceptions" )
         main.log.info( "Error report: \n" )
-        main.ONOSbench.logReport( main.ONOSip[ 0 ],
+        main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress,
                                                             [ "INFO",
                                                               "FOLLOWER",
                                                               "WARN",

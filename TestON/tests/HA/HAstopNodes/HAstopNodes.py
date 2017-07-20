@@ -80,20 +80,19 @@ class HAstopNodes:
             main.exit()
         main.testSetUp.envSetupDescription()
         try:
-            from dependencies.Cluster import Cluster
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-            main.Cluster = Cluster( main.ONOScell.nodes )
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            stepResult = main.testSetUp.envSetup( main.Cluster, hasNode=True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAstopNodes" )
 
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
-                                  extraApply=main.HA.customizeOnosGenPartitions,
+                                  extraApply=[ main.HA.startingMininet,
+                                               main.HA.customizeOnosGenPartitions ],
                                   extraClean=main.HA.cleanUpGenPartition )
 
         main.HA.initialSetUp()
@@ -132,7 +131,6 @@ class HAstopNodes:
         """
         The Failure case.
         """
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Stop minority of ONOS nodes" )
@@ -142,11 +140,11 @@ class HAstopNodes:
             main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
             main.log.warn( ctrl.checkLogs( ctrl.ipAddress ) )
 
-        n = len( main.Cluster.controllers )  # Number of nodes
+        n = len( main.Cluster.runningNodes )  # Number of nodes
         p = ( ( n + 1 ) / 2 ) + 1  # Number of partitions
-        main.kill = [ main.Cluster.controllers[ 0 ] ]  # ONOS node to kill, listed by index in main.nodes
+        main.kill = [ main.Cluster.runningNodes[ 0 ] ]  # ONOS node to kill, listed by index in main.nodes
         if n > 3:
-            main.kill.append( main.Cluster.controllers[ p - 1 ] )
+            main.kill.append( main.Cluster.runningNodes[ p - 1 ] )
             # NOTE: This only works for cluster sizes of 3,5, or 7.
 
         main.step( "Stopping nodes: " + str( main.kill ) )
@@ -194,7 +192,7 @@ class HAstopNodes:
         except AttributeError:
             main.kill = []
 
-        main.HA.checkStateAfterONOS( main, afterWhich=0 )
+        main.HA.checkStateAfterEvent( main, afterWhich=0 )
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
         leaderList = []

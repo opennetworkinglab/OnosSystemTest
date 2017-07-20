@@ -1,56 +1,32 @@
 <TOPOLOGY>
     <COMPONENT>
 
-        <ONOSbench>
-            <host>127.0.0.1</host>
+        <ONOScell>
+            <host>localhost</host>  # ONOS "bench" machine
             <user>sdn</user>
             <password>rocks</password>
-            <type>OnosDriver</type>
+            <type>OnosClusterDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOSbench>
-
-        <ONOScli1>
-            <host>127.0.0.1</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>2</connect_order>
-            <COMPONENTS>
+                <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost></diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
                 <karaf_username></karaf_username>
                 <karaf_password></karaf_password>
-                <prompt></prompt>
+                <web_user></web_user>
+                <web_pass></web_pass>
+                <rest_port></rest_port>
+                <prompt></prompt>  # TODO: we technically need a few of these, one per component
+                <onos_home></onos_home>  # defines where onos home is
+                <nodes> 3 </nodes>  # number of nodes in the cluster
             </COMPONENTS>
-        </ONOScli1>
-        <ONOScli2>
-            <host>127.0.0.1</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>3</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOScli2>
-        <ONOScli3>
-            <host>127.0.0.1</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosCliDriver</type>
-            <connect_order>3</connect_order>
-            <COMPONENTS>
-                <prompt></prompt>
-            </COMPONENTS>
-        </ONOScli3>
+        </ONOScell>
 
         <QuaggaCliSpeaker1>
             <host>127.0.0.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>QuaggaCliDriver</type>
-            <connect_order>4</connect_order>
+            <connect_order>2</connect_order>
             <COMPONENTS>
                 <prompt></prompt>
             </COMPONENTS>
@@ -61,7 +37,7 @@
             <user>sdn</user>
             <password>rocks</password>
             <type>MininetCliDriver</type>
-            <connect_order>5</connect_order>
+            <connect_order>3</connect_order>
             <COMPONENTS>
                 <home>~/Mininet/mininet/custom/</home>
                 <prompt></prompt>

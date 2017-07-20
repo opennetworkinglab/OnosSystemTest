@@ -64,15 +64,15 @@ class VPLSBasic:
             cellName = main.params[ 'ENV' ][ 'cellName' ]
 
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-            main.numCtrls = int( main.params[ 'num_controllers' ] )
 
             ofPort = main.params[ 'CTRL' ][ 'port' ]
-            stepResult = main.testSetUp.envSetup( hasRest=True, hasNode=True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+                                  cellName=cellName )
 
         main.step( "Starting Mininet" )
         # scp topo file to mininet
@@ -86,15 +86,14 @@ class VPLSBasic:
                             direction="to" )
         topo = " --custom " + main.Mininet1.home + topoFile + " --topo " + topoName
         args = " --switch ovs,protocols=OpenFlow13"
-        for node in main.nodes:
-            args += " --controller=remote,ip=" + node.ip_address
+        for ctrl in main.Cluster.active():
+            args += " --controller=remote,ip=" + ctrl.ipAddress
         mnCmd = "sudo mn" + topo + args
         mnResult = main.Mininet1.startNet( mnCmd=mnCmd )
         utilities.assert_equals( expect=main.TRUE, actual=mnResult,
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
 
-        main.activeNodes = [ i for i in range( 0, len( main.CLIs ) ) ]
 
         main.step( "Activate apps defined in the params file" )
         # get data from the params
@@ -104,11 +103,11 @@ class VPLSBasic:
             main.log.warn( apps )
             activateResult = True
             for app in apps:
-                main.CLIs[ 0 ].app( app, "Activate" )
+                main.Cluster.active( 0 ).CLI.app( app, "Activate" )
             # TODO: check this worked
             time.sleep( SLEEP )  # wait for apps to activate
             for app in apps:
-                state = main.CLIs[ 0 ].appStatus( app )
+                state = main.Cluster.active( 0 ).CLI.appStatus( app )
                 if state == "ACTIVE":
                     activateResult = activateResult and True
                 else:
@@ -129,7 +128,7 @@ class VPLSBasic:
             for component in config:
                 for setting in config[ component ]:
                     value = config[ component ][ setting ]
-                    check = main.CLIs[ 0 ].setCfg( component, setting, value )
+                    check = main.Cluster.active( 0 ).CLI.setCfg( component, setting, value )
                     main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
                     checkResult = check and checkResult
             utilities.assert_equals( expect=main.TRUE,
@@ -140,22 +139,11 @@ class VPLSBasic:
             main.log.warn( "No configurations were specified to be changed after startup" )
 
         main.step( "App Ids check" )
-        appCheck = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            appCheck = appCheck and t.result
-        if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ 0 ].apps() )
-            main.log.warn( main.CLIs[ 0 ].appIDs() )
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+        appCheck = main.Cluster.command( "appToIDCheck", returnBool=True )
+        if appCheck != True:
+            main.log.warn( main.Cluster.active( 0 ).CLI.apps() )
+            main.log.warn( main.Cluster.active( 0 ).CLI.appIDs() )
+        utilities.assert_equals( expect=True, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
@@ -167,7 +155,7 @@ class VPLSBasic:
         from tests.USECASE.VPLS.dependencies import vpls
 
         main.vpls = vpls
-        pprint = main.ONOSrest1.pprint
+        pprint = main.Cluster.active( 0 ).REST.pprint
         hosts = int( main.params[ 'vpls' ][ 'hosts' ] )
         SLEEP = int( main.params[ 'SLEEP' ][ 'netcfg' ] )
 
@@ -184,7 +172,7 @@ class VPLSBasic:
         fileName = main.params[ 'DEPENDENCY' ][ 'topology' ]
         app = main.params[ 'vpls' ][ 'name' ]
 
-        loadVPLSResult = main.ONOSbench.onosNetCfg( main.nodes[ 0 ].ip_address, "", fileName )
+        loadVPLSResult = main.ONOSbench.onosNetCfg( main.Cluster.active( 0 ).ipAddress, "", fileName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=loadVPLSResult,
                                  onpass="Loaded vpls configuration.",
@@ -211,7 +199,7 @@ class VPLSBasic:
 
         main.step( "Check interface configurations" )
         result = False
-        getPorts = utilities.retry( f=main.ONOSrest1.getNetCfg,
+        getPorts = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                     retValue=False,
                                     kwargs={"subjectClass":"ports"},
                                     sleep=SLEEP )
@@ -234,7 +222,7 @@ class VPLSBasic:
         vpls.verify( main )
 
         main.step( "Loading vpls configuration in case any configuration was missed." )
-        loadVPLSResult = main.ONOSbench.onosNetCfg( main.nodes[ 0 ].ip_address, "", fileName )
+        loadVPLSResult = main.ONOSbench.onosNetCfg( main.Cluster.active( 0 ).ipAddress, "", fileName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=loadVPLSResult,
                                  onpass="Loaded vpls configuration.",
@@ -255,10 +243,10 @@ class VPLSBasic:
         """
         from tests.USECASE.VPLS.dependencies import vpls
         SLEEP = int( main.params[ 'SLEEP' ][ 'netcfg' ] )
-        pprint = main.ONOSrest1.pprint
+        pprint = main.Cluster.active( 0 ).REST.pprint
 
         main.step( "Remove an interface from a vpls network" )
-        main.CLIs[ 0 ].vplsRemIface( 'VPLS1', 'h1' )
+        main.Cluster.active( 0 ).CLI.vplsRemIface( 'VPLS1', 'h1' )
         time.sleep( SLEEP )
         #update master config json
         for network in main.vplsConfig:
@@ -268,23 +256,23 @@ class VPLSBasic:
         vpls.verify( main )
 
         main.step( "Clean all vpls configurations" )
-        main.CLIs[ 0 ].vplsClean()
+        main.Cluster.active( 0 ).CLI.vplsClean()
         time.sleep( SLEEP )
         main.vplsConfig = []
         vpls.verify( main )
 
         main.step( "Create a new vpls network" )
         name = "Network1"
-        main.CLIs[ 0 ].vplsCreate( name )
+        main.Cluster.active( 0 ).CLI.vplsCreate( name )
         time.sleep( SLEEP )
         network1 = { 'name': name, 'interfaces': [], 'encapsulation': 'NONE' }
         main.vplsConfig.append( network1 )
         vpls.verify( main )
 
         main.step( "Add interfaces to the network" )
-        main.CLIs[ 0 ].vplsAddIface( name, "h1" )
-        main.CLIs[ 0 ].vplsAddIface( name, "h5" )
-        main.CLIs[ 0 ].vplsAddIface( name, "h4" )
+        main.Cluster.active( 0 ).CLI.vplsAddIface( name, "h1" )
+        main.Cluster.active( 0 ).CLI.vplsAddIface( name, "h5" )
+        main.Cluster.active( 0 ).CLI.vplsAddIface( name, "h4" )
         time.sleep( SLEEP )
         for network in main.vplsConfig:
             if network.get( 'name' ) == name:
@@ -297,7 +285,7 @@ class VPLSBasic:
 
         main.step( "Add MPLS encapsulation to a vpls network" )
         encapType = "MPLS"
-        main.CLIs[ 0 ].vplsSetEncap( name, encapType )
+        main.Cluster.active( 0 ).CLI.vplsSetEncap( name, encapType )
         for network in main.vplsConfig:
             if network.get( 'name' ) == name:
                 network[ 'encapsulation' ] = encapType
@@ -306,7 +294,7 @@ class VPLSBasic:
 
         main.step( "Change an encapsulation type" )
         encapType = "VLAN"
-        main.CLIs[ 0 ].vplsSetEncap( name, encapType )
+        main.Cluster.active( 0 ).CLI.vplsSetEncap( name, encapType )
         for network in main.vplsConfig:
             if network.get( 'name' ) == name:
                 network[ 'encapsulation' ] = encapType
@@ -315,7 +303,7 @@ class VPLSBasic:
 
         main.step( "Remove encapsulation" )
         encapType = "NONE"
-        main.CLIs[ 0 ].vplsSetEncap( name, encapType )
+        main.Cluster.active( 0 ).CLI.vplsSetEncap( name, encapType )
         for network in main.vplsConfig:
             if network.get( 'name' ) == name:
                 network[ 'encapsulation' ] = encapType
@@ -323,7 +311,7 @@ class VPLSBasic:
         vpls.verify( main )
 
         main.step( "Clean all vpls configurations" )
-        main.CLIs[ 0 ].vplsClean()
+        main.Cluster.active( 0 ).CLI.vplsClean()
         time.sleep( SLEEP )
         main.vplsConfig = []
         vpls.verify( main )

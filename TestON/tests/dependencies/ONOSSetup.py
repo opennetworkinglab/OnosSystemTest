@@ -1,4 +1,23 @@
+"""
+Copyright 2016 Open Networking Foundation (ONF)
 
+Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+
+    TestON is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    TestON is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+"""
 import time
 import re
 import imp
@@ -8,13 +27,29 @@ class ONOSSetup:
     def __init__( self ):
         self.default = ''
     def envSetupDescription ( self ):
+        """
+        Introduction part of the test. It will initialize some basic vairables.
+        """
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
         main.caseExplanation = "For loading from params file, and pull" + \
                                " and build the latest ONOS package"
+        try:
+            from tests.dependencies.Cluster import Cluster
+        except ImportError:
+            main.log.error( "Cluster not found. exiting the test" )
+            main.exit()
+        try:
+            main.Cluster
+        except ( NameError, AttributeError ):
+            main.Cluster = Cluster( main.ONOScell.nodes )
+        main.ONOSbench = main.Cluster.controllers[ 0 ].Bench
         main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
 
     def gitPulling( self ):
+        """
+        it will do git checkout or pull if they are enabled from the params file.
+        """
         main.case( "Pull onos branch and build onos on Teststation." )
         gitPull = main.params[ 'GIT' ][ 'pull' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
@@ -38,34 +73,50 @@ class ONOSSetup:
         else:
             main.log.info( "Skipped git checkout and pull as they are disabled in params file" )
 
-    def envSetup( self, cluster, hasMultiNodeRounds=False, hasRest=False, hasNode=False,
-                  hasCli=True, specificIp="", includeGitPull=True ):
+    def envSetup( self, includeGitPull=True ):
+        """
+        Description:
+            some environment setup for the test.
+        Required:
+            * includeGitPull - if wish to git pulling function to be executed.
+        Returns:
+            Returns main.TRUE
+        """
         if includeGitPull :
             self.gitPulling()
 
-        ONOSbench = cluster.controllers[0].Bench
-        if ONOSbench.maxNodes:
-            main.maxNodes = int( ONOSbench.maxNodes )
-        else:
-            main.maxNodes = 0
+        try:
+            from tests.dependencies.Cluster import Cluster
+        except ImportError:
+            main.log.error( "Cluster not found. exiting the test" )
+            main.exit()
+        try:
+            main.Cluster
+        except ( NameError, AttributeError ):
+            main.Cluster = Cluster( main.ONOScell.nodes )
+
         main.cellData = {}  # For creating cell file
-        main.ONOSip = cluster.getIps()  # List of IPs of active ONOS nodes. CASE 2
 
-        # FIXME: Do we need this?
-        #        We should be able to just use Cluster.getIps()
-        if specificIp != "":
-            main.ONOSip.append( specificIp )
-
-        # Assigning ONOS cli handles to a list
-        main.maxNodes = len( cluster.controllers )
         return main.TRUE
 
     def envSetupException( self, e ):
+        """
+        Description:
+            handles the exception that might occur from the environment setup.
+        Required:
+            * includeGitPull - exceeption code e.
+        """
         main.log.exception( e )
         main.cleanup()
         main.exit()
 
     def evnSetupConclusion( self, stepResult ):
+        """
+        Description:
+            compare the result of the envSetup of the test.
+        Required:
+            * stepResult - Result of the envSetup.
+        """
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully construct " +
@@ -74,7 +125,14 @@ class ONOSSetup:
 
         main.commit = main.ONOSbench.getVersion( report=True )
 
-    def getNumCtrls( self, hasMultiNodeRounds ):
+    def setNumCtrls( self, hasMultiNodeRounds ):
+        """
+        Description:
+            Set new number of controls if it uses different number of nodes.
+            different number of nodes should be pre-defined in main.scale.
+        Required:
+            * hasMultiNodeRouds - if the test is testing different number of nodes.
+        """
         if hasMultiNodeRounds:
             try:
                 main.cycle
@@ -82,58 +140,80 @@ class ONOSSetup:
                 main.cycle = 0
             main.cycle += 1
             # main.scale[ 0 ] determines the current number of ONOS controller
-            main.numCtrls = int( main.scale.pop( 0 ) )
-        else:
-            main.numCtrls = main.maxNodes
+            main.Cluster.setRunningNode( int( main.scale.pop( 0 ) ) )
 
-    def killingAllOnos( self, killRemoveMax, stopOnos ):
-        # kill off all onos processes
-        main.log.info( "Safety check, killing all ONOS processes" +
-                      " before initiating environment setup" )
+    def killingAllOnos( self, cluster, killRemoveMax, stopOnos ):
+        """
+        Description:
+            killing the onos. It will either kill the current runningnodes or
+            max number of the nodes.
+        Required:
+            * cluster - the cluster driver that will be used.
+            * killRemoveMax - The boolean that will decide either to kill
+            only running nodes (False) or max number of nodes (True).
+            * stopOnos - If wish to stop onos before killing it. True for
+            enable stop , False for disable stop.
+        Returns:
+            Returns main.TRUE if successfully killing it.
+        """
+        main.log.info( "Safety check, killing all ONOS processes" )
 
-        for i in range( main.maxNodes if killRemoveMax else main.numCtrls ):
-            if stopOnos:
-                main.ONOSbench.onosStop( main.ONOSip[ i ] )
-            main.ONOSbench.onosKill( main.ONOSip[ i ] )
+        return cluster.kill( killRemoveMax, stopOnos )
 
-    def createApplyCell( self, newCell, cellName, Mininet, useSSH ):
+    def createApplyCell( self, cluster, newCell, cellName, Mininet, useSSH, ips ):
+        """
+        Description:
+            create new cell ( optional ) and apply it. It will also verify the
+            cell.
+        Required:
+            * cluster - the cluster driver that will be used.
+            * newCell - True for making a new cell and False for not making it.
+            * cellName - The name of the cell.
+            * Mininet - a mininet driver that will be used.
+            * useSSH - True for using ssh when creating a cell
+            * ips - ip(s) of the node(s).
+        Returns:
+            Returns main.TRUE if it successfully executed.
+        """
         if newCell:
-            tempOnosIp = []
-            for i in range( main.numCtrls ):
-                tempOnosIp.append( main.ONOSip[i] )
-
-            main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
-                                           cellName,
-                                           Mininet if isinstance( Mininet, str ) else
-                                           Mininet.ip_address,
-                                           main.apps,
-                                           tempOnosIp,
-                                           main.ONOScli1.karafUser,
-                                           useSSH=useSSH )
+            cluster.createCell( cellName, Mininet, useSSH, ips )
         main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
+        stepResult = cluster.applyCell( cellName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully applied cell to " +
                                        "environment",
-                                 onfail="Failed to apply cell to environment " )
+                                 onfail="Failed to apply cell to environment" )
         return stepResult
 
-    def uninstallOnos( self, killRemoveMax ):
+    def uninstallOnos( self, cluster, uninstallMax ):
+        """
+        Description:
+            uninstalling onos and verify the result.
+        Required:
+            * cluster - a cluster driver that will be used.
+            * uninstallMax - True for uninstalling max number of nodes
+            False for uninstalling the current running nodes.
+        Returns:
+            Returns main.TRUE if it successfully uninstalled.
+        """
         main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = main.TRUE
-        for i in range( main.maxNodes if killRemoveMax else main.numCtrls ):
-            onosUninstallResult = onosUninstallResult and \
-                                  main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
+        onosUninstallResult = cluster.uninstall( uninstallMax )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=onosUninstallResult,
                                  onpass="Successfully uninstalled ONOS package",
                                  onfail="Failed to uninstall ONOS package" )
         return onosUninstallResult
 
-    def buildOnos( self ):
+    def buildOnos( self, cluster ):
+        """
+        Description:
+            build the onos using buck build onos and verify the result
+        Required:
+            * cluster - the cluster driver that will be used.
+        Returns:
+            Returns main.TRUE if it successfully built.
+        """
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.buckBuild()
         utilities.assert_equals( expect=main.TRUE,
@@ -142,16 +222,21 @@ class ONOSSetup:
                                  onfail="Failed to create ONOS package" )
         return packageResult
 
-    def installOnos( self, installMax ):
+    def installOnos( self, cluster, installMax ):
+        """
+        Description:
+            Installing onos and verify the result
+        Required:
+            * cluster - the cluster driver that will be used.
+            * installMax - True for installing max number of nodes
+            False for installing current running nodes only.
+        Returns:
+            Returns main.TRUE if it successfully installed
+        """
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
 
-        for i in range( main.ONOSbench.maxNodes if installMax else main.numCtrls ):
-            options = "-f"
-            if installMax and i >= main.numCtrls:
-                options = "-nf"
-            onosInstallResult = onosInstallResult and \
-                                main.ONOSbench.onosInstall( node=main.ONOSip[ i ], options=options )
+        cluster.install( installMax )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=onosInstallResult,
                                  onpass="Successfully installed ONOS package",
@@ -161,34 +246,35 @@ class ONOSSetup:
             main.exit()
         return onosInstallResult
 
-    def setupSsh( self ):
+    def setupSsh( self, cluster ):
+        """
+        Description:
+            set up ssh to the onos and verify the result
+        Required:
+            * cluster - the cluster driver that will be used.
+        Returns:
+            Returns main.TRUE if it successfully setup the ssh to
+            the onos.
+        """
         main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for i in range( main.numCtrls ):
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=main.ONOSip[ i ] )
+        secureSshResult = cluster.ssh()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=secureSshResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
         return secureSshResult
 
-    def checkOnosService( self ):
-        stopResult = main.TRUE
-        startResult = main.TRUE
-        onosIsUp = main.TRUE
-        main.step( "Starting ONOS service" )
-        for i in range( main.numCtrls ):
-            onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
-            if onosIsUp == main.TRUE:
-                main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
-            else:
-                main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +
-                                 "start ONOS again " )
-                stopResult = stopResult and main.ONOSbench.onosStop( main.ONOSip[ i ] )
-                startResult = startResult and main.ONOSbench.onosStart( main.ONOSip[ i ] )
-                if not startResult or stopResult:
-                    main.log.report( "ONOS instance {0} did not start correctly.".format( i + 1 ) )
-        stepResult = onosIsUp and stopResult and startResult
+    def checkOnosService( self, cluster ):
+        """
+        Description:
+            Checking if the onos service is up and verify the result
+        Required:
+            * cluster - the cluster driver that will be used.
+        Returns:
+            Returns main.TRUE if it successfully checked
+        """
+        main.step( "Checking ONOS service" )
+        stepResult = cluster.checkService()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="ONOS service is ready on all nodes",
@@ -196,6 +282,15 @@ class ONOSSetup:
         return stepResult
 
     def startOnosClis( self, cluster ):
+        """
+        Description:
+            starting Onos using onosCli driver and verify the result
+        Required:
+            * cluster - the cluster driver that will be used.
+        Returns:
+            Returns main.TRUE if it successfully started. It will exit
+            the test if not started properly.
+        """
         main.step( "Starting ONOS CLI sessions" )
         startCliResult = cluster.startCLIs()
         if not startCliResult:
@@ -210,50 +305,95 @@ class ONOSSetup:
                                  onfail="Failed to start ONOS cli" )
         return startCliResult
 
-    def ONOSSetUp( self, Mininet, cluster, hasMultiNodeRounds=False, hasCli=True, newCell=True,
+    def ONOSSetUp( self, Mininet, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
                    cellName="temp", removeLog=False, extraApply=None, arg=None, extraClean=None,
                    skipPack=False, installMax=False, useSSH=True, killRemoveMax=True,
-                   CtrlsSet=True, stopOnos=False ):
-        if CtrlsSet:
-            self.getNumCtrls( hasMultiNodeRounds )
+                   stopOnos=False ):
+        """
+        Description:
+            Initial ONOS setting up of the tests. It will also verify the result of each steps.
+            The procedures will be:
+                killing onos
+                creating (optional) /applying cell
+                removing raft logs (optional)
+                uninstalling onos
+                extra procedure to be applied( optional )
+                building onos
+                installing onos
+                extra cleanup to be applied ( optional )
+                setting up ssh to the onos
+                checking the onos service
+                starting onos
+        Required:
+            * Mininet - the mininet driver that will be used
+            * cluster - the cluster driver that will be used.
+            * hasMultiNodeRouds - True if the test is testing different set of nodes
+            * startOnos - True if wish to start onos.
+            * newCell - True for making a new cell and False for not making it.
+            * cellName - Name of the cell that will be used.
+            * removeLog - True if wish to remove raft logs
+            * extraApply - Function(s) that will be applied. Default to None.
+            * arg - argument of the functon(s) of the extraApply. Should be in list.
+            * extraClean - extra Clean up process. Function(s) will be passed.
+            * skipPack - True if wish to skip some packing.
+            * installMax - True if wish to install onos max number of nodes
+            False if wish to install onos of running nodes only
+            * useSSH - True for using ssh when creating a cell
+            * killRemoveMax - True for removing/killing max number of nodes. False for
+            removing/killing running nodes only.
+            * stopOnos - True if wish to stop onos before killing it.
+        Returns:
+            Returns main.TRUE if it everything successfully proceeded.
+        """
+        self.setNumCtrls( hasMultiNodeRounds )
 
-        main.case( "Starting up " + str( main.numCtrls ) +
+        main.case( "Starting up " + str( cluster.numCtrls ) +
                   " node(s) ONOS cluster" )
-        main.caseExplanation = "Set up ONOS with " + str( main.numCtrls ) + \
+        main.caseExplanation = "Set up ONOS with " + str( cluster.numCtrls ) + \
                                " node(s) ONOS cluster"
-        self.killingAllOnos( killRemoveMax, stopOnos )
+        killResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
 
-        main.log.info( "NODE COUNT = " + str( main.numCtrls ) )
-        cellResult = True
-        packageResult = True
-        onosUninstallResult = True
-        onosCliResult = True
+        main.log.info( "NODE COUNT = " + str( cluster.numCtrls ) )
+        cellResult = main.TRUE
+        packageResult = main.TRUE
+        onosUninstallResult = main.TRUE
+        onosCliResult = main.TRUE
         if not skipPack:
-            cellResult = self.createApplyCell( newCell, cellName, Mininet, useSSH )
-
+            tempOnosIp = []
+            for ctrl in cluster.runningNodes:
+                tempOnosIp.append( ctrl.ipAddress )
+            cellResult = self.createApplyCell( cluster, newCell,
+                                               cellName, Mininet,
+                                               useSSH, tempOnosIp )
             if removeLog:
                 main.log.info("Removing raft logs")
                 main.ONOSbench.onosRemoveRaftLogs()
 
-            onosUninstallResult = self.uninstallOnos( killRemoveMax )
+            onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
 
             if extraApply is not None:
-                extraApply( metadataMethod=arg ) if arg is not None else extraApply()
+                if isinstance( extraApply, list ):
+                    i = 0
+                    for apply in extraApply:
+                        apply( *(arg[ i ]) ) if arg is not None \
+                                                            and arg[ i ] is not None else apply()
+                        i += 1
+                else:
+                    extraApply( *arg ) if arg is not None else extraApply()
 
-            packageResult = self.buildOnos()
 
-        onosInstallResult = self.installOnos( installMax )
+            packageResult = self.buildOnos( cluster )
+
+        onosInstallResult = self.installOnos( cluster, installMax )
 
         if extraClean is not None:
             extraClean()
-        secureSshResult = True
-        if useSSH:
-            secureSshResult = self.setupSsh()
+        secureSshResult = self.setupSsh( cluster )
 
-        onosServiceResult = self.checkOnosService()
+        onosServiceResult = self.checkOnosService( cluster )
 
-        if hasCli:
+        if startOnos:
             onosCliResult = self.startOnosClis( cluster )
 
-        return cellResult and packageResult and onosUninstallResult and \
+        return killResult and cellResult and packageResult and onosUninstallResult and \
                onosInstallResult and secureSshResult and onosServiceResult and onosCliResult

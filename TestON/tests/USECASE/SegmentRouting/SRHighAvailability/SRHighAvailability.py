@@ -52,14 +52,14 @@ class SRHighAvailability:
 
         description = "High Availability tests - ONOS failures with 2x2 Leaf-spine "
         main.case( description )
-        run.config(main, '2x2', 3)
+        run.config(main, '2x2')
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
         run.pingAll( main )
         for i in range(0, main.failures):
-            toKill = i % main.numCtrls
+            toKill = i % main.Cluster.numCtrls
             run.killOnos( main, [ toKill ], '4', '8', '2' )
             run.pingAll( main, 'CASE1_Failure%d' % (i+1) )
             run.recoverOnos( main, [ toKill ], '4', '8', '3' )
@@ -86,7 +86,7 @@ class SRHighAvailability:
 
         description = "High Availability tests - ONOS random failures with 2x2 Leaf-spine "
         main.case( description )
-        run.config(main, '2x2', 3)
+        run.config(main, '2x2')
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
@@ -94,7 +94,7 @@ class SRHighAvailability:
         run.pingAll( main )
         random.seed(datetime.now())
         for i in range(0, main.failures):
-            toKill = randint(0, (main.numCtrls-1))
+            toKill = randint( 0, ( main.Cluster.numCtrls - 1 ) )
             run.killOnos( main, [ toKill ], '4', '8', '2' )
             run.pingAll( main, 'CASE2_Failure%d' % (i+1) )
             run.recoverOnos( main, [ toKill ], '4', '8', '3' )
@@ -118,14 +118,14 @@ class SRHighAvailability:
 
         description = "High Availability tests - ONOS failures with 4x4 Leaf-spine "
         main.case( description )
-        run.config(main, '4x4', 3)
+        run.config(main, '4x4')
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=350 )
         run.pingAll( main )
         for i in range(0, main.failures):
-            toKill = i % main.numCtrls
+            toKill = i % main.Cluster.numCtrls
             run.killOnos( main, [ toKill ], '8', '32', '2' )
             run.pingAll( main, 'CASE3_Failure%d' % (i+1) )
             run.recoverOnos( main, [ toKill ], '8', '32', '3' )
@@ -152,7 +152,7 @@ class SRHighAvailability:
 
         description = "High Availability tests - ONOS random failures with 4x4 Leaf-spine "
         main.case( description )
-        run.config(main, '4x4', 3)
+        run.config(main, '4x4')
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
         # pre-configured routing and bridging test
@@ -160,7 +160,7 @@ class SRHighAvailability:
         run.pingAll( main )
         random.seed(datetime.now())
         for i in range(0, main.failures):
-            toKill = randint(0, (main.numCtrls-1))
+            toKill = randint( 0, ( main.Cluster.numCtrls - 1 ) )
             run.killOnos( main, [ toKill ], '8', '32', '2' )
             run.pingAll( main, 'CASE4_Failure%d' % (i+1) )
             run.recoverOnos( main, [ toKill ], '8', '32', '3' )
@@ -187,14 +187,14 @@ class SRHighAvailability:
 
         description = "High Availability tests - ONOS failures and Switch failures with 2x2 Leaf-spine "
         main.case( description )
-        run.config(main, '2x2', 3)
+        run.config(main, '2x2')
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
         run.pingAll( main )
         for i in range(0, main.failures):
-            onosToKill = i % main.numCtrls
+            onosToKill = i % main.Cluster.numCtrls
             switchToKill = i % len(main.spines)
             run.killOnos( main, [ onosToKill ], '4', '8', '2' )
             run.pingAll( main, 'CASE5_ONOS_Failure%d' % (i+1) )
@@ -231,14 +231,14 @@ class SRHighAvailability:
 
         description = "High Availability tests - ONOS random failures and Switch random failures with 2x2 Leaf-spine "
         main.case( description )
-        run.config(main, '2x2', 3)
+        run.config(main, '2x2')
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
         run.pingAll( main )
         for i in range(0, main.failures):
-            onosToKill = randint(0, (main.numCtrls-1))
+            onosToKill = randint( 0, ( main.Cluster.numCtrls - 1 ) )
             switchToKill = randint(0, 1)
             run.killOnos( main, [ onosToKill ], '4', '8', '2' )
             run.pingAll( main, 'CASE6_ONOS_Failure%d' % (i+1) )
@@ -272,14 +272,14 @@ class SRHighAvailability:
 
         description = "High Availability tests - ONOS failures and Switch failures with 4x4 Leaf-spine "
         main.case( description )
-        run.config(main, '4x4', 3)
+        run.config(main, '4x4')
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=350 )
         run.pingAll( main )
         for i in range(0, main.failures):
-            onosToKill = i % main.numCtrls
+            onosToKill = i % main.Cluster.numCtrls
             switchToKill = i % len(main.spines)
             run.killOnos( main, [ onosToKill ], '8', '32', '2' )
             run.pingAll( main, 'CASE7_ONOS_Failure%d' % (i+1) )
@@ -316,14 +316,14 @@ class SRHighAvailability:
 
         description = "High Availability tests - ONOS random failures and Switch random failures with 4x4 Leaf-spine "
         main.case( description )
-        run.config(main, '4x4', 3)
+        run.config(main, '4x4')
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=350 )
         run.pingAll( main )
         for i in range(0, main.failures):
-            onosToKill = randint(0, (main.numCtrls-1))
+            onosToKill = randint( 0, ( main.Cluster.numCtrls - 1 ) )
             switchToKill = randint(0, 3)
             run.killOnos( main, [ onosToKill ], '8', '32', '2' )
             run.pingAll( main, 'CASE8_ONOS_Failure%d' % (i+1) )

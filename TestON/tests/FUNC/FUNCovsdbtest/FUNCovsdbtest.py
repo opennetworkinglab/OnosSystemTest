@@ -73,17 +73,15 @@ class FUNCovsdbtest:
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-
-            main.maxNodes = 1
-
-            stepResult = main.testSetUp.envSetup( hasNode=True )
+            stepResult = main.testSetUp.envSetup()
 
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
 
-        cliResults = main.testSetUp.ONOSSetUp( main.OVSDB1, cellName=cellName, removeLog=True )
+        cliResults = main.testSetUp.ONOSSetUp( main.OVSDB1, main.Cluster,
+                                               cellName=cellName, removeLog=True )
 
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )
@@ -91,24 +89,24 @@ class FUNCovsdbtest:
             main.exit()
 
         main.step( "App Ids check" )
-        appCheck = main.ONOScli1.appToIDCheck()
+        appCheck = main.Cluster.active( 0 ).CLI.appToIDCheck()
 
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ 0 ].apps() )
-            main.log.warn( main.CLIs[ 0 ].appIDs() )
+            main.log.warn( main.Cluster.active( 0 ).CLI.apps() )
+            main.log.warn( main.Cluster.active( 0 ).CLI.appIDs() )
 
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
         main.step( "Install onos-ovsdb" )
-        installResults = main.ONOScli1.activateApp( "org.onosproject.ovsdb" )
+        installResults = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.ovsdb" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install onos-ovsdatabase successful",
                                  onfail="Install onos-ovsdatabase failed" )
 
         main.step( "Install onos-app-vtn" )
-        installResults = main.ONOScli1.activateApp( "org.onosproject.vtn" )
+        installResults = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.vtn" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install onos-app-vtn successful",
                                  onfail="Install onos-app-vtn failed" )
@@ -351,7 +349,7 @@ class FUNCovsdbtest:
                                   str( ctrlip ) + " failed\n" + str( main.OVSDB2.show() ) )
 
         main.step( "Check onoscli devices have ovs " + str( OVSDB1Ip ) )
-        response = main.ONOScli1.devices()
+        response = main.Cluster.active( 0 ).CLI.devices()
         if re.search( OVSDB1Ip, response ) and not re.search( "false", response ):
             stepResult = main.TRUE
         else:
@@ -362,7 +360,7 @@ class FUNCovsdbtest:
                                  onfail="Check onoscli devices have ovs " + str( OVSDB1Ip ) + " failed" )
 
         main.step( "Check onoscli devices have ovs " + str( OVSDB2Ip ) )
-        response = main.ONOScli1.devices()
+        response = main.Cluster.active( 0 ).CLI.devices()
         if re.search( OVSDB2Ip, response ) and not re.search( "false", response ):
             stepResult = main.TRUE
         else:
@@ -472,7 +470,7 @@ class FUNCovsdbtest:
         port2postdata = port2.DictoJson()
 
         main.step( "Post Network Data via HTTP(Post port need post network)" )
-        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'networks/',
+        Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'networks/',
                                                  'POST', None, networkpostdata )
         utilities.assert_equals(
                 expect='200',
@@ -481,7 +479,7 @@ class FUNCovsdbtest:
                 onfail="Post Network Failed " + str( Poststatus ) + "," + str( result ) )
 
         main.step( "Post Subnet Data via HTTP(Post port need post subnet)" )
-        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'subnets/',
+        Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'subnets/',
                                                  'POST', None, subnetpostdata )
         utilities.assert_equals(
                 expect='202',
@@ -490,7 +488,7 @@ class FUNCovsdbtest:
                 onfail="Post Subnet Failed " + str( Poststatus ) + "," + str( result ) )
 
         main.step( "Post Port1 Data via HTTP" )
-        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'ports/',
+        Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'ports/',
                                                  'POST', None, port1postdata )
         utilities.assert_equals(
                 expect='200',
@@ -499,7 +497,7 @@ class FUNCovsdbtest:
                 onfail="Post Port Failed " + str( Poststatus ) + "," + str( result ) )
 
         main.step( "Post Port2 Data via HTTP" )
-        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'ports/',
+        Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'ports/',
                                                  'POST', None, port2postdata )
         utilities.assert_equals(
                 expect='200',
@@ -686,7 +684,7 @@ class FUNCovsdbtest:
                                  onfail="Delete ip netns host on the ovsdb node 2 failed" )
 
         main.step( "Check onoscli devices openflow session is false " + str( OVSDB1Ip ) )
-        response = main.ONOScli1.devices()
+        response = main.Cluster.active( 0 ).CLI.devices()
         if re.search( OVSDB1Ip, response ) and not re.search( "true", response ):
             stepResult = main.TRUE
         else:
@@ -697,7 +695,7 @@ class FUNCovsdbtest:
                                  onfail="Check openflow session is false " + str( OVSDB1Ip ) + " failed" )
 
         main.step( "Check onoscli devices have ovs " + str( OVSDB2Ip ) )
-        response = main.ONOScli1.devices()
+        response = main.Cluster.active( 0 ).CLI.devices()
         if re.search( OVSDB2Ip, response ) and not re.search( "true", response ):
             stepResult = main.TRUE
         else:

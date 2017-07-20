@@ -43,7 +43,7 @@ def sendArpPackage( main, hostList ):
         main.Mininet1.arping( srcHost=hostList, dstHost="10.0.0.1", output=main.FALSE, noResult=True )
     try:
         summaryStr = ""
-        summaryStr = json.loads( main.CLIs[0].summary().encode() )
+        summaryStr = json.loads( main.Cluster.active( 0 ).CLI.summary().encode() )
         hostNum = summaryStr.get( 'hosts' )
 
     except (TypeError, ValueError):

@@ -362,3 +362,92 @@ class CLI( Component ):
                                 dstPath,
                                 pwd=remoteHost.pwd,
                                 direction=direction )
+
+    def sshToNode( self, ipAddress, uName="sdn", pwd="rocks" ):
+        ssh_newkey = 'Are you sure you want to continue connecting'
+        refused = "ssh: connect to host " + ipAddress + " port 22: Connection refused"
+        handle = pexpect.spawn( 'ssh -X ' +
+                                uName +
+                                '@' +
+                                ipAddress,
+                                env={ "TERM": "xterm-mono" },
+                                maxread=1000000,
+                                timeout=60 )
+
+        # set tty window size
+        handle.setwinsize( 24, 250 )
+
+        i = 5
+        while i == 5:
+            i = handle.expect( [
+                                    ssh_newkey,
+                                    'password:|Password:',
+                                    pexpect.EOF,
+                                    pexpect.TIMEOUT,
+                                    refused,
+                                    'teston>',
+                                    self.prompt ],
+                            120 )
+            if i == 0:  # Accept key, then expect either a password prompt or access
+                main.log.info( "ssh key confirmation received, send yes" )
+                handle.sendline( 'yes' )
+                i = 5  # Run the loop again
+                continue
+            if i == 1:  # Password required
+                if pwd:
+                    main.log.info(
+                    "ssh connection asked for password, gave password" )
+                else:
+                    main.log.info( "Server asked for password, but none was "
+                                    "given in the .topo file. Trying "
+                                    "no password.")
+                    pwd = ""
+                handle.sendline( pwd )
+                j = handle.expect( [ self.prompt,
+                                     'password:|Password:',
+                                     pexpect.EOF,
+                                     pexpect.TIMEOUT ],
+                                     120 )
+                if j != 0:
+                    main.log.error( "Incorrect Password" )
+                    main.cleanup()
+                    main.exit()
+            elif i == 2:
+                main.log.error( "Connection timeout" )
+                main.cleanup()
+                main.exit()
+            elif i == 3:  # timeout
+                main.log.error(
+                    "No route to the Host " +
+                    uName +
+                    "@" +
+                    ipAddress )
+                main.cleanup()
+                main.exit()
+            elif i == 4:
+                main.log.error(
+                    "ssh: connect to host " +
+                    ipAddress +
+                    " port 22: Connection refused" )
+                main.cleanup()
+                main.exit()
+            elif i == 6:
+                main.log.info( "Password not required logged in" )
+
+        handle.sendline( "" )
+        handle.expect( self.prompt )
+        handle.sendline( "cd" )
+        handle.expect( self.prompt )
+
+        main.log.info ( "Successfully ssh to " + ipAddress + "." )
+        return handle
+
+    def exitFromSsh( self, handle, ipAddress ):
+        handle.sendline( "logout" )
+        try:
+            handle.expect( "closed." )
+            main.log.info ( "Successfully closed ssh connection from " + ipAddress )
+        except pexpect.EOF:
+            main.log.error( "Failed to close the connection from " + ipAddress )
+        handle.sendline( "" )
+        handle.expect( self.prompt )

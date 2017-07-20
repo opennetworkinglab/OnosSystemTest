@@ -71,8 +71,6 @@ class CHOTestMonkey:
             main.enableIPv6 = main.params[ 'TEST' ][ 'IPv6' ]
             main.enableIPv6 = True if main.enableIPv6 == "on" else False
             main.caseSleep = int( main.params[ 'TEST' ][ 'caseSleep' ] )
-            main.numCtrls = int( main.params[ 'TEST' ][ 'numCtrl' ] )
-            main.maxNodes = main.numCtrls
             main.controllers = []
 
             main.devices = []
@@ -99,19 +97,18 @@ class CHOTestMonkey:
 
         main.testSetUp.evnSetupConclusion( stepResult )
 
-
-        for i in range( 1, main.numCtrls + 1 ):
-            newController = Controller( i )
-            newController.setCLI( main.CLIs[i - 1] )
-            main.controllers.append( newController )
-
         if not main.onoscell :
             main.log.error("Please provide onoscell option at TestON CLI to run CHO tests")
             main.log.error("Example: ~/TestON/bin/cli.py run CHOTestMonkey onoscell <cellName>")
             main.cleanup()
             main.exit()
 
-        setupResult = main.testSetUp.ONOSSetUp( Mininet=main.Mininet1, newCell=False, cellName=main.onoscell )
+        setupResult = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+                                                newCell=False, cellName=main.onoscell )
+        for i in range( 1, main.Cluster.numCtrls + 1 ):
+            newController = Controller( i )
+            newController.setCLI( main.Cluster.active( i - 1 ).CLI )
+            main.controllers.append( newController )
 
         main.step( "Set IPv6 cfg parameters for Neighbor Discovery" )
         setIPv6CfgSleep = int( main.params[ 'TEST' ][ 'setIPv6CfgSleep' ] )
@@ -196,10 +193,11 @@ class CHOTestMonkey:
         main.step( "Assign switches to controllers" )
         switchMastership = main.TRUE
         for switchName in main.mininetSwitches.keys():
-            main.Mininet1.assignSwController( sw=switchName, ip=main.ONOSip )
+            ips = main.Cluster.getIps()
+            main.Mininet1.assignSwController( sw=switchName, ip=ips )
             response = main.Mininet1.getSwController( switchName )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
+            if re.search( "tcp:" + main.Cluster.active( 0 ).ipAddress, response ):
                 switchMastership = switchMastership and main.TRUE
             else:
                 switchMastership = main.FALSE
@@ -212,7 +210,7 @@ class CHOTestMonkey:
         time.sleep( sleep )
 
         main.step( "Balance devices across controllers" )
-        balanceResult = main.ONOScli1.balanceMasters()
+        balanceResult = main.Cluster.active( 0 ).CLI.balanceMasters()
         # giving some breathing time for ONOS to complete re-balance
         time.sleep( sleep )
 
@@ -233,8 +231,8 @@ class CHOTestMonkey:
         main.log.report( "____________________________________________________________________" )
         main.case( "Collect and Store Topology Details from ONOS" )
         topoResult = main.TRUE
-        topologyOutput = main.ONOScli1.topology()
-        topologyResult = main.ONOScli1.getTopology( topologyOutput )
+        topologyOutput = main.Cluster.active( 0 ).CLI.topology()
+        topologyResult = main.Cluster.active( 0 ).CLI.getTopology( topologyOutput )
         ONOSDeviceNum = int( topologyResult[ 'devices' ] )
         ONOSLinkNum = int( topologyResult[ 'links' ] )
         mininetSwitchNum = len( main.mininetSwitches )
@@ -245,7 +243,7 @@ class CHOTestMonkey:
             dpidToName = {}
             for key, value in main.mininetSwitches.items():
                 dpidToName[ 'of:' + str( value[ 'dpid' ] ) ] = key
-            devicesRaw = main.ONOScli1.devices()
+            devicesRaw = main.Cluster.active( 0 ).CLI.devices()
             devices = json.loads( devicesRaw )
             deviceInitIndex = 0
             for device in devices:
@@ -261,7 +259,7 @@ class CHOTestMonkey:
 
             main.step( "Collect and store link data" )
             stepResult = main.TRUE
-            linksRaw = main.ONOScli1.links()
+            linksRaw = main.Cluster.active( 0 ).CLI.links()
             links = json.loads( linksRaw )
             linkInitIndex = 0
             for link in links:

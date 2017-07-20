@@ -130,7 +130,7 @@ class HostIntentEvent( IntentEvent ):
                             main.log.warn( "Host %s does not exist: " % ( args[ 1 ] ) )
                             return EventStates().ABORT
                     index = int( args[ 2 ] )
-                    if index < 1 or index > int( main.numCtrls ):
+                    if index < 1 or index > int( main.Cluster.numCtrls ):
                         main.log.warn( "%s - invalid argument: %s" % ( self.typeString, index ) )
                         return EventStates().ABORT
                     if not main.controllers[ index - 1 ].isUp():
@@ -279,7 +279,7 @@ class PointIntentEvent( IntentEvent ):
                             main.log.warn( "Device %s does not exist: " % ( args[ 1 ] ) )
                             return EventStates().ABORT
                     index = int( args[ 2 ] )
-                    if index < 1 or index > int( main.numCtrls ):
+                    if index < 1 or index > int( main.Cluster.numCtrls ):
                         main.log.warn( "%s - invalid argument: %s" % ( self.typeString, index ) )
                         return EventStates().ABORT
                     if not main.controllers[ index - 1 ].isUp():

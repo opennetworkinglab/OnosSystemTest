@@ -90,21 +90,18 @@ class HAswapNodes:
             # load some variables from the params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            main.numCtrls = int( main.params[ 'num_controllers' ] )
-            if main.ONOSbench.maxNodes and\
-                        main.ONOSbench.maxNodes < main.numCtrls:
-                main.numCtrls = int( main.ONOSbench.maxNodes )
-            main.maxNodes = main.numCtrls
-            stepResult = main.testSetUp.envSetup( hasNode=True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAswapNodes" )
 
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName, removeLog=True,
-                                 extraApply=main.HA.customizeOnosService,
-                                 arg=main.HA.swapNodeMetadata,
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
+                                 extraApply=[ main.HA.setServerForCluster,
+                                              main.HA.swapNodeMetadata,
+                                              main.HA.startingMininet,
+                                              main.HA.copyingBackupConfig ],
                                  extraClean=main.HA.cleanUpOnosService,
                                  installMax=True )
         main.HA.initialSetUp()
@@ -145,11 +142,8 @@ class HAswapNodes:
         """
         import time
         import re
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         try:
             main.HAlabels
         except ( NameError, AttributeError ):
@@ -164,14 +158,15 @@ class HAswapNodes:
         main.case( "Swap some of the ONOS nodes" )
 
         main.step( "Checking ONOS Logs for errors" )
-        for i in main.activeNodes:
-            node = main.nodes[ i ]
-            main.log.debug( "Checking logs for errors on " + node.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
+        for ctrl in main.Cluster.active():
+            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
+        activeNodes = main.Cluster.getRunningPos()
+        # Todo : this could be wrong. need to double check.
         main.step( "Generate new metadata file" )
-        old = [ main.activeNodes[ 1 ], main.activeNodes[ -2 ] ]
-        new = range( main.ONOSbench.maxNodes )[ -2: ]
+        old = [ activeNodes[ 1 ], activeNodes[ -2 ] ]
+        new = range( main.Cluster.maxCtrls )[ -2: ]
         assert len( old ) == len( new ), "Length of nodes to swap don't match"
         handle = main.ONOSbench.handle
         for x, y in zip( old, new ):
@@ -181,75 +176,45 @@ class HAswapNodes:
             handle.expect( "\$" )  # From the prompt
             ret += handle.before
             main.log.debug( ret )
-            main.activeNodes.remove( x )
-            main.activeNodes.append( y )
+            activeNodes.remove( x )
+            activeNodes.append( y )
 
-        genResult = main.Server.generateFile( main.numCtrls )
+        genResult = main.Server.generateFile( main.Cluster.numCtrls )
         utilities.assert_equals( expect=main.TRUE, actual=genResult,
                                  onpass="New cluster metadata file generated",
                                  onfail="Failled to generate new metadata file" )
         time.sleep( 5 )  # Give time for nodes to read new file
-
+        main.Cluster.resetActive()
+        # Note : done up to this point.
         main.step( "Start new nodes" )  # OR stop old nodes?
         started = main.TRUE
         for i in new:
-            started = main.ONOSbench.onosStart( main.nodes[ i ].ip_address ) and main.TRUE
+            started = main.ONOSbench.onosStart( main.Cluster.controllers[ i ].ipAddress ) and main.TRUE
         utilities.assert_equals( expect=main.TRUE, actual=started,
                                  onpass="ONOS started",
                                  onfail="ONOS start NOT successful" )
 
-        main.step( "Checking if ONOS is up yet" )
-        for i in range( 2 ):
-            onosIsupResult = main.TRUE
-            for i in main.activeNodes:
-                node = main.nodes[ i ]
-                main.ONOSbench.onosSecureSSH( node=node.ip_address )
-                started = main.ONOSbench.isup( node.ip_address )
-                if not started:
-                    main.log.error( node.name + " didn't start!" )
-                onosIsupResult = onosIsupResult and started
-            if onosIsupResult == main.TRUE:
-                break
-        utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
-                                 onpass="ONOS started",
-                                 onfail="ONOS start NOT successful" )
+        main.Cluster.setRunningNode( activeNodes )
 
-        main.step( "Starting ONOS CLI sessions" )
-        cliResults = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
-                             name="startOnosCli-" + str( i ),
-                             args=[ main.nodes[ i ].ip_address ] )
-            threads.append( t )
-            t.start()
+        main.testSetUp.setupSsh( main.Cluster )
+        main.testSetUp.checkOnosService( main.Cluster )
 
-        for t in threads:
-            t.join()
-            cliResults = cliResults and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli started",
-                                 onfail="ONOS clis did not start" )
+        main.testSetUp.startOnosClis( main.Cluster )
 
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.HA.nodesCheck,
                                        False,
-                                       args=[ main.activeNodes ],
+                                       args=[ main.Cluster.active() ],
                                        attempts=5 )
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
 
-        for i in range( 10 ):
-            ready = True
-            for i in main.activeNodes:
-                cli = main.CLIs[ i ]
-                output = cli.summary()
-                if not output:
-                    ready = False
-            if ready:
-                break
-            time.sleep( 30 )
+        ready =  utilities.retry( main.Cluster.command,
+                                  False,
+                                  kwargs={ "function":"summary", "contentCheck":True },
+                                  sleep=30,
+                                  attempts=10 )
         utilities.assert_equals( expect=True, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
@@ -259,22 +224,19 @@ class HAswapNodes:
 
         # Rerun for election on new nodes
         runResults = main.TRUE
-        for i in main.activeNodes:
-            cli = main.CLIs[ i ]
-            run = cli.electionTestRun()
+        for ctrl in main.Cluster.active():
+            run = ctrl.CLI.electionTestRun()
             if run != main.TRUE:
-                main.log.error( "Error running for election on " + cli.name )
+                main.log.error( "Error running for election on " + ctrl.name )
             runResults = runResults and run
         utilities.assert_equals( expect=main.TRUE, actual=runResults,
                                  onpass="Reran for election",
                                  onfail="Failed to rerun for election" )
 
-        for node in main.activeNodes:
-            main.log.warn( "\n****************** {} **************".format( main.nodes[ node ].ip_address ) )
-            main.log.debug( main.CLIs[ node ].nodes( jsonFormat=False ) )
-            main.log.debug( main.CLIs[ node ].leaders( jsonFormat=False ) )
-            main.log.debug( main.CLIs[ node ].partitions( jsonFormat=False ) )
-            main.log.debug( main.CLIs[ node ].apps( jsonFormat=False ) )
+        main.HA.commonChecks()
+
+        """
+        # Note: Do we really want this? It will revert the changes we have made from this test case.
 
         main.step( "Reapplying cell variable to environment" )
         cellName = main.params[ 'ENV' ][ 'cellName' ]
@@ -282,22 +244,23 @@ class HAswapNodes:
         utilities.assert_equals( expect=main.TRUE, actual=cellResult,
                                  onpass="Set cell successfull",
                                  onfail="Failled to set cell" )
+        """
+
 
     def CASE7( self, main ):
         """
         Check state after ONOS scaling
         """
 
-        main.HA.checkStateAfterONOS( main, afterWhich=1 )
+        main.HA.checkStateAfterEvent( main, afterWhich=1 )
 
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
         leaderList = []
         leaderResult = main.TRUE
 
-        for i in main.activeNodes:
-            cli = main.CLIs[ i ]
-            leaderN = cli.electionTestLeader()
+        for ctrl in main.Cluster.active():
+            leaderN = ctrl.CLI.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
                 # error in response
@@ -306,7 +269,7 @@ class HAswapNodes:
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leaderN is None:
-                main.log.error( cli.name +
+                main.log.error( ctrl.name +
                                  " shows no leader for the election-app." )
                 leaderResult = main.FALSE
         if len( set( leaderList ) ) != 1:

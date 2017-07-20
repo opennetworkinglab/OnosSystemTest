@@ -29,7 +29,6 @@ class HA():
         self.default = ''
 
     def customizeOnosGenPartitions( self ):
-        self.startingMininet()
         # copy gen-partions file to ONOS
         # NOTE: this assumes TestON and ONOS are on the same machine
         srcFile = main.testDir + "/HA/dependencies/onos-gen-partitions"
@@ -73,6 +72,7 @@ class HA():
 
     def scalingMetadata( self ):
         import re
+        main.step( "Generate initial metadata file" )
         main.scaling = main.params[ 'scaling' ].split( "," )
         main.log.debug( main.scaling )
         scale = main.scaling.pop( 0 )
@@ -82,23 +82,24 @@ class HA():
         else:
             equal = False
         main.log.debug( equal )
-        main.numCtrls = int( re.search( "\d+", scale ).group( 0 ) )
-        genResult = main.Server.generateFile( main.numCtrls, equal=equal )
+        main.Cluster.setRunningNode( int( re.search( "\d+", scale ).group( 0 ) ) )
+        genResult = main.Server.generateFile( main.Cluster.numCtrls, equal=equal )
         utilities.assert_equals( expect=main.TRUE, actual=genResult,
                                  onpass="New cluster metadata file generated",
                                  onfail="Failled to generate new metadata file" )
 
     def swapNodeMetadata( self ):
-        if main.numCtrls >= 5:
-            main.numCtrls -= 2
+        main.step( "Generate initial metadata file" )
+        if main.Cluster.numCtrls >= 5:
+            main.Cluster.setRunningNode( main.Cluster.numCtrls - 2 )
         else:
             main.log.error( "Not enough ONOS nodes to run this test. Requires 5 or more" )
-        genResult = main.Server.generateFile( main.numCtrls )
+        genResult = main.Server.generateFile( main.Cluster.numCtrls )
         utilities.assert_equals( expect=main.TRUE, actual=genResult,
                                  onpass="New cluster metadata file generated",
                                  onfail="Failled to generate new metadata file" )
 
-    def customizeOnosService( self, metadataMethod ):
+    def setServerForCluster( self ):
         import os
         main.step( "Setup server for cluster metadata file" )
         main.serverPort = main.params[ 'server' ][ 'port' ]
@@ -112,11 +113,7 @@ class HA():
                                  onpass="Server started",
                                  onfail="Failled to start SimpleHTTPServer" )
 
-        main.step( "Generate initial metadata file" )
-        metadataMethod()
-
-        self.startingMininet()
-
+    def copyingBackupConfig( self ):
         main.step( "Copying backup config files" )
         main.onosServicepath = main.ONOSbench.home + "/tools/package/bin/onos-service"
         cp = main.ONOSbench.scp( main.ONOSbench,
@@ -185,7 +182,7 @@ class HA():
                     onosCounters.append( json.loads( onosCountersRaw[ i ] ) )
                 except ( ValueError, TypeError ):
                     main.log.error( "Could not parse counters response from " +
-                                    str( main.Cluster.active()[ i ] ) )
+                                    str( main.Cluster.active( i ) ) )
                     main.log.warn( repr( onosCountersRaw[ i ] ) )
                     onosCounters.append( [] )
 
@@ -200,7 +197,7 @@ class HA():
             for controller in enumerate( onosCounters ):
                 for key, value in controller[ 1 ].iteritems():
                     if 'TestON' in key:
-                        node = str( main.Cluster.active()[ controller[ 0 ] ] )
+                        node = str( main.Cluster.active( controller[ 0 ] ) )
                         try:
                             testCounters[ node ].append( { key: value } )
                         except KeyError:
@@ -236,7 +233,7 @@ class HA():
                 try:
                     onosValue = current.get( counterName )
                 except AttributeError:
-                    node = str( main.Cluster.active()[ i ] )
+                    node = str( main.Cluster.active( i ) )
                     main.log.exception( node + " counters result " +
                                         "is not as expected" )
                     correctResults = main.FALSE
@@ -341,11 +338,10 @@ class HA():
 
         if serviceClean:
             main.step( "Clean up ONOS service changes" )
-            ONOSbench = main.Cluster.contollers[0].Bench
-            ONOSbench.handle.sendline( "git checkout -- tools/package/init/onos.conf" )
-            ONOSbench.handle.expect( "\$" )
-            ONOSbench.handle.sendline( "git checkout -- tools/package/init/onos.service" )
-            ONOSbench.handle.expect( "\$" )
+            main.ONOSbench.handle.sendline( "git checkout -- tools/package/init/onos.conf" )
+            main.ONOSbench.handle.expect( "\$" )
+            main.ONOSbench.handle.sendline( "git checkout -- tools/package/init/onos.service" )
+            main.ONOSbench.handle.expect( "\$" )
 
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( self.nodesCheck,
@@ -374,11 +370,11 @@ class HA():
             main.log.debug( "Apps: " + str( apps ) )
             activateResult = True
             for app in apps:
-                main.Cluster.active()[0].app( app, "Activate" )
+                main.Cluster.active( 0 ).app( app, "Activate" )
             # TODO: check this worked
             time.sleep( 10 )  # wait for apps to activate
             for app in apps:
-                state = main.Cluster.active()[0].appStatus( app )
+                state = main.Cluster.active( 0 ).appStatus( app )
                 if state == "ACTIVE":
                     activateResult = activateResult and True
                 else:
@@ -506,7 +502,7 @@ class HA():
         appResults = main.Cluster.command( "appToIDCheck" )
         appCheck = all( i == main.TRUE for i in appResults )
         if not appCheck:
-            ctrl = main.Cluster.active()[0]
+            ctrl = main.Cluster.active( 0 )
             main.log.debug( "%s apps: %s" % ( ctrl.name, ctrl.apps() ) )
             main.log.debug( "%s appIDs: %s" % ( ctrl.name, ctrl.appIDs() ) )
         return appCheck
@@ -548,7 +544,6 @@ class HA():
         Assign devices to controllers
         """
         import re
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -571,7 +566,7 @@ class HA():
                 main.log.info( str( response ) )
             except Exception:
                 main.log.info( repr( response ) )
-            for ctrl in main.Cluster.controllers:
+            for ctrl in main.Cluster.runningNodes:
                 if re.search( "tcp:" + ctrl.ipAddress, response ):
                     mastershipCheck = mastershipCheck and main.TRUE
                 else:
@@ -591,7 +586,6 @@ class HA():
         """
         import time
         import json
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         try:
@@ -686,7 +680,7 @@ class HA():
                 host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
                 nodeNum = len( main.Cluster.active() )
-                ctrl = main.Cluster.active()[ i % nodeNum ]
+                ctrl = main.Cluster.active( i % nodeNum )
                 tmpId = ctrl.CLI.addHostIntent( host1Id, host2Id )
                 if tmpId:
                     main.log.info( "Added intent with id: " + tmpId )
@@ -802,7 +796,7 @@ class HA():
             else:
                 count += 1
         gossipPeriod = int( main.params[ 'timers' ][ 'gossip' ] )
-        maxGossipTime = gossipPeriod * len( main.Cluster.controllers )
+        maxGossipTime = gossipPeriod * len( main.Cluster.runningNodes )
         utilities.assert_greater_equals(
                 expect=maxGossipTime, actual=gossipTime,
                 onpass="ECM anti-entropy for intents worked within " +
@@ -857,7 +851,6 @@ class HA():
         """
         import json
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Verify connectivity by sending traffic across Intents" )
@@ -999,48 +992,23 @@ class HA():
             onpass="Intents have been installed correctly and pings work",
             onfail="Intents have not been installed correctly, pings failed." )
 
-    def readingState( self, main ):
-        """
-        Reading state of ONOS
-        """
-        import json
-        import time
-        assert main.numCtrls, "main.numCtrls not defined"
-        assert main, "main not defined"
-        assert utilities.assert_equals, "utilities.assert_equals not defined"
-        try:
-            from tests.dependencies.topology import Topology
-        except ImportError:
-            main.log.error( "Topology not found exiting the test" )
-            main.exit()
-        try:
-            main.topoRelated
-        except ( NameError, AttributeError ):
-            main.topoRelated = Topology()
-        main.case( "Setting up and gathering data for current state" )
-        # The general idea for this test case is to pull the state of
-        # ( intents,flows, topology,... ) from each ONOS node
-        # We can then compare them with each other and also with past states
-
+    def checkRoleNotNull( self ):
         main.step( "Check that each switch has a master" )
-        global mastershipState
-        mastershipState = '[]'
-
         # Assert that each device has a master
-        rolesNotNull = all( [ i == main.TRUE for i in main.Cluster.command( "rolesNotNull" ) ] )
+        rolesNotNull = main.Cluster.command( "rolesNotNull", returnBool=True )
         utilities.assert_equals(
             expect=True,
             actual=rolesNotNull,
             onpass="Each device has a master",
             onfail="Some devices don't have a master assigned" )
 
-        main.step( "Get the Mastership of each switch from each controller" )
+    def checkTheRole( self ):
+        main.step( "Read device roles from ONOS" )
         ONOSMastership = main.Cluster.command( "roles" )
-        mastershipCheck = main.FALSE
         consistentMastership = True
         rolesResults = True
         for i in range( len( ONOSMastership ) ):
-            node = str( main.Cluster.active()[ i ] )
+            node = str( main.Cluster.active( i ) )
             if not ONOSMastership[ i ] or "Error" in ONOSMastership[ i ]:
                 main.log.error( "Error in getting " + node + " roles" )
                 main.log.warn( node + " mastership response: " +
@@ -1063,10 +1031,62 @@ class HA():
             actual=consistentMastership,
             onpass="Switch roles are consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of switch roles" )
+        return ONOSMastership, rolesResults, consistentMastership
+
+    def checkingIntents( self ):
+        main.step( "Get the intents from each controller" )
+        ONOSIntents = main.Cluster.command( "intents", specificDriver=2 )
+        intentsResults = True
+        for i in range( len( ONOSIntents ) ):
+            node = str( main.Cluster.active( i ) )
+            if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
+                main.log.error( "Error in getting " + node + " intents" )
+                main.log.warn( node + " intents response: " +
+                               repr( ONOSIntents[ i ] ) )
+                intentsResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=intentsResults,
+            onpass="No error in reading intents output",
+            onfail="Error in reading intents from ONOS" )
+        return ONOSIntents, intentsResults
+
+    def readingState( self, main ):
+        """
+        Reading state of ONOS
+        """
+        import json
+        import time
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        try:
+            from tests.dependencies.topology import Topology
+        except ImportError:
+            main.log.error( "Topology not found exiting the test" )
+            main.cleanup()
+            main.exit()
+        try:
+            main.topoRelated
+        except ( NameError, AttributeError ):
+            main.topoRelated = Topology()
+        main.case( "Setting up and gathering data for current state" )
+        # The general idea for this test case is to pull the state of
+        # ( intents,flows, topology,... ) from each ONOS node
+        # We can then compare them with each other and also with past states
+
+        global mastershipState
+        mastershipState = '[]'
+
+        self.checkRoleNotNull()
+
+        main.step( "Get the Mastership of each switch from each controller" )
+        mastershipCheck = main.FALSE
+
+        ONOSMastership, consistentMastership, rolesResults = self.checkTheRole()
 
         if rolesResults and not consistentMastership:
             for i in range( len( main.Cluster.active() ) ):
-                node = str( main.Cluster.active()[ i ] )
+                node = str( main.Cluster.active( i ) )
                 try:
                     main.log.warn(
                         node + " roles: ",
@@ -1081,25 +1101,13 @@ class HA():
             mastershipCheck = main.TRUE
             mastershipState = ONOSMastership[ 0 ]
 
-        main.step( "Get the intents from each controller" )
+
         global intentState
         intentState = []
-        ONOSIntents = main.Cluster.command( "intents" )
+        ONOSIntents, intentsResults = self.checkingIntents()
         intentCheck = main.FALSE
         consistentIntents = True
-        intentsResults = True
-        for i in range( len( ONOSIntents ) ):
-            node = str( main.Cluster.active()[ i ] )
-            if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.error( "Error in getting " + node + " intents" )
-                main.log.warn( node + " intents response: " +
-                               repr( ONOSIntents[ i ] ) )
-                intentsResults = False
-        utilities.assert_equals(
-            expect=True,
-            actual=intentsResults,
-            onpass="No error in reading intents output",
-            onfail="Error in reading intents from ONOS" )
+
 
         main.step( "Check for consistency in Intents from each controller" )
         if all( [ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
@@ -1156,7 +1164,7 @@ class HA():
                                         indent=4,
                                         separators=( ',', ': ' ) ) )
             for i in range( len( ONOSIntents ) ):
-                node = str( main.Cluster.active()[ i ] )
+                node = str( main.Cluster.active( i ) )
                 if ONOSIntents[ i ] != ONOSIntents[ -1 ]:
                     main.log.debug( node + " intents: " )
                     main.log.debug( json.dumps( json.loads( ONOSIntents[ i ] ),
@@ -1172,13 +1180,13 @@ class HA():
         main.step( "Get the flows from each controller" )
         global flowState
         flowState = []
-        ONOSFlows = main.Cluster.command( "flows" ) # TODO: Possible arg: sleep = 30
+        ONOSFlows = main.Cluster.command( "flows", specificDriver=2 ) # TODO: Possible arg: sleep = 30
         ONOSFlowsJson = []
         flowCheck = main.FALSE
         consistentFlows = True
         flowsResults = True
         for i in range( len( ONOSFlows ) ):
-            node = str( main.Cluster.active()[ i ] )
+            node = str( main.Cluster.active( i ) )
             if not ONOSFlows[ i ] or "Error" in ONOSFlows[ i ]:
                 main.log.error( "Error in getting " + node + " flows" )
                 main.log.warn( node + " flows response: " +
@@ -1215,7 +1223,7 @@ class HA():
 
         if flowsResults and not consistentFlows:
             for i in range( len( ONOSFlows ) ):
-                node = str( main.Cluster.active()[ i ] )
+                node = str( main.Cluster.active( i ) )
                 try:
                     main.log.warn(
                         node + " flows: " +
@@ -1281,18 +1289,18 @@ class HA():
             pingTime=500 )
 
         main.step( "Collecting topology information from ONOS" )
-        devices = main.topoRelated.getAllDevices( main.Cluster.active(), False )
-        hosts = main.topoRelated.getAllHosts( main.Cluster.active(), False, inJson=True )
-        ports = main.topoRelated.getAllPorts( main.Cluster.active(), False )
-        links = main.topoRelated.getAllLinks( main.Cluster.active(), False )
-        clusters = main.topoRelated.getAllClusters( main.Cluster.active(), False )
+        devices = main.topoRelated.getAll( "devices" )
+        hosts = main.topoRelated.getAll( "hosts", inJson=True )
+        ports = main.topoRelated.getAll( "ports" )
+        links = main.topoRelated.getAll( "links" )
+        clusters = main.topoRelated.getAll( "clusters" )
         # Compare json objects for hosts and dataplane clusters
 
         # hosts
         main.step( "Host view is consistent across ONOS nodes" )
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
-            controllerStr = str( main.Cluster.active()[ controller ] )
+            controllerStr = str( main.Cluster.active( controller ) )
             if hosts[ controller ] and "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
@@ -1319,7 +1327,7 @@ class HA():
         main.step( "Each host has an IP address" )
         ipResult = main.TRUE
         for controller in range( 0, len( hosts ) ):
-            controllerStr = str( main.Cluster.active()[ controller ] )
+            controllerStr = str( main.Cluster.active( controller ) )
             if hosts[ controller ]:
                 for host in hosts[ controller ]:
                     if not host.get( 'ipAddresses', [] ):
@@ -1336,7 +1344,7 @@ class HA():
         main.step( "Cluster view is consistent across ONOS nodes" )
         consistentClustersResult = main.TRUE
         for controller in range( len( clusters ) ):
-            controllerStr = str( main.Cluster.active()[ controller ] )
+            controllerStr = str( main.Cluster.active( controller ) )
             if "Error" not in clusters[ controller ]:
                 if clusters[ controller ] == clusters[ 0 ]:
                     continue
@@ -1382,7 +1390,7 @@ class HA():
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
         for controller in range( len( main.Cluster.active() ) ):
-            controllerStr = str( main.Cluster.active()[ controller ] )
+            controllerStr = str( main.Cluster.active( controller ) )
             currentDevicesResult = main.topoRelated.compareDevicePort(
                                                 main.Mininet1, controller,
                                                 mnSwitches, devices, ports )
@@ -1448,7 +1456,6 @@ class HA():
         # TODO: Clean this up so it's not just a cut/paste from the test
         try:
             # Make sure variables are defined/set
-            assert main.numCtrls, "main.numCtrls not defined"
             assert utilities.assert_equals, "utilities.assert_equals not defined"
             assert main.pCounterName, "main.pCounterName not defined"
             assert main.onosSetName, "main.onosSetName not defined"
@@ -1611,7 +1618,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1643,7 +1650,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node +
@@ -1685,7 +1692,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1709,7 +1716,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " +
@@ -1751,7 +1758,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1775,7 +1782,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -1849,7 +1856,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1873,7 +1880,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -1915,7 +1922,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1939,7 +1946,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -1981,7 +1988,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -2005,7 +2012,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -2048,7 +2055,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -2072,7 +2079,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -2114,7 +2121,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -2138,7 +2145,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -2181,7 +2188,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -2205,7 +2212,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active()[ i ]
+                node = main.Cluster.active( i )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " +
@@ -2524,7 +2531,6 @@ class HA():
         """
         import os
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -2551,7 +2557,7 @@ class HA():
             logFiles = [ "karaf.log", "karaf.log.1" ]
             # NOTE: must end in /
             for f in logFiles:
-                for ctrl in main.Cluster.controllers:
+                for ctrl in main.Cluster.runningNodes:
                     dstName = main.logdir + "/" + ctrl.name + "-" + f
                     main.ONOSbench.secureCopy( ctrl.user_name, ctrl.ipAddress,
                                                logFolder + f, dstName )
@@ -2561,7 +2567,7 @@ class HA():
             logFiles = [ "stderr.log", "stdout.log" ]
             # NOTE: must end in /
             for f in logFiles:
-                for ctrl in main.Cluster.controllers:
+                for ctrl in main.Cluster.runningNodes:
                     dstName = main.logdir + "/" + ctrl.name + "-" + f
                     main.ONOSbench.secureCopy( ctrl.user_name, ctrl.ipAddress,
                                                logFolder + f, dstName )
@@ -2575,7 +2581,7 @@ class HA():
                                  onfail="MN cleanup NOT successful" )
 
         main.step( "Checking ONOS Logs for errors" )
-        for ctrl in main.Cluster.controllers:
+        for ctrl in main.Cluster.runningNodes:
             main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
             main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
@@ -2592,7 +2598,6 @@ class HA():
         Assign mastership to controllers
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -2616,45 +2621,45 @@ class HA():
                 # set up correct variables:
                 if i == 1:
                     c = 0
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS1
+                    ip = main.Cluster.active( c ).ip_address  # ONOS1
                     deviceId = onosCli.getDevice( "1000" ).get( 'id' )
                 elif i == 2:
-                    c = 1 % main.numCtrls
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS2
+                    c = 1 % main.Cluster.numCtrls
+                    ip = main.Cluster.active( c ).ip_address  # ONOS2
                     deviceId = onosCli.getDevice( "2000" ).get( 'id' )
                 elif i == 3:
-                    c = 1 % main.numCtrls
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS2
+                    c = 1 % main.Cluster.numCtrls
+                    ip = main.Cluster.active( c ).ip_address  # ONOS2
                     deviceId = onosCli.getDevice( "3000" ).get( 'id' )
                 elif i == 4:
-                    c = 3 % main.numCtrls
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS4
+                    c = 3 % main.Cluster.numCtrls
+                    ip = main.Cluster.active( c ).ip_address  # ONOS4
                     deviceId = onosCli.getDevice( "3004" ).get( 'id' )
                 elif i == 5:
-                    c = 2 % main.numCtrls
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS3
+                    c = 2 % main.Cluster.numCtrls
+                    ip = main.Cluster.active( c ).ip_address  # ONOS3
                     deviceId = onosCli.getDevice( "5000" ).get( 'id' )
                 elif i == 6:
-                    c = 2 % main.numCtrls
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS3
+                    c = 2 % main.Cluster.numCtrls
+                    ip = main.Cluster.active( c ).ip_address  # ONOS3
                     deviceId = onosCli.getDevice( "6000" ).get( 'id' )
                 elif i == 7:
-                    c = 5 % main.numCtrls
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS6
+                    c = 5 % main.Cluster.numCtrls
+                    ip = main.Cluster.active( c ).ip_address  # ONOS6
                     deviceId = onosCli.getDevice( "6007" ).get( 'id' )
                 elif i >= 8 and i <= 17:
-                    c = 4 % main.numCtrls
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS5
+                    c = 4 % main.Cluster.numCtrls
+                    ip = main.Cluster.active( c ).ip_address  # ONOS5
                     dpid = '3' + str( i ).zfill( 3 )
                     deviceId = onosCli.getDevice( dpid ).get( 'id' )
                 elif i >= 18 and i <= 27:
-                    c = 6 % main.numCtrls
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS7
+                    c = 6 % main.Cluster.numCtrls
+                    ip = main.Cluster.active( c ).ip_address  # ONOS7
                     dpid = '6' + str( i ).zfill( 3 )
                     deviceId = onosCli.getDevice( dpid ).get( 'id' )
                 elif i == 28:
                     c = 0
-                    ip = main.Cluster.active()[ c ].ip_address  # ONOS1
+                    ip = main.Cluster.active( c ).ip_address  # ONOS1
                     deviceId = onosCli.getDevice( "2800" ).get( 'id' )
                 else:
                     main.log.error( "You didn't write an else statement for " +
@@ -2705,7 +2710,6 @@ class HA():
         The bring up stopped nodes
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert main.kill, "main.kill not defined"
@@ -2779,8 +2783,20 @@ class HA():
         utilities.assert_equals( expect=main.TRUE, actual=runResults,
                                  onpass="ONOS nodes reran for election topic",
                                  onfail="Errror rerunning for election" )
+    def tempCell( self, cellName, ipList ):
+        main.step( "Create cell file" )
+        cellAppString = main.params[ 'ENV' ][ 'appString' ]
 
-    def checkStateAfterONOS( self, main, afterWhich, compareSwitch=False, isRestart=False ):
+
+        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
+                                       main.Mininet1.ip_address,
+                                       cellAppString, ipList , main.ONOScli1.karafUser )
+        main.step( "Applying cell variable to environment" )
+        cellResult = main.ONOSbench.setCell( cellName )
+        verifyResult = main.ONOSbench.verifyCell()
+
+
+    def checkStateAfterEvent( self, main, afterWhich, compareSwitch=False, isRestart=False ):
         """
         afterWhich :
             0: failure
@@ -2790,55 +2806,21 @@ class HA():
         Check state after ONOS failure/scaling
         """
         import json
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Running ONOS Constant State Tests" )
 
         OnosAfterWhich = [ "failure" , "scaliing" ]
 
-        main.step( "Check that each switch has a master" )
         # Assert that each device has a master
-        rolesNotNull = all( [ i == main.TRUE for i in main.Cluster.command( "rolesNotNull" ) ] )
-        utilities.assert_equals(
-            expect=True,
-            actual=rolesNotNull,
-            onpass="Each device has a master",
-            onfail="Some devices don't have a master assigned" )
+        self.checkRoleNotNull()
 
-        main.step( "Read device roles from ONOS" )
-        ONOSMastership = main.Cluster.command( "roles" )
+        ONOSMastership, rolesResults, consistentMastership = self.checkTheRole()
         mastershipCheck = main.FALSE
-        consistentMastership = True
-        rolesResults = True
-        for i in range( len( ONOSMastership ) ):
-            node = str( main.Cluster.active()[ i ] )
-            if not ONOSMastership[ i ] or "Error" in ONOSMastership[ i ]:
-                main.log.error( "Error in getting " + node + " roles" )
-                main.log.warn( node + " mastership response: " +
-                               repr( ONOSMastership[ i ] ) )
-                rolesResults = False
-        utilities.assert_equals(
-            expect=True,
-            actual=rolesResults,
-            onpass="No error in reading roles output",
-            onfail="Error in reading roles from ONOS" )
-
-        main.step( "Check for consistency in roles from each controller" )
-        if all( [ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
-            main.log.info(
-                "Switch roles are consistent across all ONOS nodes" )
-        else:
-            consistentMastership = False
-        utilities.assert_equals(
-            expect=True,
-            actual=consistentMastership,
-            onpass="Switch roles are consistent across all ONOS nodes",
-            onfail="ONOS nodes have different views of switch roles" )
 
         if rolesResults and not consistentMastership:
             for i in range( len( ONOSMastership ) ):
-                node = str( main.Cluster.active()[ i ] )
+                node = str( main.Cluster.active( i ) )
                 main.log.warn( node + " roles: ",
                                json.dumps( json.loads( ONOSMastership[ i ] ),
                                            sort_keys=True,
@@ -2878,23 +2860,9 @@ class HA():
                 onfail="Mastership of some switches changed" )
 
         # NOTE: we expect mastership to change on controller failure/scaling down
-        main.step( "Get the intents and compare across all nodes" )
-        ONOSIntents = main.Cluster.command( "intents" )
+        ONOSIntents, intentsResults = self.checkingIntents()
         intentCheck = main.FALSE
         consistentIntents = True
-        intentsResults = True
-        for i in range( len( ONOSIntents ) ):
-            if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                ctrl = main.Cluster.active()[ i ]
-                main.log.error( "Error in getting " + ctrl.name + " intents" )
-                main.log.warn( ctrl.name + " intents response: " +
-                               repr( ONOSIntents[ i ] ) )
-                intentsResults = False
-        utilities.assert_equals(
-            expect=True,
-            actual=intentsResults,
-            onpass="No error in reading intents output",
-            onfail="Error in reading intents from ONOS" )
 
         main.step( "Check for consistency in Intents from each controller" )
         if all( [ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
@@ -3068,13 +3036,13 @@ class HA():
         """
         import json
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         try:
             from tests.dependencies.topology import Topology
         except ImportError:
             main.log.error( "Topology not found exiting the test" )
+            main.cleanup()
             main.exit()
         try:
             main.topoRelated
@@ -3097,18 +3065,18 @@ class HA():
             hostAttachmentResults = True
             count += 1
             cliStart = time.time()
-            devices = main.topoRelated.getAllDevices( main.Cluster.active(), True,
+            devices = main.topoRelated.getAll( "devices", True,
                                                       kwargs={ 'sleep': 5, 'attempts': 5,
                                                                'randomTime': True } )
             ipResult = main.TRUE
 
-            hosts = main.topoRelated.getAllHosts( main.Cluster.active(), True,
+            hosts = main.topoRelated.getAll( "hosts", True,
                                                   kwargs={ 'sleep': 5, 'attempts': 5,
                                                            'randomTime': True },
                                                   inJson=True )
 
             for controller in range( 0, len( hosts ) ):
-                controllerStr = str( main.Cluster.active()[ controller ] )
+                controllerStr = str( main.Cluster.active( controller ) )
                 if hosts[ controller ]:
                     for host in hosts[ controller ]:
                         if host is None or host.get( 'ipAddresses', [] ) == []:
@@ -3116,13 +3084,13 @@ class HA():
                                 "Error with host ipAddresses on controller" +
                                 controllerStr + ": " + str( host ) )
                             ipResult = main.FALSE
-            ports = main.topoRelated.getAllPorts( main.Cluster.active() , True,
+            ports = main.topoRelated.getAll( "ports" , True,
                                                   kwargs={ 'sleep': 5, 'attempts': 5,
                                                            'randomTime': True } )
-            links = main.topoRelated.getAllLinks( main.Cluster.active(), True,
+            links = main.topoRelated.getAll( "links", True,
                                                   kwargs={ 'sleep': 5, 'attempts': 5,
                                                            'randomTime': True } )
-            clusters = main.topoRelated.getAllClusters( main.Cluster.active(), True,
+            clusters = main.topoRelated.getAll( "clusters", True,
                                                         kwargs={ 'sleep': 5, 'attempts': 5,
                                                                  'randomTime': True } )
 
@@ -3144,7 +3112,7 @@ class HA():
             mnLinks = main.Mininet1.getLinks()
             mnHosts = main.Mininet1.getHosts()
             for controller in range( len( main.Cluster.active() ) ):
-                controllerStr = str( main.Cluster.active()[ controller ] )
+                controllerStr = str( main.Cluster.active( controller ) )
                 currentDevicesResult = main.topoRelated.compareDevicePort( main.Mininet1, controller,
                                                           mnSwitches,
                                                           devices, ports )
@@ -3284,7 +3252,7 @@ class HA():
         main.step( "Hosts view is consistent across all ONOS nodes" )
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
-            controllerStr = str( main.Cluster.active()[ controller ] )
+            controllerStr = str( main.Cluster.active( controller ) )
             if hosts[ controller ] is not None and "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
@@ -3326,7 +3294,7 @@ class HA():
         main.step( "Clusters view is consistent across all ONOS nodes" )
         consistentClustersResult = main.TRUE
         for controller in range( len( clusters ) ):
-            controllerStr = str( main.Cluster.active()[ controller ] )
+            controllerStr = str( main.Cluster.active( controller ) )
             if "Error" not in clusters[ controller ]:
                 if clusters[ controller ] == clusters[ 0 ]:
                     continue
@@ -3428,7 +3396,6 @@ class HA():
         Link fromS-toS down
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         # NOTE: You should probably run a topology check after this
@@ -3454,7 +3421,6 @@ class HA():
         Link fromS-toS up
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         # NOTE: You should probably run a topology check after this
@@ -3480,7 +3446,6 @@ class HA():
         """
         # NOTE: You should probably run a topology check after this
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -3515,7 +3480,6 @@ class HA():
         """
         # NOTE: You should probably run a topology check after this
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -3550,7 +3514,6 @@ class HA():
         """
         start election app on all onos nodes
         """
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -3605,7 +3568,6 @@ class HA():
                 withdrawl and later before withdrawl vs after re-election
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -3619,11 +3581,11 @@ class HA():
         newLeader = ''  # the new leaders fron newLoeaders, None if not same
         oldLeaderCLI = None  # the CLI of the old leader used for re-electing
         expectNoLeader = False  # True when there is only one leader
-        if len( main.Cluster.controllers ) == 1:
+        if len( main.Cluster.runningNodes ) == 1:
             expectNoLeader = True
 
         main.step( "Run for election on each node" )
-        electionResult = all( [ i == main.TRUE for i in main.Cluster.command( "electionTestRun" ) ] )
+        electionResult = main.Cluster.command( "electionTestRun", returnBool=True )
         utilities.assert_equals(
             expect=True,
             actual=electionResult,
@@ -3762,7 +3724,6 @@ class HA():
         Install Distributed Primitives app
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 

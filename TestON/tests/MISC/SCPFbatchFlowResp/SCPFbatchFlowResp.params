@@ -45,11 +45,13 @@
 
     <CASE10>
         <app>org.onosproject.openflow-base</app>
+        <cfg>org.onosproject.provider.of.flow.impl.OpenFlowRuleProvider</cfg>
         <adaptiveFlowenabled>false</adaptiveFlowenabled>
         <mnArgs> --topo linear,{} --switch ovsk,protocols=OpenFlow13 --controller remote,port=6653</mnArgs>
     </CASE10>
 
     <CASE11>
+        <cfg>org.onosproject.provider.nil.NullProviders</cfg>
         <nullTopo>linear</nullTopo>
         <nullStart>true</nullStart>
     </CASE11>

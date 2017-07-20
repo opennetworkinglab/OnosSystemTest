@@ -6,20 +6,16 @@ class SdnBase:
         import time
         import os
         from operator import eq
-        main.case( "Setting up ONOS environment" )
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
         except Exception:
             main.log.error( "ONOSSetup not found. exiting the test" )
             main.exit()
-
+        main.testSetUp.envSetupDescription()
         main.testSetUp.envSetup()
         main.apps = main.params[ 'ENV' ][ 'appString' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
-
-
-
 
         main.step( "Copying config files" )
         src = os.path.dirname( main.testFile ) + "/network-cfg.json"
@@ -29,18 +25,16 @@ class SdnBase:
                                  actual=status,
                                  onpass="Copy config file succeeded",
                                  onfail="Copy config file failed" )
-        main.testSetUp.ONOSSetUp( main.Mininet, cellName=cellName )
+        main.testSetUp.ONOSSetUp( main.Mininet,
+                                  main.Cluster,
+                                  cellName=cellName )
 
         main.step( "Checking if ONOS CLI is ready for issuing commands" )
-        for i in range( 10 ):
-            ready = True
-            for cli in main.CLIs:
-                output = cli.summary()
-                if not output:
-                    ready = False
-            if ready:
-                break
-            time.sleep( 30 )
+        ready =  utilities.retry( main.Cluster.command,
+                                  False,
+                                  kwargs={ "function":"summary", "contentCheck":True },
+                                  sleep=30,
+                                  attempts=10 )
         utilities.assert_equals( expect=True, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
@@ -60,13 +54,13 @@ class SdnBase:
                        % main.params[ 'config' ][ 'peerNum' ] )
         main.step( "Check P2P intents number from ONOS CLI" )
 
-        getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
+        getIntentsResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True )
         bgpIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * intentExpectedNum
         if bgpIntentsActualNum != bgpIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
-            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
+            getIntentsResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True )
             bgpIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         main.log.info( "bgpIntentsExpected num is:" )
@@ -83,14 +77,14 @@ class SdnBase:
         routes and intents check to all BGP peers
         '''
         import time
-        getRoutesResult = main.ONOScli1.routes( jsonFormat=True )
+        getRoutesResult = main.Cluster.active( 0 ).CLI.routes( jsonFormat=True )
         allRoutesActual = \
             main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
         if allRoutesStrActual != allRoutesStrExpected:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
-            getRoutesResult = main.ONOScli1.routes( jsonFormat=True )
+            getRoutesResult = main.Cluster.active( 0 ).CLI.routes( jsonFormat=True )
             allRoutesActual = \
                 main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
             allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -106,12 +100,12 @@ class SdnBase:
             onfail="Routes are wrong!" )
 
         main.step( "Check M2S intents installed" )
-        getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
+        getIntentsResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True )
         routeIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
         if routeIntentsActualNum != routeIntentsExpectedNum:
             time.sleep( int( main.params['timers']['RouteDelivery'] ) )
-            getIntentsResult = main.ONOScli1.intents( jsonFormat=True )
+            getIntentsResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True )
             routeIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
 
@@ -126,7 +120,7 @@ class SdnBase:
             onfail="MultiPointToSinglePoint Intent Num is wrong!" )
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -197,7 +191,7 @@ class SdnBase:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )

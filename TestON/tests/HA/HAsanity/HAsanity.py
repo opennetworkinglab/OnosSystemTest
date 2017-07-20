@@ -79,13 +79,11 @@ class HAsanity:
             main.exit()
         main.testSetUp.envSetupDescription()
         try:
-            from dependencies.Cluster import Cluster
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-            main.Cluster = Cluster( main.ONOScell.nodes )
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            stepResult = main.testSetUp.envSetup( main.Cluster, hasNode=True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -131,7 +129,6 @@ class HAsanity:
         The Failure case. Since this is the Sanity test, we do nothing.
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Wait 60 seconds instead of inducing a failure" )
@@ -146,7 +143,7 @@ class HAsanity:
         """
         Check state after ONOS failure
         """
-        main.HA.checkStateAfterONOS( main, afterWhich=0, compareSwitch=True )
+        main.HA.checkStateAfterEvent( main, afterWhich=0, compareSwitch=True )
 
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection

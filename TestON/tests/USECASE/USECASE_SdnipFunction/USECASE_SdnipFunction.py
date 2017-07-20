@@ -53,7 +53,8 @@ class USECASE_SdnipFunction:
         swResult = main.TRUE
         for i in range ( 1, int( main.params['config']['switchNum'] ) + 1 ):
             sw = "sw%s" % ( i )
-            swResult = swResult and main.Mininet.assignSwController( sw, main.ONOSip[ 0 ] )
+            swResult = swResult and \
+                       main.Mininet.assignSwController( sw, main.Cluster.active( 0 ).ipAddress )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=swResult,
                                  onpass="Successfully connect all switches to ONOS",
@@ -63,9 +64,10 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Set up tunnel from Mininet node to onos node" )
-        forwarding1 = '%s:2000:%s:2000' % ( '1.1.1.2', main.ONOSip[ 0 ] )
+        forwarding1 = '%s:2000:%s:2000' % ( '1.1.1.2', main.Cluster.active( 0 ).ipAddress )
         command = 'ssh -nNT -o "PasswordAuthentication no" \
-        -o "StrictHostKeyChecking no" -l sdn -L %s %s & ' % ( forwarding1, main.ONOSip[ 0 ] )
+        -o "StrictHostKeyChecking no" -l sdn -L %s %s & ' % \
+                  ( forwarding1, main.Cluster.active( 0 ).ipAddress )
 
         tunnelResult = main.TRUE
         tunnelResult = main.Mininet.node( "root", command )
@@ -110,20 +112,20 @@ class USECASE_SdnipFunction:
         time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
 
         main.log.info( "Get links in the network" )
-        summaryResult = main.ONOScli1.summary()
+        summaryResult = main.Cluster.active( 0 ).CLI.summary()
         linkNum = json.loads( summaryResult )[ "links" ]
-        listResult = main.ONOScli1.links( jsonFormat=False )
+        listResult = main.Cluster.active( 0 ).CLI.links( jsonFormat=False )
         main.log.info( listResult )
         if linkNum < 100:
             main.log.error( "Link number is wrong!" )
             time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
-            listResult = main.ONOScli1.links( jsonFormat=False )
+            listResult = main.Cluster.active( 0 ).CLI.links( jsonFormat=False )
             main.log.info( listResult )
             main.cleanup()
             main.exit()
 
         main.step( "Activate sdn-ip application" )
-        activeSDNIPresult = main.ONOScli1.activateApp( "org.onosproject.sdnip" )
+        activeSDNIPresult = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.sdnip" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=activeSDNIPresult,
                                  onpass="Activate SDN-IP succeeded",
@@ -292,7 +294,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -318,7 +320,7 @@ class USECASE_SdnipFunction:
             onpass="Starting switch succeeded!",
             onfail="Starting switch failed!" )
 
-        result2 = main.Mininet.assignSwController( "sw32", main.ONOSip[ 0 ] )
+        result2 = main.Mininet.assignSwController( "sw32", main.Cluster.active( 0 ).ipAddress )
         utilities.assertEquals( \
             expect=main.TRUE,
             actual=result2,
@@ -336,7 +338,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -388,7 +390,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )
@@ -425,7 +427,7 @@ class USECASE_SdnipFunction:
         utilities.assertEquals( expect=main.TRUE, actual=result1,
                                 onpass="Starting switch succeeded!",
                                 onfail="Starting switch failed!" )
-        result2 = main.Mininet.assignSwController( "sw11", main.ONOSip[ 0 ] )
+        result2 = main.Mininet.assignSwController( "sw11", main.Cluster.active( 0 ).ipAddress )
         utilities.assertEquals( expect=main.TRUE, actual=result2,
                                 onpass="Connect switch to ONOS succeeded!",
                                 onfail="Connect switch to ONOS failed!" )
@@ -444,7 +446,7 @@ class USECASE_SdnipFunction:
             main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.ONOScli1.checkFlowsState,
+        flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={'isPENDING':False},
                                      attempts=10 )

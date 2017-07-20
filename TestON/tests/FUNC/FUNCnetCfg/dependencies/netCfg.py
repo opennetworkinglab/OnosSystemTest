@@ -31,7 +31,7 @@ def compareCfg( main, gossipTime=None ):
     """
     main.step( "Check net config" )
     if gossipTime:
-        time.sleep( gossipTime * len( main.RESTs ) )
+        time.sleep( gossipTime * main.Cluster.numCtrls )
     responses = []
     result = utilities.retry( f=checkNodeResponses,
                               retValue=False,
@@ -46,9 +46,9 @@ def compareCfg( main, gossipTime=None ):
 
 def checkNodeResponses ( main, responses ):
     numberOfFailedNodes = 0  # Tracks the number of nodes that failed to get net configuration
-    for node in main.RESTs:
-        response = node.getNetCfg( )
-        responses.append( node.pprint( response ) )
+    for ctrl in main.Cluster.active():
+        response = ctrl.REST.getNetCfg( )
+        responses.append( ctrl.REST.pprint( response ) )
         if response == main.FALSE:
             numberOfFailedNodes += 1
 
@@ -79,7 +79,7 @@ def checkDeviceAnnotations( main, jsonObj, sw ):
 
 
 def checkAllDeviceAnnotations( main, json ):
-    devices = main.ONOSrest1.devices( )
+    devices = main.Cluster.active( 0 ).REST.devices( )
     id = "of:0000000000000001"
     i = 1
     result = [ ]

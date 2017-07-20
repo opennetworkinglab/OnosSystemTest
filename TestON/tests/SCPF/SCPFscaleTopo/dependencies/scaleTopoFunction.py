@@ -77,7 +77,7 @@ def compareTimeDiffWithRoleRequest(main, term, Mode, index=0 ):
 
     '''
     try:
-        termInfo = main.CLIs[ index ].logSearch( mode=Mode, searchTerm=term )
+        termInfo = main.Cluster.active( index ).CLI.logSearch( mode=Mode, searchTerm=term )
         termTime = getTimestampFromString( main, termInfo[ 0 ] )
         roleRequestTime = getRoleRequestTimeFromTshark( main )
         if termTime == -1 or roleRequestTime == -1:
@@ -108,8 +108,8 @@ def getInfoFromLog( main, term1, mode1, term2, mode2, index=0, funcMode='TD' ):
 
     '''
     try:
-        termInfo1 = main.CLIs[ index ].logSearch( mode=mode1, searchTerm=term1 )
-        termInfo2 = main.CLIs[ index ].logSearch( mode=mode2, searchTerm=term2 )
+        termInfo1 = main.Cluster.active( index ).CLI.logSearch( mode=mode1, searchTerm=term1 )
+        termInfo2 = main.Cluster.active( index ).CLI.logSearch( mode=mode2, searchTerm=term2 )
         if funcMode == 'TD':
             startTime = getTimestampFromString( main, termInfo1[0] )
             endTime = getTimestampFromString ( main, termInfo2[0] )
@@ -243,78 +243,16 @@ def compareTopo( main ):
         Compare topology( devices, links, ports, hosts ) between ONOS and
         mininet using sts
     """
-    devices = []
-    links = []
-    ports = []
-    hosts = []
-    switchResult = []
-    linksResult = []
-    portsResult = []
-    hostsResult = []
-    mnSwitches = main.Mininet1.getSwitches()
-    mnLinks = main.Mininet1.getLinks()
-    mnHosts = main.Mininet1.getHosts()
-    compareTopoResult = main.TRUE
-
-    for i in range( main.numCtrls ):
-        devices.append( json.loads( main.CLIs[ i ].devices() ) )
-        links.append( json.loads( main.CLIs[ i ].links() ) )
-        ports.append( json.loads(  main.CLIs[ i ].ports() ) )
-        hosts.append( json.loads( main.CLIs[ i ].hosts() ) )
-
-    # Comparing switches
-    main.log.info( main.topoName + ": Comparing switches in each ONOS nodes" +
-                   " with Mininet" )
-    for i in range( main.numCtrls ):
-        tempResult = main.Mininet1.compareSwitches( mnSwitches,
-                                                    devices[ i ],
-                                                    ports[ i ] )
-        switchResult.append( tempResult )
-        if tempResult == main.FALSE:
-            main.log.error( main.topoName + ": ONOS-" + str( i + 1 ) +
-                            " switch view is incorrect " )
-
-    if all( result == main.TRUE for result in switchResult ):
-        main.log.info( main.topoName + ": Switch view in all ONOS nodes "+
-                       "are correct " )
-    else:
-        compareTopoResult = main.FALSE
-
-    # Comparing links
-    main.log.info( main.topoName + ": Comparing links in each ONOS nodes" +
-                   " with Mininet" )
-    for i in range( main.numCtrls ):
-        tempResult = main.Mininet1.compareLinks( mnSwitches,
-                                                 mnLinks,
-                                                 links[ i ] )
-        linksResult.append( tempResult )
-        if tempResult == main.FALSE:
-            main.log.error( main.topoName + ": ONOS-" + str( i + 1 ) +
-                            " links view are incorrect " )
-
-    if all( result == main.TRUE for result in linksResult ):
-        main.log.info( main.topoName + ": Links view in all ONOS nodes "+
-                       "are correct " )
-    else:
-        compareTopoResult = main.FALSE
-
-    # Comparing hosts
-    main.log.info( main.topoName + ": Comparing hosts in each ONOS nodes" +
-                   " with Mininet" )
-    for i in range( main.numCtrls ):
-        tempResult = main.Mininet1.compareHosts( mnHosts, hosts[ i ] )
-        hostsResult.append( tempResult )
-        if tempResult == main.FALSE:
-            main.log.error( main.topoName + ": ONOS-" + str( i + 1 ) +
-                            " hosts view are incorrect " )
-
-    if all( result == main.TRUE for result in hostsResult ):
-        main.log.info( main.topoName + ": Hosts view in all ONOS nodes "+
-                       "are correct " )
-    else:
-        compareTopoResult = main.FALSE
-
-    return compareTopoResult
+    try:
+        from tests.dependencies.topology import Topology
+    except ImportError:
+        main.log.error( "Topology not found exiting the test" )
+        main.exit()
+    try:
+        main.topoRelated
+    except ( NameError, AttributeError ):
+        main.topoRelated = Topology()
+    return main.topoRelated.compareTopos( main.Mininet1 )
 
 def assignSwitch( main ):
     """
@@ -324,12 +262,12 @@ def assignSwitch( main ):
     assignResult = main.TRUE
     switchList =  main.Mininet1.getSwitch()
     assignResult = main.Mininet1.assignSwController( sw=switchList,
-                                                     ip=main.ONOSip[ 0 ],
+                                                     ip=main.Cluster.active( 0 ).ipAddress,
                                                      port=6633 )
 
     for sw in switchList:
         response = main.Mininet1.getSwController( sw )
-        if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
+        if re.search( "tcp:" + main.Cluster.active( 0 ).ipAddress, response ):
             assignResult = assignResult and main.TRUE
         else:
             assignResult = main.FALSE
@@ -344,15 +282,15 @@ def connectivity( main, timeout=900, shortCircuit=True, acceptableFailed=20 ):
     appCheck = main.TRUE
     getDataResult = main.TRUE
     main.log.info( main.topoName + ": Activating reactive forwarding app " )
-    activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
+    activateResult = main.Cluster.active( 0 ).activateApp( "org.onosproject.fwd" )
 
     if main.hostsData:
         main.hostsData = {}
-    for i in range( main.numCtrls ):
-        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+    for ctrl in main.Cluster.active():
+        appCheck = appCheck and ctrl.CLI.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ i ].apps() )
-            main.log.warn( main.CLIs[ i ].appIDs() )
+            main.log.warn( ctrl.CLI.apps() )
+            main.log.warn( ctrl.CLI.appIDs() )
 
     time.sleep( main.fwdSleep )
 
@@ -362,12 +300,12 @@ def connectivity( main, timeout=900, shortCircuit=True, acceptableFailed=20 ):
                                         acceptableFailed=acceptableFailed )
 
     main.log.info( main.topoName + ": Deactivate reactive forwarding app " )
-    activateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
-    for i in range( main.numCtrls ):
-        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+    activateResult = main.Cluster.active( 0 ).deactivateApp( "org.onosproject.fwd" )
+    for ctrl in main.Cluster.active():
+        appCheck = appCheck and ctrl.CLI.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ i ].apps() )
-            main.log.warn( main.CLIs[ i ].appIDs() )
+            main.log.warn( ctrl.CLI.apps() )
+            main.log.warn( ctrl.CLI.appIDs() )
 
     return pingResult
 
@@ -379,21 +317,21 @@ def getHostsData( main ):
     appCheck = main.TRUE
     getDataResult = main.TRUE
     main.log.info( main.topoName + ": Activating reactive forwarding app " )
-    activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
+    activateResult = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.fwd" )
 
     if main.hostsData:
         main.hostsData = {}
-    for i in range( main.numCtrls ):
-        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+    for ctrl in main.Cluster.active():
+        appCheck = appCheck and ctrl.CLI.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ i ].apps() )
-            main.log.warn( main.CLIs[ i ].appIDs() )
+            main.log.warn( ctrl.CLI.apps() )
+            main.log.warn( ctrl.CLI.appIDs() )
 
     time.sleep( main.fwdSleep )
     # Discover hosts using pingall
     pingResult = main.Mininet1.pingall( timeout=900 )
 
-    hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
+    hostsJson = json.loads( main.Cluster.active( 0 ).CLI.hosts() )
     hosts = main.Mininet1.getHosts().keys()
 
     for host in hosts:
@@ -419,12 +357,12 @@ def getHostsData( main ):
         getDataResult = main.FALSE
 
     main.log.info( main.topoName + ": Deactivate reactive forwarding app " )
-    activateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
-    for i in range( main.numCtrls ):
-        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+    activateResult = main.Cluster.active( 0 ).CLI.deactivateApp( "org.onosproject.fwd" )
+    for ctrl in main.Cluster.active():
+        appCheck = appCheck and ctrl.CLI.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ i ].apps() )
-            main.log.warn( main.CLIs[ i ].appIDs() )
+            main.log.warn( ctrl.CLI.apps() )
+            main.log.warn( ctrl.CLI.appIDs() )
 
     # This data can be use later for intents
     print main.hostsData
@@ -439,65 +377,40 @@ def reinstallOnos( main ):
     Return:
         Retruns main.TRUE for a successful restart, main.FALSE otherwise.
     """
-    uninstallResult = []
-    installResult = []
     stopResult = []
     startResult = []
     onosIsUpResult = []
     restartResult = main.TRUE
 
-    main.log.info( main.topoName + ": Uninstall ONOS cluster" )
-    for ip in main.ONOSip:
-        uninstallResult.append( main.ONOSbench.onosUninstall( nodeIp=ip ) )
-
-    if all( result == main.TRUE for result in uninstallResult ):
-        main.log.info( main.topoName + ": Successfully uninstall ONOS cluster" )
-    else:
+    uninstallResult = main.testSetUp.uninstallOnos( main.Cluster, False )
+    if uninstallResult != main.TRUE:
         restartResult = main.FALSE
-        main.log.error( main.topoName + ": Failed to uninstall ONOS cluster" )
-
-    time.sleep( main.startUpSleep )
-
-    main.log.info( main.topoName + ": Installing ONOS cluster" )
-
-    for i in range( main.numCtrls ):
-        installResult.append( main.ONOSbench.onosInstall(
-                                                    node=main.ONOSip[ i ] ) )
-
-    if all( result == main.TRUE for result in installResult ):
-        main.log.info( main.topoName + ": Successfully installed ONOS cluster" )
-    else:
-        restartResult = main.FALSE
-        main.log.error( main.topoName + ": Failed to install ONOS cluster" )
-
-    main.log.info( main.topoName + ": set up ONOS secure SSH" )
-    secureSshResult = []
-    for i in range( int( main.numCtrls ) ):
-        secureSshResult.append( main.onosSecureSSH( node=main.ONOSip[i] ) )
-    if all( result == main.TRUE for result in secureSshResult ):
-        main.log.info( main.topoName + ": Successfully set up ONOS secure SSH" )
-    else:
-        main.log.error( main.topoName + ": Failed to set up ONOS secure SSH" )
+    installResult = main.testSetUp.installOnos( main.Cluster, False )
+    if installResult != main.TRUE:
         restartResult = main.FALSE
 
-    for i in range( main.numCtrls ):
-        onosIsUpResult.append( main.ONOSbench.isup( main.ONOSip[ i ] ) )
+    secureSshResult = main.testSetUp.setupSsh( main.Cluster )
+    if secureSshResult != main.TRUE:
+        restartResult = main.FALSE
+
+    for ctrl in main.Cluster.runningNodes:
+        onosIsUpResult.append( main.ONOSbench.isup( ctrl.ipAddress ) )
 
     if all( result == main.TRUE for result in onosIsUpResult ):
         main.log.report( "ONOS instance is up and ready" )
     else:
         main.log.report( "ONOS instance may not be up, stop and " +
                          "start ONOS again " )
-        for i in range( main.numCtrls ):
-            stopResult.append( main.ONOSbench.onosStop( main.ONOSip[ i ] ) )
+        for ctrl in main.Cluster.runningNodes:
+            stopResult.append( main.ONOSbench.onosStop( ctrl.ipAddress ) )
 
         if all( result == main.TRUE for result in stopResult ):
             main.log.info( main.topoName + ": Successfully stop ONOS cluster" )
         else:
             main.log.error( main.topoName + ": Failed to stop ONOS cluster" )
 
-        for i in range( main.numCtrls ):
-            startResult.append( main.ONOSbench.onosStart( main.ONOSip[ i ] ) )
+        for ctrl in main.Cluster.runningNodes:
+            startResult.append( main.ONOSbench.onosStart( ctrl.ipAddress ) )
 
         if all( result == main.TRUE for result in startResult ):
             main.log.info( main.topoName + ": Successfully start ONOS cluster" )
@@ -505,14 +418,8 @@ def reinstallOnos( main ):
             main.log.error( main.topoName + ": Failed to start ONOS cluster" )
 
     main.log.info( main.topoName + ": Starting ONOS CLI" )
-    cliResult = []
-    for i in range( main.numCtrls ):
-        cliResult.append( main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] ) )
-
-    if all( result == main.TRUE for result in cliResult ):
-        main.log.info( main.topoName + ": Successfully start ONOS cli" )
-    else:
-        main.log.error( main.topoName + ": Failed to start ONOS cli" )
+    cliResult = main.testSetUp.startOnosClis( main.Cluster )
+    if cliResult != main.TRUE:
         restartResult = main.FALSE
 
 

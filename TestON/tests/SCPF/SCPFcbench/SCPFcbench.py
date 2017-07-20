@@ -19,10 +19,10 @@ class SCPFcbench:
         import time
         import os
         global init
-        main.case("pre-condition for cbench test.")
+        main.case( "pre-condition for cbench test." )
 
         try:
-            if type(init) is not bool:
+            if type( init ) is not bool:
                 init = False
         except NameError:
             init = False
@@ -40,40 +40,40 @@ class SCPFcbench:
             stepResult = main.FALSE
             try:
                 # Load values from params file
-                BENCHIp = main.params['BENCH']['ip1']
-                BENCHUser = main.params['BENCH']['user']
-                CBENCHuser = main.params['CBENCH']['user']
-                MN1Ip = os.environ[main.params['MN']['ip1']]
-                main.maxNodes = int(main.params['availableNodes'])
-                main.cellName = main.params['ENV']['cellName']
-                main.apps = main.params['ENV']['cellApps']
-                main.scale = (main.params['SCALE']).split(",")
+                BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
+                BENCHUser = main.params[ 'BENCH' ][ 'user' ]
+                CBENCHuser = main.params[ 'CBENCH' ][ 'user' ]
+                MN1Ip = os.environ[ main.params[ 'MN' ][ 'ip1' ] ]
+                main.maxNodes = int( main.params[ 'availableNodes' ] )
+                main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+                main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+                main.scale = ( main.params[ 'SCALE' ] ).split( "," )
 
-                stepResult = main.testSetUp.envSetup( hasCli=False )
+                stepResult = main.testSetUp.envSetup()
             except Exception as e:
                 main.testSetUp.envSetupException( e )
             main.testSetUp.evnSetupConclusion( stepResult )
             main.commit = ( main.commit.split( " " ) )[ 1 ]
         # -- END OF INIT SECTION --#
 
-        main.testSetUp.ONOSSetUp( MN1Ip, True, hasCli=False,
+        main.testSetUp.ONOSSetUp( MN1Ip, main.Cluster, True,
                                   cellName=main.cellName )
 
-        for i in range(5):
-            main.ONOSbench.onosCfgSet(main.ONOSip[0], "org.onosproject.fwd.ReactiveForwarding","packetOutOnly true")
-            time.sleep(5)
-            main.ONOSbench.handle.sendline("onos $OC1 cfg get|grep packetOutOnly")
-            main.ONOSbench.handle.expect(":~")
+        for i in range( 5 ):
+            main.ONOSbench.onosCfgSet( main.Cluster.active( 0 ).ipAddress, "org.onosproject.fwd.ReactiveForwarding", "packetOutOnly true" )
+            time.sleep( 5 )
+            main.ONOSbench.handle.sendline( "onos $OC1 cfg get|grep packetOutOnly" )
+            main.ONOSbench.handle.expect( ":~" )
             check = main.ONOSbench.handle.before
             if "value=true" in check:
-                main.log.info("cfg set successful")
+                main.log.info( "cfg set successful" )
                 stepResult = main.TRUE
                 break
             if i == 4:
-                main.log.info("Cfg set failed")
+                main.log.info( "Cfg set failed" )
                 stepResult = main.FALSE
             else:
-                time.sleep(5)
+                time.sleep( 5 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -82,59 +82,59 @@ class SCPFcbench:
 
 
     def CASE2( self, main ):
-        main.case("Running Cbench")
-        main.step("Issuing cbench commands and grab returned results")
+        main.case( "Running Cbench" )
+        main.step( "Issuing cbench commands and grab returned results" )
         validFlag = False
         cbenchCMD = main.params[ 'TEST' ][ 'cbenchCMD' ]
         mode = main.params[ 'TEST' ][ 'mode' ]
         if mode != "t":
             mode = " "
 
-        runCbench = ( "ssh " + CBENCHuser + "@" + main.ONOSip[0] + " " + cbenchCMD + mode )
-        main.ONOSbench.handle.sendline(runCbench)
-        time.sleep(30)
-        main.ONOSbench.handle.expect(":~")
+        runCbench = ( "ssh " + CBENCHuser + "@" + main.Cluster.active( 0 ).ipAddress + " " + cbenchCMD + mode )
+        main.ONOSbench.handle.sendline( runCbench )
+        time.sleep( 30 )
+        main.ONOSbench.handle.expect( ":~" )
         output = main.ONOSbench.handle.before
-        main.log.info(output)
+        main.log.info( output )
 
         output = output.splitlines()
         for line in output:
             if "RESULT: " in line:
                 validFlag = True
                 print line
-                resultLine = line.split(" ")
+                resultLine = line.split( " " )
                 for word in resultLine:
                     if word == "min/max/avg/stdev":
-                        resultsIndex = resultLine.index(word)
+                        resultsIndex = resultLine.index( word )
                         print resultsIndex
                         break
 
-                finalDataString = resultLine[resultsIndex + 2]
+                finalDataString = resultLine[ resultsIndex + 2 ]
                 print finalDataString
-                finalDataList = finalDataString.split("/")
-                avg = finalDataList[2]
-                stdev = finalDataList[3]
+                finalDataList = finalDataString.split( "/" )
+                avg = finalDataList[ 2 ]
+                stdev = finalDataList[ 3 ]
 
-                main.log.info("Average: \t\t\t" + avg)
-                main.log.info("Standard Deviation: \t" + stdev)
+                main.log.info( "Average: \t\t\t" + avg )
+                main.log.info( "Standard Deviation: \t" + stdev )
 
                 try:
                     dbFileName="/tmp/CbenchDB"
-                    dbfile = open(dbFileName, "w+")
+                    dbfile = open( dbFileName, "w+" )
                     temp = "'" + main.commit + "',"
                     temp += "'" + mode + "',"
                     temp += "'" + avg + "',"
                     temp += "'" + stdev + "'\n"
-                    dbfile.write(temp)
+                    dbfile.write( temp )
                     dbfile.close()
-                    main.ONOSbench.logReport(main.ONOSip[0], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
+                    main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress, [ "ERROR", "WARNING", "EXCEPT" ], outputMode="d" )
                 except IOError:
-                    main.log.warn("Error opening " + dbFileName + " to write results.")
+                    main.log.warn( "Error opening " + dbFileName + " to write results." )
 
                 stepResult = main.TRUE
                 break
         if ( validFlag == False ):
-            main.log.warn("Cbench Test produced no valid results!!!!")
+            main.log.warn( "Cbench Test produced no valid results!!!!" )
             stepResult = main.FALSE
 
         utilities.assert_equals( expect=main.TRUE,

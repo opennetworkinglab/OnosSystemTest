@@ -69,6 +69,13 @@
         <skipReleaseResourcesOnWithdrawal>true</skipReleaseResourcesOnWithdrawal>
         <flowObj>False</flowObj>
     </TEST>
+    <CFG>
+        <intentManager>org.onosproject.net.intent.impl.IntentManager</intentManager>
+        <intentConfigRegi>org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator</intentConfigRegi>
+        <nullProvider>org.onosproject.provider.nil.NullProviders</nullProvider>
+        <linkCollectionIntent>org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler</linkCollectionIntent>
+        <intentPerfInstaller>org.onosproject.intentperf.IntentPerfInstaller</intentPerfInstaller>
+    </CFG>
     <DATABASE>
         <dbName>/tmp/IntentEventTPDB</dbName>
         <dbFlowObj>/tmp/IntentEventTPflowObjDB</dbFlowObj>

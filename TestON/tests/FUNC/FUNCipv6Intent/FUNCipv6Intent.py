@@ -80,7 +80,7 @@ class FUNCipv6Intent:
                                               main.topology,
                                               main.Mininet1.home,
                                               direction="to" )
-            stepResult = main.testSetUp.envSetup( True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -99,16 +99,15 @@ class FUNCipv6Intent:
         """
         import time
 
-        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, True )
+        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
 
         main.step( "Checking that ONOS is ready" )
-        for i in range( 3 ):
-            ready = True
-            for i in range ( main.numCtrls ):
-                output = main.CLIs[ i ].summary()
-                if not output:
-                    ready = False
-            time.sleep( 30 )
+
+        ready =  utilities.retry( main.Cluster.command,
+                                  False,
+                                  kwargs={ "function":"summary", "contentCheck":True },
+                                  sleep=30,
+                                  attempts=3 )
         utilities.assert_equals( expect=True, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
@@ -117,8 +116,8 @@ class FUNCipv6Intent:
             main.exit()
 
         main.step( "setup the ipv6NeighbourDiscovery" )
-        cfgResult1 = main.CLIs[ 0 ].setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
-        cfgResult2 = main.CLIs[ 0 ].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
+        cfgResult1 = main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
+        cfgResult2 = main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
         cfgResult = cfgResult1 and cfgResult2
         utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
                                  onpass="ipv6NeighborDiscovery cfg is set to true",
@@ -171,8 +170,8 @@ class FUNCipv6Intent:
             switchList.append( 's' + str( i ) )
 
         tempONOSip = []
-        for i in range( main.numCtrls ):
-            tempONOSip.append( main.ONOSip[ i ] )
+        for ctrl in main.Cluster.active():
+            tempONOSip.append( ctrl.ipAddress )
 
         assignResult = main.Mininet1.assignSwController( sw=switchList,
                                                          ip=tempONOSip,
@@ -184,7 +183,7 @@ class FUNCipv6Intent:
         for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
+            if re.search( "tcp:" + main.Cluster.active( 0 ).ipAddress, response ):
                 assignResult = assignResult and main.TRUE
             else:
                 assignResult = main.FALSE
@@ -217,7 +216,7 @@ class FUNCipv6Intent:
         main.step( "Balancing mastership of switches" )
 
         balanceResult = main.FALSE
-        balanceResult = utilities.retry( f=main.CLIs[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
+        balanceResult = utilities.retry( f=main.Cluster.active( 0 ).CLI.balanceMasters, retValue=main.FALSE, args=[] )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=balanceResult,
@@ -270,18 +269,17 @@ class FUNCipv6Intent:
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
         assert main.Mininet1, "Mininet handle should be named Mininet1"
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
+        intentLeadersOld = main.Cluster.active( 0 ).CLI.leaderCandidates()
 
         main.testName = "Host Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case tests Host intents using " +\
-                                str( main.numCtrls ) + " node(s) cluster;\n" +\
+                                str( main.Cluster.numCtrls ) + " node(s) cluster;\n" +\
                                 "Different type of hosts will be tested in " +\
                                 "each step such as IPV6, Dual stack, VLAN " +\
                                 "etc;\nThe test will use OF " + main.OFProtocol\
@@ -394,16 +392,15 @@ class FUNCipv6Intent:
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
         assert main.Mininet1, "Mininet handle should be named Mininet1"
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
         main.testName = "Point Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test point to point" +\
-                               " intents using " + str( main.numCtrls ) +\
+                               " intents using " + str( main.Cluster.numCtrls ) +\
                                " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV6, Dual stack, VLAN etc" +\
@@ -622,15 +619,14 @@ class FUNCipv6Intent:
         import json
         import re
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
         assert main.Mininet1, "Mininet handle should be named Mininet1"
         assert main.numSwitch, "Placed the total number of switch topology in \
                         main.numSwitch"
         main.testName = "Single to Multi Point Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) + " NODE(S) - OF " + main.OFProtocol )
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) + " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
-                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               str( main.Cluster.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV6, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
@@ -729,17 +725,16 @@ class FUNCipv6Intent:
              - Remove intents
         """
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
         assert main.Mininet1, "Mininet handle should be named Mininet1"
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
         main.testName = "Multi To Single Point Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
-                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               str( main.Cluster.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV6, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
@@ -829,7 +824,6 @@ class FUNCipv6Intent:
         Modifies the topology location of h1
         """
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
         assert main.Mininet1, "Mininet handle should be named Mininet1"
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
@@ -870,7 +864,6 @@ class FUNCipv6Intent:
         Tests Multi to Single Point Intent and Single to Multi Point Intent End Point Failure
         """
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
         assert main.Mininet1, "Mininet handle should be named Mininet1"
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"

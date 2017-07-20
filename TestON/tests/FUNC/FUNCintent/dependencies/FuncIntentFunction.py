@@ -106,11 +106,11 @@ def installHostIntent( main,
 
         # Adding point intent
         vlanId = host1.get( "vlan" )
-        intentId = main.CLIs[ onosNode ].addHostIntent( hostIdOne=host1.get( "id" ),
-                                                        hostIdTwo=host2.get( "id" ),
-                                                        vlanId=vlanId,
-                                                        setVlan=setVlan,
-                                                        encap=encap )
+        intentId = main.Cluster.active( onosNode ).CLI.addHostIntent( hostIdOne=host1.get( "id" ),
+                                                                      hostIdTwo=host2.get( "id" ),
+                                                                      vlanId=vlanId,
+                                                                      setVlan=setVlan,
+                                                                      encap=encap )
     except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -499,24 +499,24 @@ def installPointIntent( main,
         vlanId = senders[ 0 ].get( "vlan" )
 
         # Adding point intent
-        intentId = main.CLIs[ onosNode ].addPointIntent(
-                                            ingressDevice=ingressDevice,
-                                            egressDevice=egressDevice,
-                                            portIngress=portIngress,
-                                            portEgress=portEgress,
-                                            ethType=ethType,
-                                            ethDst=dstMac,
-                                            bandwidth=bandwidth,
-                                            lambdaAlloc=lambdaAlloc,
-                                            protected=protected,
-                                            ipProto=ipProto,
-                                            ipSrc=ipSrc,
-                                            ipDst=ipDst,
-                                            tcpSrc=tcpSrc,
-                                            tcpDst=tcpDst,
-                                            vlanId=vlanId,
-                                            setVlan=setVlan,
-                                            encap=encap )
+        intentId = main.Cluster.active( onosNode ).CLI.addPointIntent(
+                                                                        ingressDevice=ingressDevice,
+                                                                        egressDevice=egressDevice,
+                                                                        portIngress=portIngress,
+                                                                        portEgress=portEgress,
+                                                                        ethType=ethType,
+                                                                        ethDst=dstMac,
+                                                                        bandwidth=bandwidth,
+                                                                        lambdaAlloc=lambdaAlloc,
+                                                                        protected=protected,
+                                                                        ipProto=ipProto,
+                                                                        ipSrc=ipSrc,
+                                                                        ipDst=ipDst,
+                                                                        tcpSrc=tcpSrc,
+                                                                        tcpDst=tcpDst,
+                                                                        vlanId=vlanId,
+                                                                        setVlan=setVlan,
+                                                                        encap=encap )
     except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -649,65 +649,66 @@ def pointIntentTcp( main,
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding point intents" )
-    intent1 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
-                                                    egressDevice=deviceId2,
-                                                    portIngress=port1,
-                                                    portEgress=port2,
-                                                    ethType=ethType,
-                                                    ethSrc=mac1,
-                                                    ethDst=mac2,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip1,
-                                                    ipDst=ip2,
-                                                    tcpSrc=tcp1,
-                                                    tcpDst="" )
+    ctrl = main.Cluster.active( onosNode )
+    intent1 = ctrl.CLI.addPointIntent( ingressDevice=deviceId1,
+                                       egressDevice=deviceId2,
+                                       portIngress=port1,
+                                       portEgress=port2,
+                                       ethType=ethType,
+                                       ethSrc=mac1,
+                                       ethDst=mac2,
+                                       bandwidth=bandwidth,
+                                       lambdaAlloc=lambdaAlloc,
+                                       ipProto=ipProto,
+                                       ipSrc=ip1,
+                                       ipDst=ip2,
+                                       tcpSrc=tcp1,
+                                       tcpDst="" )
 
-    intent2 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
-                                                    egressDevice=deviceId1,
-                                                    portIngress=port2,
-                                                    portEgress=port1,
-                                                    ethType=ethType,
-                                                    ethSrc=mac2,
-                                                    ethDst=mac1,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip2,
-                                                    ipDst=ip1,
-                                                    tcpSrc=tcp2,
-                                                    tcpDst="" )
+    intent2 = ctrl.CLI.addPointIntent( ingressDevice=deviceId2,
+                                       egressDevice=deviceId1,
+                                       portIngress=port2,
+                                       portEgress=port1,
+                                       ethType=ethType,
+                                       ethSrc=mac2,
+                                       ethDst=mac1,
+                                       bandwidth=bandwidth,
+                                       lambdaAlloc=lambdaAlloc,
+                                       ipProto=ipProto,
+                                       ipSrc=ip2,
+                                       ipDst=ip1,
+                                       tcpSrc=tcp2,
+                                       tcpDst="" )
 
-    intent3 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
-                                                    egressDevice=deviceId2,
-                                                    portIngress=port1,
-                                                    portEgress=port2,
-                                                    ethType=ethType,
-                                                    ethSrc=mac1,
-                                                    ethDst=mac2,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip1,
-                                                    ipDst=ip2,
-                                                    tcpSrc="",
-                                                    tcpDst=tcp2 )
+    intent3 = ctrl.CLI.addPointIntent( ingressDevice=deviceId1,
+                                       egressDevice=deviceId2,
+                                       portIngress=port1,
+                                       portEgress=port2,
+                                       ethType=ethType,
+                                       ethSrc=mac1,
+                                       ethDst=mac2,
+                                       bandwidth=bandwidth,
+                                       lambdaAlloc=lambdaAlloc,
+                                       ipProto=ipProto,
+                                       ipSrc=ip1,
+                                       ipDst=ip2,
+                                       tcpSrc="",
+                                       tcpDst=tcp2 )
 
-    intent4 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
-                                                    egressDevice=deviceId1,
-                                                    portIngress=port2,
-                                                    portEgress=port1,
-                                                    ethType=ethType,
-                                                    ethSrc=mac2,
-                                                    ethDst=mac1,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip2,
-                                                    ipDst=ip1,
-                                                    tcpSrc="",
-                                                    tcpDst=tcp1 )
+    intent4 = ctrl.CLI.addPointIntent( ingressDevice=deviceId2,
+                                       egressDevice=deviceId1,
+                                       portIngress=port2,
+                                       portEgress=port1,
+                                       ethType=ethType,
+                                       ethSrc=mac2,
+                                       ethDst=mac1,
+                                       bandwidth=bandwidth,
+                                       lambdaAlloc=lambdaAlloc,
+                                       ipProto=ipProto,
+                                       ipSrc=ip2,
+                                       ipDst=ip1,
+                                       tcpSrc="",
+                                       tcpDst=tcp1 )
     intentsId.append( intent1 )
     intentsId.append( intent2 )
     intentsId.append( intent3 )
@@ -944,24 +945,24 @@ def installSingleToMultiIntent( main,
         vlanId = senders[ 0 ].get( "vlan" )
 
         # Adding point intent
-        intentId = main.CLIs[ onosNode ].addSinglepointToMultipointIntent(
-                                            ingressDevice=ingressDevice,
-                                            egressDeviceList=egressDeviceList,
-                                            portIngress=portIngress,
-                                            portEgressList=portEgressList,
-                                            ethType=ethType,
-                                            ethSrc=srcMac,
-                                            bandwidth=bandwidth,
-                                            lambdaAlloc=lambdaAlloc,
-                                            ipProto=ipProto,
-                                            ipSrc="",
-                                            ipDst="",
-                                            tcpSrc="",
-                                            tcpDst="",
-                                            vlanId=vlanId,
-                                            setVlan=setVlan,
-                                            partial=partial,
-                                            encap=encap )
+        intentId = main.Cluster.active( onosNode ).CLI.addSinglepointToMultipointIntent(
+                                                                                   ingressDevice=ingressDevice,
+                                                                                   egressDeviceList=egressDeviceList,
+                                                                                   portIngress=portIngress,
+                                                                                   portEgressList=portEgressList,
+                                                                                   ethType=ethType,
+                                                                                   ethSrc=srcMac,
+                                                                                   bandwidth=bandwidth,
+                                                                                   lambdaAlloc=lambdaAlloc,
+                                                                                   ipProto=ipProto,
+                                                                                   ipSrc="",
+                                                                                   ipDst="",
+                                                                                   tcpSrc="",
+                                                                                   tcpDst="",
+                                                                                   vlanId=vlanId,
+                                                                                   setVlan=setVlan,
+                                                                                   partial=partial,
+                                                                                   encap=encap )
     except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -1093,24 +1094,24 @@ def installMultiToSingleIntent( main,
         vlanId = senders[ 0 ].get( "vlan" )
 
         # Adding point intent
-        intentId = main.CLIs[ onosNode ].addMultipointToSinglepointIntent(
-                                            ingressDeviceList=ingressDeviceList,
-                                            egressDevice=egressDevice,
-                                            portIngressList=portIngressList,
-                                            portEgress=portEgress,
-                                            ethType=ethType,
-                                            ethDst=dstMac,
-                                            bandwidth=bandwidth,
-                                            lambdaAlloc=lambdaAlloc,
-                                            ipProto=ipProto,
-                                            ipSrc="",
-                                            ipDst="",
-                                            tcpSrc="",
-                                            tcpDst="",
-                                            vlanId=vlanId,
-                                            setVlan=setVlan,
-                                            partial=partial,
-                                            encap=encap )
+        intentId = main.Cluster.active( onosNode ).CLI.addMultipointToSinglepointIntent(
+                                                                ingressDeviceList=ingressDeviceList,
+                                                                egressDevice=egressDevice,
+                                                                portIngressList=portIngressList,
+                                                                portEgress=portEgress,
+                                                                ethType=ethType,
+                                                                ethDst=dstMac,
+                                                                bandwidth=bandwidth,
+                                                                lambdaAlloc=lambdaAlloc,
+                                                                ipProto=ipProto,
+                                                                ipSrc="",
+                                                                ipDst="",
+                                                                tcpSrc="",
+                                                                tcpDst="",
+                                                                vlanId=vlanId,
+                                                                setVlan=setVlan,
+                                                                partial=partial,
+                                                                encap=encap )
     except( KeyError, TypeError ):
         errorMsg = "There was a problem loading the hosts data."
         if intentId:
@@ -1898,25 +1899,25 @@ def fwdPingall( main ):
     """
     appCheck = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
-    activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
+    activateResult = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.fwd" )
 
     # Wait for forward app activation to propagate
     main.log.info( "Sleeping {} seconds".format( main.fwdSleep ) )
     time.sleep( main.fwdSleep )
 
     # Check that forwarding is enabled on all nodes
-    for i in range( main.numCtrls ):
-        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+    for ctrl in main.Cluster.active():
+        appCheck = appCheck and ctrl.CLI.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ i ].apps() )
-            main.log.warn( main.CLIs[ i ].appIDs() )
+            main.log.warn( ctrl.CLI.apps() )
+            main.log.warn( ctrl.CLI.appIDs() )
 
     # Send pingall in mininet
     main.log.info( "Run Pingall" )
     pingResult = main.Mininet1.pingall( timeout=600 )
 
     main.log.info( "Deactivating reactive forwarding app " )
-    deactivateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
+    deactivateResult = main.Cluster.active( 0 ).CLI.deactivateApp( "org.onosproject.fwd" )
     if activateResult and deactivateResult:
         main.log.info( "Successfully used fwd app to discover hosts" )
         getDataResult = main.TRUE
@@ -1940,12 +1941,12 @@ def confirmHostDiscovery( main ):
         main.topoRelated
     except Exception:
         main.topoRelated = Topology()
-    hosts = main.topoRelated.getAllHosts( main.numCtrls, False )  # Get host data from each ONOS node
+    hosts = main.topoRelated.getAll( "hosts", False )  # Get host data from each ONOS node
     hostFails = []  # Reset for each failed attempt
 
     #  Check for matching hosts on each node
     scapyHostIPs = [ x.hostIp for x in main.scapyHosts if x.hostIp != "0.0.0.0" ]
-    for controller in range( main.numCtrls ):
+    for controller in range( main.Cluster.numCtrls ):
         controllerStr = str( controller + 1 )  # ONOS node number
         # Compare Hosts
         # Load hosts data for controller node
@@ -2009,7 +2010,7 @@ def populateHostData( main ):
     """
     import json
     try:
-        hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
+        hostsJson = json.loads( main.Cluster.active( 0 ).CLI.hosts() )
         hosts = main.Mininet1.getHosts().keys()
         # TODO: Make better use of new getHosts function
         for host in hosts:
@@ -2044,9 +2045,9 @@ def checkTopology( main, expectedLink ):
     # Check onos topology
     main.log.info( itemName + ": Checking ONOS topology " )
 
-    for i in range( main.numCtrls ):
-        statusResult = main.CLIs[ i ].checkStatus( main.numSwitch,
-                                                   expectedLink ) and statusResult
+    statusResult = main.Cluster.command( "checkStatus",
+                                         args=[ main.numSwitch, expectedLink ],
+                                         returnBool=True, specificDriver=2 )
     if not statusResult:
         main.log.error( itemName + ": Topology mismatch" )
     else:
@@ -2061,11 +2062,10 @@ def checkIntentState( main, intentsId ):
         Returns main.TRUE or main.FALSE
     """
     intentResult = main.TRUE
-    stateCheckResults = []
-    for i in range( main.numCtrls ):
-        output = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
-        stateCheckResults.append( output )
-    if all( result == main.TRUE for result in stateCheckResults ):
+    stateCheckResults = main.Cluster.command( "checkIntentState",
+                                         kwargs={ "intentsId":intentsId },
+                                         returnBool=True, specificDriver=2 )
+    if stateCheckResults:
         main.log.info( itemName + ": Intents state check passed" )
     else:
         main.log.warn( "Intents state check failed" )
@@ -2078,11 +2078,10 @@ def checkBandwidthAllocations( main, bandwidth ):
         Compare the given bandwith allocation output to the cli output on each node
         Returns main.TRUE or main.FALSE
     """
-    bandwidthResults = []
-    for i in range( main.numCtrls ):
-        output = main.CLIs[ i ].compareBandwidthAllocations( bandwidth )
-        bandwidthResults.append( output )
-    if all( result == main.TRUE for result in bandwidthResults ):
+    stateCheckResults = main.Cluster.command( "compareBandwidthAllocations",
+                                         args=[ bandwidth ],
+                                         returnBool=True, specificDriver=2 )
+    if stateCheckResults:
         main.log.info( itemName + ": bandwidth check passed" )
         bandwidthResult = main.TRUE
     else:
@@ -2094,7 +2093,7 @@ def checkBandwidthAllocations( main, bandwidth ):
 def checkFlowsState( main ):
 
     main.log.info( itemName + ": Check flows state" )
-    checkFlowsResult = main.CLIs[ 0 ].checkFlowsState( isPENDING=False )
+    checkFlowsResult = main.Cluster.active( 0 ).CLI.checkFlowsState( isPENDING=False )
     return checkFlowsResult
 
 
@@ -2206,14 +2205,14 @@ def removeAllIntents( main, intentsId ):
     removeIntentResult = main.TRUE
     # Remove intents
     for intent in intentsId:
-        main.CLIs[ 0 ].removeIntent( intentId=intent, purge=True )
+        main.Cluster.active( 0 ).CLI.removeIntent( intentId=intent, purge=True )
 
     main.log.info( "Sleeping {} seconds".format( main.removeIntentSleep ) )
     time.sleep( main.removeIntentSleep )
 
     # If there is remianing intents then remove intents should fail
-    for i in range( main.numCtrls ):
-        onosSummary.append( json.loads( main.CLIs[ i ].summary() ) )
+    for ctrl in main.Cluster.active():
+        onosSummary.append( json.loads( ctrl.CLI.summary() ) )
 
     for summary in onosSummary:
         if summary.get( 'intents' ) != 0:
@@ -2237,8 +2236,8 @@ def checkFlowsCount( main ):
     """
     flowsCount = []
     main.log.info( itemName + ": Checking flows count in each ONOS node" )
-    for i in range( main.numCtrls ):
-        summaryResult = main.CLIs[ i ].summary()
+    for ctrl in main.Cluster.active():
+        summaryResult = ctrl.CLI.summary()
         if not summaryResult:
             main.log.error( itemName + ": There is something wrong with " +
                             "summary command" )
@@ -2252,9 +2251,9 @@ def checkFlowsCount( main ):
             main.log.info( itemName + ": There are " + str( flowsCount[ 0 ] ) +
                            " flows in all ONOS node" )
         else:
-            for i in range( main.numCtrls ):
-                main.log.debug( itemName + ": ONOS node " + str( i ) + " has " +
-                                str( flowsCount[ i ] ) + " flows" )
+            for i in range( main.Cluster.numCtrls ):
+                main.log.debug( itemName + ": " + ctrl.name + " has " +
+                                str( flowsCount[ ctrl.pos ] ) + " flows" )
     else:
         main.log.error( "Checking flows count failed, check summary command" )
         return main.FALSE
@@ -2304,7 +2303,7 @@ def report( main ):
     """
         Report errors/warnings/exceptions
     """
-    main.ONOSbench.logReport( main.ONOSip[ 0 ],
+    main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress,
                               [ "INFO",
                                 "FOLLOWER",
                                 "WARN",
@@ -2314,20 +2313,20 @@ def report( main ):
                               "s" )
 
     main.log.info( "ERROR report: \n" )
-    for i in range( main.numCtrls ):
-        main.ONOSbench.logReport( main.ONOSip[ i ],
+    for ctrl in main.Cluster.active():
+        main.ONOSbench.logReport( ctrl.ipAddress,
                                   [ "ERROR" ],
                                   "d" )
 
     main.log.info( "EXCEPTIONS report: \n" )
-    for i in range( main.numCtrls ):
-        main.ONOSbench.logReport( main.ONOSip[ i ],
+    for ctrl in main.Cluster.active():
+        main.ONOSbench.logReport( ctrl.ipAddress,
                                   [ "Except" ],
                                   "d" )
 
     main.log.info( "WARNING report: \n" )
-    for i in range( main.numCtrls ):
-        main.ONOSbench.logReport( main.ONOSip[ i ],
+    for ctrl in main.Cluster.active():
+        main.ONOSbench.logReport( ctrl.ipAddress,
                                   [ "WARN" ],
                                   "d" )
 
@@ -2337,7 +2336,7 @@ def flowDuration( main ):
         Check age of flows to see if flows are being overwritten
     """
     main.log.info( "Getting current flow durations" )
-    flowsJson1 = main.CLIs[ 0 ].flows( noCore=True )
+    flowsJson1 = main.Cluster.active( 0 ).CLI.flows( noCore=True )
     try:
         flowsJson1 = json.loads( flowsJson1 )
     except ValueError:
@@ -2352,7 +2351,7 @@ def flowDuration( main ):
     main.log.info( "Sleeping for {} seconds".format( main.flowDurationSleep ) )
     time.sleep( main.flowDurationSleep )
     main.log.info( "Getting new flow durations" )
-    flowsJson2 = main.CLIs[ 0 ].flows( noCore=True )
+    flowsJson2 = main.Cluster.active( 0 ).CLI.flows( noCore=True )
     try:
         flowsJson2 = json.loads( flowsJson2 )
     except ValueError:
@@ -2384,7 +2383,7 @@ def EncapsulatedIntentCheck( main, tag="" ):
 
     """
     HostJson = []
-    Jflows = main.CLIs[ 0 ].flows( noCore=True )
+    Jflows = main.Cluster.active( 0 ).CLI.flows( noCore=True )
     try:
         Jflows = json.loads( Jflows )
     except ValueError:
@@ -2417,7 +2416,7 @@ def EncapsulatedIntentCheck( main, tag="" ):
 
 
 def ProtectedIntentCheck( main ):
-    intent = main.CLIs[ 0 ].intents( jsonFormat=False )
+    intent = main.Cluster.active( 0 ).CLI.intents( jsonFormat=False )
     if "Protection" in intent:
         return main.TRUE
     return main.FALSE

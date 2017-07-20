@@ -24,7 +24,10 @@
         <testCMD1> -n </testCMD1>                       #neighbors
 
     </TEST>
-
+    <CFG>
+        <flowRule>org.onosproject.store.flow.impl.DistributedFlowRuleStore</flowRule>
+        <nullProvider>org.onosproject.provider.nil.NullProviders</nullProvider>
+    </CFG>
     <GIT>
         <pull>False</pull>
         <branch>master</branch>

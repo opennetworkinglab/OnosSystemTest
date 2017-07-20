@@ -65,6 +65,10 @@ class SCPFintentInstallWithdrawLat:
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.installSleep = int( main.params[ 'SLEEP' ][ 'install' ] )
             main.verifySleep = int( main.params[ 'SLEEP' ][ 'verify' ] )
+            main.intentManagerCfg = main.params[ 'CFG' ][ 'intentManager' ]
+            main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
+            main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
+            main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.verifyAttempts = int( main.params[ 'ATTEMPTS' ][ 'verify' ] )
             main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
             main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
@@ -84,7 +88,7 @@ class SCPFintentInstallWithdrawLat:
             for i in range( 0, len( main.intentsList ) ):
                 main.intentsList[ i ] = int( main.intentsList[ i ] )
 
-            stepResult = main.testSetUp.gitPulling()
+            stepResult = main.testSetUp.envSetup()
             # Create DataBase file
             main.log.info( "Create Database file " + main.dbFileName )
             resultsDB = open( main.dbFileName, "w+" )
@@ -98,27 +102,29 @@ class SCPFintentInstallWithdrawLat:
         import time
 
         main.maxNumBatch = 0
-        main.testSetUp.getNumCtrls( True )
-        main.testSetUp.envSetup( includeGitPull=False, makeMaxNodes=False )
-        main.testSetUp.ONOSSetUp( main.MN1Ip, True,
-                                  cellName=main.cellName, killRemoveMax=False,
-                                  CtrlsSet=False )
+        main.testSetUp.ONOSSetUp( main.MN1Ip, main.Cluster, True,
+                                  cellName=main.cellName, killRemoveMax=False )
 
         # configure apps
-        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount", value=7 )
-        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "topoShape", value="linear" )
-        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "enabled", value="true" )
-        main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal", value="true" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                             "deviceCount", value=7 )
+        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                             "topoShape", value="linear" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                             "enabled", value="true" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.intentManagerCfg,
+                                             "skipReleaseResourcesOnWithdrawal",
+                                             value="true" )
         if main.flowObj:
-            main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
-                                "useFlowObjectives", value="true" )
-            main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
-                                "defaultFlowObjectiveCompiler",
-                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
+            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                                 "useFlowObjectives", value="true" )
+            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                                 "defaultFlowObjectiveCompiler",
+                                                 value=main.linkCollectionIntentCfg )
         time.sleep( main.startUpSleep )
 
         # balanceMasters
-        main.CLIs[ 0 ].balanceMasters()
+        main.Cluster.active( 0 ).CLI.balanceMasters()
         time.sleep( main.startUpSleep )
 
     def CASE2( self, main ):
@@ -143,9 +149,13 @@ class SCPFintentInstallWithdrawLat:
                     main.log.info( "====================Warm Up=====================" )
 
                 # push intents
-                installResult = main.CLIs[ 0 ].pushTestIntents( main.ingress, main.egress, batchSize,
-                                                             offset=1, options="-i", timeout=main.timeout,
-                                                             getResponse=True )
+                installResult = main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                                              main.egress,
+                                                                              batchSize,
+                                                                              offset=1,
+                                                                              options="-i",
+                                                                              timeout=main.timeout,
+                                                                              getResponse=True )
                 if type( installResult ) is str:
                     if "Failure" in installResult:
                         main.log.error( "Install Intents failure, ignore this iteration." )
@@ -177,9 +187,13 @@ class SCPFintentInstallWithdrawLat:
                     continue
                 time.sleep( 2 )
                 # Withdraw Intents
-                withdrawResult = main.CLIs[ 0 ].pushTestIntents( main.ingress, main.egress, batchSize,
-                                                              offset=1, options="-w", timeout=main.timeout,
-                                                              getResponse=True )
+                withdrawResult = main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                                               main.egress,
+                                                                               batchSize,
+                                                                               offset=1,
+                                                                               options="-w",
+                                                                               timeout=main.timeout,
+                                                                               getResponse=True )
 
                 if type( withdrawResult ) is str:
                     if "Failure" in withdrawResult:
@@ -211,7 +225,7 @@ class SCPFintentInstallWithdrawLat:
                     invalidrun += 1
                     continue
                 time.sleep( 2 )
-                main.CLIs[ 0 ].purgeWithdrawnIntents()
+                main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
                 validrun += 1
             installave = numpy.average( main.installLatList )
             installstd = numpy.std( main.installLatList )
@@ -219,7 +233,7 @@ class SCPFintentInstallWithdrawLat:
             withdrawstd = numpy.std( main.withdrawLatList )
             # log report
             main.log.report( "----------------------------------------------------" )
-            main.log.report( "Scale: " + str( main.numCtrls ) )
+            main.log.report( "Scale: " + str( main.Cluster.numCtrls ) )
             main.log.report( "Intent batch: " + str( batchSize ) )
             main.log.report( "Install average: {}    std: {}".format( installave, installstd ) )
             main.log.report( "Withdraw average: {}   std: {}".format( withdrawave, withdrawstd ) )
@@ -227,7 +241,7 @@ class SCPFintentInstallWithdrawLat:
             if not ( numpy.isnan( installave ) or numpy.isnan( installstd ) or\
                     numpy.isnan( withdrawstd ) or numpy.isnan( withdrawave ) ):
                 databaseString = "'" + main.commit + "',"
-                databaseString += str( main.numCtrls ) + ","
+                databaseString += str( main.Cluster.numCtrls ) + ","
                 databaseString += str( batchSize ) + ","
                 databaseString += str( installave ) + ","
                 databaseString += str( installstd ) + ","

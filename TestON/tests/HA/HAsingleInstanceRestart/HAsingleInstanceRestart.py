@@ -76,146 +76,39 @@ class HAsingleInstanceRestart:
                                 "installing ONOS, starting Mininet and ONOS" +\
                                 "cli sessions."
 
-        # load some variables from the params file
-        PULLCODE = False
-        if main.params[ 'GIT' ][ 'pull' ] == 'True':
-            PULLCODE = True
-        gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-
-        main.numCtrls = int( main.params[ 'num_controllers' ] )
-        if main.ONOSbench.maxNodes:
-            if main.ONOSbench.maxNodes < main.numCtrls:
-                main.numCtrls = int( main.ONOSbench.maxNodes )
+        # set global variables
         # These are for csv plotting in jenkins
         main.HAlabels = []
         main.HAdata = []
         try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        try:
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-        except ImportError as e:
-            main.log.exception( e )
-            main.cleanup()
-            main.exit()
-
-        main.CLIs = []
-        main.nodes = []
-        ipList = []
-        for i in range( 1, int( main.ONOSbench.maxNodes ) + 1 ):
-            try:
-                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-                main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
-                ipList.append( main.nodes[ -1 ].ip_address )
-            except AttributeError:
-                break
-
-        main.step( "Create cell file" )
-        cellAppString = main.params[ 'ENV' ][ 'appString' ]
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
-                                       main.Mininet1.ip_address,
-                                       cellAppString, ipList, main.ONOScli1.karafUser )
-        main.step( "Applying cell variable to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        # FIXME:this is short term fix
-        main.log.info( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-
-        main.log.info( "Uninstalling ONOS" )
-        for node in main.nodes:
-            main.ONOSbench.onosUninstall( node.ip_address )
-
-        # Make sure ONOS is DEAD
-        main.log.info( "Killing any ONOS processes" )
-        killResults = main.TRUE
-        for node in main.nodes:
-            killed = main.ONOSbench.onosKill( node.ip_address )
-            killResults = killResults and killed
-
-        gitPullResult = main.TRUE
-
-        main.HA.startingMininet()
-
-        main.step( "Git checkout and pull " + gitBranch )
-        if PULLCODE:
-            main.ONOSbench.gitCheckout( gitBranch )
-            gitPullResult = main.ONOSbench.gitPull()
-            # values of 1 or 3 are good
-            utilities.assert_lesser( expect=0, actual=gitPullResult,
-                                      onpass="Git pull successful",
-                                      onfail="Git pull failed" )
-        main.ONOSbench.getVersion( report=True )
-
+            # load some variables from the params file
+            cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.apps = main.params[ 'ENV' ][ 'appString' ]
+            main.numCtrls = int( main.params[ 'num_controllers' ] )
+            stepResult = main.testSetUp.envSetup()
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAsingleInstanceRestart" )
-
-        main.CLIs = []
-        main.nodes = []
-        ipList = []
-        for i in range( 1, main.numCtrls + 1 ):
-            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-            main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
-            ipList.append( main.nodes[ -1 ].ip_address )
-
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "SingleHA",
-                                       main.Mininet1.ip_address,
-                                       cellAppString, ipList[ 0 ], main.ONOScli1.karafUser )
-        cellResult = main.ONOSbench.setCell( "SingleHA" )
-        verifyResult = main.ONOSbench.verifyCell()
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        utilities.assert_equals( expect=main.TRUE, actual=packageResult,
-                                 onpass="ONOS package successful",
-                                 onfail="ONOS package failed" )
-
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.TRUE
-        for node in main.nodes:
-            tmpResult = main.ONOSbench.onosInstall( options="-f",
-                                                    node=node.ip_address )
-            onosInstallResult = onosInstallResult and tmpResult
-        utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
-                                 onpass="ONOS install successful",
-                                 onfail="ONOS install failed" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for node in main.nodes:
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=node.ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        main.step( "Checking if ONOS is up yet" )
-        for i in range( 2 ):
-            onosIsupResult = main.TRUE
-            for node in main.nodes:
-                started = main.ONOSbench.isup( node.ip_address )
-                if not started:
-                    main.log.error( node.name + " hasn't started" )
-                onosIsupResult = onosIsupResult and started
-            if onosIsupResult == main.TRUE:
-                break
-        utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
-                                 onpass="ONOS startup successful",
-                                 onfail="ONOS startup failed" )
-
-        main.step( "Starting ONOS CLI sessions" )
-        cliResults = main.TRUE
-        threads = []
-        for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
-                             name="startOnosCli-" + str( i ),
-                             args=[ main.nodes[ i ].ip_address ] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            cliResults = cliResults and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli startup successful",
-                                 onfail="ONOS cli startup failed" )
+        main.Cluster.setRunningNode( int( main.params[ 'num_controllers' ] ) )
+        ip = main.Cluster.getIps( allNode=True )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName="SingleHA", removeLog=True,
+                                  extraApply=[ main.testSetUp.createApplyCell,
+                                               main.HA.startingMininet,
+                                               main.testSetUp.createApplyCell ],
+                                  arg=[ [ main.Cluster, True, cellName, main.Mininet1, True, ip ],
+                                        None,
+                                        [ main.Cluster, True, "SingleHA", main.Mininet1,
+                                        True, main.Cluster.runningNodes[ 0 ].ipAddress ] ] )
 
         main.HA.initialSetUp()
 
@@ -248,7 +141,6 @@ class HAsingleInstanceRestart:
         Reading state of ONOS
         """
         import json
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -262,45 +154,19 @@ class HAsingleInstanceRestart:
         mastershipState = '[]'
 
         # Assert that each device has a master
-        rolesNotNull = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].rolesNotNull,
-                             name="rolesNotNull-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            rolesNotNull = rolesNotNull and t.result
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=rolesNotNull,
-            onpass="Each device has a master",
-            onfail="Some devices don't have a master assigned" )
+        main.HA.checkRoleNotNull()
 
         main.step( "Get the Mastership of each switch" )
-        ONOS1Mastership = main.ONOScli1.roles()
-        # TODO: Make this a meaningful check
-        if "Error" in ONOS1Mastership or not ONOS1Mastership:
-            main.log.error( "Error in getting ONOS roles" )
-            main.log.warn(
-                "ONOS1 mastership response: " +
-                repr( ONOS1Mastership ) )
-            consistentMastership = main.FALSE
-        else:
-            mastershipState = ONOS1Mastership
-            consistentMastership = main.TRUE
+        main.HA.checkTheRole()
 
         main.step( "Get the intents from each controller" )
         global intentState
         intentState = []
-        ONOS1Intents = main.ONOScli1.intents( jsonFormat=True )
+        ONOSIntents = main.Cluster.runningNodes[ 0 ].CLI.intents( jsonFormat=True )
         intentCheck = main.FALSE
-        if "Error" in ONOS1Intents or not ONOS1Intents:
+        if "Error" in ONOSIntents or not ONOSIntents:
             main.log.error( "Error in getting ONOS intents" )
-            main.log.warn( "ONOS1 intents response: " + repr( ONOS1Intents ) )
+            main.log.warn( "ONOS1 intents response: " + repr( ONOSIntents ) )
         else:
             intentCheck = main.TRUE
 
@@ -308,13 +174,13 @@ class HAsingleInstanceRestart:
         global flowState
         flowState = []
         flowCheck = main.FALSE
-        ONOS1Flows = main.ONOScli1.flows( jsonFormat=True )
-        if "Error" in ONOS1Flows or not ONOS1Flows:
+        ONOSFlows = main.Cluster.runningNodes[ 0 ].CLI.flows( jsonFormat=True )
+        if "Error" in ONOSFlows or not ONOSFlows:
             main.log.error( "Error in getting ONOS flows" )
-            main.log.warn( "ONOS1 flows repsponse: " + ONOS1Flows )
+            main.log.warn( "ONOS1 flows repsponse: " + ONOSFlows )
         else:
             # TODO: Do a better check, maybe compare flows on switches?
-            flowState = ONOS1Flows
+            flowState = ONOSFlows
             flowCheck = main.TRUE
 
         main.step( "Get the OF Table entries" )
@@ -329,20 +195,20 @@ class HAsingleInstanceRestart:
 
         main.step( "Collecting topology information from ONOS" )
         devices = []
-        devices.append( main.ONOScli1.devices() )
+        devices.append( main.Cluster.runningNodes[ 0 ].CLI.devices() )
         hosts = []
-        hosts.append( json.loads( main.ONOScli1.hosts() ) )
+        hosts.append( json.loads( main.Cluster.runningNodes[ 0 ].CLI.hosts() ) )
         ports = []
-        ports.append( main.ONOScli1.ports() )
+        ports.append( main.Cluster.runningNodes[ 0 ].CLI.ports() )
         links = []
-        links.append( main.ONOScli1.links() )
+        links.append( main.Cluster.runningNodes[ 0 ].CLI.links() )
         clusters = []
-        clusters.append( main.ONOScli1.clusters() )
+        clusters.append( main.Cluster.runningNodes[ 0 ].CLI.clusters() )
 
         main.step( "Each host has an IP address" )
         ipResult = main.TRUE
         for controller in range( 0, len( hosts ) ):
-            controllerStr = str( main.activeNodes[ controller ] + 1 )
+            controllerStr = str( main.Cluster.active( controller ) )
             if hosts[ controller ]:
                 for host in hosts[ controller ]:
                     if not host.get( 'ipAddresses', [] ):
@@ -379,8 +245,8 @@ class HAsingleInstanceRestart:
         mnSwitches = main.Mininet1.getSwitches()
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
-        for controller in main.activeNodes:
-            controllerStr = str( main.activeNodes[ controller ] + 1 )
+        for controller in main.Cluster.getRunningPos():
+            controllerStr = str( main.Cluster.active( controller ) )
             if devices[ controller ] and ports[ controller ] and\
                     "Error" not in devices[ controller ] and\
                     "Error" not in ports[ controller ]:
@@ -452,7 +318,6 @@ class HAsingleInstanceRestart:
         The Failure case.
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -468,12 +333,12 @@ class HAsingleInstanceRestart:
                                 "sessions once onos is up."
 
         main.step( "Checking ONOS Logs for errors" )
-        for node in main.nodes:
-            main.log.debug( "Checking logs for errors on " + node.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
-
+        for ctrl in main.Cluster.active():
+            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( ctrl.ip_address ) )
+        ctrl = main.Cluster.runningNodes[ 0 ]
         main.step( "Killing ONOS processes" )
-        killResult = main.ONOSbench.onosKill( main.nodes[ 0 ].ip_address )
+        killResult = main.ONOSbench.onosKill( ctrl.ipAddress )
         start = time.time()
         utilities.assert_equals( expect=main.TRUE, actual=killResult,
                                  onpass="ONOS Killed",
@@ -482,7 +347,7 @@ class HAsingleInstanceRestart:
         main.step( "Checking if ONOS is up yet" )
         count = 0
         while count < 10:
-            onos1Isup = main.ONOSbench.isup( main.nodes[ 0 ].ip_address )
+            onos1Isup = main.ONOSbench.isup( ctrl.ipAddress )
             if onos1Isup == main.TRUE:
                 elapsed = time.time() - start
                 break
@@ -493,7 +358,7 @@ class HAsingleInstanceRestart:
                                  onfail="ONOS failed to start" )
 
         main.step( "Starting ONOS CLI sessions" )
-        cliResults = main.ONOScli1.startOnosCli( main.nodes[ 0 ].ip_address )
+        cliResults = ctrl.CLI.startOnosCli( ctrl.ipAddress )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
@@ -506,58 +371,27 @@ class HAsingleInstanceRestart:
             main.restartTime = -1
         time.sleep( 5 )
         # rerun on election apps
-        main.ONOScli1.electionTestRun()
+        ctrl.CLI.electionTestRun()
 
     def CASE7( self, main ):
         """
         Check state after ONOS failure
         """
         import json
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Running ONOS Constant State Tests" )
 
-        main.step( "Check that each switch has a master" )
         # Assert that each device has a master
-        rolesNotNull = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].rolesNotNull,
-                             name="rolesNotNull-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            rolesNotNull = rolesNotNull and t.result
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=rolesNotNull,
-            onpass="Each device has a master",
-            onfail="Some devices don't have a master assigned" )
+        main.HA.checkRoleNotNull()
 
         main.step( "Check if switch roles are consistent across all nodes" )
-        ONOS1Mastership = main.ONOScli1.roles()
-        # FIXME: Refactor this whole case for single instance
-        if "Error" in ONOS1Mastership or not ONOS1Mastership:
-            main.log.error( "Error in getting ONOS mastership" )
-            main.log.warn( "ONOS1 mastership response: " +
-                           repr( ONOS1Mastership ) )
-            consistentMastership = main.FALSE
-        else:
-            consistentMastership = main.TRUE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=consistentMastership,
-            onpass="Switch roles are consistent across all ONOS nodes",
-            onfail="ONOS nodes have different views of switch roles" )
-
+        ONOSMastership, rolesResult,consistentMastership = main.HA.checkTheRole()
+        ONOSMastership = ONOSMastership[ 0 ]
         description2 = "Compare switch roles from before failure"
         main.step( description2 )
 
-        currentJson = json.loads( ONOS1Mastership )
+        currentJson = json.loads( ONOSMastership )
         oldJson = json.loads( mastershipState )
         mastershipCheck = main.TRUE
         for i in range( 1, 29 ):
@@ -581,11 +415,11 @@ class HAsingleInstanceRestart:
         mastershipCheck = mastershipCheck and consistentMastership
 
         main.step( "Get the intents and compare across all nodes" )
-        ONOS1Intents = main.ONOScli1.intents( jsonFormat=True )
+        ONOSIntents = main.Cluster.runningNodes[ 0 ].CLI.intents( jsonFormat=True )
         intentCheck = main.FALSE
-        if "Error" in ONOS1Intents or not ONOS1Intents:
+        if "Error" in ONOSIntents or not ONOSIntents:
             main.log.error( "Error in getting ONOS intents" )
-            main.log.warn( "ONOS1 intents response: " + repr( ONOS1Intents ) )
+            main.log.warn( "ONOS1 intents response: " + repr( ONOSIntents ) )
         else:
             intentCheck = main.TRUE
         utilities.assert_equals(
@@ -595,7 +429,7 @@ class HAsingleInstanceRestart:
             onfail="ONOS nodes have different views of intents" )
         # Print the intent states
         intents = []
-        intents.append( ONOS1Intents )
+        intents.append( ONOSIntents )
         intentStates = []
         for node in intents:  # Iter through ONOS nodes
             nodeStates = []
@@ -678,12 +512,11 @@ class HAsingleInstanceRestart:
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
 
-        leader = main.nodes[ main.activeNodes[ 0 ] ].ip_address
+        leader = main.Cluster.runningNodes[ 0 ].ipAddress
         leaderResult = main.TRUE
-        for controller in range( 1, main.numCtrls + 1 ):
+        for ctrl in main.Cluster.active():
             # loop through ONOScli handlers
-            node = getattr( main, ( 'ONOScli' + str( controller ) ) )
-            leaderN = node.electionTestLeader()
+            leaderN = ctrl.CLI.electionTestLeader()
             # verify leader is ONOS1
             # NOTE even though we restarted ONOS, it is the only one so onos 1
             # must be leader
@@ -698,7 +531,7 @@ class HAsingleInstanceRestart:
                 leaderResult = main.FALSE
             elif leader != leaderN:
                 leaderResult = main.FALSE
-                main.log.error( "ONOS" + str( controller ) + " sees " +
+                main.log.error( ctrl.name + " sees " +
                                  str( leaderN ) +
                                  " as the leader of the election app. " +
                                  "Leader should be " + str( leader ) )
@@ -714,7 +547,6 @@ class HAsingleInstanceRestart:
         """
         import json
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -726,6 +558,7 @@ class HAsingleInstanceRestart:
         count = 0
         main.step( "Comparing ONOS topology to MN topology" )
         startTime = time.time()
+        ctrl = main.Cluster.active( 0 )
         # Give time for Gossip to work
         while topoResult == main.FALSE and ( elapsed < 60 or count < 3 ):
             devicesResults = main.TRUE
@@ -735,9 +568,9 @@ class HAsingleInstanceRestart:
             count += 1
             cliStart = time.time()
             devices = []
-            devices.append( main.ONOScli1.devices() )
+            devices.append( ctrl.CLI.devices() )
             hosts = []
-            hosts.append( json.loads( main.ONOScli1.hosts() ) )
+            hosts.append( json.loads( ctrl.CLI.hosts() ) )
             ipResult = main.TRUE
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
@@ -748,11 +581,11 @@ class HAsingleInstanceRestart:
                             controllerStr + ": " + str( host ) )
                         ipResult = main.FALSE
             ports = []
-            ports.append( main.ONOScli1.ports() )
+            ports.append( ctrl.CLI.ports() )
             links = []
-            links.append( main.ONOScli1.links() )
+            links.append( ctrl.CLI.links() )
             clusters = []
-            clusters.append( main.ONOScli1.clusters() )
+            clusters.append( ctrl.CLI.clusters() )
 
             elapsed = time.time() - startTime
             cliTime = time.time() - cliStart
@@ -761,8 +594,8 @@ class HAsingleInstanceRestart:
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks()
             mnHosts = main.Mininet1.getHosts()
-            for controller in range( main.numCtrls ):
-                controllerStr = str( controller + 1 )
+            for controller in main.Cluster.getRunningPos():
+                controllerStr = str( controller )
                 if devices[ controller ] and ports[ controller ] and\
                         "Error" not in devices[ controller ] and\
                         "Error" not in ports[ controller ]:
@@ -933,17 +766,17 @@ class HAsingleInstanceRestart:
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.HA.nodesCheck,
                                        False,
-                                       args=[ main.activeNodes ],
+                                       args=[ main.Cluster.active() ],
                                        attempts=5 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
         if not nodeResults:
-            for i in main.activeNodes:
+            for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    main.CLIs[ i ].name,
-                    main.CLIs[ i ].sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
 
         if not topoResult:
             main.cleanup()

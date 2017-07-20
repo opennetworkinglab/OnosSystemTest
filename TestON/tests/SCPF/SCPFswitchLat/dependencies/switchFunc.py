@@ -36,7 +36,7 @@ def getTimestampFromLog( index, searchTerm ):
         searchTerm: the key term of timestamp
 
     '''
-    lines = main.CLIs[ index ].logSearch( mode='last', searchTerm=searchTerm )
+    lines = main.Cluster.active( index ).CLI.logSearch( mode='last', searchTerm=searchTerm )
     try:
         assert lines != None
         logString = lines[ len ( lines ) - 1 ]
@@ -178,7 +178,7 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
         # if up, assign switch to controller
         time.sleep( main.measurementSleep )
         main.log.info( 'Assigning {} to controller'.format( deviceName ))
-        main.Mininet1.assignSwController( sw=deviceName, ip=main.ONOSip[0] )
+        main.Mininet1.assignSwController( sw=deviceName, ip=main.Cluster.active( 0 ).ipAddress )
         time.sleep( main.measurementSleep )
     if switchStatus == 'down':
         # if down, remove switch from topology
@@ -272,14 +272,14 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
             main.log.info( "{} Feature to Role Request: {}".format( d, str( F_Rtemp ) ) )
             main.log.info( "{} Role Request to Role Reply: {}".format( d, str( RQ_RRtemp ) ) )
 
-        for i in range( 1, main.numCtrls + 1 ):
+        for i in range( 1, main.Cluster.numCtrls + 1 ):
             RR_Dtemp = 0
             D_Gtemp = 0
             E_Etemp = 0
             main.log.info( "================================================" )
             # get onos metrics timestamps
             try:
-                response = json.loads( main.CLIs[i - 1].topologyEventsMetrics() )
+                response = json.loads( main.Cluster.active( i - 1 ).CLI.topologyEventsMetrics() )
                 DeviceTime = getTimestampFromLog( i - 1, searchTerm=main.searchTerm[switchStatus] )
                 main.log.info( "ONOS{} device Event timestamp: {}".format( i, "%.2f" % DeviceTime ) )
                 GraphTime = int( response.get( "topologyGraphEventTimestamp" ).get( "value" ) )
@@ -352,15 +352,15 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
             if not warmup:
                 resultDict[ switchStatus ][ d ][ 'FA_A' ].append( FA_Atemp )
             main.log.info( "{} FIN/ACK TO ACK {}:".format( d, FA_Atemp ) )
-        for i in range( 1, main.numCtrls + 1 ):
+        for i in range( 1, main.Cluster.numCtrls + 1 ):
             A_Dtemp = 0
             D_Gtemp = 0
             E_Etemp = 0
             main.log.info( "================================================" )
             # get onos metrics timestamps
             try:
-                response = json.loads( main.CLIs[ i - 1 ].topologyEventsMetrics() )
-                DeviceTime = getTimestampFromLog( i - 1, searchTerm=main.searchTerm[switchStatus] )
+                response = json.loads( main.Cluster.active( i - 1 ).CLI.topologyEventsMetrics() )
+                DeviceTime = getTimestampFromLog( i - 1, searchTerm=main.searchTerm[ switchStatus ] )
                 main.log.info( "ONOS{} device Event timestamp: {}".format( i, DeviceTime ) )
                 GraphTime = int( response.get( "topologyGraphEventTimestamp" ).get( "value" ) )
                 main.log.info( "ONOS{} Graph Event timestamp: {}".format( i, GraphTime ) )

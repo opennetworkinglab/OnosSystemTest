@@ -71,7 +71,7 @@ class Testcaselib:
                                               main.topology,
                                               main.Mininet1.home,
                                               direction="to" )
-            stepResult = main.testSetUp.envSetup( hasRest=True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -96,51 +96,51 @@ class Testcaselib:
             main.apps = main.apps + "," + main.diff
         else:
             main.log.error( "App list is empty" )
-        print "NODE COUNT = ", main.numCtrls
-        print main.ONOSip
+        main.log.info( "NODE COUNT = " + str( main.Cluster.numCtrls ) )
+        main.log.info( ''.join( main.Cluster.getIps() ) )
         main.dynamicHosts = [ 'in1', 'out1' ]
-        main.testSetUp.createApplyCell( newCell=True, cellName=main.cellName,
-                                        Mininet=main.Mininet1, useSSH=Testcaselib.useSSH )
+        main.testSetUp.createApplyCell( main.Cluster, newCell=True, cellName=main.cellName,
+                                        Mininet=main.Mininet1, useSSH=Testcaselib.useSSH,
+                                        ip=main.Cluster.getIps() )
         # kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
-        for i in range( main.maxNodes ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
+        for ctrl in main.Cluster.runningNodes:
+            main.ONOSbench.onosDie( ctrl.ipAddress )
 
-        main.testSetUp.buildOnos()
+        main.testSetUp.buildOnos( main.Cluster )
 
-        main.testSetUp.installOnos( False )
+        main.testSetUp.installOnos( main.Cluster, False )
 
-        main.testSetUp.setupSsh()
+        main.testSetUp.setupSsh( main.Cluster )
 
-        main.testSetUp.checkOnosService()
+        main.testSetUp.checkOnosService( main.Cluster )
 
+        cliResult = main.TRUE
         main.step( "Checking if ONOS CLI is ready" )
-        for i in range( main.numCtrls ):
-            main.CLIs[ i ].startCellCli( )
-            cliResult = main.CLIs[ i ].startOnosCli( main.ONOSip[ i ],
-                                                     commandlineTimeout=60,
-                                                     onosStartTimeout=100 )
+        for ctrl in main.Cluster.runningNodes:
+            ctrl.CLI.startCellCli( )
+            cliResult = cliResult and ctrl.CLI.startOnosCli( ctrl.ipAddress,
+                                                             commandlineTimeout=60,
+                                                             onosStartTimeout=100 )
+            ctrl.active = True
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cliResult,
                                  onpass="ONOS CLI is ready",
                                  onfail="ONOS CLI is not ready" )
-        main.active = 0
-        for i in range( 10 ):
-            ready = True
-            output = main.CLIs[ main.active ].summary()
-            if not output:
-                ready = False
-            if ready:
-                break
-            time.sleep( 10 )
-        utilities.assert_equals( expect=True, actual=ready,
+        ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
+                                 main.FALSE,
+                                 sleep=10,
+                                 attempts=10 )
+        if ready:
+            ready = main.TRUE
+        utilities.assert_equals( expect=main.TRUE, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
 
         with open( "%s/json/%s.json" % (
                 main.dependencyPath, main.cfgName) ) as cfg:
-            main.RESTs[ main.active ].setNetCfg( json.load( cfg ) )
+            main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
         with open( "%s/json/%s.chart" % (
                 main.dependencyPath, main.cfgName) ) as chart:
             main.pingChart = json.load( chart )
@@ -149,17 +149,16 @@ class Testcaselib:
             main.cleanup( )
             main.exit( )
 
-        for i in range( main.numCtrls ):
-            main.CLIs[ i ].logSet( "DEBUG", "org.onosproject.segmentrouting" )
-            main.CLIs[ i ].logSet( "DEBUG", "org.onosproject.driver.pipeline" )
-            main.CLIs[ i ].logSet( "DEBUG", "org.onosproject.store.group.impl" )
-            main.CLIs[ i ].logSet( "DEBUG",
-                                   "org.onosproject.net.flowobjective.impl" )
+        for ctrl in main.Cluster.active():
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.segmentrouting" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.driver.pipeline" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.store.group.impl" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.net.flowobjective.impl" )
 
     @staticmethod
     def startMininet( main, topology, args="" ):
         main.step( "Starting Mininet Topology" )
-        arg = "--onos %d %s" % (main.numCtrls, args)
+        arg = "--onos %d %s" % (main.Cluster.numCtrls, args)
         main.topology = topology
         topoResult = main.Mininet1.startNet(
                 topoFile=main.Mininet1.home + main.topology, args=arg )
@@ -174,12 +173,11 @@ class Testcaselib:
             main.exit( )
 
     @staticmethod
-    def config(main, cfgName, numCtrls):
+    def config( main, cfgName ):
         main.spines     = []
 
         main.failures   = int(main.params[ 'failures' ])
         main.cfgName    = cfgName
-        main.numCtrls   = numCtrls
 
         if main.cfgName == '2x2' :
             spine           = {}
@@ -222,7 +220,7 @@ class Testcaselib:
     def checkFlows( main, minFlowCount, dumpflows=True ):
         main.step(
                 " Check whether the flow count is bigger than %s" % minFlowCount )
-        count = utilities.retry( main.CLIs[ main.active ].checkFlowCount,
+        count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowCount,
                                  main.FALSE,
                                  kwargs={ 'min': minFlowCount },
                                  attempts=10,
@@ -234,7 +232,7 @@ class Testcaselib:
                 onfail="Flow count looks wrong: " + str( count ) )
 
         main.step( "Check whether all flow status are ADDED" )
-        flowCheck = utilities.retry( main.CLIs[ main.active ].checkFlowsState,
+        flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={ 'isPENDING': False },
                                      attempts=2,
@@ -245,11 +243,11 @@ class Testcaselib:
                 onpass="Flow status is correct!",
                 onfail="Flow status is wrong!" )
         if dumpflows:
-            main.ONOSbench.dumpONOSCmd( main.ONOSip[ main.active ],
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "flows",
                                         main.logdir,
                                         "flowsBefore" + main.cfgName )
-            main.ONOSbench.dumpONOSCmd( main.ONOSip[ main.active ],
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "groups",
                                         main.logdir,
                                         "groupsBefore" + main.cfgName )
@@ -268,11 +266,11 @@ class Testcaselib:
                                      onpass="IP connectivity successfully tested",
                                      onfail="IP connectivity failed" )
         if dumpflows:
-            main.ONOSbench.dumpONOSCmd( main.ONOSip[ main.active ],
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "flows",
                                         main.logdir,
                                         "flowsOn" + tag )
-            main.ONOSbench.dumpONOSCmd( main.ONOSip[ main.active ],
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "groups",
                                         main.logdir,
                                         "groupsOn" + tag )
@@ -291,7 +289,7 @@ class Testcaselib:
         main.log.info(
                 "Waiting %s seconds for link down to be discovered" % main.linkSleep )
         time.sleep( main.linkSleep )
-        topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
+        topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links },
@@ -324,15 +322,16 @@ class Testcaselib:
                     "Waiting %s seconds for link up to be discovered" % main.linkSleep )
             time.sleep( main.linkSleep )
 
-            for i in range(0, main.numCtrls):
-                onosIsUp = main.ONOSbench.isup( main.ONOSip[ i ] )
+            for i in range(0, main.Cluster.numCtrls):
+                ctrl = main.Cluster.runningNodes[ i ]
+                onosIsUp = main.ONOSbench.isup( ctrl.ipAddress )
                 if onosIsUp == main.TRUE:
-                    main.CLIs[ i ].portstate( dpid=dpid1, port=port1 )
-                    main.CLIs[ i ].portstate( dpid=dpid2, port=port2 )
+                    ctrl.CLI.portstate( dpid=dpid1, port=port1 )
+                    ctrl.CLI.portstate( dpid=dpid2, port=port2 )
             time.sleep( main.linkSleep )
 
-            result = main.CLIs[ main.active ].checkStatus( numoswitch=switches,
-                                                           numolink=links )
+            result = main.Cluster.active( 0 ).CLI.checkStatus( numoswitch=switches,
+                                                               numolink=links )
             if count > 5 or result:
                 break
         utilities.assert_equals( expect=main.TRUE, actual=result,
@@ -353,7 +352,7 @@ class Testcaselib:
         main.log.info( "Waiting %s seconds for switch down to be discovered" % (
             main.switchSleep) )
         time.sleep( main.switchSleep )
-        topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
+        topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links },
@@ -376,7 +375,7 @@ class Testcaselib:
         main.log.info( "Waiting %s seconds for switch up to be discovered" % (
             main.switchSleep) )
         time.sleep( main.switchSleep )
-        topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
+        topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links },
@@ -399,16 +398,16 @@ class Testcaselib:
             main.log.error( "Utils not found exiting the test" )
             main.exit()
         try:
-            main.Utils
+            main.utils
         except ( NameError, AttributeError ):
-            main.Utils = Utils()
+            main.utils = Utils()
 
         main.utils.mininetCleanup( main.Mininet1 )
 
-        main.utils.copyKarafLog()
+        main.utils.copyKarafLog( main.cfgName )
 
-        for i in range( main.numCtrls ):
-            main.ONOSbench.onosStop( main.ONOSip[ i ] )
+        for ctrl in main.Cluster.active():
+            main.ONOSbench.onosStop( ctrl.ipAddress )
 
     @staticmethod
     def killOnos( main, nodes, switches, links, expNodes ):
@@ -421,23 +420,17 @@ class Testcaselib:
         main.step( "Killing ONOS instance" )
 
         for i in nodes:
-            killResult = main.ONOSbench.onosDie( main.CLIs[ i ].ip_address )
+            killResult = main.ONOSbench.onosDie( main.Cluster.runningNodes[ i ].ipAddress )
             utilities.assert_equals( expect=main.TRUE, actual=killResult,
                                      onpass="ONOS instance Killed",
                                      onfail="Error killing ONOS instance" )
-            if i == main.active:
-                main.active = (i + 1) % main.numCtrls
+            main.Cluster.runningNodes[ i ].active = False
         time.sleep( 12 )
 
-        if len( nodes ) < main.numCtrls:
+        if len( nodes ) < main.Cluster.numCtrls:
 
-            nodesToCheck = []
-            for x in range(0, main.numCtrls):
-                if x not in nodes:
-                    nodesToCheck.append(x)
             nodeResults = utilities.retry( Testcaselib.nodesCheck,
                                            False,
-                                           args=[nodesToCheck],
                                            attempts=5,
                                            sleep=10 )
             utilities.assert_equals( expect=True, actual=nodeResults,
@@ -446,15 +439,15 @@ class Testcaselib:
 
             if not nodeResults:
                 for i in nodes:
-                    cli = main.CLIs[i]
+                    ctrl = main.Cluster.runningNodes[ i ]
                     main.log.debug( "{} components not ACTIVE: \n{}".format(
-                        cli.name,
-                        cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                        ctrl.name,
+                        ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
                 main.log.error( "Failed to kill ONOS, stopping test" )
                 main.cleanup()
                 main.exit()
 
-            topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
+            topology = utilities.retry( main.Cluster.active( 0 ).checkStatus,
                                         main.FALSE,
                                         kwargs={ 'numoswitch': switches,
                                                  'numolink': links,
@@ -464,8 +457,6 @@ class Testcaselib:
             utilities.assert_equals( expect=main.TRUE, actual=topology,
                                      onpass="ONOS Instance down successful",
                                      onfail="Failed to turn off ONOS Instance" )
-        else:
-            main.active = -1
 
     @staticmethod
     def recoverOnos( main, nodes, switches, links, expNodes ):
@@ -475,23 +466,24 @@ class Testcaselib:
         Recover an ONOS instance and verify the ONOS cluster can see the proper change
         """
         main.step( "Recovering ONOS instance" )
-        [ main.ONOSbench.onosStart( main.CLIs[ i ].ip_address ) for i in nodes ]
+        [ main.ONOSbench.onosStart( main.Cluster.runningNodes[ i ].ipAddress ) for i in nodes ]
         for i in nodes:
-            isUp = main.ONOSbench.isup( main.ONOSip[ i ] )
+            isUp = main.ONOSbench.isup( main.Cluster.runningNodes[ i ].ipAddress )
             utilities.assert_equals( expect=main.TRUE, actual=isUp,
                                      onpass="ONOS service is ready",
                                      onfail="ONOS service did not start properly" )
         for i in nodes:
             main.step( "Checking if ONOS CLI is ready" )
-            main.CLIs[ i ].startCellCli( )
-            cliResult = main.CLIs[ i ].startOnosCli( main.ONOSip[ i ],
-                                                     commandlineTimeout=60,
-                                                     onosStartTimeout=100 )
+            ctrl = main.Cluster.runningNodes[ i ]
+            ctrl.CLI.startCellCli()
+            cliResult = ctrl.CLI.startOnosCli( ctrl.ipAddress,
+                                               commandlineTimeout=60,
+                                               onosStartTimeout=100 )
+            ctrl.active = True
             utilities.assert_equals( expect=main.TRUE,
                                      actual=cliResult,
                                      onpass="ONOS CLI is ready",
                                      onfail="ONOS CLI is not ready" )
-            main.active = i if main.active == -1 else main.active
 
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( Testcaselib.nodesCheck,
@@ -505,15 +497,15 @@ class Testcaselib:
 
         if not nodeResults:
             for i in nodes:
-                cli = main.CLIs[i]
+                ctrl = main.Cluster.runningNodes[ i ]
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    cli.name,
-                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
 
-        topology = utilities.retry( main.CLIs[ main.active ].checkStatus,
+        topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links,
@@ -523,15 +515,13 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="ONOS Instance down successful",
                                  onfail="Failed to turn off ONOS Instance" )
-        for i in range( 10 ):
-            ready = True
-            output = main.CLIs[ main.active ].summary( )
-            if not output:
-                ready = False
-            if ready:
-                break
-            time.sleep( 10 )
-        utilities.assert_equals( expect=True, actual=ready,
+        ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
+                                 main.FALSE,
+                                 attempts=10,
+                                 sleep=12 )
+        if ready:
+            ready = main.TRUE
+        utilities.assert_equals( expect=main.TRUE, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
         if not ready:
@@ -552,18 +542,18 @@ class Testcaselib:
         main.pingChart[ 'ip' ][ 'hosts' ] += [ 'in1' ]
         main.step( "Pushing new configuration" )
         mac, cfg = hostCfg[ 'hosts' ].popitem( )
-        main.RESTs[ main.active ].setNetCfg( cfg[ 'basic' ],
-                                             subjectClass="hosts",
-                                             subjectKey=urllib.quote( mac,
-                                                                      safe='' ),
-                                             configKey="basic" )
+        main.Cluster.active( 0 ).REST.setNetCfg( cfg[ 'basic' ],
+                                                 subjectClass="hosts",
+                                                 subjectKey=urllib.quote( mac,
+                                                                          safe='' ),
+                                                 configKey="basic" )
         main.pingChart[ 'ip' ][ 'hosts' ] += [ 'out1' ]
         main.step( "Pushing new configuration" )
         mac, cfg = hostCfg[ 'hosts' ].popitem( )
-        main.RESTs[ main.active ].setNetCfg( cfg[ 'basic' ],
-                                             subjectClass="hosts",
-                                             subjectKey=urllib.quote( mac,
-                                                                      safe='' ),
+        main.Cluster.active( 0 ).REST.setNetCfg( cfg[ 'basic' ],
+                                                 subjectClass="hosts",
+                                                 subjectKey=urllib.quote( mac,
+                                                                          safe='' ),
                                              configKey="basic" )
         main.pingChart.update( { 'vlan1': { "expect": "True",
                                             "hosts": [ "olt1", "vsg1" ] } } )
@@ -571,10 +561,10 @@ class Testcaselib:
         main.pingChart[ 'vlan10' ][ 'expect' ] = 0
         ports = "[%s,%s]" % (5, 6)
         cfg = '{"of:0000000000000001":[{"vlan":1,"ports":%s,"name":"OLT 1"}]}' % ports
-        main.RESTs[ main.active ].setNetCfg( json.loads( cfg ),
-                                             subjectClass="apps",
-                                             subjectKey="org.onosproject.segmentrouting",
-                                             configKey="xconnect" )
+        main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
+                                                 subjectClass="apps",
+                                                 subjectKey="org.onosproject.segmentrouting",
+                                                 configKey="xconnect" )
 
     @staticmethod
     def delHostCfg( main ):
@@ -589,40 +579,29 @@ class Testcaselib:
         main.step( "Removing host configuration" )
         main.pingChart[ 'ip' ][ 'expect' ] = 0
         mac, cfg = hostCfg[ 'hosts' ].popitem( )
-        main.RESTs[ main.active ].removeNetCfg( subjectClass="hosts",
-                                                subjectKey=urllib.quote(
-                                                        mac,
-                                                        safe='' ),
-                                                configKey="basic" )
+        main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="hosts",
+                                                    subjectKey=urllib.quote(
+                                                            mac,
+                                                            safe='' ),
+                                                    configKey="basic" )
         main.step( "Removing configuration" )
         main.pingChart[ 'ip' ][ 'expect' ] = 0
         mac, cfg = hostCfg[ 'hosts' ].popitem( )
-        main.RESTs[ main.active ].removeNetCfg( subjectClass="hosts",
-                                                subjectKey=urllib.quote(
-                                                        mac,
-                                                        safe='' ),
-                                                configKey="basic" )
+        main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="hosts",
+                                                    subjectKey=urllib.quote(
+                                                            mac,
+                                                            safe='' ),
+                                                    configKey="basic" )
         main.step( "Removing vlan configuration" )
         main.pingChart[ 'vlan1' ][ 'expect' ] = 0
-        main.RESTs[ main.active ].removeNetCfg( subjectClass="apps",
-                                                subjectKey="org.onosproject.segmentrouting",
-                                                configKey="xconnect" )
+        main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="apps",
+                                                    subjectKey="org.onosproject.segmentrouting",
+                                                    configKey="xconnect" )
     @staticmethod
     def nodesCheck( nodes ):
-        nodesOutput = []
         results = True
-        threads = []
-        for i in nodes:
-            t = main.Thread( target=main.CLIs[i].nodes,
-                             name="nodes-" + str( i ),
-                             args=[ ] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            nodesOutput.append( t.result )
-        ips = [ main.ONOSip[ node ] for node in nodes ]
+        nodesOutput = main.Cluster.command( "nodes", specificDriver=2 )
+        ips = main.Cluster.getIps( activeOnly=True )
         ips.sort()
         for i in nodesOutput:
             try:

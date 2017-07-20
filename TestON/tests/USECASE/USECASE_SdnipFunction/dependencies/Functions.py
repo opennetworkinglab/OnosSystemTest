@@ -27,10 +27,10 @@ def checkRouteNum( main, routeNumExpected ):
     main.log.info( routeNumExpected )
     main.log.info( "Route number from ONOS CLI:" )
 
-    routeNumActual = main.ONOScli1.ipv4RouteNumber()
+    routeNumActual = main.Cluster.active( 0 ).CLI.ipv4RouteNumber()
     if routeNumActual != routeNumExpected:
         time.sleep( wait )
-        routeNumActual = main.ONOScli1.ipv4RouteNumber()
+        routeNumActual = main.Cluster.active( 0 ).CLI.ipv4RouteNumber()
     main.log.info( routeNumActual )
     utilities.assertEquals( \
         expect = routeNumExpected, actual = routeNumActual,
@@ -41,8 +41,8 @@ def checkM2SintentNum( main, intentNumExpected ):
     import time
     main.step( "Check M2S intents installed" )
     wait = int( main.params['timers']['PathAvailable'] )
-    jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
-                                       TYPE = "multiPointToSinglePoint" )
+    jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat = True, summary = True,
+                                                       TYPE = "multiPointToSinglePoint" )
     try:
         intentNumActual = jsonResult['installed']
     except TypeError as e:
@@ -50,8 +50,8 @@ def checkM2SintentNum( main, intentNumExpected ):
         main.log.error( e )
     if intentNumActual != intentNumExpected:
         time.sleep( wait )
-        jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
-                                           TYPE = "multiPointToSinglePoint" )
+        jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat = True, summary = True,
+                                                           TYPE = "multiPointToSinglePoint" )
         try:
             intentNumActual = jsonResult['installed']
         except TypeError as e:
@@ -68,8 +68,8 @@ def checkP2PintentNum( main, intentNumExpected ):
     import time
     main.step( "Check P2P intents installed" )
     wait = int( main.params['timers']['PathAvailable'] )
-    jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
-                                       TYPE = "pointToPoint" )
+    jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat = True, summary = True,
+                                                       TYPE = "pointToPoint" )
     try:
         intentNumActual = jsonResult['installed']
     except TypeError as e:
@@ -78,8 +78,8 @@ def checkP2PintentNum( main, intentNumExpected ):
 
     if intentNumActual != intentNumExpected:
         time.sleep( wait )
-        jsonResult = main.ONOScli1.intents( jsonFormat = True, summary = True,
-                                           TYPE = "pointToPoint" )
+        jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat = True, summary = True,
+                                                           TYPE = "pointToPoint" )
         try:
             intentNumActual = jsonResult['installed']
         except TypeError as e:

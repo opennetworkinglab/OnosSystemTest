@@ -42,7 +42,7 @@ class SRClusterRestart:
         if not hasattr( main, 'apps' ):
             run.initTest( main )
         main.cfgName = '2x2'
-        main.numCtrls = 3
+        main.Cluster.setRunningNode( 3 )
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
@@ -75,7 +75,7 @@ class SRClusterRestart:
         if not hasattr( main, 'apps' ):
             run.initTest( main )
         main.cfgName = '4x4'
-        main.numCtrls = 3
+        main.Cluster.setRunningNode( 3 )
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
         # pre-configured routing and bridging test
@@ -108,7 +108,7 @@ class SRClusterRestart:
         if not hasattr( main, 'apps' ):
             run.initTest( main )
         main.cfgName = '0x1'
-        main.numCtrls = 3
+        main.Cluster.setRunningNode( 3 )
         run.installOnos( main )
         run.startMininet( main, 'cord_fabric.py', args="--leaf=1 --spine=0" )
         # pre-configured routing and bridging test

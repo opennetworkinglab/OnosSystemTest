@@ -67,7 +67,7 @@ class FUNCnetCfg:
                                            wrapperFile2 +
                                            ".py" )
 
-            stepResult = main.testSetUp.envSetup( hasRest=True, hasCli=False )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -85,7 +85,7 @@ class FUNCnetCfg:
         - Connect to cli
         """
         import time
-        main.testSetUp.ONOSSetUp( main.Mininet1, hasCli=False )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
 
     def CASE8( self, main ):
         """
@@ -108,7 +108,7 @@ class FUNCnetCfg:
         """
         main.log.info( "Error report: \n" )
         main.ONOSbench.logReport(
-                globalONOSip[ 0 ],
+                main.Cluster.active( 0 ).ipAddress,
                 [ "INFO", "WARN", "ERROR", "Except" ],
                 "s" )
         # main.ONOSbench.logReport( globalONOSip[ 1 ], [ "INFO" ], "d" )
@@ -166,9 +166,7 @@ class FUNCnetCfg:
             main.cleanup()
             main.exit()
 
-        tempONOSip = []
-        for i in range( main.numCtrls ):
-            tempONOSip.append( main.ONOSip[ i ] )
+        tempONOSip = main.Cluster.getIps()
 
         swList = [ "s" + str( i ) for i in range( 1, switches + 1 ) ]
         assignResult = main.Mininet1.assignSwController( sw=swList,
@@ -229,7 +227,7 @@ class FUNCnetCfg:
                                ", the other disallowed."
 
 
-        pprint = main.RESTs[ 0 ].pprint
+        pprint = main.Cluster.active( 0 ).REST.pprint
 
         main.step( "Add Net Cfg for switch1" )
 
@@ -243,15 +241,15 @@ class FUNCnetCfg:
         main.log.info( "s1Json:" + str( s1Json ) )
 
         main.s1Json = s1Json
-        setS1Allow = main.ONOSrest1.setNetCfg( s1Json,
-                                               subjectClass="devices",
-                                               subjectKey="of:0000000000000001",
-                                               configKey="basic" )
+        setS1Allow = main.Cluster.active( 0 ).REST.setNetCfg( s1Json,
+                                                              subjectClass="devices",
+                                                              subjectKey="of:0000000000000001",
+                                                              configKey="basic" )
         s1Result = False
         #Wait 5 secs after set up netCfg
         time.sleep( main.SetNetCfgSleep )
         if setS1Allow:
-            getS1 = utilities.retry( f=main.ONOSrest1.getNetCfg,
+            getS1 = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                      retValue=False,
                                      kwargs={"subjectClass":"devices",
                                              "subjectKey" : "of:0000000000000001",
@@ -267,7 +265,10 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
-                utilities.retry( f=main.ONOSrest1.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
+                utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
+                                 retValue=False,
+                                 attempts=main.retrytimes,
+                                 sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=s1Result,
                                  onpass="Net Cfg added for device s1",
@@ -285,15 +286,15 @@ class FUNCnetCfg:
         main.log.info( "s3Json:" + str( s3Json ) )
 
         main.s3Json = s3Json
-        setS3Disallow = main.ONOSrest1.setNetCfg( s3Json,
-                                                  subjectClass="devices",
-                                                  subjectKey="of:0000000000000003",
-                                                  configKey="basic" )
+        setS3Disallow = main.Cluster.active( 0 ).REST.setNetCfg( s3Json,
+                                                                 subjectClass="devices",
+                                                                 subjectKey="of:0000000000000003",
+                                                                 configKey="basic" )
         s3Result = False
         time.sleep( main.SetNetCfgSleep )
         if setS3Disallow:
             # Check what we set is what is in ONOS
-            getS3 = utilities.retry( f=main.ONOSrest1.getNetCfg,
+            getS3 = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                      retValue=False,
                                      kwargs={"subjectClass": "devices",
                                             "subjectKey": "of:0000000000000003",
@@ -309,7 +310,10 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
-                utilities.retry( f=main.ONOSrest1.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
+                utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
+                                 retValue=False,
+                                 attempts=main.retrytimes,
+                                 sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=s3Result,
                                  onpass="Net Cfg added for device s3",
@@ -332,8 +336,8 @@ class FUNCnetCfg:
         main.netCfg.compareCfg( main )
 
         main.step( "ONOS should only show devices S1, S2, and S4" )
-        devices = main.ONOSrest1.devices()
-        main.log.debug( main.ONOSrest1.pprint( devices ) )
+        devices = main.Cluster.active( 0 ).REST.devices()
+        main.log.debug( main.Cluster.active( 0 ).REST.pprint( devices ) )
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4 ] ]
         main.log.debug( allowedDevices )
         onosDevices = []
@@ -383,7 +387,7 @@ class FUNCnetCfg:
         main.caseExplanation = "Add Network Configurations for discovered " +\
                                "devices. One device is allowed" +\
                                ", the other disallowed."
-        pprint = main.RESTs[ 0 ].pprint
+        pprint = main.Cluster.active( 0 ).REST.pprint
 
         main.step( "Add Net Cfg for switch2" )
         try:
@@ -395,14 +399,14 @@ class FUNCnetCfg:
             main.exit()
         main.log.info( "s2Json:" + str( s2Json ) )
         main.s2Json = s2Json
-        setS2Allow = main.ONOSrest2.setNetCfg( s2Json,
-                                               subjectClass="devices",
-                                               subjectKey="of:0000000000000002",
-                                               configKey="basic" )
+        setS2Allow = main.Cluster.active( 1 ).REST.setNetCfg( s2Json,
+                                                              subjectClass="devices",
+                                                              subjectKey="of:0000000000000002",
+                                                              configKey="basic" )
         s2Result = False
         if setS2Allow:
             # Check what we set is what is in ONOS
-            getS2 = utilities.retry( f=main.ONOSrest2.getNetCfg,
+            getS2 = utilities.retry( f=main.Cluster.active( 1 ).REST.getNetCfg,
                                      retValue=False,
                                      kwargs={"subjectClass": "devices",
                                             "subjectKey": "of:0000000000000002",
@@ -417,7 +421,10 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
-                utilities.retry( f=main.ONOSrest2.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
+                utilities.retry( f=main.Cluster.active( 1 ).REST.getNetCfg,
+                                 retValue=False,
+                                 attempts=main.retrytimes,
+                                 sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=s2Result,
                                  onpass="Net Cfg added for device s2",
@@ -433,14 +440,14 @@ class FUNCnetCfg:
             main.exit()
         main.log.info( "s4Json:" + str( s4Json ) )
         main.s4Json = s4Json
-        setS4Disallow = main.ONOSrest3.setNetCfg( s4Json,
+        setS4Disallow = main.Cluster.active( 2 ).REST.setNetCfg( s4Json,
                                                   subjectClass="devices",
                                                   subjectKey="of:0000000000000004",
                                                   configKey="basic" )
         s4Result = False
         if setS4Disallow:
             # Check what we set is what is in ONOS
-            getS4 = utilities.retry( f=main.ONOSrest3.getNetCfg,
+            getS4 = utilities.retry( f=main.Cluster.active( 2 ).REST.getNetCfg,
                                      retValue=False,
                                      kwargs={"subjectClass": "devices",
                                             "subjectKey": "of:0000000000000004",
@@ -456,8 +463,11 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
-                main.step( "Retrying main.ONOSrest3.getNetCfg" )
-                utilities.retry( f=main.ONOSrest3.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
+                main.step( "Retrying main.Cluster.active( 2 ).REST.getNetCfg" )
+                utilities.retry( f=main.Cluster.active( 2 ).REST.getNetCfg,
+                                 retValue=False,
+                                 attempts=main.retrytimes,
+                                 sleep=main.retrysleep )
         utilities.assert_equals( expect=True,
                                  actual=s4Result,
                                  onpass="Net Cfg added for device s4",
@@ -482,8 +492,8 @@ class FUNCnetCfg:
         main.netCfg.compareCfg( main )
 
         main.step( "ONOS should only show devices S1 and S2" )
-        devices = main.ONOSrest1.devices()
-        main.log.debug( main.ONOSrest1.pprint( devices ) )
+        devices = main.Cluster.active( 0 ).REST.devices()
+        main.log.debug( main.Cluster.active( 0 ).REST.pprint( devices ) )
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2 ] ]
         onosDevices = []
         try:
@@ -535,10 +545,10 @@ class FUNCnetCfg:
             del s1Json[ 'allowed' ]
         except KeyError:
             main.log.exception( "Key not found" )
-        setS1 = main.ONOSrest1.setNetCfg( s1Json,
-                                          subjectClass="devices",
-                                          subjectKey="of:0000000000000001",
-                                          configKey="basic" )
+        setS1 = main.Cluster.active( 0 ).REST.setNetCfg( s1Json,
+                                                         subjectClass="devices",
+                                                         subjectKey="of:0000000000000001",
+                                                         configKey="basic" )
 
         s2Json = main.s2Json  # NOTE: This is a reference
         try:
@@ -546,10 +556,10 @@ class FUNCnetCfg:
             del s2Json[ 'allowed' ]
         except KeyError:
             main.log.exception( "Key not found" )
-        setS2 = main.ONOSrest2.setNetCfg( s2Json,
-                                          subjectClass="devices",
-                                          subjectKey="of:0000000000000002",
-                                          configKey="basic" )
+        setS2 = main.Cluster.active( 1 ).REST.setNetCfg( s2Json,
+                                                         subjectClass="devices",
+                                                         subjectKey="of:0000000000000002",
+                                                         configKey="basic" )
 
         s3Json = main.s3Json  # NOTE: This is a reference
         try:
@@ -557,10 +567,10 @@ class FUNCnetCfg:
             del s3Json[ 'allowed' ]
         except KeyError:
             main.log.exception( "Key not found" )
-        setS3 = main.ONOSrest3.setNetCfg( s3Json,
-                                          subjectClass="devices",
-                                          subjectKey="of:0000000000000003",
-                                          configKey="basic" )
+        setS3 = main.Cluster.active( 2 ).REST.setNetCfg( s3Json,
+                                                         subjectClass="devices",
+                                                         subjectKey="of:0000000000000003",
+                                                         configKey="basic" )
 
         s4Json = main.s4Json  # NOTE: This is a reference
         try:
@@ -568,10 +578,10 @@ class FUNCnetCfg:
             del s4Json[ 'allowed' ]
         except KeyError:
             main.log.exception( "Key not found" )
-        setS4 = main.ONOSrest3.setNetCfg( s4Json,
-                                          subjectClass="devices",
-                                          subjectKey="of:0000000000000004",
-                                          configKey="basic" )
+        setS4 = main.Cluster.active( 2 ).REST.setNetCfg( s4Json,
+                                                         subjectClass="devices",
+                                                         subjectKey="of:0000000000000004",
+                                                         configKey="basic" )
         removeAllowed = setS1 and setS2 and setS3 and setS4
         utilities.assert_equals( expect=main.TRUE,
                                  actual=removeAllowed,
@@ -581,12 +591,12 @@ class FUNCnetCfg:
         main.netCfg.compareCfg( main, main.gossipTime )
 
         main.step( "Delete basic config for s1 and s2" )
-        removeS1 = main.ONOSrest1.removeNetCfg( subjectClass="devices",
-                                                subjectKey="of:0000000000000001",
-                                                configKey="basic" )
-        removeS2 = main.ONOSrest2.removeNetCfg( subjectClass="devices",
-                                                subjectKey="of:0000000000000002",
-                                                configKey="basic" )
+        removeS1 = main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="devices",
+                                                               subjectKey="of:0000000000000001",
+                                                               configKey="basic" )
+        removeS2 = main.Cluster.active( 1 ).REST.removeNetCfg( subjectClass="devices",
+                                                               subjectKey="of:0000000000000002",
+                                                               configKey="basic" )
         removeSingles = removeS1 and removeS2
         utilities.assert_equals( expect=main.TRUE,
                                  actual=removeSingles,
@@ -596,8 +606,8 @@ class FUNCnetCfg:
         main.netCfg.compareCfg( main, main.gossipTime )
 
         main.step( "Delete the net config for S3" )
-        removeS3 = main.ONOSrest3.removeNetCfg( subjectClass="devices",
-                                                subjectKey="of:0000000000000003" )
+        removeS3 = main.Cluster.active( 2 ).REST.removeNetCfg( subjectClass="devices",
+                                                               subjectKey="of:0000000000000003" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=removeS3,
                                  onpass="Successfully removed S3's config",
@@ -606,7 +616,7 @@ class FUNCnetCfg:
         main.netCfg.compareCfg( main, main.gossipTime )
 
         main.step( "Delete the net config for all devices" )
-        remove = main.ONOSrest3.removeNetCfg( subjectClass="devices" )
+        remove = main.Cluster.active( 2 ).REST.removeNetCfg( subjectClass="devices" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=remove,
                                  onpass="Successfully removed device config",
@@ -616,7 +626,7 @@ class FUNCnetCfg:
 
         main.step( "Assert the net config for devices is empty" )
 
-        get = utilities.retry( f=main.ONOSrest3.getNetCfg,
+        get = utilities.retry( f=main.Cluster.active( 2 ).REST.getNetCfg,
                                retValue = False,
                                kwargs={"subjectClass":"devices"},
                                sleep=main.retrysleep,
@@ -650,8 +660,8 @@ class FUNCnetCfg:
         main.case( "Check to see if the pre-startup configurations were set, then remove their allowed status" )
         main.step( "Checking configurations for Switches 5 and 6" )
         main.step( "ONOS should only show devices S1, S2, S4, and S5" )  # and S6
-        devices = main.ONOSrest1.devices()
-        main.log.debug( main.ONOSrest1.pprint( devices ) )
+        devices = main.Cluster.active( 0 ).REST.devices()
+        main.log.debug( main.Cluster.active( 0 ).REST.pprint( devices ) )
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5 ] ]  # 6
         main.log.debug( allowedDevices )
         onosDevices = []
@@ -688,16 +698,16 @@ class FUNCnetCfg:
         main.log.info( "s6Json:" + str( main.s6Json ) )
 
         s5Json = main.s5Json
-        setS1 = main.ONOSrest1.setNetCfg( s5Json,
-                                          subjectClass="devices",
-                                          subjectKey="of:0000000000000005",
-                                          configKey="basic" )
+        setS1 = main.Cluster.active( 0 ).REST.setNetCfg( s5Json,
+                                                         subjectClass="devices",
+                                                         subjectKey="of:0000000000000005",
+                                                         configKey="basic" )
 
         s6Json = main.s6Json
-        setS1 = main.ONOSrest1.setNetCfg( s6Json,
-                                          subjectClass="devices",
-                                          subjectKey="of:0000000000000006",
-                                          configKey="basic" )
+        setS1 = main.Cluster.active( 0 ).REST.setNetCfg( s6Json,
+                                                         subjectClass="devices",
+                                                         subjectKey="of:0000000000000006",
+                                                         configKey="basic" )
 
     def CASE27( self, main ):
         """
@@ -709,22 +719,22 @@ class FUNCnetCfg:
 
         """
         import json
-        pprint = main.RESTs[ 0 ].pprint
+        pprint = main.Cluster.active( 0 ).REST.pprint
         main.case( "Posting network configurations to the top level web resource" )
         main.step( "Get json object from Net Cfg" )
-        getinfo = utilities.retry( f=main.ONOSrest1.getNetCfg,
+        getinfo = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                    retValue=False,
                                    sleep=main.retrysleep,
                                    attempts=main.retrytimes )
 
         main.log.debug( getinfo )
         main.step( "Posting json object to Net Cfg" )
-        postinfo = main.ONOSrest1.setNetCfg( json.loads( getinfo ) )
+        postinfo = main.Cluster.active( 0 ).REST.setNetCfg( json.loads( getinfo ) )
         main.step( "Compare device with ONOS" )
         main.netCfg.compareCfg( main )
         main.step( "ONOS should only show devices S1, S2, S4, S5 and S6" )
-        devices = main.ONOSrest1.devices()
-        main.log.debug( main.ONOSrest1.pprint( devices ) )
+        devices = main.Cluster.active( 0 ).REST.devices()
+        main.log.debug( main.Cluster.active( 0 ).REST.pprint( devices ) )
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2, 4, 5, 6 ] ]
         onosDevices = []
         try:
@@ -741,11 +751,13 @@ class FUNCnetCfg:
         main.step( "Modify json object so S6 is disallowed" )
         main.s6Json = { "allowed": False }
         s6Json = main.s6Json
-        setS6Disallow = main.ONOSrest1.setNetCfg( s6Json, subjectClass="devices",
-                                                  subjectKey="of:0000000000000006", configKey="basic" )
+        setS6Disallow = main.Cluster.active( 0 ).REST.setNetCfg( s6Json,
+                                                                 subjectClass="devices",
+                                                                 subjectKey="of:0000000000000006",
+                                                                 configKey="basic" )
         s6Result = False
         if setS6Disallow:
-            getS6 = utilities.retry( f=main.ONOSrest1.getNetCfg,
+            getS6 = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                      retValue=False,
                                      kwargs={"subjectClass":"devices",
                                             "subjectKey" : "of:0000000000000006",
@@ -760,7 +772,10 @@ class FUNCnetCfg:
                 main.log.error( "ONOS NetCfg doesn't match what was sent" )
                 main.log.debug( "ONOS config: {}".format( onosCfg ) )
                 main.log.debug( "Sent config: {}".format( sentCfg ) )
-                utilities.retry( f=main.ONOSrest1.getNetCfg, retValue=False, attempts=main.retrytimes, sleep=main.retrysleep )
+                utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
+                                 retValue=False,
+                                 attempts=main.retrytimes,
+                                 sleep=main.retrysleep )
         utilities.assert_equals( expect=True, actual=s6Result,
                                  onpass="Net Cfg added for devices s6",
                                  onfail="Net Cfg for device s6 not correctly set" )

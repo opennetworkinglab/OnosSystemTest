@@ -45,7 +45,7 @@ class ONOSEvent( Event ):
                     result = EventStates().ABORT
                 else:
                     index = int( args[ 0 ] )
-                    if index < 1 or index > int( main.numCtrls ):
+                    if index < 1 or index > int( main.Cluster.numCtrls ):
                         main.log.warn( "%s - invalid argument: %s" % ( self.typeString, index ) )
                         result = EventStates().ABORT
                     else:

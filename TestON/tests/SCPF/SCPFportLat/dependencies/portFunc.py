@@ -57,11 +57,11 @@ def capturePortStatusPack( main, deviceName, interface, portStatus, resultDict, 
         if len( resultText ) > 1:
             tsharkResultTime = int( float( resultText[1] ) * 1000.0 )
             resultFile.close()
-            for i in range( 1, main.numCtrls + 1 ):
+            for i in range( 1, main.Cluster.numCtrls + 1 ):
                 main.log.info( "================================================" )
                 # get onos metrics timestamps
                 try:
-                    response = json.loads( main.CLIs[i - 1].topologyEventsMetrics() )
+                    response = json.loads( main.Cluster.active( i - 1 ).CLI.topologyEventsMetrics() )
                     deviceTime = int( response.get( "topologyDeviceEventTimestamp" ).get( "value" ) )
                     main.log.info( "ONOS{} device Event timestemp: {}".format( i, deviceTime ) )
 

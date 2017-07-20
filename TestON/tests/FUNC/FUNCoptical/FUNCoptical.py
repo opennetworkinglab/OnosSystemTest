@@ -63,12 +63,10 @@ class FUNCoptical:
             main.hosts = int( main.params[ 'MININET' ][ 'hosts' ] )
             main.opticalTopo = main.params[ 'MININET' ][ 'toponame' ]
             main.hostsData = {}
-            main.activeONOSip = []
             main.assertReturnString = ''  # Assembled assert return string
             main.cycle = 0  # How many times FUNCintent has run through its tests
-
             # -- INIT SECTION, ONLY RUNS ONCE -- #
-            stepResult = main.testSetUp.envSetup( True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -86,25 +84,21 @@ class FUNCoptical:
             - Connect to cli
         """
         main.flowCompiler = "Flow Rules"
-        main.testSetUp.ONOSSetUp( main.LincOE, True )
+        main.testSetUp.ONOSSetUp( main.LincOE, main.Cluster, True )
 
     def CASE10( self, main ):
         """
             Start Mininet opticalTest Topology
         """
-        del main.activeONOSip[:]
-        for i in range( main.numCtrls ):
-            # Populate activeONOSip
-            main.activeONOSip.append( main.ONOSip[ i ] )
 
         main.case( "Mininet with Linc-OE startup" )
         main.step( "Push TopoDDriver.json to ONOS through onos-netcfg" )
         topoResult = True
-        for ip in main.activeONOSip:
+        for ctrl in main.Cluster.active():
             topoResult = topoResult and \
-                         main.ONOSbench.onosNetCfg(controllerIp=ip, path=main.dependencyPath,
+                         main.ONOSbench.onosNetCfg(controllerIp=ctrl.ipAddress,
+                                                   path=main.dependencyPath,
                                                    fileName="TopoDDriver.json")
-
         #Exit if topology did not load properly
         if not topoResult:
             main.cleanup()
@@ -113,7 +107,7 @@ class FUNCoptical:
         main.caseExplanation = "Start opticalTest.py topology included with ONOS"
         main.step( "Starting mininet and LINC-OE" )
         time.sleep( 10 )
-        controllerIPs = ','.join( main.activeONOSip )
+        controllerIPs = ','.join( main.Cluster.getIps() )
         cIps = ""
         for i in range( 0, 4 ):
             cIps += controllerIPs + ' '
@@ -153,7 +147,7 @@ class FUNCoptical:
         main.step( "Balancing mastership of switches" )
 
         balanceResult = main.FALSE
-        balanceResult = utilities.retry( f=main.CLIs[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
+        balanceResult = utilities.retry( f=main.Cluster.active( 0 ).CLI.balanceMasters, retValue=main.FALSE, args=[] )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=balanceResult,
@@ -173,11 +167,11 @@ class FUNCoptical:
 
         cmd = "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator"
 
-        stepResult = main.CLIs[ 0 ].setCfg( component=cmd,
-                                            propName="useFlowObjectives", value="true" )
-        stepResult &= main.CLIs[ 0 ].setCfg( component=cmd,
-                                             propName="defaultFlowObjectiveCompiler",
-                                             value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
+        stepResult = main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
+                                                          propName="useFlowObjectives", value="true" )
+        stepResult &= main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
+                                                           propName="defaultFlowObjectiveCompiler",
+                                                           value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -197,7 +191,7 @@ class FUNCoptical:
             main.Utils
         except ( NameError, AttributeError ):
             main.Utils = Utils()
-        main.Utils.copyKarafLog()
+        main.Utils.copyKarafLog( "cycle" + str( main.cycle ) )
     def CASE21( self, main ):
         """
             Run pingall to discover all hosts
@@ -275,21 +269,21 @@ class FUNCoptical:
                 ( not devicesResults or not linksResults or not hostsResults ):
             time.sleep( 2 )
             if not devicesResults:
-                devices = main.topoRelated.getAllDevices( main.numCtrls, False )
-                ports = main.topoRelated.getAllPorts( main.numCtrls, False )
+                devices = main.topoRelated.getAll( "devices", False )
+                ports = main.topoRelated.getAll( "ports", False )
                 devicesResults = main.TRUE
                 deviceFails = []  # Reset for each attempt
             if not linksResults:
-                links = main.topoRelated.getAllLinks( main.numCtrls, False )
+                links = main.topoRelated.getAll( "links", False )
                 linksResults = main.TRUE
                 linkFails = []  # Reset for each attempt
             if not hostsResults:
-                hosts = main.topoRelated.getAllHosts( main.numCtrls, False )
+                hosts = main.topoRelated.getAll( "hosts", False )
                 hostsResults = main.TRUE
                 hostFails = []  # Reset for each attempt
 
             #  Check for matching topology on each node
-            for controller in range( main.numCtrls ):
+            for controller in range( main.Cluster.numCtrls ):
                 controllerStr = str( controller + 1 )  # ONOS node number
                 # Compare Devices
                 if devices[ controller ] and ports[ controller ] and\
@@ -397,29 +391,29 @@ class FUNCoptical:
         main.step( "Adding point intents" )
         checkFlowResult = main.TRUE
         main.pIntentsId = []
-        pIntent1 = main.CLIs[ 0 ].addPointIntent(
+        pIntent1 = main.Cluster.active( 0 ).CLI.addPointIntent(
             "of:0000000000000015/1",
             "of:000000000000000b/2" )
         time.sleep( 10 )
-        pIntent2 = main.CLIs[ 0 ].addPointIntent(
+        pIntent2 = main.Cluster.active( 0 ).CLI.addPointIntent(
             "of:000000000000000b/2",
             "of:0000000000000015/1" )
         main.pIntentsId.append( pIntent1 )
         main.pIntentsId.append( pIntent2 )
         time.sleep( 10 )
         main.log.info( "Checking intents state" )
-        checkStateResult = main.CLIs[ 0 ].checkIntentState(
-                                                  intentsId=main.pIntentsId )
+        checkStateResult = main.Cluster.active( 0 ).CLI.checkIntentState(
+                                                         intentsId=main.pIntentsId )
         time.sleep( 10 )
-        checkStateResult = utilities.retry( f=main.CLIs[0].checkIntentState,
+        checkStateResult = utilities.retry( f=main.Cluster.active( 0 ).CLI.checkIntentState,
                                            retValue=main.FALSE, args=( main.pIntentsId, "INSTALLED" ),
                                            sleep=main.checkIntentSleep, attempts=10 )
         main.log.info( "Checking flows state" )
-        checkFlowResult = main.CLIs[ 0 ].checkFlowsState()
+        checkFlowResult = main.Cluster.active( 0 ).CLI.checkFlowsState()
         # Sleep for 10 seconds to provide time for the intent state to change
         time.sleep( 10 )
         main.log.info( "Checking intents state one more time" )
-        checkStateResult = main.CLIs[ 0 ].checkIntentState(
+        checkStateResult = main.Cluster.active( 0 ).CLI.checkIntentState(
                                                   intentsId=main.pIntentsId )
 
         if checkStateResult and checkFlowResult:
@@ -450,29 +444,29 @@ class FUNCoptical:
         removeResult = main.TRUE
         # Check remaining intents
         try:
-            intentsJson = json.loads( main.CLIs[ 0 ].intents() )
+            intentsJson = json.loads( main.Cluster.active( 0 ).CLI.intents() )
             main.log.debug( intentsJson )
-            main.CLIs[ 0 ].removeIntent( intentId=pIntent1, purge=True )
-            main.CLIs[ 0 ].removeIntent( intentId=pIntent2, purge=True )
+            main.Cluster.active( 0 ).CLI.removeIntent( intentId=pIntent1, purge=True )
+            main.Cluster.active( 0 ).CLI.removeIntent( intentId=pIntent2, purge=True )
             for intents in intentsJson:
-                main.CLIs[ 0 ].removeIntent( intentId=intents.get( 'id' ),
-                                             app='org.onosproject.cli',
-                                             purge=True )
+                main.Cluster.active( 0 ).CLI.removeIntent( intentId=intents.get( 'id' ),
+                                                           app='org.onosproject.cli',
+                                                           purge=True )
                 time.sleep( 15 )
 
-            for i in range( main.numCtrls ):
+            for ctrl in main.Cluster.active():
                 if not any ( intent.get('state') == 'WITHDRAWING' for intent
-                         in json.loads( main.CLIs[i].intents() ) ):
-                        main.log.debug( json.loads( main.CLIs[i].intents ) )
+                         in json.loads( ctrl.CLI.intents() ) ):
+                        main.log.debug( json.loads( ctrl.CLI.intents() ) )
                         removeResult = main.FALSE
                         break
                 else:
                     removeResult = main.TRUE
         except ( TypeError, ValueError ):
-            main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +
+            main.log.error( "Cannot see intents on " + main.Cluster.active( 0 ).name +
                             ".  Removing all intents." )
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-            main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.cli' )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True, app='org.onosproject.cli' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=removeResult,
@@ -507,18 +501,18 @@ class FUNCoptical:
         main.log.debug( host2 )
 
         intentsId = []
-        intent1 = main.CLIs[ 0 ].addHostIntent( hostIdOne=host1,
-                                                hostIdTwo=host2 )
+        intent1 = main.Cluster.active( 0 ).CLI.addHostIntent( hostIdOne=host1,
+                                                              hostIdTwo=host2 )
         intentsId.append( intent1 )
         # Checking intents state before pinging
         main.log.info( "Checking intents state" )
-        intentResult = utilities.retry( f=main.CLIs[ 0 ].checkIntentState,
+        intentResult = utilities.retry( f=main.Cluster.active( 0 ).CLI.checkIntentState,
                                         retValue=main.FALSE, args=intentsId,
                                         sleep=main.checkIntentSleep, attempts=10 )
 
         # If intent state is still wrong, display intent states
         if not intentResult:
-            main.log.error( main.CLIs[ 0 ].intents() )
+            main.log.error( main.Cluster.active( 0 ).CLI.intents() )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=intentResult,
@@ -545,29 +539,28 @@ class FUNCoptical:
         removeResult = main.TRUE
         # Check remaining intents
         try:
-            intentsJson = json.loads( main.CLIs[ 0 ].intents() )
-            main.CLIs[ 0 ].removeIntent( intentId=intent1, purge=True )
-            #main.CLIs[ 0 ].removeIntent( intentId=intent2, purge=True )
+            intentsJson = json.loads( main.Cluster.active( 0 ).CLI.intents() )
+            main.Cluster.active( 0 ).CLI.removeIntent( intentId=intent1, purge=True )
             main.log.debug( intentsJson )
             for intents in intentsJson:
-                main.CLIs[ 0 ].removeIntent( intentId=intents.get( 'id' ),
-                                             app='org.onosproject.optical',
-                                             purge=True )
+                main.Cluster.active( 0 ).CLI.removeIntent( intentId=intents.get( 'id' ),
+                                                           app='org.onosproject.optical',
+                                                           purge=True )
             time.sleep( 15 )
 
-            for i in range( main.numCtrls ):
+            for ctrl in main.Cluster.active():
                 if not any ( intent.get('state') == 'WITHDRAWING' for intent
-                         in json.loads( main.CLIs[i].intents() ) ):
-                        main.log.debug( json.loads( main.CLIs[i].intents ) )
+                         in json.loads( ctrl.CLI.intents() ) ):
+                        main.log.debug( json.loads( ctrl.CLI.intents() ) )
                         removeResult = main.FALSE
                         break
                 else:
                     removeResult = main.TRUE
         except ( TypeError, ValueError ):
-            main.log.error( "Cannot see intents on Node " + str( main.CLIs[ 0 ] ) +
+            main.log.error( "Cannot see intents on " + main.Cluster.active( 0 ).name +
                             ".  Removing all intents." )
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
-            main.CLIs[ 0 ].removeAllIntents( purge=True, app='org.onosproject.optical' )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True, app='org.onosproject.optical' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=removeResult,

@@ -45,7 +45,7 @@ class SRDynamic:
         main.case( description )
 
         main.cfgName = '2x2'
-        main.numCtrls = 1
+        main.Cluster.setRunningNode( 1 )
         run.installOnos( main, vlanCfg=False )
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
@@ -69,7 +69,7 @@ class SRDynamic:
         description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
         main.case( description )
         main.cfgName = '4x4'
-        main.numCtrls = 1
+        main.Cluster.setRunningNode( 1 )
         run.installOnos( main, vlanCfg=False )
         run.startMininet( main, 'cord_fabric.py',
                           args="--leaf=4 --spine=4" )
@@ -94,7 +94,7 @@ class SRDynamic:
         description = "Bridging and Routing sanity test with single switch "
         main.case( description )
         main.cfgName = '0x1'
-        main.numCtrls = 1
+        main.Cluster.setRunningNode( 1 )
         run.installOnos( main, vlanCfg=False )
         run.startMininet( main, 'cord_fabric.py',
                           args="--leaf=1 --spine=0" )
@@ -120,7 +120,7 @@ class SRDynamic:
         main.case( description )
 
         main.cfgName = '2x2'
-        main.numCtrls = 3
+        main.Cluster.setRunningNode( 3 )
         run.installOnos( main, vlanCfg=False )
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
@@ -148,7 +148,7 @@ class SRDynamic:
         description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
         main.case( description )
         main.cfgName = '4x4'
-        main.numCtrls = 3
+        main.Cluster.setRunningNode( 3 )
         run.installOnos( main, vlanCfg=False )
         run.startMininet( main, 'cord_fabric.py',
                           args="--leaf=4 --spine=4" )
@@ -177,7 +177,7 @@ class SRDynamic:
         description = "Bridging and Routing sanity test with single switch "
         main.case( description )
         main.cfgName = '0x1'
-        main.numCtrls = 3
+        main.Cluster.setRunningNode( 3 )
         run.installOnos( main, vlanCfg=False )
         run.startMininet( main, 'cord_fabric.py',
                           args="--leaf=1 --spine=0" )

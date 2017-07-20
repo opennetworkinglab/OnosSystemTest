@@ -25,6 +25,11 @@
     <TEST>
         <flowObj>False</flowObj>
     </TEST>
+    <CFG>
+        <intentConfigRegi>org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator</intentConfigRegi>
+        <nullProvider>org.onosproject.provider.nil.NullProviders</nullProvider>
+        <linkCollectionIntent>org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler</linkCollectionIntent>
+    </CFG>
     <GIT>
         <pull>False</pull>
         <branch>master</branch>

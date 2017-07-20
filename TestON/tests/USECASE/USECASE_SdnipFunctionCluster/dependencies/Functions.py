@@ -19,7 +19,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-def checkRouteNum( main, routeNumExpected, ONOScli="ONOScli1" ):
+def checkRouteNum( main, routeNumExpected, node=1 ):
     import time
     main.step( "Check routes installed" )
     wait = int( main.params['timers']['PathAvailable'] )
@@ -27,10 +27,7 @@ def checkRouteNum( main, routeNumExpected, ONOScli="ONOScli1" ):
     main.log.info( routeNumExpected )
     main.log.info( "Route number from ONOS CLI:" )
 
-    if ONOScli == "ONOScli1":
-        cli = main.ONOScli1
-    else:
-        cli = main.ONOScli2
+    cli = main.Cluster.active( node - 1 ).CLI
     routeNumActual = cli.ipv4RouteNumber()
     if routeNumActual != routeNumExpected:
         time.sleep( wait )
@@ -42,17 +39,14 @@ def checkRouteNum( main, routeNumExpected, ONOScli="ONOScli1" ):
         onpass = "Route number is correct!",
         onfail = "Route number is wrong!" )
 
-def checkM2SintentNum( main, intentNumExpected, ONOScli = "ONOScli1" ):
+def checkM2SintentNum( main, intentNumExpected, node=1 ):
     import time
     main.step( "Check M2S intents installed" )
     wait = int( main.params['timers']['PathAvailable'] )
     main.log.info( "Intent number expected:" )
     main.log.info( intentNumExpected )
     main.log.info( "Intent number from ONOS CLI:" )
-    if ONOScli == "ONOScli1":
-        cli = main.ONOScli1
-    else:
-        cli = main.ONOScli2
+    cli = main.Cluster.active( node - 1 ).CLI
     jsonResult = cli.intents( jsonFormat = True, summary = True,
                               TYPE = "multiPointToSinglePoint" )
     intentNumActual = jsonResult['installed']
@@ -67,17 +61,14 @@ def checkM2SintentNum( main, intentNumExpected, ONOScli = "ONOScli1" ):
         onpass = "M2S intent number is correct!",
         onfail = "M2S intent number is wrong!" )
 
-def checkP2PintentNum( main, intentNumExpected, ONOScli = "ONOScli1" ):
+def checkP2PintentNum( main, intentNumExpected, node=1 ):
     import time
     main.step( "Check P2P intents installed" )
     wait = int( main.params['timers']['PathAvailable'] )
     main.log.info( "Intent number expected:" )
     main.log.info( intentNumExpected )
     main.log.info( "Intent number from ONOS CLI:" )
-    if ONOScli == "ONOScli1":
-        cli = main.ONOScli1
-    else:
-        cli = main.ONOScli2
+    cli = main.Cluster.active( node - 1 ).CLI
     jsonResult = cli.intents( jsonFormat = True, summary = True,
                               TYPE = "pointToPoint" )
     intentNumActual = jsonResult['installed']

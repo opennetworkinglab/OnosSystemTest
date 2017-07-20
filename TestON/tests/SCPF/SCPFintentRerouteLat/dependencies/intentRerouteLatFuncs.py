@@ -20,7 +20,7 @@ def sanityCheck( main, linkNumExpected, flowNumExpected, intentNumExpected ):
     intentNum = 0
     while attemps <= main.verifyAttempts:
         time.sleep(main.verifySleep)
-        summary = json.loads( main.CLIs[0].summary( timeout=main.timeout ) )
+        summary = json.loads( main.Cluster.active( 0 ).CLI.summary( timeout=main.timeout ) )
         linkNum = summary.get("links")
         flowNum = summary.get("flows")
         intentNum = summary.get("intents")
@@ -41,18 +41,32 @@ def sanityCheck( main, linkNumExpected, flowNumExpected, intentNumExpected ):
 
 def bringBackTopology( main ):
     main.log.info( "Bring back topology " )
-    main.CLIs[ 0 ].pushTestIntents(main.ingress, main.egress, main.batchSize,
-                                 offset=1, options="-w", timeout=main.timeout)
-    main.CLIs[ 0 ].purgeWithdrawnIntents()
-    main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount", value=0)
-    main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "enabled", value="false")
-    main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
-    main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "enabled", value="true")
-    main.CLIs[ 0 ].balanceMasters()
+    main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                  main.egress,
+                                                  main.batchSize,
+                                                  offset=1,
+                                                  options="-w",
+                                                  timeout=main.timeout)
+    main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
+    main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                         "deviceCount",
+                                         value=0)
+    main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                         "enabled",
+                                         value="false")
+    main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                         "deviceCount",
+                                         value=main.deviceCount)
+    main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                         "enabled",
+                                         value="true")
+    main.Cluster.active( 0 ).CLI.balanceMasters()
     time.sleep( main.setMasterSleep )
-    if len( main.ONOSip ) > 1:
-        main.CLIs[ 0 ].deviceRole(main.end1[ 'name' ], main.ONOSip[ 0 ])
-        main.CLIs[ 0 ].deviceRole(main.end2[ 'name' ], main.ONOSip[ 0 ])
+    if main.Cluster.numCtrls > 1:
+        main.Cluster.active( 0 ).CLI.deviceRole( main.end1[ 'name' ],
+                                                 main.Cluster.active( 0 ).ipAddress )
+        main.Cluster.active( 0 ).CLI.deviceRole( main.end2[ 'name' ],
+                                                 main.Cluster.active( 0 ).ipAddress )
     time.sleep( main.setMasterSleep )
 
 def getLogNum( main, nodeId ):
@@ -60,7 +74,7 @@ def getLogNum( main, nodeId ):
     Return the number of karaf log files
     '''
     try:
-        logNameList = main.ONOSbench.listLog( main.onosIp[ nodeId ] )
+        logNameList = main.ONOSbench.listLog( main.Cluster.active( nodeId ).ipAddress )
         assert logNameList is not None
         # FIXME: are two karaf logs enough to cover the events we want?
         if len( logNameList ) >= 2:
@@ -75,9 +89,12 @@ def getTopologyTimestamps( main ):
     Get timestamps for the last topology events on all cluster nodes
     '''
     timestamps = []
-    for i in range( main.numCtrls ):
+    for i in range( main.Cluster.numCtrls ):
         # Search for last topology event in karaf log
-        lines = main.CLIs[ i ].logSearch( mode='last', searchTerm=main.searchTerm[ "TopologyTime" ], startLine=main.startLine[ i ], logNum=getLogNum( main, i ) )
+        lines = main.Cluster.active( i ).CLI.logSearch( mode='last',
+                                                        searchTerm=main.searchTerm[ "TopologyTime" ],
+                                                        startLine=main.startLine[ i ],
+                                                        logNum=getLogNum( main, i ) )
         if lines is None or len( lines ) != 1:
             main.log.error( "Error when trying to get topology event timestamp" )
             return main.ERROR
@@ -96,9 +113,12 @@ def getIntentTimestamps( main ):
     Get timestamps for all intent keys on all cluster nodes
     '''
     timestamps = {}
-    for i in range( main.numCtrls ):
+    for i in range( main.Cluster.numCtrls ):
         # Search for intent INSTALLED event in karaf log
-        lines = main.CLIs[ i ].logSearch( mode='all', searchTerm=main.searchTerm[ "InstallTime" ], startLine=main.startLine[ i ], logNum=getLogNum( main, i ) )
+        lines = main.Cluster.active( i ).CLI.logSearch( mode='all',
+                                                        searchTerm=main.searchTerm[ "InstallTime" ],
+                                                        startLine=main.startLine[ i ],
+                                                        logNum=getLogNum( main, i ) )
         if lines is None or len( lines ) == 0:
             main.log.error( "Error when trying to get intent key or timestamp" )
             return main.ERROR

@@ -83,7 +83,7 @@ class FUNCnetconf:
                                                     wrapperFile2 +
                                                     ".py" )
 
-            stepResult = main.testSetUp.envSetup( True, True )
+            stepResult = main.testSetUp.envSetup()
             # Uncomment out the following if a mininet topology is added
             # copyResult1 = main.ONOSbench.scp( main.Mininet1,
             #                                   main.dependencyPath +
@@ -107,7 +107,7 @@ class FUNCnetconf:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, True )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
 
     def CASE19( self, main ):
         """
@@ -122,19 +122,16 @@ class FUNCnetconf:
             main.Utils
         except ( NameError, AttributeError ):
             main.Utils = Utils()
-        main.Utils.copyKarafLog()
+        main.Utils.copyKarafLog( "cycle" + str( main.cycle ) )
     def CASE100( self, main ):
         """
             Start NETCONF app and OFC-Server or make sure that they are already running
         """
         assert main, "There is no main"
-        assert main.RESTs, "There is no main.RESTs"
-        assert main.numCtrls, "Placed the total number of switch topology in \
-                                main.numCtrls"
 
         testResult = main.FALSE
         main.testName = "Start up NETCONF app in all nodes"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S)" )
         main.step( "Starting NETCONF app" )
         main.assertReturnString = "Assertion result for starting NETCONF app"
@@ -161,12 +158,9 @@ class FUNCnetconf:
                 -The file is built from information loaded from the .params file
         """
         assert main, "There is no main"
-        assert main.RESTs, "There is no main.RESTs"
-        assert main.numCtrls, "Placed the total number of switch topology in \
-                                main.numCtrls"
 
         main.testName = "Assemble the configuration"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODES(S)" )
         main.step( "Assembling configuration file" )
         main.assertReturnString = "Assertion result for assembling configuration file"
@@ -184,12 +178,9 @@ class FUNCnetconf:
             Push a configuration and bring up a switch
         """
         assert main, "There is no main"
-        assert main.RESTs, "There is no main.RESTs"
-        assert main.numCtrls, "Placed the total number of switch topology in \
-                                main.numCtrls"
 
         main.testName = "Uploading the configuration"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODES(S)" )
         main.step( "Sending the configuration file" )
         main.assertReturnString = "Assertion result for sending the configuration file"

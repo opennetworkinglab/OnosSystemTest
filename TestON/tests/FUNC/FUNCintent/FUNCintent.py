@@ -92,7 +92,7 @@ class FUNCintent:
                                               main.Mininet1.home + "custom/",
                                               direction="to" )
 
-            stepResult = main.testSetUp.envSetup( True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -111,7 +111,7 @@ class FUNCintent:
         """
 
         main.flowCompiler = "Flow Rules"
-        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, True )
+        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
         main.intents.report( main )
 
     def CASE8( self, main ):
@@ -207,9 +207,7 @@ class FUNCintent:
         for i in range( 1, ( main.numSwitch + 1 ) ):
             switchList.append( 's' + str( i ) )
 
-        tempONOSip = []
-        for i in range( main.numCtrls ):
-            tempONOSip.append( main.ONOSip[ i ] )
+        tempONOSip = main.Cluster.getIps()
 
         assignResult = main.Mininet1.assignSwController( sw=switchList,
                                                          ip=tempONOSip,
@@ -222,7 +220,7 @@ class FUNCintent:
         for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             main.log.debug( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
+            if re.search( "tcp:" + main.Cluster.active( 0 ).ipAddress, response ):
                 assignResult = assignResult and main.TRUE
             else:
                 assignResult = main.FALSE
@@ -346,7 +344,7 @@ class FUNCintent:
         main.case( "Balance mastership of switches" )
         main.step( "Balancing mastership of switches" )
 
-        balanceResult = utilities.retry( f=main.CLIs[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
+        balanceResult = utilities.retry( f=main.Cluster.active( 0 ).CLI.balanceMasters, retValue=main.FALSE, args=[] )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=balanceResult,
@@ -369,9 +367,9 @@ class FUNCintent:
 
         cmd = "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator"
 
-        stepResult = main.CLIs[ 0 ].setCfg( component=cmd,
+        stepResult = main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
                                             propName="useFlowObjectives", value="true" )
-        stepResult &= main.CLIs[ 0 ].setCfg( component=cmd,
+        stepResult &= main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
                                              propName="defaultFlowObjectiveCompiler",
                                              value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
 
@@ -436,7 +434,7 @@ class FUNCintent:
             main.Utils
         except ( NameError, AttributeError ):
             main.Utils = Utils()
-        main.Utils.copyKarafLog()
+        main.Utils.copyKarafLog( "cycle" + str( main.cycle ) )
     def CASE1000( self, main ):
         """
             Add host intents between 2 host:
@@ -463,12 +461,6 @@ class FUNCintent:
         # if you want to use the wrapper function
         assert main, "There is no main"
         try:
-            assert main.CLIs
-        except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.Mininet1
         except AssertionError:
             main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
@@ -483,13 +475,13 @@ class FUNCintent:
             main.skipCase()
 
         # Save leader candidates
-        intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
+        intentLeadersOld = main.Cluster.active( 0 ).CLI.leaderCandidates()
 
         main.testName = "Host Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case tests Host intents using " +\
-                                str( main.numCtrls ) + " node(s) cluster;\n" +\
+                                str( main.Cluster.numCtrls ) + " node(s) cluster;\n" +\
                                 "Different type of hosts will be tested in " +\
                                 "each step such as IPV4, Dual stack, VLAN " +\
                                 "etc;\nThe test will use OF " + main.OFProtocol +\
@@ -517,7 +509,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -573,7 +565,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -602,7 +594,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -630,7 +622,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -659,7 +651,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -688,7 +680,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -718,7 +710,7 @@ class FUNCintent:
         #                                               sw2="s2",
         #                                               expectedLink=18 )
         # else:
-        #     main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #     main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
         #
         # utilities.assert_equals( expect=main.TRUE,
         #                          actual=testResult,
@@ -726,7 +718,7 @@ class FUNCintent:
         #                          onfail=main.assertReturnString )
 
         main.step( "Confirm that ONOS leadership is unchanged" )
-        intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
+        intentLeadersNew = main.Cluster.active( 0 ).CLI.leaderCandidates()
         testResult = main.intents.checkLeaderChange( intentLeadersOld,
                                                      intentLeadersNew )
 
@@ -763,12 +755,6 @@ class FUNCintent:
         # if you want to use the wrapper function
         assert main, "There is no main"
         try:
-            assert main.CLIs
-        except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.Mininet1
         except AssertionError:
             main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
@@ -783,10 +769,10 @@ class FUNCintent:
             main.skipCase()
 
         main.testName = "Point Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test point to point" +\
-                               " intents using " + str( main.numCtrls ) +\
+                               " intents using " + str( main.Cluster.numCtrls ) +\
                                " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
@@ -821,7 +807,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -855,7 +841,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -890,7 +876,7 @@ class FUNCintent:
                 protected=True,
                 expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -924,7 +910,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -968,7 +954,7 @@ class FUNCintent:
                                          expectedLink=18,
                                          useTCP=True )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1033,7 +1019,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1130,7 +1116,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1164,7 +1150,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1198,7 +1184,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1233,7 +1219,7 @@ class FUNCintent:
         #         sw2="s2",
         #         expectedLink=18 )
         # else:
-        #     main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #     main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
         #
         # utilities.assert_equals( expect=main.TRUE,
         #                          actual=testResult,
@@ -1266,12 +1252,6 @@ class FUNCintent:
             main.skipCase()
         assert main, "There is no main"
         try:
-            assert main.CLIs
-        except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.Mininet1
         except AssertionError:
             main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
@@ -1286,11 +1266,11 @@ class FUNCintent:
             main.skipCase()
 
         main.testName = "Single to Multi Point Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
-                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               str( main.Cluster.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
@@ -1330,7 +1310,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1371,7 +1351,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1412,7 +1392,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1452,7 +1432,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1493,7 +1473,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1535,7 +1515,7 @@ class FUNCintent:
         #                                  sw2="s2",
         #                                  expectedLink=18 )
         # else:
-        #     main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #     main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
         #
         # utilities.assert_equals( expect=main.TRUE,
         #                          actual=testResult,
@@ -1568,12 +1548,6 @@ class FUNCintent:
             main.skipCase()
         assert main, "There is no main"
         try:
-            assert main.CLIs
-        except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.Mininet1
         except AssertionError:
             main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
@@ -1588,11 +1562,11 @@ class FUNCintent:
             main.skipCase()
 
         main.testName = "Multi To Single Point Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
-                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               str( main.Cluster.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
@@ -1632,7 +1606,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1673,7 +1647,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1714,7 +1688,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1754,7 +1728,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1796,7 +1770,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1837,7 +1811,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1879,7 +1853,7 @@ class FUNCintent:
         #        sw2="s2",
         #        expectedLink=18 )
         #else:
-        #    main.CLIs[ 0 ].removeAllIntents( purge=True )
+        #    main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
         #
         #utilities.assert_equals( expect=main.TRUE,
         #                         actual=testResult,
@@ -1898,12 +1872,6 @@ class FUNCintent:
             main.skipCase()
         assert main, "There is no main"
         try:
-            assert main.CLIs
-        except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.Mininet1
         except AssertionError:
             main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
@@ -1916,7 +1884,7 @@ class FUNCintent:
                              main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
-        main.case( "Test host mobility with host intents " + " - " + str( main.numCtrls ) +
+        main.case( "Test host mobility with host intents " + " - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
 
@@ -1965,7 +1933,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1986,12 +1954,6 @@ class FUNCintent:
             main.skipCase()
         assert main, "There is no main"
         try:
-            assert main.CLIs
-        except AssertionError:
-            main.log.error( "There is no main.CLIs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.Mininet1
         except AssertionError:
             main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
@@ -2003,7 +1965,7 @@ class FUNCintent:
             main.log.error( "Place the total number of switch topology in " + main.numSwitch )
             main.initialized = main.FALSE
             main.skipCase()
-        main.case( "Test Multi to Single End Point Failure" + " - " + str( main.numCtrls ) +
+        main.case( "Test Multi to Single End Point Failure" + " - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.step( "Installing Multi to Single Point intents with no options set" )
         main.assertReturnString = "Assertion results for IPV4 multi to single " +\
@@ -2045,7 +2007,7 @@ class FUNCintent:
                                          expectedLink1=16,
                                          expectedLink2=14 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -2095,7 +2057,7 @@ class FUNCintent:
                                          expectedLink2=14,
                                          partial=True )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -2142,7 +2104,7 @@ class FUNCintent:
                                          expectedLink1=16,
                                          expectedLink2=14 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -2192,7 +2154,7 @@ class FUNCintent:
                                          expectedLink2=14,
                                          partial=True )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,

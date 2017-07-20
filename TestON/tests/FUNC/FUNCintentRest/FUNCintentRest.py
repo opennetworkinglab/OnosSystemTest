@@ -95,7 +95,7 @@ class FUNCintentRest:
                                               main.topology,
                                               main.Mininet1.home + "custom/",
                                               direction="to" )
-            stepResult = main.testSetUp.envSetup( True, True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException(e)
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -113,7 +113,7 @@ class FUNCintentRest:
         - Connect to cli
         """
         main.flowCompiler = "Flow Rules"
-        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, True )
+        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
         main.intentFunction.report( main )
 
     def CASE8( self, main ):
@@ -133,7 +133,7 @@ class FUNCintentRest:
             Report errors/warnings/exceptions
         """
         main.log.info( "Error report: \n" )
-        main.ONOSbench.logReport( globalONOSip[ 0 ],
+        main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress,
                                   [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR", "Except" ],
                                   "s" )
         #main.ONOSbench.logReport( globalONOSip[ 1 ], [ "INFO" ], "d" )
@@ -215,9 +215,7 @@ class FUNCintentRest:
         for i in range( 1, ( main.numSwitch + 1 ) ):
             switchList.append( 's' + str( i ) )
 
-        tempONOSip = []
-        for i in range( main.numCtrls ):
-            tempONOSip.append( main.ONOSip[ i ] )
+        tempONOSip = main.Cluster.getIps()
 
         assignResult = main.Mininet1.assignSwController( sw=switchList,
                                                          ip=tempONOSip,
@@ -230,7 +228,7 @@ class FUNCintentRest:
         for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
+            if re.search( "tcp:" + main.Cluster.active( 0 ).ipAddress, response ):
                 assignResult = assignResult and main.TRUE
             else:
                 assignResult = main.FALSE
@@ -359,7 +357,7 @@ class FUNCintentRest:
         main.step( "Balancing mastership of switches" )
 
         balanceResult = main.FALSE
-        balanceResult = utilities.retry( f=main.CLIs[ 0 ].balanceMasters, retValue=main.FALSE, args=[] )
+        balanceResult = utilities.retry( f=main.Cluster.active( 0 ).CLI.balanceMasters, retValue=main.FALSE, args=[] )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -382,9 +380,9 @@ class FUNCintentRest:
 
         cmd = "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator"
 
-        stepResult = main.CLIs[ 0 ].setCfg( component=cmd,
+        stepResult = main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
                                             propName="useFlowObjectives", value="true" )
-        stepResult &= main.CLIs[ 0 ].setCfg( component=cmd,
+        stepResult &= main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
                                              propName="defaultFlowObjectiveCompiler",
                                              value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
 
@@ -450,7 +448,7 @@ class FUNCintentRest:
             main.Utils
         except ( NameError, AttributeError ):
             main.Utils = Utils()
-        main.Utils.copyKarafLog()
+        main.Utils.copyKarafLog( "cycle" + str( main.cycle ) )
     def CASE1000( self, main ):
         """
             Add host intents between 2 host:
@@ -480,12 +478,6 @@ class FUNCintentRest:
         # if you want to use the wrapper function
         assert main, "There is no main"
         try:
-            assert main.RESTs
-        except AssertionError:
-            main.log.error( "There is no main.RESTs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.Mininet1
         except AssertionError:
             main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
@@ -500,12 +492,12 @@ class FUNCintentRest:
             main.skipCase()
 
         # Save leader candidates
-        intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
+        intentLeadersOld = main.Cluster.active( 0 ).CLI.leaderCandidates()
 
-        main.case( "Host Intents Test - " + str( main.numCtrls ) +
+        main.case( "Host Intents Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case tests Host intents using " +\
-                                str( main.numCtrls ) + " node(s) cluster;\n" +\
+                                str( main.Cluster.numCtrls ) + " node(s) cluster;\n" +\
                                 "Different type of hosts will be tested in " +\
                                 "each step such as IPV4, Dual stack, VLAN " +\
                                 "etc;\nThe test will use OF " + main.OFProtocol +\
@@ -679,7 +671,7 @@ class FUNCintentRest:
         # supported by it
 
         main.step( "Confirm that ONOS leadership is unchanged" )
-        intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
+        intentLeadersNew = main.Cluster.active( 0 ).CLI.leaderCandidates()
         main.intentFunction.checkLeaderChange( intentLeadersOld,
                                                 intentLeadersNew )
 
@@ -716,12 +708,6 @@ class FUNCintentRest:
             # if you want to use the wrapper function
         assert main, "There is no main"
         try:
-            assert main.RESTs
-        except AssertionError:
-            main.log.error( "There is no main.RESTs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.Mininet1
         except AssertionError:
             main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
@@ -735,10 +721,10 @@ class FUNCintentRest:
             main.initialized = main.FALSE
             main.skipCase()
 
-        main.case( "Point Intents Test - " + str( main.numCtrls ) +
+        main.case( "Point Intents Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test point to point" + \
-                               " intents using " + str( main.numCtrls ) + \
+                               " intents using " + str( main.Cluster.numCtrls ) + \
                                " node(s) cluster;\n" + \
                                "Different type of hosts will be tested in " + \
                                "each step such as IPV4, Dual stack, VLAN etc" + \
@@ -1068,7 +1054,6 @@ class FUNCintentRest:
         assert main, "There is no main"
 
         try:
-            assert main.CLIs, "There is no main.CLIs, skipping test cases"
             assert main.Mininet1, "Mininet handle should be named Mininet1, skipping test cases"
             assert main.numSwitch, "Place the total number of switch topology in main.numSwitch"
         except AssertionError:
@@ -1076,11 +1061,11 @@ class FUNCintentRest:
             main.skipCase()
 
         main.testName = "Single to Multi Point Intents"
-        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+        main.case( main.testName + " Test - " + str( main.Cluster.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test single point to" + \
                                " multi point intents using " + \
-                               str( main.numCtrls ) + " node(s) cluster;\n" + \
+                               str( main.Cluster.numCtrls ) + " node(s) cluster;\n" + \
                                "Different type of hosts will be tested in " + \
                                "each step such as IPV4, Dual stack, VLAN etc" + \
                                ";\nThe test will use OF " + main.OFProtocol + \
@@ -1118,7 +1103,7 @@ class FUNCintentRest:
                 sw2="s2",
                 expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1157,7 +1142,7 @@ class FUNCintentRest:
                 sw2="s2",
                 expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1196,7 +1181,7 @@ class FUNCintentRest:
                 sw2="s2",
                 expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents( purge=True )
+            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1236,7 +1221,7 @@ class FUNCintentRest:
                 sw2="s2",
                 expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents()
+            main.Cluster.active( 0 ).CLI.removeAllIntents()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1277,7 +1262,7 @@ class FUNCintentRest:
                 sw2="s2",
                 expectedLink=18 )
         else:
-            main.CLIs[ 0 ].removeAllIntents()
+            main.Cluster.active( 0 ).CLI.removeAllIntents()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1306,16 +1291,15 @@ class FUNCintentRest:
              - Remove intents
         """
         assert main, "There is no main"
-        assert main.CLIs, "There is no main.CLIs"
         assert main.Mininet1, "Mininet handle should be named Mininet1"
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
         main.case( "Multi To Single Point Intents Test - " +
-                   str( main.numCtrls ) + " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
+                   str( main.Cluster.numCtrls ) + " NODE(S) - OF " + main.OFProtocol + " - Using " + main.flowCompiler )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
-                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               str( main.Cluster.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
@@ -1436,12 +1420,6 @@ class FUNCintentRest:
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
         assert main, "There is no main"
-        try:
-            assert main.RESTs
-        except AssertionError:
-            main.log.error( "There is no main.RESTs, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
         try:
             assert main.Mininet1
         except AssertionError:

@@ -31,7 +31,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
 class SCPFswitchLat:
 
-    def __init__(self):
+    def __init__( self ):
         self.default = ''
 
     def CASE0( self, main ):
@@ -58,46 +58,46 @@ class SCPFswitchLat:
             # The dictionary to record different type of wrongs
             main.wrong = { 'totalWrong': 0, 'skipDown' : 0, 'TsharkValueIncorrect': 0,
                     'TypeError' : 0, 'decodeJasonError': 0,
-                    'checkResultIncorrect': 0}
-            main.maxWrong = int( main.params['TEST'] ['MaxWrong'] )
-            main.resultRange = main.params['TEST']['ResultRange']
-            main.searchTerm = main.params['TEST']['SearchTerm']
-            main.MN1Ip = main.params['MN']['ip1']
+                    'checkResultIncorrect': 0 }
+            main.maxWrong = int( main.params[ 'TEST' ] [ 'MaxWrong' ] )
+            main.resultRange = main.params[ 'TEST' ][ 'ResultRange' ]
+            main.searchTerm = main.params[ 'TEST' ][ 'SearchTerm' ]
+            main.MN1Ip = main.params[ 'MN' ][ 'ip1' ]
             main.dependencyPath = main.testOnDirectory + \
-                                  main.params['DEPENDENCY']['path']
-            main.topoName = main.params['DEPENDENCY']['topology']
-            main.dependencyFunc = main.params['DEPENDENCY']['function']
-            main.cellName = main.params['ENV']['cellName']
-            main.apps = main.params['ENV']['cellApps']
-            main.scale = (main.params['SCALE']).split(",")
+                                  main.params[ 'DEPENDENCY' ][ 'path' ]
+            main.topoName = main.params[ 'DEPENDENCY' ][ 'topology' ]
+            main.dependencyFunc = main.params[ 'DEPENDENCY' ][ 'function' ]
+            main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.scale = ( main.params[ 'SCALE' ] ).split( "," )
 
-            main.ofPackage = main.params['TSHARK']
-
-            main.tsharkResultPath = main.params['TEST']['tsharkResultPath']
-            main.sampleSize = int(main.params['TEST']['sampleSize'])
-            main.warmUp = int(main.params['TEST']['warmUp'])
-            main.dbFileName = main.params['DATABASE']['dbName']
-            main.startUpSleep = int(main.params['SLEEP']['startup'])
-            main.measurementSleep = int( main.params['SLEEP']['measure'] )
-            main.deleteSwSleep = int( main.params['SLEEP']['deleteSW'] )
-            main.maxScale = int( main.params['max'] )
-            main.timeout = int( main.params['TIMEOUT']['timeout'] )
-            main.MNSleep = int( main.params['SLEEP']['mininet'])
-            main.device = main.params['TEST']['device']
-            stepResult = main.testSetUp.gitPulling()
-            main.log.info("Create Database file " + main.dbFileName)
-            resultsDB = open(main.dbFileName, "w+")
+            main.ofPackage = main.params[ 'TSHARK' ]
+            main.defaultTopoCfg = main.params [ 'CFG' ][ 'defaultTopo' ]
+            main.tsharkResultPath = main.params[ 'TEST' ][ 'tsharkResultPath' ]
+            main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
+            main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
+            main.dbFileName = main.params[ 'DATABASE' ][ 'dbName' ]
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            main.measurementSleep = int( main.params[ 'SLEEP' ][ 'measure' ] )
+            main.deleteSwSleep = int( main.params[ 'SLEEP' ][ 'deleteSW' ] )
+            main.maxScale = int( main.params[ 'max' ] )
+            main.timeout = int( main.params[ 'TIMEOUT' ][ 'timeout' ] )
+            main.MNSleep = int( main.params[ 'SLEEP' ][ 'mininet' ] )
+            main.device = main.params[ 'TEST' ][ 'device' ]
+            stepResult = main.testSetUp.envSetup()
+            main.log.info( "Create Database file " + main.dbFileName )
+            resultsDB = open( main.dbFileName, "w+" )
             resultsDB.close()
 
-            main.switchFunc = imp.load_source(main.dependencyFunc,
+            main.switchFunc = imp.load_source( main.dependencyFunc,
                                            main.dependencyPath +
                                            main.dependencyFunc +
-                                           ".py")
+                                           ".py" )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
-    def CASE1(self, main):
+    def CASE1( self, main ):
         # Clean up test environment and set up
         import time
         try:
@@ -110,198 +110,196 @@ class SCPFswitchLat:
         except ( NameError, AttributeError ):
             main.Utils = Utils()
         main.maxNumBatch = 0
-        main.testSetUp.getNumCtrls( True )
-        main.testSetUp.envSetup( includeGitPull=False, makeMaxNodes=False )
-        main.testSetUp.ONOSSetUp( main.Mininet1, True,
-                                  cellName=main.cellName, killRemoveMax=False,
-                                  CtrlsSet=False )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True,
+                                  cellName=main.cellName, killRemoveMax=False )
 
-        main.log.info("Configure apps")
-        main.CLIs[0].setCfg("org.onosproject.net.topology.impl.DefaultTopologyProvider",
-                            "maxEvents 1")
-        main.CLIs[0].setCfg("org.onosproject.net.topology.impl.DefaultTopologyProvider",
-                            "maxBatchMs 0")
-        main.CLIs[0].setCfg("org.onosproject.net.topology.impl.DefaultTopologyProvider",
-                            "maxIdleMs 0")
-        for i in range(main.numCtrls):
-            main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.topology")
-        time.sleep(1)
+        main.log.info( "Configure apps" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.defaultTopoCfg,
+                                             "maxEvents 1" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.defaultTopoCfg,
+                                             "maxBatchMs 0" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.defaultTopoCfg,
+                                             "maxIdleMs 0" )
+        main.Cluster.command( "logSet",
+                              args=[ "DEBUG", "org.onosproject.metrics.topology" ],
+                              specificDriver=2 )
+        time.sleep( 1 )
 
-        main.log.info("Copy topology file to Mininet")
-        main.ONOSbench.copyMininetFile(main.topoName,
-                                       main.dependencyPath,
-                                       main.Mininet1.user_name,
-                                       main.Mininet1.ip_address)
+        main.log.info( "Copy topology file to Mininet" )
+        main.ONOSbench.copyMininetFile( main.topoName,
+                                        main.dependencyPath,
+                                        main.Mininet1.user_name,
+                                        main.Mininet1.ip_address )
         main.Utils.mininetCleanup( main.Mininet1 )
-        time.sleep(main.MNSleep)
-        main.log.info("Start new mininet topology")
+        time.sleep( main.MNSleep )
+        main.log.info( "Start new mininet topology" )
         main.Mininet1.startNet()
-        main.log.info("Assign switch to controller to ONOS node 1")
+        main.log.info( "Assign switch to controller to ONOS node 1" )
 
-        time.sleep(2)
+        time.sleep( 2 )
 
-    def CASE2(self,main):
+    def CASE2( self, main ):
         import time
         import json
         import numpy
 
-        resultDict = {'up' : {}, 'down' : {}}
-        for i in range(1, main.numCtrls + 1):
-            resultDict['up'][ 'node' + str(i) ] = {}
-            resultDict['up'][ 'node' + str(i) ][ 'Ave' ] = {}
-            resultDict['up'][ 'node' + str(i) ][ 'Std' ] = {}
-            resultDict['up'][ 'node' + str(i) ][ 'T_F' ] = []#TCP to Feature
-            resultDict['up'][ 'node' + str(i) ][ 'F_R' ] = []#Feature to Role
-            resultDict['up'][ 'node' + str(i) ][ 'RQ_RR' ] = []#role request to role reply
-            resultDict['up'][ 'node' + str(i) ][ 'RR_D' ] = []#role reply to Device
-            resultDict['up'][ 'node' + str(i) ][ 'D_G' ] = []#Device to Graph
-            resultDict['up'][ 'node' + str(i) ][ 'E_E' ] = []#TCP to Graph
+        resultDict = { 'up' : {}, 'down' : {} }
+        for i in range( 1, main.Cluster.numCtrls + 1 ):
+            resultDict[ 'up' ][ 'node' + str( i ) ] = {}
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ] = {}
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ] = {}
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'T_F' ] = []#TCP to Feature
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_R' ] = []#Feature to Role
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'RQ_RR' ] = []#role request to role reply
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'RR_D' ] = []#role reply to Device
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'D_G' ] = []#Device to Graph
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'E_E' ] = []#TCP to Graph
 
-        for i in range(1,main.numCtrls + 1):
-            resultDict['down'][ 'node' + str(i) ] = {}
-            resultDict['down'][ 'node' + str(i) ][ 'Ave' ] = {}
-            resultDict['down'][ 'node' + str(i) ][ 'Std' ] = {}
-            resultDict['down'][ 'node' + str(i) ][ 'FA_A' ] = []#Fin_ack to ACK
-            resultDict['down'][ 'node' + str(i) ][ 'A_D' ] = []#Ack to Device
-            resultDict['down'][ 'node' + str(i) ][ 'D_G' ] = []#Device to Graph
-            resultDict['down'][ 'node' + str(i) ][ 'E_E' ] = []#fin_ack to Graph
-        for i in range(1 , main.sampleSize + main.warmUp):
-            main.log.info("************************************************************")
-            main.log.info("************************ Iteration: {} **********************" .format(str( i )) )
+        for i in range( 1, main.Cluster.numCtrls + 1 ):
+            resultDict[ 'down' ][ 'node' + str( i ) ] = {}
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Ave' ] = {}
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Std' ] = {}
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'FA_A' ] = []#Fin_ack to ACK
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'A_D' ] = []#Ack to Device
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'D_G' ] = []#Device to Graph
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'E_E' ] = []#fin_ack to Graph
+        for i in range( 1 , main.sampleSize + main.warmUp ):
+            main.log.info( "************************************************************" )
+            main.log.info( "************************ Iteration: {} **********************" .format( str( i ) ) )
             if i < main.warmUp:
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "up", resultDict, True )
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "down", resultDict, True )
-                main.CLIs[0].removeDevice( "of:0000000000000001" )
+                main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
             else:
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "up", resultDict, False )
-                main.switchFunc.captureOfPack (main, main.device, main.ofPackage,
+                main.switchFunc.captureOfPack ( main, main.device, main.ofPackage,
                                                "down", resultDict, False )
-                main.CLIs[0].removeDevice( "of:0000000000000001" )
+                main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
 
         # Dictionary for result
         maxDict  = {}
-        maxDict['down'] = {}
-        maxDict['up'] = {}
-        maxDict['down']['max'] = 0
-        maxDict['up']['max'] = 0
-        maxDict['down']['node'] = 0
-        maxDict['up']['node'] = 0
+        maxDict[ 'down' ] = {}
+        maxDict[ 'up' ] = {}
+        maxDict[ 'down' ][ 'max' ] = 0
+        maxDict[ 'up' ][ 'max' ] = 0
+        maxDict[ 'down' ][ 'node' ] = 0
+        maxDict[ 'up' ][ 'node' ] = 0
 
-        for i in range(1, main.numCtrls + 1):
+        for i in range( 1, main.Cluster.numCtrls + 1 ):
             # calculate average and std for result, and grep the max End to End data
-            EtoEtemp = numpy.average( resultDict['up'][ 'node' + str(i) ]['E_E'] )
-            resultDict['up'][ 'node' + str(i) ][ 'Ave' ][ 'E_E' ] = EtoEtemp
-            if maxDict['up']['max'] < EtoEtemp:
+            EtoEtemp = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'E_E' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'E_E' ] = EtoEtemp
+            if maxDict[ 'up' ][ 'max' ] < EtoEtemp:
                 # get max End to End latency
-                maxDict['up']['max'] = EtoEtemp
-                maxDict['up']['node'] = i
-            resultDict['up']['node' + str(i)]['Ave']['T_F'] = numpy.average(resultDict['up']['node' + str(i)]['T_F'])
-            resultDict['up']['node' + str(i)]['Ave']['F_R'] = numpy.average(resultDict['up']['node' + str(i)]['F_R'])
-            resultDict['up']['node' + str(i)]['Ave']['RQ_RR'] = numpy.average(resultDict['up']['node' + str(i)]['RQ_RR'])
-            resultDict['up']['node' + str(i)]['Ave']['RR_D'] = numpy.average(resultDict['up']['node' + str(i)]['RR_D'])
-            resultDict['up']['node' + str(i)]['Ave']['D_G'] = numpy.average(resultDict['up']['node' + str(i)]['D_G'])
+                maxDict[ 'up' ][ 'max' ] = EtoEtemp
+                maxDict[ 'up' ][ 'node' ] = i
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'T_F' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'T_F' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'F_R' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_R' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'RQ_RR' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'RQ_RR' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'RR_D' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'RR_D' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'D_G' ] )
 
-            resultDict['up'][ 'node' + str(i) ][ 'Std' ][ 'E_E' ] = numpy.std( resultDict['up'][ 'node' + str(i) ]['E_E'] )
-            resultDict['up']['node' + str(i)]['Std']['T_F'] = numpy.std(resultDict['up']['node' + str(i)]['T_F'])
-            resultDict['up']['node' + str(i)]['Std']['F_R'] = numpy.std(resultDict['up']['node' + str(i)]['F_R'])
-            resultDict['up']['node' + str(i)]['Std']['RQ_RR'] = numpy.std(resultDict['up']['node' + str(i)]['RQ_RR'])
-            resultDict['up']['node' + str(i)]['Std']['RR_D'] = numpy.std(resultDict['up']['node' + str(i)]['RR_D'])
-            resultDict['up']['node' + str(i)]['Std']['D_G'] = numpy.std(resultDict['up']['node' + str(i)]['D_G'])
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'E_E' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'T_F' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'T_F' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'F_R' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_R' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'RQ_RR' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'RQ_RR' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'RR_D' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'RR_D' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'D_G' ] )
 
             # calculate average and std for result, and grep the max End to End data
-            EtoEtemp = numpy.average( resultDict['down'][ 'node' + str(i) ]['E_E'] )
-            resultDict['down'][ 'node' + str(i) ][ 'Ave' ][ 'E_E' ] = EtoEtemp
-            if maxDict['down']['max'] < EtoEtemp:
+            EtoEtemp = numpy.average( resultDict[ 'down' ][ 'node' + str( i ) ][ 'E_E' ] )
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Ave' ][ 'E_E' ] = EtoEtemp
+            if maxDict[ 'down' ][ 'max' ] < EtoEtemp:
                 # get max End to End latency
-                maxDict['down']['max'] = EtoEtemp
-                maxDict['down']['node'] = i
-            resultDict['down']['node' + str(i)]['Ave']['FA_A'] = numpy.average(resultDict['down']['node' + str(i)]['FA_A'])
-            resultDict['down']['node' + str(i)]['Ave']['A_D'] = numpy.average(resultDict['down']['node' + str(i)]['A_D'])
-            resultDict['down']['node' + str(i)]['Ave']['D_G'] = numpy.average(resultDict['down']['node' + str(i)]['D_G'])
+                maxDict[ 'down' ][ 'max' ] = EtoEtemp
+                maxDict[ 'down' ][ 'node' ] = i
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Ave' ][ 'FA_A' ] = numpy.average( resultDict[ 'down' ][ 'node' + str( i ) ][ 'FA_A' ] )
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Ave' ][ 'A_D' ] = numpy.average( resultDict[ 'down' ][ 'node' + str( i ) ][ 'A_D' ] )
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] = numpy.average( resultDict[ 'down' ][ 'node' + str( i ) ][ 'D_G' ] )
 
-            resultDict['down'][ 'node' + str(i) ][ 'Std' ][ 'E_E' ] = numpy.std( resultDict['down'][ 'node' + str(i) ]['E_E'] )
-            resultDict['down']['node' + str(i)]['Std']['FA_A'] = numpy.std(resultDict['down']['node' + str(i)]['FA_A'])
-            resultDict['down']['node' + str(i)]['Std']['A_D'] = numpy.std(resultDict['down']['node' + str(i)]['A_D'])
-            resultDict['down']['node' + str(i)]['Std']['D_G'] = numpy.std(resultDict['down']['node' + str(i)]['D_G'])
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] = numpy.std( resultDict[ 'down' ][ 'node' + str( i ) ][ 'E_E' ] )
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Std' ][ 'FA_A' ] = numpy.std( resultDict[ 'down' ][ 'node' + str( i ) ][ 'FA_A' ] )
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Std' ][ 'A_D' ] = numpy.std( resultDict[ 'down' ][ 'node' + str( i ) ][ 'A_D' ] )
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] = numpy.std( resultDict[ 'down' ][ 'node' + str( i ) ][ 'D_G' ] )
 
-            main.log.report( "=====node{} Summary:=====".format( str(i) ) )
+            main.log.report( "=====node{} Summary:=====".format( str( i ) ) )
             main.log.report( "=============Switch up=======" )
 
             main.log.report(
-                            "End to End average: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Ave' ][ 'E_E' ]) ) )
+                            "End to End average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'E_E' ] ) ) )
             main.log.report(
-                            "End to End Std: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Std' ][ 'E_E' ]) ) )
+                            "End to End Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] ) ) )
 
             main.log.report(
-                            "TCP to Feature average: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Ave' ][ 'T_F' ]) ) )
+                            "TCP to Feature average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'T_F' ] ) ) )
             main.log.report(
-                            "TCP to Feature Std: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Std' ][ 'T_F' ]) ) )
+                            "TCP to Feature Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'T_F' ] ) ) )
 
             main.log.report(
-                            "Feature to Role average: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Ave' ][ 'F_R' ]) ) )
+                            "Feature to Role average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'F_R' ] ) ) )
             main.log.report(
-                            "Feature to Role Std: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Std' ][ 'F_R' ]) ) )
+                            "Feature to Role Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'F_R' ] ) ) )
 
             main.log.report(
-                            "Role request to Role reply average: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Ave' ][ 'RQ_RR' ]) ) )
+                            "Role request to Role reply average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'RQ_RR' ] ) ) )
             main.log.report(
-                            "Role request to Role reply Std: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Std' ][ 'RQ_RR' ]) ) )
+                            "Role request to Role reply Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'RQ_RR' ] ) ) )
 
             main.log.report(
-                            "Role reply to Device average: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Ave' ][ 'RR_D' ]) ) )
+                            "Role reply to Device average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'RR_D' ] ) ) )
             main.log.report(
-                            "Role reply to Device Std: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Std' ][ 'RR_D' ]) ) )
+                            "Role reply to Device Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'RR_D' ] ) ) )
 
             main.log.report(
-                            "Device to Graph average: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Ave' ][ 'D_G' ]) ) )
+                            "Device to Graph average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] ) ) )
             main.log.report(
-                            "Device to Graph Std: {}".format( str(resultDict["up"][ 'node' + str(i) ][ 'Std' ][ 'D_G' ]) ) )
+                            "Device to Graph Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] ) ) )
 
             main.log.report( "=============Switch down=======" )
 
             main.log.report(
-                            "End to End average: {}".format( str(resultDict["down"][ 'node' + str(i) ][ 'Ave' ][ 'E_E' ]) ) )
+                            "End to End average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'E_E' ] ) ) )
             main.log.report(
-                            "End to End Std: {}".format( str(resultDict["down"][ 'node' + str(i) ][ 'Std' ][ 'E_E' ]) ) )
+                            "End to End Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] ) ) )
 
             main.log.report(
-                            "Fin_ACK to ACK average: {}".format( str(resultDict["down"][ 'node' + str(i) ][ 'Ave' ][ 'FA_A' ]) ) )
+                            "Fin_ACK to ACK average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'FA_A' ] ) ) )
             main.log.report(
-                            "Fin_ACK to ACK Std: {}".format( str(resultDict["down"][ 'node' + str(i) ][ 'Std' ][ 'FA_A' ]) ) )
+                            "Fin_ACK to ACK Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'FA_A' ] ) ) )
 
             main.log.report(
-                            "ACK to Device average: {}".format( str(resultDict["down"][ 'node' + str(i) ][ 'Ave' ][ 'A_D' ]) ) )
+                            "ACK to Device average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'A_D' ] ) ) )
             main.log.report(
-                            "ACK to Device Std: {}".format( str(resultDict["down"][ 'node' + str(i) ][ 'Std' ][ 'A_D' ]) ) )
+                            "ACK to Device Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'A_D' ] ) ) )
 
             main.log.report(
-                            "Device to Graph average: {}".format( str(resultDict["down"][ 'node' + str(i) ][ 'Ave' ][ 'D_G' ]) ) )
+                            "Device to Graph average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] ) ) )
             main.log.report(
-                            "Device to Graph Std: {}".format( str(resultDict["down"][ 'node' + str(i) ][ 'Std' ][ 'D_G' ]) ) )
+                            "Device to Graph Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] ) ) )
 
-        with open(main.dbFileName, "a") as dbFile:
+        with open( main.dbFileName, "a" ) as dbFile:
             # TODO: Save STD to Database
             # Scale number
-            temp = str(main.numCtrls)
+            temp = str( main.Cluster.numCtrls )
             temp += ",'baremetal1'"
             # put result
-            temp += "," + str( "%.2f" % resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'E_E' ] )
-            temp += "," + str( "%.2f" % resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'T_F' ] )
-            temp += "," + str( "%.2f" % resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'F_R' ] )
-            temp += "," + str( "%.2f" % resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'RQ_RR' ] )
-            temp += "," + str( "%.2f" % resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'RR_D' ] )
-            temp += "," + str( "%.2f" % resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Ave' ][ 'D_G' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'E_E' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'T_F' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'F_R' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'RQ_RR' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'RR_D' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'D_G' ] )
 
-            temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'E_E' ] )
-            temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'FA_A' ] )
-            temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'A_D' ] )
-            temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Ave' ][ 'D_G' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'E_E' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'FA_A' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'A_D' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'D_G' ] )
 
-            temp += "," + str( "%.2f" % resultDict['up'][ 'node' + str(maxDict['up']['node']) ][ 'Std' ][ 'E_E' ] )
-            temp += "," + str( "%.2f" % resultDict['down'][ 'node' + str(maxDict['down']['node']) ][ 'Std' ][ 'E_E' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Std' ][ 'E_E' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Std' ][ 'E_E' ] )
 
             temp += "\n"
             dbFile.write( temp )

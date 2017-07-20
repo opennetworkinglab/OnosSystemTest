@@ -142,8 +142,8 @@ def hostIntent( main,
 
     # Adding host intents
     main.log.info( itemName + ": Adding host intents" )
-    intent1 = main.CLIs[ onosNode ].addHostIntent( hostIdOne=h1Id,
-                                                   hostIdTwo=h2Id )
+    intent1 = main.Cluster.active( onosNode ).CLI.addHostIntent( hostIdOne=h1Id,
+                                                                 hostIdTwo=h2Id )
     intentsId.append( intent1 )
 
     # Check intents state
@@ -382,36 +382,36 @@ def pointIntent( main,
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding point intents" )
-    intent1 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
-                                                    egressDevice=deviceId2,
-                                                    portIngress=port1,
-                                                    portEgress=port2,
-                                                    ethType=ethType,
-                                                    ethSrc=mac1,
-                                                    ethDst=mac2,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip1,
-                                                    ipDst=ip2,
-                                                    tcpSrc=tcp1,
-                                                    tcpDst=tcp2 )
+    intent1 = main.Cluster.active( onosNode ).CLI.addPointIntent( ingressDevice=deviceId1,
+                                                                  egressDevice=deviceId2,
+                                                                  portIngress=port1,
+                                                                  portEgress=port2,
+                                                                  ethType=ethType,
+                                                                  ethSrc=mac1,
+                                                                  ethDst=mac2,
+                                                                  bandwidth=bandwidth,
+                                                                  lambdaAlloc=lambdaAlloc,
+                                                                  ipProto=ipProto,
+                                                                  ipSrc=ip1,
+                                                                  ipDst=ip2,
+                                                                  tcpSrc=tcp1,
+                                                                  tcpDst=tcp2 )
 
     intentsId.append( intent1 )
-    intent2 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
-                                                    egressDevice=deviceId1,
-                                                    portIngress=port2,
-                                                    portEgress=port1,
-                                                    ethType=ethType,
-                                                    ethSrc=mac2,
-                                                    ethDst=mac1,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip2,
-                                                    ipDst=ip1,
-                                                    tcpSrc=tcp2,
-                                                    tcpDst=tcp1 )
+    intent2 = main.Cluster.active( onosNode ).CLI.addPointIntent( ingressDevice=deviceId2,
+                                                                  egressDevice=deviceId1,
+                                                                  portIngress=port2,
+                                                                  portEgress=port1,
+                                                                  ethType=ethType,
+                                                                  ethSrc=mac2,
+                                                                  ethDst=mac1,
+                                                                  bandwidth=bandwidth,
+                                                                  lambdaAlloc=lambdaAlloc,
+                                                                  ipProto=ipProto,
+                                                                  ipSrc=ip2,
+                                                                  ipDst=ip1,
+                                                                  tcpSrc=tcp2,
+                                                                  tcpDst=tcp1 )
     intentsId.append( intent2 )
 
     # Check intents state
@@ -640,66 +640,67 @@ def pointIntentTcp( main,
     onosNode = int( onosNode )
 
     # Adding bidirectional point  intents
+    ctrl = main.Cluster.active( onosNode )
     main.log.info( itemName + ": Adding point intents" )
-    intent1 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
-                                                    egressDevice=deviceId2,
-                                                    portIngress=port1,
-                                                    portEgress=port2,
-                                                    ethType=ethType,
-                                                    ethSrc=mac1,
-                                                    ethDst=mac2,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip1,
-                                                    ipDst=ip2,
-                                                    tcpSrc=tcp1,
-                                                    tcpDst="" )
+    intent1 = ctrl.CLI.addPointIntent( ingressDevice=deviceId1,
+                                       egressDevice=deviceId2,
+                                       portIngress=port1,
+                                       portEgress=port2,
+                                       ethType=ethType,
+                                       ethSrc=mac1,
+                                       ethDst=mac2,
+                                       bandwidth=bandwidth,
+                                       lambdaAlloc=lambdaAlloc,
+                                       ipProto=ipProto,
+                                       ipSrc=ip1,
+                                       ipDst=ip2,
+                                       tcpSrc=tcp1,
+                                       tcpDst="" )
 
-    intent2 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
-                                                    egressDevice=deviceId1,
-                                                    portIngress=port2,
-                                                    portEgress=port1,
-                                                    ethType=ethType,
-                                                    ethSrc=mac2,
-                                                    ethDst=mac1,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip2,
-                                                    ipDst=ip1,
-                                                    tcpSrc=tcp2,
-                                                    tcpDst="" )
+    intent2 = ctrl.CLI.addPointIntent( ingressDevice=deviceId2,
+                                       egressDevice=deviceId1,
+                                       portIngress=port2,
+                                       portEgress=port1,
+                                       ethType=ethType,
+                                       ethSrc=mac2,
+                                       ethDst=mac1,
+                                       bandwidth=bandwidth,
+                                       lambdaAlloc=lambdaAlloc,
+                                       ipProto=ipProto,
+                                       ipSrc=ip2,
+                                       ipDst=ip1,
+                                       tcpSrc=tcp2,
+                                       tcpDst="" )
 
-    intent3 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
-                                                    egressDevice=deviceId2,
-                                                    portIngress=port1,
-                                                    portEgress=port2,
-                                                    ethType=ethType,
-                                                    ethSrc=mac1,
-                                                    ethDst=mac2,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip1,
-                                                    ipDst=ip2,
-                                                    tcpSrc="",
-                                                    tcpDst=tcp2 )
+    intent3 = ctrl.CLI.addPointIntent( ingressDevice=deviceId1,
+                                       egressDevice=deviceId2,
+                                       portIngress=port1,
+                                       portEgress=port2,
+                                       ethType=ethType,
+                                       ethSrc=mac1,
+                                       ethDst=mac2,
+                                       bandwidth=bandwidth,
+                                       lambdaAlloc=lambdaAlloc,
+                                       ipProto=ipProto,
+                                       ipSrc=ip1,
+                                       ipDst=ip2,
+                                       tcpSrc="",
+                                       tcpDst=tcp2 )
 
-    intent4 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
-                                                    egressDevice=deviceId1,
-                                                    portIngress=port2,
-                                                    portEgress=port1,
-                                                    ethType=ethType,
-                                                    ethSrc=mac2,
-                                                    ethDst=mac1,
-                                                    bandwidth=bandwidth,
-                                                    lambdaAlloc=lambdaAlloc,
-                                                    ipProto=ipProto,
-                                                    ipSrc=ip2,
-                                                    ipDst=ip1,
-                                                    tcpSrc="",
-                                                    tcpDst=tcp1 )
+    intent4 = ctrl.CLI.addPointIntent( ingressDevice=deviceId2,
+                                       egressDevice=deviceId1,
+                                       portIngress=port2,
+                                       portEgress=port1,
+                                       ethType=ethType,
+                                       ethSrc=mac2,
+                                       ethDst=mac1,
+                                       bandwidth=bandwidth,
+                                       lambdaAlloc=lambdaAlloc,
+                                       ipProto=ipProto,
+                                       ipSrc=ip2,
+                                       ipDst=ip1,
+                                       tcpSrc="",
+                                       tcpDst=tcp1 )
     intentsId.append( intent1 )
     intentsId.append( intent2 )
     intentsId.append( intent3 )
@@ -985,20 +986,20 @@ def singleToMultiIntent( main,
                 srcMac = ""
 
         intentsId.append(
-                        main.CLIs[ onosNode ].addSinglepointToMultipointIntent(
-                                            ingressDevice=ingressDevice,
-                                            egressDeviceList=egressDeviceList,
-                                            portIngress=portIngress,
-                                            portEgressList=portEgressList,
-                                            ethType=ethType,
-                                            ethSrc=srcMac,
-                                            bandwidth=bandwidth,
-                                            lambdaAlloc=lambdaAlloc,
-                                            ipProto=ipProto,
-                                            ipSrc="",
-                                            ipDst="",
-                                            tcpSrc="",
-                                            tcpDst="" ) )
+                        main.Cluster.active( onosNode ).CLI.addSinglepointToMultipointIntent(
+                                                                ingressDevice=ingressDevice,
+                                                                egressDeviceList=egressDeviceList,
+                                                                portIngress=portIngress,
+                                                                portEgressList=portEgressList,
+                                                                ethType=ethType,
+                                                                ethSrc=srcMac,
+                                                                bandwidth=bandwidth,
+                                                                lambdaAlloc=lambdaAlloc,
+                                                                ipProto=ipProto,
+                                                                ipSrc="",
+                                                                ipDst="",
+                                                                tcpSrc="",
+                                                                tcpDst="" ) )
 
     # Check intents state
     time.sleep( main.checkIntentSleep )
@@ -1281,20 +1282,20 @@ def multiToSingleIntent( main,
                 dstMac = ""
 
         intentsId.append(
-                        main.CLIs[ onosNode ].addMultipointToSinglepointIntent(
-                                            ingressDeviceList=ingressDeviceList,
-                                            egressDevice=egressDevice,
-                                            portIngressList=portIngressList,
-                                            portEgress=portEgress,
-                                            ethType=ethType,
-                                            ethDst=dstMac,
-                                            bandwidth=bandwidth,
-                                            lambdaAlloc=lambdaAlloc,
-                                            ipProto=ipProto,
-                                            ipSrc="",
-                                            ipDst="",
-                                            tcpSrc="",
-                                            tcpDst="" ) )
+                        main.Cluster.active( onosNode ).CLI.addMultipointToSinglepointIntent(
+                                                            ingressDeviceList=ingressDeviceList,
+                                                            egressDevice=egressDevice,
+                                                            portIngressList=portIngressList,
+                                                            portEgress=portEgress,
+                                                            ethType=ethType,
+                                                            ethDst=dstMac,
+                                                            bandwidth=bandwidth,
+                                                            lambdaAlloc=lambdaAlloc,
+                                                            ipProto=ipProto,
+                                                            ipSrc="",
+                                                            ipDst="",
+                                                            tcpSrc="",
+                                                            tcpDst="" ) )
     # Check intents state
     time.sleep( main.checkIntentSleep )
     intentResult = checkIntentState( main, intentsId )
@@ -1525,20 +1526,20 @@ def testEndPointFail( main,
                     dstMac = ""
 
             intentsId.append(
-                            main.CLIs[ onosNode ].addMultipointToSinglepointIntent(
-                                                ingressDeviceList=ingressDeviceList,
-                                                egressDevice=egressDevice,
-                                                portIngressList=portIngressList,
-                                                portEgress=portEgress,
-                                                ethType=ethType,
-                                                ethDst=dstMac,
-                                                bandwidth=bandwidth,
-                                                lambdaAlloc=lambdaAlloc,
-                                                ipProto=ipProto,
-                                                ipSrc="",
-                                                ipDst="",
-                                                tcpSrc="",
-                                                tcpDst="" ) )
+                            main.Cluster.active( onosNode ).CLI.addMultipointToSinglepointIntent(
+                                                                ingressDeviceList=ingressDeviceList,
+                                                                egressDevice=egressDevice,
+                                                                portIngressList=portIngressList,
+                                                                portEgress=portEgress,
+                                                                ethType=ethType,
+                                                                ethDst=dstMac,
+                                                                bandwidth=bandwidth,
+                                                                lambdaAlloc=lambdaAlloc,
+                                                                ipProto=ipProto,
+                                                                ipSrc="",
+                                                                ipDst="",
+                                                                tcpSrc="",
+                                                                tcpDst="" ) )
 
     elif test == "SingletoMultiple":
         for i in range( len( devices ) ):
@@ -1561,20 +1562,20 @@ def testEndPointFail( main,
                     srcMac = ""
 
             intentsId.append(
-                            main.CLIs[ onosNode ].addSinglepointToMultipointIntent(
-                                                ingressDevice=ingressDevice,
-                                                egressDeviceList=egressDeviceList,
-                                                portIngress=portIngress,
-                                                portEgressList=portEgressList,
-                                                ethType=ethType,
-                                                ethSrc=srcMac,
-                                                bandwidth=bandwidth,
-                                                lambdaAlloc=lambdaAlloc,
-                                                ipProto=ipProto,
-                                                ipSrc="",
-                                                ipDst="",
-                                                tcpSrc="",
-                                                tcpDst="" ) )
+                            main.Cluster.active( onosNode ).CLI.addSinglepointToMultipointIntent(
+                                                                    ingressDevice=ingressDevice,
+                                                                    egressDeviceList=egressDeviceList,
+                                                                    portIngress=portIngress,
+                                                                    portEgressList=portEgressList,
+                                                                    ethType=ethType,
+                                                                    ethSrc=srcMac,
+                                                                    bandwidth=bandwidth,
+                                                                    lambdaAlloc=lambdaAlloc,
+                                                                    ipProto=ipProto,
+                                                                    ipSrc="",
+                                                                    ipDst="",
+                                                                    tcpSrc="",
+                                                                    tcpDst="" ) )
 
     else:
         main.log.info( "Invalid test Name - Type either SingletoMultiple or MultipletoSingle" )
@@ -1811,21 +1812,21 @@ def getHostsData( main ):
     appCheck = main.TRUE
     getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
-    activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
-    main.CLIs[ 0 ].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
-    main.CLIs[ 0 ].setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
-    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
-    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
+    activateResult = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.fwd" )
+    main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
+    main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
+    main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+    main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
     time.sleep( main.fwdSleep )
 
-    for i in range( main.numCtrls ):
-        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+    for ctrl in main.Cluster.active():
+        appCheck = appCheck and ctrl.CLI.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ i ].apps() )
-            main.log.warn( main.CLIs[ i ].appIDs() )
+            main.log.warn( ctrl.CLI.apps() )
+            main.log.warn( ctrl.CLI.appIDs() )
 
     pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=600 )
-    hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
+    hostsJson = json.loads( main.Cluster.active( 0 ).CLI.hosts() )
     hosts = main.Mininet1.getHosts().keys()
     for host in hosts:
         main.hostsData[ host ] = {}
@@ -1841,7 +1842,7 @@ def getHostsData( main ):
                 main.hostsData[ host ][ 'ipAddresses' ] = hostj[ 'ipAddresses' ]
 
     main.log.info( "Deactivating reactive forwarding app " )
-    deactivateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
+    deactivateResult = main.Cluster.active( 0 ).CLI.deactivateApp( "org.onosproject.fwd" )
     if activateResult and deactivateResult and main.hostsData:
         main.log.info( "Successfully used fwd app to discover hosts " )
         getDataResult = main.TRUE
@@ -1862,10 +1863,9 @@ def checkTopology( main, expectedLink ):
     # Check onos topology
     main.log.info( itemName + ": Checking ONOS topology " )
 
-    for i in range( main.numCtrls ):
-        statusResult = main.CLIs[ i ].checkStatus( main.numSwitch,
-                                                   expectedLink )\
-                       and statusResult
+    statusResult = main.Cluster.command( "checkStatus",
+                                         args=[ main.numSwitch, expectedLink ],
+                                         returnBool=True, specificDriver=2 )
     if not statusResult:
         main.log.error( itemName + ": Topology mismatch" )
     else:
@@ -1883,13 +1883,13 @@ def checkIntentState( main, intentsId ):
 
     main.log.info( itemName + ": Checking intents state" )
     # First check of intents
-    for i in range( main.numCtrls ):
-        tempResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
-        results.append( tempResult )
+    stateResult = main.Cluster.command( "checkIntentState",
+                                         kwargs={ "intentsId":intentsId },
+                                         returnBool=True, specificDriver=2 )
 
     expectedState = [ 'INSTALLED', 'INSTALLING' ]
 
-    if all( result == main.TRUE for result in results ):
+    if stateResult:
         main.log.info( itemName + ": Intents are installed correctly" )
     else:
         # Wait for at least 5 second before checking the intents again
@@ -1898,11 +1898,10 @@ def checkIntentState( main, intentsId ):
         results = []
         # Second check of intents since some of the intents may be in
         # INSTALLING state, they should be in INSTALLED at this time
-        for i in range( main.numCtrls ):
-            tempResult = main.CLIs[ i ].checkIntentState(
-                                                        intentsId=intentsId )
-            results.append( tempResult )
-        if all( result == main.TRUE for result in results ):
+        stateResult = main.Cluster.command( "checkIntentState",
+                                     kwargs={ "intentsId":intentsId },
+                                     returnBool=True, specificDriver=2 )
+        if stateResult:
             main.log.info( itemName + ": Intents are installed correctly" )
             intentResult = main.TRUE
         else:
@@ -1915,7 +1914,7 @@ def checkIntentState( main, intentsId ):
 def checkFlowsState( main ):
 
     main.log.info( itemName + ": Check flows state" )
-    checkFlowsResult = main.CLIs[ 0 ].checkFlowsState()
+    checkFlowsResult = main.Cluster.active( 0 ).CLI.checkFlowsState()
     return checkFlowsResult
 
 
@@ -1936,13 +1935,13 @@ def removeAllIntents( main, intentsId ):
     removeIntentResult = main.TRUE
     # Remove intents
     for intent in intentsId:
-        main.CLIs[ 0 ].removeIntent( intentId=intent, purge=True )
+        main.Cluster.active( 0 ).CLI.removeIntent( intentId=intent, purge=True )
 
     time.sleep( main.removeIntentSleep )
 
     # If there is remianing intents then remove intents should fail
-    for i in range( main.numCtrls ):
-        onosSummary.append( json.loads( main.CLIs[ i ].summary() ) )
+    for ctrl in main.Cluster.active():
+        onosSummary.append( json.loads( ctrl.CLI.summary() ) )
 
     for summary in onosSummary:
         if summary.get( 'intents' ) != 0:
@@ -1966,8 +1965,8 @@ def checkFlowsCount( main ):
     """
     flowsCount = []
     main.log.info( itemName + ": Checking flows count in each ONOS node" )
-    for i in range( main.numCtrls ):
-        summaryResult = main.CLIs[ i ].summary()
+    for ctrl in main.Cluster.active():
+        summaryResult = ctrl.CLI.summary()
         if not summaryResult:
             main.log.error( itemName + ": There is something wrong with " +
                             "summary command" )
@@ -1981,8 +1980,8 @@ def checkFlowsCount( main ):
             main.log.info( itemName + ": There are " + str( flowsCount[ 0 ] ) +
                            " flows in all ONOS node" )
         else:
-            for i in range( main.numCtrls ):
-                main.log.debug( itemName + ": ONOS node " + str( i ) + " has " +
+            for i in range( main.Cluster.numCtrls ):
+                main.log.debug( itemName + ": " + main.Cluster.active( i ).name + " has " +
                                 str( flowsCount[ i ] ) + " flows" )
     else:
         main.log.error( "Checking flows count failed, check summary command" )
@@ -2033,7 +2032,7 @@ def report( main ):
     """
     Report errors/warnings/exceptions
     """
-    main.ONOSbench.logReport( main.ONOSip[ 0 ],
+    main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress,
                               [ "INFO",
                                 "FOLLOWER",
                                 "WARN",
@@ -2043,19 +2042,19 @@ def report( main ):
                               "s" )
 
     main.log.info( "ERROR report: \n" )
-    for i in range( main.numCtrls ):
-        main.ONOSbench.logReport( main.ONOSip[ i ],
+    for ctrl in main.Cluster.active():
+        main.ONOSbench.logReport( ctrl.ipAddress,
                                   [ "ERROR" ],
                                   "d" )
 
     main.log.info( "EXCEPTIONS report: \n" )
-    for i in range( main.numCtrls ):
-        main.ONOSbench.logReport( main.ONOSip[ i ],
+    for ctrl in main.Cluster.active():
+        main.ONOSbench.logReport( ctrl.ipAddress,
                                   [ "Except" ],
                                   "d" )
 
     main.log.info( "WARNING report: \n" )
-    for i in range( main.numCtrls ):
-        main.ONOSbench.logReport( main.ONOSip[ i ],
+    for ctrl in main.Cluster.active():
+        main.ONOSbench.logReport( ctrl.ipAddress,
                                   [ "WARN" ],
                                   "d" )

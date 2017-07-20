@@ -23,7 +23,9 @@
         <pull>False</pull>
         <branch>master</branch>
     </GIT>
-
+    <CFG>
+        <defaultTopo>org.onosproject.net.topology.impl.DefaultTopologyProvider</defaultTopo>
+    </CFG>
     <TSHARK>
         <tsharkReusltPath>/tmp/tshark_portStatus</tsharkReusltPath>
         <ofpPortStatus>OF 1.3 146</ofpPortStatus>

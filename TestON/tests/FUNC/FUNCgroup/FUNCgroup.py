@@ -56,7 +56,6 @@ class FUNCgroup:
             wrapperFile2 = main.params['DEPENDENCY']['wrapper2']
             main.topology = main.params['DEPENDENCY']['topology']
             bucket = main.params['DEPENDENCY']['bucket']
-            main.maxNodes = int(main.params['SCALE']['max'])
             main.startUpSleep = int(main.params['SLEEP']['startup'])
             main.startMNSleep = int(main.params['SLEEP']['startMN'])
             main.addFlowSleep = int(main.params['SLEEP']['addFlow'])
@@ -114,7 +113,7 @@ class FUNCgroup:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1 )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
 
     def CASE3( self, main ):
         """
@@ -146,7 +145,7 @@ class FUNCgroup:
                                  onfail="Failed to load topology" )
 
         main.step( "Assign switch to controller" )
-        stepResult = main.Mininet1.assignSwController( "s1", main.ONOSip[ 0 ] )
+        stepResult = main.Mininet1.assignSwController( "s1", main.Cluster.active( 0 ).ipAddress )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -249,11 +248,12 @@ class FUNCgroup:
         bucketList.append( bucket )
         bucket = main.buckets.addBucket( main, egressPort=egressPort3 )
         bucketList.append( bucket )
-        response = main.ONOSrest.addGroup( deviceId=deviceId,
-                                           groupType=type1,
-                                           bucketList=bucketList,
-                                           appCookie=appCookie,
-                                           groupId=groupId )
+        ctrl = main.Cluster.active( 0 )
+        response = ctrl.REST.addGroup( deviceId=deviceId,
+                                       groupType=type1,
+                                       bucketList=bucketList,
+                                       appCookie=appCookie,
+                                       groupId=groupId )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=response,
@@ -265,8 +265,8 @@ class FUNCgroup:
 
         main.step( "Check groups are in ADDED state" )
 
-        response = main.ONOSrest.getGroups( deviceId=deviceId,
-                                            appCookie=appCookie )
+        response = ctrl.REST.getGroups( deviceId=deviceId,
+                                        appCookie=appCookie )
         responsejson = json.loads( response )
         for item in responsejson:
             if item[ "state" ] == "ADDED":
@@ -283,10 +283,10 @@ class FUNCgroup:
         isAdded = main.FALSE
 
         main.step( "Adding flow with Group using rest api" )
-        response = main.ONOSrest.addFlow( deviceId=deviceId,
-                                          priority=priority,
-                                          ingressPort=ingressPort,
-                                          groupId=groupId )
+        response = ctrl.REST.addFlow( deviceId=deviceId,
+                                      priority=priority,
+                                      ingressPort=ingressPort,
+                                      groupId=groupId )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=response,
                                  onpass="Successfully Added Flows",
@@ -295,7 +295,7 @@ class FUNCgroup:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        response = main.ONOSrest.getFlows( deviceId=deviceId )
+        response = ctrl.REST.getFlows( deviceId=deviceId )
         responsejson = json.loads( response )
         for item in responsejson:
             if item[ "priority" ] == int( priority ) and item[ "state" ] == "ADDED":
@@ -380,17 +380,17 @@ class FUNCgroup:
 
         main.case( "Delete the Group and Flow added through Rest api " )
         main.step( "Deleting Group and Flows" )
-
+        ctrl = main.Cluster.active( 0 )
         #Get Flow ID
-        response = main.ONOSrest.getFlows( deviceId=deviceId )
+        response = ctrl.REST.getFlows( deviceId=deviceId )
         responsejson = json.loads( response )
         for item in responsejson:
             if item[ "priority" ] == int( priority ):
                 respFlowId = item[ "id" ]
 
         main.step( "Deleting the created flow by deviceId and flowId" )
-        flowResponse = main.ONOSrest.removeFlow( deviceId=deviceId,
-                                                 flowId=respFlowId )
+        flowResponse = ctrl.REST.removeFlow( deviceId=deviceId,
+                                             flowId=respFlowId )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowResponse,
@@ -401,8 +401,8 @@ class FUNCgroup:
         time.sleep( main.delFlowSleep )
 
         main.step( "Deleting the created group by deviceId and appCookie" )
-        groupResponse = main.ONOSrest.removeGroup( deviceId=deviceId,
-                                                   appCookie=appCookie )
+        groupResponse = ctrl.REST.removeGroup( deviceId=deviceId,
+                                               appCookie=appCookie )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=groupResponse,
@@ -427,14 +427,15 @@ class FUNCgroup:
                                " Send a packet that verifies the action bucket of the group"
 
         main.step( "Add Group using Rest api" )
+        ctrl = main.Cluster.active( 0 )
         bucketList = []
         bucket = main.buckets.addBucket( main, egressPort=egressPort1 )
         bucketList.append( bucket )
-        response = main.ONOSrest.addGroup( deviceId=deviceId,
-                                           groupType=type2,
-                                           bucketList=bucketList,
-                                           appCookie=appCookie,
-                                           groupId=groupId )
+        response = ctrl.REST.addGroup( deviceId=deviceId,
+                                       groupType=type2,
+                                       bucketList=bucketList,
+                                       appCookie=appCookie,
+                                       groupId=groupId )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=response,
@@ -446,8 +447,8 @@ class FUNCgroup:
 
         main.step( "Check groups are in ADDED state" )
 
-        response = main.ONOSrest.getGroups( deviceId=deviceId,
-                                            appCookie=appCookie )
+        response = ctrl.REST.getGroups( deviceId=deviceId,
+                                        appCookie=appCookie )
         responsejson = json.loads( response )
         for item in responsejson:
             if item[ "state" ] == "ADDED":
@@ -464,10 +465,10 @@ class FUNCgroup:
         isAdded = main.FALSE
 
         main.step( "Adding flow with Group using rest api" )
-        response = main.ONOSrest.addFlow( deviceId=deviceId,
-                                          priority=priority,
-                                          ingressPort=ingressPort,
-                                          groupId=groupId )
+        response = ctrl.REST.addFlow( deviceId=deviceId,
+                                      priority=priority,
+                                      ingressPort=ingressPort,
+                                      groupId=groupId )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=response,
                                  onpass="Successfully Added Flows",
@@ -476,7 +477,7 @@ class FUNCgroup:
         # Giving ONOS time to add the flow
         time.sleep( main.addFlowSleep )
 
-        response = main.ONOSrest.getFlows( deviceId=deviceId )
+        response = ctrl.REST.getFlows( deviceId=deviceId )
         responsejson = json.loads( response )
         for item in responsejson:
             if item[ "priority" ] == int( priority ) and item[ "state" ] == "ADDED":
@@ -531,7 +532,7 @@ class FUNCgroup:
             Report errors/warnings/exceptions
         """
         main.log.info( "Error report: \n" )
-        main.ONOSbench.logReport( main.ONOSip[ 0 ],
+        main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress,
                                   [ "INFO",
                                     "FOLLOWER",
                                     "WARN",

@@ -91,20 +91,16 @@ class HAcontinuousStopNodes:
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
             main.numCtrls = int( main.params[ 'num_controllers' ] )
-            if main.ONOSbench.maxNodes and\
-                        main.ONOSbench.maxNodes < main.numCtrls:
-                main.numCtrls = int( main.ONOSbench.maxNodes )
-            main.maxNodes = main.numCtrls
-            stepResult = main.testSetUp.envSetup( hasNode=True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAcontinuousStopNodes" )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName, removeLog=True,
-                                 extraApply=main.HA.customizeOnosGenPartitions,
-                                 extraClean=main.HA.cleanUpGenPartition )
-
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
+                                  extraApply=[ main.HA.startingMininet,
+                                               main.HA.customizeOnosGenPartitions ],
+                                  extraClean=main.HA.cleanUpGenPartition )
         main.HA.initialSetUp()
 
 
@@ -142,11 +138,8 @@ class HAcontinuousStopNodes:
         """
         The Failure case.
         """
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         try:
             assert main.nodeIndex is not None, "main.nodeIndex not defined"
             assert main.killCount is not None, "main.killCount not defined"
@@ -158,23 +151,23 @@ class HAcontinuousStopNodes:
         main.case( "Stopping ONOS nodes - iteration " + str( main.killCount ) )
 
         main.step( "Checking ONOS Logs for errors" )
-        for node in main.nodes:
-            main.log.debug( "Checking logs for errors on " + node.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
+        for ctrl in main.Cluster.runningNodes:
+            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
         # NOTE: For now only kill one node. If we move to killing more, we need to
         #       make sure we don't lose any partitions
-        n = len( main.nodes )  # Number of nodes
+        n = len( main.Cluster.runningNodes )  # Number of nodes
         main.nodeIndex = ( main.nodeIndex + 1 ) % n
-        main.kill = [ main.nodeIndex ]  # ONOS node to kill, listed by index in main.nodes
+        main.kill = [ main.Cluster.runningNodes[ main.nodeIndex ] ]  # ONOS node to kill, listed by index in main.nodes
 
         # TODO: Be able to configure bringing up old node vs. a new/fresh installation
         main.step( "Stopping " + str( len( main.kill ) ) + " ONOS nodes" )
         killResults = main.TRUE
-        for i in main.kill:
+        for ctrl in main.kill:
             killResults = killResults and\
-                          main.ONOSbench.onosStop( main.nodes[ i ].ip_address )
-            main.activeNodes.remove( i )
+                          main.ONOSbench.onosStop( ctrl.ipAddress )
+            ctrl.active = False
         utilities.assert_equals( expect=main.TRUE, actual=killResults,
                                  onpass="ONOS nodes stopped successfully",
                                  onfail="ONOS nodes NOT successfully stopped" )
@@ -182,7 +175,7 @@ class HAcontinuousStopNodes:
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.HA.nodesCheck,
                                        False,
-                                       args=[ main.activeNodes ],
+                                       args=[ main.Cluster.active() ],
                                        sleep=15,
                                        attempts=5 )
 
@@ -191,11 +184,10 @@ class HAcontinuousStopNodes:
                                  onfail="Nodes check NOT successful" )
 
         if not nodeResults:
-            for i in main.activeNodes:
-                cli = main.CLIs[ i ]
+            for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    cli.name,
-                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
@@ -217,20 +209,19 @@ class HAcontinuousStopNodes:
         except AttributeError:
             main.kill = []
 
-        main.HA.checkStateAfterONOS( main, afterWhich=0 )
+        main.HA.checkStateAfterEvent( main, afterWhich=0 )
 
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
         leaderList = []
 
         restarted = []
-        for i in main.kill:
-            restarted.append( main.nodes[ i ].ip_address )
+        for ctrl in main.kill:
+            restarted.append( ctrl.ipAddress )
         leaderResult = main.TRUE
 
-        for i in main.activeNodes:
-            cli = main.CLIs[ i ]
-            leaderN = cli.electionTestLeader()
+        for ctrl in main.Cluster.active():
+            leaderN = ctrl.CLI.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
                 # error in response
@@ -239,12 +230,12 @@ class HAcontinuousStopNodes:
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leaderN is None:
-                main.log.error( cli.name +
+                main.log.error( ctrl.name +
                                  " shows no leader for the election-app was" +
                                  " elected after the old one died" )
                 leaderResult = main.FALSE
             elif leaderN in restarted:
-                main.log.error( cli.name + " shows " + str( leaderN ) +
+                main.log.error( ctrl.name + " shows " + str( leaderN ) +
                                  " as leader for the election-app, but it " +
                                  "was restarted" )
                 leaderResult = main.FALSE

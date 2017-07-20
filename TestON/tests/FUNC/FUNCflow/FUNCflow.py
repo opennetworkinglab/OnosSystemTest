@@ -55,7 +55,6 @@ class FUNCflow:
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
             wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
-            main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.startMNSleep = int( main.params[ 'SLEEP' ][ 'startMN' ] )
             main.addFlowSleep = int( main.params[ 'SLEEP' ][ 'addFlow' ] )
@@ -106,7 +105,7 @@ class FUNCflow:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1 )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
 
     def CASE10( self, main ):
         """
@@ -138,7 +137,7 @@ class FUNCflow:
                                  onfail="Failed to load topology" )
 
         main.step( "Assign switch to controller" )
-        stepResult = main.Mininet1.assignSwController( "s1", main.ONOSip[ 0 ] )
+        stepResult = main.Mininet1.assignSwController( "s1", main.Cluster.active( 0 ).ipAddress )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -226,7 +225,7 @@ class FUNCflow:
         """
         import json
         import time
-
+        ctrl = main.Cluster.active( 0 )
         main.case( "Verify flow MAC selectors are correctly compiled" )
         main.caseExplanation = "Install two flows with only MAC selectors " +\
                 "specified, then verify flows are added in ONOS, finally " +\
@@ -252,12 +251,12 @@ class FUNCflow:
         # Add flows that sends packets from port1 to port2 with correct
         # MAC src and dst addresses
         main.log.info( "Adding flow with MAC selectors" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethSrc=main.h1.hostMac,
-                                            ethDst=main.h2.hostMac,
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethSrc=main.h1.hostMac,
+                                        ethDst=main.h2.hostMac,
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -267,46 +266,7 @@ class FUNCflow:
         # Giving ONOS time to add the flows
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flows are in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flows are correct" )
 
@@ -348,7 +308,7 @@ class FUNCflow:
         """
         import json
         import time
-
+        ctrl = main.Cluster.active( 0 )
         main.case( "Verify flow IP selectors are correctly compiled" )
         main.caseExplanation = "Install two flows with only IP selectors " +\
                 "specified, then verify flows are added in ONOS, finally " +\
@@ -375,13 +335,13 @@ class FUNCflow:
 
         # Add flows that connects host1 to host2
         main.log.info( "Add flow with port ingress 1 to port egress 2" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            ipSrc=( "IPV4_SRC", main.h1.hostIp + "/32" ),
-                                            ipDst=( "IPV4_DST", main.h2.hostIp + "/32" ),
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        ipSrc=( "IPV4_SRC", main.h1.hostIp + "/32" ),
+                                        ipDst=( "IPV4_DST", main.h2.hostIp + "/32" ),
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -439,6 +399,7 @@ class FUNCflow:
         main.step( "Add flows with IPv6 addresses as the only selectors" )
 
         main.log.info( "Creating host components" )
+        ctrl = main.Cluster.active( 0 )
         main.Scapy.createHostComponent( "h5" )
         main.Scapy.createHostComponent( "h6" )
         hosts = [ main.h5, main.h6 ]
@@ -458,13 +419,13 @@ class FUNCflow:
 
         # Add flows that connects host1 to host2
         main.log.info( "Add flow with port ingress 5 to port egress 6" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            ipSrc=( "IPV6_SRC", main.h5.hostIp + "/128" ),
-                                            ipDst=( "IPV6_DST", main.h6.hostIp + "/128" ),
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        ipSrc=( "IPV6_SRC", main.h5.hostIp + "/128" ),
+                                        ipDst=( "IPV6_DST", main.h6.hostIp + "/128" ),
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -521,6 +482,7 @@ class FUNCflow:
 
         # We do this here to utilize the hosts information
         main.log.info( "Creating host components" )
+        ctrl = main.Cluster.active( 0 )
         main.Scapy.createHostComponent( "h3" )
         main.Scapy.createHostComponent( "h4" )
         hosts = [ main.h3, main.h4 ]
@@ -541,12 +503,12 @@ class FUNCflow:
 
         # Add only one flow because we don't need a response
         main.log.info( "Add flow with port ingress 1 to port egress 2" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            vlan=vlan,
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        vlan=vlan,
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -556,46 +518,7 @@ class FUNCflow:
         # Giving ONOS time to add the flows
         time.sleep( main.addFlowSleep )
 
-        main.step( "Check flows  are in the ADDED state" )
-
-        main.log.info( "Get the flows from ONOS" )
-        try:
-            flows = json.loads( main.ONOSrest.flows() )
-
-            stepResult = main.TRUE
-            for f in flows:
-                if "rest" in f.get( "appId" ):
-                    if "ADDED" not in f.get( "state" ):
-                        stepResult = main.FALSE
-                        main.log.error( "Flow: %s in state: %s" % ( f.get( "id" ), f.get( "state" ) ) )
-        except TypeError:
-            main.log.error( "No Flows found by the REST API" )
-            stepResult = main.FALSE
-        except ValueError:
-            main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in the ADDED state",
-                                 onfail="All flows are NOT in the ADDED state" )
-
-        main.step( "Check flows are in Mininet's flow table" )
-
-        # get the flow IDs that were added through rest
-        main.log.info( "Getting the flow IDs from ONOS" )
-        flowIds = [ f.get( "id" ) for f in flows if "rest" in f.get( "appId" ) ]
-        # convert the flowIDs to ints then hex and finally back to strings
-        flowIds = [ str( hex( int( x ) ) ) for x in flowIds ]
-        main.log.info( "ONOS flow IDs: {}".format( flowIds ) )
-
-        stepResult = main.Mininet1.checkFlowId( "s1", flowIds, debug=False )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="All flows are in mininet",
-                                 onfail="All flows are NOT in mininet" )
+        main.checkingFlow.checkFlow()
 
         main.step( "Send a packet to verify the flow are correct" )
 
@@ -645,6 +568,7 @@ class FUNCflow:
         main.step( "Add a flow with a MPLS selector" )
 
         main.log.info( "Creating host components" )
+        ctrl = main.Cluster.active( 0 )
         main.Scapy.createHostComponent( "h1" )
         main.Scapy.createHostComponent( "h2" )
         hosts = [ main.h1, main.h2 ]
@@ -663,12 +587,12 @@ class FUNCflow:
 
         # Add a flow that connects host1 on port1 to host2 on port2
         main.log.info( "Adding flow with MPLS selector" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            mpls=mplsLabel,
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        mpls=mplsLabel,
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -682,7 +606,7 @@ class FUNCflow:
 
         main.log.info( "Get the flows from ONOS" )
         try:
-            flows = json.loads( main.ONOSrest.flows() )
+            flows = json.loads( ctrl.REST.flows() )
 
             stepResult = main.TRUE
             for f in flows:
@@ -759,7 +683,7 @@ class FUNCflow:
                 "send a TCP packet to verify the TCP selector is compiled correctly."
 
         main.step( "Add a flow with a TCP selector" )
-
+        ctrl = main.Cluster.active( 0 )
         main.log.info( "Creating host components" )
         main.Scapy.createHostComponent( "h1" )
         main.Scapy.createHostComponent( "h2" )
@@ -780,13 +704,13 @@ class FUNCflow:
         tcpDst = main.params[ 'TEST' ][ 'tcpDst' ]
 
         main.log.info( "Add a flow that connects host1 on port1 to host2 on port2" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            ipProto=ipProto,
-                                            tcpDst=tcpDst,
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        ipProto=ipProto,
+                                        tcpDst=tcpDst,
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -844,7 +768,7 @@ class FUNCflow:
                 "send a UDP packet to verify the UDP selector is compiled correctly."
 
         main.step( "Add a flow with a UDP selector" )
-
+        ctrl = main.Cluster.active( 0 )
         main.log.info( "Creating host components" )
         main.Scapy.createHostComponent( "h1" )
         main.Scapy.createHostComponent( "h2" )
@@ -865,7 +789,7 @@ class FUNCflow:
         udpDst = main.params[ 'TEST' ][ 'udpDst' ]
 
         main.log.info( "Add a flow that connects host1 on port1 to host2 on port2" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
+        stepResult =ctrl.REST.addFlow( deviceId=main.swDPID,
                                             egressPort=egress,
                                             ingressPort=ingress,
                                             ethType=ethType,
@@ -946,14 +870,14 @@ class FUNCflow:
         ethType = main.params[ 'TEST' ][ 'ip4Type' ]
         # IP protocol
         ipProto = main.params[ 'TEST' ][ 'icmpProto' ]
-
+        ctrl = main.Cluster.active( 0 )
         main.log.info( "Add a flow that connects host1 on port1 to host2 on port2" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            ipProto=ipProto,
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        ipProto=ipProto,
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1028,14 +952,14 @@ class FUNCflow:
         ethType = main.params[ 'TEST' ][ 'ip6Type' ]
         # IP protocol
         ipProto = main.params[ 'TEST' ][ 'icmp6Proto' ]
-
+        ctrl = main.Cluster.active( 0 )
         main.log.info( "Add a flow that connects host1 on port1 to host2 on port2" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            ipProto=ipProto,
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        ipProto=ipProto,
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1088,17 +1012,17 @@ class FUNCflow:
 
         main.case( "Delete flows that were added through rest" )
         main.step( "Deleting flows" )
-
+        ctrl = main.Cluster.active( 0 )
         main.log.info( "Getting flows" )
         try:
-            flows = json.loads( main.ONOSrest.flows() )
+            flows = json.loads( ctrl.REST.flows() )
 
             stepResult = main.TRUE
             for f in flows:
                 if "rest" in f.get( "appId" ):
                     if main.debug:
-                        main.log.debug( "Flow to be deleted:\n{}".format( main.ONOSrest.pprint( f ) ) )
-                    stepResult = stepResult and main.ONOSrest.removeFlow( f.get( "deviceId" ), f.get( "id" ) )
+                        main.log.debug( "Flow to be deleted:\n{}".format( ctrl.REST.pprint( f ) ) )
+                    stepResult = stepResult and ctrl.REST.removeFlow( f.get( "deviceId" ), f.get( "id" ) )
         except TypeError:
             main.log.error( "No Flows found by the REST API" )
             stepResult = main.FALSE
@@ -1136,7 +1060,7 @@ class FUNCflow:
             host.startHostCli()
             host.startScapy()
             host.updateSelf()
-
+        ctrl = main.Cluster.active( 0 )
         # Add a flow that connects host1 on port1 to host2 on port2
         # send output on port2
         # recieve input on port1
@@ -1147,12 +1071,12 @@ class FUNCflow:
 
         # Add flows that connects host1 to host2
         main.log.info( "Add flow with port ingress 1 to port egress 2" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            priority=40001,
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        priority=40001,
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1226,14 +1150,14 @@ class FUNCflow:
         ethType = main.params[ 'TEST' ][ 'ip4Type' ]
         # IP protocol
         ipProto = main.params[ 'TEST' ][ 'sctpProto' ]
-
+        ctrl = main.Cluster.active( 0 )
         main.log.info( "Add a flow that connects host1 on port1 to host2 on port2" )
-        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
-                                            egressPort=egress,
-                                            ingressPort=ingress,
-                                            ethType=ethType,
-                                            ipProto=ipProto,
-                                            debug=main.debug )
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
+                                        egressPort=egress,
+                                        ingressPort=ingress,
+                                        ethType=ethType,
+                                        ipProto=ipProto,
+                                        debug=main.debug )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1283,7 +1207,7 @@ class FUNCflow:
             Report errors/warnings/exceptions
         """
         main.log.info( "Error report: \n" )
-        main.ONOSbench.logReport( main.ONOSip[ 0 ],
+        main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress,
                                   [ "INFO",
                                     "FOLLOWER",
                                     "WARN",

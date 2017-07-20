@@ -88,18 +88,13 @@ class HAclusterRestart:
             # load some variables from the params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            main.numCtrls = int( main.params[ 'num_controllers' ] )
-            if main.ONOSbench.maxNodes and \
-                            main.ONOSbench.maxNodes < main.numCtrls:
-                main.numCtrls = int( main.ONOSbench.maxNodes )
-            main.maxNodes = main.numCtrls
-            stepResult = main.testSetUp.envSetup( hasNode=True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAclusterRestart" )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=main.HA.startingMininet )
 
         main.HA.initialSetUp()
@@ -138,11 +133,8 @@ class HAclusterRestart:
         The Failure case.
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         try:
             main.HAlabels
         except ( NameError, AttributeError ):
@@ -163,61 +155,21 @@ class HAclusterRestart:
         main.case( "Restart entire ONOS cluster" )
 
         main.step( "Checking ONOS Logs for errors" )
-        for node in main.nodes:
-            main.log.debug( "Checking logs for errors on " + node.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
+        for ctrl in main.Cluster.active():
+            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
-        main.step( "Killing ONOS nodes" )
-        killResults = main.TRUE
-        killTime = time.time()
-        for node in main.nodes:
-            killed = main.ONOSbench.onosKill( node.ip_address )
-            killResults = killResults and killed
-        utilities.assert_equals( expect=main.TRUE, actual=killResults,
-                                 onpass="ONOS nodes killed",
-                                 onfail="ONOS kill unsuccessful" )
+        main.testSetUp.killingAllOnos( main.Cluster, True, False )
 
-        main.step( "Checking if ONOS is up yet" )
-        for i in range( 2 ):
-            onosIsupResult = main.TRUE
-            for node in main.nodes:
-                started = main.ONOSbench.isup( node.ip_address )
-                if not started:
-                    main.log.error( node.name + " didn't start!" )
-                onosIsupResult = onosIsupResult and started
-            if onosIsupResult == main.TRUE:
-                break
-        utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
-                                 onpass="ONOS restarted",
-                                 onfail="ONOS restart NOT successful" )
+        main.testSetUp.checkOnosService( main.Cluster )
 
-        main.step( "Starting ONOS CLI sessions" )
-        cliResults = main.TRUE
-        threads = []
-        for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
-                             name="startOnosCli-" + str( i ),
-                             args=[ main.nodes[ i ].ip_address ] )
-            threads.append( t )
-            t.start()
+        main.testSetUp.startOnosClis( main.Cluster )
 
-        for t in threads:
-            t.join()
-            cliResults = cliResults and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli started",
-                                 onfail="ONOS clis did not restart" )
-
-        for i in range( 10 ):
-            ready = True
-            for i in main.activeNodes:
-                cli = main.CLIs[ i ]
-                output = cli.summary()
-                if not output:
-                    ready = False
-            if ready:
-                break
-            time.sleep( 30 )
+        ready = utilities.retry( main.Cluster.command,
+                                 False,
+                                 kwargs={ "function":"summary", "contentCheck":True },
+                                 sleep=30,
+                                 attempts=10 )
         utilities.assert_equals( expect=True, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
@@ -233,23 +185,15 @@ class HAclusterRestart:
         main.HAdata.append( str( main.restartTime ) )
 
         # Rerun for election on restarted nodes
-        runResults = main.TRUE
-        for i in main.activeNodes:
-            cli = main.CLIs[ i ]
-            run = cli.electionTestRun()
-            if run != main.TRUE:
-                main.log.error( "Error running for election on " + cli.name )
-            runResults = runResults and run
-        utilities.assert_equals( expect=main.TRUE, actual=runResults,
+        runResults = main.Cluster.command( "electionTestRun", returnBool=True )
+        utilities.assert_equals( expect=True, actual=runResults,
                                  onpass="Reran for election",
                                  onfail="Failed to rerun for election" )
 
         # TODO: Make this configurable
         time.sleep( 60 )
-        node = main.activeNodes[ 0 ]
-        main.log.debug( main.CLIs[ node ].nodes( jsonFormat=False ) )
-        main.log.debug( main.CLIs[ node ].leaders( jsonFormat=False ) )
-        main.log.debug( main.CLIs[ node ].partitions( jsonFormat=False ) )
+
+        main.HA.commonChecks()
 
     def CASE7( self, main ):
         """
@@ -257,16 +201,16 @@ class HAclusterRestart:
         """
         # NOTE: Store has no durability, so intents are lost across system
         #       restarts
-        main.HA.checkStateAfterONOS( main, afterWhich=0, isRestart=True )
+        main.HA.checkStateAfterEvent( main, afterWhich=0, isRestart=True )
 
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
         leaderList = []
         leaderResult = main.TRUE
 
-        for i in main.activeNodes:
-            cli = main.CLIs[ i ]
-            leaderN = cli.electionTestLeader()
+        for ctrl in main.Cluster.active():
+            ctrl.CLI.electionTestLeader()
+            leaderN = ctrl.CLI.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
                 # error in response

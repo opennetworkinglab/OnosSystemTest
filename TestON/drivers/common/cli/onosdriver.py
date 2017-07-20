@@ -1406,6 +1406,29 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def preventAutoRespawn( self ):
+        """
+        Description:
+            This will prevent ONOSservice to automatically
+            respawn.
+        """
+        try:
+            self.handle.sendline( "sed -i -e 's/^respawn$/#respawn/g' tools/package/init/onos.conf" )
+            self.handle.expect( "\$" )  # $ from the command
+            self.handle.sendline( "sed -i -e 's/^Restart=always/Restart=no/g' tools/package/init/onos.service" )
+            self.handle.expect( "\$" )  # $ from the command
+            self.handle.expect( "\$" )  # $ from the prompt
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+
     def pushTestIntentsShell(
             self,
             dpidSrc,

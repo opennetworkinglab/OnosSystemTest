@@ -37,7 +37,7 @@ SCPFintentRerouteLat
 
 
 class SCPFintentRerouteLat:
-    def __init__(self):
+    def __init__( self ):
         self.default = ''
 
     def CASE0( self, main ):
@@ -61,14 +61,12 @@ class SCPFintentRerouteLat:
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
-            main.onosIp = main.ONOSbench.getOnosIps()
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             main.BENCHUser = main.params[ 'BENCH' ][ 'user' ]
             main.BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
             main.MN1Ip = main.params[ 'MN' ][ 'ip1' ]
-            main.maxNodes = int( main.params[ 'max' ] )
             main.cellName = main.params[ 'ENV' ][ 'cellName' ]
-            main.scale = ( main.params[ 'SCALE' ] ).split(",")
+            main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.timeout = int( main.params[ 'SLEEP' ][ 'timeout' ] )
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.installSleep = int( main.params[ 'SLEEP' ][ 'install' ] )
@@ -77,6 +75,10 @@ class SCPFintentRerouteLat:
             main.verifyAttempts = int( main.params[ 'ATTEMPTS' ][ 'verify' ] )
             main.maxInvalidRun = int( main.params[ 'ATTEMPTS' ][ 'maxInvalidRun' ] )
             main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
+            main.intentManagerCfg = main.params[ 'CFG' ][ 'intentManager' ]
+            main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
+            main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
+            main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
             main.ingress = main.params[ 'TEST' ][ 'ingress' ]
             main.egress = main.params[ 'TEST' ][ 'egress' ]
@@ -95,9 +97,9 @@ class SCPFintentRerouteLat:
                 main.dbFileName = main.params[ 'DATABASE' ][ 'dbName' ]
                 main.intentsList = ( main.params[ 'TEST' ][ 'intents' ] ).split( "," )
 
-            stepResult = main.testSetUp.gitPulling()
+            stepResult = main.testSetUp.envSetup()
 
-            for i in range( 0, len( main.intentsList) ):
+            for i in range( 0, len( main.intentsList ) ):
                 main.intentsList[ i ] = int( main.intentsList[ i ] )
                 # Create DataBase file
             main.log.info( "Create Database file " + main.dbFileName )
@@ -112,6 +114,7 @@ class SCPFintentRerouteLat:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
+
     def CASE1( self, main ):
         '''
             clean up test environment and set up
@@ -119,32 +122,30 @@ class SCPFintentRerouteLat:
         import time
 
         main.maxNumBatch = 0
-        main.testSetUp.getNumCtrls( True )
-        main.testSetUp.envSetup( includeGitPull=False, makeMaxNodes=False )
-        main.testSetUp.ONOSSetUp( main.MN1Ip, True,
-                                  cellName=main.cellName, killRemoveMax=False,
-                                  CtrlsSet=False )
+        main.testSetUp.ONOSSetUp( main.MN1Ip, main.Cluster, True,
+                                  cellName=main.cellName, killRemoveMax=False )
         # configure apps
-        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount )
-        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "topoShape", value="reroute" )
-        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "enabled", value="true" )
-        main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal", value="true" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg, "deviceCount", value=main.deviceCount )
+        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg, "topoShape", value="reroute" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg, "enabled", value="true" )
+        main.Cluster.active( 0 ).CLI.setCfg( main.intentManagerCfg, "skipReleaseResourcesOnWithdrawal",
+                                             value="true" )
         if main.flowObj:
-            main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
-                                "useFlowObjectives", value="true" )
-            main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
-                                "defaultFlowObjectiveCompiler",
-                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
+            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                                 "useFlowObjectives", value="true" )
+            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                                 "defaultFlowObjectiveCompiler",
+                                                 value=main.linkCollectionIntentCfg )
         time.sleep( main.startUpSleep )
-        for i in range( int( main.numCtrls ) ):
-            main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.topology" )
-            main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.intent" )
+        for ctrl in main.Cluster.active():
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.metrics.topology" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.metrics.intent" )
         # Balance Master
-        main.CLIs[0].balanceMasters()
+        main.Cluster.active( 0 ).CLI.balanceMasters()
         time.sleep( main.setMasterSleep )
-        if main.numCtrls:
-            main.CLIs[0].deviceRole( main.end1[ 'name' ], main.ONOSip[0] )
-            main.CLIs[0].deviceRole( main.end2[ 'name' ], main.ONOSip[0] )
+        if main.Cluster.numCtrls:
+            main.Cluster.active( 0 ).CLI.deviceRole( main.end1[ 'name' ], main.Cluster.active( 0 ).ipAddress )
+            main.Cluster.active( 0 ).CLI.deviceRole( main.end2[ 'name' ], main.Cluster.active( 0 ).ipAddress )
         time.sleep( main.setMasterSleep )
 
     def CASE2( self, main ):
@@ -154,10 +155,10 @@ class SCPFintentRerouteLat:
         import json
         # from scipy import stats
 
-        print( main.intentsList)
+        print( main.intentsList )
         for batchSize in main.intentsList:
             main.batchSize = batchSize
-            main.log.report("Intent Batch size: " + str(batchSize) + "\n      ")
+            main.log.report( "Intent Batch size: " + str( batchSize ) + "\n      " )
             firstLocalLatencies = []
             lastLocalLatencies = []
             firstGlobalLatencies = []
@@ -167,46 +168,63 @@ class SCPFintentRerouteLat:
             main.invalidRun = 0
             while main.validRun <= main.warmUp + main.sampleSize and main.invalidRun <= main.maxInvalidRun:
                 if main.validRun >= main.warmUp:
-                    main.log.info("================================================")
-                    main.log.info("Valid iteration: {} ".format( main.validRun - main.warmUp) )
-                    main.log.info("Total iteration: {}".format( main.validRun + main.invalidRun) )
-                    main.log.info("================================================")
+                    main.log.info( "================================================" )
+                    main.log.info( "Valid iteration: {} ".format( main.validRun - main.warmUp ) )
+                    main.log.info( "Total iteration: {}".format( main.validRun + main.invalidRun ) )
+                    main.log.info( "================================================" )
                 else:
-                    main.log.info("====================Warm Up=====================")
+                    main.log.info( "====================Warm Up=====================" )
 
                 # push intents
-                main.CLIs[0].pushTestIntents( main.ingress, main.egress, main.batchSize,
-                                             offset=1, options="-i", timeout=main.timeout)
+                main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                              main.egress,
+                                                              main.batchSize,
+                                                              offset=1,
+                                                              options="-i",
+                                                              timeout=main.timeout )
 
                 # check links, flows and intents
-                main.intentRerouteLatFuncs.sanityCheck( main, main.deviceCount * 2, batchSize * ( main.deviceCount - 1 ), main.batchSize )
+                main.intentRerouteLatFuncs.sanityCheck( main,
+                                                        main.deviceCount * 2,
+                                                        batchSize * ( main.deviceCount - 1 ),
+                                                        main.batchSize )
                 if not main.verify:
                     main.log.warn( "Sanity check failed, skipping this iteration..." )
                     continue
 
                 # Insert one line in karaf.log before link down
-                for i in range( main.numCtrls ):
-                    main.CLIs[ i ].log( "\'Scale: {}, Batch:{}, Iteration: {}\'".format( main.numCtrls, batchSize, main.validRun + main.invalidRun ) )
-
+                main.Cluster.command( "log",
+                                      args=[ "\'Scale: {}, Batch:{}, Iteration: {}\'".format(
+                                          main.Cluster.numCtrls, batchSize, main.validRun + main.invalidRun ) ],
+                                      returnBool=True, specificDriver=2 )
                 # bring link down
-                main.CLIs[0].link( main.end1[ 'port' ], main.end2[ 'port' ], "down",
-                                  timeout=main.timeout, showResponse=False)
+                main.Cluster.active( 0 ).CLI.link( main.end1[ 'port' ], main.end2[ 'port' ], "down",
+                                                   timeout=main.timeout, showResponse=False )
 
                 # check links, flows and intents
-                main.intentRerouteLatFuncs.sanityCheck( main, ( main.deviceCount - 1) * 2, batchSize * main.deviceCount, main.batchSize )
+                main.intentRerouteLatFuncs.sanityCheck( main,
+                                                        ( main.deviceCount - 1 ) * 2,
+                                                        batchSize * main.deviceCount,
+                                                        main.batchSize )
                 if not main.verify:
                     main.log.warn( "Sanity check failed, skipping this iteration..." )
                     continue
 
                 # Get timestamp of last LINK_REMOVED event as separator between iterations
                 skip = False
-                for i in range( main.numCtrls ):
+                for i in range( main.Cluster.numCtrls ):
                     logNum = main.intentRerouteLatFuncs.getLogNum( main, i )
-                    timestamp = str( main.CLIs[ i ].getTimeStampFromLog( "last", "LINK_REMOVED", "time = ", " ", logNum=logNum ) )
+                    timestamp = str( main.Cluster.active( i ).CLI.getTimeStampFromLog( "last",
+                                                                                       "LINK_REMOVED",
+                                                                                       "time = ", " ",
+                                                                                       logNum=logNum ) )
                     if timestamp == main.ERROR:
                         # Try again in case that the log number just increased
                         logNum = main.intentRerouteLatFuncs.getLogNum( main, i )
-                        timestamp = str( main.CLIs[ i ].getTimeStampFromLog( "last", "LINK_REMOVED", "time = ", " ", logNum=logNum ) )
+                        timestamp = str( main.Cluster.active( i ).CLI.getTimeStampFromLog( "last",
+                                                                                           "LINK_REMOVED",
+                                                                                           "time = ", " ",
+                                                                                           logNum=logNum ) )
                     if timestamp == main.ERROR:
                         main.log.warn( "Cannot find the event we want in the log, skipping this iteration..." )
                         main.intentRerouteLatFuncs.bringBackTopology( main )
@@ -218,7 +236,8 @@ class SCPFintentRerouteLat:
                         break
                     else:
                         main.startLine[ i ] = timestamp
-                        main.log.info( "Timestamp of last LINK_REMOVED event on node {} is {}".format( i+1, main.startLine[ i ] ) )
+                        main.log.info( "Timestamp of last LINK_REMOVED event on node {} is {}".format( i + 1,
+                                                                                                       main.startLine[ i ] ) )
                 if skip: continue
 
                 # calculate values
@@ -235,7 +254,8 @@ class SCPFintentRerouteLat:
                 else:
                     main.log.info( "Got valid timestamps" )
 
-                firstLocalLatnecy, lastLocalLatnecy, firstGlobalLatency, lastGlobalLatnecy = main.intentRerouteLatFuncs.calculateLatency( main, topologyTimestamps, intentTimestamps )
+                firstLocalLatnecy, lastLocalLatnecy, firstGlobalLatency, lastGlobalLatnecy \
+                    = main.intentRerouteLatFuncs.calculateLatency( main, topologyTimestamps, intentTimestamps )
                 if firstLocalLatnecy < 0:
                     main.log.info( "Got negative latency, skipping this iteration..." )
                     main.intentRerouteLatFuncs.bringBackTopology( main )
@@ -254,11 +274,17 @@ class SCPFintentRerouteLat:
                 lastGlobalLatencies.append( lastGlobalLatnecy )
 
                 # bring up link and withdraw intents
-                main.CLIs[0].link( main.end1[ 'port' ], main.end2[ 'port' ], "up",
-                                  timeout=main.timeout)
-                main.CLIs[0].pushTestIntents( main.ingress, main.egress, batchSize,
-                                             offset=1, options="-w", timeout=main.timeout)
-                main.CLIs[0].purgeWithdrawnIntents()
+                main.Cluster.active( 0 ).CLI.link( main.end1[ 'port' ],
+                                                   main.end2[ 'port' ],
+                                                   "up",
+                                                   timeout=main.timeout )
+                main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                              main.egress,
+                                                              batchSize,
+                                                              offset=1,
+                                                              options="-w",
+                                                              timeout=main.timeout )
+                main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
 
                 # check links, flows and intents
                 main.intentRerouteLatFuncs.sanityCheck( main, main.deviceCount * 2, 0, 0 )
@@ -270,7 +296,7 @@ class SCPFintentRerouteLat:
             stdLocalLatency = numpy.std( lastLocalLatencies )
             stdGlobalLatency = numpy.std( lastGlobalLatencies )
 
-            main.log.report( "Scale: " + str( main.numCtrls ) + "  \tIntent batch: " + str( batchSize ) )
+            main.log.report( "Scale: " + str( main.Cluster.numCtrls ) + "  \tIntent batch: " + str( batchSize ) )
             main.log.report( "Local latency average:................" + str( aveLocalLatency ) )
             main.log.report( "Global latency average:................" + str( aveGlobalLatency ) )
             main.log.report( "Local latency std:................" + str( stdLocalLatency ) )
@@ -281,7 +307,7 @@ class SCPFintentRerouteLat:
                 # check if got NaN for result
                 resultsDB = open( main.dbFileName, "a" )
                 resultsDB.write( "'" + main.commit + "'," )
-                resultsDB.write( str( main.numCtrls ) + "," )
+                resultsDB.write( str( main.Cluster.numCtrls ) + "," )
                 resultsDB.write( str( batchSize ) + "," )
                 resultsDB.write( str( aveLocalLatency ) + "," )
                 resultsDB.write( str( stdLocalLatency ) + "\n" )

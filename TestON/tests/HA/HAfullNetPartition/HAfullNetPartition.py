@@ -90,21 +90,16 @@ class HAfullNetPartition:
             # load some variables from the params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            main.numCtrls = int( main.params[ 'num_controllers' ] )
-            if main.ONOSbench.maxNodes and\
-                        main.ONOSbench.maxNodes < main.numCtrls:
-                main.numCtrls = int( main.ONOSbench.maxNodes )
-            main.maxNodes = main.numCtrls
-            stepResult = main.testSetUp.envSetup( hasNode=True )
+            stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAfullNetPartition" )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, cellName=cellName, removeLog=True,
-                                 extraApply=main.HA.customizeOnosGenPartitions,
-                                 extraClean=main.HA.cleanUpGenPartition )
-
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
+                                  extraApply=[ main.HA.startingMininet,
+                                               main.HA.customizeOnosGenPartitions ],
+                                  extraClean=main.HA.cleanUpGenPartition )
         main.HA.initialSetUp()
 
 
@@ -143,21 +138,18 @@ class HAfullNetPartition:
         The Failure case.
         """
         import math
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         main.case( "Partition ONOS nodes into two distinct partitions" )
 
         main.step( "Checking ONOS Logs for errors" )
-        for node in main.nodes:
-            main.log.debug( "Checking logs for errors on " + node.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
+        for ctrl in main.Cluster.runningNodes:
+            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
-        main.log.debug( main.CLIs[ 0 ].roles( jsonFormat=False ) )
+        main.log.debug( main.Cluster.next().CLI.roles( jsonFormat=False ) )
 
-        n = len( main.nodes )  # Number of nodes
+        n = len( main.Cluster.runningNodes )  # Number of nodes
         p = ( ( n + 1 ) / 2 ) + 1  # Number of partitions
         main.partition = [ 0 ]  # ONOS node to partition, listed by index in main.nodes
         if n > 3:
@@ -169,27 +161,49 @@ class HAfullNetPartition:
         main.log.info( "Nodes to be partitioned: " + str( nodeList ) )
         partitionResults = main.TRUE
         for i in range( 0, n ):
-            this = main.nodes[ i ]
+            iCtrl = main.Cluster.runningNodes[ i ]
+            this = iCtrl.Bench.sshToNode( iCtrl.ipAddress )
             if i not in main.partition:
                 for j in main.partition:
-                    foe = main.nodes[ j ]
-                    main.log.warn( "Setting IP Tables rule from {} to {}. ".format( this.ip_address, foe.ip_address ) )
+                    foe =  main.Cluster.runningNodes[ j ]
+                    main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress, foe.ipAddress ) )
                     #CMD HERE
-                    cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", this.ip_address, foe.ip_address )
-                    this.handle.sendline( cmdStr )
-                    this.handle.expect( "\$" )
-                    main.log.debug( this.handle.before )
+                    try:
+                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", iCtrl.ipAddress, foe.ipAddress )
+                        this.sendline( cmdStr )
+                        this.expect( "\$" )
+                        main.log.debug( this.before )
+                    except pexpect.EOF:
+                        main.log.error( self.name + ": EOF exception found" )
+                        main.log.error( self.name + ":    " + self.handle.before )
+                        main.cleanup()
+                        main.exit()
+                    except Exception:
+                        main.log.exception( self.name + ": Uncaught exception!" )
+                        main.cleanup()
+                        main.exit()
             else:
                 for j in range( 0, n ):
                     if j not in main.partition:
-                        foe = main.nodes[ j ]
-                        main.log.warn( "Setting IP Tables rule from {} to {}. ".format( this.ip_address, foe.ip_address ) )
+                        foe = main.Cluster.runningNodes[ j ]
+                        main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress, foe.ipAddress ) )
                         #CMD HERE
-                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", this.ip_address, foe.ip_address )
-                        this.handle.sendline( cmdStr )
-                        this.handle.expect( "\$" )
-                        main.log.debug( this.handle.before )
-                main.activeNodes.remove( i )
+                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", iCtrl.ipAddress, foe.ipAddress )
+                        try:
+                            this.sendline( cmdStr )
+                            this.expect( "\$" )
+                            main.log.debug( this.before )
+                        except pexpect.EOF:
+                            main.log.error( self.name + ": EOF exception found" )
+                            main.log.error( self.name + ":    " + self.handle.before )
+                            main.cleanup()
+                            main.exit()
+                        except Exception:
+                            main.log.exception( self.name + ": Uncaught exception!" )
+                            main.cleanup()
+                            main.exit()
+                main.Cluster.runningNodes[ i ].active = False
+            iCtrl.Bench.exitFromSsh( this, iCtrl.ipAddress )
         # NOTE: When dynamic clustering is finished, we need to start checking
         #       main.partion nodes still work when partitioned
         utilities.assert_equals( expect=main.TRUE, actual=partitionResults,
@@ -204,28 +218,30 @@ class HAfullNetPartition:
         Healing Partition
         """
         import time
-        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert main.CLIs, "main.CLIs not defined"
-        assert main.nodes, "main.nodes not defined"
         assert main.partition, "main.partition not defined"
         main.case( "Healing Partition" )
 
         main.step( "Deleteing firewall rules" )
         healResults = main.TRUE
-        for node in main.nodes:
+        for ctrl in main.Cluster.runningNodes:
             cmdStr = "sudo iptables -F"
-            node.handle.sendline( cmdStr )
-            node.handle.expect( "\$" )
-            main.log.debug( node.handle.before )
+            handle = ctrl.Bench.sshToNode( ctrl.ipAddress )
+            handle.sendline( cmdStr )
+            handle.expect( "\$" )
+            main.log.debug( handle.before )
+            ctrl.Bench.exitFromSsh( handle, ctrl.ipAddress )
         utilities.assert_equals( expect=main.TRUE, actual=healResults,
                                  onpass="Firewall rules removed",
                                  onfail="Error removing firewall rules" )
 
         for node in main.partition:
-            main.activeNodes.append( node )
-        main.activeNodes.sort()
+            main.Cluster.runningNodes[ node ].active = True
+
+        '''
+        # NOTE : Not sure if this can be removed
+         main.activeNodes.sort()
         try:
             assert list( set( main.activeNodes ) ) == main.activeNodes,\
                    "List of active nodes has duplicates, this likely indicates something was run out of order"
@@ -233,11 +249,12 @@ class HAfullNetPartition:
             main.log.exception( "" )
             main.cleanup()
             main.exit()
+        '''
 
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.HA.nodesCheck,
                                        False,
-                                       args=[ main.activeNodes ],
+                                       args=[ main.Cluster.active() ],
                                        sleep=15,
                                        attempts=5 )
 
@@ -246,11 +263,10 @@ class HAfullNetPartition:
                                  onfail="Nodes check NOT successful" )
 
         if not nodeResults:
-            for i in main.activeNodes:
-                cli = main.CLIs[ i ]
+            for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    cli.name,
-                    cli.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
@@ -260,7 +276,7 @@ class HAfullNetPartition:
         Check state after ONOS failure
         """
 
-        main.HA.checkStateAfterONOS( main, afterWhich=0 )
+        main.HA.checkStateAfterEvent( main, afterWhich=0 )
 
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
@@ -268,12 +284,11 @@ class HAfullNetPartition:
 
         partitioned = []
         for i in main.partition:
-            partitioned.append( main.nodes[ i ].ip_address )
+            partitioned.append( main.Cluster.runningNodes[ i ].ipAddress )
         leaderResult = main.TRUE
 
-        for i in main.activeNodes:
-            cli = main.CLIs[ i ]
-            leaderN = cli.electionTestLeader()
+        for ctrl in main.Cluster.active():
+            leaderN = ctrl.CLI.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
                 # error in response
@@ -282,12 +297,12 @@ class HAfullNetPartition:
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leaderN is None:
-                main.log.error( cli.name +
+                main.log.error( ctrl.name +
                                  " shows no leader for the election-app was" +
                                  " elected after the old one died" )
                 leaderResult = main.FALSE
             elif leaderN in partitioned:
-                main.log.error( cli.name + " shows " + str( leaderN ) +
+                main.log.error( ctrl.name + " shows " + str( leaderN ) +
                                  " as leader for the election-app, but it " +
                                  "was partitioned" )
                 leaderResult = main.FALSE

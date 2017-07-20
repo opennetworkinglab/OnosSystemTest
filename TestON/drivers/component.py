@@ -114,7 +114,6 @@ class Component( object ):
         args = utilities.parse_args( [ "RETURNS" ], **kwargs )
         return args[ "RETURNS" ]
 
-
 if __name__ != "__main__":
     import sys
     sys.modules[ __name__ ] = Component()

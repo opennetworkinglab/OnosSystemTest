@@ -36,7 +36,7 @@ class SCPFscalingMaxIntents:
     def __init__( self ):
         self.default = ''
 
-    def CASE0( self, main):
+    def CASE0( self, main ):
         import sys
         import json
         import time
@@ -64,6 +64,9 @@ class SCPFscalingMaxIntents:
             main.installSleep = int( main.params[ 'SLEEP' ][ 'install' ] )
             main.verifySleep = int( main.params[ 'SLEEP' ][ 'verify' ] )
             main.rerouteSleep = int ( main.params[ 'SLEEP' ][ 'reroute' ] )
+            main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
+            main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
+            main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.verifyAttempts = int( main.params[ 'ATTEMPTS' ][ 'verify' ] )
             main.ingress = main.params[ 'LINK' ][ 'ingress' ]
             main.egress = main.params[ 'LINK' ][ 'egress' ]
@@ -86,17 +89,15 @@ class SCPFscalingMaxIntents:
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
             main.nic = main.params[ 'DATABASE' ][ 'nic' ]
             node = main.params[ 'DATABASE' ][ 'node' ]
-            stepResult = main.testSetUp.gitPulling()
+            stepResult = main.testSetUp.envSetup()
             main.log.info( "Cresting DB file" )
             with open( main.dbFileName, "w+" ) as dbFile:
-                dbFile.write("")
+                dbFile.write( "" )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
     def CASE1( self ):
-        main.testSetUp.getNumCtrls( True )
-        main.testSetUp.envSetup( includeGitPull=False, makeMaxNodes=False )
         copyResult = main.ONOSbench.copyMininetFile( main.topology,
                                                      main.dependencyPath,
                                                      main.Mininet1.user_name,
@@ -109,8 +110,8 @@ class SCPFscalingMaxIntents:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, True,
-                                  killRemoveMax=False, CtrlsSet=False )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True,
+                                  killRemoveMax=False )
 
     def CASE10( self, main ):
         """
@@ -118,8 +119,8 @@ class SCPFscalingMaxIntents:
         """
         import json
         # Activate apps
-        main.step("Activating null-provider")
-        appStatus = utilities.retry( main.CLIs[0].activateApp,
+        main.step( "Activating null-provider" )
+        appStatus = utilities.retry( main.Cluster.active( 0 ).CLI.activateApp,
                                      main.FALSE,
                                      [ 'org.onosproject.null' ],
                                      sleep=main.verifySleep,
@@ -130,24 +131,24 @@ class SCPFscalingMaxIntents:
                                  onfail="Failed activate null-provider" )
 
         # Setup the null-provider
-        main.step("Configuring null-provider")
+        main.step( "Configuring null-provider" )
         cfgStatus = utilities.retry( main.ONOSbench.onosCfgSet,
                                     main.FALSE,
-                                    [ main.ONOSip[0],
-                                      'org.onosproject.provider.nil.NullProviders', 'deviceCount 8' ],
+                                    [ main.Cluster.active( 0 ).ipAddress,
+                                      main.nullProviderCfg, 'deviceCount 8' ],
                                     sleep=main.verifySleep,
                                     attempts = main.verifyAttempts )
         cfgStatus = cfgStatus and utilities.retry( main.ONOSbench.onosCfgSet,
                                                    main.FALSE,
-                                                   [ main.ONOSip[0],
-                                                     'org.onosproject.provider.nil.NullProviders', 'topoShape reroute' ],
+                                                   [ main.Cluster.active( 0 ).ipAddress,
+                                                     main.nullProviderCfg, 'topoShape reroute' ],
                                                    sleep=main.verifySleep,
                                                    attempts = main.verifyAttempts )
 
         cfgStatus = cfgStatus and utilities.retry( main.ONOSbench.onosCfgSet,
                                                    main.FALSE,
-                                                   [ main.ONOSip[0],
-                                                     'org.onosproject.provider.nil.NullProviders', 'enabled true' ],
+                                                   [ main.Cluster.active( 0 ).ipAddress,
+                                                     main.nullProviderCfg, 'enabled true' ],
                                                    sleep=main.verifySleep,
                                                    attempts = main.verifyAttempts )
 
@@ -158,12 +159,12 @@ class SCPFscalingMaxIntents:
                                  onfail="Failed to configure null-provider" )
 
         # give onos some time to settle
-        time.sleep(main.startUpSleep)
+        time.sleep( main.startUpSleep )
 
-        main.log.info("Setting default flows to zero")
+        main.log.info( "Setting default flows to zero" )
         main.defaultFlows = 0
 
-        main.step("Check status of null-provider setup")
+        main.step( "Check status of null-provider setup" )
         caseResult = appStatus and cfgStatus
         utilities.assert_equals( expect=main.TRUE,
                                  actual=caseResult,
@@ -176,11 +177,11 @@ class SCPFscalingMaxIntents:
         # If the null-provider setup was unsuccessfull, then there is no point to
         # run the subsequent cases
 
-        time.sleep(main.startUpSleep)
+        time.sleep( main.startUpSleep )
         main.step( "Balancing Masters" )
 
         stepResult = main.FALSE
-        stepResult = utilities.retry( main.CLIs[0].balanceMasters,
+        stepResult = utilities.retry( main.Cluster.active( 0 ).CLI.balanceMasters,
                                       main.FALSE,
                                       [],
                                       sleep=3,
@@ -189,51 +190,50 @@ class SCPFscalingMaxIntents:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Balance masters was successfull",
-                                 onfail="Failed to balance masters")
+                                 onfail="Failed to balance masters" )
 
         time.sleep( 5 )
         if not caseResult:
             main.setupSkipped = True
 
-    def CASE11( self, main):
+    def CASE11( self, main ):
         '''
             Setting up mininet
         '''
         import json
         import time
- 
         devices = []
-        devices = main.CLIs[0].getAllDevicesId()
+        devices = main.Cluster.active( 0 ).CLI.getAllDevicesId()
         for d in devices:
-            main.CLIs[0].deviceRemove( d )
+            main.Cluster.active( 0 ).CLI.deviceRemove( d )
 
-        time.sleep(main.startUpSleep)
+        time.sleep( main.startUpSleep )
         if main.flowObj:
-            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
-                                "useFlowObjectives", value="true")
-            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                "useFlowObjectives", value="true" )
+            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
                                 "defaultFlowObjectiveCompiler",
-                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
-        main.step('Starting mininet topology')
-        mnStatus = main.Mininet1.startNet(topoFile='~/mininet/custom/rerouteTopo.py')
+                                value=main.linkCollectionIntentCfg )
+        main.step( 'Starting mininet topology' )
+        mnStatus = main.Mininet1.startNet( topoFile='~/mininet/custom/rerouteTopo.py' )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=mnStatus,
                                  onpass="Successfully started Mininet",
                                  onfail="Failed to activate Mininet" )
 
-        main.step("Assinging masters to switches")
+        main.step( "Assinging masters to switches" )
         switches = main.Mininet1.getSwitches()
-        swStatus = main.Mininet1.assignSwController( sw=switches.keys(), ip=main.ONOSip )
+        swStatus = main.Mininet1.assignSwController( sw=switches.keys(), ip=main.Cluster.getIps() )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=swStatus,
                                  onpass="Successfully assigned switches to masters",
                                  onfail="Failed assign switches to masters" )
 
-        time.sleep(main.startUpSleep)
+        time.sleep( main.startUpSleep )
         # Balancing Masters
         main.step( "Balancing Masters" )
         stepResult = main.FALSE
-        stepResult = utilities.retry( main.CLIs[0].balanceMasters,
+        stepResult = utilities.retry( main.Cluster.active( 0 ).CLI.balanceMasters,
                                       main.FALSE,
                                       [],
                                       sleep=3,
@@ -244,11 +244,11 @@ class SCPFscalingMaxIntents:
                                        onpass="Balance masters was successfull",
                                        onfail="Failed to balance masters" )
 
-        main.log.info("Getting default flows")
-        jsonSum = json.loads(main.CLIs[0].summary())
-        main.defaultFlows = jsonSum["flows"]
+        main.log.info( "Getting default flows" )
+        jsonSum = json.loads( main.Cluster.active( 0 ).CLI.summary() )
+        main.defaultFlows = jsonSum[ "flows" ]
 
-        main.step("Check status of Mininet setup")
+        main.step( "Check status of Mininet setup" )
         caseResult = mnStatus and swStatus
         utilities.assert_equals( expect=main.TRUE,
                                  actual=caseResult,
@@ -258,11 +258,11 @@ class SCPFscalingMaxIntents:
         # This tells the following cases if we are using the null-provider or ovs
         main.switchType = "of:"
 
-        time.sleep(main.startUpSleep)
+        time.sleep( main.startUpSleep )
         main.step( "Balancing Masters" )
 
         stepResult = main.FALSE
-        stepResult = utilities.retry( main.CLIs[0].balanceMasters,
+        stepResult = utilities.retry( main.Cluster.active( 0 ).CLI.balanceMasters,
                                       main.FALSE,
                                       [],
                                       sleep=3,
@@ -271,9 +271,9 @@ class SCPFscalingMaxIntents:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Balance masters was successfull",
-                                 onfail="Failed to balance masters")
+                                 onfail="Failed to balance masters" )
 
-        time.sleep(5)
+        time.sleep( 5 )
         if not caseResult:
             main.setupSkipped = True
 
@@ -290,15 +290,15 @@ class SCPFscalingMaxIntents:
         except ( NameError, AttributeError ):
             main.Utils = Utils()
         if main.reroute:
-            main.minIntents = int(main.params[ 'NULL' ][ 'REROUTE' ][ 'min_intents' ] )
-            main.maxIntents = int(main.params[ 'NULL' ][ 'REROUTE' ][ 'max_intents' ] )
-            main.checkInterval = int(main.params[ 'NULL' ][ 'REROUTE' ][ 'check_interval' ] )
-            main.batchSize = int(main.params[ 'NULL' ][ 'REROUTE' ][ 'batch_size' ] )
+            main.minIntents = int( main.params[ 'NULL' ][ 'REROUTE' ][ 'min_intents' ] )
+            main.maxIntents = int( main.params[ 'NULL' ][ 'REROUTE' ][ 'max_intents' ] )
+            main.checkInterval = int( main.params[ 'NULL' ][ 'REROUTE' ][ 'check_interval' ] )
+            main.batchSize = int( main.params[ 'NULL' ][ 'REROUTE' ][ 'batch_size' ] )
         else:
-            main.minIntents = int(main.params[ 'NULL' ][ 'PUSH' ][ 'min_intents' ] )
-            main.maxIntents = int(main.params[ 'NULL' ][ 'PUSH' ][ 'max_intents' ] )
-            main.checkInterval = int(main.params[ 'NULL' ][ 'PUSH' ][ 'check_interval' ] )
-            main.batchSize = int(main.params[ 'NULL' ][ 'PUSH' ][ 'batch_size' ] )
+            main.minIntents = int( main.params[ 'NULL' ][ 'PUSH' ][ 'min_intents' ] )
+            main.maxIntents = int( main.params[ 'NULL' ][ 'PUSH' ][ 'max_intents' ] )
+            main.checkInterval = int( main.params[ 'NULL' ][ 'PUSH' ][ 'check_interval' ] )
+            main.batchSize = int( main.params[ 'NULL' ][ 'PUSH' ][ 'batch_size' ] )
 
         # check if the case needs to be skipped
         if main.setupSkipped:
@@ -312,7 +312,7 @@ class SCPFscalingMaxIntents:
         # keeps track of how many flows have been installed, set to 0 at start
         currFlows = 0
         # limit for the number of intents that can be installed
-        main.batchSize = int( int(main.batchSize)/int(main.numCtrls))
+        main.batchSize = int( int( main.batchSize ) / main.Cluster.numCtrls )
         limit = main.maxIntents / main.batchSize
         # total intents installed
         totalIntents = 0
@@ -324,26 +324,26 @@ class SCPFscalingMaxIntents:
         stepResult = main.TRUE
         # temp variable to contain the number of flows
         flowsNum = 0
-        if main.numCtrls > 1:
+        if main.Cluster.numCtrls > 1:
             # if more than one onos nodes, we should check more frequently
-            main.checkInterval = main.checkInterval/4
+            main.checkInterval = main.checkInterval / 4
 
         # make sure the checkInterval divisible batchSize
         main.checkInterval = int( int( main.checkInterval / main.batchSize ) * main.batchSize )
         flowTemp=0
         intentVerifyTemp = 0
         totalFlows=0
-        for i in range(limit):
+        for i in range( limit ):
 
             # Threads pool
             pool = []
 
-            for j in range( int( main.numCtrls) ):
-                if main.numCtrls > 1:
+            for j in range( main.Cluster.numCtrls ):
+                if main.Cluster.numCtrls > 1:
                     time.sleep( 1 )
                 offtmp = offfset + main.maxIntents * j
                 # Push intents by using threads
-                t = main.Thread( target=main.CLIs[j].pushTestIntents,
+                t = main.Thread( target=main.Cluster.active( j ).CLI.pushTestIntents,
                                  threadID=main.threadID,
                                  name="Push-Test-Intents",
                                  args=[ main.switchType + main.ingress,
@@ -353,8 +353,8 @@ class SCPFscalingMaxIntents:
                                           "options": "-i",
                                           "timeout": main.timeout,
                                           "background":False,
-                                          "noExit":True} )
-                pool.append(t)
+                                          "noExit":True } )
+                pool.append( t )
                 t.start()
                 main.threadID = main.threadID + 1
             for t in pool:
@@ -362,41 +362,41 @@ class SCPFscalingMaxIntents:
                 stepResult = stepResult and t.result
             offfset = offfset + main.batchSize
 
-            totalIntents = main.batchSize * main.numCtrls + totalIntents
+            totalIntents = main.batchSize * main.Cluster.numCtrls + totalIntents
             if totalIntents >= main.minIntents and totalIntents % main.checkInterval == 0:
                 # if reach to minimum number and check interval, verify Intetns and flows
-                time.sleep( main.verifySleep * main.numCtrls )
+                time.sleep( main.verifySleep * main.Cluster.numCtrls )
 
-                main.log.info("Verify Intents states")
+                main.log.info( "Verify Intents states" )
                 # k is a control variable for verify retry attempts
                 k = 1
                 while k <= main.verifyAttempts:
                     # while loop for check intents by using CLI driver
-                    time.sleep(5)
-                    intentsState = main.CLIs[0].checkIntentSummary(timeout=600, noExit=True)
+                    time.sleep( 5 )
+                    intentsState = main.Cluster.active( 0 ).CLI.checkIntentSummary( timeout=600, noExit=True )
                     if intentsState:
-                        verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600, noExit=True)
+                        verifyTotalIntents = main.Cluster.active( 0 ).CLI.getTotalIntentsNum( timeout=600, noExit=True )
                         if intentVerifyTemp < verifyTotalIntents:
                             intentVerifyTemp = verifyTotalIntents
                         else:
                             verifyTotalIntents = intentVerifyTemp
                             intentsState = False
-                        main.log.info("Total Installed Intents: {}".format( verifyTotalIntents ) )
+                        main.log.info( "Total Installed Intents: {}".format( verifyTotalIntents ) )
                         break
-                    k = k+1
+                    k = k + 1
 
                 k = 1
                 flowVerify = True
                 while k <= main.verifyAttempts:
-                    time.sleep(5)
-                    totalFlows = main.CLIs[0].getTotalFlowsNum( timeout=600, noExit=True )
+                    time.sleep( 5 )
+                    totalFlows = main.Cluster.active( 0 ).CLI.getTotalFlowsNum( timeout=600, noExit=True )
                     expectFlows = totalIntents * 7 + main.defaultFlows
                     if totalFlows == expectFlows:
-                        main.log.info("Total Flows Added: {}".format(totalFlows))
+                        main.log.info( "Total Flows Added: {}".format( totalFlows ) )
                         break
                     else:
-                        main.log.info("Some Flows are not added, retry...")
-                        main.log.info("Total Flows Added: {} Expect Flows: {}".format(totalFlows, expectFlows))
+                        main.log.info( "Some Flows are not added, retry..." )
+                        main.log.info( "Total Flows Added: {} Expect Flows: {}".format( totalFlows, expectFlows ) )
                         flowVerify = False
 
                     k += 1
@@ -408,7 +408,7 @@ class SCPFscalingMaxIntents:
                 if not intentsState or not flowVerify:
                     # If some intents are not installed, grep the previous flows list, and finished this test case
                     main.log.warn( "Intents or flows are not installed" )
-                    verifyTotalIntents = main.CLIs[0].getTotalIntentsNum(timeout=600, noExit=True)
+                    verifyTotalIntents = main.Cluster.active( 0 ).CLI.getTotalIntentsNum( timeout=600, noExit=True )
                     if intentVerifyTemp < verifyTotalIntents:
                         intentVerifyTemp = verifyTotalIntents
                     else:
@@ -417,7 +417,7 @@ class SCPFscalingMaxIntents:
                         flowTemp = totalFlows
                     else:
                         totalFlows = flowTemp
-                    main.log.info("Total Intents: {}".format( verifyTotalIntents) )
+                    main.log.info( "Total Intents: {}".format( verifyTotalIntents ) )
                     break
 
         utilities.assert_equals( expect = main.TRUE,
@@ -430,17 +430,17 @@ class SCPFscalingMaxIntents:
 
         main.Utils.mininetCleanup( main.Mininet1 )
 
-        main.log.info("Writing results to DS file")
-        with open(main.dbFileName, "a") as dbFile:
+        main.log.info( "Writing results to DS file" )
+        with open( main.dbFileName, "a" ) as dbFile:
             # Scale number
             temp = "'" + main.commit + "',"
             temp += "'" + main.nic + "',"
-            temp += str(main.numCtrls)
+            temp += str( main.Cluster.numCtrls )
             temp += ",'" + "baremetal1" + "'"
             # how many intents we installed before crash
-            temp += "," + str(verifyTotalIntents)
+            temp += "," + str( verifyTotalIntents )
             # how many flows we installed before crash
-            temp += "," + str(totalFlows)
+            temp += "," + str( totalFlows )
             # other columns in database, but we didn't use in this test
             temp += "," + "0,0,0,0,0,0"
             temp += "\n"

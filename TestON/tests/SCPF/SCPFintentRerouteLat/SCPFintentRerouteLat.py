@@ -125,15 +125,16 @@ class SCPFintentRerouteLat:
                                   cellName=main.cellName, killRemoveMax=False,
                                   CtrlsSet=False )
         # configure apps
-        main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount)
-        main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "topoShape", value="reroute")
-        main.CLIs[0].setCfg("org.onosproject.provider.nil.NullProviders", "enabled", value="true")
+        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "deviceCount", value=main.deviceCount )
+        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "topoShape", value="reroute" )
+        main.CLIs[ 0 ].setCfg( "org.onosproject.provider.nil.NullProviders", "enabled", value="true" )
+        main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.IntentManager", "skipReleaseResourcesOnWithdrawal", value="true" )
         if main.flowObj:
-            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
-                                "useFlowObjectives", value="true")
-            main.CLIs[0].setCfg("org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+            main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
+                                "useFlowObjectives", value="true" )
+            main.CLIs[ 0 ].setCfg( "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator",
                                 "defaultFlowObjectiveCompiler",
-                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler')
+                                value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
         time.sleep( main.startUpSleep )
         for i in range( int( main.numCtrls ) ):
             main.CLIs[i].logSet( "DEBUG", "org.onosproject.metrics.topology" )

@@ -59,7 +59,11 @@ class SCPFbatchFlowResp:
             main.addFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'addFlow' ] )
             main.delFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'delFlow' ] )
             main.chkFlowSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'chkFlow' ] )
-            main.onosPackaging = main.params[ 'CASE2' ][ 'incPackaging' ] == "true"
+            main.skipPackaging = main.params[ 'CASE2' ][ 'skipPackaging' ]
+            if main.skipPackaging.lower() == "true":
+                main.skipPackaging = True
+            else:
+                main.skipPackaging = False
             main.cfgSleep = float( main.params[ 'GLOBAL' ][ 'SLEEP' ][ 'cfg' ] )
             main.numSw = int( main.params[ 'GLOBAL' ][ 'numSw' ] )
             main.numThreads = int( main.params[ 'GLOBAL' ][ 'numThreads' ] )
@@ -84,7 +88,7 @@ class SCPFbatchFlowResp:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, skipPack=main.onosPackaging )
+        main.testSetUp.ONOSSetUp( main.Mininet1, skipPack=main.skipPackaging )
 
     def CASE10( self, main ):
         """

@@ -53,8 +53,13 @@ class SCPFflowTp1g:
             main.scale = ( main.params[ 'SCALE' ]  ).split( "," )
             main.flowRuleCfg = main.params[ 'CFG' ][ 'flowRule' ]
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
+            isFlowObj = main.params[ 'TEST' ][ 'flowObj' ]
+            if isFlowObj == 'true':
+               resultFile = main.params[ 'TEST' ][ 'flowObjResultFile' ]
+            else:
+               resultFile = main.params[ 'TEST' ][ 'flowResultFile' ]
             stepResult = main.testSetUp.envSetup()
-            resultsDB = open( "/tmp/flowTP1gDB", "w+" )
+            resultsDB = open( str( resultFile ), "w+" )
             resultsDB.close()
         except Exception as e:
             main.testSetUp.envSetupException( e )
@@ -69,7 +74,7 @@ class SCPFflowTp1g:
 
     def CASE2( self, main ):
         #
-        # This is the flow TP test
+        # This is the flow/flowObjective TP test
         #
         import os.path
         import numpy
@@ -96,6 +101,10 @@ class SCPFflowTp1g:
         neighborList = ( main.params[ 'TEST' ][ 'neighbors' ] ).split( "," )
         testCMD[ 0 ] = main.params[ 'TEST' ][ 'testCMD0' ]
         testCMD[ 1 ] = main.params[ 'TEST' ][ 'testCMD1' ]
+        testCMD[ 2 ] = main.params[ 'TEST' ][ 'testCMD2' ]
+        testCMD[ 3 ] = main.params[ 'TEST' ][ 'testCMD3' ]
+        flowObjType = main.params[ 'TEST' ][ 'flowObjType' ]
+        isFlowObj = main.params[ 'TEST' ][ 'flowObj' ]
         cooldown = main.params[ 'TEST' ][ 'cooldown' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
@@ -165,14 +174,23 @@ class SCPFflowTp1g:
                     break
                 time.sleep( 5 )
 
-            #devide flows
-            flows = int( main.params[ 'TEST' ][ 'flows' ] )
-            main.log.info( "Flow Target  = " + str( flows ) )
+            #divide flows/flowObjectives
+            if isFlowObj == 'true':
+               toInstall = "FlowObjectives"
+               installCount = int( main.params[ 'TEST' ][ 'flowObjectives' ] )
+               ifFailed = "FLOW_OBJ_TESTER.PY FAILURE"
+               resultFile = main.params[ 'TEST' ][ 'flowObjResultFile' ]
+            else:
+               toInstall = "Flows"
+               installCount = int( main.params[ 'TEST' ][ 'flows' ] )
+               ifFailed = "FLOW_TESTER.PY FAILURE"
+               resultFile = main.params[ 'TEST' ][ 'flowResultFile' ]
 
-            flows = ( flows *max( int( n )+1, int( servers ) ) )/( ( int( n ) + 1 ) * int( servers )*( switches ) )
+            main.log.info( toInstall + " Target  = " + str( installCount ) )
 
-            main.log.info( "Flows per switch = " + str( flows ) )
+            installCount = ( installCount *max( int( n )+1,int( servers ) ) )/( ( int( n ) + 1 )*int( servers )*( switches ) )
 
+            main.log.info( toInstall + " per switch = " + str( installCount ) )
             #build list of servers in "$OC1, $OC2...." format
             serverEnvVars = ""
             for i in range( int( servers ) ):
@@ -182,8 +200,12 @@ class SCPFflowTp1g:
             maxes = [ "" ]*int( sampleSize )
 
             flowCMD = "python3 " + homeDir + "/onos/tools/test/bin/"
-            flowCMD += testCMD[ 0 ] + " " + str( flows ) + " " + testCMD[ 1 ]
-            flowCMD += " " + str( n ) + " " + str( serverEnvVars ) + "-j"
+            if isFlowObj == 'true':
+               flowCMD += testCMD[ 2 ] + " " + str( installCount ) + " " + testCMD[ 1 ]
+               flowCMD += " " + str( n ) + " " + testCMD[ 3 ] + " " + str( flowObjType ) + " " + str( serverEnvVars ) + "-j"
+            else:
+               flowCMD += testCMD[ 0 ] + " " + str( installCount ) + " " + testCMD[ 1 ]
+               flowCMD += " " + str( n ) + " " + str( serverEnvVars ) + "-j"
 
             main.log.info( flowCMD )
             #time.sleep( 60 )
@@ -200,7 +222,7 @@ class SCPFflowTp1g:
                 main.log.info( "Raw results: \n" + rawResult + "\n" )
 
                 if "failed" in rawResult:
-                    main.log.report( "FLOW_TESTER.PY FAILURE" )
+                    main.log.report( ifFailed )
                     main.log.report( " \n" + rawResult + " \n" )
                     for ctrl in main.Cluster.active():
                         main.log.report( "=======================================================" )
@@ -254,14 +276,14 @@ class SCPFflowTp1g:
                     main.ONOSbench.handle.expect( ":~" )
                     flowCheck = main.ONOSbench.handle.before
                     if "flows=0," in flowCheck:
-                        main.log.info( "Flows removed" )
+                        main.log.info( toInstall + " removed" )
                         break
                     else:
                         for line in flowCheck.splitlines():
                             if "flows=" in line:
                                 main.log.info( "Current Summary: " + line )
                     if checkCount == 2:
-                        main.log.info( "Flows are stuck, moving on " )
+                        main.log.info( toInstall + " are stuck, moving on " )
 
 
                 time.sleep( 5 )
@@ -298,21 +320,21 @@ class SCPFflowTp1g:
             main.log.info( "Standard Deviation of max values: " + str( stdOfMaxes ) )
             print( "\n\n" )
 
-            avgTP = int( main.params[ 'TEST' ][ 'flows' ] )  / avgOfMaxes #result in kflows/second
+            avgTP = int( installCount )  / avgOfMaxes #result in kflows/second
 
             tp = []
             for i in maxes:
-                tp.append( ( int( main.params[ 'TEST' ][ 'flows' ] ) / i ) )
+                tp.append( ( int( installCount ) / i ) )
 
             stdTP = numpy.std( tp )
 
-            main.log.info( "Average thoughput:  " + str( avgTP ) + " Kflows/second" )
-            main.log.info( "Standard deviation of throughput: " + str( stdTP ) + " Kflows/second" )
+            main.log.info( "Average thoughput:  " + str( avgTP ) + " K" + toInstall + "/second" )
+            main.log.info( "Standard deviation of throughput: " + str( stdTP ) + " K" + toInstall + "/second" )
 
-            resultsLog = open( "/tmp/flowTP1gDB", "a" )
+            resultsLog = open( str( resultFile ), "a" )
             resultString = ( "'" + main.commit + "'," )
             resultString += ( "'1gig'," )
-            resultString += ( ( main.params[ 'TEST' ][ 'flows' ] ) + "," )
+            resultString += ( str( installCount ) + "," )
             resultString += ( str( main.Cluster.numCtrls ) + "," )
             resultString += ( str( n ) + "," )
             resultString += ( str( avgTP ) + "," + str( stdTP ) + "\n" )

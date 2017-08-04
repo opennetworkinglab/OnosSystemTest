@@ -398,14 +398,3 @@ class OnosClusterDriver( CLI ):
             rest = self.createRestComponent( restName, ip )
             bench = self.createBenchComponent( benchName )
             self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1, self.user_name ) )
-
-        ## DEBUG ########################################################################
-        print "Prininting NODES::"
-        try:
-            print self.nodes
-            for node in self.nodes:
-                main.log.error( repr(node ))
-                main.log.warn( node )
-        except Exception as e:
-            print repr(e)
-        ## END debug ########################################################################

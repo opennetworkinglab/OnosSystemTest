@@ -97,6 +97,7 @@ class SCPFswitchLat:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
+
     def CASE1( self, main ):
         # Clean up test environment and set up
         import time

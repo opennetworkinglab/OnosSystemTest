@@ -34,7 +34,7 @@ def capturePortStatusPack( main, deviceName, interface, portStatus, resultDict, 
         interface: port number
         portStatus: up or down
         resultDict: put result to dictionary
-        warmup: if warmpu, ignore results
+        warmup: if warmup, ignore results
 
     '''
     main.log.info( "Clean up tshark" )
@@ -97,4 +97,4 @@ def capturePortStatusPack( main, deviceName, interface, portStatus, resultDict, 
                         resultDict[ portStatus ][ 'node' + str(i) ]['DtoL'].append( DtoL )
                         resultDict[ portStatus ][ 'node' + str(i) ]['LtoG'].append( LtoG )
         else:
-            main.log.error( "Tshark output file for packet_in returned unexpected results" )
+            main.log.error( "Unexpected tshark output file" )

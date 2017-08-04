@@ -142,7 +142,6 @@ def checkTotalWrongNum():
         main.cleanup()
         main.exit()
 
-
 def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
     '''
 
@@ -385,7 +384,7 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                     check = checkResult( A_Dtemp, D_Gtemp, E_Etemp )
                     if check == 1:
                         main.log.info( "ACK to device: {}".format( A_Dtemp ) )
-                        main.log.info( "Device ot Graph: {}".format( D_Gtemp )  )
+                        main.log.info( "Device to Graph: {}".format( D_Gtemp )  )
                         main.log.info( "End to End: {}".format( E_Etemp ) )
                         main.log.info( "================================================" )
                 except KeyError:

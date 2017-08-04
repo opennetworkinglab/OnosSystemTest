@@ -254,6 +254,7 @@ class FUNCbgpls:
         bgplsConfig.Comments()
         time.sleep( 120 )
         response = main.Cluster.active( 0 ).CLI.devices()
+
         responseCheck = main.FALSE
         if response:
             responseCheck = main.TRUE
@@ -336,7 +337,7 @@ class FUNCbgpls:
         response = main.Cluster.active( 0 ).CLI.links()
         linksResp = json.loads( response )
         check_link = bgplsConfig.checkLinks( linksResp )
-
+        reply_Check_Link = main.FALSE
         if check_link:
             reply_Check_Link = main.TRUE
         utilities.assert_equals( expect=main.TRUE, actual=reply_Check_Link,
@@ -408,6 +409,7 @@ class FUNCbgpls:
         response = main.Cluster.active( 0 ).CLI.links()
         linksResp = json.loads( response )
         check_link = bgplsConfig.checkLinks( linksResp )
+        reply_Check_Link = main.FALSE
         if not check_link:
             reply_Check_Link = main.TRUE
         utilities.assert_equals( expect=main.TRUE, actual=reply_Check_Link,

@@ -150,10 +150,10 @@ class SCPFportLat:
                 resultDict[ d ][ 'node' + str( i ) ][ 'PtoD' ] = []
                 resultDict[ d ][ 'node' + str( i ) ][ 'DtoL' ] = []
                 resultDict[ d ][ 'node' + str( i ) ][ 'LtoG' ] = []
-        for i in range( 1, main.sampleSize + main.warmUp ):
+        for i in range( 0, main.sampleSize + main.warmUp ):
             main.log.info( "==========================================" )
-            main.log.info( "================iteration:{}==============".format( str ( i ) ) )
-            if i > main.warmUp:
+            main.log.info( "================iteration:{}==============".format( str ( i + 1 ) ) )
+            if i >= main.warmUp:
                 # Portdown iteration
                 main.portFunc.capturePortStatusPack( main,
                                                      main.device,

@@ -2382,6 +2382,7 @@ def EncapsulatedIntentCheck( main, tag="" ):
         else failed
 
     """
+    main.log.info( "Checking encapsulated intent for " + tag + ".")
     HostJson = []
     Jflows = main.Cluster.active( 0 ).CLI.flows( noCore=True )
     try:
@@ -2401,19 +2402,24 @@ def EncapsulatedIntentCheck( main, tag="" ):
 
     PopTag = tag + "_POP"
     PushTag = tag + "_PUSH"
-
+    main.log.info( "Host Json info :" )
     for EachHostJson in HostJson:
         for i in range( totalflows ):
-            if EachHostJson[ i ][ "treatment" ][ "instructions" ][ 0 ][ "subtype" ] == PopTag:
-                pop += 1
-            elif EachHostJson[ i ][ "treatment" ][ "instructions" ][ 0 ][ "subtype" ] == PushTag:
-                push += 1
+            main.log.info( str( EachHostJson[ i ] ) )
+            checkJson = EachHostJson[ i ][ "treatment" ][ "instructions" ][ 0 ]
+            main.Cluster.active( 0 ).REST.pprint( checkJson )
+            if 'subtype' in checkJson:
+                if checkJson[ "subtype" ] == PopTag:
+                    pop += 1
+                elif checkJson[ "subtype" ] == PushTag:
+                    push += 1
 
     if pop == totalflows and push == totalflows:
         return main.TRUE
     else:
+        main.log.error( "Total " + PushTag + str( push ) )
+        main.log.error( "Total " + PopTag + str( pop ) )
         return main.FALSE
-
 
 def ProtectedIntentCheck( main ):
     intent = main.Cluster.active( 0 ).CLI.intents( jsonFormat=False )

@@ -125,6 +125,8 @@ class BgpLs:
                   }
 
         # Comparing the Links
+        if len( linksResp ) != 22:
+            return False
         for x in xrange( 22 ):
             link_src_info = linksResp[ x ][ 'src' ][ 'device' ]
             link_dst_info = linksResp[ x ][ 'dst' ][ 'device' ]

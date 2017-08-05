@@ -196,6 +196,12 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
             with open( main.tsharkResultPath[ switchStatus ][ d ], "r" ) as resultFile:
                 # grep tshark result timestamp
                 resultText = resultFile.readlines()
+                if not resultText:
+                    main.log.warn( "Empty tshark result!" )
+                    main.wrong[ 'TsharkValueIncorrect' ] += 1
+                    main.wrong[ 'totalWrong' ] += 1
+                    checkTotalWrongNum()
+                    return
                 if d == "TCP":
                     # if TCP package, we should use the latest one package
                     resultText = resultText[ len( resultText ) - 1 ]

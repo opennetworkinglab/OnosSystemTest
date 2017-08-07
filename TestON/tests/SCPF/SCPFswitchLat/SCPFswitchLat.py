@@ -164,9 +164,9 @@ class SCPFswitchLat:
             resultDict[ 'down' ][ 'node' + str( i ) ][ 'A_D' ] = []#Ack to Device
             resultDict[ 'down' ][ 'node' + str( i ) ][ 'D_G' ] = []#Device to Graph
             resultDict[ 'down' ][ 'node' + str( i ) ][ 'E_E' ] = []#fin_ack to Graph
-        for i in range( 1 , main.sampleSize + main.warmUp ):
+        for i in range( 0, main.sampleSize + main.warmUp ):
             main.log.info( "************************************************************" )
-            main.log.info( "************************ Iteration: {} **********************" .format( str( i ) ) )
+            main.log.info( "************************ Iteration: {} **********************" .format( str( i + 1 ) ) )
             if i < main.warmUp:
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "up", resultDict, True )

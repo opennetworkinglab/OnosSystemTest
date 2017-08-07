@@ -158,7 +158,7 @@ class HAclusterRestart:
         for ctrl in main.Cluster.active():
             main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
             main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
-
+        killTime = time.time()
         main.testSetUp.killingAllOnos( main.Cluster, True, False )
 
         main.testSetUp.checkOnosService( main.Cluster )

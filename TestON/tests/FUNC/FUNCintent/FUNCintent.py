@@ -339,7 +339,6 @@ class FUNCintent:
         """
         if main.initialized == main.FALSE:
             main.log.error( "Test components did not start correctly, skipping further tests" )
-            main.stop()
             main.skipCase()
         main.case( "Balance mastership of switches" )
         main.step( "Balancing mastership of switches" )

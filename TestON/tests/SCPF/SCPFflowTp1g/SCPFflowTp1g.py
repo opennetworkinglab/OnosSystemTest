@@ -34,46 +34,34 @@ class SCPFflowTp1g:
     def __init__( self ):
         self.default = ''
 
-    def CASE1( self, main ):
+    def CASE0( self, main ):
 
         import time
-        global init
         try:
-            if type( init ) is not bool:
-                init = False
-        except NameError:
-            init = False
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error("ONOSSetup not found. exiting the test")
+            main.exit()
+        main.testSetUp.envSetupDescription()
+        try:
+            #Load values from params file
+            cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            BENCHUser = main.params[ 'BENCH' ][ 'user' ]
+            BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
+            main.scale = ( main.params[ 'SCALE' ]  ).split( "," )
+            main.flowRuleCfg = main.params[ 'CFG' ][ 'flowRule' ]
+            main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
+            stepResult = main.testSetUp.envSetup()
+            resultsDB = open( "/tmp/flowTP1gDB", "w+" )
+            resultsDB.close()
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
+        main.commit = ( main.commit.split( " " ) )[ 1 ]
 
-        main.log.info( "==========DEBUG VERSION 3===========" )
-
-        # -- INIT SECTION, ONLY RUNS ONCE -- #
-        if init == False:
-            try:
-                init = True
-                try:
-                    from tests.dependencies.ONOSSetup import ONOSSetup
-                    main.testSetUp = ONOSSetup()
-                except ImportError:
-                    main.log.error( "ONOSSetup not found. exiting the test" )
-                    main.exit()
-                main.testSetUp.envSetupDescription()
-                #Load values from params file
-                cellName = main.params[ 'ENV' ][ 'cellName' ]
-                main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-                BENCHUser = main.params[ 'BENCH' ][ 'user' ]
-                BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
-                main.scale = ( main.params[ 'SCALE' ]  ).split( "," )
-                main.flowRuleCfg = main.params[ 'CFG' ][ 'flowRule' ]
-                main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
-                stepResult = main.testSetUp.envSetup()
-                resultsDB = open( "/tmp/flowTP1gDB", "w+" )
-                resultsDB.close()
-            except Exception as e:
-                main.testSetUp.envSetupException( e )
-            main.testSetUp.evnSetupConclusion( stepResult )
-            main.commit = ( main.commit.split( " " ) )[ 1 ]
-        # -- END OF INIT SECTION --#
-
+    def CASE1( self, main ):
         main.testSetUp.ONOSSetUp( "localhost", main.Cluster, True, cellName=cellName )
 
         main.log.info( "Startup sequence complete" )

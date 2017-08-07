@@ -113,9 +113,9 @@ class SCPFintentEventTp:
         main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg, "topoShape linear" )
         main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg, "enabled true" )
         if main.flowObj:
-            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg(),
+            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
                                                  "useFlowObjectives", value="true" )
-            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg(),
+            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
                                                  "defaultFlowObjectiveCompiler",
                                                  value=main.linkCollectionIntentCfg )
         time.sleep( main.startUpSleep )

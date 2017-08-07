@@ -69,14 +69,14 @@ def verify( main ):
 
     # Variables
     app = main.params[ 'vpls' ][ 'name' ]
-    pprint = main.ONOSrest1.pprint
+    pprint = main.Cluster.active( 0 ).REST.pprint
     SLEEP = int( main.params[ 'SLEEP' ][ 'netcfg' ] )
 
     main.step( "Check network configurations for vpls application" )
     clusterResult = True
-    for node in main.RESTs:
+    for ctrl in main.Cluster.active():
         result = False
-        getVPLS = utilities.retry( f=node.getNetCfg,
+        getVPLS = utilities.retry( f=ctrl.REST.getNetCfg,
                                    retValue=False,
                                    kwargs={"subjectClass":"apps", "subjectKey":app},
                                    sleep=SLEEP )
@@ -98,10 +98,10 @@ def verify( main ):
 
     main.step( "Check vpls app configurations" )
     clusterResult = True
-    for node in main.CLIs:
+    for ctrl in main.Cluster.active():
         result = False
         #TODO Read from vpls show and match to pushed json
-        vpls = node.parseVplsShow()
+        vpls = ctrl.CLI.parseVplsShow()
         parsedVpls = pprint( sanitizeConfig( vpls ) )
         sentVpls = pprint( sanitizeConfig( main.vplsConfig ) )
         result = parsedVpls == sentVpls
@@ -155,7 +155,7 @@ def verify( main ):
 
 def checkIntentState( main , bl=[] ):
     # Print the intent states
-    intents = main.CLIs[ 0 ].intents()
+    intents = main.Cluster.active( 0 ).CLI.intents()
     count = 0
     while count <= 5:
         installedCheck = True
@@ -227,8 +227,8 @@ def testConnectivityVpls( main, blacklist=[], isNodeUp=True ):
 def compareApps( main ):
     result = True
     first = None
-    for cli in main.CLIs:
-        currentApps = cli.apps( summary=True, active=True )
+    for ctrl in main.Cluster.active():
+        currentApps = ctrl.CLI.apps( summary=True, active=True )
         if not result:
             first = currentApps
         else:

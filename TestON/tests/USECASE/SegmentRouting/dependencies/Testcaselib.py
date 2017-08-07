@@ -101,7 +101,7 @@ class Testcaselib:
         main.dynamicHosts = [ 'in1', 'out1' ]
         main.testSetUp.createApplyCell( main.Cluster, newCell=True, cellName=main.cellName,
                                         Mininet=main.Mininet1, useSSH=Testcaselib.useSSH,
-                                        ip=main.Cluster.getIps() )
+                                        ips=main.Cluster.getIps() )
         # kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )

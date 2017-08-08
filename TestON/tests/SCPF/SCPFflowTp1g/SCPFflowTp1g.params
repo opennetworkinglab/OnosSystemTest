@@ -16,7 +16,7 @@
         <enableFlowRuleStoreBackup>true</enableFlowRuleStoreBackup>
         <warmUp>5</warmUp>                              #number of runs to warm up the system
         <sampleSize>20</sampleSize>                     #number of runs to take data from
-        <neighbors>0,a</neighbors>                      #list of number of neighbors, a = all
+        <neighbors>0,0,a,0,a,0,a</neighbors>                      #list of number of neighbors, a = all
         <flows>122500</flows>
         <flowObj>false</flowObj>                         #flow objectives will be tested
         <flowObjectives>10000</flowObjectives>

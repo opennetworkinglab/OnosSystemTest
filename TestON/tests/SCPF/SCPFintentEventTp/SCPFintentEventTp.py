@@ -74,6 +74,7 @@ class SCPFintentEventTp:
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
             main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.intentPerfInstallerCfg = main.params[ 'CFG' ][ 'intentPerfInstaller' ]
+            main.neighbor = ( main.params[ 'TEST' ][ 'neighbors' ] ).split( "," )
             main.timeout = int( main.params[ 'SLEEP' ][ 'timeout' ] )
             main.cyclePeriod = main.params[ 'TEST' ][ 'cyclePeriod' ]
             if main.flowObj == "True":
@@ -90,9 +91,6 @@ class SCPFintentEventTp:
             main.log.info( "Create Database file " + main.dbFileName )
             resultsDB = open( main.dbFileName, "w+" )
             resultsDB.close()
-
-            # set neighbors
-            main.neighbors = "1"
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -104,7 +102,6 @@ class SCPFintentEventTp:
         main.maxNumBatch = 0
         main.testSetUp.ONOSSetUp( main.MN1Ip, main.Cluster, True,
                                   cellName=main.cellName, killRemoveMax=False )
-
         # config apps
         main.Cluster.active( 0 ).CLI.setCfg( main.intentManagerCfg,
                                              "skipReleaseResourcesOnWithdrawal " + main.skipRelRsrc )
@@ -123,27 +120,17 @@ class SCPFintentEventTp:
         # balanceMasters
         main.Cluster.active( 0 ).CLI.balanceMasters()
         time.sleep( main.startUpSleep )
-
     def CASE2( self, main ):
         import numpy
 
         main.log.info( "Cluster Count = " + str( main.Cluster.numCtrls ) )
-        # adjust neighbors
-        if main.Cluster.numCtrls == 1:
-            main.neighbors = "0"
-            main.log.info( "Neighbors: 0" )
-        elif main.neighbors != "0":
-            main.neighbors = "0"
-            main.log.info( "Neighbors: 0" )
-        elif main.neighbors == "0":
-            main.neighbors = str( main.Cluster.numCtrls - 1 )
-            main.log.info( "Neighbors: " + main.neighbors )
-
+        neighbors = '0' if main.neighbor.pop( 0 ) == '0' else str( main.Cluster.numCtrls - 1 )
+        main.log.info( "Neighbors: " + neighbors )
         main.log.info( "Config intent-perf app" )
         main.Cluster.active( 0 ).CLI.setCfg( main.intentPerfInstallerCfg,
                                              "numKeys " + main.numKeys )
         main.Cluster.active( 0 ).CLI.setCfg( main.intentPerfInstallerCfg,
-                                             "numNeighbors " + str( main.neighbors ) )
+                                             "numNeighbors " + neighbors )
         main.Cluster.active( 0 ).CLI.setCfg( main.intentPerfInstallerCfg,
                                              "cyclePeriod " + main.cyclePeriod )
 
@@ -172,7 +159,7 @@ class SCPFintentEventTp:
                 resultString += "'1gig',"
                 resultString += str( main.Cluster.numCtrls ) + ","
                 resultString += "'baremetal" + str( nodes + 1 ) + "',"
-                resultString += main.neighbors + ","
+                resultString += neighbors + ","
                 resultString += result[ main.Cluster.active( nodes ).ipAddress ] + ","
                 resultString += str( 0 ) + "\n"  # no stddev
                 resultDB.write( resultString )

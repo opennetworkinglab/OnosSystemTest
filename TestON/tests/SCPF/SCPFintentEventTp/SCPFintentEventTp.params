@@ -65,7 +65,7 @@
         <numKeys>40000</numKeys>
         <numKeysFlowObj>4000</numKeysFlowObj>
         <cyclePeriod>1000</cyclePeriod>
-        <neighbors>0,a</neighbors>           #a == all nodes (-1)
+        <neighbors>0,0,a,0,a,0,a</neighbors>           #a == all nodes (-1)
         <skipReleaseResourcesOnWithdrawal>true</skipReleaseResourcesOnWithdrawal>
         <flowObj>False</flowObj>
     </TEST>

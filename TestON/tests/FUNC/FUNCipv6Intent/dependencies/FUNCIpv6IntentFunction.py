@@ -1813,8 +1813,8 @@ def getHostsData( main ):
     getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
     activateResult = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.fwd" )
-    main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "useIpv6ND", "true" )
-    main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
+    main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "requestIpv6ND", "true" )
+    main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
     main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
     main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
     time.sleep( main.fwdSleep )

@@ -34,6 +34,7 @@ list your email here for future contact:
 jhall@onlab.us
 andrew@onlab.us
 shreya@onlab.us
+jeremyr@opennetworking.org
 """
 import pexpect
 import re
@@ -5656,6 +5657,54 @@ class OnosCliDriver( CLI ):
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected; " + str( output ) )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def events( self, args='-a' ):
+        """
+        Description: Returns events -a command output
+        Optional:
+            add other arguments
+        """
+        try:
+            cmdStr = "events"
+            if args:
+                cmdStr += " " + args
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def getMaster( self, deviceID ):
+        """
+            Description: Obtains current master using "roles" command for a specific deviceID
+        """
+        try:
+            return str( self.getRole( deviceID )[ 'master' ] )
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()

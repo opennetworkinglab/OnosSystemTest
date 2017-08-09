@@ -1,0 +1,2 @@
+The objective of SCPFmastershipFailoverLat is to test the latency for an ONOS node being killed, change of mastership, and role request as ONOS scales.
+For more details, check out the wiki documentation: https://wiki.onosproject.org/x/O4De

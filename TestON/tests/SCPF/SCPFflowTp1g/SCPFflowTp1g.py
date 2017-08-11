@@ -161,9 +161,9 @@ class SCPFflowTp1g:
            resultFile = main.params[ 'TEST' ][ 'flowResultFile' ]
         main.log.info( toInstall + " Target  = " + str( installCount ) )
 
-        installCount = ( installCount *max( int ( neighbors ) + 1, int( servers ) ) )/( ( int( neighbors ) + 1 )*int( servers )*( switches ) )
+        installCountPerSwitch = ( installCount *max( int ( neighbors ) + 1, int( servers ) ) )/( ( int( neighbors ) + 1 )*int( servers )*( switches ) )
 
-        main.log.info( toInstall + " per switch = " + str( installCount ) )
+        main.log.info( toInstall + " per switch = " + str( installCountPerSwitch ) )
         #build list of servers in "$OC1, $OC2...." format
         serverEnvVars = ""
         for i in range( int( servers ) ):
@@ -174,10 +174,10 @@ class SCPFflowTp1g:
 
         flowCMD = "python3 " + homeDir + "/onos/tools/test/bin/"
         if isFlowObj == 'true':
-           flowCMD += testCMD[ 2 ] + " " + str( installCount ) + " " + testCMD[ 1 ]
+           flowCMD += testCMD[ 2 ] + " " + str( installCountPerSwitch ) + " " + testCMD[ 1 ]
            flowCMD += " " + neighbors + " " + testCMD[ 3 ] + " " + str( flowObjType ) + " " + str( serverEnvVars ) + "-j"
         else:
-           flowCMD += testCMD[ 0 ] + " " + str( installCount ) + " " + testCMD[ 1 ]
+           flowCMD += testCMD[ 0 ] + " " + str( installCountPerSwitch ) + " " + testCMD[ 1 ]
            flowCMD += " " + neighbors + " " + str( serverEnvVars ) + "-j"
 
         main.log.info( flowCMD )

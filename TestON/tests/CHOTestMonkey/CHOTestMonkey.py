@@ -113,12 +113,12 @@ class CHOTestMonkey:
         setIPv6CfgSleep = int( main.params[ 'TEST' ][ 'setIPv6CfgSleep' ] )
         if main.enableIPv6:
             time.sleep( setIPv6CfgSleep )
-            cfgResult1 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager",
+            cfgResult1 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.net.neighbour.impl.NeighbourResolutionManager",
                                                            "ndpEnabled",
                                                            "true" )
             time.sleep( setIPv6CfgSleep )
             cfgResult2 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider",
-                                                           "useIpv6ND",
+                                                           "requestIpv6ND",
                                                            "true" )
         else:
             main.log.info( "Skipped setting IPv6 cfg parameters as it is disabled in params file" )

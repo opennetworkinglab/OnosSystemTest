@@ -42,7 +42,7 @@ class FUNCnetCfg:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
 
@@ -95,7 +95,7 @@ class FUNCnetCfg:
             from tests.dependencies.topology import Topology
         except ImportError:
             main.log.error( "Topology not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.topoRelated
         except ( NameError, AttributeError ):
@@ -136,8 +136,7 @@ class FUNCnetCfg:
                                  onfail="Failed to load topology" )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE11( self, main ):
         """
@@ -163,8 +162,7 @@ class FUNCnetCfg:
                                  onfail="Failed to load topology" )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         tempONOSip = main.Cluster.getIps()
 
@@ -173,8 +171,7 @@ class FUNCnetCfg:
                                                          ip=tempONOSip,
                                                          port='6653' )
         if not assignResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         assignResult = main.TRUE
         for sw in swList:
@@ -201,7 +198,7 @@ class FUNCnetCfg:
             from tests.dependencies.utils import Utils
         except ImportError:
             main.log.error( "Utils not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Utils
         except ( NameError, AttributeError ):
@@ -210,8 +207,7 @@ class FUNCnetCfg:
         topoResult = main.Utils.mininetCleanup( main.Mininet1 )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE20( self, main ):
         """
@@ -236,8 +232,7 @@ class FUNCnetCfg:
                 s1Json = json.load( s1Jsondata )
         except IOError:
             main.log.exception( "s1Json File not found." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.log.info( "s1Json:" + str( s1Json ) )
 
         main.s1Json = s1Json
@@ -281,8 +276,7 @@ class FUNCnetCfg:
                 s3Json = json.load( s3Jsondata )
         except IOError:
             main.log.exception( "s3Json File not found" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.log.info( "s3Json:" + str( s3Json ) )
 
         main.s3Json = s3Json
@@ -329,8 +323,7 @@ class FUNCnetCfg:
             assert main.s1Json, "s1Json not defined"
         except AssertionError:
             main.log.exception( "Case Prerequisites not set: " )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.case( "Check Devices After they initially connect to ONOS" )
 
         main.netCfg.compareCfg( main )
@@ -395,8 +388,7 @@ class FUNCnetCfg:
                 s2Json = json.load( s2Jsondata )
         except IOError:
             main.log.exception( "s2Json File not found" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.log.info( "s2Json:" + str( s2Json ) )
         main.s2Json = s2Json
         setS2Allow = main.Cluster.active( 1 ).REST.setNetCfg( s2Json,
@@ -436,8 +428,7 @@ class FUNCnetCfg:
                 s4Json = json.load( s4Jsondata )
         except IOError:
             main.log.exception( "s4Json File not found" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.log.info( "s4Json:" + str( s4Json ) )
         main.s4Json = s4Json
         setS4Disallow = main.Cluster.active( 2 ).REST.setNetCfg( s4Json,
@@ -485,8 +476,7 @@ class FUNCnetCfg:
             assert main.s2Json, "s2Json not defined"
         except AssertionError:
             main.log.exception( "Case Prerequisites not set: " )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.case( "Check Devices after all configurations are set" )
 
         main.netCfg.compareCfg( main )
@@ -535,8 +525,7 @@ class FUNCnetCfg:
             assert main.s4Json, "s4Json not defined"
         except AssertionError:
             main.log.exception( "Case Prerequisites not set: " )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.case( "Testing removal of configurations" )
         main.step( "Remove 'allowed' configuration from all devices" )
 
@@ -684,8 +673,7 @@ class FUNCnetCfg:
                 main.s5Json = json.load( s5Jsondata )
         except IOError:
             main.log.exception( "s5Json File not found" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.log.info( "s5Json:" + str( main.s5Json ) )
 
         try:
@@ -693,8 +681,7 @@ class FUNCnetCfg:
                 main.s6Json = json.load( s6Jsondata )
         except IOError:
             main.log.exception( "s6Json File not found" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.log.info( "s6Json:" + str( main.s6Json ) )
 
         s5Json = main.s5Json

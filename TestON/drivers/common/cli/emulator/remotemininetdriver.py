@@ -92,8 +92,7 @@ class RemoteMininetDriver( Emulator ):
                 return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkForLoss( self, pingList ):
         """
@@ -126,12 +125,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pingLong( self, **pingParams ):
         """
@@ -164,12 +161,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
 
     def pingstatus( self, **pingParams ):
@@ -206,12 +201,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception(self.name + ": Uncaught exception!")
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pingKill( self, testONUser, testONIP ):
         """
@@ -245,17 +238,14 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": TIMEOUT exception found in pingKill" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pingLongKill( self ):
         try:
@@ -274,12 +264,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception(self.name + ": Uncaught exception!")
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pingHostOptical( self, **pingParams ):
         """
@@ -310,8 +298,7 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.log.info( self.name + ": Ping Response: " + response )
         if re.search( ',\s0\%\spacket\sloss', response ):
             main.log.info( self.name + ": no packets lost, host is reachable" )
@@ -351,12 +338,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception(self.name + ": Uncaught exception!")
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checknum( self, num ):
         """
@@ -392,12 +377,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startTcpdump(
             self,
@@ -446,12 +429,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def stopTcpdump( self ):
         """
@@ -463,12 +444,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def runOpticalMnScript( self, name='onos', ctrllerIP=None ):
         import time
@@ -571,12 +550,10 @@ class RemoteMininetDriver( Emulator ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception(self.name + ": Uncaught exception!")
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setIpTablesOUTPUT( self, dstIp, dstPort, action='add',
                            packetType='tcp', rule='DROP' ):
@@ -718,8 +695,7 @@ class RemoteMininetDriver( Emulator ):
                     except Exception:
                         main.log.exception( self.name +
                                             ": Uncaught exception!" )
-                        main.cleanup()
-                        main.exit()
+                        main.cleanAndExit()
                 else:
                     main.log.error(
                         "Given rule already exists, but attempted to add it" )
@@ -762,8 +738,7 @@ class RemoteMininetDriver( Emulator ):
                     except Exception:
                         main.log.exception( self.name +
                                             ": Uncaught exception!" )
-                        main.cleanup()
-                        main.exit()
+                        main.cleanAndExit()
                 else:
                     main.log.error(
                         "Given rule does not exist,\
@@ -772,8 +747,7 @@ class RemoteMininetDriver( Emulator ):
                 # NOTE: If a bad usage of this function occurs, exit the entire
                 # test
                 main.log.error( "Bad rule given for iptables. Exiting..." )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
 
 if __name__ != "__main__":

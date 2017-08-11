@@ -63,7 +63,7 @@ class FUNCovsdbtest:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
 
@@ -85,8 +85,7 @@ class FUNCovsdbtest:
 
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "App Ids check" )
         appCheck = main.Cluster.active( 0 ).CLI.appToIDCheck()
@@ -426,8 +425,7 @@ class FUNCovsdbtest:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "Configure Network Subnet Port Start" )
         main.case( "Configure Network Subnet Port" )

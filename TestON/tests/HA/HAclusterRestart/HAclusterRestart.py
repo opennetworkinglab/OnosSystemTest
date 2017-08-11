@@ -80,7 +80,7 @@ class HAclusterRestart:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
             from tests.HA.dependencies.HA import HA
@@ -174,8 +174,7 @@ class HAclusterRestart:
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
         if not ready:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         # Grab the time of restart so we chan check how long the gossip
         # protocol has had time to work

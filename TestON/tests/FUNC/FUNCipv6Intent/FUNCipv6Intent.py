@@ -44,7 +44,7 @@ class FUNCipv6Intent:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         # Test variables
@@ -112,8 +112,8 @@ class FUNCipv6Intent:
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
         if not ready:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
+            main.cleanAndExit()
 
         main.step( "setup the ipv6NeighbourDiscovery" )
         cfgResult1 = main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.incubator.net.neighbour.impl.NeighbourResolutionManager", "ndpEnabled", "true" )
@@ -148,8 +148,8 @@ class FUNCipv6Intent:
                                  onfail="Failed to load topology" )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
+            main.cleanAndExit()
 
     def CASE12( self, main ):
         """
@@ -177,8 +177,8 @@ class FUNCipv6Intent:
                                                          ip=tempONOSip,
                                                          port='6633' )
         if not assignResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
+            main.cleanAndExit()
 
         for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
@@ -231,7 +231,7 @@ class FUNCipv6Intent:
             from tests.dependencies.utils import Utils
         except ImportError:
             main.log.error( "Utils not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Utils
         except ( NameError, AttributeError ):
@@ -240,8 +240,8 @@ class FUNCipv6Intent:
         topoResult = main.Utils.mininetCleanup( main.Mininet1 )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
+            main.cleanAndExit()
 
     def CASE1000( self, main ):
         """

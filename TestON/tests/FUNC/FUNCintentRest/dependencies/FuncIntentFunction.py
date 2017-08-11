@@ -1514,7 +1514,7 @@ def confirmHostDiscovery( main ):
         from tests.dependencies.topology import Topology
     except Exception:
         main.log.error( "Topology not found exiting the test" )
-        main.exit()
+        main.cleanAndExit()
     try:
         main.topoRelated
     except ( NameError, AttributeError ):
@@ -1697,8 +1697,7 @@ def checkLeaderChange( leaders1, leaders2 ):
         return main.FALSE
     except Exception:
         main.log.exception( self.name + ": Uncaught exception!" )
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()
     main.log.info( "Checking Intent Paritions for Change in Leadership" )
     mismatch = False
     for dict1 in leaders1:

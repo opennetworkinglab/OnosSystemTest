@@ -82,7 +82,7 @@ class HAfullNetPartition:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
             from tests.HA.dependencies.HA import HA
@@ -176,12 +176,10 @@ class HAfullNetPartition:
                     except pexpect.EOF:
                         main.log.error( self.name + ": EOF exception found" )
                         main.log.error( self.name + ":    " + self.handle.before )
-                        main.cleanup()
-                        main.exit()
+                        main.cleanAndExit()
                     except Exception:
                         main.log.exception( self.name + ": Uncaught exception!" )
-                        main.cleanup()
-                        main.exit()
+                        main.cleanAndExit()
             else:
                 for j in range( 0, n ):
                     if j not in main.partition:
@@ -196,12 +194,10 @@ class HAfullNetPartition:
                         except pexpect.EOF:
                             main.log.error( self.name + ": EOF exception found" )
                             main.log.error( self.name + ":    " + self.handle.before )
-                            main.cleanup()
-                            main.exit()
+                            main.cleanAndExit()
                         except Exception:
                             main.log.exception( self.name + ": Uncaught exception!" )
-                            main.cleanup()
-                            main.exit()
+                            main.cleanAndExit()
                 main.Cluster.runningNodes[ i ].active = False
             iCtrl.Bench.exitFromSsh( this, iCtrl.ipAddress )
         # NOTE: When dynamic clustering is finished, we need to start checking
@@ -247,8 +243,7 @@ class HAfullNetPartition:
                    "List of active nodes has duplicates, this likely indicates something was run out of order"
         except AssertionError:
             main.log.exception( "" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         '''
 
         main.step( "Checking ONOS nodes" )
@@ -268,8 +263,7 @@ class HAfullNetPartition:
                     ctrl.name,
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE7( self, main ):
         """

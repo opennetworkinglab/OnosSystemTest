@@ -48,12 +48,13 @@ class FUNCintentRest:
             - Install ONOS package
             - Build ONOS package
         """
+        main.cleanAndExit()
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
 
@@ -121,7 +122,7 @@ class FUNCintentRest:
             from tests.dependencies.topology import Topology
         except ImportError:
             main.log.error( "Topology not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.topoRelated
         except ( NameError, AttributeError ):
@@ -401,7 +402,7 @@ class FUNCintentRest:
             from tests.dependencies.utils import Utils
         except ImportError:
             main.log.error( "Utils not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Utils
         except ( NameError, AttributeError ):
@@ -432,8 +433,7 @@ class FUNCintentRest:
         mininetResult = main.Utils.mininetCleanup( main.Mininet1 )
         # Exit if topology did not load properly
         if not ( mininetResult and scapyResult ):
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE19( self, main ):
         """
@@ -443,7 +443,7 @@ class FUNCintentRest:
             from tests.dependencies.utils import Utils
         except ImportError:
             main.log.error( "Utils not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Utils
         except ( NameError, AttributeError ):

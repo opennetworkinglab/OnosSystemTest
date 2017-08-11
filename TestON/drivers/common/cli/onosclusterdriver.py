@@ -214,12 +214,10 @@ class OnosClusterDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def disconnect( self ):
         """
@@ -274,17 +272,14 @@ class OnosClusterDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         else:
             # namespace is not clear!
             main.log.error( name + " component already exists!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setRestOptions( self, name, host ):
         """
@@ -322,17 +317,14 @@ class OnosClusterDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         else:
             # namespace is not clear!
             main.log.error( name + " component already exists!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setBenchOptions( self, name ):
         """
@@ -364,17 +356,14 @@ class OnosClusterDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         else:
             # namespace is not clear!
             main.log.error( name + " component already exists!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def createComponents( self, prefix='' ):
         """

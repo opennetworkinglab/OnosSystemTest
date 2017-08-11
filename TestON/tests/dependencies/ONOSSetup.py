@@ -38,7 +38,7 @@ class ONOSSetup:
             from tests.dependencies.Cluster import Cluster
         except ImportError:
             main.log.error( "Cluster not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Cluster
         except ( NameError, AttributeError ):
@@ -60,7 +60,7 @@ class ONOSSetup:
                                      actual=stepResult,
                                      onpass="Successfully checkout onos branch.",
                                      onfail="Failed to checkout onos branch. Exiting test..." )
-            if not stepResult: main.exit()
+            if not stepResult: main.cleanAndExit()
 
             main.step( "Git Pull on ONOS branch:" + gitBranch )
             stepResult = main.ONOSbench.gitPull()
@@ -68,7 +68,7 @@ class ONOSSetup:
                                      actual=stepResult,
                                      onpass="Successfully pull onos. ",
                                      onfail="Failed to pull onos. Exiting test ..." )
-            if not stepResult: main.exit()
+            if not stepResult: main.cleanAndExit()
 
         else:
             main.log.info( "Skipped git checkout and pull as they are disabled in params file" )
@@ -89,7 +89,7 @@ class ONOSSetup:
             from tests.dependencies.Cluster import Cluster
         except ImportError:
             main.log.error( "Cluster not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Cluster
         except ( NameError, AttributeError ):
@@ -107,8 +107,7 @@ class ONOSSetup:
             * includeGitPull - exceeption code e.
         """
         main.log.exception( e )
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()
 
     def evnSetupConclusion( self, stepResult ):
         """
@@ -242,8 +241,7 @@ class ONOSSetup:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
         if not onosInstallResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return onosInstallResult
 
     def setupSsh( self, cluster ):
@@ -295,8 +293,7 @@ class ONOSSetup:
         startCliResult = cluster.startCLIs()
         if not startCliResult:
             main.log.info( "ONOS CLI did not start up properly" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         else:
             main.log.info( "Successful CLI startup" )
         utilities.assert_equals( expect=main.TRUE,

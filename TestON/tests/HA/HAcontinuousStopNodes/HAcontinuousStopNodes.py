@@ -82,7 +82,7 @@ class HAcontinuousStopNodes:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
             from tests.HA.dependencies.HA import HA
@@ -189,8 +189,7 @@ class HAcontinuousStopNodes:
                     ctrl.name,
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.killCount += 1
 

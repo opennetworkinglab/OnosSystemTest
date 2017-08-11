@@ -62,7 +62,7 @@ class CHOTestMonkey:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
 
         try:
@@ -100,8 +100,7 @@ class CHOTestMonkey:
         if not main.onoscell :
             main.log.error("Please provide onoscell option at TestON CLI to run CHO tests")
             main.log.error("Example: ~/TestON/bin/cli.py run CHOTestMonkey onoscell <cellName>")
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         setupResult = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
                                                 newCell=False, cellName=main.onoscell )
@@ -304,8 +303,7 @@ class CHOTestMonkey:
 
         if not caseResult:
             main.log.info( "Topology does not match, exiting test..." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE3( self, main ):
         """
@@ -346,8 +344,7 @@ class CHOTestMonkey:
                                  onfail="Host discovery FAIL" )
         if not stepResult:
             main.log.debug( hosts )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Disable Reactive forwarding" )
         appResult = main.controllers[ 0 ].CLI.deactivateApp( "org.onosproject.fwd" )

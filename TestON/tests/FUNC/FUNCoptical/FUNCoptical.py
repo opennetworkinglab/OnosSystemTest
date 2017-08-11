@@ -45,7 +45,7 @@ class FUNCoptical:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         # Test variables
@@ -101,8 +101,7 @@ class FUNCoptical:
                                                    fileName="TopoDDriver.json")
         #Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.caseExplanation = "Start opticalTest.py topology included with ONOS"
         main.step( "Starting mininet and LINC-OE" )
@@ -127,7 +126,7 @@ class FUNCoptical:
             from tests.dependencies.utils import Utils
         except ImportError:
             main.log.error( "Utils not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Utils
         except ( NameError, AttributeError ):
@@ -136,8 +135,7 @@ class FUNCoptical:
         topoResult = main.Utils.mininetCleanup( main.LincOE, timeout=180 )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE16( self, main ):
         """
@@ -186,7 +184,7 @@ class FUNCoptical:
             from tests.dependencies.utils import Utils
         except ImportError:
             main.log.error( "Utils not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Utils
         except ( NameError, AttributeError ):
@@ -241,7 +239,7 @@ class FUNCoptical:
             from tests.dependencies.topology import Topology
         except ImportError:
             main.log.error( "Topology not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.topoRelated
         except ( NameError, AttributeError ):

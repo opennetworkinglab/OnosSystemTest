@@ -22,8 +22,7 @@ class CheckingFlow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

@@ -116,12 +116,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startNet( self, topoFile='', args='', mnCmd='', timeout=120 ):
         """
@@ -248,12 +246,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def numSwitchesNlinks( self, topoType, depth, fanout ):
         try:
@@ -293,8 +289,7 @@ class MininetCliDriver( Emulator ):
             return topoDict
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def calculateSwAndLinks( self ):
         """
@@ -310,8 +305,7 @@ class MininetCliDriver( Emulator ):
             return topoDict
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pingall( self, protocol="IPv4", timeout=300, shortCircuit=False, acceptableFailed=0 ):
         """
@@ -374,8 +368,7 @@ class MininetCliDriver( Emulator ):
                                         ": EOF exception found" )
                         main.log.error( self.name + ":     " +
                                         self.handle.before )
-                        main.cleanup()
-                        main.exit()
+                        main.cleanAndExit()
                     elif i == 3:
                         response += self.handle.before
                         main.log.error( self.name +
@@ -402,8 +395,7 @@ class MininetCliDriver( Emulator ):
                     return main.FALSE
             else:
                 main.log.error( self.name + ": Connection failed to the host" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         except pexpect.TIMEOUT:
             if response:
                 main.log.info( "Pingall output: " + str( response ) )
@@ -412,8 +404,7 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def fpingHost( self, **pingParams ):
         """
@@ -439,8 +430,7 @@ class MininetCliDriver( Emulator ):
             return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
 
     def pingallHosts( self, hostList, wait=1 ):
@@ -494,12 +484,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pingIpv6Hosts( self, hostList, prefix='1000::', wait=1 ):
         """
@@ -548,12 +536,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pingHost( self, **pingParams ):
         """
@@ -593,12 +579,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def ping6pair( self, **pingParams ):
         """
@@ -642,12 +626,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pingHostSetAlternative( self, dstIPList, wait=1, IPv6=False ):
         """
@@ -681,8 +663,7 @@ class MininetCliDriver( Emulator ):
                         isReachable = main.FALSE
                 elif i == 1:
                     main.log.error( self.name + ": function should be called from host CLI instead of Mininet CLI" )
-                    main.cleanup()
-                    main.exit()
+                    main.cleanAndExit()
                 elif i == 2:
                     main.log.error( self.name + ": timeout when waiting for response" )
                     isReachable = main.FALSE
@@ -695,12 +676,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return isReachable
 
     def checkIP( self, host ):
@@ -717,8 +696,7 @@ class MininetCliDriver( Emulator ):
                 except pexpect.EOF:
                     main.log.error( self.name + ": EOF exception found" )
                     main.log.error( self.name + ":     " + self.handle.before )
-                    main.cleanup()
-                    main.exit()
+                    main.cleanAndExit()
 
                 pattern = "inet\s(addr|Mask):([0-1]{1}[0-9]{1,2}|" +\
                     "2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}" +\
@@ -737,8 +715,7 @@ class MininetCliDriver( Emulator ):
                 main.log.error( self.name + ": Connection failed to the host" )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def verifySSH( self, **connectargs ):
         # FIXME: Who uses this and what is the purpose? seems very specific
@@ -760,8 +737,7 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         import time
         time.sleep( 20 )
         if self.flag == 0:
@@ -862,8 +838,7 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -977,8 +952,7 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -1008,16 +982,14 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
                 return main.FALSE
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     def changeDefaultGateway( self, host, newGW ):
         """
@@ -1039,16 +1011,14 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
                 return main.FALSE
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     def addStaticMACAddress( self, host, GW, macaddr ):
         """
@@ -1070,16 +1040,14 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
                 return main.FALSE
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     def verifyStaticGWandMAC( self, host ):
         """
@@ -1096,16 +1064,14 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
                 return main.FALSE
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     def getMacAddress( self, host ):
         """
@@ -1120,12 +1086,10 @@ class MininetCliDriver( Emulator ):
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
             pattern = r'HWaddr\s([0-9A-F]{2}[:-]){5}([0-9A-F]{2})'
             macAddressSearch = re.search( pattern, response, re.I )
@@ -1150,12 +1114,10 @@ class MininetCliDriver( Emulator ):
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
             pattern = r'HWaddr\s([0-9A-F]{2}[:-]){5}([0-9A-F]{2})'
             macAddressSearch = re.search( pattern, response, re.I )
@@ -1187,12 +1149,10 @@ class MininetCliDriver( Emulator ):
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
             pattern = ''
             if proto == 'IPV4':
@@ -1223,12 +1183,10 @@ class MininetCliDriver( Emulator ):
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             pattern = r'^(?P<dpid>\w)+'
             result = re.search( pattern, response, re.MULTILINE )
             if result is None:
@@ -1256,17 +1214,14 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     def getInterfaces( self, node ):
         """
@@ -1283,12 +1238,10 @@ class MininetCliDriver( Emulator ):
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             return response
         else:
             main.log.error( "Connection failed to the node" )
@@ -1303,12 +1256,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return response
 
     def intfs( self ):
@@ -1321,12 +1272,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return response
 
     def net( self ):
@@ -1336,12 +1285,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return response
 
     def links( self, timeout=20 ):
@@ -1352,12 +1299,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return response
 
     def iperftcpAll(self, hosts, timeout=6):
@@ -1376,8 +1321,7 @@ class MininetCliDriver( Emulator ):
                             main.log.error(self.name + ": iperftcp test failed for " + host1 + " and " + host2)
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def iperftcp(self, host1="h1", host2="h2", timeout=6):
         '''
@@ -1434,12 +1378,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def iperftcpipv6(self, host1="h1", host2="h2", timeout=50):
         main.log.info( self.name + ": Simple iperf TCP test between two hosts" )
@@ -1471,12 +1413,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ": " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def iperfudpAll(self, hosts, bandwidth="10M"):
         '''
@@ -1497,8 +1437,7 @@ class MininetCliDriver( Emulator ):
             return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def iperfudp( self, bandwidth="10M", host1="h1", host2="h2"):
 
@@ -1550,17 +1489,14 @@ class MininetCliDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def nodes( self ):
         main.log.info( self.name + ": List all nodes." )
@@ -1572,12 +1508,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return response
 
     def pingpair( self ):
@@ -1590,12 +1524,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         if re.search( ',\s0\%\spacket\sloss', response ):
             main.log.info( self.name + ": Ping between two hosts SUCCESSFUL" )
@@ -1627,12 +1559,10 @@ class MininetCliDriver( Emulator ):
             return None
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def switch( self, **switchargs ):
         """
@@ -1649,13 +1579,11 @@ class MininetCliDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return main.TRUE
 
     def node( self, nodeName, commandStr ):
@@ -1680,8 +1608,7 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.log.info( " response is :" )
         main.log.info( response )
         return response
@@ -1702,12 +1629,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return main.TRUE
 
     def plug( self, **plugargs ):
@@ -1726,12 +1651,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return main.TRUE
 
     def dpctl( self, **dpctlargs ):
@@ -1750,12 +1673,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return main.TRUE
 
     def getVersion( self ):
@@ -1772,8 +1693,7 @@ class MininetCliDriver( Emulator ):
             return version
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getSwController( self, sw ):
         """
@@ -1795,12 +1715,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def assignSwController( self, sw, ip, port="6653", ptcp="" ):
         """
@@ -1926,18 +1844,15 @@ class MininetCliDriver( Emulator ):
                 except pexpect.EOF:
                     main.log.error( self.name + ": EOF exception found" )
                     main.log.error( self.name + ":     " + self.handle.before )
-                    main.cleanup()
-                    main.exit()
+                    main.cleanAndExit()
             return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def deleteSwController( self, sw ):
         """
@@ -1951,12 +1866,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         else:
             main.log.info( response )
 
@@ -1993,12 +1906,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def delSwitch( self, sw ):
         """
@@ -2028,12 +1939,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getSwitchRandom( self, timeout=60, nonCut=True ):
         """
@@ -2131,12 +2040,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def delLink( self, node1, node2 ):
         """
@@ -2168,12 +2075,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getLinkRandom( self, timeout=60, nonCut=True ):
         """
@@ -2280,12 +2185,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def delHost( self, hostname ):
         """
@@ -2316,12 +2219,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def disconnect( self ):
         """
@@ -2348,12 +2249,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def stopNet( self, fileName="", timeout=5 ):
         """
@@ -2402,17 +2301,14 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         else:
             main.log.error( self.name + ": Connection failed to the host" )
             response = main.FALSE
@@ -2455,12 +2351,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def decToHex( self, num ):
         return hex( num ).split( 'x' )[ 1 ]
@@ -2478,12 +2372,10 @@ class MininetCliDriver( Emulator ):
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + "     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             pattern = "flow_count=(\d+)"
             result = re.search( pattern, response, re.MULTILINE )
             if result is None:
@@ -2510,12 +2402,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def flowTableComp( self, flowTable1, flowTable2 ):
         # This function compares the selctors and treatments of each flow
@@ -2549,8 +2439,7 @@ class MininetCliDriver( Emulator ):
             return main.FALSE
         except Exception:
             main.log.exception( "Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def parseFlowTable( self, flowTable, version="", debug=True ):
         '''
@@ -2638,12 +2527,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getFlowTable( self, sw, version="", debug=False):
         '''
@@ -2690,12 +2577,10 @@ class MininetCliDriver( Emulator ):
 
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkFlowId( self, sw, flowId, version="1.3", debug=True ):
         '''
@@ -2746,12 +2631,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
 
     def startTcpdump( self, filename, intf="eth0", port="port 6653" ):
@@ -2804,12 +2687,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def stopTcpdump( self ):
         """
@@ -2822,17 +2703,14 @@ class MininetCliDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getPorts( self, nodeName, verbose=False ):
         """
@@ -2882,12 +2760,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getOVSPorts( self, nodeName ):
         """
@@ -2924,12 +2800,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getSwitches( self, verbose=False ):
         """
@@ -2979,12 +2853,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getHosts( self, verbose=False ):
         """
@@ -3050,12 +2922,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getLinks( self, timeout=20 ):
         """
@@ -3099,12 +2969,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def compareSwitches( self, switches, switchesJson, portsJson ):
         """
@@ -3223,12 +3091,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def compareLinks( self, switches, links, linksJson ):
         """
@@ -3346,12 +3212,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def compareHosts( self, hosts, hostsJson ):
         """
@@ -3406,12 +3270,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception(self.name + ": Uncaught exception!")
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getHostsOld( self ):
         """
@@ -3441,17 +3303,14 @@ class MininetCliDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getSwitch( self ):
         """
@@ -3497,17 +3356,14 @@ class MininetCliDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getGraphDict( self, timeout=60, useId=True, includeHost=False ):
         """
@@ -3602,8 +3458,7 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception" )
             return None
@@ -3629,17 +3484,14 @@ class MininetCliDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def assignVLAN( self, host, intf, vlan ):
         """
@@ -3693,8 +3545,7 @@ class MininetCliDriver( Emulator ):
             except pexpect.TIMEOUT:
                 main.log.error(self.name + ": TIMEOUT exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -3725,18 +3576,15 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         else:
             # namespace is not clear!
             main.log.error( name + " component already exists!" )
             # FIXME: Should we exit here?
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeHostComponent( self, name ):
         """
@@ -3760,12 +3608,10 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startHostCli( self, host=None ):
         """
@@ -3788,12 +3634,10 @@ class MininetCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def changeInterfaceStatus( self, devicename, intf, status ):
         '''
@@ -3817,16 +3661,13 @@ class MininetCliDriver( Emulator ):
                 return main.FALSE
             except pexpect.EOF:
                 main.log.exception(self.name + ": connection closed.")
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except TypeError:
                 main.log.exception(self.name + ": TypeError")
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             except Exception:
                 main.log.exception(self.name + ": Uncaught exception!")
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         else:
             main.log.warn("Interface status should be up or down!")
             return main.FALSE

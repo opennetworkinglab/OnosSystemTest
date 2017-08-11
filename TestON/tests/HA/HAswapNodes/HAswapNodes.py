@@ -80,7 +80,7 @@ class HAswapNodes:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
             from tests.HA.dependencies.HA import HA
@@ -219,8 +219,7 @@ class HAswapNodes:
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
         if not ready:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         # Rerun for election on new nodes
         runResults = main.TRUE

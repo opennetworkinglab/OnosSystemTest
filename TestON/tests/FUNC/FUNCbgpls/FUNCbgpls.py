@@ -65,7 +65,7 @@ class FUNCbgpls:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
             main.cellName = main.params['ENV']['cellName']
@@ -90,8 +90,7 @@ class FUNCbgpls:
                                      onfail="Something is wrong with app Ids" )
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS,stopping test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE2( self, main ):
         """
@@ -110,8 +109,7 @@ class FUNCbgpls:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         bgplsConfig = BgpLs()
         Ne_id = bgplsConfig.Constants()
@@ -209,8 +207,7 @@ class FUNCbgpls:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         bgplsConfig = BgpLs()
         Ne_id = bgplsConfig.Constants()
@@ -303,8 +300,7 @@ class FUNCbgpls:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         bgplsConfig = BgpLs()
         app = bgplsConfig.apps()
@@ -375,8 +371,7 @@ class FUNCbgpls:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         bgplsConfig = BgpLs()
         app = bgplsConfig.apps()
@@ -448,8 +443,7 @@ class FUNCbgpls:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         bgplsConfig = BgpLs()
         app = bgplsConfig.apps()

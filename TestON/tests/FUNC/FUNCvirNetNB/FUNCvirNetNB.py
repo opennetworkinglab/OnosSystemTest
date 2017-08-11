@@ -74,7 +74,7 @@ class FUNCvirNetNB:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
@@ -92,8 +92,7 @@ class FUNCvirNetNB:
                                                cellName=cellName, removeLog=True )
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "App Ids check" )
         appCheck = main.Cluster.active( 0 ).CLI.appToIDCheck()
@@ -123,8 +122,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Network Post test Start" )
         main.case( "Virtual Network NBI Test - Network" )
@@ -196,8 +194,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Network Update test Start" )
         main.case( "Virtual Network NBI Test - Network" )
@@ -282,8 +279,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Network Delete test Start" )
         main.case( "Virtual Network NBI Test - Network" )
@@ -342,8 +338,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Subnet Post test Start" )
         main.case( "Virtual Network NBI Test - Subnet" )
@@ -430,8 +425,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Subnet Update test Start" )
         main.case( "Virtual Network NBI Test - Subnet" )
@@ -535,8 +529,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Subnet Delete test Start" )
         main.case( "Virtual Network NBI Test - Subnet" )
@@ -611,8 +604,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Port Post test Start" )
         main.case( "Virtual Network NBI Test - Port" )
@@ -718,8 +710,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Port Update test Start" )
         main.case( "Virtual Network NBI Test - Port" )
@@ -840,8 +831,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Port Delete test Start" )
         main.case( "Virtual Network NBI Test - Port" )
@@ -938,8 +928,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Post Error Json Create Network test Start" )
         main.case( "Virtual Network NBI Test - Network" )
@@ -984,8 +973,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Post Error Json Create Subnet test Start" )
         main.case( "Virtual Network NBI Test - Subnet" )
@@ -1043,8 +1031,7 @@ class FUNCvirNetNB:
         except ImportError:
             main.log.exception( "Something wrong with import file or code error." )
             main.log.info( "Import Error, please check!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.log.info( "ONOS Post Error Json Create Subnet test Start" )
         main.case( "Virtual Network NBI Test - Port" )

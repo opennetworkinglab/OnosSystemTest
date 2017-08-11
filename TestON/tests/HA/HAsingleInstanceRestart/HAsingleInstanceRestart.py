@@ -85,7 +85,7 @@ class HAsingleInstanceRestart:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
             from tests.HA.dependencies.HA import HA
@@ -779,8 +779,7 @@ class HAsingleInstanceRestart:
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
 
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE9( self, main ):
         """

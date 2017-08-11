@@ -135,12 +135,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setInterfaceUp( self, intfs ):
         """
@@ -159,12 +157,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startSwitch( self, swId ):
         """
@@ -179,12 +175,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def stopSwitch( self, swId ):
         """
@@ -199,12 +193,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getDatapathId( self, swId ):
         """
@@ -220,12 +212,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def attachLincOESession( self ):
         """
@@ -260,12 +250,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def portUp( self, swId, ptId ):
         """
@@ -281,12 +269,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def portDown( self, swId, ptId ):
         """
@@ -302,12 +288,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def stopLincOEConsole( self ):
         """
@@ -351,12 +335,10 @@ class LincOEDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
 if __name__ != "__main__":
     import sys

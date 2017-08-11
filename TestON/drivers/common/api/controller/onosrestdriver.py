@@ -129,8 +129,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def intents( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -167,8 +166,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def intent( self, intentId, appId="org.onosproject.cli",
                 ip="DEFAULT", port="DEFAULT" ):
@@ -213,8 +211,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def apps( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -250,8 +247,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def activateApp( self, appName, ip="DEFAULT", port="DEFAULT", check=True ):
         """
@@ -307,8 +303,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def deactivateApp( self, appName, ip="DEFAULT", port="DEFAULT",
                        check=True ):
@@ -364,8 +359,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getApp( self, appName, project="org.onosproject.", ip="DEFAULT",
                 port="DEFAULT" ):
@@ -404,8 +398,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addHostIntent( self, hostIdOne, hostIdTwo, appId='org.onosproject.cli',
                        ip="DEFAULT", port="DEFAULT", vlanId="" ):
@@ -461,8 +454,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addPointIntent( self,
                         ingressDevice,
@@ -621,8 +613,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addSinglepointToMultipointIntent(self,
                        ingressDevice,
@@ -786,8 +777,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeIntent( self, intentId, appId='org.onosproject.cli',
                        ip="DEFAULT", port="DEFAULT" ):
@@ -820,8 +810,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getIntentsId( self ):
         """
@@ -845,8 +834,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeAllIntents( self, intentIdList ='ALL',appId='org.onosproject.cli',
                           ip="DEFAULT", port="DEFAULT", delay=5 ):
@@ -894,8 +882,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def hosts( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -932,8 +919,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getHost( self, mac, vlan="-1", ip="DEFAULT", port="DEFAULT" ):
         """
@@ -980,8 +966,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def topology( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -1016,8 +1001,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def devices( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -1054,8 +1038,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getIntentState( self, intentsId, intentsJson=None,
                         ip="DEFAULT", port="DEFAULT" ):
@@ -1111,8 +1094,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkIntentState( self, intentsId="ALL", expectedState='INSTALLED',
                           ip="DEFAULT", port="DEFAULT"):
@@ -1177,8 +1159,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def flows( self, ip="DEFAULT", port="DEFAULT", subjectClass=None, subjectKey=None ):
         """
@@ -1223,8 +1204,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getFlows( self, deviceId, flowId=None, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -1266,8 +1246,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def sendFlow( self, deviceId, flowJson, ip="DEFAULT", port="DEFAULT", debug=False ):
         """
@@ -1316,8 +1295,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addFlow( self,
                  deviceId,
@@ -1446,8 +1424,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeFlow( self, deviceId, flowId,
                        ip="DEFAULT", port="DEFAULT" ):
@@ -1486,8 +1463,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkFlowsState( self , ip="DEFAULT", port="DEFAULT" ):
         """
@@ -1514,8 +1490,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getNetCfg( self, ip="DEFAULT", port="DEFAULT",
                    subjectClass=None, subjectKey=None, configKey=None ):
@@ -1563,8 +1538,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setNetCfg( self, cfgJson, ip="DEFAULT", port="DEFAULT",
                    subjectClass=None, subjectKey=None, configKey=None ):
@@ -1609,8 +1583,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeNetCfg( self, ip="DEFAULT", port="DEFAULT",
                       subjectClass=None, subjectKey=None, configKey=None ):
@@ -1654,8 +1627,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def createFlowBatch( self,
                       numSw = 1,
@@ -1861,8 +1833,7 @@ class OnosRestDriver( Controller ):
             return None, None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeFlowBatch( self, batch={},
                        ip="DEFAULT", port="DEFAULT" ):
@@ -1901,8 +1872,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getTopology( self, topologyOutput ):
         """
@@ -1920,12 +1890,10 @@ class OnosRestDriver( Controller ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkStatus(
             self,
@@ -1984,12 +1952,10 @@ class OnosRestDriver( Controller ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addGroup( self, deviceId, groupType, bucketList, appCookie, groupId, ip="DEFAULT", port="DEFAULT", debug=False ):
         """
@@ -2022,8 +1988,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def sendGroup( self, deviceId, groupJson, ip="DEFAULT", port="DEFAULT", debug=False ):
         """
@@ -2070,8 +2035,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getGroups( self, deviceId=None, appCookie=None, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -2120,8 +2084,7 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeGroup( self, deviceId, appCookie,
                        ip="DEFAULT", port="DEFAULT" ):
@@ -2164,6 +2127,5 @@ class OnosRestDriver( Controller ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 

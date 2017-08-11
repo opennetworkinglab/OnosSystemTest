@@ -405,8 +405,7 @@ class Cluster():
                              getattr( ctrl, drivers[ specificDriver ] ) ), function )
             except AttributeError:
                 main.log.error( "Function " + function + " not found. Exiting the Test." )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
             t = main.Thread( target=f,
                              name=function + "-" + ctrl.name,

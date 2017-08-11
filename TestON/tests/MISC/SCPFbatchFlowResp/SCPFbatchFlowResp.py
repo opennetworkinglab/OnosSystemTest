@@ -45,7 +45,7 @@ class SCPFbatchFlowResp:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
@@ -272,8 +272,7 @@ class SCPFbatchFlowResp:
         tLastPostEnd = time.time()
         if main.postFailed:
             main.log.error( "Flow batch posting failed, exit test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check to ensure all flows are in added state." )
         #pprint( main.addedBatchList )

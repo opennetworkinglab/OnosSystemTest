@@ -75,12 +75,10 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def disconnect( self ):
         try:
@@ -111,8 +109,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def delManager( self, delaytime="5" ):
         command= "sudo ovs-vsctl del-manager"
@@ -133,8 +130,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getManager( self ):
         command= "sudo ovs-vsctl get-manager"
@@ -146,8 +142,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def listBr( self ):
         """
@@ -169,8 +164,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def listPorts( self, sw ):
         """
@@ -192,8 +186,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getController( self, sw ):
         """
@@ -214,8 +207,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def show( self ):
         """
@@ -236,8 +228,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def dumpFlows( self, sw, protocols=None ):
         """
@@ -262,8 +253,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def createHost( self, hostname ):
         command = "sudo ip netns add " + str( hostname )
@@ -281,8 +271,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def createHostport(self, hostname="host1", hostport="host1-eth0", ovsport="port1", hostportmac="000000000001" ):
         command = "sudo ip link add " + str(hostport) +" type veth peer name " + str(ovsport)
@@ -304,8 +293,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addPortToOvs(self, ifaceId, attachedMac, vmuuid, port="port1", ovsname="br-int" ):
         command = "sudo ovs-vsctl add-port " + str(ovsname) +" " + str(port)
@@ -329,8 +317,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setHostportIp(self, ip, hostname="host1", hostport1="host1-eth0" ):
         command = "sudo ip netns exec " + str(hostname) +" ifconfig " + str(hostport1) + " " + str(ip)
@@ -348,8 +335,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def hostPing(self, src, target, hostname="host1" ):
         if src:
@@ -373,8 +359,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def delBr( self, sw ):
         """
@@ -395,8 +380,7 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def delHost( self, hostname ):
         """
@@ -417,5 +401,4 @@ class OvsdbDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()

@@ -44,7 +44,7 @@ class SCPFscaleTopo:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
@@ -137,7 +137,7 @@ class SCPFscaleTopo:
             from tests.dependencies.utils import Utils
         except ImportError:
             main.log.error( "Utils not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.Utils
         except ( NameError, AttributeError ):
@@ -197,7 +197,7 @@ class SCPFscaleTopo:
             from tests.dependencies.topology import Topology
         except ImportError:
             main.log.error( "Topology not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.topoRelated
         except ( NameError, AttributeError ):
@@ -280,8 +280,7 @@ class SCPFscaleTopo:
             main.log.info( "Finished this iteration, continue to scale next topology." )
         else:
             main.log.info( "Clean up and exit TestON. Finished this test." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE100( self, main ):
         '''

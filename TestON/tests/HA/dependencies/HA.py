@@ -52,8 +52,7 @@ class HA():
         except ( pexpect.TIMEOUT, pexpect.EOF ):
             main.log.exception( "ONOSbench: pexpect exception found:" +
                                 main.ONOSbench.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startingMininet( self ):
         main.step( "Starting Mininet" )
@@ -214,8 +213,7 @@ class HA():
             return ( onosCounters, consistent )
         except Exception:
             main.log.exception( "" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def counterCheck( self, counterName, counterValue ):
         """
@@ -248,8 +246,7 @@ class HA():
             return consistent and correctResults
         except Exception:
             main.log.exception( "" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def consistentLeaderboards( self, nodes ):
         TOPIC = 'org.onosproject.election'
@@ -359,8 +356,7 @@ class HA():
                     ctrl.name,
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Activate apps defined in the params file" )
         # get data from the params
@@ -640,8 +636,7 @@ class HA():
         main.log.info( "Time for pingall: %2f seconds" %
                        ( time2 - time1 ) )
         if not pingResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         # timeout for fwd flows
         time.sleep( 11 )
         # uninstall onos-app-fwd
@@ -1063,8 +1058,7 @@ class HA():
             from tests.dependencies.topology import Topology
         except ImportError:
             main.log.error( "Topology not found exiting the test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         try:
             main.topoRelated
         except ( NameError, AttributeError ):
@@ -2770,8 +2764,7 @@ class HA():
                     ctrl.name,
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         self.commonChecks()
 
@@ -2838,8 +2831,7 @@ class HA():
                                     "ONOSMastership[0] or mastershipState" )
                 main.log.debug( "ONOSMastership[0]: " + repr( ONOSMastership[ 0 ] ) )
                 main.log.debug( "mastershipState" + repr( mastershipState ) )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             mastershipCheck = main.TRUE
             for i in range( 1, 29 ):
                 switchDPID = str(
@@ -3042,8 +3034,7 @@ class HA():
             from tests.dependencies.topology import Topology
         except ImportError:
             main.log.error( "Topology not found exiting the test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         try:
             main.topoRelated
         except ( NameError, AttributeError ):
@@ -3388,8 +3379,7 @@ class HA():
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
 
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def linkDown( self, main, fromS="s3", toS="s28" ):
         """

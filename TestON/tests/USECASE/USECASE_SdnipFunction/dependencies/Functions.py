@@ -121,12 +121,10 @@ def pingSpeakerToPeer( main, speakers = [ "spk1" ],
     """
     if len( speakers ) == 0:
         main.log.error( "Parameter speakers can not be empty." )
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()
     if len( peers ) == 0:
         main.log.error( "Parameter speakers can not be empty." )
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()
 
     if expectAllSuccess:
         main.step( "BGP speakers ping peers, expect all tests to succeed" )
@@ -151,8 +149,7 @@ def pingSpeakerToPeer( main, speakers = [ "spk1" ],
                              onfail = "Ping test results are Not expected" )
 
     if result == False:
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()
 
 
 def pingHostToHost( main,
@@ -169,8 +166,7 @@ def pingHostToHost( main,
                str( expectAllSuccess ) )
     if len( hosts ) == 0:
         main.log.error( "Parameter hosts can not be empty." )
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()
 
     result = True
     if expectAllSuccess:
@@ -194,7 +190,6 @@ def pingHostToHost( main,
 
     '''
     if result == False:
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()
     '''
 

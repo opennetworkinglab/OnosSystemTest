@@ -31,7 +31,7 @@ class FUNCflow:
             from tests.dependencies.ONOSSetup import ONOSSetup
         except ImportError:
             main.log.error( "SetUp not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.testSetUp
         except ( NameError, AttributeError ):
@@ -72,7 +72,7 @@ class FUNCflow:
             except ImportError as e:
                 print e
                 main.log.error("CheckingFlow not found exiting the test")
-                main.exit()
+                main.cleanAndExit()
             copyResult = main.ONOSbench.scp( main.Mininet1,
                                              main.dependencyPath + main.topology,
                                              main.Mininet1.home + '/custom/',
@@ -117,7 +117,7 @@ class FUNCflow:
             from tests.dependencies.topology import Topology
         except ImportError:
             main.log.error( "Topology not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.topoRelated
         except ( NameError, AttributeError ):
@@ -619,8 +619,7 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1028,8 +1027,7 @@ class FUNCflow:
             stepResult = main.FALSE
         except ValueError:
             main.log.error( "Problem getting Flows state from REST API.  Exiting test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

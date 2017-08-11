@@ -754,6 +754,17 @@ class TestON:
         os.system( "stty sane" )  # fix format if necessary
         sys.exit()
 
+    def cleanAndExit( self ):
+        """
+            It will set the testcase result to be FAILED and update it
+            before cleaning up and exitting the test.
+        :return:
+        """
+        if self.CurrentTestCaseNumber:
+            self.testCaseResult[ str( self.CurrentTestCaseNumber ) ] = self.FALSE
+            self.logger.updateCaseResults( self )
+        self.cleanup()
+        self.exit()
 
     def stop( self, email=False ):
         """

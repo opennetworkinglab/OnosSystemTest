@@ -139,8 +139,7 @@ def checkTotalWrongNum():
     # if there are too many wrongs in this test, then exit
     if main.wrong['totalWrong'] > main.maxWrong:
         main.log.error( "The total wrong number exceeds %d, test terminated" % main.maxWrong )
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()
 
 def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
     '''

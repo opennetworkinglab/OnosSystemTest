@@ -64,9 +64,7 @@ def startOFC( main ):
     except pexpect.ExceptionPexpect as e:
         main.log.exception( self.name + ": Pexpect exception found: " )
         main.log.error( self.name + ":    " + self.handle.before )
-        main.cleanup()
-        main.exit()
-
+        main.cleanAndExit()
 
 def createConfig( main ):
     """

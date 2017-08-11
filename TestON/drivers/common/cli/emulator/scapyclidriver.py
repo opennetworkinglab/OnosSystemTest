@@ -104,12 +104,10 @@ class ScapyCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def disconnect( self ):
         """
@@ -179,8 +177,7 @@ class ScapyCliDriver( Emulator ):
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         else:
             main.log.error( self.name + ": Connection failed to the host" )
             response = main.FALSE
@@ -207,13 +204,11 @@ class ScapyCliDriver( Emulator ):
             main.componentInit( name )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         else:
             # namespace is not clear!
             main.log.error( name + " component already exists!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeHostComponent( self, name ):
         """
@@ -237,8 +232,7 @@ class ScapyCliDriver( Emulator ):
             return main.TRUE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startHostCli( self, host=None ):
         """
@@ -261,12 +255,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startScapy( self, mplsPath="" ):
         """
@@ -300,12 +292,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def stopScapy( self ):
         """
@@ -320,12 +310,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def buildEther( self, **kwargs ):
         """
@@ -370,12 +358,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def buildIP( self, **kwargs ):
         """
@@ -430,12 +416,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def buildIPv6( self, **kwargs ):
         """
@@ -485,12 +469,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def buildTCP( self, ipVersion=4, **kwargs ):
         """
@@ -556,12 +538,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def buildUDP( self, ipVersion=4, **kwargs ):
         """
@@ -620,12 +600,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def buildSCTP( self, ipVersion=4, **kwargs ):
         """
@@ -684,12 +662,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
 
     def buildARP( self, **kwargs ):
         """
@@ -745,12 +721,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
 
     def buildICMP( self, ipVersion=4, **kwargs ):
         """
@@ -816,12 +790,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
 
     def sendPacket( self, iface=None, packet=None, timeout=1 ):
         """
@@ -864,12 +836,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startFilter( self, ifaceName=None, sniffCount=1, pktFilter="ip" ):
         """
@@ -902,12 +872,10 @@ class ScapyCliDriver( Emulator ):
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkFilter( self, timeout=10 ):
         """
@@ -921,12 +889,10 @@ class ScapyCliDriver( Emulator ):
                 return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def killFilter( self ):
         """
@@ -941,12 +907,10 @@ class ScapyCliDriver( Emulator ):
             return None
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def readPackets( self ):
         """
@@ -961,12 +925,10 @@ class ScapyCliDriver( Emulator ):
             return None
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         return self.handle.before
 
     def updateSelf( self, IPv6=False ):
@@ -1000,12 +962,10 @@ class ScapyCliDriver( Emulator ):
             return None
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getIp( self, ifaceName=None, IPv6=False ):
         """
@@ -1076,12 +1036,10 @@ class ScapyCliDriver( Emulator ):
             return None
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getIfList( self ):
         """
@@ -1099,12 +1057,10 @@ class ScapyCliDriver( Emulator ):
             return None
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
 if __name__ != "__main__":
     sys.modules[ __name__ ] = ScapyCliDriver()

@@ -126,12 +126,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def disconnect( self ):
         """
@@ -205,15 +203,13 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": eof exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except ValueError:
             main.log.error( self.name +
                             "ValueError exception in logout method" )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setCell( self, cellname ):
         """
@@ -224,8 +220,7 @@ class OnosCliDriver( CLI ):
         try:
             if not cellname:
                 main.log.error( "Must define cellname" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             else:
                 self.handle.sendline( "cell " + str( cellname ) )
                 # Expect the cellname in the ONOSCELL variable.
@@ -250,12 +245,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": eof exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startOnosCli( self, ONOSIp, karafTimeout="",
                       commandlineTimeout=10, onosStartTimeout=60, waitForStart=False ):
@@ -335,12 +328,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def startCellCli( self, karafTimeout="",
                       commandlineTimeout=10, onosStartTimeout=60 ):
@@ -416,12 +407,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def log( self, cmdStr, level="", noExit=False ):
         """
@@ -452,8 +441,7 @@ class OnosCliDriver( CLI ):
                 main.cleanup()
                 return None
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -461,16 +449,14 @@ class OnosCliDriver( CLI ):
                 main.cleanup()
                 return None
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             if noExit:
                 main.cleanup()
                 return None
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False, dollarSign=False ):
         """
@@ -502,11 +488,9 @@ class OnosCliDriver( CLI ):
                         if noExit:
                             return None
                         else:
-                            main.cleanup()
-                            main.exit()
+                            main.cleanAndExit()
                 else:
-                    main.cleanup()
-                    main.exit()
+                    main.cleanAndExit()
             if i == 2:
                 main.log.warn( "Timeout when testing cli responsiveness" )
                 main.log.debug( self.handle.before )
@@ -578,15 +562,13 @@ class OnosCliDriver( CLI ):
             if noExit:
                 return None
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             if noExit:
                 return None
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     # IMPORTANT NOTE:
     # For all cli commands, naming convention should match
@@ -626,12 +608,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeNode( self, nodeId ):
         """
@@ -661,12 +641,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def nodes( self, jsonFormat=True):
         """
@@ -692,12 +670,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def topology( self ):
         """
@@ -722,12 +698,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def deviceRemove( self, deviceId ):
         """
@@ -755,12 +729,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def devices( self, jsonFormat=True ):
         """
@@ -785,12 +757,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def balanceMasters( self ):
         """
@@ -818,12 +788,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkMasters( self, jsonFormat=True  ):
         """
@@ -848,12 +816,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkBalanceMasters( self, jsonFormat=True ):
         """
@@ -893,12 +859,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def links( self, jsonFormat=True, timeout=30 ):
         """
@@ -923,12 +887,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def ports( self, jsonFormat=True ):
         """
@@ -953,12 +915,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def roles( self, jsonFormat=True ):
         """
@@ -983,12 +943,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getRole( self, deviceId ):
         """
@@ -1019,12 +977,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def rolesNotNull( self ):
         """
@@ -1048,12 +1004,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def paths( self, srcId, dstId ):
         """
@@ -1081,12 +1035,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def hosts( self, jsonFormat=True ):
         """
@@ -1117,12 +1069,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getHost( self, mac ):
         """
@@ -1154,12 +1104,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getHostsId( self, hostList ):
         """
@@ -1196,12 +1144,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="", setVlan="", encap="", bandwidth="" ):
         """
@@ -1256,12 +1202,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addOpticalIntent( self, ingressDevice, egressDevice ):
         """
@@ -1304,12 +1248,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addPointIntent(
             self,
@@ -1446,12 +1388,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addMultipointToSinglepointIntent(
             self,
@@ -1606,12 +1546,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addSinglepointToMultipointIntent(
             self,
@@ -1767,12 +1705,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def addMplsIntent(
             self,
@@ -1902,12 +1838,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeIntent( self, intentId, app='org.onosproject.cli',
                       purge=False, sync=False ):
@@ -1947,12 +1881,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeAllIntents( self, purge=False, sync=False, app='org.onosproject.cli', timeout=30 ):
         """
@@ -1990,12 +1922,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def purgeWithdrawnIntents( self ):
         """
@@ -2020,12 +1950,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def routes( self, jsonFormat=False ):
         """
@@ -2053,12 +1981,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def ipv4RouteNumber( self ):
         """
@@ -2083,12 +2009,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     #=============Function to check Bandwidth allocation========
     def allocations( self, jsonFormat = True, dollarSign = True ):
@@ -2113,12 +2037,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def intents( self, jsonFormat = True, summary = False, **intentargs):
         """
@@ -2163,12 +2085,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getIntentState(self, intentsId, intentsJson=None):
         """
@@ -2224,12 +2144,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkIntentState( self, intentsId, expectedState='INSTALLED' ):
         """
@@ -2299,12 +2217,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def compareBandwidthAllocations( self, expectedAllocations ):
         """
@@ -2352,12 +2268,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def compareIntent( self, intentDict ):
         """
@@ -2407,12 +2321,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkIntentSummary( self, timeout=60, noExit=True ):
         """
@@ -2452,8 +2364,7 @@ class OnosCliDriver( CLI ):
             if noExit:
                 return main.FALSE
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": ONOS timeout" )
             return None
@@ -2462,8 +2373,7 @@ class OnosCliDriver( CLI ):
             if noExit:
                 return main.FALSE
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     def flows( self, state="", jsonFormat=True, timeout=60, noExit=False, noCore=False ):
         """
@@ -2499,12 +2409,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkFlowCount(self, min=0, timeout=60 ):
         count = self.getTotalFlowsNum( timeout=timeout )
@@ -2566,12 +2474,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pushTestIntents( self, ingress, egress, batchSize, offset="",
                          options="", timeout=10, background = False, noExit=False, getResponse=False ):
@@ -2625,15 +2531,13 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getTotalFlowsNum( self, timeout=60, noExit=False ):
         """
@@ -2665,8 +2569,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             if not noExit:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             return None
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": ONOS timeout" )
@@ -2674,8 +2577,7 @@ class OnosCliDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             if not noExit:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             return None
 
     def getTotalIntentsNum( self, timeout=60, noExit = False ):
@@ -2703,15 +2605,13 @@ class OnosCliDriver( CLI ):
             if noExit:
                 return -1
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             if noExit:
                 return -1
             else:
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
     def intentsEventsMetrics( self, jsonFormat=True ):
         """
@@ -2736,12 +2636,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def topologyEventsMetrics( self, jsonFormat=True ):
         """
@@ -2772,12 +2670,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     # Wrapper functions ****************
     # Wrapper functions use existing driver
@@ -2808,12 +2704,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def flowAddedCount( self, deviceId, core=False ):
         """
@@ -2839,12 +2733,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getAllDevicesId( self ):
         """
@@ -2885,12 +2777,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getAllNodesId( self ):
         """
@@ -2917,12 +2807,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getDevice( self, dpid=None ):
         """
@@ -2948,12 +2836,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getTopology( self, topologyOutput ):
         """
@@ -2974,12 +2860,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def checkStatus(self, numoswitch, numolink, numoctrl = -1, logLevel="info"):
         """
@@ -3046,12 +2930,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def deviceRole( self, deviceId, onosNode, role="master" ):
         """
@@ -3094,12 +2976,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def clusters( self, jsonFormat=True ):
         """
@@ -3124,12 +3004,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def electionTestLeader( self ):
         """
@@ -3175,12 +3053,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def electionTestRun( self ):
         """
@@ -3216,12 +3092,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def electionTestWithdraw( self ):
         """
@@ -3257,12 +3131,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getDevicePortsEnabledCount( self, dpid ):
         """
@@ -3287,12 +3159,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getDeviceLinksActiveCount( self, dpid ):
         """
@@ -3317,12 +3187,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getAllIntentIds( self ):
         """
@@ -3346,12 +3214,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def intentSummary( self ):
         """
@@ -3371,12 +3237,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def leaders( self, jsonFormat=True ):
         """
@@ -3401,12 +3265,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def leaderCandidates( self, jsonFormat=True ):
         """
@@ -3431,12 +3293,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def specificLeaderCandidate( self, topic ):
         """
@@ -3468,12 +3328,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pendingMap( self, jsonFormat=True ):
         """
@@ -3496,12 +3354,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def partitions( self, candidates=False, jsonFormat=True ):
         """
@@ -3537,12 +3393,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def apps( self, summary=False, active=False, jsonFormat=True ):
         """
@@ -3577,12 +3431,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def appStatus( self, appName ):
         """
@@ -3619,12 +3471,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def app( self, appName, option ):
         """
@@ -3690,12 +3540,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def activateApp( self, appName, check=True ):
         """
@@ -3743,12 +3591,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def deactivateApp( self, appName, check=True ):
         """
@@ -3795,12 +3641,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def uninstallApp( self, appName, check=True ):
         """
@@ -3858,12 +3702,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def appIDs( self, jsonFormat=True ):
         """
@@ -3888,12 +3730,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def appToIDCheck( self ):
         """
@@ -3975,12 +3815,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getCfg( self, component=None, propName=None, short=False,
                 jsonFormat=True ):
@@ -4026,12 +3864,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setCfg( self, component, propName, value=None, check=True ):
         """
@@ -4083,12 +3919,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def distPrimitivesSend( self, cmd ):
         """
@@ -4134,12 +3968,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setTestAdd( self, setName, values ):
         """
@@ -4174,8 +4006,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setTestRemove( self, setName, values, clear=False, retain=False ):
         """
@@ -4238,8 +4069,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setTestGet( self, setName, values="" ):
         """
@@ -4319,8 +4149,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setTestSize( self, setName ):
         """
@@ -4366,8 +4195,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def counters( self, jsonFormat=True ):
         """
@@ -4397,12 +4225,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def counterTestAddAndGet( self, counter, delta=1 ):
         """
@@ -4438,8 +4264,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def counterTestGetAndAdd( self, counter, delta=1 ):
         """
@@ -4475,8 +4300,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def valueTestGet( self, valueName ):
         """
@@ -4509,8 +4333,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def valueTestSet( self, valueName, newValue ):
         """
@@ -4539,8 +4362,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def valueTestCompareAndSet( self, valueName, oldValue, newValue ):
         """
@@ -4583,8 +4405,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def valueTestGetAndSet( self, valueName, newValue ):
         """
@@ -4620,8 +4441,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def valueTestDestroy( self, valueName ):
         """
@@ -4647,8 +4467,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def summary( self, jsonFormat=True, timeout=30 ):
         """
@@ -4679,12 +4498,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def transactionalMapGet( self, keyName ):
         """
@@ -4721,8 +4538,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def transactionalMapPut( self, numKeys, value ):
         """
@@ -4773,8 +4589,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def maps( self, jsonFormat=True ):
         """
@@ -4799,12 +4614,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getSwController( self, uri, jsonFormat=True ):
         """
@@ -4827,12 +4640,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def setSwController( self, uri, ip, proto="tcp", port="6653", jsonFormat=True ):
         """
@@ -4893,12 +4704,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeDevice( self, device ):
         '''
@@ -4936,12 +4745,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def removeHost( self, host ):
         '''
@@ -4977,12 +4784,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def link( self, begin, end, state, timeout=30, showResponse=True ):
         '''
@@ -5013,12 +4818,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def portstate( self, dpid, port, state ):
         '''
@@ -5053,12 +4856,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def logSet( self, level="INFO", app="org.onosproject" ):
         """
@@ -5079,17 +4880,14 @@ class OnosCliDriver( CLI ):
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getGraphDict( self, timeout=60, includeHost=False ):
         """
@@ -5258,17 +5056,14 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": TIMEOUT exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def vplsShow( self, jsonFormat=True ):
         """
@@ -5297,15 +5092,13 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except NotImplementedError:
             main.log.exception( self.name + ": Json output not supported")
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def parseVplsShow( self ):
         """
@@ -5334,8 +5127,7 @@ class OnosCliDriver( CLI ):
             return output
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def vplsList( self, jsonFormat=True ):
         """
@@ -5362,15 +5154,13 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except NotImplementedError:
             main.log.exception( self.name + ": Json output not supported")
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def vplsCreate( self, network ):
         """
@@ -5399,12 +5189,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def vplsDelete( self, network ):
         """
@@ -5434,12 +5222,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def vplsAddIface( self, network, iface ):
         """
@@ -5472,12 +5258,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def vplsRemIface( self, network, iface ):
         """
@@ -5508,12 +5292,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def vplsClean( self ):
         """
@@ -5536,12 +5318,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def vplsSetEncap( self, network, encapType ):
         """
@@ -5575,12 +5355,10 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def interfaces( self, jsonFormat=True ):
         """
@@ -5608,15 +5386,13 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except NotImplementedError:
             main.log.exception( self.name + ": Json output not supported")
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def getTimeStampFromLog( self, mode, searchTerm, splitTerm_before, splitTerm_after, startLine='', logNum=1 ):
         '''
@@ -5685,8 +5461,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def workQueueAddMultiple( self, queueName, value1, value2 ):
         """
@@ -5721,8 +5496,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def workQueueTakeAndComplete( self, queueName, number=1 ):
         """
@@ -5755,8 +5529,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def workQueueDestroy( self, queueName ):
         """
@@ -5786,8 +5559,7 @@ class OnosCliDriver( CLI ):
             return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def workQueueTotalPending( self, queueName ):
         """
@@ -5820,8 +5592,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def workQueueTotalCompleted( self, queueName ):
         """
@@ -5854,8 +5625,7 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def workQueueTotalInProgress( self, queueName ):
         """
@@ -5888,5 +5658,4 @@ class OnosCliDriver( CLI ):
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()

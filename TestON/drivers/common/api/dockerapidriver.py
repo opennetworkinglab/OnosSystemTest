@@ -100,8 +100,7 @@ class DockerApiDriver( API ):
                 return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def dockerCreateCT( self, onosImage="onosproject/onos:latest", onosNode="onos1" ):
         """
@@ -123,8 +122,7 @@ class DockerApiDriver( API ):
                 return ( main.FALSE, null)
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def dockerStartCT( self, ctID ):
         """
@@ -142,8 +140,7 @@ class DockerApiDriver( API ):
                 return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def dockerStopCT( self, ctName ):
         """
@@ -164,8 +161,7 @@ class DockerApiDriver( API ):
             return main.TRUE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            #main.cleanup()
-            #main.exit()
+            #main.cleanAndExit()
 
     def dockerRestartCT( self, ctName ):
         """
@@ -183,8 +179,7 @@ class DockerApiDriver( API ):
                 return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def dockerCheckCTName( self, ctName):
         """
@@ -206,8 +201,7 @@ class DockerApiDriver( API ):
             return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception! Continue tests..." )
-            #main.cleanup()
-            #main.exit()
+            #main.cleanAndExit()
 
     def dockerRemoveCT( self, ctName ):
         """
@@ -229,8 +223,7 @@ class DockerApiDriver( API ):
             return main.TRUE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception! Continuing..." )
-            #main.cleanup()
-            #main.exit()
+            #main.cleanAndExit()
 
     def dockerRemoveImage( self, imageRepoTag=None ):
         """
@@ -260,8 +253,7 @@ class DockerApiDriver( API ):
                 except Exception:
                     main.log.exception( self.name + ": Uncaught exception! Continuing..." )
                     rmResult = rmResult and main.FALSE
-                    #main.cleanup()
-                    #main.exit()
+                    #main.cleanAndExit()
         return rmResult
 
     def fetchLatestClusterFile( self, branch="master" ):
@@ -277,8 +269,7 @@ class DockerApiDriver( API ):
             return main.TRUE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def onosFormCluster( self, onosIPs, cmdPath, user="karaf", passwd="karaf" ):
         """
@@ -298,8 +289,7 @@ class DockerApiDriver( API ):
                 return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def dockerIP( self, ctName ):
         """
@@ -313,6 +303,5 @@ class DockerApiDriver( API ):
 
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 

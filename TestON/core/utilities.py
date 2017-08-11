@@ -336,12 +336,10 @@ class Utilities:
             return ret
         except AssertionError:
             main.log.exception( "Invalid arguements for retry: " )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         except Exception:
             main.log.exception( "Uncaught exception in retry: " )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
 
 if __name__ != "__main__":

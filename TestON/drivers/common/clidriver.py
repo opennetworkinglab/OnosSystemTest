@@ -330,8 +330,7 @@ class CLI( Component ):
                return returnVal
             elif i == 7:  # EOF
                 main.log.error( "Pexpect.EOF found!!!" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             elif i == 8:  # timeout
                 main.log.error(
                     "No route to the Host " +
@@ -410,27 +409,23 @@ class CLI( Component ):
                                      120 )
                 if j != 0:
                     main.log.error( "Incorrect Password" )
-                    main.cleanup()
-                    main.exit()
+                    main.cleanAndExit()
             elif i == 2:
                 main.log.error( "Connection timeout" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             elif i == 3:  # timeout
                 main.log.error(
                     "No route to the Host " +
                     uName +
                     "@" +
                     ipAddress )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             elif i == 4:
                 main.log.error(
                     "ssh: connect to host " +
                     ipAddress +
                     " port 22: Connection refused" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
             elif i == 6:
                 main.log.info( "Password not required logged in" )
 

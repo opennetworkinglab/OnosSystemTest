@@ -39,7 +39,7 @@ class SAMPstartTemplate_1node:
             from tests.dependencies.ONOSSetup import ONOSSetup
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.testSetUp
         except ( NameError, AttributeError ):
@@ -56,7 +56,7 @@ class SAMPstartTemplate_1node:
             from tests.dependencies.ONOSSetup import ONOSSetup
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.testSetUp
         except ( NameError, AttributeError ):
@@ -103,7 +103,7 @@ class SAMPstartTemplate_1node:
             from tests.dependencies.ONOSSetup import ONOSSetup
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.testSetUp
         except ( NameError, AttributeError ):
@@ -173,8 +173,7 @@ class SAMPstartTemplate_1node:
                                  onfail="Failed to load topology" )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Assign switches to controllers.")
         assignResult = main.TRUE

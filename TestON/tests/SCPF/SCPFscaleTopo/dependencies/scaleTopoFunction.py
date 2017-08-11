@@ -247,7 +247,7 @@ def compareTopo( main ):
         from tests.dependencies.topology import Topology
     except ImportError:
         main.log.error( "Topology not found exiting the test" )
-        main.exit()
+        main.cleanAndExit()
     try:
         main.topoRelated
     except ( NameError, AttributeError ):

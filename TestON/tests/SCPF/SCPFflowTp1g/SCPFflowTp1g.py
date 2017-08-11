@@ -41,7 +41,7 @@ class SCPFflowTp1g:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error("ONOSSetup not found. exiting the test")
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
             #Load values from params file

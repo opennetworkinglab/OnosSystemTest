@@ -80,7 +80,7 @@ class HAscaling:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
 
         main.testSetUp.envSetupDescription()
         try:
@@ -184,8 +184,7 @@ class HAscaling:
                                      onfail="Failled to generate new metadata file" )
             time.sleep( 5 )  # Give time for nodes to read new file
         except IndexError:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         activeNodes = [ i for i in range( 0, main.Cluster.numCtrls ) ]
         newNodes = [ x for x in activeNodes if x not in prevNodes ]
@@ -226,8 +225,7 @@ class HAscaling:
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
         if not ready:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         # Rerun for election on new nodes
         runResults = main.TRUE

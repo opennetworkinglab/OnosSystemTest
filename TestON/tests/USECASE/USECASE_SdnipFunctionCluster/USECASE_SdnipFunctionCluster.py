@@ -45,8 +45,7 @@ class USECASE_SdnipFunctionCluster:
                                  onfail="Failed to load topology" )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         main.step( "Connect switches to controllers" )
 
         # connect all switches to controllers
@@ -60,8 +59,7 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="Successfully connect all switches to ONOS",
                                  onfail="Failed to connect all switches to ONOS" )
         if not swResult:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
 
     def CASE101( self, main ):
@@ -89,7 +87,7 @@ class USECASE_SdnipFunctionCluster:
             from tests.USECASE.dependencies.sdnipBaseFunction import SdnBase
         except ImportError:
             main.log.error( "sdnBase not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.sdnBase
         except ( NameError, AttributeError ):
@@ -117,8 +115,7 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="ONOS correctly discovered all links",
                                  onfail="ONOS Failed to discover all links" )
         if linkNum < 100:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Activate sdn-ip application" )
         activeSDNIPresult = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.sdnip" )
@@ -128,8 +125,7 @@ class USECASE_SdnipFunctionCluster:
                                  onfail="Activate SDN-IP failed" )
         if not activeSDNIPresult:
             main.log.info( "Activate SDN-IP failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def CASE102( self, main ):
         '''
@@ -259,8 +255,7 @@ class USECASE_SdnipFunctionCluster:
             main.Functions.checkP2PintentNum( main, 48 ) #14 * 2
         else:
             main.log.error( "Stopping switch failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check ping between hosts behind BGP peers" )
         result1 = main.Mininet.pingHost( src="h64514", target="h64515" )
@@ -274,8 +269,7 @@ class USECASE_SdnipFunctionCluster:
                                  onfail="Ping test result is wrong" )
 
         if pingResult1 == False:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check ping between BGP peers and spk1" )
         result4 = main.Mininet.pingHost( src="spk1", target="p64514" )
@@ -289,8 +283,7 @@ class USECASE_SdnipFunctionCluster:
                                  onfail="Speaker1 ping peers NOT successful" )
 
         if pingResult2 == False:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check ping between BGP peers and spk2" )
         # TODO
@@ -305,8 +298,7 @@ class USECASE_SdnipFunctionCluster:
                                  onfail="Speaker2 ping peers NOT successful" )
 
         if pingResult3 == False:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
@@ -345,8 +337,7 @@ class USECASE_SdnipFunctionCluster:
             main.Functions.checkP2PintentNum( main, 30 * 2 ) # 18*2
         else:
             main.log.error( "Starting switch failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
@@ -400,8 +391,7 @@ class USECASE_SdnipFunctionCluster:
             main.Functions.checkP2PintentNum( main, 30 * 2 ) #18 * 2
         else:
             main.log.error( "Stopping switch failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
@@ -458,8 +448,7 @@ class USECASE_SdnipFunctionCluster:
             main.log.debug( main.Mininet.checkFlows( "sw7" ) )
         else:
             main.log.error( "Starting switch failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
@@ -532,8 +521,7 @@ class USECASE_SdnipFunctionCluster:
                                  onfail="Kill spk1 failed" )
         if ( "4" not in result3 ) :
             main.log.info( result3 )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
         main.Functions.checkRouteNum( main, 7 )
@@ -588,8 +576,7 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="Uninstall ONOS leader succeeded",
                                  onfail="Uninstall ONOS leader failed" )
         if uninstallResult != main.TRUE:
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
 
         if leaderIP == main.Cluster.active( 0 ).ipAddress:

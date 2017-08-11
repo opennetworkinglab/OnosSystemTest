@@ -48,5 +48,4 @@ def addBucket( main, egressPort="" ):
         return None
     except Exception:
         main.log.exception( self.name + ": Uncaught exception!" )
-        main.cleanup()
-        main.exit()
+        main.cleanAndExit()

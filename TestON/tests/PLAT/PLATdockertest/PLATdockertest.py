@@ -106,12 +106,10 @@ class PLATdockertest:
                                     onfail = "docker is not running")
         if stepResult == main.FALSE:
             main.log.warn("docker is not running - exiting test")
-            main.exit()
-            main.cleanup()
+            main.cleanAndExit()
         if imageTagCounter > len( imageTagList ):
             main.log.info("All images have been tested")
-            main.exit()
-            main.cleanup()
+            main.cleanAndExit()
 
     def CASE5(self, main):
         """

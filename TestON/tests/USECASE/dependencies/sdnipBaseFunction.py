@@ -11,7 +11,7 @@ class SdnBase:
             main.testSetUp = ONOSSetup()
         except Exception:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         main.testSetUp.envSetup()
         main.apps = main.params[ 'ENV' ][ 'appString' ]
@@ -41,8 +41,7 @@ class SdnBase:
 
         if not ready:
             main.log.error( "ONOS startup failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
     def pToPIntentTest( self, intentExpectedNum ):
         '''
@@ -155,8 +154,7 @@ class SdnBase:
             main.Functions.checkM2SintentNum( main, link1IntentNum )
         else:
             main.log.error( "Bring " + upOrDown + " link failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Bring " + upOrDown + " the link between sw8 and " + link2Peer )
         linkResult2 = main.Mininet.link( END1="sw8", END2=link2Peer,
@@ -171,8 +169,7 @@ class SdnBase:
             main.Functions.checkM2SintentNum( main, link2IntentNum )
         else:
             main.log.error( "Bring " + upOrDown + " link failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Bring " + upOrDown + " the link between sw28 and "+ link3Peer )
         linkResult3 = main.Mininet.link( END1="sw28", END2=link3Peer,
@@ -187,8 +184,7 @@ class SdnBase:
             main.Functions.checkM2SintentNum( main, link3IntentNum )
         else:
             main.log.error( "Bring " + upOrDown + " link failed!" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,

@@ -47,7 +47,7 @@ class Testcaselib:
             main.testSetUp = ONOSSetup()
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
@@ -146,8 +146,7 @@ class Testcaselib:
             main.pingChart = json.load( chart )
         if not ready:
             main.log.error( "ONOS startup failed!" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
 
         for ctrl in main.Cluster.active():
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.segmentrouting" )
@@ -169,8 +168,7 @@ class Testcaselib:
                                  onfail="Failed to load topology" )
         # Exit if topology did not load properly
         if not topoResult:
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
 
     @staticmethod
     def config( main, cfgName ):
@@ -213,8 +211,7 @@ class Testcaselib:
 
         else :
             main.log.error( "Configuration failed!" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
 
     @staticmethod
     def checkFlows( main, minFlowCount, dumpflows=True ):
@@ -396,7 +393,7 @@ class Testcaselib:
             from tests.dependencies.utils import Utils
         except ImportError:
             main.log.error( "Utils not found exiting the test" )
-            main.exit()
+            main.cleanAndExit()
         try:
             main.utils
         except ( NameError, AttributeError ):
@@ -444,8 +441,7 @@ class Testcaselib:
                         ctrl.name,
                         ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
                 main.log.error( "Failed to kill ONOS, stopping test" )
-                main.cleanup()
-                main.exit()
+                main.cleanAndExit()
 
             topology = utilities.retry( main.Cluster.active( 0 ).checkStatus,
                                         main.FALSE,
@@ -502,8 +498,7 @@ class Testcaselib:
                     ctrl.name,
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanup()
-            main.exit()
+            main.cleanAndExit()
 
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
@@ -526,8 +521,7 @@ class Testcaselib:
                                  onfail="ONOS summary command failed" )
         if not ready:
             main.log.error( "ONOS startup failed!" )
-            main.cleanup( )
-            main.exit( )
+            main.cleanAndExit()
 
     @staticmethod
     def addHostCfg( main ):

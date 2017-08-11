@@ -295,7 +295,8 @@ class Utilities:
             return 0
 
     def retry( self, f, retValue, args=(), kwargs={},
-               sleep=1, attempts=2, randomTime=False ):
+               sleep=1, attempts=2, randomTime=False,
+               getRetryingTime=False ):
         """
         Given a function and bad return values, retry will retry a function
         until successful or give up after a certain number of attempts.
@@ -321,6 +322,8 @@ class Utilities:
             assert sleep >= 0, "sleep must be >= 0"
             if not isinstance( retValue, list ):
                 retValue = [ retValue ]
+            if getRetryingTime:
+                startTime = time.time()
             for i in range( 0, attempts ):
                 ret = f( *args, **kwargs )
                 if ret not in retValue:
@@ -333,6 +336,8 @@ class Utilities:
                 time.sleep( sleeptime )
             if i > 0:
                 main.log.debug( str( f ) + " was retried " + str( i ) + " times." )
+                if getRetryingTime:
+                    main.log.debug( "Took " + str( time.time() - startTime ) + " seconds for retrying." )
             return ret
         except AssertionError:
             main.log.exception( "Invalid arguements for retry: " )

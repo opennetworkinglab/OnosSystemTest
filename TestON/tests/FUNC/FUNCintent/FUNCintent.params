@@ -47,17 +47,24 @@
     <SLEEP>
         <startup>15</startup>
         <reroute>5</reroute>
-        <removeintent>10</removeintent>
+        <removeintent>5</removeintent>
         <checkintent>5</checkintent>
         <fwd>10</fwd>
         <topoAttempts>3</topoAttempts>
         <flowDuration>10</flowDuration>
-        <checkConnection>30</checkConnection>
-        <checkFlowCount>20</checkFlowCount>
+        <checkConnection>1</checkConnection> # because the scapyCheckConnection itself takes 12 seconds.
+        <checkFlowCount>5</checkFlowCount>
         <checkIntentHost>5</checkIntentHost>
         <checkIntentPoint>5</checkIntentPoint>
     </SLEEP>
 
+    <RETRY>
+        <generalAttempts>36</generalAttempts>
+        <middleAttempts>5</middleAttempts>
+        <minimumAttempts>1</minimumAttempts>
+        <checkConnectionAtt>15</checkConnectionAtt> # because the scapyCheckConnection itself takes 12 seconds.
+        <removeIntentAtt>20</removeIntentAtt>
+    </RETRY>
     <MININET>
         <switch>7</switch>
         <links>20</links>

@@ -243,9 +243,9 @@ def testHostIntent( main,
 
     # Check intent state
     if hostIntentFailFlag:
-        attempts = 1
+        attempts = main.minimumAttemptsNum
     else:
-        attempts = 50
+        attempts = main.generalAttemptsNum
     if utilities.retry( f=checkIntentState,
                         retValue=main.FALSE,
                         args=( main, [ intentId ] ),
@@ -255,7 +255,7 @@ def testHostIntent( main,
     else:
         main.assertReturnString += 'Initial Intent State Failed\n'
         testResult = main.FALSE
-        attempts = 1
+        attempts = main.minimumAttemptsNum
 
     # Check flows count in each node
     if utilities.retry( f=checkFlowsCount,
@@ -275,9 +275,10 @@ def testHostIntent( main,
     # Check Connectivity
     if utilities.retry( f=scapyCheckConnection,
                         retValue=main.FALSE,
-                        attempts=attempts,
+                        attempts=main.checkConnectionAttNum,
                         sleep=main.checkConnectionSleep,
-                        args=( main, senderNames, recipientNames, vlanId ) ):
+                        args=( main, senderNames, recipientNames, vlanId ),
+                        getRetryingTime=True ):
         main.assertReturnString += 'Initial Ping Passed\n'
     else:
         main.assertReturnString += 'Initial Ping Failed\n'
@@ -334,7 +335,8 @@ def testHostIntent( main,
                             retValue=main.FALSE,
                             args=( main, senderNames, recipientNames, vlanId ),
                             sleep=main.checkConnectionSleep,
-                            attempts=attempts ):
+                            attempts=main.checkConnectionAttNum,
+                            getRetryingTime=True ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -391,7 +393,8 @@ def testHostIntent( main,
         # Check Connection
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
-                            args=( main, senderNames, recipientNames, vlanId ) ):
+                            args=( main, senderNames, recipientNames, vlanId ),
+                            getRetryingTime=True ):
             main.assertReturnString += 'Link Up Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Up Pingall Failed\n'
@@ -400,7 +403,7 @@ def testHostIntent( main,
     # Remove all intents
     if utilities.retry( f=removeAllIntents,
                         retValue=main.FALSE,
-                        attempts=10,
+                        attempts=main.removeIntentAttNum,
                         args=( main, [ intentId ] ) ):
         main.assertReturnString += 'Remove Intents Passed'
     else:
@@ -973,9 +976,9 @@ def installSingleToMultiIntent( main,
 
     # Check intents state
     if singleToMultiFailFlag:
-        attempts = 5
+        attempts = main.middleAttemptsNum
     else:
-        attempts = 50
+        attempts = main.generalAttemptsNum
 
     if utilities.retry( f=checkIntentState,
                         retValue=main.FALSE,
@@ -1122,9 +1125,9 @@ def installMultiToSingleIntent( main,
 
     # Check intents state
     if multiToSingleFailFlag:
-        attempts = 5
+        attempts = main.middleAttemptsNum
     else:
-        attempts = 50
+        attempts = main.generalAttemptsNum
 
     if utilities.retry( f=checkIntentState,
                         retValue=main.FALSE,
@@ -1261,9 +1264,9 @@ def testPointIntent( main,
     main.log.info( itemName + ": Adding single point to multi point intents" )
 
     if pointIntentFailFlag or singleToMultiFailFlag or multiToSingleFailFlag:
-        attempts = 1
+        attempts = main.minimumAttemptsNum
     else:
-        attempts = 50
+        attempts = main.generalAttemptsNum
 
     # Check intent state
     if utilities.retry( f=checkIntentState,
@@ -1275,7 +1278,7 @@ def testPointIntent( main,
     else:
         main.assertReturnString += 'Initial Intent State Failed\n'
         testResult = main.FALSE
-        attempts = 1
+        attempts = main.minimumAttemptsNum
 
     # Check flows count in each node
     if utilities.retry( f=checkFlowsCount,
@@ -1296,8 +1299,9 @@ def testPointIntent( main,
     if utilities.retry( f=scapyCheckConnection,
                         retValue=main.FALSE,
                         args=( main, senderNames, recipientNames, vlanId, useTCP ),
-                        attempts=attempts,
-                        sleep=main.checkConnectionSleep ):
+                        attempts=main.checkConnectionAttNum,
+                        sleep=main.checkConnectionSleep,
+                        getRetryingTime=True ):
         main.assertReturnString += 'Initial Ping Passed\n'
     else:
         main.assertReturnString += 'Initial Ping Failed\n'
@@ -1309,7 +1313,8 @@ def testPointIntent( main,
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
                             args=( main, badSenderNames, recipientNames ),
-                            kwargs={ "expectFailure": True } ):
+                            kwargs={ "expectFailure": True },
+                            getRetryingTime=True ):
             main.assertReturnString += 'Bad Sender Ping Passed\n'
         else:
             main.assertReturnString += 'Bad Sender Ping Failed\n'
@@ -1320,7 +1325,8 @@ def testPointIntent( main,
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
                             args=( main, senderNames, badRecipientNames ),
-                            kwargs={ "expectFailure": True } ):
+                            kwargs={ "expectFailure": True },
+                            getRetryingTime=True ):
             main.assertReturnString += 'Bad Recipient Ping Passed\n'
         else:
             main.assertReturnString += 'Bad Recipient Ping Failed\n'
@@ -1341,7 +1347,8 @@ def testPointIntent( main,
             # Check Connection
             if utilities.retry( f=scapyCheckConnection,
                                 retValue=main.FALSE,
-                                args=( main, senderNames, recipientNames, vlanId, useTCP ) ):
+                                args=( main, senderNames, recipientNames, vlanId, useTCP ),
+                                getRetryingTime=True ):
                 main.assertReturnString += 'Link down Scapy Packet Received Passed\n'
             else:
                 main.assertReturnString += 'Link down Scapy Packet Recieved Failed\n'
@@ -1393,7 +1400,8 @@ def testPointIntent( main,
                             retValue=main.FALSE,
                             args=( main, senderNames, recipientNames, vlanId, useTCP ),
                             sleep=main.checkConnectionSleep,
-                            attempts=attempts ):
+                            attempts=main.checkConnectionAttNum,
+                            getRetryingTime=True ):
             main.assertReturnString += 'Link Down Pingall Passed\n'
         else:
             main.assertReturnString += 'Link Down Pingall Failed\n'
@@ -1451,8 +1459,9 @@ def testPointIntent( main,
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
                             sleep=main.checkConnectionSleep,
-                            attempts=attempts,
-                            args=( main, senderNames, recipientNames, vlanId, useTCP ) ):
+                            attempts=main.checkConnectionAttNum,
+                            args=( main, senderNames, recipientNames, vlanId, useTCP ),
+                            getRetryingTime=True ):
             main.assertReturnString += 'Link Up Scapy Packet Received Passed\n'
         else:
             main.assertReturnString += 'Link Up Scapy Packet Recieved Failed\n'
@@ -1461,7 +1470,7 @@ def testPointIntent( main,
     # Remove all intents
     if utilities.retry( f=removeAllIntents,
                         retValue=main.FALSE,
-                        attempts=10,
+                        attempts=main.removeIntentAttNum,
                         args=( main, [ intentId ] ) ):
         main.assertReturnString += 'Remove Intents Passed'
     else:
@@ -1537,9 +1546,9 @@ def testEndPointFail( main,
 
     # Check intent state
     if singleToMultiFailFlag or multiToSingleFailFlag:
-        attempts = 1
+        attempts = main.minimumAttemptsNum
     else:
-        attempts = 50
+        attempts = main.generalAttemptsNum
 
     if utilities.retry( f=checkIntentState,
                         retValue=main.FALSE,
@@ -1550,7 +1559,7 @@ def testEndPointFail( main,
     else:
         main.assertReturnString += 'Initial Intent State Failed\n'
         testResult = main.FALSE
-        attempts = 1
+        attempts = main.minimumAttemptsNum
 
     # Check flows count in each node
     if utilities.retry( f=checkFlowsCount,
@@ -1568,7 +1577,8 @@ def testEndPointFail( main,
     # Check Connectivity
     if utilities.retry( f=scapyCheckConnection,
                         retValue=main.FALSE,
-                        args=( main, senderNames, recipientNames ) ):
+                        args=( main, senderNames, recipientNames ),
+                        getRetryingTime=True ):
         main.assertReturnString += 'Initial Connectivity Check Passed\n'
     else:
         main.assertReturnString += 'Initial Connectivity Check Failed\n'
@@ -1631,7 +1641,8 @@ def testEndPointFail( main,
     # Check Connection
     if utilities.retry( f=scapyCheckConnection,
                         retValue=main.FALSE,
-                        args=( main, senderNames, recipientNames ) ):
+                        args=( main, senderNames, recipientNames ),
+                        getRetryingTime=True ):
         main.assertReturnString += 'Link Down Connectivity Check Passed\n'
     else:
         main.assertReturnString += 'Link Down Connectivity Check Failed\n'
@@ -1714,8 +1725,9 @@ def testEndPointFail( main,
         # Next check connectivity of connected senders and recipients
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.FALSE,
-                            attempts=attempts,
-                            args=( main, connectedSenderNames, connectedRecipientNames ) ):
+                            attempts=main.checkConnectionAttNum,
+                            args=( main, connectedSenderNames, connectedRecipientNames ),
+                            getRetryingTime=True ):
             main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Passed\n'
         else:
             main.assertReturnString += 'Partial failure isolation link Down Connectivity Check Failed\n'
@@ -1788,7 +1800,8 @@ def testEndPointFail( main,
         # Next check connectivity of connected senders and recipients
         if utilities.retry( f=scapyCheckConnection,
                             retValue=main.TRUE,
-                            args=( main, connectedSenderNames, connectedRecipientNames, None, None, None, None, main.TRUE ) ):
+                            args=( main, connectedSenderNames, connectedRecipientNames, None, None, None, None, main.TRUE ),
+                            getRetryingTime=True ):
             main.assertReturnString += 'Isolation link Down Connectivity Check Passed\n'
         else:
             main.assertReturnString += 'Isolation link Down Connectivity Check Failed\n'
@@ -1865,8 +1878,9 @@ def testEndPointFail( main,
     if utilities.retry( f=scapyCheckConnection,
                         retValue=main.FALSE,
                         sleep=main.checkConnectionSleep,
-                        attempts=attempts,
-                        args=( main, senderNames, recipientNames ) ):
+                        attempts=main.checkConnectionAttNum,
+                        args=( main, senderNames, recipientNames ),
+                        getRetryingTime=True ):
         main.assertReturnString += 'Link Up Scapy Packet Received Passed\n'
     else:
         main.assertReturnString += 'Link Up Scapy Packet Recieved Failed\n'
@@ -1875,7 +1889,7 @@ def testEndPointFail( main,
     # Remove all intents
     if utilities.retry( f=removeAllIntents,
                         retValue=main.FALSE,
-                        attempts=10,
+                        attempts=main.removeIntentAttNum,
                         args=( main, [ intentId ] ) ):
         main.assertReturnString += 'Remove Intents Passed'
     else:

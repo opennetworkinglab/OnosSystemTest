@@ -71,6 +71,11 @@ class FUNCintent:
             main.checkIntentPointSleep = int( main.params[ 'SLEEP' ][ 'checkIntentPoint' ] )
             main.checkTopoAttempts = int( main.params[ 'SLEEP' ][ 'topoAttempts' ] )
             main.flowDurationSleep = int( main.params[ 'SLEEP' ][ 'flowDuration' ] )
+            main.generalAttemptsNum = int( main.params[ 'RETRY' ][ 'generalAttempts' ] )
+            main.middleAttemptsNum = int( main.params[ 'RETRY' ][ 'middleAttempts' ] )
+            main.minimumAttemptsNum = int( main.params[ 'RETRY' ][ 'minimumAttempts' ] )
+            main.checkConnectionAttNum = int( main.params[ 'RETRY' ][ 'checkConnectionAtt' ] )
+            main.removeIntentAttNum = int( main.params[ 'RETRY' ][ 'removeIntentAtt' ] )
             main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
             main.hostsData = {}

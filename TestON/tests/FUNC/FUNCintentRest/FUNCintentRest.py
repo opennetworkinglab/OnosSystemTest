@@ -48,7 +48,6 @@ class FUNCintentRest:
             - Install ONOS package
             - Build ONOS package
         """
-        main.cleanAndExit()
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()

@@ -148,8 +148,6 @@ def verify( main ):
                              onpass="Connectivity is as expected",
                              onfail="Connectivity is not as expected" )
 
-
-
 # TODO: if encapsulation is set, look for that
 # TODO: can we look at the intent keys?
 

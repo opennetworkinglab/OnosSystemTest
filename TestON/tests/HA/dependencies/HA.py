@@ -2911,7 +2911,7 @@ class HA():
 
         if intentsResults and not consistentIntents:
             for i in range( len( main.Cluster.active() ) ):
-                ctrl = main.Cluster.contoller[ i ]
+                ctrl = main.Cluster.controllers[ i ]
                 main.log.warn( ctrl.name + " intents: " )
                 main.log.warn( json.dumps(
                     json.loads( ONOSIntents[ i ] ),

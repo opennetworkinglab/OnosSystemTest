@@ -59,8 +59,7 @@ class OnosRestDriver( Controller ):
         except Exception as inst:
             main.log.error( "Uncaught exception: " + str( inst ) )
 
-        self.handle = super( OnosRestDriver, self ).connect()
-        return self.handle
+        return super( OnosRestDriver, self ).connect()
 
     def pprint( self, jsonObject ):
         """
@@ -333,7 +332,7 @@ class OnosRestDriver( Controller ):
                                   ip = ip, port = port )
             if response:
                 output = response[ 1 ]
-                app = json.loads( output )
+                app = {} if output == "" else json.loads( output )
                 if 200 <= response[ 0 ] <= 299:
                     if check:
                         if app.get( 'state' ) == 'INSTALLED':

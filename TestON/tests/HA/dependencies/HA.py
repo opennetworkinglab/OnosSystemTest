@@ -604,7 +604,7 @@ class HA():
         # install onos-app-fwd
         main.step( "Install reactive forwarding app" )
         onosCli = main.Cluster.next()
-        installResults = onosCli.activateApp( "org.onosproject.fwd" )
+        installResults = onosCli.CLI.activateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install fwd successful",
                                  onfail="Install fwd failed" )
@@ -641,7 +641,7 @@ class HA():
         time.sleep( 11 )
         # uninstall onos-app-fwd
         main.step( "Uninstall reactive forwarding app" )
-        uninstallResult = onosCli.deactivateApp( "org.onosproject.fwd" )
+        uninstallResult = onosCli.CLI.deactivateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=uninstallResult,
                                  onpass="Uninstall fwd successful",
                                  onfail="Uninstall fwd failed" )
@@ -686,7 +686,7 @@ class HA():
             else:
                 main.log.error( "Error, getHost() failed for h" + str( i ) +
                                 " and/or h" + str( i + 10 ) )
-                hosts = main.Cluster.next().hosts()
+                hosts = main.Cluster.next().CLI.hosts()
                 try:
                     output = json.dumps( json.loads( hosts ),
                                          sort_keys=True,
@@ -714,7 +714,7 @@ class HA():
         else:
             intentStop = None
         # Print the intent states
-        intents = onosCli.intents()
+        intents = onosCli.CLI.intents()
         intentStates = []
         installedCheck = True
         main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
@@ -762,7 +762,7 @@ class HA():
                     correct = False
                     break
                 else:
-                    intents = json.loads( ctrl.intents() )
+                    intents = json.loads( ctrl.CLI.intents() )
                     for intent in intents:
                         if intent[ 'state' ] != "INSTALLED":
                             main.log.warn( "Intent " + intent[ 'id' ] +
@@ -812,7 +812,7 @@ class HA():
             main.log.info( "Submitted intents: " + str( intentIds ) )
             main.log.info( "Intents in ONOS: " + str( onosIds ) )
             # Print the intent states
-            intents = onosCli.intents()
+            intents = onosCli.CLI.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
@@ -860,7 +860,7 @@ class HA():
         while not installedCheck and loopCount < 40:
             installedCheck = True
             # Print the intent states
-            intents = onosCli.intents()
+            intents = onosCli.CLI.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
@@ -905,7 +905,7 @@ class HA():
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
             try:
-                tmpIntents = onosCli.intents()
+                tmpIntents = onosCli.CLI.intents()
                 output = json.dumps( json.loads( tmpIntents ),
                                      sort_keys=True,
                                      indent=4,
@@ -932,7 +932,7 @@ class HA():
                            "intents change" )
             time.sleep( 60 )
             # Print the intent states
-            intents = onosCli.intents()
+            intents = onosCli.CLI.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
@@ -954,7 +954,7 @@ class HA():
         self.commonChecks()
 
         # Print flowrules
-        main.log.debug( onosCli.flows() )
+        main.log.debug( onosCli.CLI.flows() )
         main.step( "Wait a minute then ping again" )
         # the wait is above
         PingResult = main.TRUE
@@ -974,7 +974,7 @@ class HA():
             # TODO: pretty print
             main.log.warn( str( onosCli.name ) + " intents: " )
             try:
-                tmpIntents = onosCli.intents()
+                tmpIntents = onosCli.CLI.intents()
                 main.log.warn( json.dumps( json.loads( tmpIntents ),
                                            sort_keys=True,
                                            indent=4,
@@ -3510,7 +3510,7 @@ class HA():
         main.case( "Start Leadership Election app" )
         main.step( "Install leadership election app" )
         onosCli = main.Cluster.next()
-        appResult = onosCli.activateApp( "org.onosproject.election" )
+        appResult = onosCli.CLI.activateApp( "org.onosproject.election" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=appResult,
@@ -3727,7 +3727,7 @@ class HA():
         main.case( description )
         main.step( "Install Primitives app" )
         appName = "org.onosproject.distributedprimitives"
-        appResults = main.Cluster.next().activateApp( appName )
+        appResults = main.Cluster.next().CLI.activateApp( appName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=appResults,
                                  onpass="Primitives app activated",

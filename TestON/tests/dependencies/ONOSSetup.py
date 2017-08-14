@@ -159,7 +159,8 @@ class ONOSSetup:
 
         return cluster.kill( killRemoveMax, stopOnos )
 
-    def createApplyCell( self, cluster, newCell, cellName, Mininet, useSSH, ips ):
+    def createApplyCell( self, cluster, newCell, cellName,
+                         Mininet, useSSH, ips, installMax=False ):
         """
         Description:
             create new cell ( optional ) and apply it. It will also verify the
@@ -221,7 +222,7 @@ class ONOSSetup:
                                  onfail="Failed to create ONOS package" )
         return packageResult
 
-    def installOnos( self, cluster, installMax ):
+    def installOnos( self, cluster, installMax, parallel=True ):
         """
         Description:
             Installing onos and verify the result
@@ -235,7 +236,7 @@ class ONOSSetup:
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
 
-        cluster.install( installMax )
+        cluster.install( installMax, parallel )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=onosInstallResult,
                                  onpass="Successfully installed ONOS package",
@@ -305,7 +306,7 @@ class ONOSSetup:
     def ONOSSetUp( self, Mininet, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
                    cellName="temp", removeLog=False, extraApply=None, arg=None, extraClean=None,
                    skipPack=False, installMax=False, useSSH=True, killRemoveMax=True,
-                   stopOnos=False ):
+                   stopOnos=False, installParallel=True ):
         """
         Description:
             Initial ONOS setting up of the tests. It will also verify the result of each steps.
@@ -361,7 +362,8 @@ class ONOSSetup:
                 tempOnosIp.append( ctrl.ipAddress )
             cellResult = self.createApplyCell( cluster, newCell,
                                                cellName, Mininet,
-                                               useSSH, tempOnosIp )
+                                               useSSH, tempOnosIp,
+                                               installMax )
             if removeLog:
                 main.log.info("Removing raft logs")
                 main.ONOSbench.onosRemoveRaftLogs()
@@ -381,7 +383,7 @@ class ONOSSetup:
 
             packageResult = self.buildOnos( cluster )
 
-        onosInstallResult = self.installOnos( cluster, installMax )
+        onosInstallResult = self.installOnos( cluster, installMax, installParallel )
 
         if extraClean is not None:
             extraClean()

@@ -151,7 +151,7 @@ class Cluster():
         """
         self.iterator = iter( self.active() )
 
-    def createCell( self, cellName, Mininet, useSSH, ips ):
+    def createCell( self, cellName, Mininet, useSSH, ips, installMax=False ):
         """
         Description:
             create a new cell
@@ -162,15 +162,17 @@ class Cluster():
             * ips - ip(s) of the node(s).
         Returns:
         """
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
-                                       cellName,
-                                       Mininet if isinstance( Mininet, str ) else
-                                       Mininet.ip_address,
-                                       main.apps,
-                                       ips,
-                                       main.ONOScell.karafUser,
-                                       useSSH=useSSH )
-
+        self.command( "createCellFile",
+                      args=[ main.ONOSbench.ip_address,
+                            cellName,
+                            Mininet if isinstance(Mininet, str) else
+                            Mininet.ip_address,
+                            main.apps,
+                            ips,
+                            main.ONOScell.karafUser,
+                            useSSH ],
+                      specificDriver=1,
+                      getFrom=0 if installMax else 1 )
     def uninstall( self, uninstallMax ):
         """
         Description:
@@ -187,7 +189,7 @@ class Cluster():
                                   main.ONOSbench.onosUninstall( nodeIp=ctrl.ipAddress )
         return onosUninstallResult
 
-    def applyCell( self, cellName ):
+    def applyCell( self, cellName, installMax=False ):
         """
         Description:
             apply the cell with cellName. It will also verify the
@@ -197,9 +199,18 @@ class Cluster():
         Returns:
             Returns main.TRUE if it successfully set and verify cell.
         """
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-        return cellResult and verifyResult
+
+        setCellResult = self.command( "setCell",
+                      args=[ cellName ],
+                      specificDriver=1,
+                      getFrom=0 if installMax else 1 )
+        verifyResult = self.command( "verifyCell",
+                      specificDriver=1,
+                      getFrom=0 if installMax else 1 )
+        result = main.TRUE
+        for i in range( len( setCellResult ) ):
+            result = result and setCellResult[ i ] and verifyResult[ i ]
+        return result
 
     def checkService( self ):
         """
@@ -263,7 +274,7 @@ class Cluster():
             secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=ctrl.ipAddress )
         return secureSshResult
 
-    def install( self, installMax=True ):
+    def install( self, installMax=True, installParallel=True ):
         """
         Description:
             Installing onos.
@@ -280,9 +291,20 @@ class Cluster():
             options = "-f"
             if installMax and i >= self.numCtrls:
                 options = "-nf"
-            result = result and \
+            if installParallel:
+                t= main.Thread( target=ctrl.Bench.onosInstall,
+                                 name="install-" + ctrl.name,
+                                 kwargs={ "node" : ctrl.ipAddress,
+                                          "options" : options } )
+                threads.append( t )
+                t.start()
+            else:
+                result = result and \
                             main.ONOSbench.onosInstall( node=ctrl.ipAddress, options=options )
-
+        if installParallel:
+            for t in threads:
+                t.join()
+                result = result and t.result
         return result
 
     def startCLIs( self ):
@@ -365,7 +387,8 @@ class Cluster():
         resultOne = results[ 0 ]
         return all( resultOne == result for result in results )
 
-    def command( self, function, args=(), kwargs={}, returnBool=False, specificDriver=0, contentCheck=False ):
+    def command( self, function, args=(), kwargs={}, returnBool=False,
+                 specificDriver=0, contentCheck=False, getFrom=2 ):
         """
         Description:
             execute some function of the active nodes.
@@ -383,23 +406,20 @@ class Cluster():
                 3 - from rest
             * contentCheck - If this is True, it will check if the result has some
             contents.
+            * getFrom - from which nodes
+                2 - active nodes
+                1 - current running nodes
+                0 - all nodes
         Returns:
             Returns results if not returnBool and not contentCheck
             Returns checkTruthValue of the result if returnBool
             Returns resultContent of the result if contentCheck
         """
-        """
-        Send a command to all ONOS nodes and return the results as a list
-        specificDriver:
-            0 - any type of driver
-            1 - from bench
-            2 - from cli
-            3 - from rest
-        """
         threads = []
         drivers = [ None, "Bench", "CLI", "REST" ]
+        fromNode = [ self.controllers, self.runningNodes, self.active() ]
         results = []
-        for ctrl in self.active():
+        for ctrl in fromNode[ getFrom ]:
             try:
                 f = getattr( ( ctrl if not specificDriver else
                              getattr( ctrl, drivers[ specificDriver ] ) ), function )
@@ -418,7 +438,7 @@ class Cluster():
             t.join()
             results.append( t.result )
         if returnBool:
-            return self.allTrueResultCheck( results, self.active() )
+            return self.allTrueResultCheck( results, fromNode[ getFrom ] )
         elif contentCheck:
-            return self.notEmptyResultCheck( results, self.active() )
+            return self.notEmptyResultCheck( results, fromNode[ getFrom ] )
         return results

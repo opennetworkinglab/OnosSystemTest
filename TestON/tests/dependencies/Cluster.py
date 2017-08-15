@@ -164,15 +164,16 @@ class Cluster():
         """
         self.command( "createCellFile",
                       args=[ main.ONOSbench.ip_address,
-                            cellName,
-                            Mininet if isinstance(Mininet, str) else
-                            Mininet.ip_address,
-                            main.apps,
-                            ips,
-                            main.ONOScell.karafUser,
-                            useSSH ],
+                             cellName,
+                             Mininet if isinstance(Mininet, str) else
+                             Mininet.ip_address,
+                             main.apps,
+                             ips,
+                             main.ONOScell.karafUser,
+                             useSSH ],
                       specificDriver=1,
                       getFrom=0 if installMax else 1 )
+
     def uninstall( self, uninstallMax ):
         """
         Description:
@@ -183,11 +184,15 @@ class Cluster():
         Returns:
             Returns main.TRUE if it successfully uninstalled.
         """
-        onosUninstallResult = main.TRUE
-        for ctrl in self.controllers if uninstallMax else self.runningNodes:
-            onosUninstallResult = onosUninstallResult and \
-                                  main.ONOSbench.onosUninstall( nodeIp=ctrl.ipAddress )
-        return onosUninstallResult
+        result = main.TRUE
+        uninstallResult = self.command( "onosUninstall",
+                                        kwargs={ "nodeIp":"ipAddress" },
+                                        specificDriver=1,
+                                        getFrom=0 if uninstallMax else 1,
+                                        funcFromCtrl=True )
+        for uninstallR in uninstallResult:
+            result = result and uninstallR
+        return result
 
     def applyCell( self, cellName, installMax=False ):
         """
@@ -224,19 +229,23 @@ class Cluster():
         stopResult = main.TRUE
         startResult = main.TRUE
         onosIsUp = main.TRUE
-        i = 0
-        for ctrl in self.runningNodes:
-            onosIsUp = onosIsUp and main.ONOSbench.isup( ctrl.ipAddress )
-            if onosIsUp == main.TRUE:
-                main.log.report( "ONOS instance {0} is up and ready".format( i + 1 ) )
+        onosUp = self.command( "isup",
+                                 args=[ "ipAddress" ],
+                                 specificDriver=1,
+                                 getFrom=1,
+                                 funcFromCtrl=True )
+        for i in range( len( onosUp ) ):
+            ctrl = self.controllers[ i ]
+            onosIsUp = onosIsUp and onosUp[ i ]
+            if onosUp[ i ] == main.TRUE:
+                main.log.report( ctrl.name + " is up and ready" )
             else:
-                main.log.report( "ONOS instance {0} may not be up, stop and ".format( i + 1 ) +
+                main.log.report( ctrl.name + " may not be up, stop and " +
                                  "start ONOS again " )
                 stopResult = stopResult and main.ONOSbench.onosStop( ctrl.ipAddress )
                 startResult = startResult and main.ONOSbench.onosStart( ctrl.ipAddress )
                 if not startResult or stopResult:
-                    main.log.report( "ONOS instance {0} did not start correctly.".format( i + 1 ) )
-            i += 1
+                    main.log.report( ctrl.name + " did not start correctly." )
         return onosIsUp and stopResult and startResult
 
     def kill( self, killMax, stopOnos ):
@@ -253,11 +262,14 @@ class Cluster():
             Returns main.TRUE if successfully killing it.
         """
         result = main.TRUE
-        for ctrl in self.controllers if killMax else self.runningNodes:
-            if stopOnos:
-                result = result and main.ONOSbench.onosStop( ctrl.ipAddress )
-            result = result and main.ONOSbench.onosKill( ctrl.ipAddress )
-            ctrl.active = False
+        killResult = self.command( "onosKill",
+                                   args=[ "ipAddress" ],
+                                   specificDriver=1,
+                                   getFrom=0 if killMax else 1,
+                                   funcFromCtrl=True )
+        for i in range( len ( killResult ) ):
+            result = result and killResult[ i ]
+            self.controllers[ i ].active = False
         return result
 
     def ssh( self ):
@@ -269,10 +281,15 @@ class Cluster():
             Returns main.TRUE if it successfully setup the ssh to
             the onos.
         """
-        secureSshResult = main.TRUE
-        for ctrl in self.runningNodes:
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=ctrl.ipAddress )
-        return secureSshResult
+        result = main.TRUE
+        sshResult = self.command( "onosSecureSSH",
+                                   kwargs={ "node":"ipAddress" },
+                                   specificDriver=1,
+                                   getFrom=1,
+                                   funcFromCtrl=True )
+        for sshR in sshResult:
+            result = result and sshR
+        return result
 
     def install( self, installMax=True, installParallel=True ):
         """
@@ -293,9 +310,9 @@ class Cluster():
                 options = "-nf"
             if installParallel:
                 t= main.Thread( target=ctrl.Bench.onosInstall,
-                                 name="install-" + ctrl.name,
-                                 kwargs={ "node" : ctrl.ipAddress,
-                                          "options" : options } )
+                                name="install-" + ctrl.name,
+                                kwargs={ "node" : ctrl.ipAddress,
+                                         "options" : options } )
                 threads.append( t )
                 t.start()
             else:
@@ -315,20 +332,16 @@ class Cluster():
         Returns:
             Returns main.TRUE if it successfully started.
         """
-        cliResults =  main.TRUE
-        threads = []
-        for ctrl in self.runningNodes:
-            t = main.Thread( target=ctrl.CLI.startOnosCli,
-                             name="startCli-" + ctrl.name,
-                             args=[ ctrl.ipAddress ] )
-            threads.append( t )
-            t.start()
-            ctrl.active = True
-
-        for t in threads:
-            t.join()
-            cliResults = cliResults and t.result
-        return cliResults
+        result = main.TRUE
+        cliResults = self.command( "startOnosCli",
+                                   args=[ "ipAddress" ],
+                                   specificDriver=2,
+                                   getFrom=1,
+                                   funcFromCtrl=True )
+        for i in range ( len( cliResults ) ):
+            result = result and cliResults[ i ]
+            self.controllers[ i ].active = True
+        return result
 
     def printResult( self, results, activeList, logLevel="debug" ):
         """
@@ -388,7 +401,8 @@ class Cluster():
         return all( resultOne == result for result in results )
 
     def command( self, function, args=(), kwargs={}, returnBool=False,
-                 specificDriver=0, contentCheck=False, getFrom=2 ):
+                 specificDriver=0, contentCheck=False, getFrom=2,
+                 funcFromCtrl=False ):
         """
         Description:
             execute some function of the active nodes.
@@ -410,6 +424,8 @@ class Cluster():
                 2 - active nodes
                 1 - current running nodes
                 0 - all nodes
+            * funcFromCtrl - specific function of the args/kwargs
+                 from each controller from the list of the controllers
         Returns:
             Returns results if not returnBool and not contentCheck
             Returns checkTruthValue of the result if returnBool
@@ -421,16 +437,24 @@ class Cluster():
         results = []
         for ctrl in fromNode[ getFrom ]:
             try:
+                funcArgs = []
+                funcKwargs = {}
                 f = getattr( ( ctrl if not specificDriver else
                              getattr( ctrl, drivers[ specificDriver ] ) ), function )
+                if funcFromCtrl:
+                    if args:
+                        for i in range( len( args ) ):
+                            funcArgs.append( getattr( ctrl, args[ i ] ) )
+                    if kwargs:
+                        for k in kwargs:
+                            funcKwargs.update( { k:getattr( ctrl, kwargs[ k ] ) } )
             except AttributeError:
                 main.log.error( "Function " + function + " not found. Exiting the Test." )
                 main.cleanAndExit()
-
             t = main.Thread( target=f,
                              name=function + "-" + ctrl.name,
-                             args=args,
-                             kwargs=kwargs )
+                             args=funcArgs if funcFromCtrl else args,
+                             kwargs=funcKwargs if funcFromCtrl else kwargs )
             threads.append( t )
             t.start()
 

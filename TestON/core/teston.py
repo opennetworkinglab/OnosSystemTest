@@ -101,6 +101,10 @@ class TestON:
         self.cleanupFlag = False
         self.cleanupLock = threading.Lock()
         self.initiated = False
+        self.executedCase = []
+        self.leftCase = []
+        self.failedCase = []
+        self.noResultCase = []
 
         self.config = self.configparser()
         verifyOptions( options )
@@ -233,7 +237,9 @@ class TestON:
 
         result = self.TRUE
         while repeat:
+            self.leftCase.extend( self.testcases_list )
             for self.CurrentTestCaseNumber in self.testcases_list:
+                self.executedCase.append( self.leftCase.pop( 0 ) )
                 result = self.runCase( self.CurrentTestCaseNumber )
             repeat -= 1
         return result
@@ -258,6 +264,8 @@ class TestON:
         self.stepNumber = 0
         self.EXPERIMENTAL_MODE = self.FALSE
         self.addCaseHeader()
+        self.log.debug( "Case Executed       : " + str( self.executedCase ) )
+        self.log.debug( "Case to be executed : " + str( self.leftCase ) )
         self.testCaseNumber = str( testCaseNumber )
         self.CASERESULT = self.NORESULT
         stopped = False
@@ -292,6 +300,7 @@ class TestON:
             else:
                 self.CASERESULT = self.NORESULT
             self.testCaseResult[str( self.CurrentTestCaseNumber )] = self.CASERESULT
+            self.organizeResult( self.CurrentTestCaseNumber, self.CASERESULT )
             self.logger.updateCaseResults( self )
             self.log.wiki( "<p>" + self.caseExplanation + "</p>" )
             self.log.summary( self.caseExplanation )
@@ -320,6 +329,18 @@ class TestON:
             self.log.summary( self.stepCache )
             self.stepCache = ""
         return result
+
+    def organizeResult( self, caseNum, result ):
+        """
+            Organize the result and put the current number into either
+            failed/noResult lists.
+            * caseNum - number of the case
+            * result - result of the case
+        """
+        if result == main.FALSE:
+            self.failedCase.append( caseNum )
+        elif result == self.NORESULT:
+            self.noResultCase.append( caseNum )
 
     def runStep( self, code, testCaseNumber ):
         if not cli.pause:
@@ -762,6 +783,7 @@ class TestON:
         """
         if self.CurrentTestCaseNumber:
             self.testCaseResult[ str( self.CurrentTestCaseNumber ) ] = self.FALSE
+            self.organizeResult( self.CurrentTestCaseNumber, self.FALSE )
             self.logger.updateCaseResults( self )
         self.cleanup()
         self.exit()

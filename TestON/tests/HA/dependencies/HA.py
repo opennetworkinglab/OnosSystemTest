@@ -3183,8 +3183,11 @@ class HA():
                             try:
                                 mac = host.get( 'mac' )
                                 assert mac, "mac field could not be found for this host object"
-
-                                location = host.get( 'locations' )[ 0 ]
+                                print host
+                                if 'locations' in host:
+                                    location = host.get( 'locations' )[ 0 ]
+                                elif 'location' in host:
+                                    location = host.get( 'location' )
                                 assert location, "location field could not be found for this host object"
 
                                 # Trim the protocol identifier off deviceId
@@ -3209,7 +3212,7 @@ class HA():
                                         hostAttachment = False
                                 else:
                                     hostAttachment = False
-                            except AssertionError:
+                            except ( AssertionError, TypeError ):
                                 main.log.exception( "Json object not as expected" )
                                 main.log.error( repr( host ) )
                                 hostAttachment = False

@@ -284,8 +284,13 @@ class Logger:
         testResult =  testResult + "\n Total Fail           : " + str(main.TOTAL_TC_FAIL)
         testResult =  testResult + "\n Total No Result      : " + str(main.TOTAL_TC_NORESULT)
         testResult =  testResult + "\n Success Percentage   : " + str(main.TOTAL_TC_SUCCESS) + "%"
-        testResult =  testResult + "\n Execution Result     : " + str(main.TOTAL_TC_EXECPERCENT) + "%"
-
+        testResult =  testResult + "\n Execution Result     : " + str(main.TOTAL_TC_EXECPERCENT) + "%\n"
+        if main.failedCase:
+            testResult =  testResult + "\n Case Failed          : " + str( main.failedCase )
+        if main.noResultCase:
+            testResult =  testResult + "\n Case NoResult        : " + str( main.noResultCase )
+        testResult =  testResult + "\n Case Executed        : " + str( main.executedCase )
+        testResult =  testResult + "\n Case Not Executed    : " + str( main.leftCase )
         #main.log.report(testResult)
         main.testResult = testResult
         main.log.exact(testResult)

@@ -53,8 +53,8 @@ class SCPFflowTp1g:
             main.flowRuleCfg = main.params[ 'CFG' ][ 'flowRule' ]
             main.neighbor = ( main.params[ 'TEST' ][ 'neighbors' ] ).split( "," )
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
-            isFlowObj = main.params[ 'TEST' ][ 'flowObj' ]
-            if isFlowObj == 'true':
+            isFlowObj = main.params[ 'TEST' ][ 'flowObj' ] == "True"
+            if isFlowObj:
                resultFile = main.params[ 'TEST' ][ 'flowObjResultFile' ]
             else:
                resultFile = main.params[ 'TEST' ][ 'flowResultFile' ]
@@ -91,7 +91,6 @@ class SCPFflowTp1g:
         testCMD[ 2 ] = main.params[ 'TEST' ][ 'testCMD2' ]
         testCMD[ 3 ] = main.params[ 'TEST' ][ 'testCMD3' ]
         flowObjType = main.params[ 'TEST' ][ 'flowObjType' ]
-        isFlowObj = main.params[ 'TEST' ][ 'flowObj' ]
         cooldown = main.params[ 'TEST' ][ 'cooldown' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
@@ -149,7 +148,7 @@ class SCPFflowTp1g:
             time.sleep( 5 )
 
         #divide flows/flowObjectives
-        if isFlowObj == 'true':
+        if isFlowObj:
            toInstall = "FlowObjectives"
            installCount = int( main.params[ 'TEST' ][ 'flowObjectives' ] )
            ifFailed = "FLOW_OBJ_TESTER.PY FAILURE"
@@ -173,7 +172,7 @@ class SCPFflowTp1g:
         maxes = [ "" ]*int( sampleSize )
 
         flowCMD = "python3 " + homeDir + "/onos/tools/test/bin/"
-        if isFlowObj == 'true':
+        if isFlowObj:
            flowCMD += testCMD[ 2 ] + " " + str( installCountPerSwitch ) + " " + testCMD[ 1 ]
            flowCMD += " " + neighbors + " " + testCMD[ 3 ] + " " + str( flowObjType ) + " " + str( serverEnvVars ) + "-j"
         else:

@@ -8,6 +8,7 @@ SCPF = [
     SCPFhostLat: [ test:'SCPFhostLat', table:'host_latency_tests', results:'host_latency_results', file:'HostAddLatency'],
     SCPFportLat: [ test:'SCPFportLat', table:'port_latency_details', results:'port_latency_results', file:'/tmp/portEventResultDb'],
     SCPFflowTp1g: [ test:'SCPFflowTp1g', table:'flow_tp_tests', results:'flow_tp_results', file:'flowTP1gDB'],
+    SCPFflowTp1gWithFlowObj: [ test:'SCPFflowTp1g --params TEST/flowObj=True', table:'flow_tp_fobj_tests', results:'flow_tp_fobj_results', file:'flowTP1gDBFlowObj'],
     SCPFscaleTopo: [ test:'SCPFscaleTopo', table:'scale_topo_latency_details', results:'scale_topo_latency_results', file:'/tmp/scaleTopoResultDb'],
     SCPFswitchLat: [ test:'SCPFswitchLat', table:'switch_latency_details', results:'switch_latency_results', file:'/tmp/switchEventResultDb'],
     SCPFbatchFlowResp: [ test:'SCPFbatchFlowResp', table:'batch_flow_tests', results:'batch_flow_results', file:'SCPFbatchFlowRespData'],
@@ -34,7 +35,7 @@ choices = sb.toString();
 // Define sets of tests
 SCPF_Basic = "SCPFswitchLat\nSCPFportLat\nSCPFintentInstallWithdrawLat\nSCPFintentEventTp\nSCPFflowTp1g\nSCPFcbench\nSCPFbatchFlowResp"
 SCPF_ExtraSetA = "SCPFintentRerouteLat\nSCPFscalingMaxIntents\nSCPFhostLat\nSCPFscaleTopo"
-SCPF_ExtraSetB = "SCPFintentInstallWithdrawLatWithFlowObj\nSCPFintentEventTpWithFlowObj\nSCPFintentRerouteLatWithFlowObj\nSCPFscalingMaxIntentsWithFlowObj"
+SCPF_ExtraSetB = "SCPFintentInstallWithdrawLatWithFlowObj\nSCPFintentEventTpWithFlowObj\nSCPFintentRerouteLatWithFlowObj\nSCPFscalingMaxIntentsWithFlowObj\nSCPFflowTp1gWithFlowObj"
 
 try {
     timeout(time: 120, unit: 'SECONDS') {

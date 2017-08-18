@@ -71,6 +71,8 @@ class CHOTestMonkey:
             main.enableIPv6 = main.params[ 'TEST' ][ 'IPv6' ]
             main.enableIPv6 = True if main.enableIPv6 == "on" else False
             main.caseSleep = int( main.params[ 'TEST' ][ 'caseSleep' ] )
+            main.onosCell = main.params[ 'ENV' ][ 'cellName' ]
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             main.controllers = []
 
             main.devices = []
@@ -97,13 +99,8 @@ class CHOTestMonkey:
 
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        if not main.onoscell :
-            main.log.error("Please provide onoscell option at TestON CLI to run CHO tests")
-            main.log.error("Example: ~/TestON/bin/cli.py run CHOTestMonkey onoscell <cellName>")
-            main.cleanAndExit()
-
         setupResult = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
-                                                newCell=False, cellName=main.onoscell )
+                                                cellName=main.onosCell )
         for i in range( 1, main.Cluster.numCtrls + 1 ):
             newController = Controller( i )
             newController.setCLI( main.Cluster.active( i - 1 ).CLI )

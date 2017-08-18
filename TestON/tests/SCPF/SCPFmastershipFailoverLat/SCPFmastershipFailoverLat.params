@@ -1,0 +1,71 @@
+<PARAMS>
+    <testcases>0,[1,2,3]*3</testcases>
+
+    <SCALE>3,5,7</SCALE>
+    <max>7</max>
+
+    <ENV>
+        <cellName>topo_perf_test</cellName>
+        <cellApps>drivers,events,openflow</cellApps>
+    </ENV>
+
+    <MN>
+        <ip1>OCN</ip1>
+    </MN>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <TSHARK>
+        <tsharkResultPath>/tmp/tshark_mastership_failover</tsharkResultPath>
+        <ofpRoleRequest>OF 1.3 90 of_role_request</ofpRoleRequest>
+    </TSHARK>
+
+    <SLEEP>
+        <recovery>5</recovery>
+        <failover>10</failover>
+        <mininet>5</mininet>
+    </SLEEP>
+
+    <TIMEOUT>
+        <timeout>60</timeout>
+    </TIMEOUT>
+
+    <TEST>
+        #'on' or 'off' debug mode.
+        #If on, logging will be more verbose and
+        #tshark pcap will be enabled
+        #pcap file located at /tmp/'capture_name'
+        <debug>True</debug>
+
+        #Number of iterations to ignore initially
+        <warmUp>5</warmUp>
+
+        #Number of times to iterate each case
+        <sampleSize>20</sampleSize>
+
+        # Percent of data that can be invalid per sample size iteration.
+        # Any more than this will cause the test to fail and stop. Must be a float between 0 and 1.
+        <failPercent>0.25</failPercent>
+
+   </TEST>
+
+    <DATABASE>
+        <dbName>/tmp/mastershipFailoverLatDB</dbName>
+    </DATABASE>
+
+    <SWITCH>
+        <id>of:0000000000000001</id>
+    </SWITCH>
+
+    <TOPOLOGY>
+        <switchCount>5</switchCount>
+        <type>linear</type>
+    </TOPOLOGY>
+
+    <KILL>
+        <nodeNum>0</nodeNum>
+    </KILL>
+</PARAMS>

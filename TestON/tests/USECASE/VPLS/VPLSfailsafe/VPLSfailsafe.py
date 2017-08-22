@@ -59,57 +59,31 @@ class VPLSfailsafe:
         import imp
         import time
         import json
+        try:
+            from tests.dependencies.ONOSSetup import ONOSSetup
+            main.testSetUp = ONOSSetup()
+        except ImportError:
+            main.log.error( "ONOSSetup not found. exiting the test" )
+            main.cleanAndExit()
+        main.testSetUp.envSetupDescription()
+        stepResult = main.FALSE
+        try:
+            # load some variables from the params file
+            cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.timeSleep = int( main.params[ 'RETRY' ][ 'sleep' ] )
+            main.numAttempts = int( main.params[ 'RETRY' ][ 'attempts' ] )
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
 
-        main.case( "Setting up test environment" )
-        main.caseExplanation = "Setup the test environment including " +\
-                                "installing ONOS, starting Mininet and ONOS" +\
-                                "cli sessions."
+            ofPort = main.params[ 'CTRL' ][ 'port' ]
+            stepResult = main.testSetUp.envSetup()
+        except Exception as e:
+            main.testSetUp.envSetupException( e )
+        main.testSetUp.evnSetupConclusion( stepResult )
 
-        # load some variables from the params file
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-
-        main.numCtrls = int( main.params[ 'num_controllers' ] )
-
-        ofPort = main.params[ 'CTRL' ][ 'port' ]
-
-        main.timeSleep = int( main.params[ 'RETRY' ][ 'sleep' ] )
-        main.numAttempts = int( main.params[ 'RETRY' ][ 'attempts' ] )
-
-        main.CLIs = []
-        main.RESTs = []
-        main.nodes = []
-        ipList = []
-        for i in range( 1, main.numCtrls + 1 ):
-            try:
-                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-                main.RESTs.append( getattr( main, 'ONOSrest' + str( i ) ) )
-                main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
-                ipList.append( main.nodes[ -1 ].ip_address )
-            except AttributeError:
-                break
-
-        main.step( "Create cell file" )
-        cellAppString = main.params[ 'ENV' ][ 'cellApps' ]
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
-                                       main.Mininet1.ip_address,
-                                       cellAppString, ipList, main.ONOScli1.karafUser )
-        main.step( "Applying cell variable to environment" )
-        main.cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        main.log.info( "Uninstalling ONOS" )
-        for node in main.nodes:
-            main.ONOSbench.onosUninstall( node.ip_address )
-
-        # Make sure ONOS is DEAD
-        main.log.info( "Killing any ONOS processes" )
-        killResults = main.TRUE
-        for node in main.nodes:
-            killed = main.ONOSbench.onosKill( node.ip_address )
-            killResults = killResults and killed
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+                                  cellName=cellName )
 
         main.step( "Starting Mininet" )
-
         # scp topo file to mininet
         # TODO: move to params?
         topoName = "vpls"
@@ -121,72 +95,14 @@ class VPLSfailsafe:
                             direction="to" )
         topo = " --custom " + main.Mininet1.home + topoFile + " --topo " + topoName
         args = " --switch ovs,protocols=OpenFlow13"
-        for node in main.nodes:
-            args += " --controller=remote,ip=" + node.ip_address
+        for ctrl in main.Cluster.active():
+            args += " --controller=remote,ip=" + ctrl.ipAddress
         mnCmd = "sudo mn" + topo + args
         mnResult = main.Mininet1.startNet( mnCmd=mnCmd )
         utilities.assert_equals( expect=main.TRUE, actual=mnResult,
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
 
-        main.ONOSbench.getVersion( report=True )
-
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
-        utilities.assert_equals( expect=main.TRUE, actual=packageResult,
-                                 onpass="ONOS package successful",
-                                 onfail="ONOS package failed" )
-
-        main.step( "Installing ONOS package" )
-        onosInstallResult = main.TRUE
-        for node in main.nodes:
-            tmpResult = main.ONOSbench.onosInstall( options="-f",
-                                                    node=node.ip_address )
-            onosInstallResult = onosInstallResult and tmpResult
-        utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
-                                 onpass="ONOS install successful",
-                                 onfail="ONOS install failed" )
-
-        main.step( "Set up ONOS secure SSH" )
-        secureSshResult = main.TRUE
-        for node in main.nodes:
-            secureSshResult = secureSshResult and main.ONOSbench.onosSecureSSH( node=node.ip_address )
-        utilities.assert_equals( expect=main.TRUE, actual=secureSshResult,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
-
-        main.step( "Checking if ONOS is up yet" )
-        for i in range( 2 ):
-            onosIsupResult = main.TRUE
-            for node in main.nodes:
-                started = main.ONOSbench.isup( node.ip_address )
-                if not started:
-                    main.log.error( node.name + " hasn't started" )
-                onosIsupResult = onosIsupResult and started
-            if onosIsupResult == main.TRUE:
-                break
-        utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
-                                 onpass="ONOS startup successful",
-                                 onfail="ONOS startup failed" )
-
-        main.step( "Starting ONOS CLI sessions" )
-        cliResults = main.TRUE
-        threads = []
-        for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[ i ].startOnosCli,
-                             name="startOnosCli-" + str( i ),
-                             args=[ main.nodes[ i ].ip_address ] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            cliResults = cliResults and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=cliResults,
-                                 onpass="ONOS cli startup successful",
-                                 onfail="ONOS cli startup failed" )
-
-        main.activeNodes = [ i for i in range( 0, len( main.CLIs ) ) ]
 
         main.step( "Activate apps defined in the params file" )
         # get data from the params
@@ -196,11 +112,11 @@ class VPLSfailsafe:
             main.log.warn( apps )
             activateResult = True
             for app in apps:
-                main.CLIs[ 0 ].app( app, "Activate" )
+                main.Cluster.active( 0 ).CLI.app( app, "Activate" )
             # TODO: check this worked
             time.sleep( SLEEP )  # wait for apps to activate
             for app in apps:
-                state = main.CLIs[ 0 ].appStatus( app )
+                state = main.Cluster.active( 0 ).CLI.appStatus( app )
                 if state == "ACTIVE":
                     activateResult = activateResult and True
                 else:
@@ -221,7 +137,7 @@ class VPLSfailsafe:
             for component in config:
                 for setting in config[ component ]:
                     value = config[ component ][ setting ]
-                    check = main.CLIs[ 0 ].setCfg( component, setting, value )
+                    check = main.Cluster.active( 0 ).CLI.setCfg( component, setting, value )
                     main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
                     checkResult = check and checkResult
             utilities.assert_equals( expect=main.TRUE,
@@ -232,22 +148,11 @@ class VPLSfailsafe:
             main.log.warn( "No configurations were specified to be changed after startup" )
 
         main.step( "App Ids check" )
-        appCheck = main.TRUE
-        threads = []
-        for i in main.activeNodes:
-            t = main.Thread( target=main.CLIs[ i ].appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            appCheck = appCheck and t.result
-        if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ 0 ].apps() )
-            main.log.warn( main.CLIs[ 0 ].appIDs() )
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+        appCheck = main.Cluster.command( "appToIDCheck", returnBool=True )
+        if appCheck != True:
+            main.log.warn( main.Cluster.active( 0 ).CLI.apps() )
+            main.log.warn( main.Cluster.active( 0 ).CLI.appIDs() )
+        utilities.assert_equals( expect=True, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
@@ -276,7 +181,7 @@ class VPLSfailsafe:
         fileName = main.params[ 'DEPENDENCY' ][ 'topology' ]
         app = main.params[ 'vpls' ][ 'name' ]
 
-        loadVPLSResult = main.ONOSbench.onosNetCfg( main.nodes[ 0 ].ip_address, "", fileName )
+        loadVPLSResult = main.ONOSbench.onosNetCfg( main.Cluster.active( 0 ).ipAddress, "", fileName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=loadVPLSResult,
                                  onpass="Loaded vpls configuration.",
@@ -306,7 +211,7 @@ class VPLSfailsafe:
         result = False
         getPorts = utilities.retry( f=main.ONOSrest1.getNetCfg,
                                     retValue=False,
-                                    kwargs={"subjectClass":"ports"},
+                                    kwargs={ "subjectClass" : "ports" },
                                     sleep=SLEEP )
         onosCfg = pprint( getPorts )
         sentCfg = pprint( originalCfg.get( "ports" ) )
@@ -328,7 +233,7 @@ class VPLSfailsafe:
 
         # This is to avoid a race condition in pushing netcfg's.
         main.step( "Loading vpls configuration in case any configuration was missed." )
-        loadVPLSResult = main.ONOSbench.onosNetCfg( main.nodes[ 0 ].ip_address, "", fileName )
+        loadVPLSResult = main.ONOSbench.onosNetCfg( main.Cluster.active( 0 ).ipAddress, "", fileName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=loadVPLSResult,
                                  onpass="Loaded vpls configuration.",
@@ -469,16 +374,16 @@ class VPLSfailsafe:
 
         result = main.TRUE
 
-        for i in range( 0, len( main.nodes ) ):
+        for i in range( 0, main.Cluster.numCtrls ):
 
             stri = str( i )
 
-            ip_address = main.nodes[ i ].ip_address
+            ip_address = main.Cluster.active( i ).ipAddress
 
             # Stop an ONOS node: i
             main.step( "Stop ONOS node " + stri + ".")
             stopResult = main.ONOSbench.onosStop( ip_address )
-            main.activeNodes.remove( i )
+            main.Cluster.runningNodes[ i ].active = False
 
             utilities.assert_equals( expect=main.TRUE, actual=stopResult,
                                      onpass="ONOS nodes stopped successfully.",
@@ -507,8 +412,8 @@ class VPLSfailsafe:
 
             # Restart CLI
             main.log.info( "Restarting ONOS node " + stri + "'s main.CLI." )
-            cliResult = main.CLIs[ i ].startOnosCli( ip_address )
-            main.activeNodes.append( i )
+            cliResults = main.Cluster.active( 0 ).CLI.startOnosCli( ip_address )
+            main.Cluster.runningNodes[ i ].active = True
 
             utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                      onpass="ONOS CLI successfully restarted.",
@@ -520,7 +425,7 @@ class VPLSfailsafe:
             main.step( "Checking ONOS nodes." )
             nodeResults = utilities.retry( main.HA.nodesCheck,
                                            False,
-                                           args=[ main.activeNodes ],
+                                           args=[ main.Cluster.runningNodes ],
                                            sleep=main.timeSleep,
                                            attempts=main.numAttempts )
 
@@ -557,11 +462,11 @@ class VPLSfailsafe:
         killSleep = int( main.params[ 'SLEEP' ][ 'killnode' ] )
         result = main.TRUE
 
-        for i in range( 0, len( main.nodes ) ):
+        for i in range( 0, main.Cluster.numCtrls ):
 
             # Kill an ONOS node
             main.step( "Killing ONOS node " + str( i + 1 ) + "." )
-            killresult = main.ONOSbench.onosKill( main.nodes[ i ].ip_address )
+            killresult = main.ONOSbench.onosKill( main.Cluster.active( i ).ipAddress )
 
             # Check if ONOS node has been successfully killed
             utilities.assert_equals( expect=main.TRUE, actual=killresult,

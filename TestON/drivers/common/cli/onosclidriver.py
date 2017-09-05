@@ -3461,6 +3461,7 @@ class OnosCliDriver( CLI ):
             if state == "ACTIVE" or state == "INSTALLED":
                 return state
             elif state is None:
+                main.log.warn( "{} app not found", appName )
                 return "UNINSTALLED"
             elif state:
                 main.log.error( "Unexpected state from 'onos:apps': " +

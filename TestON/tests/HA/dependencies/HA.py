@@ -870,6 +870,7 @@ class HA():
                     state = intent.get( 'state', None )
                     if "INSTALLED" not in state:
                         installedCheck = False
+                        main.log.debug( "Failed intent: " + str( intent ) )
                     intentId = intent.get( 'id', None )
                     intentStates.append( ( intentId, state ) )
             except ( ValueError, TypeError ):

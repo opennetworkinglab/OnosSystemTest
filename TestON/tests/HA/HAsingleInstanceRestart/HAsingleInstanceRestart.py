@@ -313,6 +313,9 @@ class HAsingleInstanceRestart:
             onpass="Hosts are correct",
             onfail="Hosts are incorrect" )
 
+        ONOSMastership, rolesResult, consistentMastership = main.HA.checkTheRole()
+        mastershipState = ONOSMastership[ 0 ]
+
     def CASE6( self, main ):
         """
         The Failure case.
@@ -386,7 +389,7 @@ class HAsingleInstanceRestart:
         main.HA.checkRoleNotNull()
 
         main.step( "Check if switch roles are consistent across all nodes" )
-        ONOSMastership, rolesResult,consistentMastership = main.HA.checkTheRole()
+        ONOSMastership, rolesResult, consistentMastership = main.HA.checkTheRole()
         ONOSMastership = ONOSMastership[ 0 ]
         description2 = "Compare switch roles from before failure"
         main.step( description2 )
@@ -405,7 +408,8 @@ class HAsingleInstanceRestart:
             if current == old:
                 mastershipCheck = mastershipCheck and main.TRUE
             else:
-                main.log.warn( "Mastership of switch %s changed" % switchDPID )
+                main.log.warn( "Mastership of switch %s changed; old: %s, new: %s" % ( switchDPID,
+                    old, current ) )
                 mastershipCheck = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,

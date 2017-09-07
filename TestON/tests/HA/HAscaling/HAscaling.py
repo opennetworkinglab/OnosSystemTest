@@ -79,9 +79,8 @@ class HAscaling:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
         except ImportError:
-            main.log.error( "ONOSSetup not found exiting the test" )
+            main.log.error( "ONOSSetup not found. exiting the test" )
             main.cleanAndExit()
-
         main.testSetUp.envSetupDescription()
         try:
             from tests.HA.dependencies.HA import HA
@@ -99,14 +98,15 @@ class HAscaling:
         main.HA.generateGraph( "HAscaling", index=1 )
 
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
-                                 extraApply=[ main.HA.setServerForCluster,
-                                              main.HA.scalingMetadata,
-                                              main.HA.startingMininet,
-                                              main.HA.copyingBackupConfig ],
-                                 extraClean=main.HA.cleanUpOnosService,
-                                 installMax=True )
+                                  extraApply=[ main.HA.setServerForCluster,
+                                               main.HA.scalingMetadata,
+                                               main.HA.startingMininet,
+                                               main.HA.copyBackupConfig,
+                                               main.HA.setMetadataUrl ],
+                                  extraClean=main.HA.cleanUpOnosService,
+                                  installMax=True )
 
-        main.HA.initialSetUp( True )
+        main.HA.initialSetUp( serviceClean=True )
 
     def CASE2( self, main ):
         """

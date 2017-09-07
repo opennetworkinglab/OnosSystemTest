@@ -92,10 +92,11 @@ class HAstopNodes:
 
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=[ main.HA.startingMininet,
-                                               main.HA.customizeOnosGenPartitions ],
-                                  extraClean=main.HA.cleanUpGenPartition )
+                                               main.HA.customizeOnosGenPartitions,
+                                               main.HA.copyBackupConfig ],
+                                  extraClean= main.HA.cleanUpGenPartition )
 
-        main.HA.initialSetUp()
+        main.HA.initialSetUp( serviceClean=True )
 
     def CASE2( self, main ):
         """
@@ -147,7 +148,9 @@ class HAstopNodes:
             main.kill.append( main.Cluster.runningNodes[ p - 1 ] )
             # NOTE: This only works for cluster sizes of 3,5, or 7.
 
-        main.step( "Stopping nodes: " + str( main.kill ) )
+        #NOTE: This is to fix an issue with wiki formating
+        nodeNames = [ node.name for node in main.kill ]
+        main.step( "Stopping nodes: " + str( nodeNames ) )
         killResults = main.TRUE
         for ctrl in main.kill:
             killResults = killResults and\

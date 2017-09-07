@@ -438,11 +438,16 @@ class CLI( Component ):
         return handle
 
     def exitFromSsh( self, handle, ipAddress ):
-        handle.sendline( "logout" )
         try:
+            handle.sendline( "logout" )
             handle.expect( "closed." )
             main.log.info ( "Successfully closed ssh connection from " + ipAddress )
         except pexpect.EOF:
             main.log.error( "Failed to close the connection from " + ipAddress )
-        handle.sendline( "" )
-        handle.expect( self.prompt )
+        try:
+            # check that this component handle still works
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+        except pexpect.EOF:
+            main.log.error( self.handle.before )
+            main.log.error( "EOF after closing ssh connection" )

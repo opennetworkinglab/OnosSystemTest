@@ -112,7 +112,7 @@ class HA():
                                  onpass="Server started",
                                  onfail="Failled to start SimpleHTTPServer" )
 
-    def copyingBackupConfig( self ):
+    def copyBackupConfig( self ):
         main.step( "Copying backup config files" )
         main.onosServicepath = main.ONOSbench.home + "/tools/package/bin/onos-service"
         cp = main.ONOSbench.scp( main.ONOSbench,
@@ -124,6 +124,9 @@ class HA():
                                  actual=cp,
                                  onpass="Copy backup config file succeeded",
                                  onfail="Copy backup config file failed" )
+
+    def setMetadataUrl( self ):
+        # NOTE: You should probably backup the config before and reset the config after the test
         # we need to modify the onos-service file to use remote metadata file
         # url for cluster metadata file
         iface = main.params[ 'server' ].get( 'interface' )

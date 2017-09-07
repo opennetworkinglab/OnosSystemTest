@@ -18,15 +18,15 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-import time
 import re
-import imp
 
 class ONOSSetup:
     main = None
+
     def __init__( self ):
         self.default = ''
-    def envSetupDescription ( self ):
+
+    def envSetupDescription( self ):
         """
         Introduction part of the test. It will initialize some basic vairables.
         """
@@ -60,7 +60,8 @@ class ONOSSetup:
                                      actual=stepResult,
                                      onpass="Successfully checkout onos branch.",
                                      onfail="Failed to checkout onos branch. Exiting test..." )
-            if not stepResult: main.cleanAndExit()
+            if not stepResult:
+                main.cleanAndExit()
 
             main.step( "Git Pull on ONOS branch:" + gitBranch )
             stepResult = main.ONOSbench.gitPull()
@@ -68,7 +69,8 @@ class ONOSSetup:
                                      actual=stepResult,
                                      onpass="Successfully pull onos. ",
                                      onfail="Failed to pull onos. Exiting test ..." )
-            if not stepResult: main.cleanAndExit()
+            if not stepResult:
+                main.cleanAndExit()
 
         else:
             main.log.info( "Skipped git checkout and pull as they are disabled in params file" )
@@ -303,9 +305,19 @@ class ONOSSetup:
                                  onfail="Failed to start ONOS cli" )
         return startCliResult
 
+    def processList( self, functions, args ):
+        if functions is not None:
+            if isinstance( functions, list ):
+                i = 0
+                for f in functions:
+                    f( *( args[ i ] ) ) if args is not None and args[ i ] is not None else f()
+                    i += 1
+            else:
+                functions( *args ) if args is not None else functions()
+
     def ONOSSetUp( self, Mininet, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
-                   cellName="temp", removeLog=False, extraApply=None, arg=None, extraClean=None,
-                   skipPack=False, installMax=False, useSSH=True, killRemoveMax=True,
+                   cellName="temp", removeLog=False, extraApply=None, applyArgs=None, extraClean=None,
+                   cleanArgs=None, skipPack=False, installMax=False, useSSH=True, killRemoveMax=True,
                    stopOnos=False, installParallel=True ):
         """
         Description:
@@ -330,9 +342,10 @@ class ONOSSetup:
             * newCell - True for making a new cell and False for not making it.
             * cellName - Name of the cell that will be used.
             * removeLog - True if wish to remove raft logs
-            * extraApply - Function(s) that will be applied. Default to None.
-            * arg - argument of the functon(s) of the extraApply. Should be in list.
-            * extraClean - extra Clean up process. Function(s) will be passed.
+            * extraApply - Function(s) that will be called before building ONOS. Default to None.
+            * applyArgs - argument of the functon(s) of the extraApply. Should be in list.
+            * extraClean - Function(s) that will be called after building ONOS. Defaults to None.
+            * cleanArgs - argument of the functon(s) of the extraClean. Should be in list.
             * skipPack - True if wish to skip some packing.
             * installMax - True if wish to install onos max number of nodes
             False if wish to install onos of running nodes only
@@ -346,7 +359,7 @@ class ONOSSetup:
         self.setNumCtrls( hasMultiNodeRounds )
 
         main.case( "Starting up " + str( cluster.numCtrls ) +
-                  " node(s) ONOS cluster" )
+                   " node(s) ONOS cluster" )
         main.caseExplanation = "Set up ONOS with " + str( cluster.numCtrls ) + \
                                " node(s) ONOS cluster"
         killResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
@@ -369,24 +382,12 @@ class ONOSSetup:
                 main.ONOSbench.onosRemoveRaftLogs()
 
             onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
-
-            if extraApply is not None:
-                if isinstance( extraApply, list ):
-                    i = 0
-                    for apply in extraApply:
-                        apply( *(arg[ i ]) ) if arg is not None \
-                                                            and arg[ i ] is not None else apply()
-                        i += 1
-                else:
-                    extraApply( *arg ) if arg is not None else extraApply()
-
-
+            self.processList( extraApply, applyArgs )
             packageResult = self.buildOnos( cluster )
 
         onosInstallResult = self.installOnos( cluster, installMax, installParallel )
 
-        if extraClean is not None:
-            extraClean()
+        self.processList( extraClean, cleanArgs )
         secureSshResult = self.setupSsh( cluster )
 
         onosServiceResult = self.checkOnosService( cluster )

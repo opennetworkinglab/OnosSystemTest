@@ -90,15 +90,14 @@ class HAkillNodes:
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAkillNodes" )
 
-        main.step( "Make sure ONOS service doesn't automatically respawn" )
-        main.ONOSbench.preventAutoRespawn()
-
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
-                                 extraApply=[ main.HA.startingMininet,
-                                              main.HA.customizeOnosGenPartitions ],
-                                 extraClean=main.HA.cleanUpGenPartition )
+                                  extraApply=[ main.HA.startingMininet,
+                                               main.HA.customizeOnosGenPartitions,
+                                               main.HA.copyBackupConfig,
+                                               main.ONOSbench.preventAutoRespawn ],
+                                  extraClean= main.HA.cleanUpGenPartition )
 
-        main.HA.initialSetUp()
+        main.HA.initialSetUp( serviceClean=True )
 
     def CASE2( self, main ):
         """
@@ -150,7 +149,9 @@ class HAkillNodes:
             main.kill.append( main.Cluster.runningNodes[ p - 1 ] )
             # NOTE: This only works for cluster sizes of 3,5, or 7.
 
-        main.step( "Killing nodes: " + str( main.kill ) )
+        #NOTE: This is to fix an issue with wiki formating
+        nodeNames = [ node.name for node in main.kill ]
+        main.step( "Killing nodes: " + str( nodeNames ) )
         killResults = main.TRUE
         for ctrl in main.kill:
             killResults = killResults and\

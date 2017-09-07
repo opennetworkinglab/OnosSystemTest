@@ -105,10 +105,10 @@ class HAsingleInstanceRestart:
                                   extraApply=[ main.testSetUp.createApplyCell,
                                                main.HA.startingMininet,
                                                main.testSetUp.createApplyCell ],
-                                  arg=[ [ main.Cluster, True, cellName, main.Mininet1, True, ip ],
-                                        None,
-                                        [ main.Cluster, True, "SingleHA", main.Mininet1,
-                                        True, main.Cluster.runningNodes[ 0 ].ipAddress ] ] )
+                                  applyArgs=[ [ main.Cluster, True, cellName, main.Mininet1, True, ip ],
+                                              None,
+                                              [ main.Cluster, True, "SingleHA", main.Mininet1,
+                                                True, main.Cluster.runningNodes[ 0 ].ipAddress ] ] )
 
         main.HA.initialSetUp()
 

@@ -101,7 +101,8 @@ class HAswapNodes:
                                  extraApply=[ main.HA.setServerForCluster,
                                               main.HA.swapNodeMetadata,
                                               main.HA.startingMininet,
-                                              main.HA.copyingBackupConfig ],
+                                              main.HA.copyBackupConfig,
+                                              main.HA.setMetadataUrl ],
                                  extraClean=main.HA.cleanUpOnosService,
                                  installMax=True )
         main.HA.initialSetUp()

@@ -327,9 +327,10 @@ class OnosRestDriver( Controller ):
                                "from topo file" )
                 port = self.port
             query = "/" + str( appName ) + "/active"
-            response = self.send( method="DELETE",
-                                  url="/applications" + query,
-                                  ip = ip, port = port )
+            self.send( method="DELETE",
+                       url="/applications" + query,
+                       ip = ip, port = port )
+            response = self.getApp( appName, ip, port )
             if response:
                 output = response[ 1 ]
                 app = {} if output == "" else json.loads( output )
@@ -360,7 +361,7 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getApp( self, appName, project="org.onosproject.", ip="DEFAULT",
+    def getApp( self, appName, ip="DEFAULT",
                 port="DEFAULT" ):
         """
         Decription:
@@ -380,14 +381,12 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            query = "/" + project + str( appName )
+            query = "/" + str( appName )
             response = self.send( url="/applications" + query,
                                   ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
-                    output = response[ 1 ]
-                    a = json.loads( output )
-                    return a
+                    return response
                 else:
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )

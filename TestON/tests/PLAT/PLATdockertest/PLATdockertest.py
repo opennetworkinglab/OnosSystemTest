@@ -36,7 +36,7 @@ class PLATdockertest:
 
     def __init__( self ):
         self.default = ''
-        global DOCKERREPO, DOCKERTAG
+        global DOCKERREPO, DOCKERTAG, INITDOCKERTAG
         global IPlist
         global CTIDlist
         global NODElist
@@ -82,6 +82,8 @@ class PLATdockertest:
 
         if imageTagCounter < len( imageTagList ):
             DOCKERTAG = imageTagList[imageTagCounter]
+        if not imageTagCounter:
+            INITDOCKERTAG = DOCKERTAG
         imageTagCounter += 1
 
         main.case("Set case test params for onos image {}".format( DOCKERTAG ))
@@ -387,6 +389,7 @@ class PLATdockertest:
                     if matchObj:
                         wordsToRemove = re.compile("latest|- PASS|- FAIL|- No Result")
                         testCaseName = wordsToRemove.sub("", matchObj.group(1))
+                        testCaseName = testCaseName.replace( INITDOCKERTAG,'' )
                         testCaseList.append(testCaseName)
                         testCaseCounter += 1
                 if matchObj:

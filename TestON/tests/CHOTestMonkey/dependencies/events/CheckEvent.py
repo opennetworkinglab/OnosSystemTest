@@ -328,3 +328,19 @@ class TrafficCheck( CheckEvent ):
                 checkResult = EventStates().FAIL
                 main.log.warn( "Traffic Check - ping6 failed" )
         return checkResult
+
+class RaftLogSizeCheck( CheckEvent ):
+
+    def __init__( self ):
+        CheckEvent.__init__( self )
+        self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+
+    def startCheckEvent( self, args=None ):
+        checkResult = EventStates().PASS
+        main.log.info( "Starting checking Raft Log size" )
+        if not main.Cluster.checkPartitionSize():
+            checkResult = EventStates().FAIL
+            main.log.warn( "Raft Log Size Check - Raft log grew too big" )
+
+        return checkResult

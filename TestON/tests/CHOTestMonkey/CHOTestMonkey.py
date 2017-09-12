@@ -785,6 +785,7 @@ class CHOTestMonkey:
             main.eventGenerator.triggerEvent( EventType().CHECK_TRAFFIC, EventScheduleMethod().RUN_NON_BLOCK )
             main.eventGenerator.triggerEvent( EventType().CHECK_FLOW, EventScheduleMethod().RUN_NON_BLOCK )
             main.eventGenerator.triggerEvent( EventType().CHECK_INTENT, EventScheduleMethod().RUN_NON_BLOCK )
+            main.eventGenerator.triggerEvent( EventType().CHECK_RAFT_LOG_SIZE, EventScheduleMethod().RUN_NON_BLOCK )
             with main.eventScheduler.idleCondition:
                 while not main.eventScheduler.isIdle():
                     main.eventScheduler.idleCondition.wait()

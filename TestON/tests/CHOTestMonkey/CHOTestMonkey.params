@@ -134,6 +134,14 @@
             <maxRerunNum>5</maxRerunNum>
         </ONOSCheck>
 
+        <RaftLogSizeCheck>
+            <status>on</status>
+            <typeIndex>15</typeIndex>
+            <typeString>CHECK_RAFT_LOG_SIZE</typeString>
+            <CLI>check-raft-size</CLI>
+            <CLIParamNum>0</CLIParamNum>
+        </RaftLogSizeCheck>
+
         <LinkDown>
             <status>on</status>
             <typeIndex>20</typeIndex>

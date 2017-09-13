@@ -136,7 +136,8 @@ class HA():
         main.log.warn( javaArgs )
         main.log.warn( repr( javaArgs ) )
         handle = main.ONOSbench.handle
-        sed = r"sed -i 's/bash/bash\nexport JAVA_OPTS=${{JAVA_OPTS:-{}}}\n/' {}".format( javaArgs, main.onosServicepath )
+        sed = r"sed -i 's/bash/bash\nexport JAVA_OPTS=${{JAVA_OPTS:-{}}}\n/' {}".format( javaArgs,
+                                                                                         main.onosServicepath )
         main.log.warn( sed )
         main.log.warn( repr( sed ) )
         handle.sendline( sed )
@@ -326,8 +327,6 @@ class HA():
         """
         rest of initialSetup
         """
-
-
         if main.params[ 'tcpdump' ].lower() == "true":
             main.step( "Start Packet Capture MN" )
             main.Mininet2.startTcpdump(
@@ -450,7 +449,8 @@ class HA():
             main.log.exception( "Error parsing leaders" )
             main.log.error( repr( leaders ) )
         if missing:
-            #NOTE Can we refactor this into the Cluster class? Maybe an option to print the output of a command from each node?
+            # NOTE Can we refactor this into the Cluster class?
+            #      Maybe an option to print the output of a command from each node?
             for ctrl in main.Cluster.active():
                 response = ctrl.CLI.leaders( jsonFormat=False )
                 main.log.debug( str( ctrl.name ) + " leaders output: \n" +
@@ -569,7 +569,7 @@ class HA():
                 if re.search( "tcp:" + ctrl.ipAddress, response ):
                     mastershipCheck = mastershipCheck and main.TRUE
                 else:
-                    main.log.error( "Error, node " + repr( ctrl )+ " is " +
+                    main.log.error( "Error, node " + repr( ctrl ) + " is " +
                                     "not in the list of controllers s" +
                                     str( i ) + " is connecting to." )
                     mastershipCheck = main.FALSE
@@ -915,7 +915,7 @@ class HA():
                                      indent=4,
                                      separators=( ',', ': ' ) )
             except ( ValueError, TypeError ):
-               output = repr( tmpIntents )
+                output = repr( tmpIntents )
             main.log.debug( "ONOS1 intents: " + output )
         utilities.assert_equals(
             expect=main.TRUE,
@@ -1099,13 +1099,11 @@ class HA():
             mastershipCheck = main.TRUE
             mastershipState = ONOSMastership[ 0 ]
 
-
         global intentState
         intentState = []
         ONOSIntents, intentsResults = self.checkingIntents()
         intentCheck = main.FALSE
         consistentIntents = True
-
 
         main.step( "Check for consistency in Intents from each controller" )
         if all( [ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
@@ -1178,7 +1176,7 @@ class HA():
         main.step( "Get the flows from each controller" )
         global flowState
         flowState = []
-        ONOSFlows = main.Cluster.command( "flows", specificDriver=2 ) # TODO: Possible arg: sleep = 30
+        ONOSFlows = main.Cluster.command( "flows", specificDriver=2 )  # TODO: Possible arg: sleep = 30
         ONOSFlowsJson = []
         flowCheck = main.FALSE
         consistentFlows = True
@@ -2025,8 +2023,8 @@ class HA():
             main.step( "Distributed Set clear()" )
             main.onosSet.clear()
             clearResponses = main.Cluster.command( "setTestRemove",
-                    args=[ main.onosSetName, " " ],  # Values doesn't matter
-                    kwargs={ "clear": True } )
+                                                   args=[ main.onosSetName, " " ],  # Values doesn't matter
+                                                   kwargs={ "clear": True } )
             # main.TRUE = successfully changed the set
             # main.FALSE = action resulted in no change in set
             # main.ERROR - Some error in executing the function
@@ -2536,7 +2534,17 @@ class HA():
         colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
                    'blue': '\033[94m', 'green': '\033[92m',
                    'yellow': '\033[93m', 'red': '\033[91m', 'end': '\033[0m' }
+
         main.case( "Test Cleanup" )
+
+        main.step( "Checking raft log size" )
+        # TODO: this is a flaky check, but the intent is to make sure the raft logs
+        #       get compacted periodically
+        logCheck = main.Cluster.checkPartitionSize()
+        utilities.assert_equals( expect=True, actual=logCheck,
+                                 onpass="Raft log size is not too big",
+                                 onfail="Raft logs grew too big" )
+
         main.step( "Killing tcpdumps" )
         main.Mininet2.stopTcpdump()
 
@@ -2780,10 +2788,10 @@ class HA():
         utilities.assert_equals( expect=main.TRUE, actual=runResults,
                                  onpass="ONOS nodes reran for election topic",
                                  onfail="Errror rerunning for election" )
+
     def tempCell( self, cellName, ipList ):
         main.step( "Create cell file" )
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
-
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        main.Mininet1.ip_address,
@@ -2791,7 +2799,6 @@ class HA():
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
-
 
     def checkStateAfterEvent( self, main, afterWhich, compareSwitch=False, isRestart=False ):
         """
@@ -3108,9 +3115,11 @@ class HA():
             mnHosts = main.Mininet1.getHosts()
             for controller in range( len( main.Cluster.active() ) ):
                 controllerStr = str( main.Cluster.active( controller ) )
-                currentDevicesResult = main.topoRelated.compareDevicePort( main.Mininet1, controller,
-                                                          mnSwitches,
-                                                          devices, ports )
+                currentDevicesResult = main.topoRelated.compareDevicePort( main.Mininet1,
+                                                                           controller,
+                                                                           mnSwitches,
+                                                                           devices,
+                                                                           ports )
                 utilities.assert_equals( expect=main.TRUE,
                                          actual=currentDevicesResult,
                                          onpass=controllerStr +
@@ -3118,10 +3127,9 @@ class HA():
                                          onfail=controllerStr +
                                          " Switches view is incorrect" )
 
-
                 currentLinksResult = main.topoRelated.compareBase( links, controller,
-                                                        main.Mininet1.compareLinks,
-                                                        [mnSwitches, mnLinks] )
+                                                                   main.Mininet1.compareLinks,
+                                                                   [ mnSwitches, mnLinks ] )
                 utilities.assert_equals( expect=main.TRUE,
                                          actual=currentLinksResult,
                                          onpass=controllerStr +
@@ -3428,7 +3436,7 @@ class HA():
                       "working properly"
         main.case( description )
 
-        main.step( "Bring link between " + fromS + " and " + toS +" back up" )
+        main.step( "Bring link between " + fromS + " and " + toS + " back up" )
         LinkUp = main.Mininet1.link( END1=fromS, END2=toS, OPTION="up" )
         main.log.info( "Waiting " + str( linkSleep ) +
                        " seconds for link up to be discovered" )

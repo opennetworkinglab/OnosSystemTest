@@ -80,15 +80,14 @@ class CLI( Component ):
         self.handle.logfile = self.logfile_handler
         i = 5
         while i == 5:
-            i = self.handle.expect( [
-                                    ssh_newkey,
-                                    'password:|Password:',
-                                    pexpect.EOF,
-                                    pexpect.TIMEOUT,
-                                    refused,
-                                    'teston>',
-                                    self.prompt ],
-                            120 )
+            i = self.handle.expect( [ ssh_newkey,
+                                      'password:|Password:',
+                                      pexpect.EOF,
+                                      pexpect.TIMEOUT,
+                                      refused,
+                                      'teston>',
+                                      self.prompt ],
+                                    120 )
             if i == 0:  # Accept key, then expect either a password prompt or access
                 main.log.info( "ssh key confirmation received, send yes" )
                 self.handle.sendline( 'yes' )
@@ -97,7 +96,7 @@ class CLI( Component ):
             if i == 1:  # Password required
                 if self.pwd:
                     main.log.info(
-                    "ssh connection asked for password, gave password" )
+                            "ssh connection asked for password, gave password" )
                 else:
                     main.log.info( "Server asked for password, but none was "
                                     "given in the .topo file. Trying "
@@ -327,7 +326,7 @@ class CLI( Component ):
                 main.log.error( "Permission denied. Check folder permissions" )
                 returnVal = main.FALSE
             elif i == 6:  # prompt returned
-               return returnVal
+                return returnVal
             elif i == 7:  # EOF
                 main.log.error( "Pexpect.EOF found!!!" )
                 main.cleanAndExit()
@@ -378,15 +377,14 @@ class CLI( Component ):
 
         i = 5
         while i == 5:
-            i = handle.expect( [
-                                    ssh_newkey,
-                                    'password:|Password:',
-                                    pexpect.EOF,
-                                    pexpect.TIMEOUT,
-                                    refused,
-                                    'teston>',
-                                    self.prompt ],
-                            120 )
+            i = handle.expect( [ ssh_newkey,
+                                 'password:|Password:',
+                                 pexpect.EOF,
+                                 pexpect.TIMEOUT,
+                                 refused,
+                                 'teston>',
+                                 self.prompt ],
+                               120 )
             if i == 0:  # Accept key, then expect either a password prompt or access
                 main.log.info( "ssh key confirmation received, send yes" )
                 handle.sendline( 'yes' )
@@ -395,7 +393,7 @@ class CLI( Component ):
             if i == 1:  # Password required
                 if pwd:
                     main.log.info(
-                    "ssh connection asked for password, gave password" )
+                            "ssh connection asked for password, gave password" )
                 else:
                     main.log.info( "Server asked for password, but none was "
                                     "given in the .topo file. Trying "
@@ -434,14 +432,14 @@ class CLI( Component ):
         handle.sendline( "cd" )
         handle.expect( self.prompt )
 
-        main.log.info ( "Successfully ssh to " + ipAddress + "." )
+        main.log.info( "Successfully ssh to " + ipAddress + "." )
         return handle
 
     def exitFromSsh( self, handle, ipAddress ):
         try:
             handle.sendline( "logout" )
             handle.expect( "closed." )
-            main.log.info ( "Successfully closed ssh connection from " + ipAddress )
+            main.log.info( "Successfully closed ssh connection from " + ipAddress )
         except pexpect.EOF:
             main.log.error( "Failed to close the connection from " + ipAddress )
         try:
@@ -451,3 +449,67 @@ class CLI( Component ):
         except pexpect.EOF:
             main.log.error( self.handle.before )
             main.log.error( "EOF after closing ssh connection" )
+
+    def folderSize( self, path, size='10', unit='M', ignoreRoot=True ):
+        """
+        Run `du -h` on the folder path and verifies the folder(s) size is
+        less than the given size. Note that if multiple subdirectories are
+        present, the result will be the OR of all the individual subdirectories.
+
+        Arguments:
+        path - A string containing the path supplied to the du command
+        size - The number portion of the file size that the results will be compared to
+        unit - The unit portion of the file size that the results will be compared to
+        ignoreRoot - If True, will ignore the "root" of the path supplied to du. I.E. will ignore `.`
+
+        Returns True if the folder(s) size(s) are less than SIZE UNITS, else returns False
+        """
+        sizeRe = r'(?P<number>\d+\.*\d*)(?P<unit>\D)'
+        unitsList = [ 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y' ]
+        try:
+            # make sure we convert units if size is too big
+            size = float( size )
+            if size >= 1000:
+                size = size / 1000
+                unit = unitsList[ unitsList.index( unit + 1 ) ]
+            cmdStr = "du -h " + path
+            self.handle.sendline( cmdStr )
+            self.handle.expect( self.prompt )
+            output = self.handle.before
+            assert "cannot access" not in output
+            assert "command not found" not in output
+            main.log.debug( output )
+            lines = [ line for line in output.splitlines() ]
+            retValue = True
+            if ignoreRoot:
+                lastIndex = -2
+            else:
+                lastIndex = -1
+            for line in lines[1:lastIndex]:
+                parsed = line.split()
+                sizeMatch = parsed[0]
+                folder = parsed[1]
+                match = re.search( sizeRe, sizeMatch )
+                num = match.group( 'number' )
+                unitMatch = match.group( 'unit' )
+                if unitsList.index( unitMatch ) < unitsList.index( unit ):
+                    retValue &= True
+                elif unitsList.index( unitMatch ) == unitsList.index( unit ):
+                    if float( num ) < float( size ):
+                        retValue &= True
+                    else:
+                        retValue &= False
+                elif unitsList.index( unitMatch ) > unitsList.index( unit ):
+                    retValue &= False
+            return retValue
+        except AssertionError:
+            main.log.error( self.name + ": Could not execute command: " + output )
+            return False
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return False
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()

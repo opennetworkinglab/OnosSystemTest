@@ -24,14 +24,13 @@ class Cluster():
 
     def __str__( self ):
         return self.name
+
     def __repr__( self ):
-        #TODO use repr of cli's?
         controllers = []
         runningNodes = []
         for ctrl in self.controllers:
             controllers.append( str( ctrl ) )
         return "%s[%s]" % ( self.name, ", ".join( controllers ) )
-
 
     def __init__( self, ctrlList=[], name="Cluster" ):
         '''
@@ -186,7 +185,7 @@ class Cluster():
         """
         result = main.TRUE
         uninstallResult = self.command( "onosUninstall",
-                                        kwargs={ "nodeIp":"ipAddress" },
+                                        kwargs={ "nodeIp": "ipAddress" },
                                         specificDriver=1,
                                         getFrom=0 if uninstallMax else 1,
                                         funcFromCtrl=True )
@@ -206,12 +205,12 @@ class Cluster():
         """
 
         setCellResult = self.command( "setCell",
-                      args=[ cellName ],
-                      specificDriver=1,
-                      getFrom=0 if installMax else 1 )
+                                      args=[ cellName ],
+                                      specificDriver=1,
+                                      getFrom=0 if installMax else 1 )
         verifyResult = self.command( "verifyCell",
-                      specificDriver=1,
-                      getFrom=0 if installMax else 1 )
+                                     specificDriver=1,
+                                     getFrom=0 if installMax else 1 )
         result = main.TRUE
         for i in range( len( setCellResult ) ):
             result = result and setCellResult[ i ] and verifyResult[ i ]
@@ -267,7 +266,7 @@ class Cluster():
                                    specificDriver=1,
                                    getFrom=0 if killMax else 1,
                                    funcFromCtrl=True )
-        for i in range( len ( killResult ) ):
+        for i in range( len( killResult ) ):
             result = result and killResult[ i ]
             self.controllers[ i ].active = False
         return result
@@ -283,7 +282,7 @@ class Cluster():
         """
         result = main.TRUE
         sshResult = self.command( "onosSecureSSH",
-                                   kwargs={ "node":"ipAddress" },
+                                   kwargs={ "node": "ipAddress" },
                                    specificDriver=1,
                                    getFrom=1,
                                    funcFromCtrl=True )
@@ -309,10 +308,10 @@ class Cluster():
             if installMax and i >= self.numCtrls:
                 options = "-nf"
             if installParallel:
-                t= main.Thread( target=ctrl.Bench.onosInstall,
-                                name="install-" + ctrl.name,
-                                kwargs={ "node" : ctrl.ipAddress,
-                                         "options" : options } )
+                t = main.Thread( target=ctrl.Bench.onosInstall,
+                                 name="install-" + ctrl.name,
+                                 kwargs={ "node" : ctrl.ipAddress,
+                                          "options" : options } )
                 threads.append( t )
                 t.start()
             else:
@@ -338,7 +337,7 @@ class Cluster():
                                    specificDriver=2,
                                    getFrom=1,
                                    funcFromCtrl=True )
-        for i in range ( len( cliResults ) ):
+        for i in range( len( cliResults ) ):
             result = result and cliResults[ i ]
             self.controllers[ i ].active = True
         return result
@@ -354,8 +353,8 @@ class Cluster():
         Returns:
         """
         f = getattr( main.log, logLevel )
-        for i in range ( len ( results ) ):
-            f( activeList[ i ].name + "'s result : " + str ( results[ i ] ) )
+        for i in range( len( results ) ):
+            f( activeList[ i ].name + "'s result : " + str( results[ i ] ) )
 
     def allTrueResultCheck( self, results, activeList ):
         """
@@ -447,7 +446,7 @@ class Cluster():
                             funcArgs.append( getattr( ctrl, args[ i ] ) )
                     if kwargs:
                         for k in kwargs:
-                            funcKwargs.update( { k:getattr( ctrl, kwargs[ k ] ) } )
+                            funcKwargs.update( { k: getattr( ctrl, kwargs[ k ] ) } )
             except AttributeError:
                 main.log.error( "Function " + function + " not found. Exiting the Test." )
                 main.cleanAndExit()
@@ -466,3 +465,15 @@ class Cluster():
         elif contentCheck:
             return self.notEmptyResultCheck( results, fromNode[ getFrom ] )
         return results
+
+    def checkPartitionSize( self, segmentSize='64', units='M', multiplier='3' ):
+        # max segment size in bytes: 1024 * 1024 * 64
+        # multiplier is somewhat arbitrary, but the idea is the logs would have
+        # been compacted before this many segments are written
+
+        maxSize = float( segmentSize ) * float( multiplier )
+        ret = True
+        for n in self.runningNodes:
+            ret = ret and n.server.folderSize( "/opt/onos/apache-karaf-*/data/partitions/*/*.log",
+                                               size=maxSize, unit=units, ignoreRoot=False )
+        return ret

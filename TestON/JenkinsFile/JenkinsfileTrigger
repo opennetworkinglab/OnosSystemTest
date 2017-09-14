@@ -1,0 +1,257 @@
+#!groovy
+// This is a Jenkinsfile for a scripted pipeline for the SCPF tests
+// Define sets of tests
+SCPF_Basic = "SCPFswitchLat,SCPFportLat,SCPFintentInstallWithdrawLat,SCPFintentEventTp,SCPFflowTp1g,SCPFcbench,SCPFbatchFlowResp"
+SCPF_ExtraSetA = "SCPFintentRerouteLat,SCPFscalingMaxIntents,SCPFhostLat,SCPFscaleTopo,SCPFmastershipFailoverLat"
+SCPF_NEW_TEST = "SCPFmastershipFailoverLat"
+SCPF_ExtraSetB = "SCPFintentInstallWithdrawLatWithFlowObj,SCPFintentEventTpWithFlowObj,SCPFintentRerouteLatWithFlowObj,SCPFscalingMaxIntentsWithFlowObj,SCPFflowTp1gWithFlowObj"
+FUNC_Basic = "FUNCipv6Intent,FUNCoptical,FUNCflow,FUNCnetCfg,FUNCovsdbtest,FUNCnetconf"
+FUNC_ExtraSetA = "FUNCgroup,FUNCintent"
+FUNC_ExtraSetB = "FUNCintentRest"
+HA_Basic = "HAsanity,HAsingleInstanceRestart,HAclusterRestart"
+HA_ExtraSetA = "HAstopNodes,HAfullNetPartition"
+HA_ExtraSetB = "HAkillNodes,HAswapNodes,HAscaling"
+USECASE_Basic = "FUNCvirNetNB,FUNCbgpls,VPLSBasic,PLATdockertest,SRSanity,SRSwitchFailure,SRLinkFailure,SROnosFailure,SRClusterRestart,SRDynamic,SRHA,USECASE_SdnipFunction,USECASE_SdnipFunctionCluster"
+USECASE_NEW_TEST = "VPLSfailsafe"
+testcases = [
+    "FUNC" : [ tests : "" , nodeName : "VM"],
+    "HA" : [ tests : "" , nodeName : "VM"],
+    "SCPF" : [ tests : "" , nodeName : "BM"],
+    "USECASE" : [ tests : "" , nodeName : "BM"]
+]
+Prefix_organizer = [
+    "FU" : "FUNC",
+    "HA" : "HA",
+    "PL" : "USECASE",
+    "SA" : "USECASE",
+    "SC" : "SCPF",
+    "SR" : "USECASE",
+    "US" : "USECASE",
+    "VP" : "USECASE"
+]
+
+onos_branch = "1.11"
+// Set tests based on day of week
+def now = new Date()
+echo(now.toString())
+today = now[Calendar.DAY_OF_WEEK]
+day = ""
+SCPF_choices = SCPF_Basic
+USECASE_choices = ""
+FUNC_choices = FUNC_Basic
+HA_choices = HA_Basic
+
+switch (today) {
+    case Calendar.MONDAY:
+        SCPF_choices += "," + SCPF_ExtraSetB
+        FUNC_choices += "," + FUNC_ExtraSetA
+        HA_choices += "," + HA_ExtraSetA
+        day = "Monday"
+        break
+    case Calendar.TUESDAY:
+        day = "Tuesday"
+        USECASE_choices = USECASE_Basic + "," + USECASE_NEW_TEST
+        FUNC_choices += "," + FUNC_ExtraSetB
+        HA_choices += "," + HA_ExtraSetB
+        break
+    case Calendar.WEDNESDAY:
+        SCPF_choices += "," + SCPF_ExtraSetA + "," + SCPF_NEW_TEST
+        FUNC_choices += "," + FUNC_ExtraSetA
+        HA_choices += "," + HA_ExtraSetA
+        day = "Wednesday"
+        break
+    case Calendar.THURSDAY:
+        SCPF_choices += "," + SCPF_ExtraSetB
+        FUNC_choices += "," + FUNC_ExtraSetB
+        HA_choices += "," + HA_ExtraSetB
+        day = "Thursday"
+        break
+    case Calendar.FRIDAY:
+        SCPF_choices += "," + SCPF_ExtraSetA + "," + SCPF_NEW_TEST + "," + SCPF_ExtraSetB
+        FUNC_choices += "," + FUNC_ExtraSetA
+        HA_choices += "," + HA_ExtraSetA
+        day = "Friday"
+        break
+    case Calendar.SATURDAY:
+        SCPF_choices += "," + SCPF_ExtraSetA  + "," + SCPF_ExtraSetB
+        USECASE_choices = USECASE_Basic
+        FUNC_choices += "," + FUNC_ExtraSetA + "," + FUNC_ExtraSetB
+        HA_choices += "," + HA_ExtraSetA + "," + HA_ExtraSetB
+        onos_branch= "1.10"
+        day = "Saturday"
+        break
+    case Calendar.SUNDAY:
+        SCPF_choices += "," + SCPF_ExtraSetA + "," + SCPF_NEW_TEST + "," + SCPF_ExtraSetB
+        USECASE_choices = USECASE_Basic + "," + USECASE_NEW_TEST
+        FUNC_choices += "," + FUNC_ExtraSetA + "," + FUNC_ExtraSetB
+        HA_choices += "," + HA_ExtraSetA + "," + HA_ExtraSetB
+        onos_branch= "master"
+        day = "Sunday"
+        break
+}
+
+manually_run = params.manual_run
+post_result = params.PostResult
+if ( manually_run ){
+    organize_tests( params.Tests )
+    onos_branch = params.ONOSVersion
+    test_branch = params.TestONBranch
+    println "Tests to be run manually : "
+}else{
+    testcases["SCPF"]["tests"] = SCPF_choices
+    testcases["USECASE"]["tests"] = USECASE_choices
+    testcases["FUNC"]["tests"] = FUNC_choices
+    testcases["HA"]["tests"] = HA_choices
+    println "Defaulting to " + day + " tests:"
+}
+print_tests( testcases )
+
+def runTest = [
+    "VM" : [:],
+    "BM" : [:]
+]
+for( String test in testcases.keySet() ){
+    println test
+    if (testcases[test]["tests"] != ""){
+        runTest[testcases[test]["nodeName"]][test] = trigger_pipeline( onos_branch, testcases[test]["tests"], testcases[test]["nodeName"], test, manually_run )
+    }
+}
+def finalList = [:]
+finalList["VM"] = runTestSeq( runTest["VM"] )
+finalList["BM"] = runTestSeq( runTest["BM"] )
+parallel finalList
+
+def runTestSeq( testList ){
+    return{
+        for ( test in testList.keySet() ){
+            testList[test].call()
+        }
+    }
+}
+
+def print_tests( tests ){
+    for( String test in tests.keySet() ){
+        if( tests[test]["tests"] != "" ){
+            println test + ":"
+            println tests[test]["tests"]
+        }
+    }
+}
+def organize_tests( tests ){
+    testList = tests.tokenize("\n;, ")
+    for( String test in testList )
+        testcases [ Prefix_organizer[ ( test == "FUNCbgpls" || test == "FUNCvirNetNB" ? "US" : ( test[ 0 ] + test[ 1 ] ) ) ] ][ "tests" ] += test + ","
+}
+def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun ){
+// nodeName : "BM" or "VM"
+// jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
+    return{
+        if (branch == "master"){
+            onos_branch = branch
+        }else{
+            onos_branch = "onos-" + branch
+        }
+        wiki = branch
+        if ( !manuallyRun )
+            test_branch = onos_branch
+        if (onos_branch == "onos-1.11")
+            test_branch = "master"
+        println jobOn + "_Pipeline_" + manuallyRun ? "manually" : branch
+        node("TestStation-" + nodeName + "s"){
+            if (!manuallyRun)
+                envSetup(onos_branch, test_branch)
+
+            exportEnvProperty( onos_branch, test_branch, wiki, tests, post_result, manuallyRun )
+        }
+
+        jobToRun = jobOn + "_Pipeline_" + ( manuallyRun ? "manually" : branch )
+        build job: jobToRun, propagate: false
+    }
+}
+
+// export Environment properties.
+def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manually_run ){
+    stage("export Property"){
+        sh '''
+            echo "ONOSBranch=''' + onos_branch +'''" > /var/jenkins/TestONOS.property
+            echo "TestONBranch=''' + test_branch +'''" >> /var/jenkins/TestONOS.property
+            echo "ONOSTag='''+ env.ONOSTag +'''" >> /var/jenkins/TestONOS.property
+            echo "WikiPrefix=''' + wiki +'''" >> /var/jenkins/TestONOS.property
+            echo "ONOSJVMHeap='''+ env.ONOSJVMHeap +'''" >> /var/jenkins/TestONOS.property
+            echo "Tests=''' + tests +'''" >> /var/jenkins/TestONOS.property
+            echo "postResult=''' + postResult +'''" >> /var/jenkins/TestONOS.property
+            echo "manualRun=''' + manually_run +'''" >> /var/jenkins/TestONOS.property
+        '''
+    }
+}
+// Initialize the environment Setup for the onos and OnosSystemTest
+def envSetup( onos_branch, test_branch ){
+    stage("envSetup") {
+        sh '''
+        #!/bin/bash
+        set +e
+        . ~/.bashrc
+        env
+
+        echo -e "\n#####  Set TestON Branch #####"
+        echo "TestON Branch is set on: " + test_branch
+
+        cd ~/OnosSystemTest/
+        git checkout HEAD~1      # Make sure you aren't pn a branch
+        git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
+        git branch -D $TestONBranch # just incase there are local changes. This will normally result in a branch not found error
+        git clean -df # clean any local files
+        git fetch --all # update all caches from remotes
+        git reset --hard origin/$TestONBranch  # force local index to match remote branch
+        git clean -df # clean any local files
+        git checkout $TestONBranch #create new local branch
+        git branch
+        git log -1 --decorate
+
+
+        echo -e "\n#####  Set ONOS Branch #####"
+        echo "ONOS Branch is set on: + onos_branch
+
+        echo -e "\n #### check karaf version ######"
+        env |grep karaf
+
+        cd ~/onos
+        rm -rf buck-out/*
+        ~/onos/tools/build/onos-buck clean
+        git checkout HEAD~1      # Make sure you aren't pn a branch
+        git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
+        git branch -D $ONOSBranch # just incase there are local changes. This will normally result in a branch not found error
+        git clean -df # clean any local files
+        git fetch --all # update all caches from remotes
+        git reset --hard origin/$ONOSBranch  # force local index to match remote branch
+        git clean -df # clean any local files
+        if [ -z "$ONOSTag" ] #if tag is not specified
+        then
+            git checkout $ONOSBranch #create new local branch
+        else
+            git checkout $ONOSTag #checkout the tag
+        fi
+        git branch
+        git log -1 --decorate
+
+
+        echo -e "\n##### set jvm heap size to 8G #####"
+        echo ${ONOSJVMHeap}
+
+        inserted_line="export JAVA_OPTS="${ONOSJVMHeap}""
+        sed -i "s/bash/bash\n$inserted_line/" ~/onos/tools/package/bin/onos-service
+
+        echo "##### Check onos-service setting..... #####"
+        cat ~/onos/tools/package/bin/onos-service
+
+        export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+
+        echo -e "\n##### build ONOS skip unit tests ######"
+        #mvn clean install -DskipTests
+        # Force buck update
+        rm -f ~/onos/bin/buck
+        ~/onos/tools/build/onos-buck build onos
+
+        git branch'''
+    }
+}

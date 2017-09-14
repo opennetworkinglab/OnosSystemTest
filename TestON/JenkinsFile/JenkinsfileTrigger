@@ -30,7 +30,8 @@ Prefix_organizer = [
     "VP" : "USECASE"
 ]
 
-onos_branch = "1.11"
+onos_branch = "master"
+onos_tag = params.ONOSTag
 // Set tests based on day of week
 def now = new Date()
 echo(now.toString())
@@ -85,7 +86,7 @@ switch (today) {
         USECASE_choices = USECASE_Basic + "," + USECASE_NEW_TEST
         FUNC_choices += "," + FUNC_ExtraSetA + "," + FUNC_ExtraSetB
         HA_choices += "," + HA_ExtraSetA + "," + HA_ExtraSetB
-        onos_branch= "master"
+        onos_branch= "1.11"
         day = "Sunday"
         break
 }
@@ -113,7 +114,7 @@ def runTest = [
 for( String test in testcases.keySet() ){
     println test
     if (testcases[test]["tests"] != ""){
-        runTest[testcases[test]["nodeName"]][test] = trigger_pipeline( onos_branch, testcases[test]["tests"], testcases[test]["nodeName"], test, manually_run )
+        runTest[testcases[test]["nodeName"]][test] = trigger_pipeline( onos_branch, testcases[test]["tests"], testcases[test]["nodeName"], test, manually_run, onos_tag )
     }
 }
 def finalList = [:]
@@ -142,7 +143,7 @@ def organize_tests( tests ){
     for( String test in testList )
         testcases [ Prefix_organizer[ ( test == "FUNCbgpls" || test == "FUNCvirNetNB" ? "US" : ( test[ 0 ] + test[ 1 ] ) ) ] ][ "tests" ] += test + ","
 }
-def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun ){
+def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 // nodeName : "BM" or "VM"
 // jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
     return{
@@ -159,9 +160,9 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun ){
         println jobOn + "_Pipeline_" + manuallyRun ? "manually" : branch
         node("TestStation-" + nodeName + "s"){
             if (!manuallyRun)
-                envSetup(onos_branch, test_branch)
+                envSetup(onos_branch, test_branch, onosTag)
 
-            exportEnvProperty( onos_branch, test_branch, wiki, tests, post_result, manuallyRun )
+            exportEnvProperty( onos_branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag )
         }
 
         jobToRun = jobOn + "_Pipeline_" + ( manuallyRun ? "manually" : branch )
@@ -170,12 +171,12 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun ){
 }
 
 // export Environment properties.
-def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manually_run ){
+def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manually_run, onosTag ){
     stage("export Property"){
         sh '''
             echo "ONOSBranch=''' + onos_branch +'''" > /var/jenkins/TestONOS.property
             echo "TestONBranch=''' + test_branch +'''" >> /var/jenkins/TestONOS.property
-            echo "ONOSTag='''+ env.ONOSTag +'''" >> /var/jenkins/TestONOS.property
+            echo "ONOSTag='''+ onosTag +'''" >> /var/jenkins/TestONOS.property
             echo "WikiPrefix=''' + wiki +'''" >> /var/jenkins/TestONOS.property
             echo "ONOSJVMHeap='''+ env.ONOSJVMHeap +'''" >> /var/jenkins/TestONOS.property
             echo "Tests=''' + tests +'''" >> /var/jenkins/TestONOS.property
@@ -185,32 +186,31 @@ def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manual
     }
 }
 // Initialize the environment Setup for the onos and OnosSystemTest
-def envSetup( onos_branch, test_branch ){
+def envSetup( onos_branch, test_branch, onos_tag ){
     stage("envSetup") {
-        sh '''
-        #!/bin/bash
+        sh '''#!/bin/bash -l
         set +e
         . ~/.bashrc
         env
 
         echo -e "\n#####  Set TestON Branch #####"
-        echo "TestON Branch is set on: " + test_branch
+        echo "TestON Branch is set on: ''' + test_branch + '''"
 
         cd ~/OnosSystemTest/
         git checkout HEAD~1      # Make sure you aren't pn a branch
         git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
-        git branch -D $TestONBranch # just incase there are local changes. This will normally result in a branch not found error
+        git branch -D ''' + test_branch + ''' # just incase there are local changes. This will normally result in a branch not found error
         git clean -df # clean any local files
         git fetch --all # update all caches from remotes
-        git reset --hard origin/$TestONBranch  # force local index to match remote branch
+        git reset --hard origin/''' + test_branch +'''  # force local index to match remote branch
         git clean -df # clean any local files
-        git checkout $TestONBranch #create new local branch
+        git checkout ''' + test_branch + ''' #create new local branch
         git branch
         git log -1 --decorate
 
 
         echo -e "\n#####  Set ONOS Branch #####"
-        echo "ONOS Branch is set on: + onos_branch
+        echo "ONOS Branch is set on: ''' + onos_branch + '''"
 
         echo -e "\n #### check karaf version ######"
         env |grep karaf
@@ -220,17 +220,12 @@ def envSetup( onos_branch, test_branch ){
         ~/onos/tools/build/onos-buck clean
         git checkout HEAD~1      # Make sure you aren't pn a branch
         git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
-        git branch -D $ONOSBranch # just incase there are local changes. This will normally result in a branch not found error
+        git branch -D ''' + onos_branch + ''' # just incase there are local changes. This will normally result in a branch not found error
         git clean -df # clean any local files
         git fetch --all # update all caches from remotes
-        git reset --hard origin/$ONOSBranch  # force local index to match remote branch
+        git reset --hard origin/''' + onos_branch + '''  # force local index to match remote branch
         git clean -df # clean any local files
-        if [ -z "$ONOSTag" ] #if tag is not specified
-        then
-            git checkout $ONOSBranch #create new local branch
-        else
-            git checkout $ONOSTag #checkout the tag
-        fi
+        ''' + tagCheck(onos_tag, onos_branch) + '''
         git branch
         git log -1 --decorate
 
@@ -238,8 +233,8 @@ def envSetup( onos_branch, test_branch ){
         echo -e "\n##### set jvm heap size to 8G #####"
         echo ${ONOSJVMHeap}
 
-        inserted_line="export JAVA_OPTS="${ONOSJVMHeap}""
-        sed -i "s/bash/bash\n$inserted_line/" ~/onos/tools/package/bin/onos-service
+        inserted_line="export JAVA_OPTS=\"\${ONOSJVMHeap}\""
+        sed -i "s/bash/bash\\n$inserted_line/" ~/onos/tools/package/bin/onos-service
 
         echo "##### Check onos-service setting..... #####"
         cat ~/onos/tools/package/bin/onos-service
@@ -252,6 +247,19 @@ def envSetup( onos_branch, test_branch ){
         rm -f ~/onos/bin/buck
         ~/onos/tools/build/onos-buck build onos
 
+        sleep 30
+        echo -e "\n##### Stop all running instances of Karaf #####"
+        kill $(ps -efw | grep karaf | grep -v grep | awk '{print $2}')
+        sleep 30
+
         git branch'''
     }
+}
+def tagCheck(onos_tag, onos_branch){
+    result = "git checkout "
+    if (onos_tag == "" )
+        result += onos_branch //create new local branch
+    else
+        result += onos_tag //checkout the tag
+    return result
 }

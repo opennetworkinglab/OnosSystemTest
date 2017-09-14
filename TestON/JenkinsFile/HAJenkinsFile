@@ -121,7 +121,6 @@ def HATest( testName, toBeRun, prop ) {
                                         def database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + table_name + " VALUES('\$DATE','" + result_name + "','" + testName + "',\$BUILD_NUMBER, '\$ONOSBranch', \$line);\""
 
                                         sh '''#!/bin/bash
-                                        set +e
                                         export DATE=\$(date +%F_%T)
                                         cd ~
                                         pwd

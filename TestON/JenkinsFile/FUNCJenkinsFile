@@ -56,6 +56,7 @@ def FUNCTest( testName, toBeRun, prop ) {
                                  'WORKSPACE='+workSpace]){
                             sh '''#!/bin/bash -l
                             set -i # interactive
+                            set +e
                             shopt -s expand_aliases # expand alias in non-interactive mode
                             export PYTHONUNBUFFERED=1
 
@@ -83,7 +84,7 @@ def FUNCTest( testName, toBeRun, prop ) {
 
                             // For the Wiki page
                             sh '''#!/bin/bash -i
-
+                            set +e
                             echo "ONOS Branch is: ${ONOSBranch}"
                             echo "TestON Branch is: ${TestONBranch}"
 
@@ -118,7 +119,6 @@ def FUNCTest( testName, toBeRun, prop ) {
                                         def database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + table_name + " VALUES('\$DATE','" + result_name + "','" + testName + "',\$BUILD_NUMBER, '\$ONOSBranch', \$line);\""
 
                                         sh '''#!/bin/bash
-                                        set +e
                                         export DATE=\$(date +%F_%T)
                                         cd ~
                                         pwd
@@ -134,7 +134,7 @@ def FUNCTest( testName, toBeRun, prop ) {
                             }
                             // Fetch Logs
                             sh '''#!/bin/bash
-
+                            set +e
                             cd ~/OnosSystemTest/TestON/logs
                             echo "Job Name is: " + ''' + testName + '''
                             TestONlogDir=$(ls -t | grep ${TEST_NAME}_  |head -1)

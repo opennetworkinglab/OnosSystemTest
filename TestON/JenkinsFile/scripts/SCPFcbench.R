@@ -42,48 +42,30 @@ library( RPostgreSQL )    # For databases
 
 # Normal usage
 # Check if sufficient args are provided.
-if ( is.na( args[ 8 ] ) ){
-    print( "Usage: Rscript SCPFInstalledIntentsFlows <has-flowObj> <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
+if ( is.na( args[ 7 ] ) ){
+    print( "Usage: Rscript SCPFcbench <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
     q()  # basically exit(), but in R
 }
 
 # Filenames for output graphs include the testname and the graph type.
 # See the examples below. paste() is used to concatenate strings.
 
-outputFile <- paste( args[ 8 ], args[ 6 ], sep="" )
-if ( args[ 1 ] == "y" ){
-    outputFile <- paste( outputFile, "flowObj", sep="_" )
-}
-outputFile <- paste( outputFile, args[ 7 ], sep="_" )
-outputFile <- paste( outputFile, "_errGraph.jpg", sep="" )
+errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
+errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
+errBarOutputFile <- paste( errBarOutputFile, "_errGraph.jpg", sep="" )
 
 print( "Reading from databases." )
 
-con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 2 ], port=strtoi( args[ 3 ] ), user=args[ 4 ],password=args[ 5 ] )
+con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
 
-command  <- "SELECT * FROM max_intents_"
-if ( args[ 1 ] == "y" ){
-    command <- paste( command, "fobj_", sep="" )
-}
-command <- paste( command, "tests WHERE branch = '", sep = "" )
-command <- paste( command, args[ 7 ], sep="" )
-command <- paste( command, "' AND date IN ( SELECT MAX( date ) FROM max_intents_", sep="" )
-if ( args[ 1 ] == "y" ){
-    command <- paste( command, "fobj_", sep="" )
-}
-command <- paste( command, "tests WHERE branch = '", sep = "" )
-command <- paste( command, args[ 7 ], sep = "" )
-command <- paste( command, "' ) ", sep="" )
+command <- paste( "SELECT * FROM cbench_bm_tests WHERE branch='", args[ 6 ], sep="" )
+command <- paste( command, "' ORDER BY date DESC LIMIT 3", sep="" )
 
 print( paste( "Sending SQL command:", command ) )
 
 fileData <- dbGetQuery( con, command )
 
-if ( args[ 1 ] == "y" ){
-    chartTitle <- "Number of Installed Intents & Flows with Flow Objectives"
-} else {
-    chartTitle <- "Number of Installed Intents & Flows"
-}
+chartTitle <- paste( "Single-Node CBench Throughput", "Last 3 Builds", sep = "\n" )
 
 # **********************************************************
 # STEP 2: Organize data.
@@ -92,17 +74,22 @@ if ( args[ 1 ] == "y" ){
 fileDataNames <- names( fileData )
 
 avgs <- c()
+stds <- c()
 
 print( "Sorting data." )
-avgs <- c( fileData[ 'max_intents_ovs' ], fileData[ 'max_flows_ovs' ] )
+avgs <- c( fileData[ 'avg' ] )
 
 dataFrame <- melt( avgs )
-dataFrame$scale <- fileData$scale
+dataFrame$std <- c( fileData$std )
+dataFrame$date <- c( fileData$date )
+dataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
 
-colnames( dataFrame ) <- c( "ms", "type", "scale" )
+colnames( dataFrame ) <- c( "ms", "type", "std", "date", "iterative" )
 
-dataFrame$type <- as.character( dataFrame$type )
-dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+print( "Data Frame Results:" )
+print( dataFrame )
 
 # **********************************************************
 # STEP 3: Generate graphs.
@@ -110,24 +97,26 @@ dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 
 print( "Generating fundamental graph data." )
 
-mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, fill = type ) )
-xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
-xLabel <- xlab( "Scale" )
-yLabel <- ylab( "Max Number of Intents/Flow Rules" )
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+
+mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, ymin = ms - std, ymax = ms + std ) )
+xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
+xLabel <- xlab( "date" )
+yLabel <- ylab( "Responses / sec" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 
-print( "Generating bar graph bars." )
-width <- 1.3
-barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width )
+print( "Generating bar graph with error bars." )
+width <- 0.3
+barGraphFormat <- geom_bar( stat="identity", position = position_dodge(), width = width, fill="#00AA13" )
+errorBarFormat <- geom_errorbar( position=position_dodge( ), width = width )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
 
 
-print( paste( "Saving bar chart to", outputFile ) )
-ggsave( outputFile, width = 10, height = 6, dpi = 200 )
-
-print( paste( "Successfully wrote bar chart out to", outputFile ) )
+print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
+ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+print( paste( "Successfully wrote bar chart with error bars out to", errBarOutputFile ) )

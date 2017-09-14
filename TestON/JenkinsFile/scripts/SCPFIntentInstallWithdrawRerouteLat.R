@@ -129,6 +129,11 @@ colnames( dataFrame ) <- c( "ms", "type", "scale", "stds" )
 dataFrame$type <- as.character( dataFrame$type )
 dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+print( "Data Frame Results:" )
+print( dataFrame )
+
 # **********************************************************
 # STEP 3: Generate graphs.
 # **********************************************************
@@ -145,6 +150,8 @@ print( "STEP 3: Generate graphs." )
 #      Graphs are saved to the filename above, in the directory provided in command line args
 
 print( "Generating fundamental graph data." )
+
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 
 # Calculate window to display graph, based on the lowest and highest points of the data.
 if ( min( dataFrame$ms - dataFrame$stds ) < 0){
@@ -165,12 +172,12 @@ yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
 chartTitle <- "Intent Install, Withdraw, & Reroute Latencies"
 if ( args[ 1 ] == "y" ){
-    chartTitle <- paste( chartTitle, "with Flow Objectives" )
+    chartTitle <- paste( chartTitle, "w/ FlowObj" )
 }
 chartTitle <- paste( chartTitle, "\nBatch Size =" )
 chartTitle <- paste( chartTitle, fileData1[ 1,'batch_size' ] )
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + yLimit + xLabel + yLabel + fillLabel + theme

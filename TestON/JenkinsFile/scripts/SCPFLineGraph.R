@@ -93,8 +93,10 @@ colnames( dataFrame ) <- c( "Legend", "Values" )
 dataFrame$Legend <- as.character( dataFrame$Legend )
 dataFrame$Legend <- factor( dataFrame$Legend, levels=unique( dataFrame$Legend ) )
 
-# Adding a temporary reversed iterative list to the dataFrame so that there are no gaps in-between date numbers.
-dataFrame$iterative <- seq( 1, nrow( fileData ), by = 1 )
+# Adding a temporary iterative list to the dataFrame so that there are no gaps in-between date numbers.
+dataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
+
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
 
 print( "Data Frame Results:" )
 print( dataFrame )
@@ -113,6 +115,7 @@ print( "Creating main plot." )
 #        - x: x-axis values (usually iterative, but it will become date # later)
 #        - y: y-axis values (usually tests)
 #        - color: the category of the colored lines (usually legend of test)
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = Values, color = Legend ) )
 
 print( "Formatting main plot." )
@@ -127,7 +130,7 @@ yLabel <- ylab( args[ 9 ] )
 fillLabel <- labs( fill="Type" )
 legendLabels <- scale_colour_discrete( labels = names( fileData ) )
 centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( axis.text.x = element_blank(), axis.ticks.x = element_blank(), plot.title = element_text( size = 18, face='bold' ) )
+theme <- theme( axis.text.x = element_blank(), axis.ticks.x = element_blank(), plot.title = element_text( size = 28, face='bold' ) )
 
 fundamentalGraphData <- fundamentalGraphData + yScaleConfig + xLabel + yLabel + fillLabel + legendLabels + centerTitle + theme
 print( "Generating line graph." )

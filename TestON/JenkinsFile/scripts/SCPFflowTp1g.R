@@ -71,13 +71,13 @@ if ( args[ 1 ] == 'y' ){
     flowObjModifier <- "_fobj"
 }
 if ( args[ 8 ] == 'y' ){
-    commandNeighborModifier <- "NOT "
+    commandNeighborModifier <- "scale=1 OR NOT "
 }
 
 command <- paste( "SELECT scale, avg( avg ), avg( std ) FROM flow_tp", flowObjModifier, sep="" )
-command <- paste( command, "_tests WHERE ", sep="" )
+command <- paste( command, "_tests WHERE (", sep="" )
 command <- paste( command, commandNeighborModifier, sep="" )
-command <- paste( command, "neighbors = 0 AND branch = '", sep="" )
+command <- paste( command, "neighbors = 0 ) AND branch = '", sep="" )
 command <- paste( command, args[ 7 ], sep="" )
 command <- paste( command, "' AND date IN ( SELECT max( date ) FROM flow_tp", sep="" )
 command <- paste( command, flowObjModifier, sep="" )
@@ -109,6 +109,11 @@ dataFrame$std <- fileData$std
 
 colnames( dataFrame ) <- c( "throughput", "type", "scale", "std" )
 
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+print( "Data Frame Results:" )
+print( dataFrame )
+
 # **********************************************************
 # STEP 3: Generate graphs.
 # **********************************************************
@@ -133,6 +138,9 @@ print( "Generating fundamental graph data." )
 #        - x: x-axis values (usually node scaling)
 #        - y: y-axis values (usually time in milliseconds)
 #        - fill: the category of the colored side-by-side bars (usually type)
+
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+
 mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = throughput, ymin = throughput - std, ymax = throughput + std, fill = type ) )
 
 # Formatting the plot
@@ -152,7 +160,7 @@ if ( args[ 8 ] == 'y' ){
     chartTitle <- paste( chartTitle, "0" )
 }
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme

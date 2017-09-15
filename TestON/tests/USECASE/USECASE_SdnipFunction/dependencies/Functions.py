@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,11 +18,10 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 def checkRouteNum( main, routeNumExpected ):
     import time
     main.step( "Check routes installed" )
-    wait = int( main.params['timers']['PathAvailable'] )
+    wait = int( main.params[ 'timers' ][ 'PathAvailable' ] )
     main.log.info( "Route number expected:" )
     main.log.info( routeNumExpected )
     main.log.info( "Route number from ONOS CLI:" )
@@ -32,85 +31,88 @@ def checkRouteNum( main, routeNumExpected ):
         time.sleep( wait )
         routeNumActual = main.Cluster.active( 0 ).CLI.ipv4RouteNumber()
     main.log.info( routeNumActual )
-    utilities.assertEquals( \
-        expect = routeNumExpected, actual = routeNumActual,
-        onpass = "Route number is correct!",
-        onfail = "Route number is wrong!" )
+    utilities.assertEquals(
+        expect=routeNumExpected, actual=routeNumActual,
+        onpass="Route number is correct!",
+        onfail="Route number is wrong!" )
+
 
 def checkM2SintentNum( main, intentNumExpected ):
     import time
     main.step( "Check M2S intents installed" )
-    wait = int( main.params['timers']['PathAvailable'] )
-    jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat = True, summary = True,
-                                                       TYPE = "multiPointToSinglePoint" )
+    wait = int( main.params[ 'timers' ][ 'PathAvailable' ] )
+    jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True, summary=True,
+                                                       TYPE="multiPointToSinglePoint" )
     try:
-        intentNumActual = jsonResult['installed']
+        intentNumActual = jsonResult[ 'installed' ]
     except TypeError as e:
         intentNumActual = -1
         main.log.error( e )
     if intentNumActual != intentNumExpected:
         time.sleep( wait )
-        jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat = True, summary = True,
-                                                           TYPE = "multiPointToSinglePoint" )
+        jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True, summary=True,
+                                                           TYPE="multiPointToSinglePoint" )
         try:
-            intentNumActual = jsonResult['installed']
+            intentNumActual = jsonResult[ 'installed' ]
         except TypeError as e:
             intentNumActual = -1
             main.log.error( e )
     main.log.info( "Intent number expected: {}".format( intentNumExpected ) )
     main.log.info( "Intent number from ONOS CLI: {}".format( intentNumActual ) )
-    utilities.assertEquals( \
-        expect = intentNumExpected, actual = intentNumActual,
-        onpass = "M2S intent number is correct!",
-        onfail = "M2S intent number is wrong!" )
+    utilities.assertEquals(
+        expect=intentNumExpected, actual=intentNumActual,
+        onpass="M2S intent number is correct!",
+        onfail="M2S intent number is wrong!" )
+
 
 def checkP2PintentNum( main, intentNumExpected ):
     import time
     main.step( "Check P2P intents installed" )
-    wait = int( main.params['timers']['PathAvailable'] )
-    jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat = True, summary = True,
-                                                       TYPE = "pointToPoint" )
+    wait = int( main.params[ 'timers' ][ 'PathAvailable' ] )
+    jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True, summary=True,
+                                                       TYPE="pointToPoint" )
     try:
-        intentNumActual = jsonResult['installed']
+        intentNumActual = jsonResult[ 'installed' ]
     except TypeError as e:
         intentNumActual = -1
         main.log.error( e )
 
     if intentNumActual != intentNumExpected:
         time.sleep( wait )
-        jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat = True, summary = True,
-                                                           TYPE = "pointToPoint" )
+        jsonResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True, summary=True,
+                                                           TYPE="pointToPoint" )
         try:
-            intentNumActual = jsonResult['installed']
+            intentNumActual = jsonResult[ 'installed' ]
         except TypeError as e:
             intentNumActual = -1
             main.log.error( e )
     main.log.info( "Intent number expected: {}".format( intentNumExpected ) )
     main.log.info( "Intent number from ONOS CLI: {}".format( intentNumActual ) )
-    utilities.assertEquals( \
-        expect = intentNumExpected, actual = intentNumActual,
-        onpass = "P2P intent number is correct!",
-        onfail = "P2P intent number is wrong!" )
+    utilities.assertEquals(
+        expect=intentNumExpected, actual=intentNumActual,
+        onpass="P2P intent number is correct!",
+        onfail="P2P intent number is wrong!" )
+
 
 def checkFlowNum( main, switch, flowNumExpected ):
     import time
     main.step( "Check flow entry number in " + switch )
-    wait = int( main.params['timers']['PathAvailable'] )
+    wait = int( main.params[ 'timers' ][ 'PathAvailable' ] )
     main.log.info( "Flow number expected: {}".format( flowNumExpected ) )
     flowNumActual = main.Mininet.getSwitchFlowCount( switch )
-    if flowNumActual != flowNumExpected :
+    if flowNumActual != flowNumExpected:
         time.sleep( wait )
         flowNumActual = main.Mininet.getSwitchFlowCount( switch )
     main.log.info( "Flow number actual: {}".format( flowNumActual ) )
-    utilities.assertEquals( \
-        expect = flowNumExpected, actual = flowNumActual,
-        onpass = "Flow number in " + switch + " is correct!",
-        onfail = "Flow number in " + switch + " is wrong!" )
+    utilities.assertEquals(
+        expect=flowNumExpected, actual=flowNumActual,
+        onpass="Flow number in " + switch + " is correct!",
+        onfail="Flow number in " + switch + " is wrong!" )
 
 
-def pingSpeakerToPeer( main, speakers = [ "spk1" ],
-                       peers = [ "peer64514", "peer64515", "peer64516" ],
-                       expectAllSuccess = True ):
+def pingSpeakerToPeer( main, speakers=[ "spk1" ],
+                       peers=[ "peer64514", "peer64515", "peer64516" ],
+                       expectAllSuccess=True ):
     """
     Carry out ping test between each BGP speaker and peer pair
     Optional argument:
@@ -135,26 +137,26 @@ def pingSpeakerToPeer( main, speakers = [ "spk1" ],
     if expectAllSuccess:
         for speaker in speakers:
             for peer in peers:
-                tmpResult = main.Mininet.pingHost( src = speaker,
-                                                   target = peer )
+                tmpResult = main.Mininet.pingHost( src=speaker,
+                                                   target=peer )
                 result = result and ( tmpResult == main.TRUE )
     else:
         for speaker in speakers:
             for peer in peers:
-                tmpResult = main.Mininet.pingHost( src = speaker,
-                                                   target = peer )
+                tmpResult = main.Mininet.pingHost( src=speaker,
+                                                   target=peer )
 
-    utilities.assert_equals( expect = True, actual = result,
-                             onpass = "Ping test results are expected",
-                             onfail = "Ping test results are Not expected" )
+    utilities.assert_equals( expect=True, actual=result,
+                             onpass="Ping test results are expected",
+                             onfail="Ping test results are Not expected" )
 
-    if result == False:
+    if not result:
         main.cleanAndExit()
 
 
 def pingHostToHost( main,
-                    hosts = [ "h64514", "h64515", "h64516" ],
-                expectAllSuccess = True ):
+                    hosts=[ "h64514", "h64515", "h64516" ],
+                    expectAllSuccess=True ):
     """
     Carry out ping test between each BGP host pair
     Optional argument:
@@ -173,23 +175,22 @@ def pingHostToHost( main,
         for srcHost in hosts:
             for targetHost in hosts:
                 if srcHost != targetHost:
-                    tmpResult = main.Mininet.pingHost( src = srcHost,
-                                                       target = targetHost )
+                    tmpResult = main.Mininet.pingHost( src=srcHost,
+                                                       target=targetHost )
                     result = result and ( tmpResult == main.TRUE )
     else:
         for srcHost in hosts:
             for targetHost in hosts:
                 if srcHost != targetHost:
-                    tmpResult = main.Mininet.pingHost( src = srcHost,
-                                                       target = targetHost )
+                    tmpResult = main.Mininet.pingHost( src=srcHost,
+                                                       target=targetHost )
                     result = result and ( tmpResult == main.FALSE )
 
-    utilities.assert_equals( expect = True, actual = result,
-                             onpass = "Ping test results are expected",
-                             onfail = "Ping test results are Not expected" )
+    utilities.assert_equals( expect=True, actual=result,
+                             onpass="Ping test results are expected",
+                             onfail="Ping test results are Not expected" )
 
-    '''
+    """
     if result == False:
         main.cleanAndExit()
-    '''
-
+    """

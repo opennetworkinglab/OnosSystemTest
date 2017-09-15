@@ -1,5 +1,5 @@
 """
-Copyright 2017 Open Networking Foundation (ONF)
+Copyright 2017 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 Testing various connectivity failures for VPLS.
 
@@ -31,12 +30,10 @@ CASE300: Stop 1 ONOS node at a time and test connectivity.
 CASE310: Kill 1 ONOS node at a time and test connectivity.
 CASE400: Bring down 1 link at a time and test connectivity.
 """
-
 class VPLSfailsafe:
 
     def __init__( self ):
         self.default = ''
-
 
     def CASE1( self, main ):
         """
@@ -103,7 +100,6 @@ class VPLSfailsafe:
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
 
-
         main.step( "Activate apps defined in the params file" )
         # get data from the params
         apps = main.params.get( 'apps' )
@@ -149,7 +145,7 @@ class VPLSfailsafe:
 
         main.step( "App Ids check" )
         appCheck = main.Cluster.command( "appToIDCheck", returnBool=True )
-        if appCheck != True:
+        if appCheck is not True:
             main.log.warn( main.Cluster.active( 0 ).CLI.apps() )
             main.log.warn( main.Cluster.active( 0 ).CLI.appIDs() )
         utilities.assert_equals( expect=True, actual=appCheck,
@@ -185,7 +181,7 @@ class VPLSfailsafe:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=loadVPLSResult,
                                  onpass="Loaded vpls configuration.",
-                                 onfail="Failed to load vpls configuration.")
+                                 onfail="Failed to load vpls configuration." )
 
         # Time for netcfg to load data
         time.sleep( SLEEP )
@@ -211,7 +207,7 @@ class VPLSfailsafe:
         result = False
         getPorts = utilities.retry( f=main.ONOSrest1.getNetCfg,
                                     retValue=False,
-                                    kwargs={ "subjectClass" : "ports" },
+                                    kwargs={ "subjectClass": "ports" },
                                     sleep=SLEEP )
         onosCfg = pprint( getPorts )
         sentCfg = pprint( originalCfg.get( "ports" ) )
@@ -239,8 +235,6 @@ class VPLSfailsafe:
                                  onpass="Loaded vpls configuration.",
                                  onfail="Failed to load vpls configuration." )
 
-
-
     def CASE50( self, main ):
         """
         Initial connectivity check
@@ -252,7 +246,6 @@ class VPLSfailsafe:
         utilities.assert_equals( expect=main.TRUE, actual=connectCheckResult,
                                  onpass="Connectivity is as expected.",
                                  onfail="Connectivity is NOT as expected." )
-
 
     def CASE100( self, main ):
         """
@@ -301,7 +294,7 @@ class VPLSfailsafe:
 
         utilities.assert_equals( expect=main.TRUE, actual=result,
                                  onpass="Connectivity is as expected.",
-                                 onfail="Connectivity is NOT as expected.")
+                                 onfail="Connectivity is NOT as expected." )
 
     def CASE200( self, main ):
         """
@@ -310,7 +303,7 @@ class VPLSfailsafe:
         assert vpls, "vpls not defined"
 
         main.case( "Bring down one switch at a time and test connectivity." )
-        links = main.Mininet1.getLinks( )  # Obtain links here
+        links = main.Mininet1.getLinks()  # Obtain links here
         result = main.TRUE
 
         for i in range( 5, hosts + 1 ):
@@ -318,7 +311,7 @@ class VPLSfailsafe:
             stri = str( i )
 
             # Bring switch down
-            main.step( "Delete s" + stri + ".")
+            main.step( "Delete s" + stri + "." )
             delSwitchResult = main.Mininet1.delSwitch( sw="s" + stri )
 
             # Check if switch was deleted
@@ -332,17 +325,17 @@ class VPLSfailsafe:
             result = result and connectivityResult
 
             # Bring switch up
-            main.step( "Add s" + stri + ".")
+            main.step( "Add s" + stri + "." )
             addSwitchResult = main.Mininet1.addSwitch( sw="s" + stri )
 
             # Check if switch was added
             utilities.assert_equals( expect=main.TRUE, actual=addSwitchResult,
                                      onpass="Successfully added switch.",
-                                     onfail="Failed to add switch.")
+                                     onfail="Failed to add switch." )
             result = result and addSwitchResult
 
             # Reconnect links
-            main.step( "Reconnecting links on s" + stri + ".")
+            main.step( "Reconnecting links on s" + stri + "." )
             for j in links:
                 if ( j[ 'node1' ] == "s" + stri and j[ 'node2' ][ 0 ] == "s" ) or \
                    ( j[ 'node2' ] == "s" + stri and j[ 'node1' ][ 0 ] == "s" ):
@@ -354,7 +347,6 @@ class VPLSfailsafe:
             # Check connectivity
             connectivityResult = vpls.testConnectivityVpls( main )
             result = result and connectivityResult
-
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=result,
@@ -381,7 +373,7 @@ class VPLSfailsafe:
             ip_address = main.Cluster.active( i ).ipAddress
 
             # Stop an ONOS node: i
-            main.step( "Stop ONOS node " + stri + ".")
+            main.step( "Stop ONOS node " + stri + "." )
             stopResult = main.ONOSbench.onosStop( ip_address )
             main.Cluster.runningNodes[ i ].active = False
 
@@ -394,7 +386,7 @@ class VPLSfailsafe:
             result = result and connectivityResult
 
             # Restart ONOS node
-            main.step( "Restart ONOS node " + stri + " and checking status of restart.")
+            main.step( "Restart ONOS node " + stri + " and checking status of restart." )
             startResult = main.ONOSbench.onosStart( ip_address )
 
             utilities.assert_equals( expect=main.TRUE, actual=startResult,
@@ -451,7 +443,6 @@ class VPLSfailsafe:
                                  onpass="Connectivity is as expected.",
                                  onfail="Connectivity is NOT as expected." )
 
-
     def CASE310( self, main ):
         """
         Kill 1 ONOS node at a time and test connectivity
@@ -484,15 +475,13 @@ class VPLSfailsafe:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=result,
                                  onpass="Connectivity is as expected.",
-                                 onfail="Connectivity is NOT as expected.")
-
+                                 onfail="Connectivity is NOT as expected." )
 
     def CASE400( self, main ):
         """
         Bring down 1 link at a time and test connectivity
         """
         assert vpls, "vpls not defined"
-
 
         main.case( "Bring down one link at a time and test connectivity." )
 

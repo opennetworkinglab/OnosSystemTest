@@ -22,13 +22,13 @@ class SCPFcbench:
         main.case( "pre-condition for cbench test." )
 
         try:
-            if type( init ) is not bool:
+            if not isinstance( init, bool ):
                 init = False
         except NameError:
             init = False
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
-        if init == False:
+        if not init:
             init = True
             try:
                 from tests.dependencies.ONOSSetup import ONOSSetup
@@ -80,7 +80,6 @@ class SCPFcbench:
                                  onpass="Successfully configure onos for cbench test ",
                                  onfail="Failed to configure onos for cbench test" )
 
-
     def CASE2( self, main ):
         main.case( "Running Cbench" )
         main.step( "Issuing cbench commands and grab returned results" )
@@ -119,7 +118,7 @@ class SCPFcbench:
                 main.log.info( "Standard Deviation: \t" + stdev )
 
                 try:
-                    dbFileName="/tmp/CbenchDB"
+                    dbFileName = "/tmp/CbenchDB"
                     dbfile = open( dbFileName, "w+" )
                     temp = "'" + main.commit + "',"
                     temp += "'" + mode + "',"
@@ -133,7 +132,7 @@ class SCPFcbench:
 
                 stepResult = main.TRUE
                 break
-        if ( validFlag == False ):
+        if not validFlag:
             main.log.warn( "Cbench Test produced no valid results!!!!" )
             stepResult = main.FALSE
 
@@ -141,4 +140,3 @@ class SCPFcbench:
                                  actual=stepResult,
                                  onpass="Successfully tested onos for cbench. ",
                                  onfail="Failed to obtain valid onos cbench result!" )
-

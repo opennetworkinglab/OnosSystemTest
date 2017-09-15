@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 Description: This test is to determine if a single
     instance ONOS 'cluster' can handle a restart
@@ -409,7 +408,7 @@ class HAsingleInstanceRestart:
                 mastershipCheck = mastershipCheck and main.TRUE
             else:
                 main.log.warn( "Mastership of switch %s changed; old: %s, new: %s" % ( switchDPID,
-                    old, current ) )
+                                                                                       old, current ) )
                 mastershipCheck = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
@@ -446,57 +445,6 @@ class HAsingleInstanceRestart:
 
         # NOTE: Store has no durability, so intents are lost across system
         #       restarts
-        """
-        main.step( "Compare current intents with intents before the failure" )
-        # NOTE: this requires case 5 to pass for intentState to be set.
-        #      maybe we should stop the test if that fails?
-        sameIntents = main.FALSE
-        try:
-            intentState
-        except NameError:
-            main.log.warn( "No previous intent state was saved" )
-        else:
-            if intentState and intentState == ONOSIntents[ 0 ]:
-                sameIntents = main.TRUE
-                main.log.info( "Intents are consistent with before failure" )
-            # TODO: possibly the states have changed? we may need to figure out
-            #       what the acceptable states are
-            elif len( intentState ) == len( ONOSIntents[ 0 ] ):
-                sameIntents = main.TRUE
-                try:
-                    before = json.loads( intentState )
-                    after = json.loads( ONOSIntents[ 0 ] )
-                    for intent in before:
-                        if intent not in after:
-                            sameIntents = main.FALSE
-                            main.log.debug( "Intent is not currently in ONOS " +
-                                            "(at least in the same form):" )
-                            main.log.debug( json.dumps( intent ) )
-                except ( ValueError, TypeError ):
-                    main.log.exception( "Exception printing intents" )
-                    main.log.debug( repr( ONOSIntents[ 0 ] ) )
-                    main.log.debug( repr( intentState ) )
-            if sameIntents == main.FALSE:
-                try:
-                    main.log.debug( "ONOS intents before: " )
-                    main.log.debug( json.dumps( json.loads( intentState ),
-                                                sort_keys=True, indent=4,
-                                                separators=( ',', ': ' ) ) )
-                    main.log.debug( "Current ONOS intents: " )
-                    main.log.debug( json.dumps( json.loads( ONOSIntents[ 0 ] ),
-                                                sort_keys=True, indent=4,
-                                                separators=( ',', ': ' ) ) )
-                except ( ValueError, TypeError ):
-                    main.log.exception( "Exception printing intents" )
-                    main.log.debug( repr( ONOSIntents[ 0 ] ) )
-                    main.log.debug( repr( intentState ) )
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=sameIntents,
-                onpass="Intents are consistent with before failure",
-                onfail="The Intents changed during failure" )
-        intentCheck = intentCheck and sameIntents
-        """
         main.step( "Get the OF Table entries and compare to before " +
                    "component failure" )
         FlowTables = main.TRUE

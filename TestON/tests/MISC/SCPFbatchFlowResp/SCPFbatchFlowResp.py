@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 class SCPFbatchFlowResp:
 
     """
@@ -75,7 +74,6 @@ class SCPFbatchFlowResp:
         main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
 
-
     def CASE2( self, main ):
         """
         - Set up cell
@@ -113,7 +111,7 @@ class SCPFbatchFlowResp:
 
         main.step( "Configure AdaptiveFlowSampling " )
         stepResult = main.Cluster.active( 0 ).CLI.setCfg( component=main.params[ 'CASE10' ][ 'cfg' ],
-                                           propName="adaptiveFlowSampling ", value=main.params[ 'CASE10' ][ 'adaptiveFlowenabled' ] )
+                                                          propName="adaptiveFlowSampling ", value=main.params[ 'CASE10' ][ 'adaptiveFlowenabled' ] )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="App Configuration Succeeded! ",
@@ -215,12 +213,12 @@ class SCPFbatchFlowResp:
 
             main.log.info( "Creating batch: " + str( index ) )
             flowJsonBatch = main.Cluster.active( 0 ).REST.createFlowBatch( numSw=main.numSw,
-                                                           swIndex=ind,
-                                                           batchSize=main.batchSize,
-                                                           batchIndex=index,
-                                                           deviceIdpreFix=main.deviceIdPrefix,
-                                                           ingressPort=2,
-                                                           egressPort=3 )
+                                                                           swIndex=ind,
+                                                                           batchSize=main.batchSize,
+                                                                           batchIndex=index,
+                                                                           deviceIdpreFix=main.deviceIdPrefix,
+                                                                           ingressPort=2,
+                                                                           egressPort=3 )
             main.flowJsonBatchList.append( flowJsonBatch )
 
             startSw += 1
@@ -247,11 +245,11 @@ class SCPFbatchFlowResp:
         def postWorker( id ):
             while True:
                 item = q.get()
-                #print json.dumps( item )
+                # print json.dumps( item )
                 status, response = main.Cluster.active( 0 ).REST.sendFlowBatch( batch=item )
                 if status == main.TRUE:
                     main.log.info( "Thread {} is working on posting. ".format( id ) )
-                    #print json.dumps( response )
+                    # print json.dumps( response )
                     main.addedBatchList.append( response[ 1 ] )
                 else:
                     main.log.error( "Thread {} failed to post.".format( id ) )
@@ -275,7 +273,7 @@ class SCPFbatchFlowResp:
             main.cleanAndExit()
 
         main.step( "Check to ensure all flows are in added state." )
-        #pprint( main.addedBatchList )
+        # pprint( main.addedBatchList )
         resp = main.FALSE
         while resp != main.TRUE and ( tAllAdded - tLastPostEnd < int( main.params[ 'CASE2100' ][ 'chkFlowTO' ] ) ):
             if main.params[ 'CASE2100' ][ 'RESTchkFlow' ] == 'main.TRUE':
@@ -347,7 +345,7 @@ class SCPFbatchFlowResp:
         main.log.info( "Number of flow batches at end of remove: " + str( len( main.addedBatchList ) ) )
 
         main.step( "Check to ensure all flows are in added state." )
-        #pprint( main.addedBatchList )
+        # pprint( main.addedBatchList )
         resp = main.FALSE
         while resp != main.TRUE and ( tAllRemoved - tLastDeleteEnd < int( main.params[ 'CASE3100' ][ 'chkFlowTO' ] ) ):
             if main.params[ 'CASE3100' ][ 'RESTchkFlow' ] == 'main.TRUE':
@@ -381,7 +379,7 @@ class SCPFbatchFlowResp:
         main.case( "Check to ensure onos flows." )
 
         resp = main.Cluster.active( 0 ).REST.checkFlowsState()
-        #pprint( resp )
+        # pprint( resp )
 
     def CASE210( self, main ):
         main.case( "Log test results to a data file" )
@@ -427,5 +425,4 @@ class SCPFbatchFlowResp:
                                     "ERROR",
                                     "Except" ],
                                   "s" )
-        #main.stop()
-
+        # main.stop()

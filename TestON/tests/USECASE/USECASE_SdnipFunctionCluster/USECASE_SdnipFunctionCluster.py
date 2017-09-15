@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,8 +18,9 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 # Testing the functionality of SDN-IP with single ONOS instance
+
+
 class USECASE_SdnipFunctionCluster:
 
     def __init__( self ):
@@ -50,7 +51,7 @@ class USECASE_SdnipFunctionCluster:
 
         # connect all switches to controllers
         swResult = main.TRUE
-        for i in range ( 1, int( main.params['config']['switchNum'] ) + 1 ):
+        for i in range( 1, int( main.params[ 'config' ][ 'switchNum' ] ) + 1 ):
             sw = "sw%s" % ( i )
             swResult = swResult and \
                        main.Mininet.assignSwController( sw, main.Cluster.getIps() )
@@ -60,7 +61,6 @@ class USECASE_SdnipFunctionCluster:
                                  onfail="Failed to connect all switches to ONOS" )
         if not swResult:
             main.cleanAndExit()
-
 
     def CASE101( self, main ):
         """
@@ -98,7 +98,7 @@ class USECASE_SdnipFunctionCluster:
     def CASE200( self, main ):
         main.case( "Activate sdn-ip application" )
         main.log.info( "waiting link discovery......" )
-        time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
+        time.sleep( int( main.params[ 'timers' ][ 'TopoDiscovery' ] ) )
 
         main.step( "Get links in the network" )
         summaryResult = main.Cluster.active( 0 ).CLI.summary()
@@ -106,7 +106,7 @@ class USECASE_SdnipFunctionCluster:
         main.log.info( "Expected 100 links, actual number is: {}".format( linkNum ) )
         if linkNum < 100:
             main.log.error( "Link number is wrong! Retrying..." )
-            time.sleep( int( main.params['timers']['TopoDiscovery'] ) )
+            time.sleep( int( main.params[ 'timers' ][ 'TopoDiscovery' ] ) )
             summaryResult = main.Cluster.active( 0 ).CLI.summary()
             linkNum = json.loads( summaryResult )[ "links" ]
         main.log.info( "Expected 100 links, actual number is: {}".format( linkNum ) )
@@ -128,10 +128,10 @@ class USECASE_SdnipFunctionCluster:
             main.cleanAndExit()
 
     def CASE102( self, main ):
-        '''
+        """
         This test case is to load the methods from other Python files, and create
         tunnels from mininet host to onos nodes.
-        '''
+        """
         import time
         main.case( "Load methods from other Python file and create tunnels" )
         # load the methods from other file
@@ -141,7 +141,7 @@ class USECASE_SdnipFunctionCluster:
                                           wrapperFile1 +
                                           ".py" )
         # Create tunnels
-        for i in range ( main.Cluster.numCtrls ):
+        for i in range( main.Cluster.numCtrls ):
             main.Functions.setupTunnel( main,
                                         '1.1.1.' + str( ( i + 1 ) * 2 ),
                                         2000,
@@ -156,16 +156,15 @@ class USECASE_SdnipFunctionCluster:
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
 
     def CASE1( self, main ):
-        '''
+        """
         ping test from 3 bgp peers to BGP speaker
-        '''
-
+        """
         main.case( "Ping between BGP peers and speakers" )
         main.Functions.pingSpeakerToPeer( main, speakers=[ "spk1" ],
                                           peers=[ "p64514", "p64515", "p64516" ],
                                           expectAllSuccess=True )
 
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk2"],
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk2" ],
                                           peers=[ p64514, p64515, p64516 ],
                                           expectAllSuccess=True )
 
@@ -178,15 +177,15 @@ class USECASE_SdnipFunctionCluster:
                                           expectAllSuccess=True )
 
     def CASE2( self, main ):
-        '''
+        """
         point-to-point intents test for each BGP peer and BGP speaker pair
-        '''
+        """
         main.sdnBase.pToPIntentTest( 12 )
 
     def CASE3( self, main ):
-        '''
+        """
         routes and intents check to all BGP peers
-        '''
+        """
         import time
         main.case( "Check routes and M2S intents to all BGP peers" )
 
@@ -202,44 +201,43 @@ class USECASE_SdnipFunctionCluster:
 
         main.sdnBase.routeAndIntentCheck( allRoutesExpected, 7 )
 
-
     def CASE4( self, main ):
-        '''
+        """
         Ping test in data plane for each route
-        '''
+        """
         main.case( "Ping test for each route, all hosts behind BGP peers" )
         main.Functions.pingHostToHost( main,
-                        hosts=["h64514", "h64515", "h64516"],
-                        expectAllSuccess=True )
-        main.Functions.pingHostToHost(main,
-                                      hosts=["h64517", "h64518"],
-                                      expectAllSuccess=True)
+                                       hosts=[ "h64514", "h64515", "h64516" ],
+                                       expectAllSuccess=True )
+        main.Functions.pingHostToHost( main,
+                                       hosts=[ "h64517", "h64518" ],
+                                       expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
                                        hosts=[ "h64519", "h64520" ],
                                        expectAllSuccess=True )
 
     def CASE5( self, main ):
-        '''
+        """
         Cut links to peers one by one, check routes/intents
-        '''
+        """
         main.sdnBase.linkUpDownCheck( "p64514", "p64515", "p64516",
                                       6, 6, 5, 5, 4, 4,
                                       "spk1", [ "h64514", "h64515", "h64516" ],
                                       "down" )
 
     def CASE6( self, main ):
-        '''
+        """
         Recover links to peers one by one, check routes/intents
-        '''
+        """
         main.sdnBase.linkUpDownCheck( "p64514", "p64515", "p64516",
                                       5, 5, 6, 6, 7, 7,
                                       "spk1", [ "h64514", "h64515", "h64516" ],
                                       "up" )
 
     def CASE7( self, main ):
-        '''
+        """
         Shut down a edge switch, check P-2-P and M-2-S intents, ping test
-        '''
+        """
         import time
         main.case( "Stop edge sw32,check P-2-P and M-2-S intents, ping test" )
         main.step( "Stop sw32" )
@@ -252,7 +250,7 @@ class USECASE_SdnipFunctionCluster:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 6 )
             main.Functions.checkM2SintentNum( main, 6 )
-            main.Functions.checkP2PintentNum( main, 48 ) #14 * 2
+            main.Functions.checkP2PintentNum( main, 48 )  # 14 * 2
         else:
             main.log.error( "Stopping switch failed!" )
             main.cleanAndExit()
@@ -268,7 +266,7 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="Ping test result is correct",
                                  onfail="Ping test result is wrong" )
 
-        if pingResult1 == False:
+        if not pingResult1:
             main.cleanAndExit()
 
         main.step( "Check ping between BGP peers and spk1" )
@@ -282,7 +280,7 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="Speaker1 ping peers successful",
                                  onfail="Speaker1 ping peers NOT successful" )
 
-        if pingResult2 == False:
+        if not pingResult2:
             main.cleanAndExit()
 
         main.step( "Check ping between BGP peers and spk2" )
@@ -297,13 +295,13 @@ class USECASE_SdnipFunctionCluster:
                                  onpass="Speaker2 ping peers successful",
                                  onfail="Speaker2 ping peers NOT successful" )
 
-        if pingResult3 == False:
+        if not pingResult3:
             main.cleanAndExit()
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowCheck,
@@ -311,10 +309,10 @@ class USECASE_SdnipFunctionCluster:
                                  onfail="Flow status is wrong!" )
 
     def CASE8( self, main ):
-        '''
-        Bring up the edge switch (sw32) which was shut down in CASE7,
+        """
+        Bring up the edge switch ( sw32 ) which was shut down in CASE7,
         check P-2-P and M-2-S intents, ping test
-        '''
+        """
         import time
         main.case( "Start the edge sw32, check P-2-P and M-2-S intents, ping test" )
         main.step( "Start sw32" )
@@ -334,7 +332,7 @@ class USECASE_SdnipFunctionCluster:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 7 )
             main.Functions.checkM2SintentNum( main, 7 )
-            main.Functions.checkP2PintentNum( main, 30 * 2 ) # 18*2
+            main.Functions.checkP2PintentNum( main, 30 * 2 )  # 18*2
         else:
             main.log.error( "Starting switch failed!" )
             main.cleanAndExit()
@@ -342,7 +340,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowCheck,
@@ -351,7 +349,7 @@ class USECASE_SdnipFunctionCluster:
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers=[ "spk1" ],
-                                          peers=["p64514", "p64515", "p64516"],
+                                          peers=[ "p64514", "p64515", "p64516" ],
                                           expectAllSuccess=True )
 
         main.Functions.pingSpeakerToPeer( main, speakers=[ "spk2" ],
@@ -363,10 +361,10 @@ class USECASE_SdnipFunctionCluster:
                                        expectAllSuccess=True )
 
     def CASE9( self, main ):
-        '''
+        """
         Bring down a switch in best path, check:
         route number, P2P intent number, M2S intent number, ping test
-        '''
+        """
         main.case( "Stop sw11 located in best path, \
         check route number, P2P intent number, M2S intent number, ping test" )
 
@@ -388,7 +386,7 @@ class USECASE_SdnipFunctionCluster:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 7 )
             main.Functions.checkM2SintentNum( main, 7 )
-            main.Functions.checkP2PintentNum( main, 30 * 2 ) #18 * 2
+            main.Functions.checkP2PintentNum( main, 30 * 2 )  # 18 * 2
         else:
             main.log.error( "Stopping switch failed!" )
             main.cleanAndExit()
@@ -396,29 +394,28 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowCheck,
                                  onpass="Flow status is correct!",
                                  onfail="Flow status is wrong!" )
         # Ping test
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
-                       peers=["p64514", "p64515", "p64516"],
-                       expectAllSuccess=True )
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk2"],
-                       peers=[p64514, p64515, p64516],
-                       expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk1" ],
+                                          peers=[ "p64514", "p64515", "p64516" ],
+                                          expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk2" ],
+                                          peers=[ p64514, p64515, p64516 ],
+                                          expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["h64514", "h64515", "h64516"],
-                        expectAllSuccess=True )
-
+                                       hosts=[ "h64514", "h64515", "h64516" ],
+                                       expectAllSuccess=True )
 
     def CASE10( self, main ):
-        '''
+        """
         Bring up the switch which was stopped in CASE9, check:
         route number, P2P intent number, M2S intent number, ping test
-        '''
+        """
         main.case( "Start sw11 which was stopped in CASE9, \
         check route number, P2P intent number, M2S intent number, ping test" )
 
@@ -453,25 +450,24 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowCheck,
                                  onpass="Flow status is correct!",
                                  onfail="Flow status is wrong!" )
         # Ping test
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
-                       peers=["p64514", "p64515", "p64516"],
-                       expectAllSuccess=True )
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk2"],
-                       peers=[p64514, p64515, p64516],
-                       expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk1" ],
+                                          peers=[ "p64514", "p64515", "p64516" ],
+                                          expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk2" ],
+                                          peers=[ p64514, p64515, p64516 ],
+                                          expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["h64514", "h64515", "h64516"],
-                        expectAllSuccess=True )
+                                       hosts=[ "h64514", "h64515", "h64516" ],
+                                       expectAllSuccess=True )
 
-
-    def CASE11(self, main):
+    def CASE11( self, main ):
         import time
         main.case( "Kill spk1, check:\
         route number, P2P intent number, M2S intent number, ping test" )
@@ -482,22 +478,22 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowCheck,
                                  onpass="Flow status is correct!",
                                  onfail="Flow status is wrong!" )
 
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
-                       peers=["p64514", "p64515", "p64516"],
-                       expectAllSuccess=True )
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk2"],
-                       peers=[p64514, p64515, p64516],
-                       expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk1" ],
+                                          peers=[ "p64514", "p64515", "p64516" ],
+                                          expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk2" ],
+                                          peers=[ p64514, p64515, p64516 ],
+                                          expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["h64514", "h64515", "h64516"],
-                        expectAllSuccess=True )
+                                       hosts=[ "h64514", "h64515", "h64516" ],
+                                       expectAllSuccess=True )
 
         main.step( "Kill spk1" )
         command1 = "ps -e | grep bgp -c"
@@ -519,7 +515,7 @@ class USECASE_SdnipFunctionCluster:
                                  actual=( "4" in result3 ),
                                  onpass="Kill spk1 succeeded",
                                  onfail="Kill spk1 failed" )
-        if ( "4" not in result3 ) :
+        if ( "4" not in result3 ):
             main.log.info( result3 )
             main.cleanAndExit()
 
@@ -531,25 +527,24 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowCheck,
                                  onpass="Flow status is correct!",
                                  onfail="Flow status is wrong!" )
 
-        '''
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
-                       peers=["p64514", "p64515", "p64516"],
+        """
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk1" ],
+                       peers=[ "p64514", "p64515", "p64516" ],
                        expectAllSuccess=False )
-        '''
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk2"],
-                       peers=[p64514, p64515, p64516],
-                       expectAllSuccess=True )
+        """
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk2" ],
+                                          peers=[ p64514, p64515, p64516 ],
+                                          expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["h64514", "h64515", "h64516"],
-                        expectAllSuccess=True )
-
+                                       hosts=[ "h64514", "h64515", "h64516" ],
+                                       expectAllSuccess=True )
 
     def CASE12( self, main ):
         import time
@@ -561,8 +556,8 @@ class USECASE_SdnipFunctionCluster:
         jsonResult = json.loads( result )
         leaderIP = ""
         for entry in jsonResult:
-            if entry["topic"] == "org.onosproject.sdnip":
-                leaderIP = entry["leader"]
+            if entry[ "topic" ] == "org.onosproject.sdnip":
+                leaderIP = entry[ "leader" ]
                 main.log.info( "leaderIP is: " )
                 main.log.info( leaderIP )
 
@@ -587,7 +582,7 @@ class USECASE_SdnipFunctionCluster:
             main.step( "Check whether all flow status are ADDED" )
             flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                          main.FALSE,
-                                         kwargs={'isPENDING':False},
+                                         kwargs={ 'isPENDING': False },
                                          attempts=10 )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=flowCheck,
@@ -601,19 +596,19 @@ class USECASE_SdnipFunctionCluster:
             main.step( "Check whether all flow status are ADDED" )
             flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                          main.FALSE,
-                                         kwargs={'isPENDING':False},
+                                         kwargs={ 'isPENDING': False },
                                          attempts=10 )
             utilities.assert_equals( expect=main.TRUE,
                                      actual=flowCheck,
                                      onpass="Flow status is correct!",
                                      onfail="Flow status is wrong!" )
 
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk1"],
-                       peers=["p64514", "p64515", "p64516"],
-                       expectAllSuccess=True )
-        main.Functions.pingSpeakerToPeer( main, speakers=["spk2"],
-                       peers=[p64514, p64515, p64516],
-                       expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk1" ],
+                                          peers=[ "p64514", "p64515", "p64516" ],
+                                          expectAllSuccess=True )
+        main.Functions.pingSpeakerToPeer( main, speakers=[ "spk2" ],
+                                          peers=[ p64514, p64515, p64516 ],
+                                          expectAllSuccess=True )
         main.Functions.pingHostToHost( main,
-                        hosts=["h64514", "h64515", "h64516"],
-                        expectAllSuccess=True )
+                                       hosts=[ "h64514", "h64515", "h64516" ],
+                                       expectAllSuccess=True )

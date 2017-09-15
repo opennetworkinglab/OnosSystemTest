@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import json
 import time
 
@@ -2795,7 +2794,7 @@ class HA():
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        main.Mininet1.ip_address,
-                                       cellAppString, ipList , main.ONOScli1.karafUser )
+                                       cellAppString, ipList, main.ONOScli1.karafUser )
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
@@ -2814,7 +2813,7 @@ class HA():
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Running ONOS Constant State Tests" )
 
-        OnosAfterWhich = [ "failure" , "scaliing" ]
+        OnosAfterWhich = [ "failure", "scaliing" ]
 
         # Assert that each device has a master
         self.checkRoleNotNull()
@@ -2981,7 +2980,7 @@ class HA():
                 utilities.assert_equals(
                     expect=main.TRUE,
                     actual=sameIntents,
-                    onpass="Intents are consistent with before " + OnosAfterWhich[ afterWhich ] ,
+                    onpass="Intents are consistent with before " + OnosAfterWhich[ afterWhich ],
                     onfail="The Intents changed during " + OnosAfterWhich[ afterWhich ] )
             intentCheck = intentCheck and sameIntents
 
@@ -3032,7 +3031,6 @@ class HA():
         #       we expect loss in dataplane connectivity
         LossInPings = main.FALSE
         """
-
     def compareTopo( self, main ):
         """
         Compare topo
@@ -3086,7 +3084,7 @@ class HA():
                                 "Error with host ipAddresses on controller" +
                                 controllerStr + ": " + str( host ) )
                             ipResult = main.FALSE
-            ports = main.topoRelated.getAll( "ports" , True,
+            ports = main.topoRelated.getAll( "ports", True,
                                                   kwargs={ 'sleep': 5, 'attempts': 5,
                                                            'randomTime': True } )
             links = main.topoRelated.getAll( "links", True,

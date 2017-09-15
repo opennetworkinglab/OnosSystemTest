@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -10,7 +10,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 Multiple ovsdb OVS!!
 
@@ -32,7 +31,6 @@ which causes switch.cmd() and switch.popen() to be
 delegated to the ovsdb instance.
 
 """
-
 from mininet.net import Mininet
 from mininet.node import Node, OVSSwitch
 from mininet.node import OVSBridge
@@ -46,7 +44,9 @@ from mininet.clean import Cleanup, sh
 from itertools import groupby
 from operator import attrgetter
 
+
 class OVSDB( Node ):
+
     "Namespace for an OVSDB instance"
 
     privateDirs = [ '/etc/openvswitch',
@@ -70,7 +70,7 @@ class OVSDB( Node ):
             info( '### Adding NAT for control and data networks'
                   ' (use --nat flush=0 for data network)\n' )
             cls.cnet = cnet
-            cls.nat = cnet.addNAT( 'ovsdbnat0')
+            cls.nat = cnet.addNAT( 'ovsdbnat0' )
             cnet.start()
             info( '### Control network started\n' )
         return cnet
@@ -155,6 +155,7 @@ Cleanup.addCleanupCallback( OVSDB.cleanUpOVS )
 
 
 class OVSSwitchNS( OVSSwitch ):
+
     "OVS Switch in shared OVSNS namespace"
 
     isSetup = False
@@ -162,7 +163,7 @@ class OVSSwitchNS( OVSSwitch ):
     @classmethod
     def batchStartup( cls, switches ):
         result = []
-        for ovsdb, switchGroup in groupby( switches, attrgetter( 'ovsdb') ):
+        for ovsdb, switchGroup in groupby( switches, attrgetter( 'ovsdb' ) ):
             switchGroup = list( switchGroup )
             info( '(%s)' % ovsdb )
             result += OVSSwitch.batchStartup( switchGroup, run=ovsdb.cmd )
@@ -171,7 +172,7 @@ class OVSSwitchNS( OVSSwitch ):
     @classmethod
     def batchShutdown( cls, switches ):
         result = []
-        for ovsdb, switchGroup in groupby( switches, attrgetter( 'ovsdb') ):
+        for ovsdb, switchGroup in groupby( switches, attrgetter( 'ovsdb' ) ):
             switchGroup = list( switchGroup )
             info( '(%s)' % ovsdb )
             for switch in switches:
@@ -214,7 +215,7 @@ class OVSSwitchNS( OVSSwitch ):
             # Delegate methods and initialize local vars
             attrs = ( 'cmd', 'cmdPrint', 'sendCmd', 'waitOutput',
                       'monitor', 'write', 'read',
-                      'pid', 'shell', 'stdout',)
+                      'pid', 'shell', 'stdout', )
             for attr in attrs:
                 setattr( self, attr, getattr( ovsdb, attr ) )
         self.defaultIntf().updateIP()
@@ -246,14 +247,14 @@ class OVSSwitchNS( OVSSwitch ):
             super( OVSSwitchNS, self ).terminate( *args, **kwargs )
         else:
             self.pid = None
-            self.shell= None
+            self.shell = None
 
     def defaultIntf( self ):
         return self.ovsdb.defaultIntf()
 
     def __init__( self, *args, **kwargs ):
         """n: number of OVS instances per OVSDB
-           shell: run private shell/bash process? (False)
+           shell: run private shell/bash process? ( False )
            If shell is shared/not private, cmd() and popen() are
            delegated to the OVSDB instance, which is different than
            regular OVSSwitch semantics!!"""
@@ -261,7 +262,9 @@ class OVSSwitchNS( OVSSwitch ):
         self.privateShell = kwargs.pop( 'shell', False )
         super( OVSSwitchNS, self ).__init__( *args, **kwargs )
 
+
 class OVSLinkNS( Link ):
+
     "OVSLink that supports OVSSwitchNS"
 
     def __init__( self, node1, node2, **kwargs ):
@@ -278,6 +281,7 @@ class OVSLinkNS( Link ):
 switches = { 'ovsns': OVSSwitchNS, 'ovsm': OVSSwitchNS }
 
 links = { 'ovs': OVSLinkNS }
+
 
 def test():
     "Test OVSNS switch"

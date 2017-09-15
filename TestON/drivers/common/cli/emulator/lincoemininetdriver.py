@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -23,7 +23,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
 LincOEMininetDriver is an extension of the mininetclidriver to handle linc oe
 """
-
 import pexpect
 import re
 import sys
@@ -32,7 +31,8 @@ from drivers.common.cli.emulator.mininetclidriver import MininetCliDriver
 
 
 class LincOEMininetDriver( MininetCliDriver ):
-    def runOpticalMnScript( self, onosDirectory = 'onos', ctrllerIP = None, topology = 'opticalTest' ):
+
+    def runOpticalMnScript( self, onosDirectory='onos', ctrllerIP=None, topology='opticalTest' ):
         import time
         import types
         """
@@ -41,22 +41,22 @@ class LincOEMininetDriver( MininetCliDriver ):
                 It runs python script "opticalTest.py" to create the
                 packet layer( mn ) and optical topology
             Optional:
-                name - Name of onos directory. (ONOS | onos)
+                name - Name of onos directory. ( ONOS | onos )
                 topology - Name of optical topology to activate, defaults to opticalTest.py
             Required:
-                ctrllerIP = Controller(s) IP address
+                ctrllerIP = Controller( s ) IP address
             TODO: If no ctrllerIP is provided, a default
                 $OC1 can be accepted
         """
         try:
-            if ctrllerIP == None:
+            if ctrllerIP is None:
                 main.log.error( "You need to specify the IP" )
                 return main.FALSE
             else:
                 controller = ''
                 if isinstance( ctrllerIP, types.ListType ):
                     for i in xrange( len( ctrllerIP ) ):
-                        controller += ctrllerIP[i] + ' '
+                        controller += ctrllerIP[ i ] + ' '
                     main.log.info( "Mininet topology is being loaded with " +
                                    "controllers: " + controller )
                 elif isinstance( ctrllerIP, types.StringType ):
@@ -70,12 +70,12 @@ class LincOEMininetDriver( MininetCliDriver ):
                 cmd = "sudo -E python {0} {1}".format( topoFile, controller )
                 main.log.info( self.name + ": cmd = " + cmd )
                 self.handle.sendline( cmd )
-                lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ],timeout=120 )
+                lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ], timeout=120 )
                 if lincStart == 1:
                     self.handle.sendline( "\x03" )
                     self.handle.sendline( "sudo mn -c" )
                     self.handle.sendline( cmd )
-                    lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ],timeout=120 )
+                    lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ], timeout=120 )
                 if lincStart == 1:
                     main.log.error( "OpticalTest.py failed to start." )
                     return main.FALSE
@@ -85,7 +85,7 @@ class LincOEMininetDriver( MininetCliDriver ):
             main.log.error( self.name + ":     " + self.handle.before )
             return main.FALSE
         except Exception:
-            main.log.exception(self.name + ": Uncaught exception!")
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
             return main.FALSE
 
@@ -120,7 +120,7 @@ class LincOEMininetDriver( MininetCliDriver ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except Exception:
-            main.log.exception(self.name + ": Uncaught exception!")
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
         main.log.info( self.name + ": Ping Response: " + response )
         if re.search( ',\s0\%\spacket\sloss', response ):

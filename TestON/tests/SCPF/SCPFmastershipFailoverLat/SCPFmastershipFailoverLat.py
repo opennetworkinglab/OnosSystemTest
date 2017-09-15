@@ -1,5 +1,5 @@
 """
-Copyright 2017 Open Networking Foundation (ONF)
+Copyright 2017 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,15 +18,15 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 class SCPFmastershipFailoverLat:
+
     def __init__( self ):
         self.default = ''
 
     def CASE0( self, main ):
         import os
         import imp
-        '''
+        """
         - GIT
         - BUILDING ONOS
             Pull specific ONOS branch, then Build ONOS ono ONOS Bench.
@@ -34,7 +34,7 @@ class SCPFmastershipFailoverLat:
             test env. We want Jenkins jobs to pull&build for flexibility to handle
             different versions of ONOS.
         - Construct tests variables
-        '''
+        """
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
@@ -79,8 +79,6 @@ class SCPFmastershipFailoverLat:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-
-
     def CASE1( self, main ):
         # Clean up test environment and set up
         import time
@@ -110,11 +108,10 @@ class SCPFmastershipFailoverLat:
                                  onpass="Mininet was set up correctly.",
                                  onfail="Mininet was NOT set up correctly." )
 
-
     def CASE2( self, main ):
         """
         Kill ONOS node, and measure the latency for INSTANCE_DEACTIVATED, MASTER_CHANGED, and role request
-        (tshark time), then bring the node back up.
+        ( tshark time ), then bring the node back up.
         """
         import time
         import datetime
@@ -123,14 +120,17 @@ class SCPFmastershipFailoverLat:
 
         main.HA = HA()
 
-        main.latencyData = { 'kill_to_deactivation' : [],
-                             'deactivation_to_role_request' : [] }
+        main.latencyData = { 'kill_to_deactivation': [],
+                             'deactivation_to_role_request': [] }
 
         main.failCounter = 0
         passingResult = True
         criticalError = False
 
-        main.step( "Gathering data starting with " + str( main.warmUp ) + " warm ups and a sample size of " + str( main.sampleSize ) )
+        main.step( "Gathering data starting with "
+                   + str( main.warmUp )
+                   + " warm ups and a sample size of "
+                   + str( main.sampleSize ) )
 
         for iteration in range( 0, main.sampleSize + main.warmUp ):
 
@@ -185,10 +185,12 @@ class SCPFmastershipFailoverLat:
                 eventOutput = main.Cluster.active( CLInum ).CLI.events( args='-a' ).split( "\r\n" )
                 for line in reversed( eventOutput ):
                     if "INSTANCE_DEACTIVATED" in line and len( instanceDeactivatedLats ) == CLInum:
-                        deactivateTime = float( datetime.datetime.strptime( line.split()[ 0 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
+                        deactivateTime = float( datetime.datetime.strptime(
+                                            line.split()[ 0 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
                         instanceDeactivatedLats.append( deactivateTime - time1 )
                     elif "MASTER_CHANGED" in line and len( masterChangedLats ) == CLInum:
-                        changedTime = float( datetime.datetime.strptime( line.split()[ 0 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
+                        changedTime = float( datetime.datetime.strptime(
+                                            line.split()[ 0 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
                         masterChangedLats.append( changedTime - time1 )
                     if len( instanceDeactivatedLats ) > CLInum and len( masterChangedLats ) > CLInum:
                         break
@@ -228,9 +230,10 @@ class SCPFmastershipFailoverLat:
 
                     if eventLatCheck and tsharkLatCheck and validDataCheck:
                         main.log.info( "Saving data..." )
-                        main.latencyData[ 'kill_to_deactivation' ].append( instanceDeactivated )
-                        main.latencyData[ 'deactivation_to_role_request' ].append( roleRequestLat - instanceDeactivated )
-
+                        main.latencyData[ 'kill_to_deactivation' ]\
+                            .append( instanceDeactivated )
+                        main.latencyData[ 'deactivation_to_role_request' ]\
+                            .append( roleRequestLat - instanceDeactivated )
 
             # Restart ONOS node
             main.log.info( "Restart ONOS node " + strNodeNumToKill + " and checking status of restart." )
@@ -279,16 +282,20 @@ class SCPFmastershipFailoverLat:
                 main.failCounter += 1
                 main.log.warn( "Iteration failed. Failure count: " + str( main.failCounter ) )
             if float( main.failCounter ) / float( main.sampleSize ) >= main.failPercent or criticalError:
-                main.log.error( str( main.failPercent * 100 ) + "% or more of data is invalid, or a critical error has occurred." )
+                main.log.error( str( main.failPercent * 100 )
+                                + "% or more of data is invalid, or a critical error has occurred." )
                 passingResult = False
                 break
 
         utilities.assert_equals( expect=True, actual=passingResult,
-                                 onpass="Node scaling " + str( main.Cluster.numCtrls ) + " data gathering was successful.",
-                                 onfail="Node scaling " + str( main.Cluster.numCtrls ) + " data gathering FAILED. Stopping test.")
+                                 onpass="Node scaling "
+                                        + str( main.Cluster.numCtrls )
+                                        + " data gathering was successful.",
+                                 onfail="Node scaling "
+                                        + str( main.Cluster.numCtrls )
+                                        + " data gathering FAILED. Stopping test." )
         if not passingResult:
             main.cleanAndExit()
-
 
     def CASE3( self, main ):
         """
@@ -296,7 +303,7 @@ class SCPFmastershipFailoverLat:
         Omit this case if you don't want to write to database.
         """
         import numpy
-        result = { 'avg' : {}, 'stddev' : {} }
+        result = { 'avg': {}, 'stddev': {} }
 
         for i in main.latencyData:
             result[ 'avg' ][ i ] = numpy.average( main.latencyData[ i ] )
@@ -305,7 +312,7 @@ class SCPFmastershipFailoverLat:
         main.log.info( "result: " + str( result ) )
         with open( main.dbFileName, "a" ) as dbFile:
             strToWrite = str( main.Cluster.numCtrls ) + ",'baremetal1'"
-            strToWrite += ",'" + main.commit.split()[ 1 ] + "'"
+            strToWrite += ",'" + main.commit.split()[1] + "'"
             for i in result:
                 for j in result[ i ]:
                     strToWrite += "," + str( result[ i ][ j ] )

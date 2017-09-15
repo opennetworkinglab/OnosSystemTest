@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -1047,7 +1047,7 @@ def installSingleToMultiIntent( main,
                                                                 portEgressList=portEgressList,
                                                                 ethType=ethType,
                                                                 ethSrc=srcMac,
-                                                                #ethDst=dstMac, #Isn't working because of ONOS itself
+                                                                # ethDst=dstMac, #Isn't working because of ONOS itself
                                                                 bandwidth=bandwidth,
                                                                 lambdaAlloc=lambdaAlloc,
                                                                 ipProto=ipProto,
@@ -1159,15 +1159,15 @@ def multiToSingleIntent( main,
     if hostNames and devices:
         if len( hostNames ) != len( devices ):
             main.log.debug( "hosts and devices does not have the same length" )
-            #print "len hostNames = ", len( hostNames )
-            #print "len devices = ", len( devices )
+            # print "len hostNames = ", len( hostNames )
+            # print "len devices = ", len( devices )
             return main.FALSE
         if ports:
             if len( ports ) != len( devices ):
                 main.log.error( "Ports and devices does " +
                                 "not have the same length" )
-                #print "len devices = ", len( devices )
-                #print "len ports = ", len( ports )
+                # print "len devices = ", len( devices )
+                # print "len ports = ", len( ports )
                 return main.FALSE
         else:
             main.log.info( "Device Ports are not specified" )
@@ -1183,11 +1183,11 @@ def multiToSingleIntent( main,
                         main.hostsData.get( host ).get( 'mac' )
             ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
                         main.hostsData.get( host ).get( 'ipAddresses' )
-        #print main.hostsData
+        # print main.hostsData
 
-    #print 'host names = ', hostNames
-    #print 'devices = ', devices
-    #print "macsDict = ", macsDict
+    # print 'host names = ', hostNames
+    # print 'devices = ', devices
+    # print "macsDict = ", macsDict
 
     pingResult = main.TRUE
     intentResult = main.TRUE
@@ -1399,8 +1399,8 @@ def checkIntentState( main, intentsId ):
     main.log.info( itemName + ": Checking intents state" )
     # First check of intents
     stateCheckResults = main.Cluster.command( "checkIntentState",
-                                         kwargs={ "intentsId":intentsId },
-                                         returnBool=True, specificDriver=3 )
+                                              kwargs={ "intentsId": intentsId },
+                                              returnBool=True, specificDriver=3 )
 
     expectedState = [ 'INSTALLED', 'INSTALLING' ]
 
@@ -1414,8 +1414,8 @@ def checkIntentState( main, intentsId ):
         # Second check of intents since some of the intents may be in
         # INSTALLING state, they should be in INSTALLED at this time
         stateCheckResults = main.Cluster.command( "checkIntentState",
-                                         kwargs={ "intentsId":intentsId },
-                                         returnBool=True, specificDriver=3 )
+                                                  kwargs={ "intentsId": intentsId },
+                                                  returnBool=True, specificDriver=3 )
         if stateCheckResults:
             main.log.info( itemName + ": Intents are installed correctly" )
             intentResult = main.TRUE
@@ -1466,7 +1466,6 @@ def checkFlowsCount( main ):
     main.log.info( itemName + ": Checking flows count in each ONOS node" )
     for ctrl in main.Cluster.active():
         flowsCount.append( len( json.loads( ctrl.REST.flows() ) ) )
-
 
     if flowsCount:
         if all( flows == flowsCount[ 0 ] for flows in flowsCount ):

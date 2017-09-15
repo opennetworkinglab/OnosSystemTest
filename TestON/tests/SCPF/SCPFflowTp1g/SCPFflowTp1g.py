@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 # ScaleOutTemplate -> flowTP
 #
 # CASE1 starts number of nodes specified in param file
@@ -40,24 +39,24 @@ class SCPFflowTp1g:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
         except ImportError:
-            main.log.error("ONOSSetup not found. exiting the test")
+            main.log.error( "ONOSSetup not found. exiting the test" )
             main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
-            #Load values from params file
+            # Load values from params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             BENCHUser = main.params[ 'BENCH' ][ 'user' ]
             BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
-            main.scale = ( main.params[ 'SCALE' ]  ).split( "," )
+            main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.flowRuleCfg = main.params[ 'CFG' ][ 'flowRule' ]
             main.neighbor = ( main.params[ 'TEST' ][ 'neighbors' ] ).split( "," )
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
             isFlowObj = main.params[ 'TEST' ][ 'flowObj' ] == "True"
             if isFlowObj:
-               resultFile = main.params[ 'TEST' ][ 'flowObjResultFile' ]
+                resultFile = main.params[ 'TEST' ][ 'flowObjResultFile' ]
             else:
-               resultFile = main.params[ 'TEST' ][ 'flowResultFile' ]
+                resultFile = main.params[ 'TEST' ][ 'flowResultFile' ]
             stepResult = main.testSetUp.envSetup()
             resultsDB = open( str( resultFile ), "w+" )
             resultsDB.close()
@@ -110,13 +109,13 @@ class SCPFflowTp1g:
         main.step( "\tNEIGHBORS:\t" + neighbors )
         main.log.info( "=============================================================" )
         main.log.info( "=============================================================" )
-        #write file to configure nil link
+        # write file to configure nil link
         ipCSV = ""
-        for i in range ( main.Cluster.maxCtrls ):
+        for i in range( main.Cluster.maxCtrls ):
             tempstr = "ip" + str( i + 1 )
             ipCSV += main.params[ 'CTRL' ][ tempstr ]
             if i + 1 < main.Cluster.maxCtrls:
-                ipCSV +=","
+                ipCSV += ","
 
         main.ONOSbench.onosCfgSet( main.Cluster.active( 0 ).ipAddress,
                                    main.flowRuleCfg,
@@ -142,51 +141,51 @@ class SCPFflowTp1g:
                 main.ONOSbench.handle.expect( ":~" )
                 time.sleep( 5 )
                 main.ONOSbench.handle.sendline( "onos $OC1 roles " )
-                main.ONOSbench.handle.expect ( ":~" )
+                main.ONOSbench.handle.expect( ":~" )
                 main.log.info( "switch masterships:" + str( main.ONOSbench.handle.before ) )
                 break
             time.sleep( 5 )
 
-        #divide flows/flowObjectives
+        # divide flows/flowObjectives
         if isFlowObj:
-           toInstall = "FlowObjectives"
-           installCount = int( main.params[ 'TEST' ][ 'flowObjectives' ] )
-           ifFailed = "FLOW_OBJ_TESTER.PY FAILURE"
-           resultFile = main.params[ 'TEST' ][ 'flowObjResultFile' ]
+            toInstall = "FlowObjectives"
+            installCount = int( main.params[ 'TEST' ][ 'flowObjectives' ] )
+            ifFailed = "FLOW_OBJ_TESTER.PY FAILURE"
+            resultFile = main.params[ 'TEST' ][ 'flowObjResultFile' ]
         else:
-           toInstall = "Flows"
-           installCount = int( main.params[ 'TEST' ][ 'flows' ] )
-           ifFailed = "FLOW_TESTER.PY FAILURE"
-           resultFile = main.params[ 'TEST' ][ 'flowResultFile' ]
+            toInstall = "Flows"
+            installCount = int( main.params[ 'TEST' ][ 'flows' ] )
+            ifFailed = "FLOW_TESTER.PY FAILURE"
+            resultFile = main.params[ 'TEST' ][ 'flowResultFile' ]
         main.log.info( toInstall + " Target  = " + str( installCount ) )
 
-        installCountPerSwitch = ( installCount *max( int ( neighbors ) + 1, int( servers ) ) )/( ( int( neighbors ) + 1 )*int( servers )*( switches ) )
+        installCountPerSwitch = ( installCount * max( int( neighbors ) + 1, int( servers ) ) ) / ( ( int( neighbors ) + 1 ) * int( servers ) * ( switches ) )
 
         main.log.info( toInstall + " per switch = " + str( installCountPerSwitch ) )
-        #build list of servers in "$OC1, $OC2...." format
+        # build list of servers in "$OC1, $OC2...." format
         serverEnvVars = ""
         for i in range( int( servers ) ):
             serverEnvVars += ( "-s " + main.Cluster.active( i ).ipAddress + " " )
 
-        data = [ [ "" ]*int( servers ) ]*int( sampleSize )
-        maxes = [ "" ]*int( sampleSize )
+        data = [ [ "" ] * int( servers ) ] * int( sampleSize )
+        maxes = [ "" ] * int( sampleSize )
 
         flowCMD = "python3 " + homeDir + "/onos/tools/test/bin/"
         if isFlowObj:
-           flowCMD += testCMD[ 2 ] + " " + str( installCountPerSwitch ) + " " + testCMD[ 1 ]
-           flowCMD += " " + neighbors + " " + testCMD[ 3 ] + " " + str( flowObjType ) + " " + str( serverEnvVars ) + "-j"
+            flowCMD += testCMD[ 2 ] + " " + str( installCountPerSwitch ) + " " + testCMD[ 1 ]
+            flowCMD += " " + neighbors + " " + testCMD[ 3 ] + " " + str( flowObjType ) + " " + str( serverEnvVars ) + "-j"
         else:
-           flowCMD += testCMD[ 0 ] + " " + str( installCountPerSwitch ) + " " + testCMD[ 1 ]
-           flowCMD += " " + neighbors + " " + str( serverEnvVars ) + "-j"
+            flowCMD += testCMD[ 0 ] + " " + str( installCountPerSwitch ) + " " + testCMD[ 1 ]
+            flowCMD += " " + neighbors + " " + str( serverEnvVars ) + "-j"
 
         main.log.info( flowCMD )
-        #time.sleep( 60 )
+        # time.sleep( 60 )
 
         for test in range( 0, warmUp + sampleSize ):
             if test < warmUp:
                 main.log.info( "Warm up " + str( test + 1 ) + " of " + str( warmUp ) )
             else:
-                 main.log.info( "====== Test run: " + str( test-warmUp+1 ) + " ======" )
+                main.log.info( "====== Test run: " + str( test - warmUp + 1 ) + " ======" )
 
             main.ONOSbench.handle.sendline( flowCMD )
             main.ONOSbench.handle.expect( ":~" )
@@ -205,17 +204,17 @@ class SCPFflowTp1g:
                 main.log.info( main.ONOSbench.handle.before )
 
                 break
-            result = [ "" ]*( main.Cluster.numCtrls )
+            result = [ "" ] * ( main.Cluster.numCtrls )
 
             rawResult = rawResult.splitlines()
 
             for node in range( main.Cluster.numCtrls ):
                 for line in rawResult:
-                    #print( "line: " + line )
+                    # print( "line: " + line )
                     if main.Cluster.active( node ).ipAddress in line and "server" in line:
                         temp = line.split( " " )
                         for word in temp:
-                            #print ( "word: " + word )
+                            # print ( "word: " + word )
                             if "elapsed" in repr( word ):
                                 index = temp.index( word ) + 1
                                 myParsed = ( temp[ index ] ).replace( ",", "" )
@@ -231,11 +230,11 @@ class SCPFflowTp1g:
                         main.log.error( "Missing data point, critical failure incoming" )
 
                 print result
-                maxes[ test-warmUp ] = max( result )
-                main.log.info( "Data collection iteration: " + str( test-warmUp ) + " of " + str( sampleSize ) )
-                main.log.info( "Throughput time: " + str( maxes[ test-warmUp ] ) + "(ms)" )
+                maxes[ test - warmUp ] = max( result )
+                main.log.info( "Data collection iteration: " + str( test - warmUp ) + " of " + str( sampleSize ) )
+                main.log.info( "Throughput time: " + str( maxes[ test - warmUp ] ) + "(ms)" )
 
-                data[ test-warmUp ] = result
+                data[ test - warmUp ] = result
 
             # wait for flows = 0
             for checkCount in range( 0, 5 ):
@@ -256,7 +255,6 @@ class SCPFflowTp1g:
 
         main.log.info( "raw data: " + str( data ) )
         main.log.info( "maxes:" + str( maxes ) )
-
 
         # report data
         print( "" )
@@ -285,7 +283,7 @@ class SCPFflowTp1g:
         main.log.info( "Standard Deviation of max values: " + str( stdOfMaxes ) )
         print( "\n\n" )
 
-        avgTP = int( installCount )  / avgOfMaxes #result in kflows/second
+        avgTP = int( installCount ) / avgOfMaxes  # result in kflows/second
 
         tp = []
         for i in maxes:

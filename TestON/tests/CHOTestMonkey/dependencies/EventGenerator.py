@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 This file contains the event generator class for CHOTestMonkey
 Author: you@onlab.us
@@ -129,10 +128,10 @@ class EventGenerator:
         This function triggers an event from inside of CHOTestMonkey
         """
         import time
-        if not typeIndex in EventType().map.keys():
+        if typeIndex not in EventType().map.keys():
             main.log.warn( "Event Generator - Unknown event type: " + str( typeIndex ) )
             return
-        if not scheduleMethod in EventScheduleMethod().map.keys():
+        if scheduleMethod not in EventScheduleMethod().map.keys():
             main.log.warn( "Event Generator - Unknown event schedule method: " + str( scheduleMethod ) )
             return
         while not main.eventScheduler.isAvailable():
@@ -145,7 +144,7 @@ class EventGenerator:
         """
         if typeIndex > 100:
             # Handle group events
-            if not typeIndex in main.enabledEvents.keys():
+            if typeIndex not in main.enabledEvents.keys():
                 main.log.warn( "Event Generator - event type %s not enabled" % ( typeIndex ) )
                 return
             function = getattr( self, main.enabledEvents[ typeIndex ] )

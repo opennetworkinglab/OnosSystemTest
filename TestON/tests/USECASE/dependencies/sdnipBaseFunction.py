@@ -1,6 +1,8 @@
 class SdnBase:
-    def __init__(self):
+
+    def __init__( self ):
         self.default = ''
+
     def initSetup( self ):
         import json
         import time
@@ -30,9 +32,9 @@ class SdnBase:
                                   cellName=cellName )
 
         main.step( "Checking if ONOS CLI is ready for issuing commands" )
-        ready =  utilities.retry( main.Cluster.command,
+        ready = utilities.retry( main.Cluster.command,
                                   False,
-                                  kwargs={ "function":"summary", "contentCheck":True },
+                                  kwargs={ "function": "summary", "contentCheck": True },
                                   sleep=30,
                                   attempts=10 )
         utilities.assert_equals( expect=True, actual=ready,
@@ -44,9 +46,9 @@ class SdnBase:
             main.cleanAndExit()
 
     def pToPIntentTest( self, intentExpectedNum ):
-        '''
+        """
         point-to-point intents test for each BGP peer and BGP speaker pair
-        '''
+        """
         import time
         main.case( "Check point-to-point intents" )
         main.log.info( "There are %s BGP peers in total "
@@ -58,7 +60,7 @@ class SdnBase:
             main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * intentExpectedNum
         if bgpIntentsActualNum != bgpIntentsExpectedNum:
-            time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             getIntentsResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True )
             bgpIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
@@ -72,9 +74,9 @@ class SdnBase:
                                  onfail="PointToPointIntent Intent Num is wrong!" )
 
     def routeAndIntentCheck( self, allRoutesExpected, routeIntentsExpectedNum ):
-        '''
+        """
         routes and intents check to all BGP peers
-        '''
+        """
         import time
         getRoutesResult = main.Cluster.active( 0 ).CLI.routes( jsonFormat=True )
         allRoutesActual = \
@@ -82,7 +84,7 @@ class SdnBase:
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
         if allRoutesStrActual != allRoutesStrExpected:
-            time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             getRoutesResult = main.Cluster.active( 0 ).CLI.routes( jsonFormat=True )
             allRoutesActual = \
                 main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
@@ -93,7 +95,7 @@ class SdnBase:
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals( \
+        utilities.assertEquals(
             expect=allRoutesStrExpected, actual=allRoutesStrActual,
             onpass="Routes are correct!",
             onfail="Routes are wrong!" )
@@ -103,7 +105,7 @@ class SdnBase:
         routeIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
         if routeIntentsActualNum != routeIntentsExpectedNum:
-            time.sleep( int( main.params['timers']['RouteDelivery'] ) )
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             getIntentsResult = main.Cluster.active( 0 ).CLI.intents( jsonFormat=True )
             routeIntentsActualNum = \
                 main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
@@ -112,7 +114,7 @@ class SdnBase:
         main.log.info( routeIntentsExpectedNum )
         main.log.info( "MultiPointToSinglePoint Intent NUM Actual is:" )
         main.log.info( routeIntentsActualNum )
-        utilities.assertEquals( \
+        utilities.assertEquals(
             expect=routeIntentsExpectedNum,
             actual=routeIntentsActualNum,
             onpass="MultiPointToSinglePoint Intent Num is correct!",
@@ -121,9 +123,9 @@ class SdnBase:
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10 )
-        utilities.assertEquals( \
+        utilities.assertEquals(
             expect=main.TRUE,
             actual=flowCheck,
             onpass="Flow status is correct!",
@@ -134,10 +136,10 @@ class SdnBase:
                          link2RouteNum, link2IntentNum,
                          link3RouteNum, link3IntentNum,
                          speakers, hosts, upOrDown ):
-        '''
+        """
         Cut/Recover links to peers one by one, check routes/intents
         upOrDown - "up" or "down"
-        '''
+        """
         import time
         main.case( "Bring " + upOrDown + " links and check routes/intents" )
         main.step( "Bring " + upOrDown + " the link between sw32 and " + link1Peer )
@@ -171,7 +173,7 @@ class SdnBase:
             main.log.error( "Bring " + upOrDown + " link failed!" )
             main.cleanAndExit()
 
-        main.step( "Bring " + upOrDown + " the link between sw28 and "+ link3Peer )
+        main.step( "Bring " + upOrDown + " the link between sw28 and " + link3Peer )
         linkResult3 = main.Mininet.link( END1="sw28", END2=link3Peer,
                                          OPTION=upOrDown )
         utilities.assert_equals( expect=main.TRUE,
@@ -189,7 +191,7 @@ class SdnBase:
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
-                                     kwargs={'isPENDING':False},
+                                     kwargs={ 'isPENDING': False },
                                      attempts=10 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=flowCheck,
@@ -198,8 +200,8 @@ class SdnBase:
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers=[ speakers ],
-                       peers=[ link1Peer, link2Peer, link3Peer ],
-                       expectAllSuccess=False )
+                                          peers=[ link1Peer, link2Peer, link3Peer ],
+                                          expectAllSuccess=False )
         main.Functions.pingHostToHost( main,
-                        hosts=hosts,
-                        expectAllSuccess=False )
+                                       hosts=hosts,
+                                       expectAllSuccess=False )

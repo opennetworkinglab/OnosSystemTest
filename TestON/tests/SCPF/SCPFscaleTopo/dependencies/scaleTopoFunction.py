@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
     Wrapper function for FuncTopo
     Includes onosclidriver and mininetclidriver functions
@@ -27,13 +26,15 @@ import time
 import json
 import re
 
+
 def __init__( self ):
     self.default = ''
 
+
 def getTimestampFromString( main, targetString ):
-    #Get time string from the target string
+    # Get time string from the target string
     try:
-        assert type( targetString ) is str
+        assert isinstance( targetString, str )
         timeString = targetString.split( ' | ' )
         timeString = timeString[ 0 ]
         from datetime import datetime
@@ -53,10 +54,11 @@ def getTimestampFromString( main, targetString ):
         main.log.error( "Got wrong string from log" )
         return -1
 
+
 def getRoleRequestTimeFromTshark( main ):
     try:
         main.log.info( "Get role request time" )
-        with open(main.tsharkResultPath, "r" ) as resultFile:
+        with open( main.tsharkResultPath, "r" ) as resultFile:
             resultText = resultFile.readlines()
             # select the last role request string
             roleRequestString = resultText[ len( resultText ) - 1 ]
@@ -64,18 +66,19 @@ def getRoleRequestTimeFromTshark( main ):
             # get timestamp from role request string
             roleRequestTime = roleRequestString.split( " " )
             resultFile.close()
-            return float(roleRequestTime[1])
+            return float( roleRequestTime[ 1 ] )
     except IndexError:
-        main.log.error("Got wrong role request string from Tshark file")
+        main.log.error( "Got wrong role request string from Tshark file" )
         return -1
 
-def compareTimeDiffWithRoleRequest(main, term, Mode, index=0 ):
-    '''
+
+def compareTimeDiffWithRoleRequest( main, term, Mode, index=0 ):
+    """
     Description:
         Compare the time difference between the time of target term and the time of role request
         Inclides onosclidriver functions
 
-    '''
+    """
     try:
         termInfo = main.Cluster.active( index ).CLI.logSearch( mode=Mode, searchTerm=term )
         termTime = getTimestampFromString( main, termInfo[ 0 ] )
@@ -91,37 +94,38 @@ def compareTimeDiffWithRoleRequest(main, term, Mode, index=0 ):
         main.writeData = -1
         return -1
 
+
 def getInfoFromLog( main, term1, mode1, term2, mode2, index=0, funcMode='TD' ):
-    '''
+    """
     Description:
         Get needed informations of the search term from karaf.log
         Includes onosclidriver functions
     Function mode:
-        TD (time difference):
+        TD ( time difference ):
             Get time difference between start and end
             Term1: startTerm
             Term2: endTerm
-        DR (disconnect rate):
+        DR ( disconnect rate ):
             Get switch disconnect rate
             Term1: disconnectTerm
             Term2: connectTerm
 
-    '''
+    """
     try:
         termInfo1 = main.Cluster.active( index ).CLI.logSearch( mode=mode1, searchTerm=term1 )
         termInfo2 = main.Cluster.active( index ).CLI.logSearch( mode=mode2, searchTerm=term2 )
         if funcMode == 'TD':
-            startTime = getTimestampFromString( main, termInfo1[0] )
-            endTime = getTimestampFromString ( main, termInfo2[0] )
+            startTime = getTimestampFromString( main, termInfo1[ 0 ] )
+            endTime = getTimestampFromString( main, termInfo2[ 0 ] )
             if startTime == -1 or endTime == -1:
                 main.log.error( "Wrong Time!" )
                 main.writeData = -1
                 return -1
             return endTime - startTime
         if funcMode == 'DR':
-            #In this mode, termInfo1 means the total number of switch disconnection and
-            #termInfo2 means the total number of new switch connection
-            #termInfo2 - termInfo1 means the actual real number of switch connection.
+            # In this mode, termInfo1 means the total number of switch disconnection and
+            # termInfo2 means the total number of new switch connection
+            # termInfo2 - termInfo1 means the actual real number of switch connection.
             disconnection = int( termInfo1 ) * 1.0
             expectConnection = int( main.currScale ) ** 2
             realConnection = int( termInfo2 ) - int( termInfo1 )
@@ -135,6 +139,7 @@ def getInfoFromLog( main, term1, mode1, term2, mode2, index=0, funcMode='TD' ):
         main.log.error( "Catch the wrong information of search term" )
         main.writeData = -1
         return -1
+
 
 def testTopology( main, topoFile='', args='', mnCmd='', timeout=300, clean=True ):
     """
@@ -173,15 +178,15 @@ def testTopology( main, topoFile='', args='', mnCmd='', timeout=300, clean=True 
     # Starts topology
     startResult = startNewTopology( main, topoFile, args, mnCmd, timeout=timeout )
     # onos needs time to see the links
-    time.sleep(15)
+    time.sleep( 15 )
 
     # Gets list of switches in mininet
-    #assignSwitch( main )
+    # assignSwitch( main )
 
     testTopoResult = startResult and topoObjectResult
 
-
     return testTopoResult
+
 
 def startNewTopology( main, topoFile='', args='', mnCmd='', timeout=900 ):
     """
@@ -215,13 +220,13 @@ def startNewTopology( main, topoFile='', args='', mnCmd='', timeout=900 ):
         main.log.info( main.topoName + ": Starting topology with '" +
                        mnCmd + "' Mininet command" )
 
-
     result = main.Mininet1.startNet( topoFile=topoFile,
                                      args=args,
                                      mnCmd=mnCmd,
-                                     timeout=timeout)
+                                     timeout=timeout )
 
     return result
+
 
 def stopMininet( main ):
     """
@@ -235,8 +240,9 @@ def stopMininet( main ):
     stopResult = main.Mininet1.stopNet()
     time.sleep( 30 )
     if not stopResult:
-        main.log.info(  main.topoName + ": Did not stop Mininet topology" )
+        main.log.info( main.topoName + ": Did not stop Mininet topology" )
     return stopResult
+
 
 def compareTopo( main ):
     """
@@ -254,13 +260,14 @@ def compareTopo( main ):
         main.topoRelated = Topology()
     return main.topoRelated.compareTopos( main.Mininet1 )
 
+
 def assignSwitch( main ):
     """
         Returns switch list using getSwitch in Mininet driver
     """
     switchList = []
     assignResult = main.TRUE
-    switchList =  main.Mininet1.getSwitch()
+    switchList = main.Mininet1.getSwitch()
     assignResult = main.Mininet1.assignSwController( sw=switchList,
                                                      ip=main.Cluster.active( 0 ).ipAddress,
                                                      port=6633 )
@@ -273,6 +280,7 @@ def assignSwitch( main ):
             assignResult = main.FALSE
 
     return switchList
+
 
 def connectivity( main, timeout=900, shortCircuit=True, acceptableFailed=20 ):
     """
@@ -308,6 +316,7 @@ def connectivity( main, timeout=900, shortCircuit=True, acceptableFailed=20 ):
             main.log.warn( ctrl.CLI.appIDs() )
 
     return pingResult
+
 
 def getHostsData( main ):
     """
@@ -369,6 +378,7 @@ def getHostsData( main ):
 
     return getDataResult
 
+
 def reinstallOnos( main ):
     """
     Description:
@@ -422,8 +432,4 @@ def reinstallOnos( main ):
     if cliResult != main.TRUE:
         restartResult = main.FALSE
 
-
     return restartResult
-
-
-

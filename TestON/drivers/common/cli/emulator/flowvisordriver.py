@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Created on 26-Mar-2013
-Copyright 2013 Open Networking Foundation (ONF)
+Copyright 2013 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -42,7 +42,7 @@ class FlowVisorDriver( Emulator ):
         self.wrapped = sys.modules[ __name__ ]
 
     def connect( self, **connectargs ):
-        #,user_name, ip_address, pwd,options ):
+        # user_name, ip_address, pwd,options ):
         # Here the main is the TestON instance after creating all the log
         # handles.
         for key in connectargs:
@@ -63,7 +63,7 @@ class FlowVisorDriver( Emulator ):
         if self.handle:
             self.execute( cmd='\r', prompt=self.prompt, timeout=10 )
             self.options[ 'path' ] = '/home/openflow/flowvisor/scripts/'
-            #self.handle.logfile = sys.stdout
+            # self.handle.logfile = sys.stdout
             self.execute(
                 cmd='cd ' +
                 self.options[ 'path' ],
@@ -90,9 +90,9 @@ class FlowVisorDriver( Emulator ):
                 self.fvprocess_id,
                 onfail="Failed to start FlowVisor" )
             main.log.info( response )
-            #import time
+            # import time
             # time.sleep( 10 )
-            #response = self.execute( cmd='./start_visualizer.sh & \r',prompt=self.prompt,timeout=10 )
+            # response = self.execute( cmd='./start_visualizer.sh & \r',prompt=self.prompt,timeout=10 )
 
             return main.TRUE
         else:
@@ -192,7 +192,7 @@ class FlowVisorDriver( Emulator ):
 
     def listDevices( self ):
         # self.execute( cmd="clear",prompt=self.prompt,timeout=10 )
-        #self.execute( cmd="./fvctl.sh listDevices ",prompt="passwd:",timeout=10 )
+        # self.execute( cmd="./fvctl.sh listDevices ",prompt="passwd:",timeout=10 )
         # self.execute( cmd="\n",prompt=self.prompt,timeout=10 )
         devices_list = ''
         last_response = re.findall(

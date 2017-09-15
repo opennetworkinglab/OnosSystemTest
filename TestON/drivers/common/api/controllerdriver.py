@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Created on 29-Nov-2012
-Copyright 2012 Open Networking Foundation (ONF)
+Copyright 2012 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -32,4 +32,3 @@ class Controller( API ):
 
     def __init__( self ):
         super( Controller, self ).__init__()
-

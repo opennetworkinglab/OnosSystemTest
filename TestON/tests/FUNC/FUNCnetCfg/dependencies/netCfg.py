@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,19 +35,19 @@ def compareCfg( main, gossipTime=None ):
     responses = []
     result = utilities.retry( f=checkNodeResponses,
                               retValue=False,
-                              kwargs={'main' : main,'responses' : responses},
-                              sleep = main.retrysleep,
-                              attempts = main.retrytimes )
+                              kwargs={ 'main': main, 'responses': responses },
+                              sleep=main.retrysleep,
+                              attempts=main.retrytimes )
     utilities.assert_equals( expect=True,
                              actual=result,
                              onpass="Net Cfg is the same on all nodes",
                              onfail="Check Net Cfg failed. Check above messages." )
 
 
-def checkNodeResponses ( main, responses ):
+def checkNodeResponses( main, responses ):
     numberOfFailedNodes = 0  # Tracks the number of nodes that failed to get net configuration
     for ctrl in main.Cluster.active():
-        response = ctrl.REST.getNetCfg( )
+        response = ctrl.REST.getNetCfg()
         responses.append( ctrl.REST.pprint( response ) )
         if response == main.FALSE:
             numberOfFailedNodes += 1
@@ -65,24 +65,25 @@ def checkNodeResponses ( main, responses ):
             main.log.debug( i )
     return False
 
+
 def checkDeviceAnnotations( main, jsonObj, sw ):
     id = str( sw.get( 'id' ) )
     keys = [ 'name', 'owner', 'rackAddress' ]
     correct = True
     for k in keys:
-        if str( sw.get( 'annotations', {} ).get( k ) ) != str( jsonObj[ k ] ) :
+        if str( sw.get( 'annotations', {} ).get( k ) ) != str( jsonObj[ k ] ):
             correct = False
             main.log.debug( "{} is wrong on switch: ".format( k ) + id )
     if not correct:
-        main.log.error( "Annotations for switch " + id  + " are incorrect: {}".format( sw ) )
+        main.log.error( "Annotations for switch " + id + " are incorrect: {}".format( sw ) )
     return correct
 
 
 def checkAllDeviceAnnotations( main, json ):
-    devices = main.Cluster.active( 0 ).REST.devices( )
+    devices = main.Cluster.active( 0 ).REST.devices()
     id = "of:0000000000000001"
     i = 1
-    result = [ ]
+    result = []
     try:
         for sw in json.loads( devices ):
             if id in sw.get( 'id' ):

@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 Description: This test is to determine if ONOS can handle
              dynamic swapping of cluster nodes.
@@ -96,15 +95,14 @@ class HAswapNodes:
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAswapNodes" )
 
-
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
-                                 extraApply=[ main.HA.setServerForCluster,
-                                              main.HA.swapNodeMetadata,
-                                              main.HA.startingMininet,
-                                              main.HA.copyBackupConfig,
-                                              main.HA.setMetadataUrl ],
-                                 extraClean=main.HA.cleanUpOnosService,
-                                 installMax=True )
+                                  extraApply=[ main.HA.setServerForCluster,
+                                               main.HA.swapNodeMetadata,
+                                               main.HA.startingMininet,
+                                               main.HA.copyBackupConfig,
+                                               main.HA.setMetadataUrl ],
+                                  extraClean=main.HA.cleanUpOnosService,
+                                  installMax=True )
         main.HA.initialSetUp()
 
     def CASE2( self, main ):
@@ -211,9 +209,9 @@ class HAswapNodes:
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
 
-        ready =  utilities.retry( main.Cluster.command,
+        ready = utilities.retry( main.Cluster.command,
                                   False,
-                                  kwargs={ "function":"summary", "contentCheck":True },
+                                  kwargs={ "function": "summary", "contentCheck": True },
                                   sleep=30,
                                   attempts=10 )
         utilities.assert_equals( expect=True, actual=ready,
@@ -235,23 +233,10 @@ class HAswapNodes:
 
         main.HA.commonChecks()
 
-        """
-        # Note: Do we really want this? It will revert the changes we have made from this test case.
-
-        main.step( "Reapplying cell variable to environment" )
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        cellResult = main.ONOSbench.setCell( cellName )
-        utilities.assert_equals( expect=main.TRUE, actual=cellResult,
-                                 onpass="Set cell successfull",
-                                 onfail="Failled to set cell" )
-        """
-
-
     def CASE7( self, main ):
         """
         Check state after ONOS scaling
         """
-
         main.HA.checkStateAfterEvent( main, afterWhich=1 )
 
         main.step( "Leadership Election is still functional" )

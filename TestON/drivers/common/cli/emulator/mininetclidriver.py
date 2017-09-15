@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Created on 26-Oct-2012
-Copyright 2012 Open Networking Foundation (ONF)
+Copyright 2012 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -44,6 +44,7 @@ from core.graph import Graph
 
 
 class MininetCliDriver( Emulator ):
+
     """
        MininetCliDriver is the basic driver which will handle
        the Mininet functions"""
@@ -124,12 +125,12 @@ class MininetCliDriver( Emulator ):
     def startNet( self, topoFile='', args='', mnCmd='', timeout=120 ):
         """
         Description:
-            Starts Mininet accepts a topology(.py) file and/or an optional
+            Starts Mininet accepts a topology( .py ) file and/or an optional
             argument, to start the mininet, as a parameter.
             Can also send regular mininet command to load up desired topology.
             Eg. Pass in a string 'mn --topo=tree,3,3' to mnCmd
         Options:
-            topoFile = file path for topology file (.py)
+            topoFile = file path for topology file ( .py )
             args = extra option added when starting the topology from the file
             mnCmd = Mininet command use to start topology
         Returns:
@@ -183,7 +184,7 @@ class MininetCliDriver( Emulator ):
                         main.log.info(
                             "Starting Mininet from topo file " +
                             topoFile )
-                        cmdString +=  "-E python " + topoFile + " "
+                        cmdString += "-E python " + topoFile + " "
                         if args is None:
                             args = ''
                             # TODO: allow use of args from .topo file?
@@ -432,7 +433,6 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-
     def pingallHosts( self, hostList, wait=1 ):
         """
             Ping all specified IPv4 hosts
@@ -460,7 +460,7 @@ class MininetCliDriver( Emulator ):
                 pingList = hostList[ :listIndex ] + \
                     hostList[ ( listIndex + 1 ): ]
 
-                pingResponse += str(str(host) + " -> ")
+                pingResponse += str( str( host ) + " -> " )
 
                 for temp in pingList:
                     # Current host pings all other hosts specified
@@ -469,14 +469,14 @@ class MininetCliDriver( Emulator ):
                     self.handle.expect( "mininet>", timeout=wait + 1 )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
-                        pingResponse += str(" h" + str( temp[1:] ))
+                        pingResponse += str( " h" + str( temp[ 1: ] ) )
                     else:
                         pingResponse += " X"
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
                         failedPings += 1
                 pingResponse += "\n"
-            main.log.info( pingResponse + "Failed pings: " + str(failedPings) )
+            main.log.info( pingResponse + "Failed pings: " + str( failedPings ) )
             return isReachable
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
@@ -511,23 +511,23 @@ class MininetCliDriver( Emulator ):
                 pingList = hostList[ :listIndex ] + \
                     hostList[ ( listIndex + 1 ): ]
 
-                pingResponse += str(str(host) + " -> ")
+                pingResponse += str( str( host ) + " -> " )
 
                 for temp in pingList:
                     # Current host pings all other hosts specified
-                    pingCmd = str( host ) + cmd + str( self.getIPAddress(temp,proto='IPv6') )
+                    pingCmd = str( host ) + cmd + str( self.getIPAddress( temp, proto='IPv6' ) )
                     self.handle.sendline( pingCmd )
                     self.handle.expect( "mininet>", timeout=wait + 1 )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
-                        pingResponse += str(" h" + str( temp[1:] ))
+                        pingResponse += str( " h" + str( temp[ 1: ] ) )
                     else:
                         pingResponse += " X"
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
                         failedPings += 1
                 pingResponse += "\n"
-            main.log.info( pingResponse + "Failed pings: " + str(failedPings) )
+            main.log.info( pingResponse + "Failed pings: " + str( failedPings ) )
             return isReachable
 
         except pexpect.TIMEOUT:
@@ -547,7 +547,7 @@ class MininetCliDriver( Emulator ):
         Currently the only supported Params: SRC, TARGET, and WAIT
         """
         args = utilities.parse_args( [ "SRC", "TARGET", 'WAIT' ], **pingParams )
-        wait = args['WAIT']
+        wait = args[ 'WAIT' ]
         wait = int( wait if wait else 1 )
         command = args[ "SRC" ] + " ping " + \
             args[ "TARGET" ] + " -c 1 -i 1 -W " + str( wait ) + " "
@@ -588,11 +588,11 @@ class MininetCliDriver( Emulator ):
         """
            IPv6 Ping between a pair of mininet hosts
            Currently the only supported Params are: SRC, TARGET, and WAIT
-           FLOWLABEL and -I (src interface) will be added later after running some tests.
+           FLOWLABEL and -I ( src interface ) will be added later after running some tests.
            Example: main.Mininet1.ping6pair( src="h1", target="1000::2" )
         """
         args = utilities.parse_args( [ "SRC", "TARGET", 'WAIT' ], **pingParams )
-        wait = args['WAIT']
+        wait = args[ 'WAIT' ]
         wait = int( wait if wait else 1 )
         command = args[ "SRC" ] + " ping6 " + \
             args[ "TARGET" ] + " -c 1 -i 1 -W " + str( wait ) + " "
@@ -836,8 +836,8 @@ class MininetCliDriver( Emulator ):
                 return main.TRUE
 
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -875,7 +875,7 @@ class MininetCliDriver( Emulator ):
                 self.handle.expect( "mininet>" )
 
                 # Determine ip and mac address of the host-oldSw interface
-                cmd = "px ipaddr = " + str(IP)
+                cmd = "px ipaddr = " + str( IP )
                 print "cmd3= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -923,13 +923,13 @@ class MininetCliDriver( Emulator ):
                 self.handle.expect( "mininet>" )
 
                 cmd = host + " ifconfig"
-                print "cmd9 =",cmd
-                response = self.execute( cmd = cmd, prompt="mininet>" ,timeout=10 )
+                print "cmd9 =", cmd
+                response = self.execute( cmd=cmd, prompt="mininet>", timeout=10 )
                 print response
                 pattern = "h\d-eth([\w])"
                 ipAddressSearch = re.search( pattern, response )
-                print ipAddressSearch.group(1)
-                intf= host + "-eth" + str(ipAddressSearch.group(1))
+                print ipAddressSearch.group( 1 )
+                intf = host + "-eth" + str( ipAddressSearch.group( 1 ) )
                 cmd = host + " ip -6 addr add %s dev %s" % ( IP, intf )
                 print "cmd10 = ", cmd
                 self.handle.sendline( cmd )
@@ -950,8 +950,8 @@ class MininetCliDriver( Emulator ):
 
                 return main.TRUE
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -980,8 +980,8 @@ class MininetCliDriver( Emulator ):
                     newIP )
                 return main.TRUE
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -1009,8 +1009,8 @@ class MininetCliDriver( Emulator ):
                     newGW )
                 return main.TRUE
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -1038,8 +1038,8 @@ class MininetCliDriver( Emulator ):
                     macaddr )
                 return main.TRUE
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -1062,8 +1062,8 @@ class MininetCliDriver( Emulator ):
                 main.log.info( host + " arp -an = " + response )
                 return main.TRUE
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -1136,7 +1136,7 @@ class MininetCliDriver( Emulator ):
         else:
             main.log.error( "Connection failed to the host" )
 
-    def getIPAddress( self, host , proto='IPV4'):
+    def getIPAddress( self, host, proto='IPV4' ):
         """
            Verifies the host's ip configured or not."""
         if self.handle:
@@ -1212,8 +1212,8 @@ class MininetCliDriver( Emulator ):
                 response = self.handle.before
                 return response
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -1305,33 +1305,33 @@ class MininetCliDriver( Emulator ):
             main.cleanAndExit()
         return response
 
-    def iperftcpAll(self, hosts, timeout=6):
-        '''
+    def iperftcpAll( self, hosts, timeout=6 ):
+        """
         Runs the iperftcp function with a given set of hosts and specified timeout.
 
         @parm:
             timeout: The defualt timeout is 6 sec to allow enough time for a successful test to complete,
              and short enough to stop an unsuccessful test from quiting and cleaning up mininet.
-        '''
+        """
         try:
             for host1 in hosts:
                 for host2 in hosts:
                     if host1 != host2:
-                        if self.iperftcp(host1, host2, timeout) == main.FALSE:
-                            main.log.error(self.name + ": iperftcp test failed for " + host1 + " and " + host2)
+                        if self.iperftcp( host1, host2, timeout ) == main.FALSE:
+                            main.log.error( self.name + ": iperftcp test failed for " + host1 + " and " + host2 )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def iperftcp(self, host1="h1", host2="h2", timeout=6):
-        '''
+    def iperftcp( self, host1="h1", host2="h2", timeout=6 ):
+        """
         Creates an iperf TCP test between two hosts. Returns main.TRUE if test results
         are valid.
 
         @parm:
             timeout: The defualt timeout is 6 sec to allow enough time for a successful test to complete,
              and short enough to stop an unsuccessful test from quiting and cleaning up mininet.
-        '''
+        """
         main.log.info( self.name + ": Simple iperf TCP test between two hosts" )
         try:
             # Setup the mininet command
@@ -1342,26 +1342,26 @@ class MininetCliDriver( Emulator ):
 
             # checks if there are results in the mininet response
             if "Results:" in response:
-                main.log.report(self.name + ": iperf test completed")
+                main.log.report( self.name + ": iperf test completed" )
                 # parse the mn results
-                response = response.split("\r\n")
-                response = response[len(response)-2]
-                response = response.split(": ")
-                response = response[len(response)-1]
-                response = response.replace("[", "")
-                response = response.replace("]", "")
-                response = response.replace("\'", "")
+                response = response.split( "\r\n" )
+                response = response[ len( response ) - 2 ]
+                response = response.split( ": " )
+                response = response[ len( response ) - 1 ]
+                response = response.replace( "[", "" )
+                response = response.replace( "]", "" )
+                response = response.replace( "\'", "" )
 
                 # this is the bandwith two and from the two hosts
-                bandwidth = response.split(", ")
+                bandwidth = response.split( ", " )
 
                 # there should be two elements in the bandwidth list
-                # ['host1 to host2', 'host2 to host1"]
-                if len(bandwidth) == 2:
-                    main.log.report(self.name + ": iperf test successful")
+                # [ 'host1 to host2', 'host2 to host1" ]
+                if len( bandwidth ) == 2:
+                    main.log.report( self.name + ": iperf test successful" )
                     return main.TRUE
                 else:
-                    main.log.error(self.name + ": invalid iperf results")
+                    main.log.error( self.name + ": invalid iperf results" )
                     return main.FALSE
             else:
                 main.log.error( self.name + ": iperf test failed" )
@@ -1383,22 +1383,22 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def iperftcpipv6(self, host1="h1", host2="h2", timeout=50):
+    def iperftcpipv6( self, host1="h1", host2="h2", timeout=50 ):
         main.log.info( self.name + ": Simple iperf TCP test between two hosts" )
         try:
             IP1 = self.getIPAddress( host1, proto='IPV6' )
-            cmd1 = host1 +' iperf -V -sD -B '+ str(IP1)
+            cmd1 = host1 + ' iperf -V -sD -B ' + str( IP1 )
             self.handle.sendline( cmd1 )
-            outcome1 = self.handle.expect( "mininet>")
-            cmd2 = host2 +' iperf -V -c '+ str(IP1) +' -t 5'
+            outcome1 = self.handle.expect( "mininet>" )
+            cmd2 = host2 + ' iperf -V -c ' + str( IP1 ) + ' -t 5'
             self.handle.sendline( cmd2 )
-            outcome2 = self.handle.expect( "mininet>")
+            outcome2 = self.handle.expect( "mininet>" )
             response1 = self.handle.before
             response2 = self.handle.after
-            print response1,response2
-            pattern = "connected with "+ str(IP1)
+            print response1, response2
+            pattern = "connected with " + str( IP1 )
             if pattern in response1:
-                main.log.report(self.name + ": iperf test completed")
+                main.log.report( self.name + ": iperf test completed" )
                 return main.TRUE
             else:
                 main.log.error( self.name + ": iperf test failed" )
@@ -1418,77 +1418,76 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def iperfudpAll(self, hosts, bandwidth="10M"):
-        '''
+    def iperfudpAll( self, hosts, bandwidth="10M" ):
+        """
         Runs the iperfudp function with a given set of hosts and specified
         bandwidth
 
         @param:
-            bandwidth: the targeted bandwidth, in megabits ('M')
-        '''
+            bandwidth: the targeted bandwidth, in megabits ( 'M' )
+        """
         try:
             for host1 in hosts:
                 for host2 in hosts:
                     if host1 != host2:
-                        if self.iperfudp(host1, host2, bandwidth) == main.FALSE:
-                            main.log.error(self.name + ": iperfudp test failed for " + host1 + " and " + host2)
+                        if self.iperfudp( host1, host2, bandwidth ) == main.FALSE:
+                            main.log.error( self.name + ": iperfudp test failed for " + host1 + " and " + host2 )
         except TypeError:
-            main.log.exception(self.name + ": Object not as expected")
+            main.log.exception( self.name + ": Object not as expected" )
             return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def iperfudp( self, bandwidth="10M", host1="h1", host2="h2"):
-
-        '''
+    def iperfudp( self, bandwidth="10M", host1="h1", host2="h2" ):
+        """
         Creates an iperf UDP test with a specific bandwidth.
         Returns true if results are valid.
 
         @param:
-            bandwidth: the targeted bandwidth, in megabits ('M'), to run the test
-        '''
-        main.log.info(self.name + ": Simple iperf UDP test between two hosts")
+            bandwidth: the targeted bandwidth, in megabits ( 'M' ), to run the test
+        """
+        main.log.info( self.name + ": Simple iperf UDP test between two hosts" )
         try:
             # setup the mininet command
             cmd = 'iperfudp ' + bandwidth + " " + host1 + " " + host2
-            self.handle.sendline(cmd)
-            self.handle.expect("mininet>")
+            self.handle.sendline( cmd )
+            self.handle.expect( "mininet>" )
             response = self.handle.before
 
             # check if there are in results in the mininet response
             if "Results:" in response:
-                main.log.report(self.name + ": iperfudp test completed")
+                main.log.report( self.name + ": iperfudp test completed" )
                 # parse the results
-                response = response.split("\r\n")
-                response = response[len(response)-2]
-                response = response.split(": ")
-                response = response[len(response)-1]
-                response = response.replace("[", "")
-                response = response.replace("]", "")
-                response = response.replace("\'", "")
+                response = response.split( "\r\n" )
+                response = response[ len( response ) - 2 ]
+                response = response.split( ": " )
+                response = response[ len( response ) - 1 ]
+                response = response.replace( "[", "" )
+                response = response.replace( "]", "" )
+                response = response.replace( "\'", "" )
 
-                mnBandwidth = response.split(", ")
+                mnBandwidth = response.split( ", " )
 
                 # check to see if there are at least three entries
-                # ['bandwidth', 'host1 to host2', 'host2 to host1']
-                if len(mnBandwidth) == 3:
+                # [ 'bandwidth', 'host1 to host2', 'host2 to host1' ]
+                if len( mnBandwidth ) == 3:
                     # if one entry is blank then something is wrong
                     for item in mnBandwidth:
                         if item == "":
-                            main.log.error(self.name + ": Could not parse iperf output")
-                            main.log.error(self.name + ": invalid iperfudp results")
+                            main.log.error( self.name + ": Could not parse iperf output" )
+                            main.log.error( self.name + ": invalid iperfudp results" )
                             return main.FALSE
                     # otherwise results are vaild
-                    main.log.report(self.name + ": iperfudp test successful")
+                    main.log.report( self.name + ": iperfudp test successful" )
                     return main.TRUE
                 else:
-                    main.log.error(self.name + ": invalid iperfudp results")
+                    main.log.error( self.name + ": invalid iperfudp results" )
                     return main.FALSE
 
         except pexpect.TIMEOUT:
-            main.log.error(self.name + ": TIMEOUT exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1577,8 +1576,8 @@ class MininetCliDriver( Emulator ):
             self.handle.sendline( command )
             self.handle.expect( "mininet>" )
         except pexpect.TIMEOUT:
-            main.log.error(self.name + ": TIMEOUT exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1598,7 +1597,7 @@ class MininetCliDriver( Emulator ):
         main.log.info( command )
 
         try:
-            response = self.execute( cmd = command, prompt = "mininet>" )
+            response = self.execute( cmd=command, prompt="mininet>" )
             if re.search( "Unknown command", response ):
                 main.log.warn( response )
                 return main.FALSE
@@ -1740,7 +1739,7 @@ class MininetCliDriver( Emulator ):
         Return:
             Returns main.TRUE if mininet correctly assigned switches to
             controllers, otherwise it will return main.FALSE or an appropriate
-            exception(s)
+            exception( s )
         """
         assignResult = main.TRUE
         # Initial ovs command
@@ -1947,9 +1946,9 @@ class MininetCliDriver( Emulator ):
     def getSwitchRandom( self, timeout=60, nonCut=True ):
         """
         Randomly get a switch from Mininet topology.
-        If nonCut is True, it gets a list of non-cut switches (the deletion
+        If nonCut is True, it gets a list of non-cut switches ( the deletion
         of a non-cut switch will not increase the number of connected
-        components of a graph) and randomly returns one of them, otherwise
+        components of a graph ) and randomly returns one of them, otherwise
         it just randomly returns one switch from all current switches in
         Mininet.
         Returns the name of the chosen switch.
@@ -1964,11 +1963,11 @@ class MininetCliDriver( Emulator ):
                     candidateSwitches.append( switchName )
             else:
                 graphDict = self.getGraphDict( timeout=timeout, useId=False )
-                if graphDict == None:
+                if graphDict is None:
                     return None
                 self.graph.update( graphDict )
                 candidateSwitches = self.graph.getNonCutVertices()
-            if candidateSwitches == None:
+            if candidateSwitches is None:
                 return None
             elif len( candidateSwitches ) == 0:
                 main.log.info( self.name + ": No candidate switch for deletion" )
@@ -1989,16 +1988,16 @@ class MininetCliDriver( Emulator ):
     def delSwitchRandom( self, timeout=60, nonCut=True ):
         """
         Randomly delete a switch from Mininet topology.
-        If nonCut is True, it gets a list of non-cut switches (the deletion
+        If nonCut is True, it gets a list of non-cut switches ( the deletion
         of a non-cut switch will not increase the number of connected
-        components of a graph) and randomly chooses one for deletion,
+        components of a graph ) and randomly chooses one for deletion,
         otherwise it just randomly delete one switch from all current
         switches in Mininet.
         Returns the name of the deleted switch
         """
         try:
             switch = self.getSwitchRandom( timeout, nonCut )
-            if switch == None:
+            if switch is None:
                 return None
             else:
                 deletionResult = self.delSwitch( switch )
@@ -2083,9 +2082,9 @@ class MininetCliDriver( Emulator ):
     def getLinkRandom( self, timeout=60, nonCut=True ):
         """
         Randomly get a link from Mininet topology.
-        If nonCut is True, it gets a list of non-cut links (the deletion
+        If nonCut is True, it gets a list of non-cut links ( the deletion
         of a non-cut link will not increase the number of connected
-        component of a graph) and randomly returns one of them, otherwise
+        component of a graph ) and randomly returns one of them, otherwise
         it just randomly returns one link from all current links in
         Mininet.
         Returns the link as a list, e.g. [ 's1', 's2' ]
@@ -2103,11 +2102,11 @@ class MininetCliDriver( Emulator ):
                     candidateLinks.append( [ link[ 'node1' ], link[ 'node2' ] ] )
             else:
                 graphDict = self.getGraphDict( timeout=timeout, useId=False )
-                if graphDict == None:
+                if graphDict is None:
                     return None
                 self.graph.update( graphDict )
                 candidateLinks = self.graph.getNonCutEdges()
-            if candidateLinks == None:
+            if candidateLinks is None:
                 return None
             elif len( candidateLinks ) == 0:
                 main.log.info( self.name + ": No candidate link for deletion" )
@@ -2128,16 +2127,16 @@ class MininetCliDriver( Emulator ):
     def delLinkRandom( self, timeout=60, nonCut=True ):
         """
         Randomly delete a link from Mininet topology.
-        If nonCut is True, it gets a list of non-cut links (the deletion
+        If nonCut is True, it gets a list of non-cut links ( the deletion
         of a non-cut link will not increase the number of connected
-        component of a graph) and randomly chooses one for deletion,
+        component of a graph ) and randomly chooses one for deletion,
         otherwise it just randomly delete one link from all current links
         in Mininet.
         Returns the deleted link as a list, e.g. [ 's1', 's2' ]
         """
         try:
             link = self.getLinkRandom( timeout, nonCut )
-            if link == None:
+            if link is None:
                 return None
             else:
                 deletionResult = self.delLink( link[ 0 ], link[ 1 ] )
@@ -2299,8 +2298,8 @@ class MininetCliDriver( Emulator ):
                         fileName +
                         "\" | grep -v grep | awk '{print $2}'\`" )
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -2328,7 +2327,7 @@ class MininetCliDriver( Emulator ):
             ethDevice = '-I ' + ethDevice + ' '
         cmd = srcHost + " arping -c1 "
         if noResult:
-            cmd += "-w10 " # If we don't want the actural arping result, set -w10, arping will exit after 10 ms.
+            cmd += "-w10 "  # If we don't want the actural arping result, set -w10, arping will exit after 10 ms.
         cmd += ethDevice + dstHost
         try:
             if output:
@@ -2413,11 +2412,11 @@ class MininetCliDriver( Emulator ):
             assert flowTable1, "flowTable1 is empty or None"
             assert flowTable2, "flowTable2 is empty or None"
             returnValue = main.TRUE
-            if len(flowTable1) != len(flowTable2):
+            if len( flowTable1 ) != len( flowTable2 ):
                 main.log.warn( "Flow table lengths do not match" )
                 returnValue = main.FALSE
-            dFields = ["n_bytes", "cookie", "n_packets", "duration"]
-            for flow1, flow2 in zip(flowTable1, flowTable2):
+            dFields = [ "n_bytes", "cookie", "n_packets", "duration" ]
+            for flow1, flow2 in zip( flowTable1, flowTable2 ):
                 for field in dFields:
                     try:
                         flow1.pop( field )
@@ -2427,10 +2426,10 @@ class MininetCliDriver( Emulator ):
                         flow2.pop( field )
                     except KeyError:
                         pass
-            for i in range( len(flowTable1) ):
-                if flowTable1[i] not in flowTable2:
+            for i in range( len( flowTable1 ) ):
+                if flowTable1[ i ] not in flowTable2:
                     main.log.warn( "Flow tables do not match:" )
-                    main.log.warn( "Old flow:\n{}\n not in new flow table".format( flowTable1[i] ) )
+                    main.log.warn( "Old flow:\n{}\n not in new flow table".format( flowTable1[ i ] ) )
                     returnValue = main.FALSE
                     break
             return returnValue
@@ -2442,7 +2441,7 @@ class MininetCliDriver( Emulator ):
             main.cleanAndExit()
 
     def parseFlowTable( self, flowTable, version="", debug=True ):
-        '''
+        """
         Discription: Parses flows into json format.
         NOTE: this can parse any string thats separated with commas
         Arguments:
@@ -2452,69 +2451,70 @@ class MininetCliDriver( Emulator ):
                 version: The version of OpenFlow. Currently, 1.3 and 1.0 are supported.
                 debug: prints out the final result
         returns: A list of flows in json format
-        '''
+        """
         jsonFlowTable = []
         try:
             for flow in flowTable:
                 jsonFlow = {}
                 # split up the fields of the flow
-                parsedFlow = flow.split(", ")
+                parsedFlow = flow.split( ", " )
                 # get rid of any spaces in front of the field
-                for i in range( len(parsedFlow) ):
-                    item = parsedFlow[i]
-                    if item[0] == " ":
-                        parsedFlow[i] = item[1:]
+                for i in range( len( parsedFlow ) ):
+                    item = parsedFlow[ i ]
+                    if item[ 0 ] == " ":
+                        parsedFlow[ i ] = item[ 1: ]
                 # grab the selector and treatment from the parsed flow
                 # the last element is the selector and the treatment
-                temp = parsedFlow.pop(-1)
+                temp = parsedFlow.pop( -1 )
                 # split up the selector and the treatment
-                temp = temp.split(" ")
+                temp = temp.split( " " )
                 index = 0
                 # parse the flags
                 # NOTE: This only parses one flag
                 flag = {}
                 if version == "1.3":
-                    flag = {"flag":[temp[index]]}
+                    flag = { "flag": [ temp[ index ] ] }
                     index += 1
                 # the first element is the selector and split it up
-                sel = temp[index]
+                sel = temp[ index ]
                 index += 1
-                sel = sel.split(",")
+                sel = sel.split( "," )
                 # the priority is stuck in the selecter so put it back
                 # in the flow
-                parsedFlow.append(sel.pop(0))
+                parsedFlow.append( sel.pop( 0 ) )
                 # parse selector
                 criteria = []
                 for item in sel:
                     # this is the type of the packet e.g. "arp"
                     if "=" not in item:
-                        criteria.append( {"type":item} )
+                        criteria.append( { "type": item } )
                     else:
-                        field = item.split("=")
-                        criteria.append( {field[0]:field[1]} )
-                selector = {"selector": {"criteria":sorted(criteria)} }
-                treat = temp[index]
+                        field = item.split( "=" )
+                        criteria.append( { field[ 0 ]: field[ 1 ] } )
+                selector = { "selector": { "criteria": sorted( criteria ) } }
+                treat = temp[ index ]
                 # get rid of the action part e.g. "action=output:2"
                 # we will add it back later
-                treat = treat.split("=")
-                treat.pop(0)
+                treat = treat.split( "=" )
+                treat.pop( 0 )
                 # parse treatment
                 action = []
                 for item in treat:
-                    field = item.split(":")
-                    action.append( {field[0]:field[1]} )
+                    field = item.split( ":" )
+                    action.append( { field[ 0 ]: field[ 1 ] } )
                 # create the treatment field and add the actions
-                treatment = {"treatment": {"action":sorted(action)} }
+                treatment = { "treatment": { "action": sorted( action ) } }
                 # parse the rest of the flow
                 for item in parsedFlow:
-                    field = item.split("=")
-                    jsonFlow.update( {field[0]:field[1]} )
+                    field = item.split( "=" )
+                    jsonFlow.update( { field[ 0 ]: field[ 1 ] } )
                 # add the treatment and the selector to the json flow
                 jsonFlow.update( selector )
                 jsonFlow.update( treatment )
                 jsonFlow.update( flag )
 
-                if debug: main.log.debug( "\033[94mJson flow:\033[0m\n{}\n".format(jsonFlow) )
+                if debug:
+                    main.log.debug( "\033[94mJson flow:\033[0m\n{}\n".format( jsonFlow ) )
 
                 # add the json flow to the json flow table
                 jsonFlowTable.append( jsonFlow )
@@ -2532,23 +2532,24 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getFlowTable( self, sw, version="", debug=False):
-        '''
-        Discription: Returns the flow table(s) on a switch or switches in a list.
+    def getFlowTable( self, sw, version="", debug=False ):
+        """
+        Discription: Returns the flow table( s ) on a switch or switches in a list.
             Each element is a flow.
         Arguments:
             Required:
-                sw: The switch name ("s1") to retrive the flow table. Can also be
+                sw: The switch name ( "s1" ) to retrive the flow table. Can also be
                     a list of switches.
             Optional:
                 version: The version of OpenFlow. Currently, 1.3 and 1.0 are supported.
                 debug: prints out the final result
-        '''
+        """
         try:
             switches = []
-            if type(sw) is list:
-                switches.extend(sw)
-            else: switches.append(sw)
+            if isinstance( sw, list ):
+                switches.extend( sw )
+            else:
+                switches.append( sw )
 
             flows = []
             for s in switches:
@@ -2568,10 +2569,11 @@ class MininetCliDriver( Emulator ):
                 # the first element is the command that was sent
                 # the second is the table header
                 # the last element is empty
-                response = response[2:-1]
+                response = response[ 2:-1 ]
                 flows.extend( response )
 
-            if debug: print "Flows:\n{}\n\n".format(flows)
+            if debug:
+                print "Flows:\n{}\n\n".format( flows )
 
             return self.parseFlowTable( flows, version, debug )
 
@@ -2583,11 +2585,11 @@ class MininetCliDriver( Emulator ):
             main.cleanAndExit()
 
     def checkFlowId( self, sw, flowId, version="1.3", debug=True ):
-        '''
+        """
         Discription: Checks whether the ID provided matches a flow ID in Mininet
         Arguments:
             Required:
-                sw: The switch name ("s1") to retrive the flow table. Can also be
+                sw: The switch name ( "s1" ) to retrive the flow table. Can also be
                     a list of switches.
                 flowId: the flow ID in hex format. Can also be a list of IDs
             Optional:
@@ -2595,17 +2597,18 @@ class MininetCliDriver( Emulator ):
                 debug: prints out the final result
         returns: main.TRUE if all IDs are present, otherwise returns main.FALSE
         NOTE: prints out IDs that are not present
-        '''
+        """
         try:
             main.log.info( "Getting flows from Mininet" )
             flows = self.getFlowTable( sw, version, debug )
-            if flows == None:
+            if flows is None:
                 return main.ERROR
 
-            if debug: print "flow ids:\n{}\n\n".format(flowId)
+            if debug:
+                print "flow ids:\n{}\n\n".format( flowId )
 
             # Check flowId is a list or a string
-            if type( flowId ) is str:
+            if isinstance( flowId, str ):
                 result = False
                 for f in flows:
                     if flowId in f.get( 'cookie' ):
@@ -2619,7 +2622,8 @@ class MininetCliDriver( Emulator ):
                 # Save the IDs that are not in Mininet
                 absentIds = [ x for x in flowId if x not in mnFlowIds ]
 
-                if debug: print "mn flow ids:\n{}\n\n".format(mnFlowIds)
+                if debug:
+                    print "mn flow ids:\n{}\n\n".format( mnFlowIds )
 
                 # Print out the IDs that are not in Mininet
                 if absentIds:
@@ -2635,7 +2639,6 @@ class MininetCliDriver( Emulator ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
-
 
     def startTcpdump( self, filename, intf="eth0", port="port 6653" ):
         """
@@ -2701,8 +2704,8 @@ class MininetCliDriver( Emulator ):
             self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
         except pexpect.TIMEOUT:
-            main.log.error(self.name + ": TIMEOUT exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -2783,7 +2786,7 @@ class MininetCliDriver( Emulator ):
                 for line in response.split( "\n" ):
                     # Regex patterns to parse 'ovs-ofctl dump-ports-desc' output
                     # Example port:
-                    # 1(s1-eth1): addr:ae:60:72:77:55:51
+                    # 1( s1-eth1 ): addr:ae:60:72:77:55:51
                     pattern = "(?P<index>\d+)\((?P<name>[^-]+-eth(?P<port>\d+))\):\saddr:(?P<mac>([a-f0-9]{2}:){5}[a-f0-9]{2})"
                     result = re.search( pattern, line )
                     if result:
@@ -2883,7 +2886,7 @@ class MininetCliDriver( Emulator ):
             dump = self.dump().split( "\n" )
             hosts = {}
             for line in dump:
-                if "Host" in line :
+                if "Host" in line:
                     result = re.search( hostRE, line )
                     name = result.group( 'name' )
                     interfaces = []
@@ -2945,11 +2948,11 @@ class MininetCliDriver( Emulator ):
         """
         try:
             self.update()
-            response = self.links(timeout=timeout).split( '\n' )
+            response = self.links( timeout=timeout ).split( '\n' )
 
             # Examples:
-            # s1-eth3<->s2-eth1 (OK OK)
-            # s13-eth3<->h27-eth0 (OK OK)
+            # s1-eth3<->s2-eth1 ( OK OK )
+            # s13-eth3<->h27-eth0 ( OK OK )
             linkRE = "(?P<node1>[\w]+)\-eth(?P<port1>[\d]+)\<\-\>" +\
                      "(?P<node2>[\w]+)\-eth(?P<port2>[\d]+)"
             links = []
@@ -3268,11 +3271,11 @@ class MininetCliDriver( Emulator ):
                     main.log.info( output )
             return hostResults
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except Exception:
-            main.log.exception(self.name + ": Uncaught exception!")
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
     def getHostsOld( self ):
@@ -3301,8 +3304,8 @@ class MininetCliDriver( Emulator ):
 
             return hostList
         except pexpect.TIMEOUT:
-            main.log.error(self.name + ": TIMEOUT exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -3344,7 +3347,7 @@ class MininetCliDriver( Emulator ):
             nodesList = nodesStr.split( "," )
 
             nodesSet = set( nodesList )
-            # discarding default controller(s) node
+            # discarding default controller( s ) node
             nodesSet.discard( 'c0' )
             nodesSet.discard( 'c1' )
             nodesSet.discard( 'c2' )
@@ -3354,8 +3357,8 @@ class MininetCliDriver( Emulator ):
 
             return switchList
         except pexpect.TIMEOUT:
-            main.log.error(self.name + ": TIMEOUT exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -3374,7 +3377,7 @@ class MininetCliDriver( Emulator ):
           vertex2: { 'edges': ..., 'name': ..., 'protocol': ... } }
         Each vertex should at least have an 'edges' attribute which describes the
         adjacency information. The value of 'edges' attribute is also represented by
-        a dictionary, which maps each edge (identified by the neighbor vertex) to a
+        a dictionary, which maps each edge ( identified by the neighbor vertex ) to a
         list of attributes.
         An example of the edges dictionary:
         'edges': { vertex2: { 'port': ..., 'weight': ... },
@@ -3382,7 +3385,7 @@ class MininetCliDriver( Emulator ):
         If useId == True, dpid/mac will be used instead of names to identify
         vertices, which is helpful when e.g. comparing Mininet topology with ONOS
         topology.
-        If includeHost == True, all hosts (and host-switch links) will be included
+        If includeHost == True, all hosts ( and host-switch links ) will be included
         in topology data.
         Note that link or switch that are brought down by 'link x x down' or 'switch
         x down' commands still show in the output of Mininet CLI commands such as
@@ -3411,7 +3414,7 @@ class MininetCliDriver( Emulator ):
                     # Get port index from OVS
                     # The index extracted from port name may be inconsistent with ONOS
                     portIndex = -1
-                    if not nodeName1 in portDict.keys():
+                    if nodeName1 not in portDict.keys():
                         portList = self.getOVSPorts( nodeName1 )
                         if len( portList ) == 0:
                             main.log.warn( self.name + ": No port found on switch " + nodeName1 )
@@ -3430,21 +3433,21 @@ class MininetCliDriver( Emulator ):
                     else:
                         node1 = nodeName1
                         node2 = nodeName2
-                    if not node1 in graphDict.keys():
+                    if node1 not in graphDict.keys():
                         if useId:
-                            graphDict[ node1 ] = { 'edges':{},
-                                                   'dpid':switches[ nodeName1 ][ 'dpid' ],
-                                                   'name':nodeName1,
-                                                   'ports':switches[ nodeName1 ][ 'ports' ],
-                                                   'swClass':switches[ nodeName1 ][ 'swClass' ],
-                                                   'pid':switches[ nodeName1 ][ 'pid' ],
-                                                   'options':switches[ nodeName1 ][ 'options' ] }
+                            graphDict[ node1 ] = { 'edges': {},
+                                                   'dpid': switches[ nodeName1 ][ 'dpid' ],
+                                                   'name': nodeName1,
+                                                   'ports': switches[ nodeName1 ][ 'ports' ],
+                                                   'swClass': switches[ nodeName1 ][ 'swClass' ],
+                                                   'pid': switches[ nodeName1 ][ 'pid' ],
+                                                   'options': switches[ nodeName1 ][ 'options' ] }
                         else:
-                            graphDict[ node1 ] = { 'edges':{} }
+                            graphDict[ node1 ] = { 'edges': {} }
                     else:
                         # Assert node2 is not connected to any current links of node1
                         assert node2 not in graphDict[ node1 ][ 'edges' ].keys()
-                    graphDict[ node1 ][ 'edges' ][ node2 ] = { 'port':portIndex }
+                    graphDict[ node1 ][ 'edges' ][ node2 ] = { 'port': portIndex }
                     # Swap two nodes/ports
                     nodeName1, nodeName2 = nodeName2, nodeName1
                     port1, port2 = port2, port1
@@ -3482,8 +3485,8 @@ class MininetCliDriver( Emulator ):
 
             return main.TRUE
         except pexpect.TIMEOUT:
-            main.log.error(self.name + ": TIMEOUT exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -3543,8 +3546,8 @@ class MininetCliDriver( Emulator ):
 
                 return main.TRUE
             except pexpect.TIMEOUT:
-                main.log.error(self.name + ": TIMEOUT exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
                 main.cleanAndExit()
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -3570,8 +3573,8 @@ class MininetCliDriver( Emulator ):
             getattr( main, name )
         except AttributeError:
             # namespace is clear, creating component
-            main.componentDictionary[name] = main.componentDictionary[self.name].copy()
-            main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+            main.componentDictionary[ name ] = main.componentDictionary[ self.name ].copy()
+            main.componentDictionary[ name ][ 'connect_order' ] = str( int( main.componentDictionary[ name ][ 'connect_order' ] ) + 1 )
             main.componentInit( name )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -3604,7 +3607,7 @@ class MininetCliDriver( Emulator ):
             # Delete component
             delattr( main, name )
             # Delete component from ComponentDictionary
-            del( main.componentDictionary[name] )
+            del( main.componentDictionary[ name ] )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -3640,8 +3643,7 @@ class MininetCliDriver( Emulator ):
             main.cleanAndExit()
 
     def changeInterfaceStatus( self, devicename, intf, status ):
-        '''
-
+        """
         Args:
             devicename: switch name
             intf: port name on switch
@@ -3649,29 +3651,28 @@ class MininetCliDriver( Emulator ):
 
         Returns: boolean to show success change status
 
-        '''
+        """
         if status == "down" or status == "up":
             try:
                 cmd = devicename + " ifconfig " + intf + " " + status
                 self.handle.sendline( cmd )
-                self.handle.expect("mininet>")
+                self.handle.expect( "mininet>" )
                 return main.TRUE
             except pexpect.TIMEOUT:
-                main.log.exception(self.name + ": Command timed out")
+                main.log.exception( self.name + ": Command timed out" )
                 return main.FALSE
             except pexpect.EOF:
-                main.log.exception(self.name + ": connection closed.")
+                main.log.exception( self.name + ": connection closed." )
                 main.cleanAndExit()
             except TypeError:
-                main.log.exception(self.name + ": TypeError")
+                main.log.exception( self.name + ": TypeError" )
                 main.cleanAndExit()
             except Exception:
-                main.log.exception(self.name + ": Uncaught exception!")
+                main.log.exception( self.name + ": Uncaught exception!" )
                 main.cleanAndExit()
         else:
-            main.log.warn("Interface status should be up or down!")
+            main.log.warn( "Interface status should be up or down!" )
             return main.FALSE
-
 
 
 if __name__ != "__main__":

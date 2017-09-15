@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,25 +18,24 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-'''
+"""
 SCPFintentEventTp
     - Use intentperf app to generate a lot of intent install and withdraw events
     - Test will run with 1,3,5,7 nodes, and with all neighbors
     - Test will run 400 seconds and grep the overall rate from intent-perf summary
 
     yunpeng@onlab.us
-'''
-
+"""
 import time
 
 
 class SCPFintentEventTp:
+
     def __init__( self ):
         self.default = ''
 
     def CASE0( self, main ):
-        '''
+        """
         - GIT
         - BUILDING ONOS
             Pull specific ONOS branch, then Build ONOS ono ONOS Bench.
@@ -44,7 +43,7 @@ class SCPFintentEventTp:
             test env. We want Jenkins jobs to pull&build for flexibility to handle
             different versions of ONOS.
         - Construct tests variables
-        '''
+        """
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
@@ -120,6 +119,7 @@ class SCPFintentEventTp:
         # balanceMasters
         main.Cluster.active( 0 ).CLI.balanceMasters()
         time.sleep( main.startUpSleep )
+
     def CASE2( self, main ):
         import numpy
 
@@ -158,7 +158,7 @@ class SCPFintentEventTp:
                 resultString = "'" + main.commit + "',"
                 resultString += "'1gig',"
                 resultString += str( main.Cluster.numCtrls ) + ","
-                resultString += "'baremetal" + str( nodes + 1 ) + "',"
+                resultString += "'baremetal" + str(nodes + 1) + "',"
                 resultString += neighbors + ","
                 resultString += result[ main.Cluster.active( nodes ).ipAddress ] + ","
                 resultString += str( 0 ) + "\n"  # no stddev

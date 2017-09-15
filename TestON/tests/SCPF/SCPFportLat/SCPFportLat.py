@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,23 +18,23 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-'''
+"""
     SCPFportLat test
     Test latency for port status change
     Up & Down:
     PortStatus --- Device --- Link --- Graph
 
     yunpeng@onlab.us
-'''
+"""
 class SCPFportLat:
+
     def __init__( self ):
         self.default = ''
 
     def CASE0( self, main ):
         import os
         import imp
-        '''
+        """
         - GIT
         - BUILDING ONOS
             Pull specific ONOS branch, then Build ONOS ono ONOS Bench.
@@ -42,7 +42,7 @@ class SCPFportLat:
             test env. We want Jenkins jobs to pull&build for flexibility to handle
             different versions of ONOS.
         - Construct tests variables
-        '''
+        """
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
@@ -87,9 +87,9 @@ class SCPFportLat:
             resultsDB.close()
 
             main.portFunc = imp.load_source( main.dependencyFunc,
-                                           main.dependencyPath +
-                                           main.dependencyFunc +
-                                           ".py" )
+                                             main.dependencyPath +
+                                             main.dependencyFunc +
+                                             ".py" )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -111,9 +111,9 @@ class SCPFportLat:
         time.sleep( 1 )
         main.log.info( "Copy topology file to Mininet" )
         main.ONOSbench.copyMininetFile( main.topoName,
-                                       main.dependencyPath,
-                                       main.Mininet1.user_name,
-                                       main.Mininet1.ip_address )
+                                        main.dependencyPath,
+                                        main.Mininet1.user_name,
+                                        main.Mininet1.ip_address )
         try:
             from tests.dependencies.utils import Utils
         except ImportError:
@@ -140,7 +140,7 @@ class SCPFportLat:
         import time
         import numpy
         # dictionary for each node and each timestamps
-        resultDict = { 'up' : {}, 'down' : {} }
+        resultDict = { 'up': {}, 'down': {} }
         for d in resultDict:
             for i in range( 1, main.Cluster.numCtrls + 1 ):
                 resultDict[ d ][ 'node' + str( i ) ] = {}
@@ -152,7 +152,7 @@ class SCPFportLat:
                 resultDict[ d ][ 'node' + str( i ) ][ 'LtoG' ] = []
         for i in range( 0, main.sampleSize + main.warmUp ):
             main.log.info( "==========================================" )
-            main.log.info( "================iteration:{}==============".format( str ( i + 1 ) ) )
+            main.log.info( "================iteration:{}==============".format( str( i + 1 ) ) )
             if i >= main.warmUp:
                 # Portdown iteration
                 main.portFunc.capturePortStatusPack( main,
@@ -185,7 +185,7 @@ class SCPFportLat:
                                                      True )
 
         # Dictionary for result
-        maxDict  = {}
+        maxDict = {}
         maxDict[ 'down' ] = {}
         maxDict[ 'up' ] = {}
         maxDict[ 'down' ][ 'max' ] = 0

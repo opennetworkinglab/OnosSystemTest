@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 class FUNCgroup:
 
     def __init__( self ):
@@ -47,59 +46,57 @@ class FUNCgroup:
 
         try:
             # Test variables
-            main.cellName = main.params['ENV']['cellName']
-            main.apps = main.params['ENV']['cellApps']
-            main.ONOSport = main.params['CTRL']['port']
+            main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
             main.dependencyPath = main.testOnDirectory + \
-                                  main.params['DEPENDENCY']['path']
-            wrapperFile1 = main.params['DEPENDENCY']['wrapper1']
-            wrapperFile2 = main.params['DEPENDENCY']['wrapper2']
-            main.topology = main.params['DEPENDENCY']['topology']
-            bucket = main.params['DEPENDENCY']['bucket']
-            main.startUpSleep = int(main.params['SLEEP']['startup'])
-            main.startMNSleep = int(main.params['SLEEP']['startMN'])
-            main.addFlowSleep = int(main.params['SLEEP']['addFlow'])
-            main.delFlowSleep = int(main.params['SLEEP']['delFlow'])
-            main.addGroupSleep = int(main.params['SLEEP']['addGroup'])
-            main.delGroupSleep = int(main.params['SLEEP']['delGroup'])
-            main.debug = main.params['DEBUG']
-            main.swDPID = main.params['TEST']['swDPID']
-            egressPort1 = main.params['TEST']['egressPort1']
-            egressPort2 = main.params['TEST']['egressPort2']
-            egressPort3 = main.params['TEST']['egressPort3']
-            ingressPort = main.params['TEST']['ingressPort']
-            appCookie = main.params['TEST']['appCookie']
-            type1 = main.params['TEST']['type1']
-            type2 = main.params['TEST']['type2']
-            groupId = main.params['TEST']['groupId']
-            priority = main.params['TEST']['priority']
-            deviceId = main.params['TEST']['swDPID']
+                                  main.params[ 'DEPENDENCY' ][ 'path' ]
+            wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+            wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
+            main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+            bucket = main.params[ 'DEPENDENCY' ][ 'bucket' ]
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            main.startMNSleep = int( main.params[ 'SLEEP' ][ 'startMN' ] )
+            main.addFlowSleep = int( main.params[ 'SLEEP' ][ 'addFlow' ] )
+            main.delFlowSleep = int( main.params[ 'SLEEP' ][ 'delFlow' ] )
+            main.addGroupSleep = int( main.params[ 'SLEEP' ][ 'addGroup' ] )
+            main.delGroupSleep = int( main.params[ 'SLEEP' ][ 'delGroup' ] )
+            main.debug = main.params[ 'DEBUG' ]
+            main.swDPID = main.params[ 'TEST' ][ 'swDPID' ]
+            egressPort1 = main.params[ 'TEST' ][ 'egressPort1' ]
+            egressPort2 = main.params[ 'TEST' ][ 'egressPort2' ]
+            egressPort3 = main.params[ 'TEST' ][ 'egressPort3' ]
+            ingressPort = main.params[ 'TEST' ][ 'ingressPort' ]
+            appCookie = main.params[ 'TEST' ][ 'appCookie' ]
+            type1 = main.params[ 'TEST' ][ 'type1' ]
+            type2 = main.params[ 'TEST' ][ 'type2' ]
+            groupId = main.params[ 'TEST' ][ 'groupId' ]
+            priority = main.params[ 'TEST' ][ 'priority' ]
+            deviceId = main.params[ 'TEST' ][ 'swDPID' ]
 
             main.debug = True if "on" in main.debug else False
             # -- INIT SECTION, ONLY RUNS ONCE -- #
 
-            main.buckets = imp.load_source(bucket,
-                                           main.dependencyPath +
-                                           bucket +
-                                           ".py")
+            main.buckets = imp.load_source( bucket,
+                                            main.dependencyPath +
+                                            bucket +
+                                            ".py" )
 
-            copyResult = main.ONOSbench.scp(main.Mininet1,
-                                            main.dependencyPath + main.topology,
-                                            main.Mininet1.home + '/custom/',
-                                            direction="to")
+            copyResult = main.ONOSbench.scp( main.Mininet1,
+                                             main.dependencyPath + main.topology,
+                                             main.Mininet1.home + '/custom/',
+                                             direction="to" )
 
-            utilities.assert_equals(expect=main.TRUE,
-                                    actual=copyResult,
-                                    onpass="Successfully copy " + "test variables ",
-                                    onfail="Failed to copy test variables")
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=copyResult,
+                                     onpass="Successfully copy " + "test variables ",
+                                     onfail="Failed to copy test variables" )
             stepResult = main.testSetUp.envSetup()
 
         except Exception as e:
             main.testSetUp.envSetupException( e )
 
         main.testSetUp.evnSetupConclusion( stepResult )
-
-
 
     def CASE2( self, main ):
         """
@@ -381,7 +378,7 @@ class FUNCgroup:
         main.case( "Delete the Group and Flow added through Rest api " )
         main.step( "Deleting Group and Flows" )
         ctrl = main.Cluster.active( 0 )
-        #Get Flow ID
+        # Get Flow ID
         response = ctrl.REST.getFlows( deviceId=deviceId )
         responsejson = json.loads( response )
         for item in responsejson:

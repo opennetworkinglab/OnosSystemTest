@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 Description: This test is to check onos set configuration and flows with ovsdb connection.
 
@@ -78,7 +77,6 @@ class FUNCovsdbtest:
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
-
 
         cliResults = main.testSetUp.ONOSSetUp( main.OVSDB1, main.Cluster,
                                                cellName=cellName, removeLog=True )
@@ -469,7 +467,7 @@ class FUNCovsdbtest:
 
         main.step( "Post Network Data via HTTP(Post port need post network)" )
         Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'networks/',
-                                                 'POST', None, networkpostdata )
+                                                                 'POST', None, networkpostdata )
         utilities.assert_equals(
                 expect='200',
                 actual=Poststatus,
@@ -478,7 +476,7 @@ class FUNCovsdbtest:
 
         main.step( "Post Subnet Data via HTTP(Post port need post subnet)" )
         Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'subnets/',
-                                                 'POST', None, subnetpostdata )
+                                                                 'POST', None, subnetpostdata )
         utilities.assert_equals(
                 expect='202',
                 actual=Poststatus,
@@ -487,7 +485,7 @@ class FUNCovsdbtest:
 
         main.step( "Post Port1 Data via HTTP" )
         Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'ports/',
-                                                 'POST', None, port1postdata )
+                                                                 'POST', None, port1postdata )
         utilities.assert_equals(
                 expect='200',
                 actual=Poststatus,
@@ -496,7 +494,7 @@ class FUNCovsdbtest:
 
         main.step( "Post Port2 Data via HTTP" )
         Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'ports/',
-                                                 'POST', None, port2postdata )
+                                                                 'POST', None, port2postdata )
         utilities.assert_equals(
                 expect='200',
                 actual=Poststatus,

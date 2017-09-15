@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 # Testing the basic intent functionality of ONOS
 # TODO: Replace the CLI calls with REST API equivalents as they become available.
 #           - May need to write functions in the onosrestdriver.py file to do this
@@ -97,7 +96,7 @@ class FUNCintentRest:
                                               direction="to" )
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
-            main.testSetUp.envSetupException(e)
+            main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
     def CASE2( self, main ):
@@ -136,7 +135,7 @@ class FUNCintentRest:
         main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress,
                                   [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR", "Except" ],
                                   "s" )
-        #main.ONOSbench.logReport( globalONOSip[ 1 ], [ "INFO" ], "d" )
+        # main.ONOSbench.logReport( globalONOSip[ 1 ], [ "INFO" ], "d" )
 
     def CASE10( self, main ):
         """
@@ -381,10 +380,10 @@ class FUNCintentRest:
         cmd = "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator"
 
         stepResult = main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
-                                            propName="useFlowObjectives", value="true" )
+                                                          propName="useFlowObjectives", value="true" )
         stepResult &= main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
-                                             propName="defaultFlowObjectiveCompiler",
-                                             value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
+                                                           propName="defaultFlowObjectiveCompiler",
+                                                           value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -448,6 +447,7 @@ class FUNCintentRest:
         except ( NameError, AttributeError ):
             main.Utils = Utils()
         main.Utils.copyKarafLog( "cycle" + str( main.cycle ) )
+
     def CASE1000( self, main ):
         """
             Add host intents between 2 host:
@@ -1246,7 +1246,7 @@ class FUNCintentRest:
             recipients=recipients,
             sw1="s5",
             sw2="s2" )
-        #setVlan=100 )
+        # setVlan=100 )
 
         if installResult:
             testResult = main.intentFunction.testPointIntent(

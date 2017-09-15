@@ -1,5 +1,5 @@
 """
-Copyright 2017 Open Networking Foundation (ONF)
+Copyright 2017 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,8 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-
 class Cluster():
 
     def __str__( self ):
@@ -33,14 +31,14 @@ class Cluster():
         return "%s[%s]" % ( self.name, ", ".join( controllers ) )
 
     def __init__( self, ctrlList=[], name="Cluster" ):
-        '''
+        """
             controllers : All the nodes
             runningNodes : Node that are specifically running from the test.
-                ie) When the test is testing different number of nodes on each
+                ie ) When the test is testing different number of nodes on each
                     run.
             numCtrls : number of runningNodes
             maxCtrls : number of controllers
-        '''
+        """
         self.controllers = ctrlList
         self.runningNodes = ctrlList
         self.numCtrls = len( self.runningNodes )
@@ -107,7 +105,7 @@ class Cluster():
         Returns:
         """
         self.runningNodes = []
-        for i in numCtrls if isinstance( numCtrls, list ) else range( numCtrls ) :
+        for i in numCtrls if isinstance( numCtrls, list ) else range( numCtrls ):
             self.runningNodes.append( self.controllers[ i ] )
         self.numCtrls = len( numCtrls ) if isinstance( numCtrls, list ) else numCtrls
 
@@ -158,13 +156,13 @@ class Cluster():
             * cellName - The name of the cell.
             * Mininet - a mininet driver that will be used.
             * useSSH - True for using ssh when creating a cell
-            * ips - ip(s) of the node(s).
+            * ips - ip( s ) of the node( s ).
         Returns:
         """
         self.command( "createCellFile",
                       args=[ main.ONOSbench.ip_address,
                              cellName,
-                             Mininet if isinstance(Mininet, str) else
+                             Mininet if isinstance( Mininet, str ) else
                              Mininet.ip_address,
                              main.apps,
                              ips,
@@ -203,7 +201,6 @@ class Cluster():
         Returns:
             Returns main.TRUE if it successfully set and verify cell.
         """
-
         setCellResult = self.command( "setCell",
                                       args=[ cellName ],
                                       specificDriver=1,
@@ -254,7 +251,7 @@ class Cluster():
             max number of the nodes.
         Required:
             * killRemoveMax - The boolean that will decide either to kill
-            only running nodes (False) or max number of nodes (True).
+            only running nodes ( False ) or max number of nodes ( True ).
             * stopOnos - If wish to stop onos before killing it. True for
             enable stop , False for disable stop.
         Returns:
@@ -439,7 +436,7 @@ class Cluster():
                 funcArgs = []
                 funcKwargs = {}
                 f = getattr( ( ctrl if not specificDriver else
-                             getattr( ctrl, drivers[ specificDriver ] ) ), function )
+                               getattr( ctrl, drivers[ specificDriver ] ) ), function )
                 if funcFromCtrl:
                     if args:
                         for i in range( len( args ) ):

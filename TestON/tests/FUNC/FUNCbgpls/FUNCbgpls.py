@@ -1,6 +1,5 @@
 """
-
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -9,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -68,11 +67,11 @@ class FUNCbgpls:
             main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
-            main.cellName = main.params['ENV']['cellName']
-            main.ipList = os.getenv(main.params['CTRL']['ip1'])
-            main.scapy_ip = os.getenv(main.params['SCAPY']['HOSTNAMES'])
+            main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+            main.ipList = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+            main.scapy_ip = os.getenv( main.params[ 'SCAPY' ][ 'HOSTNAMES' ] )
 
-            main.apps = main.params['ENV']['cellApps']
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )

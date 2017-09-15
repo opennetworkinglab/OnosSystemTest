@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,9 +17,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
-"""
 
-"""
 Functions for the vpls tests
 """
 import time
@@ -65,8 +63,6 @@ def verify( main ):
     NOTE: This requires the expected/sent network config json for the vpls
           application be stored in main.vplsConfig
     """
-
-
     # Variables
     app = main.params[ 'vpls' ][ 'name' ]
     pprint = main.Cluster.active( 0 ).REST.pprint
@@ -78,7 +74,7 @@ def verify( main ):
         result = False
         getVPLS = utilities.retry( f=ctrl.REST.getNetCfg,
                                    retValue=False,
-                                   kwargs={"subjectClass":"apps", "subjectKey":app},
+                                   kwargs={ "subjectClass": "apps", "subjectKey": app },
                                    sleep=SLEEP )
         onosCfg = json.loads( getVPLS ).get( 'vpls' ).get( 'vplsList' )
         onosCfg = pprint( sanitizeConfig( onosCfg ) )
@@ -100,7 +96,7 @@ def verify( main ):
     clusterResult = True
     for ctrl in main.Cluster.active():
         result = False
-        #TODO Read from vpls show and match to pushed json
+        # TODO Read from vpls show and match to pushed json
         vpls = ctrl.CLI.parseVplsShow()
         parsedVpls = pprint( sanitizeConfig( vpls ) )
         sentVpls = pprint( sanitizeConfig( main.vplsConfig ) )
@@ -142,7 +138,7 @@ def verify( main ):
             if pingResult != expected:
                 connectivityCheck = False
                 main.log.error( "%s <-> %s: %s; Expected: %s" %
-                               ( src, dst, pingResult, expected ) )
+                                ( src, dst, pingResult, expected ) )
     utilities.assert_equals( expect=True,
                              actual=connectivityCheck,
                              onpass="Connectivity is as expected",
@@ -151,7 +147,8 @@ def verify( main ):
 # TODO: if encapsulation is set, look for that
 # TODO: can we look at the intent keys?
 
-def checkIntentState( main , bl=[] ):
+
+def checkIntentState( main, bl=[] ):
     # Print the intent states
     intents = main.Cluster.active( 0 ).CLI.intents()
     count = 0
@@ -179,7 +176,7 @@ def getVplsHashtable( main, bl=[] ):
     result = {}
     vplsConfig = main.vplsConfig
     for v in vplsConfig:
-        interfaces = v[ 'interfaces' ][:]
+        interfaces = v[ 'interfaces' ][ : ]
         for i in bl:
             if i in interfaces:
                 interfaces.remove( i )

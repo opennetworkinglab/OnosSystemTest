@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 Description: This test is to determine if ONOS can handle
              a full network partion
@@ -102,7 +101,6 @@ class HAfullNetPartition:
                                   extraClean=main.HA.cleanUpGenPartition )
         main.HA.initialSetUp()
 
-
     def CASE2( self, main ):
         """
         Assign devices to controllers
@@ -165,9 +163,9 @@ class HAfullNetPartition:
             this = iCtrl.Bench.sshToNode( iCtrl.ipAddress )
             if i not in main.partition:
                 for j in main.partition:
-                    foe =  main.Cluster.runningNodes[ j ]
+                    foe = main.Cluster.runningNodes[ j ]
                     main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress, foe.ipAddress ) )
-                    #CMD HERE
+                    # CMD HERE
                     try:
                         cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", iCtrl.ipAddress, foe.ipAddress )
                         this.sendline( cmdStr )
@@ -185,7 +183,7 @@ class HAfullNetPartition:
                     if j not in main.partition:
                         foe = main.Cluster.runningNodes[ j ]
                         main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress, foe.ipAddress ) )
-                        #CMD HERE
+                        # CMD HERE
                         cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", iCtrl.ipAddress, foe.ipAddress )
                         try:
                             this.sendline( cmdStr )
@@ -235,7 +233,7 @@ class HAfullNetPartition:
         for node in main.partition:
             main.Cluster.runningNodes[ node ].active = True
 
-        '''
+        """
         # NOTE : Not sure if this can be removed
          main.activeNodes.sort()
         try:
@@ -244,8 +242,7 @@ class HAfullNetPartition:
         except AssertionError:
             main.log.exception( "" )
             main.cleanAndExit()
-        '''
-
+        """
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.HA.nodesCheck,
                                        False,
@@ -269,7 +266,6 @@ class HAfullNetPartition:
         """
         Check state after ONOS failure
         """
-
         main.HA.checkStateAfterEvent( main, afterWhich=0 )
 
         main.step( "Leadership Election is still functional" )

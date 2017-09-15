@@ -1,12 +1,14 @@
 import json
 import time
+
+
 class CheckingFlow:
 
     def __init__( self ):
         self.default = ''
 
     def checkFlow( self ):
-        main.step("Check flow is in the ADDED state")
+        main.step( "Check flow is in the ADDED state" )
         main.log.info( "Get the flows from ONOS" )
         try:
             flows = json.loads( main.Cluster.active( 0 ).REST.flows() )

@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,12 +18,11 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import sys
 import json
 import time
 import os
-'''
+"""
 SCPFscalingMaxIntents
 Push test Intents to onos
 CASE10: set up Null Provider
@@ -31,8 +30,9 @@ CASE11: set up Open Flows
 Check flows number, if flows number is not as except, finished this test iteration
 Scale up when reach the Limited
 Start from 1 nodes, 8 devices. Then Scale up to 3,5,7 nodes
-'''
+"""
 class SCPFscalingMaxIntents:
+
     def __init__( self ):
         self.default = ''
 
@@ -63,7 +63,7 @@ class SCPFscalingMaxIntents:
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.installSleep = int( main.params[ 'SLEEP' ][ 'install' ] )
             main.verifySleep = int( main.params[ 'SLEEP' ][ 'verify' ] )
-            main.rerouteSleep = int ( main.params[ 'SLEEP' ][ 'reroute' ] )
+            main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
             main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
@@ -97,6 +97,7 @@ class SCPFscalingMaxIntents:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
+
     def CASE1( self ):
         copyResult = main.ONOSbench.copyMininetFile( main.topology,
                                                      main.dependencyPath,
@@ -133,25 +134,24 @@ class SCPFscalingMaxIntents:
         # Setup the null-provider
         main.step( "Configuring null-provider" )
         cfgStatus = utilities.retry( main.ONOSbench.onosCfgSet,
-                                    main.FALSE,
-                                    [ main.Cluster.active( 0 ).ipAddress,
-                                      main.nullProviderCfg, 'deviceCount 8' ],
-                                    sleep=main.verifySleep,
-                                    attempts = main.verifyAttempts )
+                                     main.FALSE,
+                                     [ main.Cluster.active( 0 ).ipAddress,
+                                       main.nullProviderCfg, 'deviceCount 8' ],
+                                     sleep=main.verifySleep,
+                                     attempts=main.verifyAttempts )
         cfgStatus = cfgStatus and utilities.retry( main.ONOSbench.onosCfgSet,
                                                    main.FALSE,
                                                    [ main.Cluster.active( 0 ).ipAddress,
                                                      main.nullProviderCfg, 'topoShape reroute' ],
                                                    sleep=main.verifySleep,
-                                                   attempts = main.verifyAttempts )
+                                                   attempts=main.verifyAttempts )
 
         cfgStatus = cfgStatus and utilities.retry( main.ONOSbench.onosCfgSet,
                                                    main.FALSE,
                                                    [ main.Cluster.active( 0 ).ipAddress,
                                                      main.nullProviderCfg, 'enabled true' ],
                                                    sleep=main.verifySleep,
-                                                   attempts = main.verifyAttempts )
-
+                                                   attempts=main.verifyAttempts )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cfgStatus,
@@ -197,9 +197,9 @@ class SCPFscalingMaxIntents:
             main.setupSkipped = True
 
     def CASE11( self, main ):
-        '''
+        """
             Setting up mininet
-        '''
+        """
         import json
         import time
         devices = []
@@ -210,10 +210,10 @@ class SCPFscalingMaxIntents:
         time.sleep( main.startUpSleep )
         if main.flowObj:
             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                "useFlowObjectives", value="true" )
+                                                 "useFlowObjectives", value="true" )
             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                "defaultFlowObjectiveCompiler",
-                                value=main.linkCollectionIntentCfg )
+                                                 "defaultFlowObjectiveCompiler",
+                                                 value=main.linkCollectionIntentCfg )
         main.step( 'Starting mininet topology' )
         mnStatus = main.Mininet1.startNet( topoFile='~/mininet/custom/rerouteTopo.py' )
         utilities.assert_equals( expect=main.TRUE,
@@ -277,8 +277,6 @@ class SCPFscalingMaxIntents:
         if not caseResult:
             main.setupSkipped = True
 
-
-
     def CASE20( self, main ):
         try:
             from tests.dependencies.utils import Utils
@@ -330,9 +328,9 @@ class SCPFscalingMaxIntents:
 
         # make sure the checkInterval divisible batchSize
         main.checkInterval = int( int( main.checkInterval / main.batchSize ) * main.batchSize )
-        flowTemp=0
+        flowTemp = 0
         intentVerifyTemp = 0
-        totalFlows=0
+        totalFlows = 0
         for i in range( limit ):
 
             # Threads pool
@@ -352,8 +350,8 @@ class SCPFscalingMaxIntents:
                                  kwargs={ "offset": offtmp,
                                           "options": "-i",
                                           "timeout": main.timeout,
-                                          "background":False,
-                                          "noExit":True } )
+                                          "background": False,
+                                          "noExit": True } )
                 pool.append( t )
                 t.start()
                 main.threadID = main.threadID + 1
@@ -420,10 +418,10 @@ class SCPFscalingMaxIntents:
                     main.log.info( "Total Intents: {}".format( verifyTotalIntents ) )
                     break
 
-        utilities.assert_equals( expect = main.TRUE,
-                                 actual = intentsState,
-                                 onpass = "Successfully pushed and verified intents",
-                                 onfail = "Failed to push and verify intents" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=intentsState,
+                                 onpass="Successfully pushed and verified intents",
+                                 onfail="Failed to push and verify intents" )
 
         main.log.info( "Total Intents Installed before crash: {}".format( totalIntents ) )
         main.log.info( "Total Flows ADDED before crash: {}".format( totalFlows ) )

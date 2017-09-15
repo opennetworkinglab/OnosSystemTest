@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -10,7 +10,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 Custom topology for Mininet
 Author: kelvin@onlab.us
@@ -45,7 +44,9 @@ allSwitches = {}
 totalSwitches = 0
 totalEndSwitches = 0
 totalHosts = 0
-endSwitchCount = 0 # total count of end switch in each row in gui
+endSwitchCount = 0  # total count of end switch in each row in gui
+
+
 class spineTopo( Topo ):
 
     def __init__( self, **opts ):
@@ -71,8 +72,8 @@ class spineTopo( Topo ):
         global endSwitchCount
         endSwitchCount = e
 
-        print "Creating topology with", s,"spine", l,"leaf", c,"core",\
-                e,"end switches and",h,"host for each end switches"
+        print "Creating topology with", s, "spine", l, "leaf", c, "core",\
+                e, "end switches and", h, "host for each end switches"
 
         self.addCore( c )
         self.addSpine( s )
@@ -88,7 +89,6 @@ class spineTopo( Topo ):
         allSwitches.update( endSwitches )
         deviceData = self.createSwitchDict()
         self.genCfgJson( deviceData )
-
 
     def addCore( self, numSwitch ):
         global totalSwitches
@@ -134,7 +134,6 @@ class spineTopo( Topo ):
 
         return host
 
-
     def linkHosts( self, numHosts ):
         global endSwitches
         switches = sorted( endSwitches.values() )
@@ -142,7 +141,6 @@ class spineTopo( Topo ):
         for sw in switches:
             for i in xrange( numHosts ):
                 self.addLink( sw, self.addEndHosts() )
-
 
     def linkLayer( self, topLayer, botLayer ):
         """
@@ -156,14 +154,12 @@ class spineTopo( Topo ):
                        layer below
             botLater - Layer that is below the upper layer to be linked at
         """
-
         topSwitches = sorted( topLayer.keys() )
         botSwitches = sorted( botLayer.keys() )
 
         for topSw in topSwitches:
             for botSw in botSwitches:
                 self.addLink( topLayer.get( topSw ), botLayer.get( botSw ) )
-
 
     def linkEndSwitch( self, numSwitch, leafLayer ):
         global totalSwitches
@@ -182,7 +178,7 @@ class spineTopo( Topo ):
                     self.addLink( leaf[ i ], endSw )
                     self.addLink( leaf[ i + 1 ], endSw )
                 break
-            if i == ( len( leafSwitches ) - 1 ) and len( leafSwitches )%2:
+            if i == ( len( leafSwitches ) - 1 ) and len( leafSwitches ) % 2:
                 for j in xrange( numSwitch ):
                     self.addLink( leaf[ i ], self.addEnd() )
                 break
@@ -194,7 +190,7 @@ class spineTopo( Topo ):
                 continue
             if i == 1:
                 continue
-            if i%2 == 0:
+            if i % 2 == 0:
                 for j in xrange( numSwitch ):
                     endSw = self.addEnd()
                     self.addLink( leaf[ i ], endSw )
@@ -206,11 +202,9 @@ class spineTopo( Topo ):
         configJson[ "devices" ] = deviceData
         with open( 'spine.json', 'w+' ) as outfile:
             json.dump( configJson, outfile )
-        #cfgFile = open( "spine.json" , 'w+' )
-        #cfgFile.write( configJson )
-        #cfgFile.close()
-
-
+        # cfgFile = open( "spine.json" , 'w+' )
+        # cfgFile.write( configJson )
+        # cfgFile.close()
 
     def createSwitchDict( self ):
         global allSwitches
@@ -222,18 +216,18 @@ class spineTopo( Topo ):
         spineLong = -80
         leafLong = -90
         endLat = 30
-        rowCount = 0 # count of end switches or rows
-        colOffSet = 0 # off set for end switches; longitude
+        rowCount = 0  # count of end switches or rows
+        colOffSet = 0  # off set for end switches; longitude
 
-        #for i in xrange( len( allSwitches ) ):
+        # for i in xrange( len( allSwitches ) ):
         deviceList = []
         deviceDict = {}
         for sw in allSwitches:
             tempSw = allSwitches.get( sw )
-            uri = str( "{0:0>16}".format( str( hex( int( tempSw[ 1: ] ) )\
-                            ).split( "x" )[ 1 ] ) )
-            mac = str( "{0:0>12}".format( str( hex( int( tempSw[ 1: ] ) )\
-                            ).split( "x" )[ 1 ] ) )
+            uri = str( "{0:0>16}".format( str( hex( int( tempSw[ 1: ] ) )
+                                               ).split( "x" )[ 1 ] ) )
+            mac = str( "{0:0>12}".format( str( hex( int( tempSw[ 1: ] ) )
+                                               ).split( "x" )[ 1 ] ) )
 
             if "core" in sw:
                 latitude = 45
@@ -259,7 +253,7 @@ class spineTopo( Topo ):
                 endLat -= 1
                 rowCount += 1
 
-            tempItem = { "alias": allSwitches.get( sw ) ,
+            tempItem = { "alias": allSwitches.get( sw ),
                          "uri": "of:" + uri,
                          "mac": mac,
                          "annotations": { "name": sw,
@@ -269,21 +263,22 @@ class spineTopo( Topo ):
             deviceList.append( tempItem )
 
         return deviceList
-    #def createHostsJson( hostDict ):
+    # def createHostsJson( hostDict ):
 
 topos = { 'spine': ( lambda s=2, l=3, c=1, e=5, h=1: spineTopo( s=s,
                                                                 l=l,
                                                                 c=c,
                                                                 e=e,
-                                                                h=h) ) }
+                                                                h=h ) ) }
 
 # HERE THE CODE DEFINITION OF THE TOPOLOGY ENDS
+
 
 def setupNetwork():
     "Create network"
     topo = spineTopo()
-    #if controller_ip == '':
-        #controller_ip = '10.0.2.2';
+    # if controller_ip == '':
+    # controller_ip = '10.0.2.2';
     #    controller_ip = '127.0.0.1';
     network = Mininet( topo=topo,
                        autoSetMacs=True,
@@ -294,5 +289,5 @@ def setupNetwork():
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-    #setLogLevel('debug')
+    # setLogLevel( 'debug' )
     setupNetwork()

@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import os
 import imp
 import time
@@ -29,7 +28,7 @@ from core import utilities
 
 class Testcaselib:
 
-    useSSH=True
+    useSSH = True
 
     @staticmethod
     def initTest( main ):
@@ -60,7 +59,7 @@ class Testcaselib:
             main.dependencyPath = main.path + "/../dependencies/"
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
-            main.scale = (main.params[ 'SCALE' ][ 'size' ]).split( "," )
+            main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
             # main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
@@ -75,8 +74,6 @@ class Testcaselib:
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
-
-
 
     @staticmethod
     def installOnos( main, vlanCfg=True ):
@@ -119,7 +116,7 @@ class Testcaselib:
         cliResult = main.TRUE
         main.step( "Checking if ONOS CLI is ready" )
         for ctrl in main.Cluster.runningNodes:
-            ctrl.CLI.startCellCli( )
+            ctrl.CLI.startCellCli()
             cliResult = cliResult and ctrl.CLI.startOnosCli( ctrl.ipAddress,
                                                              commandlineTimeout=60,
                                                              onosStartTimeout=100 )
@@ -139,10 +136,10 @@ class Testcaselib:
                                  onfail="ONOS summary command failed" )
 
         with open( "%s/json/%s.json" % (
-                main.dependencyPath, main.cfgName) ) as cfg:
+                main.dependencyPath, main.cfgName ) ) as cfg:
             main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
         with open( "%s/json/%s.chart" % (
-                main.dependencyPath, main.cfgName) ) as chart:
+                main.dependencyPath, main.cfgName ) ) as chart:
             main.pingChart = json.load( chart )
         if not ready:
             main.log.error( "ONOS startup failed!" )
@@ -157,7 +154,7 @@ class Testcaselib:
     @staticmethod
     def startMininet( main, topology, args="" ):
         main.step( "Starting Mininet Topology" )
-        arg = "--onos %d %s" % (main.Cluster.numCtrls, args)
+        arg = "--onos %d %s" % ( main.Cluster.numCtrls, args )
         main.topology = topology
         topoResult = main.Mininet1.startNet(
                 topoFile=main.Mininet1.home + main.topology, args=arg )
@@ -172,44 +169,44 @@ class Testcaselib:
 
     @staticmethod
     def config( main, cfgName ):
-        main.spines     = []
+        main.spines = []
 
-        main.failures   = int(main.params[ 'failures' ])
-        main.cfgName    = cfgName
+        main.failures = int( main.params[ 'failures' ] )
+        main.cfgName = cfgName
 
-        if main.cfgName == '2x2' :
-            spine           = {}
-            spine[ 'name' ] = main.params['switches'][ 'spine1' ]
-            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid1' ]
-            main.spines.append(spine)
+        if main.cfgName == '2x2':
+            spine = {}
+            spine[ 'name' ] = main.params[ 'switches' ][ 'spine1' ]
+            spine[ 'dpid' ] = main.params[ 'switches' ][ 'spinedpid1' ]
+            main.spines.append( spine )
 
-            spine           = {}
-            spine[ 'name' ] = main.params['switches'][ 'spine2' ]
-            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid2' ]
-            main.spines.append(spine)
+            spine = {}
+            spine[ 'name' ] = main.params[ 'switches' ][ 'spine2' ]
+            spine[ 'dpid' ] = main.params[ 'switches' ][ 'spinedpid2' ]
+            main.spines.append( spine )
 
-        elif main.cfgName == '4x4' :
-            spine           = {}
-            spine[ 'name' ] = main.params['switches'][ 'spine1' ]
-            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid1' ]
-            main.spines.append(spine)
+        elif main.cfgName == '4x4':
+            spine = {}
+            spine[ 'name' ] = main.params[ 'switches' ][ 'spine1' ]
+            spine[ 'dpid' ] = main.params[ 'switches' ][ 'spinedpid1' ]
+            main.spines.append( spine )
 
-            spine           = {}
-            spine[ 'name' ] = main.params['switches'][ 'spine2' ]
-            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid2' ]
-            main.spines.append(spine)
+            spine = {}
+            spine[ 'name' ] = main.params[ 'switches' ][ 'spine2' ]
+            spine[ 'dpid' ] = main.params[ 'switches' ][ 'spinedpid2' ]
+            main.spines.append( spine )
 
-            spine           = {}
-            spine[ 'name' ] = main.params['switches'][ 'spine3' ]
-            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid3' ]
-            main.spines.append(spine)
+            spine = {}
+            spine[ 'name' ] = main.params[ 'switches' ][ 'spine3' ]
+            spine[ 'dpid' ] = main.params[ 'switches' ][ 'spinedpid3' ]
+            main.spines.append( spine )
 
-            spine           = {}
-            spine[ 'name' ] = main.params['switches'][ 'spine4' ]
-            spine[ 'dpid' ] = main.params['switches'][ 'spinedpid4' ]
-            main.spines.append(spine)
+            spine = {}
+            spine[ 'name' ] = main.params[ 'switches' ][ 'spine4' ]
+            spine[ 'dpid' ] = main.params[ 'switches' ][ 'spinedpid4' ]
+            main.spines.append( spine )
 
-        else :
+        else:
             main.log.error( "Configuration failed!" )
             main.cleanAndExit()
 
@@ -222,9 +219,9 @@ class Testcaselib:
                                  kwargs={ 'min': minFlowCount },
                                  attempts=10,
                                  sleep=10 )
-        utilities.assertEquals( \
+        utilities.assertEquals(
                 expect=True,
-                actual=(count > 0),
+                actual=( count > 0 ),
                 onpass="Flow count looks correct: " + str( count ),
                 onfail="Flow count looks wrong: " + str( count ) )
 
@@ -234,7 +231,7 @@ class Testcaselib:
                                      kwargs={ 'isPENDING': False },
                                      attempts=2,
                                      sleep=10 )
-        utilities.assertEquals( \
+        utilities.assertEquals(
                 expect=main.TRUE,
                 actual=flowCheck,
                 onpass="Flow status is correct!",
@@ -253,11 +250,11 @@ class Testcaselib:
     def pingAll( main, tag="", dumpflows=True ):
         main.log.report( "Check full connectivity" )
         print main.pingChart
-        for entry in main.pingChart.itervalues( ):
+        for entry in main.pingChart.itervalues():
             print entry
             hosts, expect = entry[ 'hosts' ], entry[ 'expect' ]
             expect = main.TRUE if expect else main.FALSE
-            main.step( "Connectivity for %s %s" % (str( hosts ), tag) )
+            main.step( "Connectivity for %s %s" % ( str( hosts ), tag ) )
             pa = main.Mininet1.pingallHosts( hosts )
             utilities.assert_equals( expect=expect, actual=pa,
                                      onpass="IP connectivity successfully tested",
@@ -280,7 +277,7 @@ class Testcaselib:
         Kill a link and verify ONOS can see the proper link change
         """
         main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        main.step( "Kill link between %s and %s" % (end1, end2) )
+        main.step( "Kill link between %s and %s" % ( end1, end2 ) )
         LinkDown = main.Mininet1.link( END1=end1, END2=end2, OPTION="down" )
         LinkDown = main.Mininet1.link( END2=end1, END1=end2, OPTION="down" )
         main.log.info(
@@ -308,7 +305,7 @@ class Testcaselib:
             switches, links: number of expected switches and links after linkDown, ex.: '4', '6'
         Kill a link and verify ONOS can see the proper link change
         """
-        main.step( "Restore link between %s and %s" % (end1, end2) )
+        main.step( "Restore link between %s and %s" % ( end1, end2 ) )
         result = False
         count = 0
         while True:
@@ -319,7 +316,7 @@ class Testcaselib:
                     "Waiting %s seconds for link up to be discovered" % main.linkSleep )
             time.sleep( main.linkSleep )
 
-            for i in range(0, main.Cluster.numCtrls):
+            for i in range( 0, main.Cluster.numCtrls ):
                 ctrl = main.Cluster.runningNodes[ i ]
                 onosIsUp = main.ONOSbench.isup( ctrl.ipAddress )
                 if onosIsUp == main.TRUE:
@@ -347,7 +344,7 @@ class Testcaselib:
         main.Mininet1.switch( SW=switch, OPTION="stop" )
         # todo make this repeatable
         main.log.info( "Waiting %s seconds for switch down to be discovered" % (
-            main.switchSleep) )
+            main.switchSleep ) )
         time.sleep( main.switchSleep )
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
@@ -370,7 +367,7 @@ class Testcaselib:
         main.log.info( "Starting" + switch )
         main.Mininet1.switch( SW=switch, OPTION="start" )
         main.log.info( "Waiting %s seconds for switch up to be discovered" % (
-            main.switchSleep) )
+            main.switchSleep ) )
         time.sleep( main.switchSleep )
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
@@ -413,7 +410,6 @@ class Testcaselib:
         switches, links, nodes: number of expected switches, links and nodes after KillOnos, ex.: '4', '6'
         Completely Kill an ONOS instance and verify the ONOS cluster can see the proper change
         """
-
         main.step( "Killing ONOS instance" )
 
         for i in nodes:
@@ -484,7 +480,7 @@ class Testcaselib:
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( Testcaselib.nodesCheck,
                                        False,
-                                       args=[nodes],
+                                       args=[ nodes ],
                                        attempts=5,
                                        sleep=10 )
         utilities.assert_equals( expect=True, actual=nodeResults,
@@ -527,15 +523,15 @@ class Testcaselib:
     def addHostCfg( main ):
         """
         Adds Host Configuration to ONOS
-        Updates expected state of the network (pingChart)
+        Updates expected state of the network ( pingChart )
         """
         import json
-        hostCfg = { }
+        hostCfg = {}
         with open( main.dependencyPath + "/json/extra.json" ) as template:
             hostCfg = json.load( template )
         main.pingChart[ 'ip' ][ 'hosts' ] += [ 'in1' ]
         main.step( "Pushing new configuration" )
-        mac, cfg = hostCfg[ 'hosts' ].popitem( )
+        mac, cfg = hostCfg[ 'hosts' ].popitem()
         main.Cluster.active( 0 ).REST.setNetCfg( cfg[ 'basic' ],
                                                  subjectClass="hosts",
                                                  subjectKey=urllib.quote( mac,
@@ -543,17 +539,17 @@ class Testcaselib:
                                                  configKey="basic" )
         main.pingChart[ 'ip' ][ 'hosts' ] += [ 'out1' ]
         main.step( "Pushing new configuration" )
-        mac, cfg = hostCfg[ 'hosts' ].popitem( )
+        mac, cfg = hostCfg[ 'hosts' ].popitem()
         main.Cluster.active( 0 ).REST.setNetCfg( cfg[ 'basic' ],
                                                  subjectClass="hosts",
                                                  subjectKey=urllib.quote( mac,
                                                                           safe='' ),
-                                             configKey="basic" )
+                                                 configKey="basic" )
         main.pingChart.update( { 'vlan1': { "expect": "True",
                                             "hosts": [ "olt1", "vsg1" ] } } )
         main.pingChart[ 'vlan5' ][ 'expect' ] = 0
         main.pingChart[ 'vlan10' ][ 'expect' ] = 0
-        ports = "[%s,%s]" % (5, 6)
+        ports = "[%s,%s]" % ( 5, 6 )
         cfg = '{"of:0000000000000001":[{"vlan":1,"ports":%s,"name":"OLT 1"}]}' % ports
         main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
                                                  subjectClass="apps",
@@ -564,15 +560,15 @@ class Testcaselib:
     def delHostCfg( main ):
         """
         Removest Host Configuration from ONOS
-        Updates expected state of the network (pingChart)
+        Updates expected state of the network ( pingChart )
         """
         import json
-        hostCfg = { }
+        hostCfg = {}
         with open( main.dependencyPath + "/json/extra.json" ) as template:
             hostCfg = json.load( template )
         main.step( "Removing host configuration" )
         main.pingChart[ 'ip' ][ 'expect' ] = 0
-        mac, cfg = hostCfg[ 'hosts' ].popitem( )
+        mac, cfg = hostCfg[ 'hosts' ].popitem()
         main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="hosts",
                                                     subjectKey=urllib.quote(
                                                             mac,
@@ -580,7 +576,7 @@ class Testcaselib:
                                                     configKey="basic" )
         main.step( "Removing configuration" )
         main.pingChart[ 'ip' ][ 'expect' ] = 0
-        mac, cfg = hostCfg[ 'hosts' ].popitem( )
+        mac, cfg = hostCfg[ 'hosts' ].popitem()
         main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="hosts",
                                                     subjectKey=urllib.quote(
                                                             mac,
@@ -591,20 +587,20 @@ class Testcaselib:
         main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="apps",
                                                     subjectKey="org.onosproject.segmentrouting",
                                                     configKey="xconnect" )
+
     @staticmethod
     def nodesCheck( nodes ):
         results = True
         nodesOutput = main.Cluster.command( "nodes", specificDriver=2 )
-        ips = main.Cluster.getIps( activeOnly=True )
-        ips.sort()
+        ips = sorted( main.Cluster.getIps( activeOnly=True ) )
         for i in nodesOutput:
             try:
                 current = json.loads( i )
                 activeIps = []
                 currentResult = False
                 for node in current:
-                    if node['state'] == 'READY':
-                        activeIps.append( node['ip'] )
+                    if node[ 'state' ] == 'READY':
+                        activeIps.append( node[ 'ip' ] )
                 currentResult = True
                 for ip in ips:
                     if ip not in activeIps:

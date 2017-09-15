@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -38,9 +38,9 @@ class DPCliDriver( CLI ):
 
         self.name = self.options[ 'name' ]
         self.handle = super( DPCliDriver, self ).connect( user_name=self.user_name,
-                        ip_address=self.ip_address,
-                        port=self.port,
-                        pwd=self.pwd )
+                                                          ip_address=self.ip_address,
+                                                          port=self.port,
+                                                          pwd=self.pwd )
 
         if self.handle:
             return self.handle
@@ -148,7 +148,7 @@ class DPCliDriver( CLI ):
         self.handle.sendline( "sudo fping -S " + str( netsrc ) + "." +
                               str( netstrt ) + ".1.1 -f /tmp/ip_table" +
                               str( netdst ) + ".txt" )
-        while 1:
+        while True:
             i = self.handle.expect( [
                                     "reachable",
                                     "unreachable",
@@ -210,4 +210,3 @@ class DPCliDriver( CLI ):
             main.log.exception( "Connection failed to the host" )
             response = main.FALSE
         return response
-

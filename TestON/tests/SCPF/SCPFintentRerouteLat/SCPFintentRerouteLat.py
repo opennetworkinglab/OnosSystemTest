@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 # SCPFintentRerouteLat
 """
 SCPFintentRerouteLat
@@ -26,24 +25,23 @@ SCPFintentRerouteLat
     - Test Algorithm:
         1. Start Null Provider reroute Topology
         2. Using Push-test-intents to push batch size intents from switch 1 to switch 7
-        3. Cut the link between switch 3 and switch 4 (the path will reroute to switch 8)
+        3. Cut the link between switch 3 and switch 4 ( the path will reroute to switch 8 )
         4. Get the topology time stamp
-        5. Get Intent reroute(Installed) time stamp from each nodes
+        5. Get Intent reroute( Installed ) time stamp from each nodes
         6. Use the latest intent time stamp subtract topology time stamp
     - This test will run 5 warm up by default, warm up iteration can be setup in Param file
     - The intent batch size will default set to 1, 100, and 1000, also can be set in Param file
     - The unit of the latency result is milliseconds
 """
-
-
 class SCPFintentRerouteLat:
+
     def __init__( self ):
         self.default = ''
 
     def CASE0( self, main ):
         import imp
         import os
-        '''
+        """
         - GIT
         - BUILDING ONOS
             Pull specific ONOS branch, then Build ONOS ono ONOS Bench.
@@ -51,7 +49,7 @@ class SCPFintentRerouteLat:
             test env. We want Jenkins jobs to pull&build for flexibility to handle
             different versions of ONOS.
         - Construct tests variables
-        '''
+        """
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
@@ -115,11 +113,10 @@ class SCPFintentRerouteLat:
         main.testSetUp.evnSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
 
-
     def CASE1( self, main ):
-        '''
+        """
             clean up test environment and set up
-        '''
+        """
         import time
 
         main.maxNumBatch = 0
@@ -239,7 +236,8 @@ class SCPFintentRerouteLat:
                         main.startLine[ i ] = timestamp
                         main.log.info( "Timestamp of last LINK_REMOVED event on node {} is {}".format( i + 1,
                                                                                                        main.startLine[ i ] ) )
-                if skip: continue
+                if skip:
+                    continue
 
                 # calculate values
                 topologyTimestamps = main.intentRerouteLatFuncs.getTopologyTimestamps( main )

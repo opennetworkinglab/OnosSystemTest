@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,6 +19,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
+
 
 class ONOSSetup:
     main = None
@@ -84,7 +85,7 @@ class ONOSSetup:
         Returns:
             Returns main.TRUE
         """
-        if includeGitPull :
+        if includeGitPull:
             self.gitPulling()
 
         try:
@@ -151,7 +152,7 @@ class ONOSSetup:
         Required:
             * cluster - the cluster driver that will be used.
             * killRemoveMax - The boolean that will decide either to kill
-            only running nodes (False) or max number of nodes (True).
+            only running nodes ( False ) or max number of nodes ( True ).
             * stopOnos - If wish to stop onos before killing it. True for
             enable stop , False for disable stop.
         Returns:
@@ -173,7 +174,7 @@ class ONOSSetup:
             * cellName - The name of the cell.
             * Mininet - a mininet driver that will be used.
             * useSSH - True for using ssh when creating a cell
-            * ips - ip(s) of the node(s).
+            * ips - ip( s ) of the node( s ).
         Returns:
             Returns main.TRUE if it successfully executed.
         """
@@ -324,8 +325,8 @@ class ONOSSetup:
             Initial ONOS setting up of the tests. It will also verify the result of each steps.
             The procedures will be:
                 killing onos
-                creating (optional) /applying cell
-                removing raft logs (optional)
+                creating ( optional ) /applying cell
+                removing raft logs ( optional )
                 uninstalling onos
                 extra procedure to be applied( optional )
                 building onos
@@ -342,10 +343,10 @@ class ONOSSetup:
             * newCell - True for making a new cell and False for not making it.
             * cellName - Name of the cell that will be used.
             * removeLog - True if wish to remove raft logs
-            * extraApply - Function(s) that will be called before building ONOS. Default to None.
-            * applyArgs - argument of the functon(s) of the extraApply. Should be in list.
-            * extraClean - Function(s) that will be called after building ONOS. Defaults to None.
-            * cleanArgs - argument of the functon(s) of the extraClean. Should be in list.
+            * extraApply - Function( s ) that will be called before building ONOS. Default to None.
+            * applyArgs - argument of the functon( s ) of the extraApply. Should be in list.
+            * extraClean - Function( s ) that will be called after building ONOS. Defaults to None.
+            * cleanArgs - argument of the functon( s ) of the extraClean. Should be in list.
             * skipPack - True if wish to skip some packing.
             * installMax - True if wish to install onos max number of nodes
             False if wish to install onos of running nodes only
@@ -378,7 +379,7 @@ class ONOSSetup:
                                                useSSH, tempOnosIp,
                                                installMax )
             if removeLog:
-                main.log.info("Removing raft logs")
+                main.log.info( "Removing raft logs" )
                 main.ONOSbench.onosRemoveRaftLogs()
 
             onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )

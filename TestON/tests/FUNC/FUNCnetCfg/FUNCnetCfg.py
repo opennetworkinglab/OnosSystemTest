@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 # Testing the basic intent functionality of ONOS
 
 
@@ -36,7 +35,6 @@ class FUNCnetCfg:
             - Checkout ONOS master branch
             - Pull latest ONOS code
         """
-
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
@@ -222,7 +220,6 @@ class FUNCnetCfg:
                                " not discovered yet. One device is allowed" +\
                                ", the other disallowed."
 
-
         pprint = main.Cluster.active( 0 ).REST.pprint
 
         main.step( "Add Net Cfg for switch1" )
@@ -241,14 +238,14 @@ class FUNCnetCfg:
                                                               subjectKey="of:0000000000000001",
                                                               configKey="basic" )
         s1Result = False
-        #Wait 5 secs after set up netCfg
+        # Wait 5 secs after set up netCfg
         time.sleep( main.SetNetCfgSleep )
         if setS1Allow:
             getS1 = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                      retValue=False,
-                                     kwargs={"subjectClass":"devices",
-                                             "subjectKey" : "of:0000000000000001",
-                                             "configKey" : "basic"},
+                                     kwargs={ "subjectClass": "devices",
+                                              "subjectKey": "of:0000000000000001",
+                                              "configKey": "basic" },
                                      attempts=main.retrytimes,
                                      sleep=main.retrysleep )
             onosCfg = pprint( getS1 )
@@ -290,9 +287,9 @@ class FUNCnetCfg:
             # Check what we set is what is in ONOS
             getS3 = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                      retValue=False,
-                                     kwargs={"subjectClass": "devices",
-                                            "subjectKey": "of:0000000000000003",
-                                            "configKey": "basic"},
+                                     kwargs={ "subjectClass": "devices",
+                                              "subjectKey": "of:0000000000000003",
+                                              "configKey": "basic" },
                                      attempts=main.retrytimes,
                                      sleep=main.retrysleep )
             onosCfg = pprint( getS3 )
@@ -400,9 +397,9 @@ class FUNCnetCfg:
             # Check what we set is what is in ONOS
             getS2 = utilities.retry( f=main.Cluster.active( 1 ).REST.getNetCfg,
                                      retValue=False,
-                                     kwargs={"subjectClass": "devices",
-                                            "subjectKey": "of:0000000000000002",
-                                            "configKey": "basic"},
+                                     kwargs={ "subjectClass": "devices",
+                                              "subjectKey": "of:0000000000000002",
+                                              "configKey": "basic" },
                                      attempts=main.retrytimes,
                                      sleep=main.retrysleep )
             onosCfg = pprint( getS2 )
@@ -432,17 +429,17 @@ class FUNCnetCfg:
         main.log.info( "s4Json:" + str( s4Json ) )
         main.s4Json = s4Json
         setS4Disallow = main.Cluster.active( 2 ).REST.setNetCfg( s4Json,
-                                                  subjectClass="devices",
-                                                  subjectKey="of:0000000000000004",
-                                                  configKey="basic" )
+                                                                 subjectClass="devices",
+                                                                 subjectKey="of:0000000000000004",
+                                                                 configKey="basic" )
         s4Result = False
         if setS4Disallow:
             # Check what we set is what is in ONOS
             getS4 = utilities.retry( f=main.Cluster.active( 2 ).REST.getNetCfg,
                                      retValue=False,
-                                     kwargs={"subjectClass": "devices",
-                                            "subjectKey": "of:0000000000000004",
-                                            "configKey": "basic"},
+                                     kwargs={ "subjectClass": "devices",
+                                              "subjectKey": "of:0000000000000004",
+                                              "configKey": "basic" },
                                      attempts=main.retrytimes,
                                      sleep=main.retrysleep )
 
@@ -510,8 +507,6 @@ class FUNCnetCfg:
                                  actual=stepResult,
                                  onpass="Configured devices' annotations are correct",
                                  onfail="Incorrect annotations for configured devices." )
-
-
 
     def CASE24( self, main ):
         """
@@ -616,8 +611,8 @@ class FUNCnetCfg:
         main.step( "Assert the net config for devices is empty" )
 
         get = utilities.retry( f=main.Cluster.active( 2 ).REST.getNetCfg,
-                               retValue = False,
-                               kwargs={"subjectClass":"devices"},
+                               retValue=False,
+                               kwargs={ "subjectClass": "devices" },
                                sleep=main.retrysleep,
                                attempts=main.retrytimes )
 
@@ -746,9 +741,9 @@ class FUNCnetCfg:
         if setS6Disallow:
             getS6 = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                      retValue=False,
-                                     kwargs={"subjectClass":"devices",
-                                            "subjectKey" : "of:0000000000000006",
-                                            "configKey" : "basic"},
+                                     kwargs={ "subjectClass": "devices",
+                                              "subjectKey": "of:0000000000000006",
+                                              "configKey": "basic" },
                                      sleep=main.retrysleep,
                                      attempts=main.retrytimes )
             onosCfg = pprint( getS6 )

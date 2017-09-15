@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 # Testing the basic intent functionality of ONOS
 
 
@@ -90,16 +89,15 @@ class FUNCoptical:
         """
             Start Mininet opticalTest Topology
         """
-
         main.case( "Mininet with Linc-OE startup" )
         main.step( "Push TopoDDriver.json to ONOS through onos-netcfg" )
         topoResult = True
         for ctrl in main.Cluster.active():
             topoResult = topoResult and \
-                         main.ONOSbench.onosNetCfg(controllerIp=ctrl.ipAddress,
-                                                   path=main.dependencyPath,
-                                                   fileName="TopoDDriver.json")
-        #Exit if topology did not load properly
+                         main.ONOSbench.onosNetCfg( controllerIp=ctrl.ipAddress,
+                                                    path=main.dependencyPath,
+                                                    fileName="TopoDDriver.json" )
+        # Exit if topology did not load properly
         if not topoResult:
             main.cleanAndExit()
 
@@ -190,6 +188,7 @@ class FUNCoptical:
         except ( NameError, AttributeError ):
             main.Utils = Utils()
         main.Utils.copyKarafLog( "cycle" + str( main.cycle ) )
+
     def CASE21( self, main ):
         """
             Run pingall to discover all hosts
@@ -219,7 +218,7 @@ class FUNCoptical:
 
         arpingHostResults = main.TRUE
         for host in hosts:
-            if main.LincOE.arping( host, ethDevice=host+"-eth0" ):
+            if main.LincOE.arping( host, ethDevice=host + "-eth0" ):
                 main.log.info( "Successfully reached host {} with arping".format( host ) )
             else:
                 main.log.error( "Could not reach host {} with arping".format( host ) )
@@ -371,7 +370,6 @@ class FUNCoptical:
                                  onpass="ONOS correctly discovered the topology",
                                  onfail="ONOS incorrectly discovered the topology" )
 
-
     def CASE31( self, main ):
         import time
         """
@@ -404,8 +402,8 @@ class FUNCoptical:
                                                          intentsId=main.pIntentsId )
         time.sleep( 10 )
         checkStateResult = utilities.retry( f=main.Cluster.active( 0 ).CLI.checkIntentState,
-                                           retValue=main.FALSE, args=( main.pIntentsId, "INSTALLED" ),
-                                           sleep=main.checkIntentSleep, attempts=10 )
+                                            retValue=main.FALSE, args=( main.pIntentsId, "INSTALLED" ),
+                                            sleep=main.checkIntentSleep, attempts=10 )
         main.log.info( "Checking flows state" )
         checkFlowResult = main.Cluster.active( 0 ).CLI.checkFlowsState()
         # Sleep for 10 seconds to provide time for the intent state to change
@@ -453,11 +451,11 @@ class FUNCoptical:
                 time.sleep( 15 )
 
             for ctrl in main.Cluster.active():
-                if not any ( intent.get('state') == 'WITHDRAWING' for intent
-                         in json.loads( ctrl.CLI.intents() ) ):
-                        main.log.debug( json.loads( ctrl.CLI.intents() ) )
-                        removeResult = main.FALSE
-                        break
+                if not any( intent.get( 'state' ) == 'WITHDRAWING' for intent
+                            in json.loads( ctrl.CLI.intents() ) ):
+                    main.log.debug( json.loads( ctrl.CLI.intents() ) )
+                    removeResult = main.FALSE
+                    break
                 else:
                     removeResult = main.TRUE
         except ( TypeError, ValueError ):
@@ -547,11 +545,11 @@ class FUNCoptical:
             time.sleep( 15 )
 
             for ctrl in main.Cluster.active():
-                if not any ( intent.get('state') == 'WITHDRAWING' for intent
-                         in json.loads( ctrl.CLI.intents() ) ):
-                        main.log.debug( json.loads( ctrl.CLI.intents() ) )
-                        removeResult = main.FALSE
-                        break
+                if not any( intent.get( 'state' ) == 'WITHDRAWING' for intent
+                            in json.loads( ctrl.CLI.intents() ) ):
+                    main.log.debug( json.loads( ctrl.CLI.intents() ) )
+                    removeResult = main.FALSE
+                    break
                 else:
                     removeResult = main.TRUE
         except ( TypeError, ValueError ):

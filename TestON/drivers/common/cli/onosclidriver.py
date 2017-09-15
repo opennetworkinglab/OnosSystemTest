@@ -2,7 +2,7 @@
 
 """
 OCT 13 2014
-Copyright 2014 Open Networking Foundation (ONF)
+Copyright 2014 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -11,7 +11,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,7 +21,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 This driver enters the onos> prompt to issue commands.
 
@@ -47,6 +46,7 @@ from core.graph import Graph
 from cStringIO import StringIO
 from itertools import izip
 
+
 class OnosCliDriver( CLI ):
 
     def __init__( self ):
@@ -61,10 +61,11 @@ class OnosCliDriver( CLI ):
         self.graph = Graph()
         super( OnosCliDriver, self ).__init__()
 
-    def checkOptions(self, var, defaultVar):
+    def checkOptions( self, var, defaultVar ):
         if var is None or var == "":
             return defaultVar
         return var
+
     def connect( self, **connectargs ):
         """
         Creates ssh handle for ONOS cli.
@@ -81,9 +82,9 @@ class OnosCliDriver( CLI ):
                 elif key == "karaf_password":
                     self.karafPass = self.options[ key ]
 
-            self.home = self.checkOptions(self.home, "~/onos")
-            self.karafUser = self.checkOptions(self.karafUser, self.user_name)
-            self.karafPass = self.checkOptions(self.karafPass, self.pwd )
+            self.home = self.checkOptions( self.home, "~/onos" )
+            self.karafUser = self.checkOptions( self.karafUser, self.user_name )
+            self.karafPass = self.checkOptions( self.karafPass, self.pwd )
 
             for key in self.options:
                 if key == 'onosIp':
@@ -163,7 +164,7 @@ class OnosCliDriver( CLI ):
         """
         Sends 'logout' command to ONOS cli
         Returns main.TRUE if exited CLI and
-                main.FALSE on timeout (not guranteed you are disconnected)
+                main.FALSE on timeout ( not guranteed you are disconnected )
                 None on TypeError
                 Exits test on unknown error or pexpect exits unexpectedly
         """
@@ -227,12 +228,12 @@ class OnosCliDriver( CLI ):
                 # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
-                self.handle.expect(str(cellname))
+                self.handle.expect( str( cellname ) )
                 handleBefore = self.handle.before
                 handleAfter = self.handle.after
                 # Get the rest of the handle
-                self.handle.sendline("")
-                self.handle.expect(self.prompt)
+                self.handle.sendline( "" )
+                self.handle.expect( self.prompt )
                 handleMore = self.handle.before
 
                 main.log.info( "Cell call returned: " + handleBefore +
@@ -272,7 +273,7 @@ class OnosCliDriver( CLI ):
             # Check if we are already in the cli
             self.handle.sendline( "" )
             x = self.handle.expect( [
-                self.prompt, "onos>" ], commandlineTimeout)
+                self.prompt, "onos>" ], commandlineTimeout )
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
                 return main.TRUE
@@ -351,11 +352,10 @@ class OnosCliDriver( CLI ):
         Note: karafTimeout is left as str so that this could be read
         and passed to startOnosCli from PARAMS file as str.
         """
-
         try:
             self.handle.sendline( "" )
             x = self.handle.expect( [
-                self.prompt, "onos>" ], commandlineTimeout)
+                self.prompt, "onos>" ], commandlineTimeout )
 
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
@@ -478,7 +478,7 @@ class OnosCliDriver( CLI ):
             self.handle.sendline( "" )
             i = self.handle.expect( [ "onos>", self.prompt, pexpect.TIMEOUT ] )
             if i == 1:
-                main.log.error( self.name + ": onos cli session closed. ")
+                main.log.error( self.name + ": onos cli session closed. " )
                 if self.onosIp:
                     main.log.warn( "Trying to reconnect " + self.onosIp )
                     reconnectResult = self.startOnosCli( self.onosIp )
@@ -504,12 +504,12 @@ class OnosCliDriver( CLI ):
                 self.log( logStr, noExit=noExit )
             self.handle.sendline( cmdStr )
             if dollarSign:
-                i = self.handle.expect( ["onos>"], timeout )
+                i = self.handle.expect( [ "onos>" ], timeout )
             else:
-                i = self.handle.expect( ["onos>", self.prompt], timeout )
+                i = self.handle.expect( [ "onos>", self.prompt ], timeout )
             response = self.handle.before
             # TODO: do something with i
-            main.log.info( "Command '" + str( cmdStr ) + "' sent to "
+            main.log.info( "Command '" + str(cmdStr) + "' sent to "
                            + self.name + "." )
             if debug:
                 main.log.debug( self.name + ": Raw output" )
@@ -523,7 +523,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": " + repr( response ) )
 
             # Remove extra return chars that get added
-            response = re.sub(  r"\s\r", "", response )
+            response = re.sub( r"\s\r", "", response )
             if debug:
                 main.log.debug( self.name + ": Removed extra returns " +
                                 "from output" )
@@ -541,7 +541,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": split output" )
                 for r in output:
                     main.log.debug( self.name + ": " + repr( r ) )
-            output = output[1].strip()
+            output = output[ 1 ].strip()
             if showResponse:
                 main.log.info( "Response from ONOS: {}".format( output ) )
             return output
@@ -647,7 +647,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def nodes( self, jsonFormat=True):
+    def nodes( self, jsonFormat=True ):
         """
         List the nodes currently visible
         Issues command: 'nodes'
@@ -794,7 +794,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def checkMasters( self, jsonFormat=True  ):
+    def checkMasters( self, jsonFormat=True ):
         """
             Returns the output of the masters command.
             Optional argument:
@@ -852,7 +852,7 @@ class OnosCliDriver( CLI ):
                     main.log.info( "\n" + self.checkMasters( False ) )
                     return main.FALSE
             main.log.info( "Mastership balanced between " +
-                           str( len(masters) ) + " masters" )
+                           str( len( masters ) ) + " masters" )
             return main.TRUE
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, mastersOutput ) )
@@ -1186,9 +1186,9 @@ class OnosCliDriver( CLI ):
             else:
                 main.log.info( "Host intent installed between " +
                                str( hostIdOne ) + " and " + str( hostIdTwo ) )
-                match = re.search('id=0x([\da-f]+),', handle)
+                match = re.search( 'id=0x([\da-f]+),', handle )
                 if match:
-                    return match.group()[3:-1]
+                    return match.group()[ 3:-1 ]
                 else:
                     main.log.error( "Error, intent ID not found" )
                     main.log.debug( "Response from ONOS was: " +
@@ -1234,9 +1234,9 @@ class OnosCliDriver( CLI ):
                 main.log.info( "Optical intent installed between " +
                                str( ingressDevice ) + " and " +
                                str( egressDevice ) )
-                match = re.search('id=0x([\da-f]+),', handle)
+                match = re.search( 'id=0x([\da-f]+),', handle )
                 if match:
-                    return match.group()[3:-1]
+                    return match.group()[ 3:-1 ]
                 else:
                     main.log.error( "Error, intent ID not found" )
                     return None
@@ -1374,9 +1374,9 @@ class OnosCliDriver( CLI ):
                 main.log.info( "Point-to-point intent installed between " +
                                str( ingressDevice ) + " and " +
                                str( egressDevice ) )
-                match = re.search('id=0x([\da-f]+),', handle)
+                match = re.search( 'id=0x([\da-f]+),', handle )
                 if match:
-                    return match.group()[3:-1]
+                    return match.group()[ 3:-1 ]
                 else:
                     main.log.error( "Error, intent ID not found" )
                     return None
@@ -1532,9 +1532,9 @@ class OnosCliDriver( CLI ):
                                 "intent" )
                 return None
             else:
-                match = re.search('id=0x([\da-f]+),', handle)
+                match = re.search( 'id=0x([\da-f]+),', handle )
                 if match:
-                    return match.group()[3:-1]
+                    return match.group()[ 3:-1 ]
                 else:
                     main.log.error( "Error, intent ID not found" )
                     return None
@@ -1691,9 +1691,9 @@ class OnosCliDriver( CLI ):
                                 "intent" )
                 return None
             else:
-                match = re.search('id=0x([\da-f]+),', handle)
+                match = re.search( 'id=0x([\da-f]+),', handle )
                 if match:
-                    return match.group()[3:-1]
+                    return match.group()[ 3:-1 ]
                 else:
                     main.log.error( "Error, intent ID not found" )
                     return None
@@ -1729,7 +1729,7 @@ class OnosCliDriver( CLI ):
             tcpDst="",
             ingressLabel="",
             egressLabel="",
-            priority=""):
+            priority="" ):
         """
         Required:
             * ingressDevice: device id of ingress device
@@ -1824,9 +1824,9 @@ class OnosCliDriver( CLI ):
                 main.log.info( "MPLS intent installed between " +
                                str( ingressDevice ) + " and " +
                                str( egressDevice ) )
-                match = re.search('id=0x([\da-f]+),', handle)
+                match = re.search( 'id=0x([\da-f]+),', handle )
                 if match:
-                    return match.group()[3:-1]
+                    return match.group()[ 3:-1 ]
                 else:
                     main.log.error( "Error, intent ID not found" )
                     return None
@@ -2000,7 +2000,7 @@ class OnosCliDriver( CLI ):
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             jsonResult = json.loads( handle )
-            return len(jsonResult['routes4'])
+            return len( jsonResult[ 'routes4' ] )
         except AssertionError:
             main.log.exception( "" )
             return None
@@ -2015,8 +2015,8 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    #=============Function to check Bandwidth allocation========
-    def allocations( self, jsonFormat = True, dollarSign = True ):
+    # =============Function to check Bandwidth allocation========
+    def allocations( self, jsonFormat=True, dollarSign=True ):
         """
         Description:
             Obtain Bandwidth Allocation Information from ONOS cli.
@@ -2043,7 +2043,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def intents( self, jsonFormat = True, summary = False, **intentargs):
+    def intents( self, jsonFormat=True, summary=False, **intentargs ):
         """
         Description:
             Obtain intents from the ONOS cli.
@@ -2091,22 +2091,21 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getIntentState(self, intentsId, intentsJson=None):
+    def getIntentState( self, intentsId, intentsJson=None ):
         """
         Description:
-            Gets intent state. Accepts a single intent ID (string type) or a
+            Gets intent state. Accepts a single intent ID ( string type ) or a
             list of intent IDs.
         Parameters:
             intentsId: intent ID, both string type and list type are acceptable
             intentsJson: parsed json object from the onos:intents api
         Returns:
-            Returns the state (string type) of the ID if a single intent ID is
+            Returns the state ( string type ) of the ID if a single intent ID is
             accepted.
             Returns a list of dictionaries if a list of intent IDs is accepted,
             and each dictionary maps 'id' to the Intent ID and 'state' to
             corresponding intent state.
         """
-
         try:
             state = "State is Undefined"
             if not intentsJson:
@@ -2157,7 +2156,7 @@ class OnosCliDriver( CLI ):
         Required:
             intentsId - List of intents ID to be checked
         Optional:
-            expectedState - Check the expected state(s) of each intents
+            expectedState - Check the expected state( s ) of each intents
                             state in the list.
                             *NOTE: You can pass in a list of expected state,
                             Eg: expectedState = [ 'INSTALLED' , 'INSTALLING' ]
@@ -2169,15 +2168,15 @@ class OnosCliDriver( CLI ):
             returnValue = main.TRUE
             # Generating a dictionary: intent id as a key and state as value
 
-            #intentsDict = self.getIntentState( intentsId )
+            # intentsDict = self.getIntentState( intentsId )
             intentsDict = []
             for intent in json.loads( self.intents() ):
-                if isinstance ( intentsId, types.StringType) \
-                        and intent.get('id') == intentsId:
-                    intentsDict.append(intent)
-                elif isinstance ( intentsId, types.ListType ) \
+                if isinstance( intentsId, types.StringType ) \
+                        and intent.get( 'id' ) == intentsId:
+                    intentsDict.append( intent )
+                elif isinstance( intentsId, types.ListType ) \
                         and any( intent.get( 'id' ) == ids for ids in intentsId ):
-                            intentsDict.append(intent)
+                    intentsDict.append( intent )
 
             if not intentsDict:
                 main.log.info( self.name + ": There is something wrong " +
@@ -2248,10 +2247,10 @@ class OnosCliDriver( CLI ):
                 expected = expected.rstrip()
                 main.log.debug( "Expect: {}\nactual: {}".format( expected, actual ) )
                 if actual != expected and 'allocated' in actual and 'allocated' in expected:
-                    marker1 = actual.find('allocated')
-                    m1 = actual[:marker1]
-                    marker2 = expected.find('allocated')
-                    m2 = expected[:marker2]
+                    marker1 = actual.find( 'allocated' )
+                    m1 = actual[ :marker1 ]
+                    marker2 = expected.find( 'allocated' )
+                    m2 = expected[ :marker2 ]
                     if m1 != m2:
                         bandwidthFailed = True
                 elif actual != expected and 'allocated' not in actual and 'allocated' not in expected:
@@ -2260,7 +2259,7 @@ class OnosCliDriver( CLI ):
             ONOSOutput.close()
 
             if bandwidthFailed:
-                main.log.error("Bandwidth not allocated correctly using Intents!!")
+                main.log.error( "Bandwidth not allocated correctly using Intents!!" )
                 returnValue = main.FALSE
             return returnValue
         except TypeError:
@@ -2338,7 +2337,6 @@ class OnosCliDriver( CLI ):
             Returns main.TRUE only if the number of all installed intents are the same as total intents number
             , otherwise, returns main.FALSE.
         """
-
         try:
             cmd = "intents -s -j"
 
@@ -2350,10 +2348,10 @@ class OnosCliDriver( CLI ):
 
             # get total and installed number, see if they are match
             allState = response.get( 'all' )
-            if allState.get('total') == allState.get('installed'):
-                main.log.info( 'Total Intents: {}   Installed Intents: {}'.format( allState.get('total'), allState.get('installed') ) )
+            if allState.get( 'total' ) == allState.get( 'installed' ):
+                main.log.info( 'Total Intents: {}   Installed Intents: {}'.format( allState.get( 'total' ), allState.get( 'installed' ) ) )
                 return main.TRUE
-            main.log.info( 'Verified Intents failed Excepte intetnes: {} installed intents: {}'.format( allState.get('total'), allState.get('installed') ) )
+            main.log.info( 'Verified Intents failed Excepte intetnes: {} installed intents: {}'.format( allState.get( 'total' ), allState.get( 'installed' ) ) )
             return main.FALSE
 
         except ( TypeError, ValueError ):
@@ -2415,7 +2413,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def checkFlowCount(self, min=0, timeout=60 ):
+    def checkFlowCount( self, min=0, timeout=60 ):
         count = self.getTotalFlowsNum( timeout=timeout )
         count = int( count ) if count else 0
         return count if ( count > min ) else False
@@ -2435,11 +2433,11 @@ class OnosCliDriver( CLI ):
                           parameter is set true, return main.FALSE otherwise.
         """
         try:
-            states = ["PENDING_ADD", "PENDING_REMOVE", "REMOVED", "FAILED"]
+            states = [ "PENDING_ADD", "PENDING_REMOVE", "REMOVED", "FAILED" ]
             checkedStates = []
-            statesCount = [0, 0, 0, 0]
+            statesCount = [ 0, 0, 0, 0 ]
             for s in states:
-                rawFlows = self.flows( state=s, timeout = timeout )
+                rawFlows = self.flows( state=s, timeout=timeout )
                 if rawFlows:
                     # if we didn't get flows or flows function return None, we should return
                     # main.Flase
@@ -2447,19 +2445,19 @@ class OnosCliDriver( CLI ):
                 else:
                     return main.FALSE
             for i in range( len( states ) ):
-                for c in checkedStates[i]:
+                for c in checkedStates[ i ]:
                     try:
-                        statesCount[i] += int( c.get( "flowCount" ) )
+                        statesCount[ i ] += int( c.get( "flowCount" ) )
                     except TypeError:
                         main.log.exception( "Json object not as expected" )
-                main.log.info( states[i] + " flows: " + str( statesCount[i] ) )
+                main.log.info( states[ i ] + " flows: " + str( statesCount[ i ] ) )
 
             # We want to count PENDING_ADD if isPENDING is true
             if isPENDING:
-                if statesCount[1] + statesCount[2] + statesCount[3] > 0:
+                if statesCount[ 1 ] + statesCount[ 2 ] + statesCount[ 3 ] > 0:
                     return main.FALSE
             else:
-                if statesCount[0] + statesCount[1] + statesCount[2] + statesCount[3] > 0:
+                if statesCount[ 0 ] + statesCount[ 1 ] + statesCount[ 2 ] + statesCount[ 3 ] > 0:
                     return main.FALSE
             return main.TRUE
         except ( TypeError, ValueError ):
@@ -2481,7 +2479,7 @@ class OnosCliDriver( CLI ):
             main.cleanAndExit()
 
     def pushTestIntents( self, ingress, egress, batchSize, offset="",
-                         options="", timeout=10, background = False, noExit=False, getResponse=False ):
+                         options="", timeout=10, background=False, noExit=False, getResponse=False ):
         """
         Description:
             Push a number of intents in a batch format to
@@ -2548,18 +2546,17 @@ class OnosCliDriver( CLI ):
             The number of ADDED flows
             Or return None if any exceptions
         """
-
         try:
             # get total added flows number
             cmd = "flows -c added"
             rawFlows = self.sendline( cmd, timeout=timeout, noExit=noExit )
             if rawFlows:
-                rawFlows = rawFlows.split("\n")
+                rawFlows = rawFlows.split( "\n" )
                 totalFlows = 0
                 for l in rawFlows:
-                    totalFlows += int(l.split("Count=")[1])
+                    totalFlows += int( l.split( "Count=" )[ 1 ] )
             else:
-                main.log.error("Response not as expected!")
+                main.log.error( "Response not as expected!" )
                 return None
             return totalFlows
 
@@ -2581,7 +2578,7 @@ class OnosCliDriver( CLI ):
                 main.cleanAndExit()
             return None
 
-    def getTotalIntentsNum( self, timeout=60, noExit = False ):
+    def getTotalIntentsNum( self, timeout=60, noExit=False ):
         """
         Description:
             Get the total number of intents, include every states.
@@ -2596,7 +2593,7 @@ class OnosCliDriver( CLI ):
             if response is None:
                 return -1
             response = json.loads( response )
-            return int( response.get("intents") )
+            return int( response.get( "intents" ) )
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, response ) )
             return None
@@ -2690,7 +2687,7 @@ class OnosCliDriver( CLI ):
         """
         try:
             # Obtain output of intents function
-            intentsStr = self.intents(jsonFormat=True)
+            intentsStr = self.intents( jsonFormat=True )
             if intentsStr is None:
                 raise TypeError
             # Convert to a dictionary
@@ -2800,7 +2797,7 @@ class OnosCliDriver( CLI ):
                 main.log.info( "There are no nodes to get id from" )
                 return idList
             nodesJson = json.loads( nodesStr )
-            idList = [ node.get('id') for node in nodesJson ]
+            idList = [ node.get( 'id' ) for node in nodesJson ]
             return idList
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, nodesStr ) )
@@ -2852,7 +2849,7 @@ class OnosCliDriver( CLI ):
         import json
         try:
             # either onos:topology or 'topology' will work in CLI
-            topology = json.loads(topologyOutput)
+            topology = json.loads( topologyOutput )
             main.log.debug( topology )
             return topology
         except ( TypeError, ValueError ):
@@ -2866,7 +2863,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def checkStatus(self, numoswitch, numolink, numoctrl = -1, logLevel="info"):
+    def checkStatus( self, numoswitch, numolink, numoctrl=-1, logLevel="info" ):
         """
         Checks the number of switches & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
@@ -3225,7 +3222,7 @@ class OnosCliDriver( CLI ):
         Returns a dictionary containing the current intent states and the count
         """
         try:
-            intents = self.intents( )
+            intents = self.intents()
             states = []
             for intent in json.loads( intents ):
                 states.append( intent.get( 'state', None ) )
@@ -3301,7 +3298,7 @@ class OnosCliDriver( CLI ):
 
     def specificLeaderCandidate( self, topic ):
         """
-        Returns a list in format [leader,candidate1,candidate2,...] for a given
+        Returns a list in format [ leader,candidate1,candidate2,... ] for a given
         topic parameter and an empty list if the topic doesn't exist
         If no leader is elected leader in the returned list will be "none"
         Returns None if there is a type error processing the json object
@@ -3314,9 +3311,9 @@ class OnosCliDriver( CLI ):
             output = json.loads( rawOutput )
             results = []
             for dict in output:
-                if dict["topic"] == topic:
-                    leader = dict["leader"]
-                    candidates = re.split( ", ", dict["candidates"][1:-1] )
+                if dict[ "topic" ] == topic:
+                    leader = dict[ "leader" ]
+                    candidates = re.split( ", ", dict[ "candidates" ][ 1:-1 ] )
                     results.append( leader )
                     results.extend( candidates )
             return results
@@ -3405,10 +3402,10 @@ class OnosCliDriver( CLI ):
         information about installed ONOS applications
         """
         # Sample JSON object
-        # [{"name":"org.onosproject.openflow","id":0,"version":"1.2.0",
+        # [ { "name":"org.onosproject.openflow","id":0,"version":"1.2.0",
         # "description":"ONOS OpenFlow protocol southbound providers",
         # "origin":"ON.Lab","permissions":"[]","featuresRepo":"",
-        # "features":"[onos-openflow]","state":"ACTIVE"}]
+        # "features":"[onos-openflow]","state":"ACTIVE" } ]
         try:
             cmdStr = "onos:apps"
             if summary:
@@ -3455,8 +3452,8 @@ class OnosCliDriver( CLI ):
             appsJson = json.loads( output )
             state = None
             for app in appsJson:
-                if appName == app.get('name'):
-                    state = app.get('state')
+                if appName == app.get( 'name' ):
+                    state = app.get( 'state' )
                     break
             if state == "ACTIVE" or state == "INSTALLED":
                 return state
@@ -3508,7 +3505,7 @@ class OnosCliDriver( CLI ):
                 # Invalid option
                 main.log.error( "The ONOS app command argument only takes " +
                                 "the values: (activate|deactivate|uninstall)" +
-                                "; was given '" + option + "'")
+                                "; was given '" + option + "'" )
                 return main.FALSE
             cmdStr = "onos:app " + option + " " + appName
             output = self.sendline( cmdStr )
@@ -3566,7 +3563,7 @@ class OnosCliDriver( CLI ):
             if status == "INSTALLED":
                 response = self.app( appName, "activate" )
                 if check and response == main.TRUE:
-                    for i in range(10):  # try 10 times then give up
+                    for i in range( 10 ):  # try 10 times then give up
                         status = self.appStatus( appName )
                         if status == "ACTIVE":
                             return main.TRUE
@@ -3619,7 +3616,7 @@ class OnosCliDriver( CLI ):
             elif status == "ACTIVE":
                 response = self.app( appName, "deactivate" )
                 if check and response == main.TRUE:
-                    for i in range(10):  # try 10 times then give up
+                    for i in range( 10 ):  # try 10 times then give up
                         status = self.appStatus( appName )
                         if status == "INSTALLED":
                             return main.TRUE
@@ -3668,7 +3665,7 @@ class OnosCliDriver( CLI ):
             if status == "INSTALLED":
                 response = self.app( appName, "uninstall" )
                 if check and response == main.TRUE:
-                    for i in range(10):  # try 10 times then give up
+                    for i in range( 10 ):  # try 10 times then give up
                         status = self.appStatus( appName )
                         if status == "UNINSTALLED":
                             return main.TRUE
@@ -3683,7 +3680,7 @@ class OnosCliDriver( CLI ):
                                 "currently active." )
                 response = self.app( appName, "uninstall" )
                 if check and response == main.TRUE:
-                    for i in range(10):  # try 10 times then give up
+                    for i in range( 10 ):  # try 10 times then give up
                         status = self.appStatus( appName )
                         if status == "UNINSTALLED":
                             return main.TRUE
@@ -3788,8 +3785,8 @@ class OnosCliDriver( CLI ):
                     # there is more than one app with this ID
                     result = main.FALSE
                     # We will log this later in the method
-                elif not current[0][ 'name' ] == appName:
-                    currentName = current[0][ 'name' ]
+                elif not current[ 0 ][ 'name' ] == appName:
+                    currentName = current[ 0 ][ 'name' ]
                     result = main.FALSE
                     main.log.error( "'app-ids' has " + str( currentName ) +
                                     " registered under id:" + str( appID ) +
@@ -3804,12 +3801,12 @@ class OnosCliDriver( CLI ):
                 namesList.append( item[ 'name' ] )
             if len( idsList ) != len( set( idsList ) ) or\
                len( namesList ) != len( set( namesList ) ):
-                    main.log.error( "'app-ids' has some duplicate entries: \n"
-                                    + json.dumps( ids,
-                                                  sort_keys=True,
-                                                  indent=4,
-                                                  separators=( ',', ': ' ) ) )
-                    result = main.FALSE
+                main.log.error( "'app-ids' has some duplicate entries: \n"
+                                + json.dumps( ids,
+                                              sort_keys=True,
+                                              indent=4,
+                                              separators=( ',', ': ' ) ) )
+                result = main.FALSE
             return result
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected: {!r}".format( self.name, rawJson ) )
@@ -3880,7 +3877,7 @@ class OnosCliDriver( CLI ):
             propName - The case sensitive name of the property to be set/unset
         Optional arguments:
             value - The value to set the property to. If None, will unset the
-                    property and revert it to it's default value(if applicable)
+                    property and revert it to it's default value( if applicable )
             check - Boolean, Check whether the option was successfully set this
                     only applies when a value is given.
         returns:
@@ -3980,7 +3977,7 @@ class OnosCliDriver( CLI ):
         CLI command to add elements to a distributed set.
         Arguments:
             setName - The name of the set to add to.
-            values - The value(s) to add to the set, space seperated.
+            values - The value( s ) to add to the set, space seperated.
         Example usages:
             setTestAdd( "set1", "a b c" )
             setTestAdd( "set2", "1" )
@@ -3994,9 +3991,9 @@ class OnosCliDriver( CLI ):
             output = self.distPrimitivesSend( cmdStr )
             positiveMatch = "\[(.*)\] was added to the set " + str( setName )
             negativeMatch = "\[(.*)\] was already in set " + str( setName )
-            if re.search( positiveMatch, output):
+            if re.search( positiveMatch, output ):
                 return main.TRUE
-            elif re.search( negativeMatch, output):
+            elif re.search( negativeMatch, output ):
                 return main.FALSE
             else:
                 main.log.error( self.name + ": setTestAdd did not" +
@@ -4015,11 +4012,11 @@ class OnosCliDriver( CLI ):
         CLI command to remove elements from a distributed set.
         Required arguments:
             setName - The name of the set to remove from.
-            values - The value(s) to remove from the set, space seperated.
+            values - The value( s ) to remove from the set, space seperated.
         Optional arguments:
             clear - Clear all elements from the set
-            retain - Retain only the  given values. (intersection of the
-                     original set and the given set)
+            retain - Retain only the  given values. ( intersection of the
+                     original set and the given set )
         returns:
             main.TRUE on success OR
             main.FALSE if the set was not changed OR
@@ -4079,7 +4076,7 @@ class OnosCliDriver( CLI ):
         Required arguments:
             setName - The name of the set to remove from.
         Optional arguments:
-            values - The value(s) to check if in the set, space seperated.
+            values - The value( s ) to check if in the set, space seperated.
         returns:
             main.ERROR on error OR
             A list of elements in the set if no optional arguments are
@@ -4558,8 +4555,8 @@ class OnosCliDriver( CLI ):
             None on Error
 
             Example output
-            { 'Key1': {'oldValue': 'oldTestValue', 'value': 'Testing'},
-              'Key2': {'value': 'Testing'} }
+            { 'Key1': { 'oldValue': 'oldTestValue', 'value': 'Testing' },
+              'Key2': { 'value': 'Testing' } }
         """
         try:
             numKeys = str( numKeys )
@@ -4649,10 +4646,10 @@ class OnosCliDriver( CLI ):
 
     def setSwController( self, uri, ip, proto="tcp", port="6653", jsonFormat=True ):
         """
-        Descrition: sets the controller(s) for the specified device
+        Descrition: sets the controller( s ) for the specified device
 
         Parameters:
-            Required: uri - String: The uri of the device(switch).
+            Required: uri - String: The uri of the device( switch ).
                       ip - String or List: The ip address of the controller.
                       This parameter can be formed in a couple of different ways.
                         VALID:
@@ -4677,14 +4674,14 @@ class OnosCliDriver( CLI ):
                 cmd += " -j"
             cmd += " " + uri
             if isinstance( ip, str ):
-                ip = [ip]
+                ip = [ ip ]
             for item in ip:
                 if ":" in item:
                     sitem = item.split( ":" )
-                    if len(sitem) == 3:
+                    if len( sitem ) == 3:
                         cmd += " " + item
-                    elif "." in sitem[1]:
-                        cmd += " {}:{}".format(item, port)
+                    elif "." in sitem[ 1 ]:
+                        cmd += " {}:{}".format( item, port )
                     else:
                         main.log.error( "Malformed entry: " + item )
                         raise TypeError
@@ -4712,19 +4709,19 @@ class OnosCliDriver( CLI ):
             main.cleanAndExit()
 
     def removeDevice( self, device ):
-        '''
+        """
         Description:
-            Remove a device from ONOS by passing the uri of the device(s).
+            Remove a device from ONOS by passing the uri of the device( s ).
         Parameters:
-            device - (str or list) the id or uri of the device ex. "of:0000000000000001"
+            device - ( str or list ) the id or uri of the device ex. "of:0000000000000001"
         Returns:
             Returns main.FALSE if an exception is thrown or an error is present
             in the response. Otherwise, returns main.TRUE.
         NOTE:
             If a host cannot be removed, then this function will return main.FALSE
-        '''
+        """
         try:
-            if type( device ) is str:
+            if isinstance( device, str ):
                 deviceStr = device
                 device = []
                 device.append( deviceStr )
@@ -4753,19 +4750,19 @@ class OnosCliDriver( CLI ):
             main.cleanAndExit()
 
     def removeHost( self, host ):
-        '''
+        """
         Description:
-            Remove a host from ONOS by passing the id of the host(s)
+            Remove a host from ONOS by passing the id of the host( s )
         Parameters:
-            hostId - (str or list) the id or mac of the host ex. "00:00:00:00:00:01"
+            hostId - ( str or list ) the id or mac of the host ex. "00:00:00:00:00:01"
         Returns:
             Returns main.FALSE if an exception is thrown or an error is present
             in the response. Otherwise, returns main.TRUE.
         NOTE:
             If a host cannot be removed, then this function will return main.FALSE
-        '''
+        """
         try:
-            if type( host ) is str:
+            if isinstance( host, str ):
                 host = list( host )
 
             for h in host:
@@ -4792,16 +4789,16 @@ class OnosCliDriver( CLI ):
             main.cleanAndExit()
 
     def link( self, begin, end, state, timeout=30, showResponse=True ):
-        '''
+        """
         Description:
             Bring link down or up in the null-provider.
         params:
-            begin - (string) One end of a device or switch.
-            end - (string) the other end of the device or switch
+            begin - ( string ) One end of a device or switch.
+            end - ( string ) the other end of the device or switch
         returns:
             main.TRUE if no exceptions were thrown and no Errors are
             present in the resoponse. Otherwise, returns main.FALSE
-        '''
+        """
         try:
             cmd = "null-link null:{} null:{} {}".format( begin, end, state )
             response = self.sendline( cmd, showResponse=showResponse, timeout=timeout )
@@ -4826,18 +4823,18 @@ class OnosCliDriver( CLI ):
             main.cleanAndExit()
 
     def portstate( self, dpid, port, state ):
-        '''
+        """
         Description:
              Changes the state of port in an OF switch by means of the
              PORTSTATUS OF messages.
         params:
-            dpid - (string) Datapath ID of the device. Ex: 'of:0000000000000102'
-            port - (string) target port in the device. Ex: '2'
-            state - (string) target state (enable or disable)
+            dpid - ( string ) Datapath ID of the device. Ex: 'of:0000000000000102'
+            port - ( string ) target port in the device. Ex: '2'
+            state - ( string ) target state ( enable or disable )
         returns:
             main.TRUE if no exceptions were thrown and no Errors are
             present in the resoponse. Otherwise, returns main.FALSE
-        '''
+        """
         try:
             state = state.lower()
             assert state == 'enable' or state == 'disable', "Unknown state"
@@ -4900,12 +4897,12 @@ class OnosCliDriver( CLI ):
           vertex2: { 'edges': ..., 'name': ..., 'protocol': ... } }
         Each vertex should at least have an 'edges' attribute which describes the
         adjacency information. The value of 'edges' attribute is also represented by
-        a dictionary, which maps each edge (identified by the neighbor vertex) to a
+        a dictionary, which maps each edge ( identified by the neighbor vertex ) to a
         list of attributes.
         An example of the edges dictionary:
         'edges': { vertex2: { 'port': ..., 'weight': ... },
                    vertex3: { 'port': ..., 'weight': ... } }
-        If includeHost == True, all hosts (and host-switch links) will be included
+        If includeHost == True, all hosts ( and host-switch links ) will be included
         in topology data.
         """
         graphDict = {}
@@ -4926,7 +4923,7 @@ class OnosCliDriver( CLI ):
                 assert idToDevice[ nodeA ][ 'available' ] and idToDevice[ nodeB ][ 'available' ]
                 if nodeA not in graphDict.keys():
                     graphDict[ nodeA ] = { 'edges': {},
-                                           'dpid': idToDevice[ nodeA ][ 'id' ][3:],
+                                           'dpid': idToDevice[ nodeA ][ 'id' ][ 3: ],
                                            'type': idToDevice[ nodeA ][ 'type' ],
                                            'available': idToDevice[ nodeA ][ 'available' ],
                                            'role': idToDevice[ nodeA ][ 'role' ],
@@ -4935,7 +4932,7 @@ class OnosCliDriver( CLI ):
                                            'sw': idToDevice[ nodeA ][ 'sw' ],
                                            'serial': idToDevice[ nodeA ][ 'serial' ],
                                            'chassisId': idToDevice[ nodeA ][ 'chassisId' ],
-                                           'annotations': idToDevice[ nodeA ][ 'annotations' ]}
+                                           'annotations': idToDevice[ nodeA ][ 'annotations' ] }
                 else:
                     # Assert nodeB is not connected to any current links of nodeA
                     assert nodeB not in graphDict[ nodeA ][ 'edges' ].keys()
@@ -4961,11 +4958,11 @@ class OnosCliDriver( CLI ):
             return None
 
     def getIntentPerfSummary( self ):
-        '''
+        """
         Send command to check intent-perf summary
         Returns: dictionary for intent-perf summary
                  if something wrong, function will return None
-        '''
+        """
         cmd = "intent-perf -s"
         respDic = {}
         resp = self.sendline( cmd )
@@ -4977,9 +4974,9 @@ class OnosCliDriver( CLI ):
                 # Delete any white space in line
                 temp = re.sub( r'\s+', '', l )
                 temp = temp.split( ":" )
-                respDic[ temp[0] ] = temp[ 1 ]
+                respDic[ temp[ 0 ] ] = temp[ 1 ]
 
-        except (TypeError, ValueError):
+        except ( TypeError, ValueError ):
             main.log.exception( self.name + ": Object not as expected" )
             return None
         except KeyError:
@@ -5021,7 +5018,7 @@ class OnosCliDriver( CLI ):
                 total: return how many lines in karaf log
         """
         try:
-            assert type( searchTerm ) is str
+            assert isinstance( searchTerm, str )
             # Build the log paths string
             logPath = '/opt/onos/log/karaf.log.'
             logPaths = '/opt/onos/log/karaf.log'
@@ -5043,14 +5040,14 @@ class OnosCliDriver( CLI ):
                 return num
             elif mode == 'total':
                 totalLines = self.sendline( "cat /opt/onos/log/karaf.log | wc -l" )
-                return int(totalLines)
+                return int( totalLines )
             else:
                 main.log.error( self.name + " unsupported mode" )
                 return main.ERROR
             before = self.sendline( cmd )
             before = before.splitlines()
             # make sure the returned list only contains the search term
-            returnLines = [line for line in before if searchTerm in line]
+            returnLines = [ line for line in before if searchTerm in line ]
             return returnLines
         except AssertionError:
             main.log.error( self.name + " searchTerm is not string type" )
@@ -5096,7 +5093,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
         except NotImplementedError:
-            main.log.exception( self.name + ": Json output not supported")
+            main.log.exception( self.name + ": Json output not supported" )
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
@@ -5118,7 +5115,7 @@ class OnosCliDriver( CLI ):
             for match in mIter:
                 item = {}
                 item[ 'name' ] = match.group( 'name' )
-                ifaces = match.group( 'interfaces' ).split( ', ')
+                ifaces = match.group( 'interfaces' ).split( ', ' )
                 if ifaces == [ "" ]:
                     ifaces = []
                 item[ 'interfaces' ] = ifaces
@@ -5158,7 +5155,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
         except NotImplementedError:
-            main.log.exception( self.name + ": Json output not supported")
+            main.log.exception( self.name + ": Json output not supported" )
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
@@ -5390,14 +5387,14 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
         except NotImplementedError:
-            main.log.exception( self.name + ": Json output not supported")
+            main.log.exception( self.name + ": Json output not supported" )
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
     def getTimeStampFromLog( self, mode, searchTerm, splitTerm_before, splitTerm_after, startLine='', logNum=1 ):
-        '''
+        """
         Get the timestamp of searchTerm from karaf log.
 
         Arguments:
@@ -5410,17 +5407,17 @@ class OnosCliDriver( CLI ):
 
             others:
                 Please look at the "logsearch" Function in onosclidriver.py
-        '''
+        """
         if logNum < 0:
-            main.log.error("Get wrong log number ")
+            main.log.error( "Get wrong log number " )
             return main.ERROR
         lines = self.logSearch( mode=mode, searchTerm=searchTerm, startLine=startLine, logNum=logNum )
-        if len(lines) == 0:
+        if len( lines ) == 0:
             main.log.warn( "Captured timestamp string is empty" )
             return main.ERROR
         lines = lines[ 0 ]
         try:
-            assert type(lines) is str
+            assert isinstance( lines, str )
             # get the target value
             line = lines.split( splitTerm_before )
             key = line[ 1 ].split( splitTerm_after )
@@ -5588,7 +5585,7 @@ class OnosCliDriver( CLI ):
                 return None
             else:
                 match = re.search( pattern, output )
-                return match.group(0)
+                return match.group( 0 )
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected; " + str( output ) )
             return None
@@ -5621,7 +5618,7 @@ class OnosCliDriver( CLI ):
                 return None
             else:
                 match = re.search( pattern, output )
-                return match.group(0)
+                return match.group( 0 )
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected; " + str( output ) )
             return None
@@ -5654,7 +5651,7 @@ class OnosCliDriver( CLI ):
                 return None
             else:
                 match = re.search( pattern, output )
-                return match.group(0)
+                return match.group( 0 )
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected; " + str( output ) )
             return None

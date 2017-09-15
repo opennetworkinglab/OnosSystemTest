@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 # CASE1: Startup
 # CASE2: Load vpls topology and configurations from demo script
 # CASE3: Test CLI commands
@@ -94,7 +93,6 @@ class VPLSBasic:
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
 
-
         main.step( "Activate apps defined in the params file" )
         # get data from the params
         apps = main.params.get( 'apps' )
@@ -140,7 +138,7 @@ class VPLSBasic:
 
         main.step( "App Ids check" )
         appCheck = main.Cluster.command( "appToIDCheck", returnBool=True )
-        if appCheck != True:
+        if not appCheck:
             main.log.warn( main.Cluster.active( 0 ).CLI.apps() )
             main.log.warn( main.Cluster.active( 0 ).CLI.appIDs() )
         utilities.assert_equals( expect=True, actual=appCheck,
@@ -199,7 +197,7 @@ class VPLSBasic:
         result = False
         getPorts = utilities.retry( f=main.Cluster.active( 0 ).REST.getNetCfg,
                                     retValue=False,
-                                    kwargs={ "subjectClass" :"ports" },
+                                    kwargs={ "subjectClass": "ports" },
                                     sleep=main.sleep )
         onosCfg = pprint( getPorts )
         sentCfg = pprint( originalCfg.get( "ports" ) )
@@ -233,13 +231,12 @@ class VPLSBasic:
         main.step( "Remove an interface from a vpls network" )
         main.Cluster.active( 0 ).CLI.vplsRemIface( 'VPLS1', 'h1' )
         time.sleep( main.sleep )
-        #update master config json
+        # update master config json
         for network in main.vplsConfig:
             if network.get( 'name' ) == 'VPLS1':
                 ifaces = network.get( 'interfaces' )
                 ifaces.remove( 'h1' )
         main.vpls.verify( main )
-
 
     def CASE11( self, main ):
         """
@@ -250,7 +247,6 @@ class VPLSBasic:
         time.sleep( main.sleep )
         main.vplsConfig = []
         main.vpls.verify( main )
-
 
     def CASE12( self, main ):
         """
@@ -263,7 +259,6 @@ class VPLSBasic:
         network1 = { 'name': name, 'interfaces': [], 'encapsulation': 'NONE' }
         main.vplsConfig.append( network1 )
         main.vpls.verify( main )
-
 
     def CASE13( self, main ):
         """
@@ -292,7 +287,6 @@ class VPLSBasic:
                 network[ 'interfaces' ] = ifaces
         main.vpls.verify( main )
 
-
     def CASE14( self, main ):
         """
         Add MPLS encapsulation.
@@ -306,7 +300,6 @@ class VPLSBasic:
         time.sleep( main.sleep )
         main.vpls.verify( main )
 
-
     def CASE15( self, main ):
         """
         Change an encapsulation type.
@@ -319,7 +312,6 @@ class VPLSBasic:
                 network[ 'encapsulation' ] = encapType
         time.sleep( main.sleep )
         main.vpls.verify( main )
-
 
     def CASE16( self, main ):
         """

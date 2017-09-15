@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 class FUNCflow:
 
     def __init__( self ):
@@ -42,7 +41,6 @@ class FUNCflow:
             - Checkout ONOS master branch
             - Pull latest ONOS code
         """
-
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
@@ -71,7 +69,7 @@ class FUNCflow:
                 main.checkingFlow = CheckingFlow()
             except ImportError as e:
                 print e
-                main.log.error("CheckingFlow not found exiting the test")
+                main.log.error( "CheckingFlow not found exiting the test" )
                 main.cleanAndExit()
             copyResult = main.ONOSbench.scp( main.Mininet1,
                                              main.dependencyPath + main.topology,
@@ -88,7 +86,6 @@ class FUNCflow:
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
-
 
     def CASE2( self, main ):
         """
@@ -788,7 +785,7 @@ class FUNCflow:
         udpDst = main.params[ 'TEST' ][ 'udpDst' ]
 
         main.log.info( "Add a flow that connects host1 on port1 to host2 on port2" )
-        stepResult =ctrl.REST.addFlow( deviceId=main.swDPID,
+        stepResult = ctrl.REST.addFlow( deviceId=main.swDPID,
                                             egressPort=egress,
                                             ingressPort=ingress,
                                             ethType=ethType,

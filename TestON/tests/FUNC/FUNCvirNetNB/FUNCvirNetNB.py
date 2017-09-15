@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,9 +17,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
-"""
 
-"""
 Description: This test is to determine if North bound
     can handle the request
 
@@ -78,8 +76,8 @@ class FUNCvirNetNB:
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
-            main.apps = main.params['ENV']['cellApps']
-            cellName = main.params['ENV']['cellName']
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
@@ -126,8 +124,7 @@ class FUNCvirNetNB:
 
         main.log.info( "ONOS Network Post test Start" )
         main.case( "Virtual Network NBI Test - Network" )
-        main.caseExplanation  = "Test Network Post NBI " +\
-                                "Verify Post Data same with Stored Data"
+        main.caseExplanation = "Test Network Post NBI Verify Post Data same with Stored Data"
 
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         port = main.params[ 'HTTP' ][ 'port' ]
@@ -198,8 +195,7 @@ class FUNCvirNetNB:
 
         main.log.info( "ONOS Network Update test Start" )
         main.case( "Virtual Network NBI Test - Network" )
-        main.caseExplanation  = "Test Network Update NBI " +\
-                                "Verify Update Data same with Stored Data"
+        main.caseExplanation = "Test Network Update NBI Verify Update Data same with Stored Data"
 
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         port = main.params[ 'HTTP' ][ 'port' ]
@@ -449,10 +445,10 @@ class FUNCvirNetNB:
         networkpostdata = network.DictoJson()
         subnetpostdata = subnet.DictoJson()
 
-        #Change allocation_poolsdata scope
+        # Change allocation_poolsdata scope
         subnet.start = "192.168.102.1"
         subnet.end = "192.168.102.255"
-        #end change
+        # end change
         newsubnetpostdata = subnet.DictoJson()
         ctrl = main.Cluster.active( 0 )
         main.step( "Post Network Data via HTTP(Post Subnet need post network)" )
@@ -740,10 +736,10 @@ class FUNCvirNetNB:
         subnetpostdata = subnet.DictoJson()
         portpostdata = port.DictoJson()
 
-        #create update data
+        # create update data
         port.name = "onos-new"
         newportpostdata = port.DictoJson()
-        #end
+        # end
         ctrl = main.Cluster.active( 0 )
         main.step( "Post Network Data via HTTP(Post port need post network)" )
         Poststatus, result = ctrl.REST.send( ctrlip, httpport, '', path + 'networks/',
@@ -932,8 +928,7 @@ class FUNCvirNetNB:
 
         main.log.info( "ONOS Post Error Json Create Network test Start" )
         main.case( "Virtual Network NBI Test - Network" )
-        main.caseExplanation  = "Test Network Post With Error json " +\
-                                "The wrong Json can't post network successfully"
+        main.caseExplanation = "Test Network Post With Error json The wrong Json can't post network successfully"
 
         ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         port = main.params[ 'HTTP' ][ 'port' ]
@@ -943,11 +938,11 @@ class FUNCvirNetNB:
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
-        #The network.admin_state_up should be True or False,when the admin_state_up is 'tttttttttt',the Json can't post.
+        # The network.admin_state_up should be True or False,when the admin_state_up is 'tttttttttt',the Json can't post.
         network.admin_state_up = 'tttttttttt'
-        #The network.routerExternal should be True or False,when the routerExternal is 'ffffffffffff',the Json can't post.
+        # The network.routerExternal should be True or False,when the routerExternal is 'ffffffffffff',the Json can't post.
         network.routerExternal = 'ffffffffffff'
-        #The network.shared should be True or False,when the shared is 'ffffffffffffff',the Json can't post.
+        # The network.shared should be True or False,when the shared is 'ffffffffffffff',the Json can't post.
         network.shared = 'ffffffffffffff'
         postdata = network.DictoJson()
 
@@ -990,9 +985,9 @@ class FUNCvirNetNB:
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
         subnet = SubnetData()
         subnet.id = "e44bd655-e22c-4aeb-b1e9-ea1606875178"
-        #The subnet.enable_dhcp should be True or False,when the enable_dhcp is 'tttttttttttttt',the Json can't post.
+        # The subnet.enable_dhcp should be True or False,when the enable_dhcp is 'tttttttttttttt',the Json can't post.
         subnet.enable_dhcp = 'tttttttttttttt'
-        #The subnet.tenant_id should be True or False,when the tenant_id is ffffffffffffff',the Json can't post.
+        # The subnet.tenant_id should be True or False,when the tenant_id is ffffffffffffff',the Json can't post.
         subnet.shared = 'ffffffffffffff'
         subnet.tenant_id = network.tenant_id
         subnet.network_id = network.id
@@ -1055,7 +1050,7 @@ class FUNCvirNetNB:
         port.subnet_id = subnet.id
         port.tenant_id = network.tenant_id
         port.network_id = network.id
-        #The port.adminStateUp should be True or False,when the adminStateUp is 'tttttttttttt',the Json can't post.
+        # The port.adminStateUp should be True or False,when the adminStateUp is 'tttttttttttt',the Json can't post.
         port.adminStateUp = 'tttttttttttt'
 
         networkpostdata = network.DictoJson()

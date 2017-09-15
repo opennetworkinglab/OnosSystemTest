@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
     SCPFhostLat
     This test will test the host found latency.
@@ -213,7 +212,7 @@ class SCPFhostLat:
                     caseResult = main.FALSE
                 resultFile.close()
             # Compare the timestemps, and get the lowest one.
-            temp = 0;
+            temp = 0
             # Get host event timestamps from each nodes
             for ctrl in main.Cluster.active():
                 metricsResult = json.loads( ctrl.CLI.topologyEventsMetrics() )
@@ -229,7 +228,7 @@ class SCPFhostLat:
             # gethost to remove
             gethost = main.Cluster.active( 0 ).REST.hosts()
             HosttoRemove = []
-            HosttoRemove.append( json.loads( gethost[ 1:len( gethost )-1 ] ).get( 'id' ) )
+            HosttoRemove.append( json.loads( gethost[ 1:len( gethost ) - 1 ] ).get( 'id' ) )
             main.Cluster.active( 0 ).CLI.removeHost( HosttoRemove )
 
         main.log.info( "Result List: {}".format( addingHostTime ) )
@@ -260,7 +259,7 @@ class SCPFhostLat:
         assertion = main.TRUE
 
         utilities.assert_equals( expect=main.TRUE, actual=assertion,
-                onpass='Host latency test successful',
-                onfail='Host latency test failed' )
+                                 onpass='Host latency test successful',
+                                 onfail='Host latency test failed' )
 
         main.Utils.mininetCleanup( main.Mininet1 )

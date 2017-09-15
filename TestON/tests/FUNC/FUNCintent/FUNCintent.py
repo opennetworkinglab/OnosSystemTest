@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 # Testing the basic intent functionality of ONOS
 
 
@@ -39,7 +38,6 @@ class FUNCintent:
             - Install ONOS package
             - Build ONOS package
         """
-
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
@@ -114,7 +112,6 @@ class FUNCintent:
         - Install ONOS cluster
         - Connect to cli
         """
-
         main.flowCompiler = "Flow Rules"
         main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
         main.intents.report( main )
@@ -134,6 +131,7 @@ class FUNCintent:
         except ( NameError, AttributeError ):
             main.topoRelated = Topology()
         main.topoRelated.compareTopos( main.Mininet1, main.checkTopoAttempts )
+
     def CASE10( self, main ):
         """
             Start Mininet topology with OF 1.0 switches
@@ -372,10 +370,10 @@ class FUNCintent:
         cmd = "org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator"
 
         stepResult = main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
-                                            propName="useFlowObjectives", value="true" )
+                                                          propName="useFlowObjectives", value="true" )
         stepResult &= main.Cluster.active( 0 ).CLI.setCfg( component=cmd,
-                                             propName="defaultFlowObjectiveCompiler",
-                                             value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
+                                                           propName="defaultFlowObjectiveCompiler",
+                                                           value='org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler' )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -438,6 +436,7 @@ class FUNCintent:
         except ( NameError, AttributeError ):
             main.Utils = Utils()
         main.Utils.copyKarafLog( "cycle" + str( main.cycle ) )
+
     def CASE1000( self, main ):
         """
             Add host intents between 2 host:
@@ -924,11 +923,11 @@ class FUNCintent:
         main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV4 using TCP point intents\n"
         senders = [
             { "name": "h1", "device": "of:0000000000000005/1", "mac": "00:00:00:00:00:01",
-              "ip":( main.h1.hostIp + "/24" ) }
+              "ip": ( main.h1.hostIp + "/24" ) }
         ]
         recipients = [
             { "name": "h9", "device": "of:0000000000000006/1", "mac": "00:00:00:00:00:09",
-              "ip":( main.h9.hostIp + "/24" ) }
+              "ip": ( main.h9.hostIp + "/24" ) }
         ]
         ipProto = main.params[ 'SDNIP' ][ 'ipPrototype' ]
         # Uneccessary, not including this in the selectors
@@ -1820,48 +1819,49 @@ class FUNCintent:
                                  actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
+        """
+        Testing MPLS would require kernel version of 4.1 or higher ( Current version is 3.13 )
+        main.step( "ENCAPSULATION: Add multi point to single point intents" )
+        main.assertReturnString = "Assertion results for MPLS Encapsulation multi to single point intent\n"
+        senders = [
+           { "name": "h16", "device": "of:0000000000000006/8" },
+           { "name": "h24", "device": "of:0000000000000007/8" }
+        ]
+        recipients = [
+           { "name": "h8", "device": "of:0000000000000005/8" }
+        ]
+        badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
+        badRecipients = [ { "name": "h9" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intents.installMultiToSingleIntent(
+           main,
+           name="ENCAPSULATION",
+           senders=senders,
+           recipients=recipients,
+           sw1="s5",
+           sw2="s2",
+           encap="MPLS" )
 
-        #Testing MPLS would require kernel version of 4.1 or higher ( Current version is 3.13 )
-        #main.step( "ENCAPSULATION: Add multi point to single point intents" )
-        #main.assertReturnString = "Assertion results for MPLS Encapsulation multi to single point intent\n"
-        #senders = [
-        #    { "name": "h16", "device": "of:0000000000000006/8" },
-        #    { "name": "h24", "device": "of:0000000000000007/8" }
-        # ]
-        #recipients = [
-        #    { "name": "h8", "device": "of:0000000000000005/8" }
-        # ]
-        #badSenders = [ { "name": "h17" } ]  # Senders that are not in the intent
-        #badRecipients = [ { "name": "h9" } ]  # Recipients that are not in the intent
-        #testResult = main.FALSE
-        #installResult = main.intents.installMultiToSingleIntent(
-        #    main,
-        #    name="ENCAPSULATION",
-        #    senders=senders,
-        #    recipients=recipients,
-        #    sw1="s5",
-        #    sw2="s2",
-        #    encap="MPLS" )
-        #
-        #if installResult:
-        #    testResult = main.intents.testPointIntent(
-        #        main,
-        #        intentId=installResult,
-        #        name="ENCAPSULATION",
-        #        senders=senders,
-        #        recipients=recipients,
-        #        badSenders=badSenders,
-        #        badRecipients=badRecipients,
-        #        sw1="s5",
-        #        sw2="s2",
-        #        expectedLink=18 )
-        #else:
-        #    main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
-        #
-        #utilities.assert_equals( expect=main.TRUE,
-        #                         actual=testResult,
-        #                         onpass=main.assertReturnString,
-        #                         onfail=main.assertReturnString )
+        if installResult:
+           testResult = main.intents.testPointIntent(
+               main,
+               intentId=installResult,
+               name="ENCAPSULATION",
+               senders=senders,
+               recipients=recipients,
+               badSenders=badSenders,
+               badRecipients=badRecipients,
+               sw1="s5",
+               sw2="s2",
+               expectedLink=18 )
+        else:
+           main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                actual=testResult,
+                                onpass=main.assertReturnString,
+                                onfail=main.assertReturnString )
+        """
 
         main.intents.report( main )
 

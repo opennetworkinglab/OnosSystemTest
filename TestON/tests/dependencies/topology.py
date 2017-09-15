@@ -1,5 +1,5 @@
 """
-Copyright 2016 Open Networking Foundation (ONF)
+Copyright 2016 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,6 +22,8 @@ import time
 import re
 import imp
 import json
+
+
 class Topology:
 
     def __init__( self ):
@@ -47,7 +49,7 @@ class Topology:
         for ctrl in main.Cluster.active():
             func = getattr( ctrl.CLI, function )
             t = main.Thread( target=utilities.retry if needRetry else func,
-                             name= function + "-" + str( ctrl ),
+                             name=function + "-" + str( ctrl ),
                              args=[ func, [ None ] ] if needRetry else [],
                              kwargs=kwargs )
             threads.append( t )
@@ -116,10 +118,10 @@ class Topology:
                 if isinstance( compareArg, list ):
                     compareArg.append( json.loads( compareElem[ controller ] ) )
                 else:
-                    compareArg = [compareArg, json.loads( compareElem[ controller ] ) ]
+                    compareArg = [ compareArg, json.loads( compareElem[ controller ] ) ]
 
                 currentCompareResult = compareF( *compareArg )
-            except(TypeError, ValueError):
+            except( TypeError, ValueError ):
                 main.log.error(
                     "Could not load json: {0} or {1}".format( str( compareElem[ controller ] ) ) )
                 currentCompareResult = main.FALSE

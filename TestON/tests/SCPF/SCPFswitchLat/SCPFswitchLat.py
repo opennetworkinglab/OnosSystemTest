@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2015 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,8 +18,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-'''
+"""
     SCPFswitchLat
     Test Switch add/remove latency
     calculate package latency between switch and ONOS
@@ -27,8 +26,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TCP -- Feature Reply -- Role Request -- Role Reply -- Device -- Graph
     Siwtch Down:
     Openflow FIN/ACK -- ACK -- Device -- Graph
-'''
-
+"""
 class SCPFswitchLat:
 
     def __init__( self ):
@@ -37,7 +35,7 @@ class SCPFswitchLat:
     def CASE0( self, main ):
         import os
         import imp
-        '''
+        """
         - GIT
         - BUILDING ONOS
             Pull specific ONOS branch, then Build ONOS ono ONOS Bench.
@@ -45,7 +43,7 @@ class SCPFswitchLat:
             test env. We want Jenkins jobs to pull&build for flexibility to handle
             different versions of ONOS.
         - Construct tests variables
-        '''
+        """
         try:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
@@ -56,10 +54,10 @@ class SCPFswitchLat:
         stepResult = main.FALSE
         try:
             # The dictionary to record different type of wrongs
-            main.wrong = { 'totalWrong': 0, 'skipDown' : 0, 'TsharkValueIncorrect': 0,
-                    'TypeError' : 0, 'decodeJasonError': 0,
-                    'checkResultIncorrect': 0 }
-            main.maxWrong = int( main.params[ 'TEST' ] [ 'MaxWrong' ] )
+            main.wrong = { 'totalWrong': 0, 'skipDown': 0, 'TsharkValueIncorrect': 0,
+                           'TypeError': 0, 'decodeJasonError': 0,
+                           'checkResultIncorrect': 0 }
+            main.maxWrong = int( main.params[ 'TEST' ][ 'MaxWrong' ] )
             main.resultRange = main.params[ 'TEST' ][ 'ResultRange' ]
             main.searchTerm = main.params[ 'TEST' ][ 'SearchTerm' ]
             main.MN1Ip = main.params[ 'MN' ][ 'ip1' ]
@@ -72,7 +70,7 @@ class SCPFswitchLat:
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
 
             main.ofPackage = main.params[ 'TSHARK' ]
-            main.defaultTopoCfg = main.params [ 'CFG' ][ 'defaultTopo' ]
+            main.defaultTopoCfg = main.params[ 'CFG' ][ 'defaultTopo' ]
             main.tsharkResultPath = main.params[ 'TEST' ][ 'tsharkResultPath' ]
             main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
             main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
@@ -90,9 +88,9 @@ class SCPFswitchLat:
             resultsDB.close()
 
             main.switchFunc = imp.load_source( main.dependencyFunc,
-                                           main.dependencyPath +
-                                           main.dependencyFunc +
-                                           ".py" )
+                                               main.dependencyPath +
+                                               main.dependencyFunc +
+                                               ".py" )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -144,26 +142,26 @@ class SCPFswitchLat:
         import json
         import numpy
 
-        resultDict = { 'up' : {}, 'down' : {} }
+        resultDict = { 'up': {}, 'down': {} }
         for i in range( 1, main.Cluster.numCtrls + 1 ):
             resultDict[ 'up' ][ 'node' + str( i ) ] = {}
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ] = {}
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ] = {}
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'T_F' ] = []#TCP to Feature
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_R' ] = []#Feature to Role
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'RQ_RR' ] = []#role request to role reply
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'RR_D' ] = []#role reply to Device
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'D_G' ] = []#Device to Graph
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'E_E' ] = []#TCP to Graph
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'T_F' ] = []  # TCP to Feature
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_R' ] = []  # Feature to Role
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'RQ_RR' ] = []  # role request to role reply
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'RR_D' ] = []  # role reply to Device
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'D_G' ] = []  # Device to Graph
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'E_E' ] = []  # TCP to Graph
 
         for i in range( 1, main.Cluster.numCtrls + 1 ):
             resultDict[ 'down' ][ 'node' + str( i ) ] = {}
             resultDict[ 'down' ][ 'node' + str( i ) ][ 'Ave' ] = {}
             resultDict[ 'down' ][ 'node' + str( i ) ][ 'Std' ] = {}
-            resultDict[ 'down' ][ 'node' + str( i ) ][ 'FA_A' ] = []#Fin_ack to ACK
-            resultDict[ 'down' ][ 'node' + str( i ) ][ 'A_D' ] = []#Ack to Device
-            resultDict[ 'down' ][ 'node' + str( i ) ][ 'D_G' ] = []#Device to Graph
-            resultDict[ 'down' ][ 'node' + str( i ) ][ 'E_E' ] = []#fin_ack to Graph
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'FA_A' ] = []  # Fin_ack to ACK
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'A_D' ] = []  # Ack to Device
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'D_G' ] = []  # Device to Graph
+            resultDict[ 'down' ][ 'node' + str( i ) ][ 'E_E' ] = []  # fin_ack to Graph
         for i in range( 0, main.sampleSize + main.warmUp ):
             main.log.info( "************************************************************" )
             main.log.info( "************************ Iteration: {} **********************" .format( str( i + 1 ) ) )
@@ -176,12 +174,12 @@ class SCPFswitchLat:
             else:
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "up", resultDict, False )
-                main.switchFunc.captureOfPack ( main, main.device, main.ofPackage,
-                                               "down", resultDict, False )
+                main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
+                                                "down", resultDict, False )
                 main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
 
         # Dictionary for result
-        maxDict  = {}
+        maxDict = {}
         maxDict[ 'down' ] = {}
         maxDict[ 'up' ] = {}
         maxDict[ 'down' ][ 'max' ] = 0

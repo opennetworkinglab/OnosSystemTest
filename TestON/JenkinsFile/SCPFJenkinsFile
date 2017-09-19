@@ -154,7 +154,7 @@ def SCPFTest( testName, toBeRun, prop ) {
                     node("TestStation-BMs"){
                         sh '''#!/bin/bash
 
-                        if [ -e ''' + workSpace + "/" + testName + "Result.txt ] && grep -q \"1\" " + workSpace + "/" + testName + "Result.txt" + '''
+                        if [ -e ''' + workSpace + "/*Result.txt ] && grep -q \"1\" " + workSpace + "/*Result.txt" + '''
                         then
                             echo ''' + testName + " : All passed." + '''
                         else
@@ -187,5 +187,5 @@ def generateCombinedResultGraph( host, port, user, pass, testName, branchName ){
     return result
 }
 def checkIfList( testName, forWhich, pos ){
-    return SCPF[testName][forWhich] instanceof List ? SCPF[testName][forWhich][pos] :  SCPF[testName][forWhich]
+    return SCPF[testName][forWhich].getClass().getName() != "java.lang.String" ? SCPF[testName][forWhich][pos] :  SCPF[testName][forWhich]
 }

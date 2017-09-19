@@ -101,6 +101,8 @@ dataFrame$num_failed <- fileData$num_failed
 # Adding a temporary reversed iterative list to the dataFrame so that there are no gaps in-between build numbers.
 dataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
 
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
 print( "Data Frame Results:" )
 print( dataFrame )
 
@@ -118,6 +120,7 @@ print( "Creating main plot." )
 #        - x: x-axis values (usually iterative, but it will become build # later)
 #        - y: y-axis values (usually tests)
 #        - color: the category of the colored lines (usually status of test)
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = Tests, color = Status ) )
 
 print( "Formatting main plot." )
@@ -134,7 +137,7 @@ yLabel <- ylab( "Test Cases" )
 fillLabel <- labs( fill="Type" )
 legendLabels <- scale_colour_discrete( labels = c( "Failed", "Passed", "Planned" ) )
 centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( plot.title = element_text( size = 18, face='bold' ) )
+theme <- theme( plot.title = element_text( size = 28, face='bold' ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + plannedColor + passedColor + failedColor + xScaleConfig + yScaleConfig + xLabel + yLabel + fillLabel + legendLabels + centerTitle + theme

@@ -40,11 +40,11 @@ library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )    # For databases
 
-
+# Normal usage
 # Check if sufficient args are provided.
 if ( is.na( args[ 7 ] ) ){
-    print( "Usage: Rscript SCPFhostLat <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
-    q()  # basically exit(), but in R
+    print( "Usage: Rscript SCPFmastershipFailoverLat <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
+        q()  # basically exit(), but in R
 }
 
 # Filenames for output graphs include the testname and the graph type.
@@ -54,12 +54,16 @@ errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
 errBarOutputFile <- paste( errBarOutputFile, "_errGraph.jpg", sep="" )
 
+stackedBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
+stackedBarOutputFile <- paste( stackedBarOutputFile, args[ 6 ], sep="_" )
+stackedBarOutputFile <- paste( stackedBarOutputFile, "_stackedGraph.jpg", sep="" )
+
 print( "Reading from databases." )
 
 con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
 
-command  <- paste( "SELECT * FROM host_latency_tests WHERE branch = '", args[ 6 ], sep = "" )
-command <- paste( command, "' AND date IN ( SELECT MAX( date ) FROM host_latency_tests WHERE branch = '", sep = "" )
+command  <- paste( "SELECT * FROM mastership_failover_tests WHERE branch = '", args[ 6 ], sep = "" )
+command <- paste( command, "' AND date IN ( SELECT MAX( date ) FROM mastership_failover_tests WHERE branch = '", sep = "" )
 command <- paste( command, args[ 6 ], sep = "" )
 command <- paste( command, "' ) ", sep="" )
 
@@ -67,25 +71,43 @@ print( paste( "Sending SQL command:", command ) )
 
 fileData <- dbGetQuery( con, command )
 
-chartTitle <- "Host Latency"
+chartTitle <- "Mastership Failover Latency"
 
 
 # **********************************************************
 # STEP 2: Organize data.
 # **********************************************************
 
-print( "STEP 2: Organize data." )
+fileDataNames <- names( fileData )
 
 avgs <- c()
+stds <- c()
+
 
 print( "Sorting data." )
-avgs <- c( fileData[ 'avg' ] )
+for ( name in fileDataNames ){
+    nameLen <- nchar( name )
+    if ( nameLen > 2 ){
+        if ( substring( name, nameLen - 2, nameLen ) == "avg" ){
+            avgs <- c( avgs, fileData[ name ] )
+        }
+        if ( substring( name, nameLen - 2, nameLen ) == "std" ){
+            stds <- c( stds, fileData[ name  ] )
+        }
+    }
+}
 
-dataFrame <- melt( avgs )
-dataFrame$scale <- fileData$scale
-dataFrame$std <- fileData$std
+avgData <- melt( avgs )
+avgData$scale <- fileData$scale
+colnames( avgData ) <- c( "ms", "type", "scale" )
 
-colnames( dataFrame ) <- c( "ms", "type", "scale", "std" )
+stdData <- melt( stds )
+colnames( stdData ) <- c( "ms", "type" )
+
+dataFrame <- na.omit( avgData )   # Omit any data that doesn't exist
+
+print( "Data Frame Results:" )
+print( avgData )
 
 
 # **********************************************************
@@ -94,19 +116,22 @@ colnames( dataFrame ) <- c( "ms", "type", "scale", "std" )
 
 print( "Generating fundamental graph data." )
 
-mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, ymin = ms - std, ymax = ms + std ) )
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+
+mainPlot <- ggplot( data = avgData, aes( x = scale, y = ms, ymin = ms - stdData$ms, ymax = ms + stdData$ms,fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
+yLimit <- ylim( yMin, yMax )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + yLimit + xLabel + yLabel + fillLabel + theme
 
 
 print( "Generating bar graph with error bars." )
 width <- 0.9
-barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width, fill="#E8BD00" )
+barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width )
 errorBarFormat <- geom_errorbar( position=position_dodge( ), width = width )
 title <- ggtitle( paste( chartTitle, "with Standard Error Bars" ) )
 result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
@@ -115,4 +140,18 @@ result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
 ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
 
-print( paste( "Successfully wrote bar chart out to", errBarOutputFile ) )
+
+print( paste( "Successfully wrote bar chart with error bars out to", errBarOutputFile ) )
+
+
+print( "Generating stacked bar chart." )
+stackedBarFormat <- geom_bar( stat="identity", width=width )
+title <- ggtitle( paste( chartTitle, "Total Latency" ) )
+result <- fundamentalGraphData + stackedBarFormat + title
+
+
+print( paste( "Saving stacked bar chart to", stackedBarOutputFile ) )
+ggsave( stackedBarOutputFile, width = 10, height = 6, dpi = 200 )
+
+
+print( paste( "Successfully wrote stacked bar chart out to", stackedBarOutputFile ) )

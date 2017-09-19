@@ -86,18 +86,25 @@ colnames( dataFrame ) <- c( "ms", "type", "scale", "date", "iterative" )
 dataFrame$type <- as.character( dataFrame$type )
 dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+print( "Data Frame Results:" )
+print( dataFrame )
+
 # **********************************************************
 # STEP 3: Generate graphs.
 # **********************************************************
 
 print( "Generating fundamental graph data." )
 
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
 xLabel <- xlab( "date" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
@@ -135,6 +142,10 @@ colnames( dataFrame ) <- c( "ms", "type", "scale", "date", "iterative" )
 dataFrame$type <- as.character( dataFrame$type )
 dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+print( "Data Frame Results:" )
+print( dataFrame )
 
 # **********************************************************
 # STEP 3: Generate graphs.
@@ -142,12 +153,14 @@ dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 
 print( "Generating fundamental graph data." )
 
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
 xLabel <- xlab( "Build Date" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 

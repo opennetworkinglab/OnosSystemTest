@@ -26,7 +26,7 @@ USECASE = [
 
 table_name = "executed_test_tests"
 result_name = "executed_test_results"
-graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/testCaseGraphGenerator.R"
+graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
 graph_saved_directory = "/var/jenkins/workspace/Pipeline_postjob_BM/"
 
 echo("Testcases:")

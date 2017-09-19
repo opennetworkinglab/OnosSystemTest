@@ -42,17 +42,17 @@ library( RPostgreSQL )    # For databases
 
 # Check if sufficient args are provided.
 if ( is.na( args[ 7 ] ) ){
-    print( "Usage: Rscript SCPFportLat <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
+    print( "Usage: Rscript SCPFswitchLat <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
     q()  # basically exit(), but in R
 }
 
 # Filenames for output graphs include the testname and the graph type.
 # See the examples below. paste() is used to concatenate strings.
-errBarOutputFileUp <- paste( args[ 7 ], "SCPFportLat_", sep = "" )
+errBarOutputFileUp <- paste( args[ 7 ], "SCPFswitchLat_", sep = "" )
 errBarOutputFileUp <- paste( errBarOutputFileUp, args[ 6 ], sep = "" )
 errBarOutputFileUp <- paste( errBarOutputFileUp, "_UpErrBarWithStack.jpg", sep = "" )
 
-errBarOutputFileDown <- paste( args[ 7 ], "SCPFportLat_", sep = "" )
+errBarOutputFileDown <- paste( args[ 7 ], "SCPFswitchLat_", sep = "" )
 errBarOutputFileDown <- paste( errBarOutputFileDown, args[ 6 ], sep = "" )
 errBarOutputFileDown <- paste( errBarOutputFileDown, "_DownErrBarWithStack.jpg", sep = "" )
 
@@ -60,18 +60,14 @@ print( "Reading from databases." )
 
 con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
 
-command  <- paste( "SELECT * FROM port_latency_details WHERE branch = '", args[ 6 ], sep = "" )
-command <- paste( command, "' AND date IN ( SELECT MAX( date ) FROM port_latency_details WHERE branch = '", sep = "" )
-command <- paste( command, args[ 6 ], sep = "" )
-command <- paste( command, "' ) ", sep="" )
+command <- paste( "SELECT * FROM switch_latency_details WHERE branch = '", args[ 6 ], sep="" )
+command <- paste( command, "' AND date IN ( SELECT MAX( date ) FROM switch_latency_details WHERE branch='", sep = "")
+command <- paste( command, args[ 6 ], sep="" )
+command <- paste( command, "' )", sep="" )
 
 print( paste( "Sending SQL command:", command ) )
 
 fileData <- dbGetQuery( con, command )
-
-chartTitle <- paste( "Port Latency", args[ 6 ], sep = " - " )
-chartTitle <- paste( chartTitle, "\n" )
-
 
 # **********************************************************
 # STEP 2: Organize data.
@@ -79,17 +75,16 @@ chartTitle <- paste( chartTitle, "\n" )
 
 print( "Sorting data." )
 
-upAvgs <- c( fileData[ 'up_ofp_to_dev_avg' ], fileData[ 'up_dev_to_link_avg' ], fileData[ 'up_link_to_graph_avg' ] )
+upAvgs <- c( fileData[ 'up_device_to_graph_avg' ], fileData[ 'role_reply_to_device_avg' ], fileData[ 'role_request_to_role_reply_avg' ], fileData[ 'feature_reply_to_role_request_avg' ], fileData[ 'tcp_to_feature_reply_avg' ] )
 upAvgsData <- melt( upAvgs )
 upAvgsData$scale <- fileData$scale
 upAvgsData$up_std <- fileData$up_std
-
 
 colnames( upAvgsData ) <- c( "ms", "type", "scale", "stds" )
 upAvgsData$type <- as.character( upAvgsData$type )
 upAvgsData$type <- factor( upAvgsData$type, levels=unique( upAvgsData$type ) )
 
-downAvgs <- c( fileData[ 'down_ofp_to_dev_avg' ], fileData[ 'down_dev_to_link_avg' ], fileData[ 'down_link_to_graph_avg' ] )
+downAvgs <- c( fileData[ 'down_device_to_graph_avg' ], fileData[ 'ack_to_device_avg' ], fileData[ 'fin_ack_to_ack_avg' ] )
 downAvgsData <- melt( downAvgs )
 downAvgsData$scale <- fileData$scale
 downAvgsData$down_std <- fileData$down_std
@@ -98,20 +93,30 @@ colnames( downAvgsData ) <- c( "ms", "type", "scale", "stds" )
 downAvgsData$type <- as.character( downAvgsData$type )
 downAvgsData$type <- factor( downAvgsData$type, levels=unique( downAvgsData$type ) )
 
+upAvgsData <- na.omit( upAvgsData )   # Omit any data that doesn't exist
+downAvgsData <- na.omit( downAvgsData )
+
+print( "Up Averages Results:" )
+print( upAvgsData )
+
+print( "Down Averages Results:" )
+print( downAvgsData )
 
 # **********************************************************
 # STEP 3: Generate graphs.
 # **********************************************************
 
 
-print( "Generating fundamental graph data (Port Up Latency)." )
+print( "Generating fundamental graph data (Switch Up Latency)." )
 width <- 1
  if ( min( fileData[ 'up_end_to_end_avg' ] - upAvgsData$stds ) < 0 ) {
-     yMin <- min( fileData[ 'up_end_to_end_avg' ] - upAvgsData$stds ) * 1.05
+     yMin <- min( fileData[ 'up_end_to_end_avg' ] + upAvgsData$stds ) * 1.05
  } else {
      yMin <- 0
  }
 yMax <- max( fileData[ 'up_end_to_end_avg' ] + upAvgsData$stds )
+
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = upAvgsData, aes( x = scale, y = ms, fill = type, ymin = fileData[ 'up_end_to_end_avg' ] - stds, ymax = fileData[ 'up_end_to_end_avg' ] + stds ) )
 xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
@@ -119,26 +124,26 @@ yLimit <- ylim( yMin, yMax )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 fundamentalGraphData <- mainPlot + yLimit + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
-print( "Generating bar graph with error bars (Port Up Latency)." )
+print( "Generating bar graph with error bars (Switch Up Latency)." )
 barGraphFormat <- geom_bar( stat="identity", width = width )
 errorBarFormat <- geom_errorbar( width = width )
 
-title <- ggtitle( "Port Up Latency" )
+title <- ggtitle( "Switch Up Latency" )
 result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
 
 
-print( paste( "Saving bar chart with error bars (Port Up Latency) to", errBarOutputFileUp ) )
+print( paste( "Saving bar chart with error bars (Switch Up Latency) to", errBarOutputFileUp ) )
 ggsave( errBarOutputFileUp, width = 10, height = 6, dpi = 200 )
 
 
-print( paste( "Successfully wrote bar chart with error bars (Port Up Latency) out to", errBarOutputFileUp ) )
+print( paste( "Successfully wrote bar chart with error bars (Switch Up Latency) out to", errBarOutputFileUp ) )
 
 
-print( "Generating fundamental graph data (Port Down Latency)." )
+print( "Generating fundamental graph data (Switch Down Latency)." )
  if ( min( fileData[ 'down_end_to_end_avg' ] - downAvgsData$stds ) < 0 ) {
      yMin <- min( fileData[ 'down_end_to_end_avg' ] - downAvgsData$stds )
  } else {
@@ -148,20 +153,20 @@ print( "Generating fundamental graph data (Port Down Latency)." )
 
 mainPlot <- ggplot( data = downAvgsData, aes( x = scale, y = ms, fill = type, ymin = fileData[ 'down_end_to_end_avg' ] - stds, ymax = fileData[ 'down_end_to_end_avg' ] + stds ) )
 yLimit <- ylim( yMin, yMax )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 fundamentalGraphData <- mainPlot + yLimit + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
-print( "Generating bar graph with error bars (Port Down Latency)." )
+print( "Generating bar graph with error bars (Switch Down Latency)." )
 barGraphFormat <- geom_bar( stat="identity", width = width )
 errorBarFormat <- geom_errorbar( width = width )
 
-title <- ggtitle( "Port Down Latency" )
+title <- ggtitle( "Switch Down Latency" )
 result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
 
 
-print( paste( "Saving bar chart with error bars (Port Down Latency) to", errBarOutputFileDown ) )
+print( paste( "Saving bar chart with error bars (Switch Down Latency) to", errBarOutputFileDown ) )
 ggsave( errBarOutputFileDown, width = 10, height = 6, dpi = 200 )
 
 
-print( paste( "Successfully wrote bar chart with error bars (Port Down Latency) out to", errBarOutputFileDown ) )
+print( paste( "Successfully wrote bar chart with error bars (Switch Down Latency) out to", errBarOutputFileDown ) )

@@ -28,7 +28,7 @@ SCPF = [
 ]
 
 echo("Testcases:")
-graph_generator_directory = "~/OnosSystemTest/TestON/JenkinsFile/SCPF/"
+graph_generator_directory = "~/OnosSystemTest/TestON/JenkinsFile/scripts/"
 graph_saved_directory = "/var/jenkins/workspace/Pipeline_postjob_BM/"
 def testsToRun = null
 def prop = null

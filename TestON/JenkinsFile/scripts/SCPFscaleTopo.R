@@ -92,6 +92,11 @@ dataFrame$iterative <- seq( 1, nrow( fileData ), by = 1 )
 # Obtain the sum of the averages for the plot size and center of standard deviation bars.
 avgsSum <- fileData$total_time
 
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+print( "Data Frame Results:" )
+print( dataFrame )
+
 # **********************************************************
 # STEP 3: Generate graphs.
 # **********************************************************
@@ -117,6 +122,8 @@ if ( min( avgsSum ) < 0){
 }
 yWindowMax <- max( avgsSum )
 
+theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+
 # Create the primary plot here.
 # ggplot contains the following arguments:
 #     - data: the data frame that the graph will be based off of
@@ -133,8 +140,8 @@ yLimit <- ylim( yWindowMin, yWindowMax )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-chartTitle <- paste( "Topology Scaling Operation Latency" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 18, face='bold' ) )
+chartTitle <- paste( "Scale Topology Latency Test" )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + yLimit + xLabel + yLabel + fillLabel + theme

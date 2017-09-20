@@ -1,0 +1,189 @@
+#!groovy
+// This is a Jenkinsfile for a scripted pipeline for the USECASETest tests
+
+// TODO: Exception handling around steps
+
+def prop = null
+node("TestStation-BMs"){
+    prop = readProperties(file:'/var/jenkins/TestONOS.property')
+}
+USECASE = [
+    "FUNCvirNetNB" : [wiki_link:prop["WikiPrefix"]+"-"+"FUNCvirNetNB", wiki_file:"FUNCvirNetNBWiki.txt"],
+    "FUNCbgpls" : [wiki_link:prop["WikiPrefix"]+"-"+"FUNCbgpls", wiki_file:"FUNCbgplsWiki.txt"],
+    "VPLSBasic" : [wiki_link:prop["WikiPrefix"]+"-"+"VPLSBasic", wiki_file:"VPLSBasicWiki.txt"],
+    "VPLSfailsafe" : [wiki_link:prop["WikiPrefix"]+"-"+"VPLSfailsafe", wiki_file:"VPLSfailsafeWiki.txt"],
+    "PLATdockertest": [wiki_link:"Docker Images sanity test", wiki_file:"PLATdockertestTableWiki.txt"],
+    "SRSanity": [wiki_link:prop["WikiPrefix"]+"-"+"SR Sanity", wiki_file:"SRSanityWiki.txt"],
+    "SRSwitchFailure": [wiki_link:prop["WikiPrefix"]+"-"+"SR Switch Failure", wiki_file:"SRSwitchFailureWiki.txt"],
+    "SRLinkFailure": [wiki_link:prop["WikiPrefix"]+"-"+"SR Link Failure", wiki_file:"SRLinkFailureWiki.txt"],
+    "SROnosFailure": [wiki_link:prop["WikiPrefix"]+"-"+"SR Onos node Failure", wiki_file:"SROnosFailureWiki.txt"],
+    "SRClusterRestart": [wiki_link:prop["WikiPrefix"]+"-"+"SR Cluster Restart", wiki_file:"SRClusterRestartWiki.txt"],
+    "SRDynamic": [wiki_link:prop["WikiPrefix"]+"-"+"SR Dynamic Config", wiki_file:"SRDynamicWiki.txt"],
+    "SRHA": [wiki_link:prop["WikiPrefix"]+"-"+"SR High Availability", wiki_file:"SRHighAvailabilityWiki.txt"],
+    "USECASE_SdnipFunction": [wiki_link:prop["WikiPrefix"]+"-"+"SDNIP Function", wiki_file:"USECASE_SdnipFunctionWiki.txt"],
+    "USECASE_SdnipFunctionCluster": [wiki_link:prop["WikiPrefix"]+"-"+"SDNIP Function Cluster", wiki_file:"USECASE_SdnipFunctionClusterWiki.txt"]
+]
+
+table_name = "executed_test_tests"
+result_name = "executed_test_results"
+graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
+graph_saved_directory = "/var/jenkins/workspace/Pipeline_postjob_BM/"
+
+echo("Testcases:")
+testsToRun = prop["Tests"].tokenize("\n;, ")
+for ( String test : testsToRun ) {
+    println test
+}
+
+def tests = [:]
+for( String test : USECASE.keySet() ){
+    toBeRun = testsToRun.contains( test )
+    def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
+    tests[stepName] = USECASETest(test, toBeRun, prop)
+}
+
+// run the tests
+for ( test in tests.keySet() ){
+    tests[test].call()
+}
+
+// The testName should be the key from the FUNC
+def USECASETest( testName, toBeRun, prop ) {
+    return {
+        catchError{
+            stage(testName) {
+                if ( toBeRun ){
+                    workSpace = "/var/jenkins/workspace/"+testName
+                    def fileContents = ""
+                    node("TestStation-BMs"){
+                        withEnv(['ONOSBranch='+prop["ONOSBranch"],
+                                 'ONOSJVMHeap='+prop["ONOSJVMHeap"],
+                                 'TestONBranch='+prop["TestONBranch"],
+                                 'ONOSTag='+prop["ONOSTag"],
+                                 'WikiPrefix='+prop["WikiPrefix"],
+                                 'WORKSPACE='+workSpace]){
+                            sh '''#!/bin/bash -l
+                            set -i # interactive
+                            set +e
+                            shopt -s expand_aliases # expand alias in non-interactive mode
+                            export PYTHONUNBUFFERED=1
+
+                            ifconfig
+
+                            echo "ONOS Branch is: $ONOSBranch"
+                            echo "TestON Branch is: $TestONBranch"
+                            echo "Test date: "
+                            date
+
+                            cd ~
+                            export PATH=$PATH:onos/tools/test/bin
+
+                            . .bash_killcmd
+                            killTestONall
+                            onos-group uninstall
+                            timeout 240 stc teardown | head -100
+
+                            cd ~/OnosSystemTest/TestON/bin
+                            git log |head
+                            ./cleanup.sh -f
+                            ''' + "./cli.py run " + testName + '''
+                            ./cleanup.sh -f
+                            cd ~/onos/tools/package/config
+                            git clean -df'''
+
+                            // For the Wiki page
+                            sh '''#!/bin/bash -i
+                            set +e
+                            echo "ONOS Branch is: ${ONOSBranch}"
+                            echo "TestON Branch is: ${TestONBranch}"
+
+                            echo "Job name is: "''' + testName + '''
+                            echo "Workspace is: ${WORKSPACE}/"
+
+                            echo "Wiki page to post is: ${WikiPrefix}-"
+
+                            # remove any leftover files from previous tests
+                            sudo rm ${WORKSPACE}/*Wiki.txt
+                            sudo rm ${WORKSPACE}/*Summary.txt
+                            sudo rm ${WORKSPACE}/*Result.txt
+                            sudo rm ${WORKSPACE}/*.csv
+
+                            #copy files to workspace
+                            cd `ls -t ~/OnosSystemTest/TestON/logs/*/ | head -1 | sed 's/://'`
+                            sudo cp *.txt ${WORKSPACE}/
+                            sudo cp *.csv ${WORKSPACE}/
+                            cd ${WORKSPACE}/
+                            for i in *.csv
+                                do mv "$i" "$WikiPrefix"-"$i"
+                            done
+                            ls -al
+                            cd '''
+
+                            if( prop["manualRun"] == "false" ){
+                                // Post Results
+                                withCredentials([
+                                    string(credentialsId: 'db_pass', variable: 'pass'),
+                                    string(credentialsId: 'db_user', variable: 'user'),
+                                    string(credentialsId: 'db_host', variable: 'host'),
+                                    string(credentialsId: 'db_port', variable: 'port')]) {
+                                        def database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + table_name + " VALUES('\$DATE','" + result_name + "','" + testName + "',\$BUILD_NUMBER, '\$ONOSBranch', \$line);\""
+
+                                        sh '''#!/bin/bash
+                                        export DATE=\$(date +%F_%T)
+                                        cd ~
+                                        pwd
+                                        sed 1d ''' + workSpace + "/" + prop["WikiPrefix"] + "-" + testName + '''.csv | while read line
+                                        do
+                                        echo \$line
+                                        echo ''' + database_command + '''
+
+                                        done
+                                        Rscript ''' + graph_generator_file + " " + host + " " + port + " " + user + " " + pass + " " + testName + " " + prop["ONOSBranch"] + " 20 " + graph_saved_directory
+
+                                }
+                            }
+                            // Fetch Logs
+                            sh '''#!/bin/bash
+                            set +e
+                            cd ~/OnosSystemTest/TestON/logs
+                            echo "Job Name is: " + ''' + testName + '''
+                            TestONlogDir=$(ls -t | grep ${TEST_NAME}_  |head -1)
+                            echo "########################################################################################"
+                            echo "#####  copying ONOS logs from all nodes to TestON/logs directory: ${TestONlogDir}"
+                            echo "########################################################################################"
+                            cd $TestONlogDir
+                            if [ $? -eq 1 ]
+                            then
+                                echo "Job name does not match any test suite name to move log!"
+                            else
+                                pwd
+                                for i in $OC{1..7}; do onos-fetch-logs $i || echo log does not exist; done
+                            fi
+                            cd'''
+                            fileContents = readFile workSpace+"/"+USECASE[testName]['wiki_file']
+
+                        }
+                    }
+                    if( prop["manualRun"] == "false" ){
+                        def post = build job: "Pipeline_postjob_BM", propagate: false,
+                                    parameters: [
+                                        string(name: 'Wiki_Contents', value: fileContents),
+                                        string(name: 'Wiki_Link', value: USECASE[testName]['wiki_link'])
+                                    ]
+                    }
+                    node("TestStation-BMs"){
+                        sh '''#!/bin/bash
+
+                        if [ -e ''' + workSpace + "/" + testName + "Result.txt ] && grep -q \"1\" " + workSpace + "/" + testName + "Result.txt" + '''
+                        then
+                            echo ''' + testName + " : All passed." + '''
+                        else
+                            echo ''' + testName + " : not all passed." + '''
+                            DoingThisToSetTheResultFalse
+                        fi'''
+                    }
+                }
+            }
+        }
+    }
+}

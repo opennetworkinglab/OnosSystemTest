@@ -39,10 +39,10 @@ class Controller():
     def __repr__( self ):
         #TODO use repr() for components?
         return "%s<IP=%s, CLI=%s, REST=%s, Bench=%s >" % ( self.name,
-                                                          self.ipAddress,
-                                                          self.CLI,
-                                                          self.REST,
-                                                          self.Bench )
+                                                           self.ipAddress,
+                                                           self.CLI,
+                                                           self.REST,
+                                                           self.Bench )
 
     def __getattr__( self, name ):
         """
@@ -79,7 +79,7 @@ class Controller():
 
 
 
-    def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None, userName=None ):
+    def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None, userName=None, server=None ):
         #TODO: validate these arguments
         self.name = str( name )
         self.ipAddress = ipAddress
@@ -90,6 +90,7 @@ class Controller():
         self.pos = pos
         self.ip_address = ipAddress
         self.user_name = userName
+        self.server = server
 
 class OnosClusterDriver( CLI ):
 
@@ -365,7 +366,56 @@ class OnosClusterDriver( CLI ):
             main.log.error( name + " component already exists!" )
             main.cleanAndExit()
 
-    def createComponents( self, prefix='' ):
+
+    def setServerOptions( self, name, ipAddress ):
+        """
+        Parse the cluster options to create an ONOS "server" component with the given name
+
+        Arguments:
+            name - The name of the server componet
+            ipAddress - The ip address of the server
+        """
+        main.componentDictionary[name] = main.componentDictionary[self.name].copy()
+        main.componentDictionary[name]['type'] = "OnosDriver"
+        main.componentDictionary[name]['host'] = ipAddress
+        home = main.componentDictionary[name]['COMPONENTS'].get( "onos_home", None )
+        main.componentDictionary[name]['home'] = self.checkOptions( home, None )
+        main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+        main.log.debug( main.componentDictionary[name] )
+
+
+    def createServerComponent( self, name, ipAddress ):
+        """
+        Creates a new onos "server" component. This will be connected to the
+        node ONOS is running on.
+
+        Arguments:
+            name - The string of the name of this component. The new component
+                   will be assigned to main.<name> .
+                   In addition, main.<name>.name = str( name )
+            ipAddress - The ip address of the server
+        """
+        try:
+            # look to see if this component already exists
+            getattr( main, name )
+        except AttributeError:
+            # namespace is clear, creating component
+            self.setServerOptions( name, ipAddress )
+            return main.componentInit( name )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+        else:
+            # namespace is not clear!
+            main.log.error( name + " component already exists!" )
+            main.cleanAndExit()
+
+
+    def createComponents( self, prefix='', createServer=True ):
         """
         Creates a CLI and REST component for each nodes in the cluster
         """
@@ -373,11 +423,12 @@ class OnosClusterDriver( CLI ):
         cliPrefix = prefix + "cli"
         restPrefix = prefix + "rest"
         benchPrefix = prefix + "bench"
-        #self.nodes = []
+        serverPrefix = prefix + "server"
         for i in xrange( 1, self.maxNodes + 1 ):
             cliName = cliPrefix + str( i  )
             restName = restPrefix + str( i )
             benchName = benchPrefix + str( i )
+            serverName = serverPrefix + str( i )
 
             # Unfortunately this means we need to have a cell set beofre running TestON,
             # Even if it is just the entire possible cluster size
@@ -386,4 +437,5 @@ class OnosClusterDriver( CLI ):
             cli = self.createCliComponent( cliName, ip )
             rest = self.createRestComponent( restName, ip )
             bench = self.createBenchComponent( benchName )
-            self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1, self.user_name ) )
+            server = self.createServerComponent( serverName, ip ) if createServer else None
+            self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1, self.user_name, server=server ) )

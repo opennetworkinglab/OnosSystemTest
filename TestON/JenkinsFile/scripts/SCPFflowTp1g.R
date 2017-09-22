@@ -147,7 +147,7 @@ mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = throughput, ymin = thr
 width <- 0.7  # Width of the bars.
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$scale, label = dataFrame$scale )
 xLabel <- xlab( "Scale" )
-yLabel <- ylab( "Throughput (events/second)" )
+yLabel <- ylab( "Throughput (,000 Flows/sec)" )
 fillLabel <- labs( fill="Type" )
 chartTitle <- "Flow Throughput Test"
 if ( args[ 1 ] == 'y' ){

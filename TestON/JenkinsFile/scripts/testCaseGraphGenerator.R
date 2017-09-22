@@ -137,7 +137,7 @@ yLabel <- ylab( "Test Cases" )
 fillLabel <- labs( fill="Type" )
 legendLabels <- scale_colour_discrete( labels = c( "Failed", "Passed", "Planned" ) )
 centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( plot.title = element_text( size = 28, face='bold' ) )
+theme <- theme( plot.title = element_text( size = 28, face='bold' ), axis.text.x = element_text( angle = 45, size = 10 ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + plannedColor + passedColor + failedColor + xScaleConfig + yScaleConfig + xLabel + yLabel + fillLabel + legendLabels + centerTitle + theme

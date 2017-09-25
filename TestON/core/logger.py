@@ -123,6 +123,7 @@ class Logger:
         main.WikiFileName = main.logdir + "/" + main.TEST + "Wiki.txt"
         main.SummaryFileName = main.logdir + "/" + main.TEST + "Summary.txt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
+        main.resultFile = main.logdir + "/" + main.TEST + "Result.txt"
         main.TOTAL_TC_SUCCESS = 0
 
         #### Add log-level - Report
@@ -294,8 +295,14 @@ class Logger:
         #NOTE: the elements were orded based on the colors assigned to the data
         logfile = open(main.JenkinsCSV ,"w")
         logfile.write(",".join( ['Tests Failed', 'Tests Passed', 'Tests Planned'] ) + "\n")
-        logfile.write(",".join( [str(int(main.TOTAL_TC_FAIL)), str(int(main.TOTAL_TC_PASS)), str(int(main.TOTAL_TC_PLANNED))] ))
+        logfile.write(",".join( [str(int(main.TOTAL_TC_FAIL)), str(int(main.TOTAL_TC_PASS)), str(int(main.TOTAL_TC_PLANNED))] ) + "\n" )
         logfile.close()
+        executedStatus = open(main.resultFile, "w")
+        if main.TOTAL_TC_FAIL == 0 and main.TOTAL_TC_NORESULT + main.TOTAL_TC_PASS == main.TOTAL_TC_PLANNED:
+            executedStatus.write("1\n")
+        else:
+            executedStatus.write("0\n")
+        executedStatus.close()
 
     def updateCaseResults(self,main):
         '''

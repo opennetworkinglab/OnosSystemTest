@@ -120,7 +120,7 @@ if ( min( avgsSum ) < 0){
 } else {
     yWindowMin <- 0
 }
-yWindowMax <- max( avgsSum )
+yWindowMax <- max( avgsSum ) * 1.2
 
 theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 

@@ -35,7 +35,7 @@ class Utils:
         main.case( "Stop Mininet" )
         main.caseExplanation = "Stopping the current mininet to start up fresh"
 
-    def mininetCleanup( self, Mininet, timeout=5 ):
+    def mininetCleanup( self, Mininet, timeout=5, exitTimeout=1000 ):
         """
         Description:
             Clean up the mininet using stopNet and verify it.
@@ -47,7 +47,7 @@ class Utils:
             else returns main.FALSE
         """
         main.step( "Stopping Mininet" )
-        topoResult = Mininet.stopNet( timeout=timeout )
+        topoResult = Mininet.stopNet( timeout=timeout, exitTimeout=exitTimeout )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=topoResult,
                                  onpass="Successfully stopped mininet",

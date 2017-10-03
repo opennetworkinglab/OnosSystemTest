@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # This is the R script that generates the SCPF front page graphs.
 
@@ -31,7 +31,7 @@ print( "STEP 1: Data management." )
 # Import libraries to be used for graphing and organizing data, respectively.
 # Find out more about ggplot2: https://github.com/tidyverse/ggplot2
 #                     reshape2: https://github.com/hadley/reshape
-#                      RPostgreSQL: https://code.google.com/archive/p/rpostgresql/
+#                     RPostgreSQL: https://code.google.com/archive/p/rpostgresql/
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )

@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,7 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
+# Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -46,8 +44,7 @@ if ( is.na( args[ 7 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
+# paste() is used to concatenate strings.
 errBarOutputFileUp <- paste( args[ 7 ], "SCPFswitchLat_", sep = "" )
 errBarOutputFileUp <- paste( errBarOutputFileUp, args[ 6 ], sep = "" )
 errBarOutputFileUp <- paste( errBarOutputFileUp, "_UpErrBarWithStack.jpg", sep = "" )
@@ -109,24 +106,17 @@ print( downAvgsData )
 
 print( "Generating fundamental graph data (Switch Up Latency)." )
 width <- 1
- if ( min( fileData[ 'up_end_to_end_avg' ] - upAvgsData$stds ) < 0 ) {
-     yMin <- min( fileData[ 'up_end_to_end_avg' ] + upAvgsData$stds ) * 1.05
- } else {
-     yMin <- 0
- }
-yMax <- max( fileData[ 'up_end_to_end_avg' ] + upAvgsData$stds )
 
 theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = upAvgsData, aes( x = scale, y = ms, fill = type, ymin = fileData[ 'up_end_to_end_avg' ] - stds, ymax = fileData[ 'up_end_to_end_avg' ] + stds ) )
 xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
-yLimit <- ylim( yMin, yMax )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
-fundamentalGraphData <- mainPlot + yLimit + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 print( "Generating bar graph with error bars (Switch Up Latency)." )
 barGraphFormat <- geom_bar( stat="identity", width = width )
@@ -144,18 +134,11 @@ print( paste( "Successfully wrote bar chart with error bars (Switch Up Latency) 
 
 
 print( "Generating fundamental graph data (Switch Down Latency)." )
- if ( min( fileData[ 'down_end_to_end_avg' ] - downAvgsData$stds ) < 0 ) {
-     yMin <- min( fileData[ 'down_end_to_end_avg' ] - downAvgsData$stds )
- } else {
-     yMin <- 0
- }
- yMax <- max( fileData[ 'down_end_to_end_avg' ] + downAvgsData$stds )
 
 mainPlot <- ggplot( data = downAvgsData, aes( x = scale, y = ms, fill = type, ymin = fileData[ 'down_end_to_end_avg' ] - stds, ymax = fileData[ 'down_end_to_end_avg' ] + stds ) )
-yLimit <- ylim( yMin, yMax )
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
-fundamentalGraphData <- mainPlot + yLimit + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 print( "Generating bar graph with error bars (Switch Down Latency)." )
 barGraphFormat <- geom_bar( stat="identity", width = width )

@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,6 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -47,9 +44,7 @@ if ( is.na( args[ 8 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
-
+# paste() is used to concatenate strings.
 outputFile <- paste( args[ 8 ], args[ 6 ], sep="" )
 if ( args[ 1 ] == "y" ){
     outputFile <- paste( outputFile, "flowObj", sep="_" )
@@ -80,7 +75,7 @@ print( paste( "Sending SQL command:", command ) )
 fileData <- dbGetQuery( con, command )
 
 if ( args[ 1 ] == "y" ){
-    chartTitle <- "Number of Installed Intents & Flows with Flow Objectives"
+    chartTitle <- "Number of Installed Intents & Flows w/ FlowObj"
 } else {
     chartTitle <- "Number of Installed Intents & Flows"
 }

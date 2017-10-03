@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,7 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
+# Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -40,16 +38,13 @@ library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )    # For databases
 
-# Normal usage
 # Check if sufficient args are provided.
 if ( is.na( args[ 7 ] ) ){
     print( "Usage: Rscript SCPFmastershipFailoverLat <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
         q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
-
+# paste() is used to concatenate strings.
 errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
 errBarOutputFile <- paste( errBarOutputFile, "_errGraph.jpg", sep="" )
@@ -120,13 +115,12 @@ theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the g
 
 mainPlot <- ggplot( data = avgData, aes( x = scale, y = ms, ymin = ms - stdData$ms, ymax = ms + stdData$ms,fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
-yLimit <- ylim( yMin, yMax )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
-fundamentalGraphData <- mainPlot + xScaleConfig + yLimit + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 
 print( "Generating bar graph with error bars." )

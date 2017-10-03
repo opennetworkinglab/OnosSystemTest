@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,7 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
+# Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -46,9 +44,7 @@ if ( is.na( args[ 7 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
-
+# paste() is used to concatenate strings
 outputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 outputFile <- paste( outputFile, args[ 6 ], sep="_" )
 outputFile <- paste( outputFile, "_graph.jpg", sep="" )
@@ -80,7 +76,7 @@ avgs <- c( fileData[ 'last_role_request_to_last_topology' ], fileData[ 'last_con
 
 # Parse lists into data frames.
 dataFrame <- melt( avgs )              # This is where reshape2 comes in. Avgs list is converted to data frame
-dataFrame$scale <- fileData$scale          # Add node scaling to the data frame.
+dataFrame$scale <- fileData$scale      # Add node scaling to the data frame.
 colnames( dataFrame ) <- c( "ms", "type", "scale")
 
 
@@ -114,20 +110,12 @@ print( "STEP 3: Generate graphs." )
 
 print( "Generating fundamental graph data." )
 
-# Calculate window to display graph, based on the lowest and highest points of the data.
-if ( min( avgsSum ) < 0){
-    yWindowMin <- min( avgsSum ) * 1.05
-} else {
-    yWindowMin <- 0
-}
-yWindowMax <- max( avgsSum ) * 1.2
-
 theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 
 # Create the primary plot here.
 # ggplot contains the following arguments:
 #     - data: the data frame that the graph will be based off of
-#    - aes: the asthetics of the graph which require:
+#     - aes: the asthetics of the graph which require:
 #        - x: x-axis values (usually node scaling)
 #        - y: y-axis values (usually time in milliseconds)
 #        - fill: the category of the colored side-by-side bars (usually type)
@@ -136,7 +124,6 @@ mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) 
 # Formatting the plot
 width <- 0.6  # Width of the bars.
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$scale )
-yLimit <- ylim( yWindowMin, yWindowMax )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
@@ -144,7 +131,7 @@ chartTitle <- paste( "Scale Topology Latency Test" )
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + xScaleConfig + yLimit + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 # Create the stacked bar graph with error bars.
 # geom_bar contains:

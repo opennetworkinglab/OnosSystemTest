@@ -18,9 +18,9 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
-# This is the R script that generates the FUNC and HA result graphs.
+# This is the R script that generates the FUNC, HA, and various USECASE result graphs.
 
 # **********************************************************
 # STEP 1: Data management.

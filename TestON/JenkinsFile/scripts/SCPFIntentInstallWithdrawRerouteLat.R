@@ -177,7 +177,7 @@ if ( args[ 1 ] == "y" ){
 chartTitle <- paste( chartTitle, "\nBatch Size =" )
 chartTitle <- paste( chartTitle, fileData1[ 1,'batch_size' ] )
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 22, face='bold' ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + yLimit + xLabel + yLabel + fillLabel + theme

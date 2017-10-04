@@ -479,7 +479,7 @@ class CLI( Component ):
             assert "cannot access" not in output
             assert "command not found" not in output
             main.log.debug( output )
-            lines = [ line for line in output.splitlines() ]
+            lines = [ line for line in output.split('\r\n') ]
             retValue = True
             if ignoreRoot:
                 lastIndex = -2

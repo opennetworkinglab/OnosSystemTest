@@ -292,6 +292,9 @@ class VPLSfailsafe:
             connectivityResult = vpls.testConnectivityVpls( main )
             result = result and connectivityResult
 
+            if not result:
+                break
+
         utilities.assert_equals( expect=main.TRUE, actual=result,
                                  onpass="Connectivity is as expected.",
                                  onfail="Connectivity is NOT as expected." )
@@ -347,6 +350,9 @@ class VPLSfailsafe:
             # Check connectivity
             connectivityResult = vpls.testConnectivityVpls( main )
             result = result and connectivityResult
+
+            if not result:
+                break
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=result,
@@ -438,6 +444,9 @@ class VPLSfailsafe:
             connectivityResult = vpls.testConnectivityVpls( main )
             result = result and connectivityResult
 
+            if not result:
+                break
+
         utilities.assert_equals( expect=main.TRUE,
                                  actual=result,
                                  onpass="Connectivity is as expected.",
@@ -471,6 +480,9 @@ class VPLSfailsafe:
             # Check connectivity
             connectivityResult = vpls.testConnectivityVpls( main )
             result = result and connectivityResult
+
+            if not result:
+                break
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=result,
@@ -526,6 +538,9 @@ class VPLSfailsafe:
             # Check intent states, then connectivity
             connectivityResult = vpls.testConnectivityVpls( main )
             result = result and connectivityResult
+
+            if not result:
+                break
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=result,

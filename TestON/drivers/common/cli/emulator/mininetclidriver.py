@@ -38,6 +38,7 @@ import re
 import sys
 import types
 import os
+import time
 from math import pow
 from drivers.common.cli.emulatordriver import Emulator
 from core.graph import Graph
@@ -198,6 +199,7 @@ class MininetCliDriver( Emulator ):
                 self.handle.expect( self.prompt )
                 main.log.info( "Sending '" + cmdString + "' to " + self.name )
                 self.handle.sendline( cmdString )
+                startTime = time.time()
                 while True:
                     i = self.handle.expect( [ 'mininet>',
                                               'Exception',
@@ -206,7 +208,7 @@ class MininetCliDriver( Emulator ):
                                               pexpect.TIMEOUT ],
                                             timeout )
                     if i == 0:
-                        main.log.info( self.name + ": Mininet built" )
+                        main.log.info( self.name + ": Mininet built\nTime Took : " + str( time.time() - startTime ) )
                         return main.TRUE
                     elif i == 1:
                         response = str( self.handle.before +
@@ -1291,7 +1293,7 @@ class MininetCliDriver( Emulator ):
             main.cleanAndExit()
         return response
 
-    def links( self, timeout=20 ):
+    def links( self, timeout=1000 ):
         main.log.info( self.name + ": List network links" )
         try:
             response = self.execute( cmd='links', prompt='mininet>',
@@ -2253,7 +2255,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def stopNet( self, fileName="", timeout=5 ):
+    def stopNet( self, fileName="", timeout=5, exitTimeout=1000 ):
         """
         Stops mininet.
         Returns main.TRUE if the mininet successfully stops and
@@ -2272,11 +2274,12 @@ class MininetCliDriver( Emulator ):
                                           pexpect.TIMEOUT ],
                                         timeout )
                 if i == 0:
-                    main.log.info( "Exiting mininet..." )
+                    main.log.info( "Exiting mininet.." )
+                    startTime = time.time()
                     response = self.execute( cmd="exit",
-                                             prompt="(.*)",
-                                             timeout=120 )
-                    main.log.info( self.name + ": Stopped" )
+                                             prompt=self.prompt,
+                                             timeout=exitTimeout )
+                    main.log.info( self.name + ": Stopped\nTime Took : " + str( time.time() - startTime ) )
                     self.handle.sendline( "sudo mn -c" )
                     response = main.TRUE
 
@@ -2808,7 +2811,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getSwitches( self, verbose=False ):
+    def getSwitches( self, verbose=False, updateTimeout=1000 ):
         """
         Read switches from Mininet.
 
@@ -2833,7 +2836,7 @@ class MininetCliDriver( Emulator ):
                    r"(?P<ports>([^,]+,)*[^,\s]+)" +\
                    r"\spid=(?P<pid>(\d)+)"
             # Update mn port info
-            self.update()
+            self.update( updateTimeout )
             output = {}
             dump = self.dump().split( "\n" )
             for line in dump:
@@ -2861,7 +2864,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getHosts( self, verbose=False ):
+    def getHosts( self, verbose=False, updateTimeout=1000 ):
         """
         Read hosts from Mininet.
 
@@ -2881,7 +2884,7 @@ class MininetCliDriver( Emulator ):
             hostRE = r"Host\s(?P<name>[^:]+)\:((\s(?P<ifname>[^:]+)\:" +\
                 "(?P<ip>[^\s]+))|(\s)\spid=(?P<pid>[^>]+))"
             # update mn port info
-            self.update()
+            self.update( updateTimeout )
             # Get mininet dump
             dump = self.dump().split( "\n" )
             hosts = {}
@@ -2930,7 +2933,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getLinks( self, timeout=20 ):
+    def getLinks( self, timeout=20, updateTimeout=1000 ):
         """
         Gathers information about current Mininet links. These links may not
         be up if one of the ports is down.
@@ -2947,7 +2950,7 @@ class MininetCliDriver( Emulator ):
               hosts, this is just the eth#.
         """
         try:
-            self.update()
+            self.update( updateTimeout )
             response = self.links( timeout=timeout ).split( '\n' )
 
             # Examples:
@@ -3466,7 +3469,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception" )
             return None
 
-    def update( self ):
+    def update( self, timeout=1000 ):
         """
            updates the port address and status information for
            each port in mn"""
@@ -3477,8 +3480,7 @@ class MininetCliDriver( Emulator ):
             self.handle.expect( "mininet>" )
 
             self.handle.sendline( "update" )
-            self.handle.expect( "update" )
-            self.handle.expect( "mininet>" )
+            self.handle.expect( "mininet>", timeout )
 
             self.handle.sendline( "" )
             self.handle.expect( "mininet>" )

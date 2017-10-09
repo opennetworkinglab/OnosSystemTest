@@ -4483,6 +4483,7 @@ class OnosCliDriver( CLI ):
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             assert "Error:" not in handle, handle
+            assert "Error executing" not in handle, handle
             if not handle:
                 main.log.error( self.name + ": There is no output in " +
                                 "summary command" )

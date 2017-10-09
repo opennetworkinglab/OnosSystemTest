@@ -70,6 +70,9 @@ def getRoleRequestTimeFromTshark( main ):
     except IndexError:
         main.log.error( "Got wrong role request string from Tshark file" )
         return -1
+    except ValueError:
+        main.log.error( "Got wrong string from log" )
+        return -1
 
 
 def compareTimeDiffWithRoleRequest( main, term, Mode, index=0 ):
@@ -93,7 +96,9 @@ def compareTimeDiffWithRoleRequest( main, term, Mode, index=0 ):
         main.log.error( "Catch the wrong information of search term " )
         main.writeData = -1
         return -1
-
+    except ValueError:
+        main.log.error( "Got wrong string from log" )
+        return -1
 
 def getInfoFromLog( main, term1, mode1, term2, mode2, index=0, funcMode='TD' ):
     """
@@ -139,7 +144,9 @@ def getInfoFromLog( main, term1, mode1, term2, mode2, index=0, funcMode='TD' ):
         main.log.error( "Catch the wrong information of search term" )
         main.writeData = -1
         return -1
-
+    except ValueError:
+        main.log.error( "Got wrong string from log" )
+        return -1
 
 def testTopology( main, topoFile='', args='', mnCmd='', timeout=300, clean=True ):
     """

@@ -37,14 +37,15 @@ def sendArpPackage( main, hostList ):
     if isinstance( hostList, list ):
         for h in hostList:
             main.Mininet1.arping( srcHost=h, dstHost="10.0.0.1", output=main.FALSE, noResult=True )
-            time.sleep( 0.5 )
     else:
         main.Mininet1.arping( srcHost=hostList, dstHost="10.0.0.1", output=main.FALSE, noResult=True )
+
+def getHostNum( main ):
     try:
         summaryStr = ""
         summaryStr = json.loads( main.Cluster.active( 0 ).CLI.summary().encode() )
         hostNum = summaryStr.get( 'hosts' )
-
+        main.log.info( "host nums from ONOS : " + str( hostNum ) )
     except ( TypeError, ValueError ):
         main.log.exception( " Object not as expected: {!r}".format( summaryStr ) )
         return -1

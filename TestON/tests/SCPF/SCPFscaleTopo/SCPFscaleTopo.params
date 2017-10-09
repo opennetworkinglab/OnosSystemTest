@@ -8,7 +8,7 @@
     # 200 - bring onos node up and balance masters
     # 1000 - report logs
     # 1,[2,10,300,11,100,300,11,200,300,11,1000]*3
-    <testcases>1,[2,10,300,11,1000]*10</testcases>
+    <testcases>1,[3,2,10,300,11,1000]*10,3</testcases>
 
     <DEPENDENCY>
         <path>/tests/SCPF/SCPFscaleTopo/dependencies/</path>
@@ -51,12 +51,18 @@
         <nodeSleep>10</nodeSleep>
         <pingall>15</pingall>
         <MNsleep>60</MNsleep>
-        <host>0</host>
+        <host>20</host>
     </SLEEP>
 
     <TIMEOUT>
         # pingall timeout unit: ms
         <pingall>0.03</pingall>
+        # others unit: s
+        <basicMininet>1000</basicMininet>
+        <startNet>50</startNet>
+        <stopNet>60</stopNet>
+        <update>40</update>
+        <links>60</links>
     </TIMEOUT>
 
     <ATTEMPTS>
@@ -66,7 +72,7 @@
 
     <TOPOLOGY>
         <topology>torus</topology>
-        <scale>5,10,20,30,35,40,45,50,55,60</scale>
+        <scale>10,20,30,40,50,55,60</scale>
         <host>True</host>
     </TOPOLOGY>
 

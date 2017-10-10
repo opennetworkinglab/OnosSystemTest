@@ -1,4 +1,5 @@
 #!groovy
+import groovy.time.*
 // This is a Jenkinsfile for a scripted pipeline for the SCPF tests
 // properties([pipelineTriggers([cron('30 19 * * *')])])
 
@@ -7,6 +8,7 @@
 none = [ "" ]
 batches = [1,100,1000]
 neighbors = ['y', 'n']
+times = [ 'y', 'n' ]
 SCPF = [
     SCPFcbench: [ test:'SCPFcbench', table:'cbench_bm_tests', results:'cbench_bm_results', file:'CbenchDB', rFile:'SCPFcbench.R', extra:none, finalResult:1, graphTitle:['Cbench Test'], dbCols:'avg', dbWhere:'', y_axis:'Throughput (Responses/sec)'],
     SCPFhostLat: [ test:'SCPFhostLat', table:'host_latency_tests', results:'host_latency_results', file:'HostAddLatency', rFile:'SCPFhostLat.R', extra:none,finalResult:1, graphTitle:['Host Latency Test'], dbCols:'avg', dbWhere:'AND scale=5', y_axis:'Latency (ms)'],
@@ -18,11 +20,11 @@ SCPF = [
     SCPFbatchFlowResp: [ test:'SCPFbatchFlowResp', table:'batch_flow_tests', results:'batch_flow_results', file:'SCPFbatchFlowRespData', rFile:'SCPFbatchFlowResp.R', extra:none, finalResult:1, graphTitle:['Batch Flow Test - Post', 'Batch Flow Test - Del'], dbCols:[ 'elapsepost, posttoconfrm', 'elapsedel, deltoconfrm' ], dbWhere:'', y_axis:'Latency (ms)'],
     SCPFintentEventTp: [ test:'SCPFintentEventTp', table:'intent_tp_tests', results:'intent_tp_results', file:'IntentEventTPDB', rFile:'SCPFintentEventTp.R n', extra:neighbors, finalResult:1, graphTitle:['Intent Throughput Test - neighbors=0','Intent Throughput Test - neighbors=4'], dbCols:'SUM( avg ) as avg', dbWhere:[ 'AND scale=5 AND neighbors=0 GROUP BY date','AND scale=5 AND NOT neighbors=0 GROUP BY date' ], y_axis:'Throughput (Ops/sec)'],
     SCPFintentRerouteLat: [ test:'SCPFintentRerouteLat', table:'intent_reroute_latency_tests', results:'intent_reroute_latency_results', file:'IntentRerouteLatDB', rFile:'SCPFIntentInstallWithdrawRerouteLat.R n', extra:batches, finalResult:1, graphTitle:['Intent Reroute Test'], dbCols:'avg', dbWhere:'AND scale=5 AND batch_size=100', y_axis:'Latency (ms)'],
-    SCPFscalingMaxIntents: [ test:'SCPFscalingMaxIntents', table:'max_intents_tests', results:'max_intents_results', file:'ScalingMaxIntentDB', rFile:'SCPFscalingMaxIntents.R n', extra:none, finalResult:0],
+    SCPFscalingMaxIntents: [ test:'SCPFscalingMaxIntents', table:'max_intents_tests', results:'max_intents_results', file:'ScalingMaxIntentDB', rFile:'SCPFscalingMaxIntents.R n', extra:times, finalResult:0],
     SCPFintentEventTpWithFlowObj: [ test:'SCPFintentEventTp --params TEST/flowObj=True', table:'intent_tp_fobj_tests', results:'intent_tp_fobj_results', file:'IntentEventTPflowObjDB', rFile:'SCPFintentEventTp.R y', extra:neighbors,finalResult:0],
     SCPFintentInstallWithdrawLat: [ test:'SCPFintentInstallWithdrawLat', table:'intent_latency_tests', results:'intent_latency_results', file:'IntentInstallWithdrawLatDB', rFile:'SCPFIntentInstallWithdrawRerouteLat.R n', extra:batches,finalResult:1, graphTitle:['Intent Installation Test','Intent Withdrawal Test'], dbCols:[ 'install_avg','withdraw_avg' ], dbWhere:'AND scale=5 AND batch_size=100', y_axis:'Latency (ms)'],
     SCPFintentRerouteLatWithFlowObj: [ test:'SCPFintentRerouteLat --params TEST/flowObj=True', table:'intent_reroute_latency_fobj_tests', results:'intent_reroute_latency_fobj_results', file:'IntentRerouteLatDBWithFlowObj', rFile:'SCPFIntentInstallWithdrawRerouteLat.R y', extra:batches, finalResult:0],
-    SCPFscalingMaxIntentsWithFlowObj: [ test:'SCPFscalingMaxIntents --params TEST/flowObj=True', table:'max_intents_fobj_tests', results:'max_intents_fobj_results', file:'ScalingMaxIntentDBWFO', rFile:'SCPFscalingMaxIntents.R y', extra:none, finalResult:0],
+    SCPFscalingMaxIntentsWithFlowObj: [ test:'SCPFscalingMaxIntents --params TEST/flowObj=True', table:'max_intents_fobj_tests', results:'max_intents_fobj_results', file:'ScalingMaxIntentDBWFO', rFile:'SCPFscalingMaxIntents.R y', extra:times, finalResult:0],
     SCPFintentInstallWithdrawLatWithFlowObj: [ test:'SCPFintentInstallWithdrawLat --params TEST/flowObj=True', table:'intent_latency_fobj_tests', results:'intent_latency_fobj_results', file:'IntentInstallWithdrawLatDBWFO', rFile:'SCPFIntentInstallWithdrawRerouteLat.R y', extra:batches, finalResult:0],
     SCPFmastershipFailoverLat: [test:'SCPFmastershipFailoverLat', table:'mastership_failover_tests', results:'mastership_failover_results', file:'mastershipFailoverLatDB', rFile:'SCPFmastershipFailoverLat.R', extra:none, finalResult:1, graphTitle:['Mastership Failover Test'], dbCols:[ 'kill_deact_avg,deact_role_avg' ], dbWhere:'AND scale=5', y_axis:'Latency (ms)' ]
 ]
@@ -47,15 +49,20 @@ for( String test : SCPF.keySet() ){
     tests[stepName] = SCPFTest(test, toBeRun, prop)
 }
 
+def now = new Date()
 // run the tests
 for ( test in tests.keySet() ){
     tests[test].call()
 }
-
+if( prop["manualRun"] == "false" ){
+    def end = new Date()
+    TimeDuration duration = TimeCategory.minus( end, now )
+    slackSend( color:"#5816EE", message: "SCPF tests ended at: " + end.toString() + "\nTime took : " + duration )
+}
 // The testName should be the key from the SCPF map
 def SCPFTest( testName, toBeRun, prop ) {
     return {
-        catchError{
+        try{
             stage(testName) {
                 if ( toBeRun ){
                     workSpace = "/var/jenkins/workspace/"+testName
@@ -104,30 +111,32 @@ def SCPFTest( testName, toBeRun, prop ) {
                             ls -al
                             cd '''
                             // Post Results
-                            withCredentials([
-                                string(credentialsId: 'db_pass', variable: 'pass'),
-                                string(credentialsId: 'db_user', variable: 'user'),
-                                string(credentialsId: 'db_host', variable: 'host'),
-                                string(credentialsId: 'db_port', variable: 'port')]) {
-                                    def database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + "','\$BUILD_NUMBER', '\$ONOSBranch', \$line);\""
-                                    if (testName == "SCPFscaleTopo" || testName == "SCPFswitchLat" || testName == "SCPFportLat") {
-                                        database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + "','\$BUILD_NUMBER', \$line, '\$ONOSBranch');\""
-                                    }
-                                    sh '''#!/bin/bash
+                            if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
+                                withCredentials([
+                                    string(credentialsId: 'db_pass', variable: 'pass'),
+                                    string(credentialsId: 'db_user', variable: 'user'),
+                                    string(credentialsId: 'db_host', variable: 'host'),
+                                    string(credentialsId: 'db_port', variable: 'port')]) {
+                                        def database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + "','\$BUILD_NUMBER', '\$ONOSBranch', \$line);\""
+                                        if (testName == "SCPFscaleTopo" || testName == "SCPFswitchLat" || testName == "SCPFportLat") {
+                                            database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + "','\$BUILD_NUMBER', \$line, '\$ONOSBranch');\""
+                                        }
+                                        sh '''#!/bin/bash
 
-                                    export DATE=\$(date +%F_%T)
-                                    cd ~
-                                    pwd
-                                    cd /tmp
-                                    while read line
-                                    do
+                                        export DATE=\$(date +%F_%T)
+                                        cd ~
+                                        pwd
+                                        cd /tmp
+                                        while read line
+                                        do
 
-                                    echo \$line
-                                    echo ''' + database_command + '''
+                                        echo \$line
+                                        echo ''' + database_command + '''
 
-                                    done< ''' + SCPF[testName]['file'] + '''
-                                    ''' + getGraphCommand( SCPF[testName]['rFile'], SCPF[testName]['extra'], host, port, user, pass, testName, prop["ONOSBranch"] ) + '''
-                                    ''' + ( SCPF[testName]['finalResult'] ? generateCombinedResultGraph( host,port, user, pass, testName, prop["ONOSBranch"] ) : "" )
+                                        done< ''' + SCPF[testName]['file'] + '''
+                                        ''' + getGraphCommand( SCPF[testName]['rFile'], SCPF[testName]['extra'], host, port, user, pass, testName, prop["ONOSBranch"] ) + '''
+                                        ''' + ( SCPF[testName]['finalResult'] ? generateCombinedResultGraph( host,port, user, pass, testName, prop["ONOSBranch"] ) : "" )
+                                }
                             }
                             // Fetch Logs
                             sh '''#!/bin/bash
@@ -148,7 +157,7 @@ def SCPFTest( testName, toBeRun, prop ) {
                             fi'''
                         }
                     }
-                    if( prop["manualRun"] == "false" ){
+                    if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
                         def post = build job: "Pipeline_postjob_BM", propagate: false
                     }
                     node("TestStation-BMs"){
@@ -163,6 +172,12 @@ def SCPFTest( testName, toBeRun, prop ) {
                         fi'''
                     }
                 }
+            }
+        }catch (all) {
+            catchError{
+                if( prop["manualRun"] == "false" )
+                    slackSend(color:"FF0000", message: "[" + prop["TestONBranch"] + "]" + testName + " : Failed!\nURL:${BUILD_URL}")
+                Failed
             }
         }
     }

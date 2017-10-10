@@ -1,18 +1,66 @@
 #!groovy
 // This is a Jenkinsfile for a scripted pipeline for the SCPF tests
 // Define sets of tests
-SCPF_Basic = "SCPFswitchLat,SCPFportLat,SCPFintentInstallWithdrawLat,SCPFintentEventTp,SCPFflowTp1g,SCPFcbench,SCPFbatchFlowResp"
-SCPF_ExtraSetA = "SCPFintentRerouteLat,SCPFscalingMaxIntents,SCPFhostLat,SCPFscaleTopo,SCPFmastershipFailoverLat"
-SCPF_NEW_TEST = "SCPFmastershipFailoverLat"
-SCPF_ExtraSetB = "SCPFintentInstallWithdrawLatWithFlowObj,SCPFintentEventTpWithFlowObj,SCPFintentRerouteLatWithFlowObj,SCPFscalingMaxIntentsWithFlowObj,SCPFflowTp1gWithFlowObj"
-FUNC_Basic = "FUNCipv6Intent,FUNCoptical,FUNCflow,FUNCnetCfg,FUNCovsdbtest,FUNCnetconf"
-FUNC_ExtraSetA = "FUNCgroup,FUNCintent"
-FUNC_ExtraSetB = "FUNCintentRest"
-HA_Basic = "HAsanity,HAsingleInstanceRestart,HAclusterRestart"
-HA_ExtraSetA = "HAstopNodes,HAfullNetPartition"
-HA_ExtraSetB = "HAkillNodes,HAswapNodes,HAscaling"
-USECASE_Basic = "FUNCvirNetNB,FUNCbgpls,VPLSBasic,PLATdockertest,SRSanity,SRSwitchFailure,SRLinkFailure,SROnosFailure,SRClusterRestart,SRDynamic,SRHA,USECASE_SdnipFunction,USECASE_SdnipFunctionCluster"
-USECASE_NEW_TEST = "VPLSfailsafe"
+AllTheTests=
+[
+    "FUNC":[
+            "FUNCipv6Intent" : ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "FUNCoptical" :    ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "FUNCflow" :       ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "FUNCnetCfg":      ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "FUNCovsdbtest" :  ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "FUNCnetconf" :    ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "FUNCgroup" :      ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "FUNCintent" :     ["basic":false, "extra_A":true, "extra_B":false, "day":""],
+            "FUNCintentRest" : ["basic":false, "extra_A":false, "extra_B":true, "day":""]
+    ],
+    "HA":[
+            "HAsanity" :                ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "HAclusterRestart" :        ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "HAsingleInstanceRestart" : ["basic":true, "extra_A":false, "extra_B":false, "day":""],
+            "HAstopNodes" :             ["basic":false, "extra_A":true, "extra_B":false, "day":""],
+            "HAfullNetPartition" :      ["basic":false, "extra_A":true, "extra_B":false, "day":""],
+            "HAswapNodes" :             ["basic":false, "extra_A":false, "extra_B":true, "day":""],
+            "HAscaling" :               ["basic":false, "extra_A":false, "extra_B":true, "day":""],
+            "HAkillNodes" :             ["basic":false, "extra_A":false, "extra_B":true, "day":""]
+    ],
+    "SCPF":[
+            "SCPFswitchLat":                           ["basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFcbench":                              ["basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFportLat":                             ["basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFflowTp1g":                            ["basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFintentEventTp":                       ["basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFhostLat":                             ["basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            // batch will be on extra_A after fixing from the ONOS side.
+            "SCPFbatchFlowResp":                       ["basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFintentRerouteLat":                    ["basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFintentInstallWithdrawLat":            ["basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFflowTp1gWithFlowObj":                 ["basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFintentEventTpWithFlowObj":            ["basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFintentRerouteLatWithFlowObj":         ["basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFscalingMaxIntentsWithFlowObj":        ["basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFintentInstallWithdrawLatWithFlowObj": ["basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFscaleTopo":                           ["basic":false, "extra_A":false, "extra_B":false, "extra_C":true, "extra_D":false, "new_Test":false, day:""],
+            "SCPFscalingMaxIntents":                   ["basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":true, "new_Test":false, day:""],
+            "SCPFmastershipFailoverLat":               ["basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":true, day:""]
+    ],
+    "USECASE":[
+            "FUNCvirNetNB" :                ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCbgpls" :                   ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "VPLSBasic" :                   ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "USECASE_SdnipFunction":        ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "USECASE_SdnipFunctionCluster": ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "PLATdockertest":               ["basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":""],
+            "SRSanity":                     ["basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":""],
+            "SRSwitchFailure":              ["basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":""],
+            "SRLinkFailure":                ["basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":""],
+            "SROnosFailure":                ["basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":""],
+            "SRClusterRestart":             ["basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":""],
+            "SRDynamic":                    ["basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":""],
+            "SRHighAvailability":           ["basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":""],
+            "VPLSfailsafe" :                ["basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":""]
+    ]
+]
 testcases = [
     "FUNC" : [ tests : "" , nodeName : "VM"],
     "HA" : [ tests : "" , nodeName : "VM"],
@@ -37,62 +85,24 @@ def now = new Date()
 echo(now.toString())
 today = now[Calendar.DAY_OF_WEEK]
 day = ""
-SCPF_choices = SCPF_Basic
+SCPF_choices = ""
 USECASE_choices = ""
-FUNC_choices = FUNC_Basic
-HA_choices = HA_Basic
-
-switch (today) {
-    case Calendar.MONDAY:
-        SCPF_choices += "," + SCPF_ExtraSetB
-        FUNC_choices += "," + FUNC_ExtraSetA
-        HA_choices += "," + HA_ExtraSetA
-        day = "Monday"
-        break
-    case Calendar.TUESDAY:
-        day = "Tuesday"
-        USECASE_choices = USECASE_Basic + "," + USECASE_NEW_TEST
-        FUNC_choices += "," + FUNC_ExtraSetB
-        HA_choices += "," + HA_ExtraSetB
-        break
-    case Calendar.WEDNESDAY:
-        SCPF_choices += "," + SCPF_ExtraSetA + "," + SCPF_NEW_TEST
-        FUNC_choices += "," + FUNC_ExtraSetA
-        HA_choices += "," + HA_ExtraSetA
-        day = "Wednesday"
-        break
-    case Calendar.THURSDAY:
-        SCPF_choices += "," + SCPF_ExtraSetB
-        FUNC_choices += "," + FUNC_ExtraSetB
-        HA_choices += "," + HA_ExtraSetB
-        day = "Thursday"
-        break
-    case Calendar.FRIDAY:
-        SCPF_choices += "," + SCPF_ExtraSetA + "," + SCPF_NEW_TEST + "," + SCPF_ExtraSetB
-        FUNC_choices += "," + FUNC_ExtraSetA
-        HA_choices += "," + HA_ExtraSetA
-        day = "Friday"
-        break
-    case Calendar.SATURDAY:
-        SCPF_choices += "," + SCPF_ExtraSetA  + "," + SCPF_ExtraSetB
-        USECASE_choices = USECASE_Basic
-        FUNC_choices += "," + FUNC_ExtraSetA + "," + FUNC_ExtraSetB
-        HA_choices += "," + HA_ExtraSetA + "," + HA_ExtraSetB
-        onos_branch= "1.10"
-        day = "Saturday"
-        break
-    case Calendar.SUNDAY:
-        SCPF_choices += "," + SCPF_ExtraSetA + "," + SCPF_NEW_TEST + "," + SCPF_ExtraSetB
-        USECASE_choices = USECASE_Basic + "," + USECASE_NEW_TEST
-        FUNC_choices += "," + FUNC_ExtraSetA + "," + FUNC_ExtraSetB
-        HA_choices += "," + HA_ExtraSetA + "," + HA_ExtraSetB
-        onos_branch= "1.11"
-        day = "Sunday"
-        break
-}
+FUNC_choices = ""
+HA_choices = ""
 
 manually_run = params.manual_run
 post_result = params.PostResult
+if( !manually_run ){
+    sendToSlack( '#03CD9F', ":sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:\n"
+                            + "Starting tests on : " + now.toString()
+                            + "\n:sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:" )
+    testDivider( today )
+    FUNC_choices =  lastCommaRemover( FUNC_choices )
+    HA_choices =  lastCommaRemover( HA_choices )
+    SCPF_choices =  lastCommaRemover( SCPF_choices )
+    USECASE_choices =  lastCommaRemover( USECASE_choices )
+}
+
 if ( manually_run ){
     organize_tests( params.Tests )
     onos_branch = params.ONOSVersion
@@ -107,6 +117,149 @@ if ( manually_run ){
 }
 print_tests( testcases )
 
+def testDivider( today ){
+    switch (today) {
+        case Calendar.MONDAY:
+            monday( true )
+            tuesday( true, false )
+            wednesday( true, false )
+            thursday( true, false )
+            friday( true, false )
+            day = "Monday"
+            sendToSlack( '#FFD988', "Tests to be run this weekdays : \n" + printDaysForTest() )
+            break
+        case Calendar.TUESDAY:
+            tuesday( true, true )
+            day = "Tuesday"
+            break
+        case Calendar.WEDNESDAY:
+            wednesday( true, true )
+            day = "Wednesday"
+            break
+        case Calendar.THURSDAY:
+            thursday( true, true)
+            day = "Thursday"
+            break
+        case Calendar.FRIDAY:
+            friday( true, true)
+            day = "Friday"
+            break
+        case Calendar.SATURDAY:
+            saturday()
+            onos_branch= "1.11"
+            day = "Saturday"
+            break
+        case Calendar.SUNDAY:
+            sunday()
+            onos_branch= "1.10"
+            day = "Sunday"
+            break
+    }
+}
+def printDaysForTest(){
+    result = ""
+    for ( String test in AllTheTests.keySet() ){
+        result += test + " : \n"
+        for( String each in AllTheTests[ test ].keySet() ){
+            AllTheTests[ test ][ each ][ "day" ] = lastCommaRemover( AllTheTests[ test ][ each ][ "day" ] )
+            result += "    " + each + ":[" + AllTheTests[ test ][ each ][ "day" ] + "]\n"
+        }
+        result += "\n"
+    }
+    return result
+}
+def lastCommaRemover( str ){
+    if ( str.size() > 0 && str[ str.size() - 1 ] == ',' ){
+        str = str.substring( 0,str.size() - 1 )
+    }
+    return str
+}
+def monday( getResult ){
+    FUNC_choices += adder( "FUNC", "basic", true, "M", getResult )
+    FUNC_choices += adder( "FUNC", "extra_A", true, "M", getResult )
+    HA_choices += adder( "HA", "basic", true, "M", getResult )
+    HA_choices += adder( "HA", "extra_A", true, "M", getResult )
+    SCPF_choices += adder( "SCPF", "basic", true, "M", getResult )
+    SCPF_choices += adder( "SCPF", "extra_B", true, "M", getResult )
+}
+def tuesday( getDay, getResult ){
+    FUNC_choices += adder( "FUNC", "basic", getDay, "T", getResult )
+    FUNC_choices += adder( "FUNC", "extra_B", getDay, "T", getResult )
+    HA_choices += adder( "HA", "basic", getDay, "T", getResult )
+    HA_choices += adder( "HA", "extra_B", getDay, "T", getResult )
+    SCPF_choices += adder( "SCPF", "basic", getDay, "T", getResult )
+    SCPF_choices += adder( "SCPF", "extra_C", getDay, "T", getResult )
+    USECASE_choices += adder( "USECASE", "basic", getDay, "T", getResult )
+    USECASE_choices += adder( "USECASE", "extra_A", getDay, "T", getResult )
+    USECASE_choices += adder( "USECASE", "new_Test", getDay, "T", getResult )
+}
+def wednesday( getDay, getResult ){
+    FUNC_choices += adder( "FUNC", "basic", getDay, "W", getResult )
+    FUNC_choices += adder( "FUNC", "extra_A", getDay, "W", getResult )
+    HA_choices += adder( "HA", "basic", getDay, "W", getResult )
+    HA_choices += adder( "HA", "extra_A", getDay, "W", getResult )
+    SCPF_choices += adder( "SCPF", "basic", getDay, "W", getResult )
+    SCPF_choices += adder( "SCPF", "extra_A", getDay, "W", getResult )
+    SCPF_choices += adder( "SCPF", "new_Test", getDay, "W", getResult )
+}
+def thursday( getDay, getResult ){
+    FUNC_choices += adder( "FUNC", "basic", getDay, "Th", getResult )
+    FUNC_choices += adder( "FUNC", "extra_B", getDay, "Th", getResult )
+    HA_choices += adder( "HA", "basic", getDay, "Th", getResult )
+    HA_choices += adder( "HA", "extra_B", getDay, "Th", getResult )
+    SCPF_choices += adder( "SCPF", "basic", getDay, "Th", getResult )
+    SCPF_choices += adder( "SCPF", "extra_B", getDay, "Th", getResult )
+}
+def friday( getDay, getResult ){
+    FUNC_choices += adder( "FUNC", "basic", getDay, "F", getResult )
+    FUNC_choices += adder( "FUNC", "extra_A", getDay, "F", getResult )
+    HA_choices += adder( "HA", "basic", getDay, "F", getResult )
+    HA_choices += adder( "HA", "extra_A", getDay, "F", getResult )
+    SCPF_choices += adder( "SCPF", "basic", getDay, "F", getResult )
+    SCPF_choices += adder( "SCPF", "extra_A", getDay, "F", getResult )
+    SCPF_choices += adder( "SCPF", "extra_D", getDay, "F", getResult )
+}
+def saturday(){
+    FUNC_choices += adder( "FUNC", "basic", false, "Sa", true )
+    FUNC_choices += adder( "FUNC", "extra_A", false, "Sa", true )
+    FUNC_choices += adder( "FUNC", "extra_B", false, "Sa", true )
+    HA_choices += adder( "HA", "basic", false, "Sa", true )
+    HA_choices += adder( "HA", "extra_A", false, "Sa", true )
+    HA_choices += adder( "HA", "extra_B", false, "Sa", true )
+    SCPF_choices += adder( "SCPF", "basic", false, "Sa", true )
+    SCPF_choices += adder( "SCPF", "extra_A", false, "Sa", true )
+    SCPF_choices += adder( "SCPF", "extra_B", false, "Sa", true )
+    SCPF_choices += adder( "SCPF", "extra_C", false, "Sa", true )
+    SCPF_choices += adder( "SCPF", "extra_D", false, "Sa", true )
+    SCPF_choices += adder( "SCPF", "new_Test", false, "Sa", true )
+    USECASE_choices += adder( "USECASE", "basic", false, "Sa", true )
+    USECASE_choices += adder( "USECASE", "new_Test", false, "Sa", true )
+}
+def sunday(){
+    FUNC_choices += adder( "FUNC", "basic", false, "S", true )
+    FUNC_choices += adder( "FUNC", "extra_A", false, "S", true )
+    FUNC_choices += adder( "FUNC", "extra_B", false, "S", true )
+    HA_choices += adder( "HA", "basic", false, "S", true )
+    HA_choices += adder( "HA", "extra_A", false, "S", true )
+    HA_choices += adder( "HA", "extra_B", false, "S", true )
+    SCPF_choices += adder( "SCPF", "basic", false, "S", true )
+    USECASE_choices += adder( "USECASE", "basic", false, "S", true )
+}
+def adder( testCat, set, dayAdding, day, getResult ){
+    result = ""
+    for( String test in AllTheTests[ testCat ].keySet()  ){
+        if( AllTheTests[ testCat ][ test ][ set ] ){
+            if( getResult )
+                result += test + ","
+            if( dayAdding )
+                dayAdder( testCat, test, day )
+        }
+    }
+    return result
+}
+def dayAdder( testCat, testName, dayOfWeek ){
+    AllTheTests[ testCat ][ testName ][ "day" ] += dayOfWeek + ","
+}
 def runTest = [
     "VM" : [:],
     "BM" : [:]
@@ -184,6 +337,9 @@ def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manual
             echo "manualRun=''' + manually_run +'''" >> /var/jenkins/TestONOS.property
         '''
     }
+}
+def sendToSlack( color, message ){
+    slackSend(color:color, message: message)
 }
 // Initialize the environment Setup for the onos and OnosSystemTest
 def envSetup( onos_branch, test_branch, onos_tag ){

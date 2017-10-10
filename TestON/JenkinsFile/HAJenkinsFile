@@ -1,4 +1,5 @@
 #!groovy
+import groovy.time.*
 // This is a Jenkinsfile for a scripted pipeline for the HA tests
 
 def prop = null
@@ -35,16 +36,20 @@ for( String test : HA.keySet() ){
     tests[stepName] = HATest(test, toBeRun, prop)
 }
 
+def now = new Date()
 // run the tests
 for ( test in tests.keySet() ){
     tests[test].call()
 }
-
-
+if( prop["manualRun"] == "false" ){
+    def end = new Date()
+    TimeDuration duration = TimeCategory.minus( end, now )
+    slackSend( color:"#5816EE", message: "HA tests ended at: " + end.toString() + "\nTime took : " + duration )
+}
 // The testName should be the key from the FUNC
 def HATest( testName, toBeRun, prop ) {
     return {
-        catchError{
+        try{
             stage(testName) {
                 if ( toBeRun ){
                     workSpace = "/var/jenkins/workspace/"+testName
@@ -111,7 +116,7 @@ def HATest( testName, toBeRun, prop ) {
                             ls -al
                             cd '''
 
-                            if( prop["manualRun"] == "false" ){
+                            if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
                                 // Post Results
                                 withCredentials([
                                     string(credentialsId: 'db_pass', variable: 'pass'),
@@ -156,7 +161,7 @@ def HATest( testName, toBeRun, prop ) {
                         }
                     }
 
-                    if( prop["manualRun"] == "false" ){
+                    if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
                         def post = build job: "Pipeline_postjob_VM", propagate: false,
                             parameters: [
                                 string(name: 'Wiki_Contents', value: fileContents),
@@ -175,6 +180,12 @@ def HATest( testName, toBeRun, prop ) {
                         fi'''
                     }
                 }
+            }
+        }catch (all) {
+            catchError{
+                if( prop["manualRun"] == "false" )
+                    slackSend(color:"FF0000", message: "[" + prop["TestONBranch"] + "]" + testName + " : Failed!\nURL:${BUILD_URL}")
+                Failed
             }
         }
     }

@@ -1,4 +1,5 @@
 #!groovy
+import groovy.time.*
 // This is a Jenkinsfile for a scripted pipeline for the USECASETest tests
 
 // TODO: Exception handling around steps
@@ -19,7 +20,7 @@ USECASE = [
     "SROnosFailure": [wiki_link:prop["WikiPrefix"]+"-"+"SR Onos node Failure", wiki_file:"SROnosFailureWiki.txt"],
     "SRClusterRestart": [wiki_link:prop["WikiPrefix"]+"-"+"SR Cluster Restart", wiki_file:"SRClusterRestartWiki.txt"],
     "SRDynamic": [wiki_link:prop["WikiPrefix"]+"-"+"SR Dynamic Config", wiki_file:"SRDynamicWiki.txt"],
-    "SRHA": [wiki_link:prop["WikiPrefix"]+"-"+"SR High Availability", wiki_file:"SRHighAvailabilityWiki.txt"],
+    "SRHighAvailability": [wiki_link:prop["WikiPrefix"]+"-"+"SR High Availability", wiki_file:"SRHighAvailabilityWiki.txt"],
     "USECASE_SdnipFunction": [wiki_link:prop["WikiPrefix"]+"-"+"SDNIP Function", wiki_file:"USECASE_SdnipFunctionWiki.txt"],
     "USECASE_SdnipFunctionCluster": [wiki_link:prop["WikiPrefix"]+"-"+"SDNIP Function Cluster", wiki_file:"USECASE_SdnipFunctionClusterWiki.txt"]
 ]
@@ -42,15 +43,20 @@ for( String test : USECASE.keySet() ){
     tests[stepName] = USECASETest(test, toBeRun, prop)
 }
 
+def now = new Date()
 // run the tests
 for ( test in tests.keySet() ){
     tests[test].call()
 }
-
+if( prop["manualRun"] == "false" ){
+    def end = new Date()
+    TimeDuration duration = TimeCategory.minus( end, now )
+    slackSend( color:"#5816EE", message: "USECASE tests ended at: " + end.toString() + "\nTime took : " + duration )
+}
 // The testName should be the key from the FUNC
 def USECASETest( testName, toBeRun, prop ) {
     return {
-        catchError{
+        try{
             stage(testName) {
                 if ( toBeRun ){
                     workSpace = "/var/jenkins/workspace/"+testName
@@ -119,7 +125,7 @@ def USECASETest( testName, toBeRun, prop ) {
                             ls -al
                             cd '''
 
-                            if( prop["manualRun"] == "false" ){
+                            if( prop["manualRun"] == "false" || prop["postResult"] == "true"  ){
                                 // Post Results
                                 withCredentials([
                                     string(credentialsId: 'db_pass', variable: 'pass'),
@@ -164,7 +170,7 @@ def USECASETest( testName, toBeRun, prop ) {
 
                         }
                     }
-                    if( prop["manualRun"] == "false" ){
+                    if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
                         def post = build job: "Pipeline_postjob_BM", propagate: false,
                                     parameters: [
                                         string(name: 'Wiki_Contents', value: fileContents),
@@ -183,6 +189,12 @@ def USECASETest( testName, toBeRun, prop ) {
                         fi'''
                     }
                 }
+            }
+        }catch (all) {
+            catchError{
+                if( prop["manualRun"] == "false" )
+                    slackSend(color:"FF0000", message: "[" + prop["TestONBranch"] + "]" + testName + " : Failed!\nURL:${BUILD_URL}")
+                Failed
             }
         }
     }

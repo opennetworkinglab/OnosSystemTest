@@ -440,3 +440,15 @@ def reinstallOnos( main ):
         restartResult = main.FALSE
 
     return restartResult
+
+def checkingONOSStablility( main ):
+    compareRetry = 0
+    while compareRetry < 3 and main.postResult:
+        for controller in main.Cluster.active():
+            if controller.CLI.summary() is None:
+                main.info.error( "Something happened to ONOS. Skip the rest of the steps" )
+                main.postResult = False
+                break
+            time.sleep( 5 )
+        compareRetry += 1
+        time.sleep( 10 )

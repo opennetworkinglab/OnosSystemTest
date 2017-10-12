@@ -217,6 +217,7 @@ class SCPFscaleTopo:
         # First capture
 
         main.postResult = True
+        main.step( "Grep information from the ONOS log" )
         for i in range( 3 ):
             # Calculate total time
             main.allinfo[ 0 ][ 'info' + str( i ) ][ 'totalTime' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'start' ], 'first', main.searchTerm[ 'end' ], 'last', index=i, funcMode='TD' )
@@ -230,7 +231,10 @@ class SCPFscaleTopo:
             main.allinfo[ 0 ][ 'info' + str( i ) ][ 'disconnectRate' ] = main.scaleTopoFunction.getInfoFromLog( main, main.searchTerm[ 'Disconnect' ], 'num', main.searchTerm[ 'start' ], 'num', index=i, funcMode='DR' )
         main.log.debug( "The data is " + str( main.allinfo[ 0 ] ) )
         if -1 in main.allinfo[ 0 ][ 'info0' ].values() or -1 in main.allinfo[ 0 ][ 'info1' ].values() or -1 in main.allinfo[ 0 ][ 'info2' ].values():
-            main.log.warn( "Something happened to ONOS. Skip the rest of the steps" )
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=main.FALSE,
+                                     onpass="Everything installed properly to the ONOS.",
+                                     onfail="Something happened to ONOS. Skip the rest of the steps." )
             main.postResult = False
         else:
             main.case( "Verifying topology: TORUS %sx%s" % ( main.currScale, main.currScale ) )
@@ -239,87 +243,102 @@ class SCPFscaleTopo:
 
             main.log.info( "Gathering topology information" )
             time.sleep( main.MNSleep )
-            stepResult = main.TRUE
-            main.step( "Comparing MN topology to ONOS topology" )
+
             compareRetry = 0
+            main.step( "Checking if ONOS is stable" )
+            main.scaleTopoFunction.checkingONOSStablility( main )
 
-            while compareRetry < 3:
-                currentDevicesResult = main.TRUE
-                currentLinksResult = main.TRUE
-                # While loop for retry
-                devices = main.topoRelated.getAll( "devices" )
-                ports = main.topoRelated.getAll( "ports" )
-                links = main.topoRelated.getAll( "links" )
-                mnSwitches = main.Mininet1.getSwitches( updateTimeout=main.basicMNTime + int( main.currScale ) * main.MNupdateTime )
-                main.log.info( "Comparing switches..." )
-                devicePool = []
-                for controller in range( len( main.Cluster.active() ) ):
-                    t = main.Thread( target=main.topoRelated.compareDevicePort,
-                                     threadID=main.threadID,
-                                     name="Compare-Device-Port",
-                                     args=[ main.Mininet1, controller,
-                                            mnSwitches,
-                                            devices, ports ] )
-                    devicePool.append( t )
-                    t.start()
-                    main.threadID = main.threadID + 1
+            if main.postResult:
+                main.step( "Comparing MN topology to ONOS topology" )
 
-                mnLinks = main.Mininet1.getLinks( timeout=main.basicMNTime + int( main.currScale ) * main.MNLinksTime,
-                                                  updateTimeout=main.basicMNTime + int(main.currScale) * main.MNupdateTime )
-                main.log.info( "Comparing links..." )
-                linkPool = []
-                for controller in range( len( main.Cluster.active() ) ):
-                    t = main.Thread( target=main.topoRelated.compareBase,
-                                     threadID=main.threadID,
-                                     name="Compare-Link-Result",
-                                     args=[ links, controller,
-                                            main.Mininet1.compareLinks,
-                                            [ mnSwitches, mnLinks ] ] )
-                    linkPool.append( t )
-                    t.start()
-                    main.threadID = main.threadID + 1
-
-                for t in devicePool:
-                    t.join()
-                    currentDevicesResult = currentDevicesResult and t.result
-                for t in linkPool:
-                    t.join()
-                    currentLinksResult = currentLinksResult and t.result
-                stepResult = stepResult and currentDevicesResult and currentLinksResult
-                if stepResult:
-                    break
-                compareRetry += 1
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass=" Topology match Mininet",
-                                     onfail="ONOS Topology doesn't match Mininet" )
-
-            if stepResult:
-                if main.hostDiscover:
-                    hostList = []
-                    for i in range( 1, int( main.currScale ) + 1 ):
-                        for j in range( 1, int( main.currScale ) + 1 ):
-                            # Generate host list
-                            hoststr = "h" + str( i ) + "x" + str( j )
-                            hostList.append( hoststr )
-                    for i in range( len( hostList ) ):
-                        main.topo.sendArpPackage( main, hostList[ i ] )
-                    time.sleep( 20 )
-                    totalHost = main.topo.getHostNum( main )
-                    if totalHost == int( main.currScale ) * int( main.currScale ):
-                        main.log.info( "Discovered all hosts" )
-                        stepResult = stepResult and main.TRUE
-                    else:
-                        main.log.warn( "Some hosts ware not discovered by ONOS... Topology doesn't match!" )
+                compareRetry = 0
+                while compareRetry < 2:
+                    stepResult = main.TRUE
+                    currentDevicesResult = main.TRUE
+                    currentLinksResult = main.TRUE
+                    # While loop for retry
+                    devices = main.topoRelated.getAll( "devices" )
+                    ports = main.topoRelated.getAll( "ports" )
+                    links = main.topoRelated.getAll( "links" )
+                    if None in devices or None in ports or None in links:
+                        main.log.warn( "Something went wrong. Retrying..." )
+                        time.sleep( 20 )
                         stepResult = main.FALSE
+                        compareRetry += 1
+                        continue
+                    mnSwitches = main.Mininet1.getSwitches( updateTimeout=main.basicMNTime + int( main.currScale ) * main.MNupdateTime )
+                    main.log.info( "Comparing switches..." )
+                    devicePool = []
+                    for controller in range( len( main.Cluster.active() ) ):
+                        t = main.Thread( target=main.topoRelated.compareDevicePort,
+                                         threadID=main.threadID,
+                                         name="Compare-Device-Port",
+                                         args=[ main.Mininet1, controller,
+                                                mnSwitches,
+                                                devices, ports ] )
+                        devicePool.append( t )
+                        t.start()
+                        main.threadID = main.threadID + 1
+
+                    mnLinks = main.Mininet1.getLinks( timeout=main.basicMNTime + int( main.currScale ) * main.MNLinksTime,
+                                                      updateTimeout=main.basicMNTime + int(main.currScale) * main.MNupdateTime )
+                    main.log.info( "Comparing links..." )
+                    linkPool = []
+                    for controller in range( len( main.Cluster.active() ) ):
+                        t = main.Thread( target=main.topoRelated.compareBase,
+                                         threadID=main.threadID,
+                                         name="Compare-Link-Result",
+                                         args=[ links, controller,
+                                                main.Mininet1.compareLinks,
+                                                [ mnSwitches, mnLinks ] ] )
+                        linkPool.append( t )
+                        t.start()
+                        main.threadID = main.threadID + 1
+
+                    for t in devicePool:
+                        t.join()
+                        currentDevicesResult = currentDevicesResult and t.result
+                    for t in linkPool:
+                        t.join()
+                        currentLinksResult = currentLinksResult and t.result
+                    stepResult = stepResult and currentDevicesResult and currentLinksResult
+                    if stepResult:
+                        break
+                    compareRetry += 1
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=stepResult,
+                                         onpass=" Topology match Mininet",
+                                         onfail="ONOS Topology doesn't match Mininet" )
+                main.scaleTopoFunction.checkingONOSStablility( main )
+                if stepResult and main.postResult:
+                    if main.hostDiscover:
+                        hostList = []
+                        for i in range( 1, int( main.currScale ) + 1 ):
+                            for j in range( 1, int( main.currScale ) + 1 ):
+                                # Generate host list
+                                hoststr = "h" + str( i ) + "x" + str( j )
+                                hostList.append( hoststr )
+                        for i in range( len( hostList ) ):
+                            main.topo.sendArpPackage( main, hostList[ i ] )
+                        time.sleep( 20 )
+                        totalHost = main.topo.getHostNum( main )
+                        if totalHost == int( main.currScale ) * int( main.currScale ):
+                            main.log.info( "Discovered all hosts" )
+                            stepResult = stepResult and main.TRUE
+                        else:
+                            main.log.warn( "Some hosts ware not discovered by ONOS... Topology doesn't match!" )
+                            stepResult = main.FALSE
+                        utilities.assert_equals( expect=main.TRUE,
+                                                 actual=stepResult,
+                                                 onpass=" Topology match Mininet",
+                                                 onfail="ONOS Topology doesn't match Mininet" )
+                    main.log.info( "Finished this iteration, continue to scale next topology." )
+                else:
                     utilities.assert_equals( expect=main.TRUE,
-                                             actual=stepResult,
-                                             onpass=" Topology match Mininet",
-                                             onfail="ONOS Topology doesn't match Mininet" )
-                main.log.info( "Finished this iteration, continue to scale next topology." )
-            else:
-                main.log.info( "Clean up and exit TestON. Finished this test." )
-                main.cleanAndExit()
+                                             actual=main.FALSE,
+                                             onpass="ONOS is stable.",
+                                             onfail="Something happened to ONOS. Skip the rest of the steps." )
+                    main.postResult = False
 
     def CASE100( self, main ):
         """

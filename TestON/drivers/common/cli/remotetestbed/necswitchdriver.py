@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation ( ONF )
+Copyright 2015 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -18,6 +18,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 class NEC:
 
     def __init__( self ):

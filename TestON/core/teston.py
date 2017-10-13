@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""
+'''
 Created on 22-Oct-2012
-Copyright 2012 Open Networking Foundation ( ONF )
+Copyright 2012 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -10,7 +10,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    ( at your option ) any later version.
+    (at your option) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,7 +24,8 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
 teston is the main module.
 
-"""
+'''
+
 import sys
 import getpass
 import os
@@ -54,24 +55,21 @@ sys.path.append( tests_path )
 from core.utilities import Utilities
 from core.Thread import Thread
 
-
 class SkipCase( Exception ):
     pass
 
-
 class TestON:
-
-    """
+    '''
     TestON will initiate the specified test.
     The main tasks are:
     * Initiate the required Component handles for the test.
     * Create Log file  Handles.
-    """
+    '''
     def __init__( self, options ):
-        """
+        '''
            Initialise the component handles specified in the topology file of
            the specified test.
-        """
+        '''
         # Initialization of the variables.
         __builtin__.main = self
         __builtin__.path = path
@@ -112,19 +110,19 @@ class TestON:
         verifyOptions( options )
         load_logger()
         self.componentDictionary = {}
-        self.componentDictionary = self.topology[ 'COMPONENT' ]
+        self.componentDictionary = self.topology['COMPONENT']
         self.driversList = []
-        if isinstance( self.componentDictionary, str ):
+        if isinstance( self.componentDictionary, str):
             self.componentDictionary = dict( self.componentDictionary )
 
         for component in self.componentDictionary:
-            self.driversList.append( self.componentDictionary[ component ][ 'type' ] )
+            self.driversList.append( self.componentDictionary[component]['type'] )
 
         self.driversList = list( set( self.driversList ) )  # Removing duplicates.
         # Checking the test_target option set for the component or not
         if isinstance( self.componentDictionary, dict ):
             for component in self.componentDictionary.keys():
-                if 'test_target' in self.componentDictionary[ component ].keys():
+                if 'test_target' in self.componentDictionary[component].keys():
                     self.test_target = component
 
         # Checking for the openspeak file and test script
@@ -138,20 +136,20 @@ class TestON:
         components_connect_order = {}
         if isinstance( self.componentDictionary, dict ):
             for component in self.componentDictionary.keys():
-                if 'connect_order' not in self.componentDictionary[ component ].keys():
-                    self.componentDictionary[ component ][ 'connect_order' ] = str( self.get_random() )
-                components_connect_order[ component ] = eval( self.componentDictionary[ component ][ 'connect_order' ] )
+                if 'connect_order' not in self.componentDictionary[component].keys():
+                    self.componentDictionary[component]['connect_order'] = str( self.get_random() )
+                components_connect_order[component] = eval( self.componentDictionary[component]['connect_order'] )
             # Ordering components based on the connect order.
             ordered_component_list = sorted( components_connect_order,
-                                             key=lambda key: components_connect_order[ key ] )
+                                             key=lambda key: components_connect_order[key] )
             print ordered_component_list
             for component in ordered_component_list:
                 self.componentInit( component )
 
     def configparser( self ):
-        """
-        It will parse the config file ( teston.cfg ) and return as dictionary
-        """
+        '''
+        It will parse the config file (teston.cfg) and return as dictionary
+        '''
         matchFileName = re.match( r'(.*)\.cfg', self.configFile, re.M | re.I )
         if matchFileName:
             xml = open( self.configFile ).read()
@@ -164,57 +162,57 @@ class TestON:
             print "There is no such file to parse " + self.configFile
 
     def componentInit( self, component ):
-        """
+        '''
         This method will initialize specified component
-        """
+        '''
         global driver_options
         self.initiated = False
         self.log.info( "Creating component Handle: " + component )
         driver_options = {}
-        if 'COMPONENTS' in self.componentDictionary[ component ].keys():
-            driver_options = dict( self.componentDictionary[ component ][ 'COMPONENTS' ] )
-        driver_options[ 'name' ] = component
-        driverName = self.componentDictionary[ component ][ 'type' ]
-        driver_options[ 'type' ] = driverName
+        if 'COMPONENTS' in self.componentDictionary[component].keys():
+            driver_options = dict( self.componentDictionary[component]['COMPONENTS'] )
+        driver_options['name'] = component
+        driverName = self.componentDictionary[component]['type']
+        driver_options['type'] = driverName
 
         classPath = self.getDriverPath( driverName.lower() )
         driverModule = importlib.import_module( classPath )
         driverClass = getattr( driverModule, driverName )
         driverObject = driverClass()
 
-        if "OCN" in self.componentDictionary[ component ][ 'host' ] and\
+        if "OCN" in self.componentDictionary[component]['host'] and\
            main.onoscell:
-            self.componentDictionary[ component ][ 'host' ] = main.mnIP
+            self.componentDictionary[component]['host'] = main.mnIP
 
-        user_name = self.componentDictionary[ component ].get( 'user',
-                                                               getpass.getuser() )
-        ip_address = self.componentDictionary[ component ].get( 'host',
-                                                                'localhost' )
-        pwd = self.componentDictionary[ component ].get( 'password',
-                                                         'changeme' )
-        port = self.componentDictionary[ component ].get( 'port' )
+        user_name = self.componentDictionary[component].get( 'user',
+                                                             getpass.getuser() )
+        ip_address = self.componentDictionary[component].get( 'host',
+                                                              'localhost' )
+        pwd = self.componentDictionary[component].get( 'password',
+                                                       'changeme' )
+        port = self.componentDictionary[component].get( 'port' )
         connect_result = driverObject.connect( user_name=user_name,
                                                ip_address=ip_address,
                                                pwd=pwd,
                                                port=port,
-                                               options=driver_options )
+                                               options=driver_options)
 
         if not connect_result:
             self.log.error( "Exiting from the test execution because connecting to the " +
                             component + " component failed." )
             self.exit()
 
-        vars( self )[ component ] = driverObject
+        vars( self )[component] = driverObject
         self.initiated = True
         return driverObject
 
     def run( self ):
-        """
+        '''
            The Execution of the test script's cases listed in the Test params
            file will be done here then update each test case result.
            This method will return main.TRUE if it executed all the test cases
            successfully, else will retun main.FALSE
-        """
+        '''
         self.testCaseResult = {}
         self.TOTAL_TC = 0
         self.TOTAL_TC_RUN = 0
@@ -272,12 +270,12 @@ class TestON:
         self.CASERESULT = self.NORESULT
         stopped = False
         try:
-            self.code[ self.testCaseNumber ]
+            self.code[self.testCaseNumber]
         except KeyError:
             self.log.error( "There is no Test-Case " + self.testCaseNumber )
             return self.FALSE
         self.stepCount = 0
-        while self.stepCount < len( self.code[ self.testCaseNumber ].keys() ):
+        while self.stepCount < len( self.code[self.testCaseNumber].keys() ):
             result = self.runStep( self.code, self.testCaseNumber )
             if result == self.FALSE:
                 break
@@ -301,7 +299,7 @@ class TestON:
                 self.CASERESULT = self.TRUE
             else:
                 self.CASERESULT = self.NORESULT
-            self.testCaseResult[ str( self.CurrentTestCaseNumber ) ] = self.CASERESULT
+            self.testCaseResult[str( self.CurrentTestCaseNumber )] = self.CASERESULT
             self.organizeResult( self.CurrentTestCaseNumber, self.CASERESULT )
             self.logger.updateCaseResults( self )
             self.log.wiki( "<p>" + self.caseExplanation + "</p>" )
@@ -352,7 +350,7 @@ class TestON:
                 # NOTE: This is needed to catch results of main.step()'s
                 #       called inside functions or loops
                 self.stepResults = ( [], [], [], [] )
-                exec code[ testCaseNumber ][ step ] in module.__dict__
+                exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
                 self.parseStepResults( testCaseNumber )
             except SkipCase:  # Raised in self.skipCase()
@@ -363,9 +361,9 @@ class TestON:
                 self.stepCache += "\t\t" + self.onFailMsg + "\n"
                 self.stepCount = self.stepCount + 1
                 return self.FALSE
-            except Exception as e:
+            except StandardError as e:
                 try:
-                    stepNo = self.stepResults[ 0 ][ self.stepNumber - 1 ]
+                    stepNo = self.stepResults[0][ self.stepNumber - 1 ]
                 except IndexError:
                     stepNo = "<IndexError>"
                     main.log.warn( "Error trying to get step number. " +
@@ -373,7 +371,7 @@ class TestON:
                                    str( self.stepNumber ) + " and step " +
                                    str( self.stepNumber + 1 ) )
                 try:
-                    stepName = self.stepResults[ 1 ][ self.stepNumber - 1 ]
+                    stepName = self.stepResults[1][ self.stepNumber - 1 ]
                 except IndexError:
                     stepName = "<IndexError>"
                 self.log.error( "\nException in the following section of" +
@@ -403,7 +401,7 @@ class TestON:
         if cli.stop:
             cli.stop = False
             self.TOTAL_TC_NORESULT = self.TOTAL_TC_NORESULT + 1
-            self.testCaseResult[ str( self.CurrentTestCaseNumber ) ] = "Stopped"
+            self.testCaseResult[str( self.CurrentTestCaseNumber )] = "Stopped"
             self.logger.updateCaseResults( self )
             result = self.cleanup()
             return self.FALSE
@@ -414,12 +412,12 @@ class TestON:
         """
         try:
             # Iterate through each of the steps and print them
-            for index in range( len( self.stepResults[ 0 ] ) ):
+            for index in range( len( self.stepResults[0] ) ):
                 # stepResults = ( stepNo, stepName, stepResult, onFail )
-                stepNo = self.stepResults[ 0 ][ index ]
-                stepName = self.stepResults[ 1 ][ index ]
-                stepResult = self.stepResults[ 2 ][ index ]
-                onFail = self.stepResults[ 3 ][ index ]
+                stepNo = self.stepResults[0][ index ]
+                stepName = self.stepResults[1][ index ]
+                stepResult = self.stepResults[2][ index ]
+                onFail = self.stepResults[3][ index ]
                 self.stepCache += "\t" + str( testCaseNumber ) + "."
                 self.stepCache += str( stepNo ) + " "
                 self.stepCache += stepName + " - "
@@ -462,10 +460,10 @@ class TestON:
         caseHeader = "\n" + "*" * 40 + "\nStart of Test Case" +\
                      str( self.CurrentTestCaseNumber ) + " : "
         for driver in self.componentDictionary.keys():
-            vars( self )[ driver + 'log' ].info( caseHeader )
+            vars( self )[driver + 'log'].info( caseHeader )
 
     def addCaseFooter( self ):
-        stepNo = self.stepResults[ 0 ][ -2 ]
+        stepNo = self.stepResults[0][-2]
         if stepNo > 0:
             previousStep = " " + str( self.CurrentTestCaseNumber ) + "." +\
                            str( stepNo ) + ": " + str( self.stepName )
@@ -476,10 +474,10 @@ class TestON:
                      str( self.CurrentTestCaseNumber ) + "\n" + "*" * 40 + "\n"
 
         for driver in self.driversList:
-            vars( self )[ driver ].write( stepHeader + "\n" + caseFooter )
+            vars( self )[driver].write( stepHeader + "\n" + caseFooter )
 
     def cleanup( self ):
-        """
+        '''
         Print a summary of the current test's results then attempt to release
         all the component handles and the close opened file handles.
 
@@ -488,7 +486,7 @@ class TestON:
 
         This will return TRUE if all the component handles and log handles
         closed properly, else return FALSE.
-        """
+        '''
         result = self.TRUE
         lock = self.cleanupLock
         if lock.acquire( False ):
@@ -499,12 +497,12 @@ class TestON:
                         self.logger.testSummary( self )
                     components = self.componentDictionary
                     for component in sorted( components,
-                                             key=lambda item: components[ item ][ 'connect_order' ],
+                                             key=lambda item: components[item]['connect_order'],
                                              reverse=True ):
                         try:
-                            tempObject = vars( self )[ component ]
+                            tempObject = vars( self )[component]
                             print "Disconnecting from " + str( tempObject.name ) +\
-                                  ": " + str( tempObject.__class__ )
+                                  ": " + str( tempObject.__class__)
                             tempObject.disconnect()
                         except KeyboardInterrupt:
                             pass
@@ -512,14 +510,14 @@ class TestON:
                             # Component not created yet
                             self.log.warn( "Could not find the component " +
                                            str( component ) )
-                        except Exception:
+                        except StandardError:
                             self.log.exception( "Exception while disconnecting from " +
                                                  str( component ) )
                             result = self.FALSE
                     # Closing all the driver's session files
                     for driver in self.componentDictionary.keys():
                         try:
-                            vars( self )[ driver ].close_log_handles()
+                            vars( self )[driver].close_log_handles()
                         except KeyboardInterrupt:
                             pass
                         except KeyError:
@@ -527,7 +525,7 @@ class TestON:
                             self.log.warn( "Could not find the component " +
                                            str( driver ) + " while trying to" +
                                            " close log file" )
-                        except Exception:
+                        except StandardError:
                             self.log.exception( "Exception while closing log files for " +
                                                  str( driver ) )
                             result = self.FALSE
@@ -545,41 +543,41 @@ class TestON:
         return result
 
     def pause( self ):
-        """
+        '''
         This function will pause the test's execution, and will continue after
         user provide 'resume' command.
-        """
+        '''
         __builtin__.testthread.pause()
 
     def onfail( self, *components ):
-        """
+        '''
         When test step failed, calling all the components onfail.
-        """
+        '''
         if not components:
             try:
                 for component in self.componentDictionary.keys():
-                    tempObject = vars( self )[ component ]
+                    tempObject = vars( self )[component]
                     result = tempObject.onfail()
-            except Exception as e:
+            except StandardError as e:
                 print str( e )
                 result = self.FALSE
         else:
             try:
                 for component in components:
-                    tempObject = vars( self )[ component ]
+                    tempObject = vars( self )[component]
                     result = tempObject.onfail()
-            except Exception as e:
+            except StandardError as e:
                 print str( e )
                 result = self.FALSE
 
     def getDriverPath( self, driverName ):
-        """
+        '''
            Based on the component 'type' specified in the params , this method
            will find the absolute path, by recursively searching the name of
            the component.
 
            NOTE: This function requires the linux 'find' command.
-        """
+        '''
         import commands
 
         cmd = "find " + drivers_path + " -name " + driverName + ".py"
@@ -604,66 +602,66 @@ class TestON:
         return result
 
     def step( self, stepDesc ):
-        """
+        '''
            The step information of the test-case will append to the logs.
-        """
+        '''
         previousStep = " " + str( self.CurrentTestCaseNumber ) + "." +\
                        str( self.stepNumber ) + ": " + str( self.stepName )
         self.stepName = stepDesc
         self.stepNumber += 1
-        self.stepResults[ 0 ].append( self.stepNumber )
-        self.stepResults[ 1 ].append( stepDesc )
-        self.stepResults[ 2 ].append( self.NORESULT )
-        self.stepResults[ 3 ].append( "No on fail message given" )
+        self.stepResults[0].append( self.stepNumber )
+        self.stepResults[1].append( stepDesc )
+        self.stepResults[2].append( self.NORESULT )
+        self.stepResults[3].append( "No on fail message given" )
 
         stepName = " " + str( self.CurrentTestCaseNumber ) + "." +\
                    str( self.stepNumber ) + ": " + str( stepDesc )
-        self.log.step( stepName )
+        self.log.step(stepName)
         stepHeader = ""
         line = "\n" + "-" * 45 + "\n"
         if self.stepNumber > 1:
             stepHeader = line + "End of Step " + previousStep + line
         stepHeader += line + "Start of Step" + stepName + line
         for driver in self.componentDictionary.keys():
-            vars( self )[ driver + 'log' ].info( stepHeader )
+            vars( self )[driver + 'log'].info( stepHeader )
 
     def case( self, testCaseName ):
-        """
+        '''
            Test's each test-case information will append to the logs.
-        """
+        '''
         self.CurrentTestCase = testCaseName
         testCaseName = " " + str( testCaseName )
         self.log.case( testCaseName )
         caseHeader = testCaseName + "\n" + "*" * 40 + "\n"
         for driver in self.componentDictionary.keys():
-            vars( self )[ driver + 'log' ].info( caseHeader )
+            vars( self )[driver + 'log'].info( caseHeader )
 
     def testDesc( self, description ):
-        """
+        '''
            Test description will append to the logs.
-        """
+        '''
         description = "Test Description : " + str( description )
         self.log.info( description )
 
     def _getTest( self ):
-        """
+        '''
         This method will parse the test script to find required test
         information.
-        """
+        '''
         testFileHandler = open( main.testFile, 'r' )
         testFileList = testFileHandler.readlines()
         testFileHandler.close()
         counter = 0
         for index in range( len( testFileList ) ):
             lineMatch = re.match( '\s+def CASE(\d+)(.*):',
-                                  testFileList[ index ],
+                                  testFileList[index],
                                   0 )
             if lineMatch:
                 counter = counter + 1
                 self.TC_PLANNED = len( self.testcases_list )
 
     def response_parser( self, response, return_format ):
-        " It will load the default response parser "
+        ''' It will load the default response parser '''
         response_dict = {}
         response_dict = self.response_to_dict( response, return_format )
         return_format_string = self.dict_to_return_format( response,
@@ -680,14 +678,14 @@ class TestON:
             self.log.info( "Response is in 'JSON' format, converting to '" +
                            return_format + "' format" )
             # Formatting the json string
-            response = re.sub( r"{\s*'?(\w)", r'{ "\1', response )
+            response = re.sub( r"{\s*'?(\w)", r'{"\1', response )
             response = re.sub( r",\s*'?(\w)", r',"\1', response )
             response = re.sub( r"(\w)'?\s*:", r'\1":', response )
             response = re.sub( r":\s*'(\w)'\s*([,}])", r':"\1"\2', response )
             try:
                 import json
                 response_dict = json.loads( response )
-            except Exception:
+            except StandardError:
                 self.log.exception( "Json Parser is unable to parse the string" )
             return response_dict
         elif ini_match:
@@ -706,21 +704,21 @@ class TestON:
                 response_dict = xmldict.xml_to_dict( "<response> " +
                                                      str( response ) +
                                                      " </response>" )
-            except Exception:
+            except StandardError:
                 self.log.exception()
             return response_dict
 
     def dict_to_return_format( self, response, return_format, response_dict ):
         if return_format == 'table':
-            " Will return in table format"
+            ''' Will return in table format'''
             to_do = "Call the table output formatter"
             global response_table
             response_table = '\n'
             response_table = response_table + '\t'.join( response_dict ) + "\n"
 
             def get_table( value_to_convert ):
-                """ This will parse the dictionary recusrsively and print as
-                    table format"""
+                ''' This will parse the dictionary recusrsively and print as
+                    table format'''
                 table_data = ""
                 if isinstance( value_to_convert, dict ):
                     table_data = table_data + '\t'.join( value_to_convert ) +\
@@ -736,7 +734,7 @@ class TestON:
             return response_table
 
         elif return_format == 'config':
-            " Will return in config format"
+            ''' Will return in config format'''
             to_do = 'Call dict to config coverter'
             response_string = str( response_dict )
             print response_string
@@ -747,12 +745,12 @@ class TestON:
             response_config = re.sub( ":", " =", response_config )
             return "[response]\n\t " + response_config
         elif return_format == 'xml':
-            " Will return in xml format"
+            ''' Will return in xml format'''
             response_xml = xmldict.dict_to_xml( response_dict )
             response_xml = re.sub( ">\s*<", ">\n<", response_xml )
             return "\n" + response_xml
         elif return_format == 'json':
-            " Will return in json format"
+            ''' Will return in json format'''
             to_do = 'Call dict to xml coverter'
             import json
             response_json = json.dumps( response_dict )
@@ -817,10 +815,10 @@ class TestON:
 
 
 def verifyOptions( options ):
-    """
+    '''
     This will verify the command line options and set to default values,
     if any option not given in command line.
-    """
+    '''
     verifyTest( options )
     verifyExample( options )
     verifyTestScript( options )
@@ -829,7 +827,6 @@ def verifyOptions( options ):
     verifyMail( options )
     verifyTestCases( options )
     verifyOnosCell( options )
-
 
 def verifyTest( options ):
     try:
@@ -845,13 +842,11 @@ def verifyTest( options ):
         print "Test or Example not specified please specify the --test <test name > or --example <example name>"
         main.exit()
 
-
 def verifyExample( options ):
     if options.example:
         main.testDir = path + '/examples/'
         main.tests_path = path + "/examples/"
         main.classPath = "examples." + main.TEST + "." + main.TEST
-
 
 def verifyLogdir( options ):
     # Verifying Log directory option
@@ -860,22 +855,20 @@ def verifyLogdir( options ):
     else:
         main.logdir = main.FALSE
 
-
 def verifyMail( options ):
     # Mail-To: field
     if options.mail:  # Test run specific
         main.mail = options.mail
-    elif main.params.get( 'mail' ):  # Test suite specific
+    elif main.params.get('mail'):  # Test suite specific
         main.mail = main.params.get( 'mail' )
     else:  # TestON specific
-        main.mail = main.config[ 'config' ].get( 'mail_to' )
+        main.mail = main.config['config'].get( 'mail_to' )
     # Mail-From: field
-    main.sender = main.config[ 'config' ].get( 'mail_from' )
+    main.sender = main.config['config'].get( 'mail_from' )
     # Mail smtp server
-    main.smtp = main.config[ 'config' ].get( 'mail_server' )
+    main.smtp = main.config['config'].get( 'mail_server' )
     # Mail-From account password
-    main.senderPwd = main.config[ 'config' ].get( 'mail_pass' )
-
+    main.senderPwd = main.config['config'].get( 'mail_pass' )
 
 def evalTestCase( tempList ):
     tList = []
@@ -883,9 +876,8 @@ def evalTestCase( tempList ):
         if isinstance( tcase, list ):
             tList.extend( evalTestCase( tcase ) )
         else:
-            tList.extend( [ tcase ] )
+            tList.extend( [tcase] )
     return tList
-
 
 def verifyTestCases( options ):
     # Getting Test cases list
@@ -896,13 +888,12 @@ def verifyTestCases( options ):
         main.testcases_list = eval( testcases_list + "," )
     else:
         if 'testcases' in main.params.keys():
-            temp = eval( main.params[ 'testcases' ] + "," )
+            temp = eval( main.params['testcases'] + "," )
             main.testcases_list = evalTestCase( list( temp ) )
         else:
             print "Testcases not specifed in params, please provide in " +\
                   "params file or 'testcases' commandline argument"
             sys.exit()
-
 
 def verifyOnosCell( options ):
     # Verifying onoscell option
@@ -911,41 +902,40 @@ def verifyOnosCell( options ):
         main.ONOSip = []
         main.mnIP = ""
         cellCMD = ". ~/onos/tools/dev/bash_profile; cell " + main.onoscell
-        output = subprocess.check_output( [ "bash", '-c', cellCMD ] )
+        output = subprocess.check_output( ["bash", '-c', cellCMD] )
         splitOutput = output.splitlines()
         main.apps = ""
         for i in range( len( splitOutput ) ):
-            if re.match( "OCN", splitOutput[ i ] ):
-                mnNode = splitOutput[ i ].split( "=" )
-                main.mnIP = mnNode[ 1 ]
+            if re.match( "OCN", splitOutput[i] ):
+                mnNode = splitOutput[i].split( "=" )
+                main.mnIP = mnNode[1]
             # cell already sorts OC variables in bash, so no need to
             # sort in TestON
-            elif re.match( "OC[1-9]", splitOutput[ i ] ):
-                onosNodes = splitOutput[ i ].split( "=" )
-                main.ONOSip.append( onosNodes[ 1 ] )
-            elif re.match( "ONOS_APPS", splitOutput[ i ] ):
-                main.apps = ( splitOutput[ i ].split( "=" ) )[ 1 ]
+            elif re.match( "OC[1-9]", splitOutput[i] ):
+                onosNodes = splitOutput[i].split( "=" )
+                main.ONOSip.append( onosNodes[1] )
+            elif re.match( "ONOS_APPS", splitOutput[i] ):
+                main.apps = ( splitOutput[i].split( "=" ) )[1]
     else:
         main.onoscell = main.FALSE
 
-
 def verifyTestScript( options ):
-    """
+    '''
     Verifyies test script.
-    """
+    '''
     main.openspeak = openspeak.OpenSpeak()
     directory = main.testDir + "/" + main.TEST
     if os.path.exists( directory ):
         pass
     else:
         directory = ""
-        for root, dirs, files in os.walk( main.testDir, topdown=True ):
+        for root, dirs, files in os.walk( main.testDir, topdown=True):
             if not directory:
                 for name in dirs:
                     if name == main.TEST:
                         directory = ( os.path.join( root, name ) )
                         index = directory.find( "/tests/" ) + 1
-                        main.classPath = directory[ index: ].replace( '/', '.' ) + "." + main.TEST
+                        main.classPath = directory[index:].replace( '/', '.' ) + "." + main.TEST
                         break
     openspeakfile = directory + "/" + main.TEST + ".ospk"
     main.testFile = directory + "/" + main.TEST + ".py"
@@ -965,7 +955,7 @@ def verifyTestScript( options ):
         testModule = __import__( main.classPath,
                                  globals(),
                                  locals(),
-                                 [ main.TEST ],
+                                 [main.TEST],
                                  -1 )
     except ImportError:
         print "There was an import error, it might mean that there is " +\
@@ -978,22 +968,21 @@ def verifyTestScript( options ):
     main.params = main.parser.parseParams( main.classPath )
     main.topology = main.parser.parseTopology( main.classPath )
 
-
 def verifyParams( options ):
     try:
-        main.params = main.params[ 'PARAMS' ]
+        main.params = main.params['PARAMS']
     except KeyError:
         print "Error with the params file: Either the file not specified " +\
               "or the format is not correct"
         main.exit()
     try:
-        main.topology = main.topology[ 'TOPOLOGY' ]
+        main.topology = main.topology['TOPOLOGY']
     except KeyError:
         print "Error with the Topology file: Either the file not specified " +\
               "or the format is not correct"
         main.exit()
     # Overwrite existing params variables if they are specified from command line
-    if len( options.params ) > 0:
+    if len(options.params) > 0:
         # Some params variables are specified from command line
         for param in options.params:
             if not re.search( ".=.", param ):
@@ -1008,7 +997,7 @@ def verifyParams( options ):
             # Get the innermost dictionary
             try:
                 while len( keyList ) > 1:
-                    key = keyList.pop( 0 )
+                    key = keyList.pop(0)
                     assert isinstance( paramDict[ key ], dict )
                     paramDict = paramDict[ key ]
             except KeyError:
@@ -1018,39 +1007,38 @@ def verifyParams( options ):
                 print( "Error when parsing params: \"" + key + "\" is already the innermost level in main.params" )
                 main.exit()
             # Change the value
-            if keyList[ 0 ] not in paramDict:
+            if not paramDict.has_key( keyList[0] ):
                 print( "Error when parsing params: key \"" + keyList[0] + "\" not found in main.params" )
                 main.exit()
-            elif isinstance( paramDict[ keyList[ 0 ] ], dict ):
+            elif isinstance( paramDict[ keyList[0] ], dict ):
                 print( "Error when parsing params: more levels under key \"" + keyList[0] + "\" in main.params" )
                 main.exit()
             else:
-                paramDict[ keyList[ 0 ] ] = value
-
+                paramDict[ keyList[0] ] = value
 
 def load_parser():
-    """
+    '''
     It facilitates the loading customised parser for topology and params file.
     It loads parser mentioned in tab named parser of teston.cfg file.
     It also loads default xmlparser if no parser have specified in teston.cfg
     file.
 
-    """
+    '''
     confighash = main.configDict
-    if 'file' in confighash[ 'config' ][ 'parser' ] and\
-       'class' in confighash[ 'config' ][ 'parser' ]:
-        path = confighash[ 'config' ][ 'parser' ][ 'file' ]
+    if 'file' in confighash['config']['parser'] and\
+       'class' in confighash['config']['parser']:
+        path = confighash['config']['parser']['file']
         if path is not None or\
-           confighash[ 'config' ][ 'parser' ][ 'class' ] is not None:
+           confighash['config']['parser']['class'] is not None:
             try:
                 module = re.sub( r".py\s*$", "", path )
-                moduleList = module.split( "/" )
-                newModule = ".".join( moduleList[ -2: ] )
-                parsingClass = confighash[ 'config' ][ 'parser' ][ 'class' ]
+                moduleList = module.split("/")
+                newModule = ".".join( moduleList[-2:] )
+                parsingClass = confighash['config']['parser']['class']
                 parsingModule = __import__( newModule,
                                             globals(),
                                             locals(),
-                                            [ parsingClass ],
+                                            [parsingClass],
                                             -1 )
                 parsingClass = getattr( parsingModule, parsingClass )
                 main.parser = parsingClass()
@@ -1065,26 +1053,25 @@ def load_parser():
                 print "Could not find the file " + path +\
                       " using default parser."
                 load_defaultParser()
-        elif confighash[ 'config' ][ 'parser' ][ 'file' ] is None or\
-             confighash[ 'config' ][ 'parser' ][ 'class' ] is None:
+        elif confighash['config']['parser']['file'] is None or\
+             confighash['config']['parser']['class'] is None:
             load_defaultParser()
     else:
         load_defaultParser()
 
-
 def load_defaultParser():
-    """
+    '''
     It will load the default parser which is xml parser to parse the params and
     topology file.
-    """
-    moduleList = main.parserPath.split( "/" )
-    newModule = ".".join( moduleList[ -2: ] )
+    '''
+    moduleList = main.parserPath.split("/")
+    newModule = ".".join( moduleList[-2:] )
     try:
         parsingClass = main.parsingClass
         parsingModule = __import__( newModule,
                                     globals(),
                                     locals(),
-                                    [ parsingClass ],
+                                    [parsingClass],
                                     -1 )
         parsingClass = getattr( parsingModule, parsingClass )
         main.parser = parsingClass()
@@ -1095,31 +1082,30 @@ def load_defaultParser():
         else:
             main.exit()
     except ImportError:
-        print sys.exc_info()[ 1 ]
-
+        print sys.exc_info()[1]
 
 def load_logger():
-    """
+    '''
     It facilitates the loading customised parser for topology and params file.
     It loads parser mentioned in tab named parser of teston.cfg file.
     It also loads default xmlparser if no parser have specified in teston.cfg
     file.
-    """
+    '''
     confighash = main.configDict
-    if 'file' in confighash[ 'config' ][ 'logger' ] and\
-       'class' in confighash[ 'config' ][ 'logger' ]:
-        path = confighash[ 'config' ][ 'logger' ][ 'file' ]
+    if 'file' in confighash['config']['logger'] and\
+       'class' in confighash['config']['logger']:
+        path = confighash['config']['logger']['file']
         if path is not None or\
-           confighash[ 'config' ][ 'logger' ][ 'class' ] is not None:
+           confighash['config']['logger']['class'] is not None:
             try:
                 module = re.sub( r".py\s*$", "", path )
                 moduleList = module.split( "/" )
-                newModule = ".".join( moduleList[ -2: ] )
-                loggerClass = confighash[ 'config' ][ 'logger' ][ 'class' ]
+                newModule = ".".join( moduleList[-2:] )
+                loggerClass = confighash['config']['logger']['class']
                 loggerModule = __import__( newModule,
                                            globals(),
                                            locals(),
-                                           [ loggerClass ],
+                                           [loggerClass],
                                            -1 )
                 loggerClass = getattr( loggerModule, loggerClass )
                 main.logger = loggerClass()
@@ -1127,34 +1113,32 @@ def load_logger():
                 print "Could not find the file " + path +\
                       " using default logger."
                 load_defaultlogger()
-        elif confighash[ 'config' ][ 'parser' ][ 'file' ] is None or\
-             confighash[ 'config' ][ 'parser' ][ 'class' ] is None:
+        elif confighash['config']['parser']['file'] is None or\
+             confighash['config']['parser']['class'] is None:
             load_defaultlogger()
     else:
         load_defaultlogger()
 
-
 def load_defaultlogger():
-    """
+    '''
     It will load the default parser which is xml parser to parse the params and
     topology file.
-    """
-    moduleList = main.loggerPath.split( "/" )
-    newModule = ".".join( moduleList[ -2: ] )
+    '''
+    moduleList = main.loggerPath.split("/")
+    newModule = ".".join( moduleList[-2:] )
     try:
         loggerClass = main.loggerClass
         loggerModule = __import__( newModule,
                                    globals(),
                                    locals(),
-                                   [ loggerClass ],
+                                   [loggerClass],
                                    -1 )
         loggerClass = getattr( loggerModule, loggerClass )
         main.logger = loggerClass()
 
     except ImportError:
-        print sys.exc_info()[ 1 ]
+        print sys.exc_info()[1]
         main.exit()
-
 
 def _echo( self ):
     print "THIS IS ECHO"

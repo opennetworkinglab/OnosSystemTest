@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Created on 26-Oct-2012
-Copyright 2012 Open Networking Foundation ( ONF )
+Copyright 2012 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -56,7 +56,7 @@ class RemoteMininetDriver( Emulator ):
             self.name = self.options[ 'name' ]
 
             try:
-                if os.getenv( str( self.ip_address ) ) is not None:
+                if os.getenv( str( self.ip_address ) ) != None:
                     self.ip_address = os.getenv( str( self.ip_address ) )
                 else:
                     main.log.info( self.name +
@@ -152,7 +152,7 @@ class RemoteMininetDriver( Emulator ):
             self.handle.expect( self.prompt )
             return main.TRUE
         except TypeError:
-            main.log.exception( self.name + ": Object not as expected" )
+            main.log.exception(self.name + ": Object not as expected")
             return main.FALSE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found in pingLong" )
@@ -165,6 +165,7 @@ class RemoteMininetDriver( Emulator ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
 
     def pingstatus( self, **pingParams ):
         """
@@ -202,7 +203,7 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.exception(self.name + ": Uncaught exception!")
             main.cleanAndExit()
 
     def pingKill( self, testONUser, testONIP ):
@@ -261,11 +262,11 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             return main.FALSE
         except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
             main.cleanAndExit()
         except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.exception(self.name + ": Uncaught exception!")
             main.cleanAndExit()
 
     def pingHostOptical( self, **pingParams ):
@@ -335,11 +336,11 @@ class RemoteMininetDriver( Emulator ):
                 main.lastResult = main.FALSE
                 return main.FALSE
         except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
             main.cleanAndExit()
         except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.exception(self.name + ": Uncaught exception!")
             main.cleanAndExit()
 
     def checknum( self, num ):
@@ -406,7 +407,7 @@ class RemoteMininetDriver( Emulator ):
             self.handle.sendline( "" )
             self.handle.sendline( "" )
             i = self.handle.expect( [ 'No\ssuch\device', 'listening\son',
-                                      pexpect.TIMEOUT, self.prompt ], timeout=10 )
+                                    pexpect.TIMEOUT, self.prompt ], timeout=10 )
             main.log.info( self.handle.before + self.handle.after )
             if i == 0:
                 main.log.error( self.name + ": tcpdump - No such device exists.\
@@ -457,9 +458,9 @@ class RemoteMininetDriver( Emulator ):
                 It runs python script "opticalTest.py" to create the
                 packet layer( mn ) and optical topology
             Optional:
-                name - Name of onos directory. ( ONOS | onos )
+                name - Name of onos directory. (ONOS | onos)
             Required:
-                ctrllerIP = Controller( s ) IP address
+                ctrllerIP = Controller(s) IP address
             TODO: If no ctrllerIP is provided, a default
                 $OC1 can be accepted
         """
@@ -467,15 +468,15 @@ class RemoteMininetDriver( Emulator ):
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
             self.handle.sendline( "cd ~/" + name + "/tools/test/topos" )
-            self.handle.expect( "topos" + self.prompt )
-            if ctrllerIP is None:
+            self.handle.expect( "topos"+ self.prompt )
+            if ctrllerIP == None:
                 main.log.info( "You need to specify the IP" )
                 return main.FALSE
             else:
                 controller = ''
                 if isinstance( ctrllerIP, types.ListType ):
                     for i in xrange( len( ctrllerIP ) ):
-                        controller += ctrllerIP[ i ] + ' '
+                        controller += ctrllerIP[i] + ' '
                     main.log.info( "Mininet topology is being loaded with " +
                                    "controllers: " + controller )
                 elif isinstance( ctrllerIP, types.StringType ):
@@ -488,10 +489,10 @@ class RemoteMininetDriver( Emulator ):
                 cmd = "sudo -E python opticalTest.py " + controller
                 main.log.info( self.name + ": cmd = " + cmd )
                 self.handle.sendline( cmd )
-                time.sleep( 30 )
+                time.sleep(30)
                 self.handle.sendline( "" )
                 self.handle.sendline( "" )
-                self.handle.expect( "mininet>" )
+                self.handle.expect("mininet>")
                 return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -502,7 +503,7 @@ class RemoteMininetDriver( Emulator ):
         """
             Since executing opticalTest.py will give you mininet
             prompt, you would at some point require to get onto
-            console of LincOE ( ( linc@onosTestBench )1> ) to execute
+            console of LincOE ((linc@onosTestBench)1>) to execute
             commands like bring a optical port up or down on a ROADM
             You can attach to console of Linc-OE session by a cmd:
             sudo ~/linc-oe/rel/linc/bin/linc attach
@@ -535,7 +536,7 @@ class RemoteMininetDriver( Emulator ):
                 elif i == 1:
                     self.handle.sendline( "exit" )
                     self.handle.expect( "exit" )
-                    self.handle.expect( self.prompt )
+                    self.handle.expect(self.prompt)
                     self.handle.sendline( "exit" )
                     self.handle.expect( "exit" )
                     self.handle.expect( "closed" )
@@ -547,11 +548,11 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             return main.FALSE
         except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
             main.cleanAndExit()
         except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.exception(self.name + ": Uncaught exception!")
             main.cleanAndExit()
 
     def setIpTablesOUTPUT( self, dstIp, dstPort, action='add',

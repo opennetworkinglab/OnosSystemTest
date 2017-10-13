@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Created on 26-Oct-2012
-Copyright 2012 Open Networking Foundation ( ONF )
+Copyright 2012 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -25,7 +25,6 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 """
 from drivers.common.clidriver import CLI
-
 
 class Emulator( CLI ):
     # The common functions for emulator included in emulatordriver

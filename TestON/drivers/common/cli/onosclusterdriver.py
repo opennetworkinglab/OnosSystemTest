@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Copyright 2017 Open Networking Foundation ( ONF )
+Copyright 2017 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -9,7 +9,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    ( at your option ) any later version.
+    (at your option) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,15 +33,11 @@ import os
 from drivers.common.clidriver import CLI
 
 # FIXME: Move this to it's own file?
-
-
 class Controller():
-
     def __str__( self ):
         return self.name
-
     def __repr__( self ):
-        # TODO: use repr() for components?
+        #TODO use repr() for components?
         return "%s<IP=%s, CLI=%s, REST=%s, Bench=%s >" % ( self.name,
                                                            self.ipAddress,
                                                            self.CLI,
@@ -51,9 +47,9 @@ class Controller():
     def __getattr__( self, name ):
         """
         Called when an attribute lookup has not found the attribute
-        in the usual places ( i.e. it is not an instance attribute nor
-        is it found in the class tree for self ). name is the attribute
-        name. This method should return the ( computed ) attribute value
+        in the usual places (i.e. it is not an instance attribute nor
+        is it found in the class tree for self). name is the attribute
+        name. This method should return the (computed) attribute value
         or raise an AttributeError exception.
 
         We will look into each of the node's component handles to try to find the attreibute, looking at REST first
@@ -63,26 +59,28 @@ class Controller():
             main.log.warn( "Rest driver has attribute '%s'" % ( name ) )
             if not usedDriver:
                 usedDriver = True
-                main.log.debug( "Using Rest driver's attribute for '%s'" % ( name ) )
-                f = getattr( self.REST, name )
+                main.log.debug("Using Rest driver's attribute for '%s'" % (name))
+                f = getattr( self.REST, name)
         if hasattr( self.CLI, name ):
             main.log.warn( "CLI driver has attribute '%s'" % ( name ) )
             if not usedDriver:
                 usedDriver = True
-                main.log.debug( "Using CLI driver's attribute for '%s'" % ( name ) )
-                f = getattr( self.CLI, name )
+                main.log.debug("Using CLI driver's attribute for '%s'" % (name))
+                f = getattr( self.CLI, name)
         if hasattr( self.Bench, name ):
             main.log.warn( "Bench driver has attribute '%s'" % ( name ) )
             if not usedDriver:
                 usedDriver = True
-                main.log.debug( "Using Bench driver's attribute for '%s'" % ( name ) )
-                f = getattr( self.Bench, name )
+                main.log.debug("Using Bench driver's attribute for '%s'" % (name))
+                f = getattr( self.Bench, name)
         if usedDriver:
             return f
         raise AttributeError( "Could not find the attribute %s in %r or it's component handles" % ( name, self ) )
 
+
+
     def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None, userName=None, server=None ):
-        # TODO: validate these arguments
+        #TODO: validate these arguments
         self.name = str( name )
         self.ipAddress = ipAddress
         self.CLI = CLI
@@ -93,7 +91,6 @@ class Controller():
         self.ip_address = ipAddress
         self.user_name = userName
         self.server = server
-
 
 class OnosClusterDriver( CLI ):
 
@@ -134,9 +131,9 @@ class OnosClusterDriver( CLI ):
                 elif key == "cluster_name":
                     prefix = self.options[ key ]
 
-            self.home = self.checkOptions( self.home, "~/onos" )
-            self.karafUser = self.checkOptions( self.karafUser, self.user_name )
-            self.karafPass = self.checkOptions( self.karafPass, self.pwd )
+            self.home = self.checkOptions(self.home, "~/onos")
+            self.karafUser = self.checkOptions(self.karafUser, self.user_name)
+            self.karafPass = self.checkOptions(self.karafPass, self.pwd )
             prefix = self.checkOptions( prefix, "ONOS" )
 
             self.name = self.options[ 'name' ]
@@ -249,13 +246,13 @@ class OnosClusterDriver( CLI ):
         """
         Parse the cluster options to create an ONOS cli component with the given name
         """
-        main.componentDictionary[ name ] = main.componentDictionary[ self.name ].copy()
+        main.componentDictionary[name] = main.componentDictionary[self.name].copy()
         clihost = main.componentDictionary[ name ][ 'COMPONENTS' ].get( "diff_clihost", "" )
         if clihost == "True":
             main.componentDictionary[ name ][ 'host' ] = host
-        main.componentDictionary[ name ][ 'type' ] = "OnosCliDriver"
-        main.componentDictionary[ name ][ 'connect_order' ] = str( int( main.componentDictionary[ name ][ 'connect_order' ] ) + 1 )
-        main.log.debug( main.componentDictionary[ name ] )
+        main.componentDictionary[name]['type'] = "OnosCliDriver"
+        main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+        main.log.debug( main.componentDictionary[name] )
 
     def createCliComponent( self, name, host ):
         """
@@ -289,18 +286,18 @@ class OnosClusterDriver( CLI ):
         """
         Parse the cluster options to create an ONOS cli component with the given name
         """
-        main.componentDictionary[ name ] = main.componentDictionary[ self.name ].copy()
-        main.log.debug( main.componentDictionary[ name ] )
-        user = main.componentDictionary[ name ][ 'COMPONENTS' ].get( "web_user", "onos" )
-        main.componentDictionary[ name ][ 'user' ] = self.checkOptions( user, "onos" )
-        password = main.componentDictionary[ name ][ 'COMPONENTS' ].get( "web_pass", "rocks" )
-        main.componentDictionary[ name ][ 'pass' ] = self.checkOptions( password, "rocks" )
-        main.componentDictionary[ name ][ 'host' ] = host
-        port = main.componentDictionary[ name ][ 'COMPONENTS' ].get( "rest_port", "8181" )
-        main.componentDictionary[ name ][ 'port' ] = self.checkOptions( port, "8181" )
-        main.componentDictionary[ name ][ 'type' ] = "OnosRestDriver"
-        main.componentDictionary[ name ][ 'connect_order' ] = str( int( main.componentDictionary[ name ][ 'connect_order' ] ) + 1 )
-        main.log.debug( main.componentDictionary[ name ] )
+        main.componentDictionary[name] = main.componentDictionary[self.name].copy()
+        main.log.debug( main.componentDictionary[name] )
+        user = main.componentDictionary[name]['COMPONENTS'].get( "web_user", "onos" )
+        main.componentDictionary[name]['user'] = self.checkOptions( user, "onos" )
+        password = main.componentDictionary[name]['COMPONENTS'].get( "web_pass", "rocks" )
+        main.componentDictionary[name]['pass'] = self.checkOptions( password, "rocks" )
+        main.componentDictionary[name]['host'] = host
+        port = main.componentDictionary[name]['COMPONENTS'].get( "rest_port", "8181" )
+        main.componentDictionary[name]['port'] = self.checkOptions( port, "8181" )
+        main.componentDictionary[name]['type'] = "OnosRestDriver"
+        main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+        main.log.debug( main.componentDictionary[name] )
 
     def createRestComponent( self, name, ipAddress ):
         """
@@ -334,12 +331,12 @@ class OnosClusterDriver( CLI ):
         """
         Parse the cluster options to create an ONOS "bench" component with the given name
         """
-        main.componentDictionary[ name ] = main.componentDictionary[ self.name ].copy()
-        main.componentDictionary[ name ][ 'type' ] = "OnosDriver"
-        home = main.componentDictionary[ name ][ 'COMPONENTS' ].get( "onos_home", None )
-        main.componentDictionary[ name ][ 'home' ] = self.checkOptions( home, None )
-        main.componentDictionary[ name ][ 'connect_order' ] = str( int( main.componentDictionary[ name ][ 'connect_order' ] ) + 1 )
-        main.log.debug( main.componentDictionary[ name ] )
+        main.componentDictionary[name] = main.componentDictionary[self.name].copy()
+        main.componentDictionary[name]['type'] = "OnosDriver"
+        home = main.componentDictionary[name]['COMPONENTS'].get( "onos_home", None )
+        main.componentDictionary[name]['home'] = self.checkOptions( home, None )
+        main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+        main.log.debug( main.componentDictionary[name] )
 
     def createBenchComponent( self, name ):
         """
@@ -369,6 +366,7 @@ class OnosClusterDriver( CLI ):
             main.log.error( name + " component already exists!" )
             main.cleanAndExit()
 
+
     def setServerOptions( self, name, ipAddress ):
         """
         Parse the cluster options to create an ONOS "server" component with the given name
@@ -384,6 +382,7 @@ class OnosClusterDriver( CLI ):
         main.componentDictionary[name]['home'] = self.checkOptions( home, None )
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
         main.log.debug( main.componentDictionary[name] )
+
 
     def createServerComponent( self, name, ipAddress ):
         """
@@ -415,6 +414,7 @@ class OnosClusterDriver( CLI ):
             main.log.error( name + " component already exists!" )
             main.cleanAndExit()
 
+
     def createComponents( self, prefix='', createServer=True ):
         """
         Creates a CLI and REST component for each nodes in the cluster
@@ -425,7 +425,7 @@ class OnosClusterDriver( CLI ):
         benchPrefix = prefix + "bench"
         serverPrefix = prefix + "server"
         for i in xrange( 1, self.maxNodes + 1 ):
-            cliName = cliPrefix + str( i )
+            cliName = cliPrefix + str( i  )
             restName = restPrefix + str( i )
             benchName = benchPrefix + str( i )
             serverName = serverPrefix + str( i )

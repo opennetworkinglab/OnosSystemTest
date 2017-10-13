@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Created on 24-Oct-2012
-Copyright 2012 Open Networking Foundation ( ONF )
+Copyright 2012 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -34,10 +34,10 @@ class CLI( Component ):
     def __init__( self ):
         super( CLI, self ).__init__()
 
-    def checkPrompt( self ):
+    def checkPrompt(self):
         for key in self.options:
-            if key == "prompt" and self.options[ 'prompt' ] is not None:
-                self.prompt = self.options[ 'prompt' ]
+            if key == "prompt" and self.options['prompt'] is not None:
+                self.prompt = self.options['prompt']
                 break
 
     def connect( self, **connectargs ):
@@ -100,7 +100,7 @@ class CLI( Component ):
                 else:
                     main.log.info( "Server asked for password, but none was "
                                     "given in the .topo file. Trying "
-                                    "no password." )
+                                    "no password.")
                     self.pwd = ""
                 self.handle.sendline( self.pwd )
                 j = self.handle.expect( [
@@ -181,8 +181,8 @@ class CLI( Component ):
         if index == 0:
             self.LASTRSP = self.LASTRSP + \
                 self.handle.before + self.handle.after
-            main.log.info( "Executed :" + str( cmd ) +
-                           " \t\t Expected Prompt '" + str( expectPrompt ) +
+            main.log.info( "Executed :" + str(cmd ) +
+                           " \t\t Expected Prompt '" + str( expectPrompt) +
                            "' Found" )
         elif index == 1:
             self.LASTRSP = self.LASTRSP + self.handle.before
@@ -397,7 +397,7 @@ class CLI( Component ):
                 else:
                     main.log.info( "Server asked for password, but none was "
                                     "given in the .topo file. Trying "
-                                    "no password." )
+                                    "no password.")
                     pwd = ""
                 handle.sendline( pwd )
                 j = handle.expect( [ self.prompt,

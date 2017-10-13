@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Copyright 2015 Open Networking Foundation ( ONF )
+Copyright 2015 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -9,7 +9,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    ( at your option ) any later version.
+    (at your option) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,6 +19,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 import time
 import pexpect
 import sys
@@ -57,9 +58,9 @@ class QuaggaCliDriver( CLI ):
                 ip_address="1.1.1.1",
                 port=self.port,
                 pwd=self.pwd )
-        # main.log.info( "connect parameters:" + str( self.user_name ) + ";"
+        #main.log.info( "connect parameters:" + str( self.user_name ) + ";"
         #               + str( self.ip_address ) + ";" + str( self.port )
-        #               + ";" + str( self.pwd ) )
+        #               + ";" + str(self.pwd ) )
 
         if self.handle:
             # self.handle.expect( "",timeout=10 )
@@ -207,7 +208,7 @@ class QuaggaCliDriver( CLI ):
         routesJsonObj = json.loads( getRoutesResult )
 
         allRoutesActual = []
-        for route in routesJsonObj[ 'routes4' ]:
+        for route in routesJsonObj['routes4']:
             if 'prefix' in route:
                 if route[ 'prefix' ] == '172.16.10.0/24':
                     continue
@@ -220,7 +221,7 @@ class QuaggaCliDriver( CLI ):
         routesJsonObj = json.loads( getRoutesResult )
 
         allRoutesActual = []
-        for route in routesJsonObj[ 'routes4' ]:
+        for route in routesJsonObj['routes4']:
             if route[ 'prefix' ] == '172.16.10.0/24':
                 continue
             allRoutesActual.append(
@@ -236,10 +237,10 @@ class QuaggaCliDriver( CLI ):
         intentsJsonObj = json.loads( getIntentsResult )
 
         for intent in intentsJsonObj:
-            # if intent[ 'appId' ] != "org.onosproject.sdnip":
+            #if intent[ 'appId' ] != "org.onosproject.sdnip":
             #    continue
             if intent[ 'type' ] == "MultiPointToSinglePointIntent" \
-                    and intent[ 'state' ] == 'INSTALLED':
+            and intent[ 'state' ] == 'INSTALLED':
                 egress = str( intent[ 'egress' ][ 'device' ] ) + ":" \
                     + str( intent[ 'egress' ][ 'port' ] )
                 ingress = []
@@ -265,7 +266,7 @@ class QuaggaCliDriver( CLI ):
         num = 0
         for intent in intentsJsonObj:
             if intent[ 'type' ] == "MultiPointToSinglePointIntent" \
-                    and intent[ 'state' ] == 'INSTALLED':
+            and intent[ 'state' ] == 'INSTALLED':
                 num = num + 1
         return num
 
@@ -275,7 +276,7 @@ class QuaggaCliDriver( CLI ):
         num = 0
         for intent in intentsJsonObj:
             if intent[ 'type' ] == "PointToPointIntent" \
-                    and intent[ 'state' ] == 'INSTALLED':
+            and intent[ 'state' ] == 'INSTALLED':
                 num = num + 1
         return num
 
@@ -287,10 +288,10 @@ class QuaggaCliDriver( CLI ):
         intentsJsonObj = json.loads( getIntentsResult )
 
         for intent in intentsJsonObj:
-            # if intent[ 'appId' ] != "org.onosproject.sdnip":
+            #if intent[ 'appId' ] != "org.onosproject.sdnip":
             #    continue
             if intent[ 'type' ] == "PointToPointIntent" \
-                    and "protocol=6" in str( intent[ 'selector' ] ):
+            and "protocol=6" in str( intent[ 'selector' ] ):
                 ingress = str( intent[ 'ingress' ][ 'device' ] ) + ":" \
                     + str( intent[ 'ingress' ][ 'port' ] )
                 egress = str( intent[ 'egress' ][ 'device' ] ) + ":" + \
@@ -324,15 +325,15 @@ class QuaggaCliDriver( CLI ):
             # find out the BGP speaker IP address for this BGP peer
             bgpSpeakerIpAddress = ""
             for interfaceAddress in \
-                    sdnipData[ 'bgpSpeakers' ][ 0 ][ 'interfaceAddresses' ]:
+            sdnipData[ 'bgpSpeakers' ][ 0 ][ 'interfaceAddresses' ]:
                 # if eq( interfaceAddress[ 'interfaceDpid' ],sdnipData[
                 # 'bgpSpeakers' ][ 0 ][ 'attachmentDpid' ] ) and eq(
                 # interfaceAddress[ 'interfacePort' ], sdnipData[ 'bgpSpeakers'
                 # ][ 0 ][ 'attachmentPort' ] ):
                 if eq( interfaceAddress[ 'interfaceDpid' ],
                        peer[ 'attachmentDpid' ] ) \
-                    and eq( interfaceAddress[ 'interfacePort' ],
-                            peer[ 'attachmentPort' ] ):
+                and eq( interfaceAddress[ 'interfacePort' ],
+                        peer[ 'attachmentPort' ] ):
                     bgpSpeakerIpAddress = interfaceAddress[ 'ipAddress' ]
                     break
                 else:
@@ -342,9 +343,9 @@ class QuaggaCliDriver( CLI ):
             # direction
             selectorStr = "IPV4_SRC{ip=" + bgpSpeakerIpAddress + "/32}," \
                 + "IPV4_DST{ip=" + peer[ 'ipAddress' ] + "/32}," \
-                + "IP_PROTO{ protocol=6 }, ETH_TYPE{ ethType=800 }, \
-                TCP_DST{ tcpPort=179 }"
-            selector = selectorStr.replace( " ", "" ).replace( "[", "" )\
+                + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, \
+                TCP_DST{tcpPort=179}"
+            selector = selectorStr.replace( " ", "" ).replace("[", "" )\
                 .replace( "]", "" ).split( "," )
             intent = bgpSpeakerAttachmentPoint + "/" + \
                 bgpPeerAttachmentPoint + "/" + str( sorted( selector ) )
@@ -352,9 +353,9 @@ class QuaggaCliDriver( CLI ):
 
             selectorStr = "IPV4_SRC{ip=" + bgpSpeakerIpAddress + "/32}," \
                 + "IPV4_DST{ip=" + peer[ 'ipAddress' ] + "/32}," \
-                + "IP_PROTO{ protocol=6 }, ETH_TYPE{ ethType=800 }, \
-                TCP_SRC{ tcpPort=179 }"
-            selector = selectorStr.replace( " ", "" ).replace( "[", "" )\
+                + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, \
+                TCP_SRC{tcpPort=179}"
+            selector = selectorStr.replace( " ", "" ).replace("[", "" )\
                 .replace( "]", "" ).split( "," )
             intent = bgpSpeakerAttachmentPoint + "/" \
                 + bgpPeerAttachmentPoint + "/" + str( sorted( selector ) )
@@ -364,9 +365,9 @@ class QuaggaCliDriver( CLI ):
             # direction
             selectorStr = "IPV4_SRC{ip=" + peer[ 'ipAddress' ] + "/32}," \
                 + "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," \
-                + "IP_PROTO{ protocol=6 }, ETH_TYPE{ ethType=800 }, \
-                TCP_DST{ tcpPort=179 }"
-            selector = selectorStr.replace( " ", "" ).replace( "[", "" )\
+                + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, \
+                TCP_DST{tcpPort=179}"
+            selector = selectorStr.replace( " ", "" ).replace("[", "" )\
                 .replace( "]", "" ).split( "," )
             intent = bgpPeerAttachmentPoint + "/" \
                 + bgpSpeakerAttachmentPoint + "/" + str( sorted( selector ) )
@@ -374,8 +375,8 @@ class QuaggaCliDriver( CLI ):
 
             selectorStr = "IPV4_SRC{ip=" + peer[ 'ipAddress' ] + "/32}," \
                 + "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," \
-                + "IP_PROTO{ protocol=6 }, ETH_TYPE{ ethType=800 }, \
-                TCP_SRC{ tcpPort=179 }"
+                + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, \
+                TCP_SRC{tcpPort=179}"
             selector = selectorStr.replace( " ", "" ).replace( "[", "" )\
                 .replace( "]", "" ).split( "," )
             intent = bgpPeerAttachmentPoint + "/" \
@@ -399,23 +400,23 @@ class QuaggaCliDriver( CLI ):
 
         chunk_size = 20
 
-        if len( routes ) > chunk_size:
-            num_iter = ( int )( len( routes ) / chunk_size )
+        if len(routes) > chunk_size:
+            num_iter = (int) (len(routes) / chunk_size)
         else:
-            num_iter = 1
+            num_iter = 1;
 
         total = 0
-        for n in range( 0, num_iter + 1 ):
+        for n in range( 0, num_iter + 1):
             routeCmd = ""
-            if ( len( routes ) - ( n * chunk_size ) ) >= chunk_size:
-                m = ( n + 1 ) * chunk_size
+            if (len( routes ) - (n * chunk_size)) >= chunk_size:
+                m = (n + 1) * chunk_size
             else:
                 m = len( routes )
             for i in range( n * chunk_size, m ):
                 routeCmd = routeCmd + "network " + routes[ i ] + "\n"
                 total = total + 1
 
-            main.log.info( routeCmd )
+            main.log.info(routeCmd)
             try:
                 self.handle.sendline( routeCmd )
                 self.handle.expect( "bgpd", timeout=5 )
@@ -424,8 +425,8 @@ class QuaggaCliDriver( CLI ):
                 self.disconnect()
 
             # waitTimer = 1.00 / routeRate
-            main.log.info( "Total routes so far " + ( ( str )( total ) ) + " wait for 0 sec" )
-            # time.sleep( 1 )
+            main.log.info("Total routes so far " + ((str) (total)) + " wait for 0 sec")
+            #time.sleep( 1 )
         if routesAdded == len( routes ):
             main.log.info( "Finished adding routes" )
             return main.TRUE
@@ -487,6 +488,7 @@ class QuaggaCliDriver( CLI ):
         else:
             main.log.info( "NO HANDLE" )
             return main.FALSE
+
 
     # Please use the generateRoutes plus addRoutes instead of this one!
     def addRoute( self, net, numRoutes, routeRate ):
@@ -611,7 +613,7 @@ class QuaggaCliDriver( CLI ):
             count = 0
             while True:
                 i = child.expect( [ '17\d\.\d{1,3}\.\d{1,3}\.\d{1,3}',
-                                    'CLI#', pexpect.TIMEOUT ] )
+                                   'CLI#', pexpect.TIMEOUT ] )
                 if i == 0:
                     count = count + 1
                 elif i == 1:
@@ -698,3 +700,4 @@ class QuaggaCliDriver( CLI ):
             main.log.error( "Connection failed to the host" )
             response = main.FALSE
         return response
+

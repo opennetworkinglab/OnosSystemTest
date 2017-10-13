@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Created on 24-Oct-2012
-Copyright 2012 Open Networking Foundation ( ONF )
+Copyright 2012 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -45,9 +45,9 @@ class Component( object ):
     def __getattr__( self, name ):
         """
          Called when an attribute lookup has not found the attribute
-         in the usual places ( i.e. it is not an instance attribute nor
-         is it found in the class tree for self ). name is the attribute
-         name. This method should return the ( computed ) attribute value
+         in the usual places (i.e. it is not an instance attribute nor
+         is it found in the class tree for self). name is the attribute
+         name. This method should return the (computed) attribute value
          or raise an AttributeError exception.
         """
         try:
@@ -117,3 +117,4 @@ class Component( object ):
 if __name__ != "__main__":
     import sys
     sys.modules[ __name__ ] = Component()
+

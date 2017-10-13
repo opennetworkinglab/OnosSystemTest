@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Created on 26-Oct-2012
-Copyright 2012 Open Networking Foundation ( ONF )
+Copyright 2012 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -25,7 +25,8 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 
 fvtapidriver is the basic driver which will handle the fvtapidriver functions
-""""""
+"""
+"""
 There are two changes required in flowvisor-test framework :
 
 1. In ~/flowvisortests/tests/templatetest.py line : 15 comment 'basic_logger = None'
@@ -187,3 +188,4 @@ class FvtApiDriver( API, templatetest.TemplateTest ):
         #    self.logfile_handler.close()
 
         return main.TRUE
+

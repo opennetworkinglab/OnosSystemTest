@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright 2014 Open Networking Foundation ( ONF )
+Copyright 2014 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -10,7 +10,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    ( at your option ) any later version.
+    (at your option) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,6 +35,7 @@ list your email here for future contact:
 
 OCT 20 2014
 """
+
 import pexpect
 import sys
 from drivers.common.cli.emulatordriver import Emulator
@@ -55,6 +56,7 @@ class LincOEDriver( Emulator ):
         """
         Create ssh handle for Linc-OE cli
         """
+
         for key in connectargs:
             vars( self )[ key ] = connectargs[ key ]
 
@@ -219,7 +221,7 @@ class LincOEDriver( Emulator ):
         """
             Since executing opticalTest.py will give you mininet
             prompt, you would at some point require to get onto
-            console of LincOE ( ( linc@onosTestBench )1> ) to execute
+            console of LincOE ((linc@onosTestBench)1>) to execute
             commands like bring a optical port up or down on a ROADM
             You can attach to console of Linc-OE session by a cmd:
             sudo ~/linc-oe/rel/linc/bin/linc attach

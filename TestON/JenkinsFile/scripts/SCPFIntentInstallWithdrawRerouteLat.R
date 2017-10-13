@@ -127,6 +127,8 @@ dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 
 dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
 
+
+
 print( "Data Frame Results:" )
 print( dataFrame )
 
@@ -166,9 +168,10 @@ chartTitle <- paste( chartTitle, fileData1[ 1,'batch_size' ] )
 
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 22, face='bold' ) )
 
+
+
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
-
 
 # Create the bar graph with error bars.
 # geom_bar contains:
@@ -177,9 +180,11 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 # geom_errorbar contains similar arguments as geom_bar.
 print( "Generating bar graph with error bars." )
 barGraphFormat <- geom_bar( stat = "identity", width = width, position = "dodge" )
-errorBarFormat <- geom_errorbar( width = width, position = "dodge" )
+errorBarFormat <- geom_errorbar( width = width, position = "dodge", color=rgb( 140, 140, 140, maxColorValue=255 ) )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.035 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), position=position_dodge( width=1.3 ), size = 3.2, fontface = "bold" )
+
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 # Save graph to file
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )

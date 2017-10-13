@@ -125,10 +125,11 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 
 print( "Generating bar graph with error bars." )
 width <- 0.9
-barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width )
-errorBarFormat <- geom_errorbar( position=position_dodge( ), width = width )
-title <- ggtitle( paste( chartTitle, "with Standard Error Bars" ) )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+barGraphFormat <- geom_bar( stat="identity", position=position_dodge(), width = width )
+errorBarFormat <- geom_errorbar( width = width, position=position_dodge(), color=rgb( 140, 140, 140, maxColorValue=255 ) )
+values <- geom_text( aes( x=avgData$scale, y=avgData$ms + 0.04 * max( avgData$ms ), label = format( avgData$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold", position=position_dodge( 0.9 ) )
+title <- ggtitle( paste( chartTitle, "" ) )
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
@@ -140,8 +141,10 @@ print( paste( "Successfully wrote bar chart with error bars out to", errBarOutpu
 
 print( "Generating stacked bar chart." )
 stackedBarFormat <- geom_bar( stat="identity", width=width )
-title <- ggtitle( paste( chartTitle, "Total Latency" ) )
-result <- fundamentalGraphData + stackedBarFormat + title
+title <- ggtitle( paste( chartTitle, "" ) )
+sum <- fileData[ 'deact_role_avg' ] + fileData[ 'kill_deact_avg' ]
+values <- geom_text( aes( x=avgData$scale, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
+result <- fundamentalGraphData + stackedBarFormat + title + values
 
 
 print( paste( "Saving stacked bar chart to", stackedBarOutputFile ) )

@@ -105,11 +105,13 @@ theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 
-print( "Generating bar graph with error bars." )
+print( "Generating bar graph." )
 width <- 0.3
 barGraphFormat <- geom_bar( stat="identity", width = width )
+sum <- fileData[ 'posttoconfrm' ] + fileData[ 'elapsepost' ]
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title
+result <- fundamentalGraphData + barGraphFormat + title + values
 
 
 print( paste( "Saving bar chart to", errBarOutputFile ) )
@@ -161,12 +163,14 @@ theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 
-print( "Generating bar graph with error bars." )
+print( "Generating bar graph." )
 width <- 0.3
 barGraphFormat <- geom_bar( stat="identity", width = width )
+sum <- fileData[ 'deltoconfrm' ] + fileData[ 'elapsedel' ]
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
 chartTitle <- paste( "Single Bench Flow Latency - Del", "Last 3 Builds", sep = "\n" )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title
+result <- fundamentalGraphData + barGraphFormat + title + values
 
 errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )

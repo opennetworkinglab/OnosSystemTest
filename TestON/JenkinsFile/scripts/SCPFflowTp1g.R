@@ -158,6 +158,7 @@ if ( args[ 8 ] == 'y' ){
 
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
 
+
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
@@ -169,9 +170,10 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 # geom_errorbar contains similar arguments as geom_bar.
 print( "Generating bar graph with error bars." )
 barGraphFormat <- geom_bar( stat = "identity", width = width, fill="#FFA94F" )
-errorBarFormat <- geom_errorbar( position=position_dodge( ), width = width )
+errorBarFormat <- geom_errorbar( width = width, position=position_dodge(), color=rgb( 140,140,140, maxColorValue=255 ) )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$throughput + 0.04 * max( dataFrame$throughput ), label = format( dataFrame$throughput, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
 title <- ggtitle( paste( chartTitle, "" ) )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 # Save graph to file
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )

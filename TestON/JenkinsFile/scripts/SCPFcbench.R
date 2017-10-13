@@ -96,8 +96,8 @@ print( "Generating fundamental graph data." )
 theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, ymin = ms - std, ymax = ms + std ) )
-xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
-xLabel <- xlab( "date" )
+xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative,   label = dataFrame$date )
+xLabel <- xlab( "Build Date" )
 yLabel <- ylab( "Responses / sec" )
 fillLabel <- labs( fill="Type" )
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
@@ -108,9 +108,10 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 print( "Generating bar graph with error bars." )
 width <- 0.3
 barGraphFormat <- geom_bar( stat="identity", position = position_dodge(), width = width, fill="#00AA13" )
-errorBarFormat <- geom_errorbar( position=position_dodge( ), width = width )
+errorBarFormat <- geom_errorbar( width = width, color=rgb( 140, 140,140, maxColorValue=255 ) )
+values <- geom_text( aes( x=dataFrame$iterative, y=fileData[ 'avg' ] + 0.025 * max( fileData[ 'avg' ] ), label = format( fileData[ 'avg' ], digits=3, big.mark = ",", scientific = FALSE ) ), size = 4.5, fontface = "bold" )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )

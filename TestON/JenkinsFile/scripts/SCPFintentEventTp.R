@@ -120,7 +120,6 @@ print( "STEP 3: Generate graphs." )
 #    These are variables that apply to all of the graphs being generated, regardless of type.
 #
 # 2. Type specific graph data is generated.
-#     Data specific for the error bar and stacked bar graphs are generated.
 #
 # 3. Generate and save the graphs.
 #      Graphs are saved to the filename above, in the directory provided in command line args
@@ -156,16 +155,12 @@ if ( args[ 8 ] == 'y' ){
 }
 
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$throughput + 0.04 * max( dataFrame$throughput ), label = format( dataFrame$throughput, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
 
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + values
 
 
-# Create the stacked bar graph with error bars.
-# geom_bar contains:
-#    - stat: data formatting (usually "identity")
-#    - width: the width of the bar types (declared above)
-# geom_errorbar contains similar arguments as geom_bar.
 print( "Generating bar graph." )
 barGraphFormat <- geom_bar( stat = "identity", width = width, fill="#169EFF" )
 title <- ggtitle( paste( chartTitle, "" ) )

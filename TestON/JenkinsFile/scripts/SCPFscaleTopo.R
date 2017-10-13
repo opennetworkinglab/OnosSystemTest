@@ -85,10 +85,9 @@ dataFrame$type <- as.character( dataFrame$type )
 dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 dataFrame$iterative <- seq( 1, nrow( fileData ), by = 1 )
 
-# Obtain the sum of the averages for the plot size and center of standard deviation bars.
-avgsSum <- fileData$total_time
-
 dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+sum <- fileData[ 'last_role_request_to_last_topology' ] + fileData[ 'last_connection_to_last_role_request' ] + fileData[ 'first_connection_to_last_connection' ]
 
 print( "Data Frame Results:" )
 print( dataFrame )
@@ -103,7 +102,6 @@ print( "STEP 3: Generate graphs." )
 #    These are variables that apply to all of the graphs being generated, regardless of type.
 #
 # 2. Type specific graph data is generated.
-#     Data specific for the error bar and stacked bar graphs are generated.
 #
 # 3. Generate and save the graphs.
 #      Graphs are saved to the filename above, in the directory provided in command line args
@@ -129,21 +127,17 @@ yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
 chartTitle <- paste( "Scale Topology Latency Test" )
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.02 * max( sum ), label = format( sum, big.mark = ",", scientific = FALSE ), fontface = "bold" ) )
 
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + values
 
-# Create the stacked bar graph with error bars.
-# geom_bar contains:
-#    - stat: data formatting (usually "identity")
-#    - width: the width of the bar types (declared above)
-# geom_errorbar contains similar arguments as geom_bar.
-print( "Generating bar graph with error bars." )
+print( "Generating bar graph." )
 barGraphFormat <- geom_bar( stat = "identity", width = width )
 title <- ggtitle( paste( chartTitle, "" ) )
 result <- fundamentalGraphData + barGraphFormat + title
 
 # Save graph to file
-print( paste( "Saving bar chart with error bars to", outputFile ) )
+print( paste( "Saving bar chart to", outputFile ) )
 ggsave( outputFile, width = 10, height = 6, dpi = 200 )
-print( paste( "Successfully wrote bar chart with error bars out to", outputFile ) )
+print( paste( "Successfully wrote bar chart out to", outputFile ) )

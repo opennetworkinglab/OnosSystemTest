@@ -108,9 +108,10 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 print( "Generating bar graph with error bars." )
 width <- 0.9
 barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width, fill="#E8BD00" )
-errorBarFormat <- geom_errorbar( position=position_dodge( ), width = width )
+errorBarFormat <- geom_errorbar( position=position_dodge(), width = width, color=rgb( 140, 140, 140, maxColorValue=255 ) )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.08 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
 title <- ggtitle( paste( chartTitle, "with Standard Error Bars" ) )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )

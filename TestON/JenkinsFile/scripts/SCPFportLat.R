@@ -124,10 +124,11 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 
 print( "Generating bar graph with error bars (Port Up Latency)." )
 barGraphFormat <- geom_bar( stat="identity", width = width )
-errorBarFormat <- geom_errorbar( width = width )
-
+errorBarFormat <- geom_errorbar( width = width, color=rgb( 140, 140, 140, maxColorValue=255 ) )
+sum <- fileData[ 'up_ofp_to_dev_avg' ] + fileData[ 'up_dev_to_link_avg' ] + fileData[ 'up_link_to_graph_avg' ]
+values <- geom_text( aes( x=upAvgsData$scale, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
 title <- ggtitle( "Port Up Latency" )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 
 print( paste( "Saving bar chart with error bars (Port Up Latency) to", errBarOutputFileUp ) )
@@ -146,10 +147,12 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 
 print( "Generating bar graph with error bars (Port Down Latency)." )
 barGraphFormat <- geom_bar( stat="identity", width = width )
-errorBarFormat <- geom_errorbar( width = width )
+errorBarFormat <- geom_errorbar( width = width, color=rgb( 140, 140, 140, maxColorValue=255 ) )
+sum <- fileData[ 'down_ofp_to_dev_avg' ] + fileData[ 'down_dev_to_link_avg' ] + fileData[ 'down_link_to_graph_avg' ]
+values <- geom_text( aes( x=downAvgsData$scale, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
 
 title <- ggtitle( "Port Down Latency" )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 
 print( paste( "Saving bar chart with error bars (Port Down Latency) to", errBarOutputFileDown ) )

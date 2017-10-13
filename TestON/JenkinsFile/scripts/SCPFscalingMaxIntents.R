@@ -75,7 +75,7 @@ print( paste( "Sending SQL command:", command ) )
 fileData <- dbGetQuery( con, command )
 
 if ( args[ 1 ] == "y" ){
-    chartTitle <- "Number of Installed Intents & Flows w/ FlowObj"
+    chartTitle <- "Number of Installed Intents & Flows\n with Flow Objectives"
 } else {
     chartTitle <- "Number of Installed Intents & Flows"
 }
@@ -125,8 +125,9 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 print( "Generating bar graph bars." )
 width <- 1.3
 barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.02 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 3.2, fontface = "bold", position=position_dodge( width=1.25 ) )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title
+result <- fundamentalGraphData + barGraphFormat + title + values
 
 
 print( paste( "Saving bar chart to", outputFile ) )

@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>0,[1,1000,10,110,900,1000]*12,1001</testcases>
+    <testcases>0,[1,1000,10,110,120,130,140,299,900,1000]*12,1001</testcases>
 
     <DOCKER>
         <repo>onosproject/onos</repo>
@@ -15,7 +15,10 @@
 
     <CASE110>
         <clustercmdpath>../tests/PLAT/PLATdockertest/dependencies</clustercmdpath>
-        <apps>org.onosproject.proxyarp,org.onosproject.fwd</apps>
+        <apps>org.onosproject.proxyarp,org.onosproject.fwd,org.onosproject.openflow</apps>
+        <mnCmd>mn --topo tree,2 --controller remote,ip=</mnCmd>
+        <swDPID>of:0000000000000002</swDPID>
+        <debug>on</debug>
     </CASE110>
 
     <ENV>

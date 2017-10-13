@@ -1416,7 +1416,7 @@ class OnosRestDriver( Controller ):
                                                         "type": "IP_PROTO",
                                                         "protocol": ipProto } )
 
-            return self.sendFlow( deviceId=deviceId, flowJson=flowJson, debug=debug )
+            return self.sendFlow( deviceId=deviceId, flowJson=flowJson, debug=debug, ip=ip, port=port )
 
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )

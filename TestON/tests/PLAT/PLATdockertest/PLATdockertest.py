@@ -171,12 +171,13 @@ class PLATdockertest:
 
     def CASE110( self, main ):
         """
+        Docker init testing
+
         Steps:
         1 ) check default startup standalone onos applications status;
         2 ) form onos cluster with all nodes;
         3 ) check onos applications status;
         4 ) activate apps per params and check app status;
-        5 ) deactivate apps and check app status
 
         """
         import time
@@ -185,15 +186,17 @@ class PLATdockertest:
         main.case( "Form onos cluster and check status of onos apps for onos image {}".format( DOCKERTAG ) )
 
         startupSleep = int( main.params[ "SLEEP" ][ "startup" ] )
+        main.swDPID = main.params[ "CASE110" ][ "swDPID" ]
+        main.debug = main.params[ "CASE110" ][ "debug" ]
 
         appToAct = main.params[ "CASE110" ][ "apps" ]
-        stepResult = main.FALSE
+        main.initResult = main.FALSE
 
         main.log.info( "Wait for startup, sleep (sec): " + str( startupSleep ) )
         time.sleep( startupSleep )
 
         main.step( "Check initial app states from onos1 for onos image {}".format( DOCKERTAG ) )
-        stepResult = main.TRUE
+        main.initResult = main.TRUE
         response = main.ONOSbenchRest.apps( ip=IPlist[ 0 ], port=8181 )
         main.log.debug( "Rest call response is: " + response )
         if response is not main.FALSE:
@@ -201,20 +204,20 @@ class PLATdockertest:
                 if item[ "state" ] not in [ "ACTIVE", "INSTALLED" ]:
                     main.log.info( "Some bundles are not in correct state. " )
                     main.log.info( "App states are: " + response )
-                    stepResult = main.FALSE
+                    main.initResult = main.FALSE
                     break
                 if ( item[ "description" ] == "Builtin device drivers" ) and ( item[ "state" ] != "ACTIVE" ):
                     main.log.info( "Driver app is not in 'ACTIVE' state, but in: " + item[ "state" ] )
-                    stepResult = main.FALSE
+                    main.initResult = main.FALSE
                     break
-        utilities.assert_equals( expect=main.TRUE, actual=stepResult,
+        utilities.assert_equals( expect=main.TRUE, actual=main.initResult,
                                     onpass="ONOS successfully started",
                                     onfail="Failed to start ONOS correctly" )
-        if stepResult is main.FALSE:
+        if main.initResult is main.FALSE:
             main.skipCase()
 
         main.step( "Form onos cluster using 'dependencies/onos-form-cluster' util" )
-        stepResult = main.FALSE
+        main.initResult = main.FALSE
         clcmdpath = main.params[ "CASE110" ][ "clustercmdpath" ]
         main.log.info( "onos-form-cluster cmd path is: " + clcmdpath )
         dkruser = main.params[ "DOCKER" ][ "user" ]
@@ -233,52 +236,196 @@ class PLATdockertest:
             main.log.debug( " IPlist is:" + ",".join( IPlist ) )
             main.log.debug( " cluster IP is" + ",".join( clusterIP ) )
             if set( IPlist ) == set( clusterIP ):
-                stepResult = main.TRUE
+                main.initResult = main.TRUE
 
-        utilities.assert_equals( expect=main.TRUE, actual=stepResult,
+        utilities.assert_equals( expect=main.TRUE, actual=main.initResult,
                                     onpass="ONOS successfully started",
                                     onfail="Failed to start ONOS correctly" )
-        if stepResult is main.FALSE:
+        if main.initResult is main.FALSE:
             main.skipCase()
 
         main.step( "Check cluster app status" )
-        stepResult = main.TRUE
+        main.initResult = main.TRUE
         response = main.ONOSbenchRest.apps( ip=IPlist[ 0 ], port=8181 )
         if response is not main.FALSE:
             for item in json.loads( response ):
                 if item[ "state" ] not in [ "ACTIVE", "INSTALLED" ]:
                     main.log.info( "Some bundles are not in correct state. " )
                     main.log.info( "App states are: " + response )
-                    stepResult = main.FALSE
+                    main.initResult = main.FALSE
                     break
                 if ( item[ "description" ] == "Builtin device drivers" ) and ( item[ "state" ] != "ACTIVE" ):
                     main.log.info( "Driver app is not in 'ACTIVE' state, but in: " + item[ "state" ] )
-                    stepResult = main.FALSE
+                    main.initResult = main.FALSE
                     break
-        utilities.assert_equals( expect=main.TRUE, actual=stepResult,
+        utilities.assert_equals( expect=main.TRUE, actual=main.initResult,
                                     onpass="ONOS successfully started",
                                     onfail="Failed to start ONOS correctly" )
-        if stepResult is main.FALSE:
+        if main.initResult is main.FALSE:
             main.skipCase()
 
         main.step( " Activate an APP from REST and check APP status" )
         appResults = list()
-        stepResult = main.TRUE
+        main.initResult = main.TRUE
         applist = main.params[ "CASE110" ][ "apps" ].split( "," )
         main.log.info( "List of apps to activate: " + str( applist ) )
         for app in applist:
             appRslt = main.ONOSbenchRest.activateApp( appName=app, ip=IPlist[ 0 ], port=8181, check=True )
             time.sleep( 5 )
             appResults.append( appRslt )
-            stepResult = stepResult and appRslt
+            main.initResult = main.initResult and appRslt
         main.log.debug( "Apps activation result for " + ",".join( applist ) + ": " + str( appResults ) )
-        utilities.assert_equals( expect=main.TRUE, actual=stepResult,
+        utilities.assert_equals( expect=main.TRUE, actual=main.initResult,
                                     onpass="Successfully activated apps",
                                     onfail="Failed to activated apps correctly" )
-        if stepResult is main.FALSE:
+
+    def CASE120( self, main ):
+        """
+            Docker Mininet testing
+        """
+        import time
+        import json
+        from operator import itemgetter
+
+        if main.initResult is main.FALSE:
+            main.mininetResult = main.FALSE
             main.skipCase()
 
-        main.step( " Deactivate an APP from REST and check APP status" )
+        main.step( "Loading Mininet Topology." )
+
+        mnCmd = main.params[ "CASE110" ][ "mnCmd" ]
+        main.mininetResult = main.Mininet1.startNet( mnCmd=mnCmd + IPlist[ 0 ] )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=main.mininetResult,
+                                 onpass="Successfully loaded topology.",
+                                 onfail="Failed to load topology" )
+
+        if main.mininetResult is main.FALSE:
+            main.skipCase()
+
+        main.mininetResult = utilities.retry( f=main.Mininet1.pingall,
+                                              retValue=main.FALSE,
+                                              attempts=3,
+                                              sleep=5 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=main.mininetResult,
+                                 onpass="Successfully loaded topology.",
+                                 onfail="Failed to load topology" )
+
+    def CASE130( self, main ):
+        """
+            Docker Intents testing
+        """
+        import time
+        import json
+        from operator import itemgetter
+
+        if main.initResult is main.FALSE or main.mininetResult is main.FALSE:
+            main.intentResult = False
+            main.skipCase()
+
+        main.hosts = sorted( json.loads( main.ONOSbenchRest.hosts( ip=IPlist[ 0 ] ) ), key=itemgetter( "ipAddresses" ) )
+        main.ONOSbenchRest.addHostIntent( main.hosts[ 0 ][ "id" ], main.hosts[ -1 ][ "id" ], ip=IPlist[ 0 ] )
+        main.ONOSbenchRest.addHostIntent( main.hosts[ 1 ][ "id" ], main.hosts[ -2 ][ "id" ], ip=IPlist[ 0 ] )
+
+        main.log.info( "Sleeping for 5 seconds to avoid potential race condition..." )
+        time.sleep( 5 )
+
+        main.step( "Get the intents from each controller" )
+        main.ONOSIntents = main.ONOSbenchRest.intents( IPlist[ 0 ] )
+        main.intentResult = True
+        for i in range( 0, len( IPlist ) ):
+            node = str( IPlist[ i ] )
+            if not main.ONOSIntents[ i ] or "Error" in main.ONOSIntents[ i ]:
+                main.log.error( "Error in getting " + node + " intents" )
+                main.log.warn( node + " intents response: " +
+                               repr( main.ONOSIntents[ i ] ) )
+                main.intentResult = False
+
+        utilities.assert_equals( expect=True,
+                                 actual=main.intentResult,
+                                 onpass="No error in reading intents output",
+                                 onfail="Error in reading intents from ONOS" )
+
+        if not main.intentResult:
+            main.skipCase()
+
+        main.step( "Checking intent state" )
+
+        main.intentResult = json.loads( main.ONOSIntents )[ 0 ][ "state" ] == "INSTALLED"
+
+        utilities.assert_equals( expect=True,
+                                 actual=main.intentResult,
+                                 onpass="Intent check successful.",
+                                 onfail="Intent check failed." )
+
+    def CASE140( self, main ):
+        """
+            Docker Flows testing
+        """
+        import time
+        import json
+
+        if main.initResult is main.FALSE or not main.intentResult:
+            main.skipCase()
+
+        main.step( "Adding flows." )
+
+        ingress = 1
+        egress = 2
+
+        main.log.info( "Add flow with MAC selectors." )
+        main.flowResult = main.ONOSbenchRest.addFlow( deviceId=main.swDPID,
+                                                      egressPort=egress,
+                                                      ingressPort=ingress,
+                                                      ethSrc=main.hosts[ 0 ][ 'mac' ],
+                                                      ethDst=main.hosts[ 1 ][ 'mac' ],
+                                                      debug=main.debug,
+                                                      ip=IPlist[ 0 ] )
+
+        main.log.info( "Sleeping for 10 seconds..." )
+        time.sleep( 10 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=main.flowResult,
+                                 onpass="Successfully added flows",
+                                 onfail="Failed to add flows" )
+
+    def CASE299( self, main ):
+        """
+            Cleanup Docker testing
+        """
+        import time
+        import json
+
+        if main.initResult is main.FALSE:
+            main.skipCase()
+
+        if main.flowResult is main.TRUE:
+            main.step( "Remove flow." )
+
+            prevFlow = json.loads( main.ONOSbenchRest.getFlows( main.swDPID, ip=IPlist[ 0 ] ) )[ -1 ]
+            stepResult = main.ONOSbenchRest.removeFlow( main.swDPID, prevFlow[ 'id' ], ip=IPlist[ 0 ] )
+            utilities.assert_equals( expect=main.TRUE, actual=stepResult,
+                                     onpass="Successfully removed flow.",
+                                     onfail="Failed to remove flow." )
+
+        if main.intentResult:
+            main.step( "Remove intents." )
+            results = []
+            for i in range( 0, len( json.loads( main.ONOSIntents ) ) ):
+                intentID = json.loads( main.ONOSbenchRest.intents( IPlist[ 0 ] ) )[ 0 ][ 'id' ]
+                results.append( main.ONOSbenchRest.removeIntent( intentID, ip=IPlist[ 0 ] ) == main.TRUE )
+
+            utilities.assert_equals( expect=True, actual=all( results ),
+                                     onpass="Successfully removed intents.",
+                                     onfail="Failed to remove intents." )
+
+        if main.mininetResult is main.TRUE:
+            main.Mininet1.stopNet()
+
+        main.step( "Deactivate an APP from REST and check APP status" )
         appResults = list()
         stepResult = main.TRUE
         applist = main.params[ "CASE110" ][ "apps" ].split( "," )
@@ -290,10 +437,8 @@ class PLATdockertest:
             stepResult = stepResult and appRslt
         main.log.debug( "Apps deactivation result for " + ",".join( applist ) + ": " + str( appResults ) )
         utilities.assert_equals( expect=main.TRUE, actual=stepResult,
-                                    onpass="Successfully deactivated apps",
-                                    onfail="Failed to deactivated apps correctly" )
-        if stepResult is main.FALSE:
-            main.skipCase()
+                                 onpass="Successfully deactivated apps",
+                                 onfail="Failed to deactivated apps correctly" )
 
     def CASE900( self, main ):
         """

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 '''
 Copyright 2016 Open Networking Foundation (ONF)
@@ -69,7 +69,7 @@ class Graph:
         self.graphDict = graphDict
         return main.TRUE
 
-    def compareGraphs( self, graphDictA, graphDictB, vertexAttributes=['edges'], edgeAttributes=['port'] ):
+    def compareGraphs( self, graphDictA, graphDictB, vertexAttributes=[ 'edges' ], edgeAttributes=[ 'port' ] ):
         """
         Compare two graphs.
         By default only the adjacency relationship, i.e. 'port' attribute in
@@ -150,8 +150,8 @@ class Graph:
                                                                                                                                    attributeValueA,
                                                                                                                                    attributeValueB ) )
             if not result:
-                #main.log.debug( "Graph: graphDictA: {}".format( graphDictA ) )
-                #main.log.debug( "Graph: graphDictB: {}".format( graphDictB ) )
+                # main.log.debug( "Graph: graphDictA: {}".format( graphDictA ) )
+                # main.log.debug( "Graph: graphDictB: {}".format( graphDictB ) )
                 pass
             return result
         except TypeError:
@@ -183,7 +183,7 @@ class Graph:
             for chain in self.chains:
                 for edge in chain:
                     nonCutEdges.append( edge )
-            #main.log.debug( 'Non-cut-edges: {}'.format( nonCutEdges ) )
+            # main.log.debug( 'Non-cut-edges: {}'.format( nonCutEdges ) )
             return nonCutEdges
         except Exception:
             main.log.exception( "Graph: Uncaught exception" )
@@ -207,16 +207,16 @@ class Graph:
                 # chain, the chain is a cycle chain
                 if chain[ 0 ][ 0 ] == chain[ -1 ][ 1 ]:
                     cycleChains.append( chain )
-            #main.log.debug( 'Cycle chains: {}'.format( cycleChains ) )
+            # main.log.debug( 'Cycle chains: {}'.format( cycleChains ) )
             # Get a set of vertices which are the first vertices of a cycle chain (excluding the first
             # cycle chain), and these vertices are a subset of all cut-vertices
             subsetOfCutVertices = []
             if len( cycleChains ) > 1:
                 for cycleChain in cycleChains[ 1: ]:
                     subsetOfCutVertices.append( cycleChain[ 0 ][ 0 ] )
-            #main.log.debug( 'Subset of cut vertices: {}'.format( subsetOfCutVertices ) )
+            # main.log.debug( 'Subset of cut vertices: {}'.format( subsetOfCutVertices ) )
             nonCutVertices = []
-            assert nonCutEdges != None
+            assert nonCutEdges is not None
             for vertex in self.graphDict.keys():
                 if vertex in subsetOfCutVertices:
                     continue
@@ -224,12 +224,12 @@ class Graph:
                 for neighbor in self.graphDict[ vertex ][ 'edges' ].keys():
                     edge = [ vertex, neighbor ]
                     backwardEdge = [ neighbor, vertex ]
-                    if not edge in nonCutEdges and not backwardEdge in nonCutEdges:
+                    if edge not in nonCutEdges and backwardEdge not in nonCutEdges:
                         vertexIsNonCut = False
                         break
                 if vertexIsNonCut:
                     nonCutVertices.append( vertex )
-            #main.log.debug( 'Non-cut-vertices: {}'.format( nonCutVertices ) )
+            # main.log.debug( 'Non-cut-vertices: {}'.format( nonCutVertices ) )
             return nonCutVertices
         except KeyError:
             main.log.exception( "Graph: KeyError exception found" )
@@ -247,7 +247,7 @@ class Graph:
         as generates the back edges
         """
         try:
-            assert self.graphDict != None and len( self.graphDict ) != 0
+            assert self.graphDict is not None and len( self.graphDict ) != 0
             for vertex in self.graphDict.keys():
                 self.DFI[ vertex ] = -1
                 self.parentVertexInDFS[ vertex ] = ''
@@ -288,14 +288,14 @@ class Graph:
                 else:
                     key = self.DFI[ neighbor ]
                     if key in self.backEdges.keys():
-                        if not edge in self.backEdges[ key ] and\
-                        not backwardEdge in self.backEdges[ key ]:
+                        if edge not in self.backEdges[ key ] and \
+                                backwardEdge not in self.backEdges[ key ]:
                             self.backEdges[ key ].append( backwardEdge )
                     else:
                         tempKey = self.DFI[ vertex ]
                         if tempKey in self.backEdges.keys():
-                            if not edge in self.backEdges[ tempKey ] and\
-                            not backwardEdge in self.backEdges[ tempKey ]:
+                            if edge not in self.backEdges[ tempKey ] and\
+                                    backwardEdge not in self.backEdges[ tempKey ]:
                                 self.backEdges[ key ] = [ backwardEdge ]
                         else:
                             self.backEdges[ key ] = [ backwardEdge ]
@@ -329,7 +329,7 @@ class Graph:
                         nextVertex = currentEdge[ 1 ]
                         vertexIsVisited[ currentVertex ] = True
                         chain.append( currentEdge )
-                        if nextVertex == sourceVertex or vertexIsVisited[ nextVertex ] == True:
+                        if nextVertex == sourceVertex or vertexIsVisited[ nextVertex ] is True:
                             break
                         currentEdge = self.parentEdgeInDFS[ nextVertex ]
                     self.chains.append( chain )

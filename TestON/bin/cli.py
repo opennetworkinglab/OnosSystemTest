@@ -46,16 +46,16 @@ import time
 import threading
 import __builtin__
 import pprint
-dump = pprint.PrettyPrinter(indent=4)
+dump = pprint.PrettyPrinter( indent=4 )
 __builtin__.testthread = False
 introduction = "TestON is the testing framework \nDeveloped by Paxterra Solutions (www.paxterrasolutions.com)"
 __builtin__.COLORS = False
 
-path = re.sub( "/bin$", "", sys.path[0] )
+path = re.sub( "/bin$", "", sys.path[ 0 ] )
 sys.path.insert( 1, path )
 from core.teston import *
 
-class CLI( threading.Thread,Cmd,object ):
+class CLI( threading.Thread, Cmd, object ):
     "command-line interface to execute the test."
 
     prompt = 'teston> '
@@ -64,7 +64,7 @@ class CLI( threading.Thread,Cmd,object ):
         self.teston = teston
 
         self._mainevent = threading.Event()
-        threading.Thread.__init__(self)
+        threading.Thread.__init__( self )
         self.main_stop = False
         self.locals = { 'test': teston }
         self.stdin = stdin
@@ -86,7 +86,8 @@ class CLI( threading.Thread,Cmd,object ):
         Cmd.do_help( self, line )
         if line is '':
             output( self.helpStr )
-    def do_run(self,args):
+
+    def do_run( self, args ):
         '''
         run command will execute the test with following optional command line arguments
         logdir <directory to store logs in>
@@ -97,22 +98,22 @@ class CLI( threading.Thread,Cmd,object ):
         try:
             args = args.split()
             options = {}
-            options = self.parseArgs(args,options)
-            options = dictToObj(options)
+            options = self.parseArgs( args, options )
+            options = dictToObj( options )
             if not testthread:
-                test = TestThread(options)
+                test = TestThread( options )
                 test.start()
                 while test.isAlive():
-                    test.join(1)
+                    test.join( 1 )
             else:
-                print main.TEST+ " test execution paused, please resume that before executing to another test"
+                print main.TEST + " test execution paused, please resume that before executing to another test"
         except KeyboardInterrupt, SystemExit:
             print "Interrupt called, Exiting."
             test._Thread__stop()
             main.cleanup()
             main.exit()
 
-    def do_resume(self, line):
+    def do_resume( self, line ):
         '''
         resume command will continue the execution of paused test.
         teston>resume
@@ -122,10 +123,10 @@ class CLI( threading.Thread,Cmd,object ):
         '''
         if testthread:
             testthread.play()
-        else :
+        else:
             print "There is no test to resume"
 
-    def do_nextstep(self,line):
+    def do_nextstep( self, line ):
         '''
         nextstep will execute the next-step of the paused test and
         it will pause the test after finishing of step.
@@ -140,14 +141,14 @@ class CLI( threading.Thread,Cmd,object ):
 
         '''
         if testthread:
-            main.log.info("Executing the nextstep, Will pause test execution, after completion of the step")
+            main.log.info( "Executing the nextstep, Will pause test execution, after completion of the step" )
             testthread.play()
-            time.sleep(.1)
+            time.sleep( .1 )
             testthread.pause()
         else:
             print "There is no paused test "
 
-    def do_dumpvar(self,line):
+    def do_dumpvar( self, line ):
         '''
         dumpvar will print all the test data in raw format.
         usgae :
@@ -162,16 +163,16 @@ class CLI( threading.Thread,Cmd,object ):
         '''
         if testthread:
             if line == "main":
-                dump.pprint(vars(main))
-            else :
-                try :
-                    dump.pprint(vars(main)[line])
+                dump.pprint( vars( main ) )
+            else:
+                try:
+                    dump.pprint( vars( main )[ line ] )
                 except KeyError as e:
                     print e
-        else :
+        else:
             print "There is no paused test "
 
-    def do_currentcase(self,line):
+    def do_currentcase( self, line ):
         '''
         currentcase will return the current case in the test execution.
 
@@ -180,12 +181,11 @@ class CLI( threading.Thread,Cmd,object ):
 
         '''
         if testthread:
-            print "Currently executing test case is: "+str(main.CurrentTestCaseNumber)
-        else :
+            print "Currently executing test case is: " + str( main.CurrentTestCaseNumber )
+        else:
             print "There is no paused test "
 
-
-    def do_currentstep(self,line):
+    def do_currentstep( self, line ):
         '''
         currentstep will return the current step in the test execution.
 
@@ -193,12 +193,11 @@ class CLI( threading.Thread,Cmd,object ):
         Currently executing test step is: 2.3
         '''
         if testthread:
-            print "Currently executing test step is: "+str(main.CurrentTestCaseNumber)+'.'+str(main.stepCount)
-        else :
+            print "Currently executing test step is: " + str( main.CurrentTestCaseNumber ) + '.' + str( main.stepCount )
+        else:
             print "There is no paused test "
 
-
-    def do_stop(self,line):
+    def do_stop( self, line ):
         '''
         Will stop the paused test, if any !
         '''
@@ -207,7 +206,7 @@ class CLI( threading.Thread,Cmd,object ):
 
         return 'exited by user command'
 
-    def do_gettest(self,line):
+    def do_gettest( self, line ):
         '''
         gettest will return the test name which is under execution or recently executed.
 
@@ -218,16 +217,16 @@ class CLI( threading.Thread,Cmd,object ):
         Test recently executed:
         Recently executed test is: MininetTest
         '''
-        try :
-            if testthread :
-                print "Currently executing Test is: "+main.TEST
-            else :
-                print "Recently executed test is: "+main.TEST
+        try:
+            if testthread:
+                print "Currently executing Test is: " + main.TEST
+            else:
+                print "Recently executed test is: " + main.TEST
 
         except NameError:
             print "There is no previously executed Test"
 
-    def do_showlog(self,line):
+    def do_showlog( self, line ):
         '''
         showlog will show the test's Log
         teston>showlog
@@ -237,16 +236,16 @@ class CLI( threading.Thread,Cmd,object ):
         Currently executing Test's log is: /home/openflow/TestON/logs/PoxTest_07_Jan_2013_21_46_58/PoxTest_07_Jan_2013_21_46_58.log
         .....
         '''
-        try :
-            if testthread :
-                print "Currently executing Test's log is: "+main.LogFileName
+        try:
+            if testthread:
+                print "Currently executing Test's log is: " + main.LogFileName
 
-            else :
-                print "Last executed test's log is : "+main.LogFileName
+            else:
+                print "Last executed test's log is : " + main.LogFileName
 
             logFile = main.LogFileName
-            logFileHandler = open(logFile, 'r')
-            for msg in logFileHandler.readlines() :
+            logFileHandler = open( logFile, 'r' )
+            for msg in logFileHandler.readlines():
                 print msg,
 
             logFileHandler.close()
@@ -254,79 +253,77 @@ class CLI( threading.Thread,Cmd,object ):
         except NameError:
             print "There is no previously executed Test"
 
-
-
-    def parseArgs(self,args,options):
+    def parseArgs( self, args, options ):
         '''
         This will parse the command line arguments.
         '''
-        options = self.initOptions(options)
-        try :
+        options = self.initOptions( options )
+        try:
             index = 0
             while index < len( args ):
-                option = args[index]
-                if index > 0 :
-                    if re.match("--params", option, flags=0):
+                option = args[ index ]
+                if index > 0:
+                    if re.match( "--params", option, flags=0 ):
                         # check if there is a params
-                        options['params'].append(args[index+1])
-                    elif re.match("logdir|mail|example|testdir|testcases|onoscell", option, flags = 0):
-                        options[option] = args[index+1]
-                        options = self.testcasesInRange(index+1,option,args,options)
+                        options[ 'params' ].append( args[ index + 1 ] )
+                    elif re.match( "logdir|mail|example|testdir|testcases|onoscell", option, flags = 0 ):
+                        options[ option ] = args[ index + 1 ]
+                        options = self.testcasesInRange( index + 1, option, args, options )
                     index += 2
-                else :
-                    options['testname'] = option
+                else:
+                    options[ 'testname' ] = option
                     index += 1
         except IndexError as e:
-            print (e)
+            print ( e )
             main.cleanup()
             main.exit()
 
         return options
 
-    def initOptions(self,options):
+    def initOptions( self, options ):
         '''
         This will initialize the commandline options.
         '''
-        options['logdir'] = None
-        options['mail'] = None
-        options['example'] = None
-        options['testdir'] = None
-        options['testcases'] = None
-        options['onoscell'] = None
+        options[ 'logdir' ] = None
+        options[ 'mail' ] = None
+        options[ 'example' ] = None
+        options[ 'testdir' ] = None
+        options[ 'testcases' ] = None
+        options[ 'onoscell' ] = None
         # init params as a empty list
-        options['params'] = []
+        options[ 'params' ] = []
         return options
 
-    def testcasesInRange(self,index,option,args,options):
+    def testcasesInRange( self, index, option, args, options ):
         '''
         This method will handle testcases list,specified in range [1-10].
         '''
-        if re.match("testcases",option,1):
+        if re.match( "testcases", option, 1 ):
             testcases = []
-            args[index] = re.sub("\[|\]","",args[index],0)
-            m = re.match("(\d+)\-(\d+)",args[index],flags=0)
+            args[ index ] = re.sub( "\[|\]", "", args[ index ], 0 )
+            m = re.match( "(\d+)\-(\d+)", args[ index ], flags=0 )
             if m:
-                start_case = eval(m.group(1))
-                end_case = eval(m.group(2))
-                if (start_case <= end_case):
+                start_case = eval( m.group( 1 ) )
+                end_case = eval( m.group( 2 ) )
+                if ( start_case <= end_case ):
                     i = start_case
                     while i <= end_case:
-                        testcases.append(i)
-                        i= i+1
-                else :
+                        testcases.append( i )
+                        i = i + 1
+                else:
                     print "Please specify testcases properly like 1-5"
-            else :
-                options[option] = args[index]
+            else:
+                options[ option ] = args[ index ]
                 return options
-            options[option] = str(testcases)
+            options[ option ] = str( testcases )
 
         return options
 
-    def cmdloop(self, intro=introduction):
+    def cmdloop( self, intro=introduction ):
         print introduction
         while True:
             try:
-                super(CLI, self).cmdloop(intro="")
+                super( CLI, self ).cmdloop( intro="" )
                 self.postloop()
             except KeyboardInterrupt:
                 if testthread:
@@ -339,7 +336,7 @@ class CLI( threading.Thread,Cmd,object ):
         '''
         Echoing of given input.
         '''
-        output(line)
+        output( line )
 
     def do_sh( self, line ):
         '''
@@ -348,7 +345,6 @@ class CLI( threading.Thread,Cmd,object ):
         sh ifconfig etc.
         '''
         call( line, shell=True )
-
 
     def do_py( self, line ):
         '''
@@ -363,7 +359,7 @@ class CLI( threading.Thread,Cmd,object ):
         except Exception as e:
             output( str( e ) + '\n' )
 
-    def do_interpret(self,line):
+    def do_interpret( self, line ):
         '''
         interpret will translate the single line openspeak statement to equivalent python script.
 
@@ -373,13 +369,13 @@ class CLI( threading.Thread,Cmd,object ):
         '''
         from core import openspeak
         ospk = openspeak.OpenSpeak()
-        try :
-            translated_code = ospk.interpret(text=line)
+        try:
+            translated_code = ospk.interpret( text=line )
             print translated_code
         except AttributeError as e:
             print 'Dynamic params are not allowed in single statement translations'
 
-    def do_do (self,line):
+    def do_do( self, line ):
         '''
         Do will translate and execute the openspeak statement for the paused test.
         do <OpenSpeak statement>
@@ -387,16 +383,16 @@ class CLI( threading.Thread,Cmd,object ):
         if testthread:
             from core import openspeak
             ospk = openspeak.OpenSpeak()
-            try :
-                translated_code = ospk.interpret(text=line)
-                eval(translated_code)
+            try:
+                translated_code = ospk.interpret( text=line )
+                eval( translated_code )
             except ( AttributeError, SyntaxError ) as e:
                 print 'Dynamic params are not allowed in single statement translations:'
                 print e
-        else :
+        else:
             print "Do will translate and execute the openspeak statement for the paused test.\nPlease use interpret to translate the OpenSpeak statement."
 
-    def do_compile(self,line):
+    def do_compile( self, line ):
         '''
         compile will translate the openspeak (.ospk) file into TestON test script (python).
         It will receive the openspeak file path as input and will generate
@@ -411,11 +407,11 @@ class CLI( threading.Thread,Cmd,object ):
         from core import openspeak
         openspeak = openspeak.OpenSpeak()
         openspeakfile = line
-        if os.path.exists(openspeakfile) :
-            openspeak.compiler(openspeakfile=openspeakfile,writetofile=1)
-            print "Auto-generated test-script file is "+ re.sub("ospk","py",openspeakfile,0)
+        if os.path.exists( openspeakfile ):
+            openspeak.compiler( openspeakfile=openspeakfile, writetofile=1 )
+            print "Auto-generated test-script file is " + re.sub( "ospk", "py", openspeakfile, 0 )
         else:
-            print 'There is no such file : '+line
+            print 'There is no such file : ' + line
 
     def do_exit( self, _line ):
         "Exit"
@@ -454,7 +450,7 @@ class CLI( threading.Thread,Cmd,object ):
         '''
 
         args = line.split()
-        if len(args) != 1:
+        if len( args ) != 1:
             error( 'usage: source <file>\n' )
             return
         try:
@@ -471,43 +467,43 @@ class CLI( threading.Thread,Cmd,object ):
     def do_time( self, line ):
         "Measure time taken for any command in TestON."
         start = time.time()
-        self.onecmd(line)
+        self.onecmd( line )
         elapsed = time.time() - start
-        self.stdout.write("*** Elapsed time: %0.6f secs\n" % elapsed)
+        self.stdout.write( "*** Elapsed time: %0.6f secs\n" % elapsed )
 
     def default( self, line ):
         """Called on an input line when the command prefix is not recognized."""
         first, args, line = self.parseline( line )
         if not args:
             return
-        if args and len(args) > 0 and args[ -1 ] == '\n':
-            args = args[ :-1 ]
+        if args and len( args ) > 0 and args[ -1 ] == '\n':
+            args = args[:-1 ]
         rest = args.split( ' ' )
 
         error( '*** Unknown command: %s\n' % first )
 
-class TestThread(threading.Thread):
+class TestThread( threading.Thread ):
     '''
     TestThread class will handle the test execution and will communicate with the thread in the do_run.
     '''
-    def __init__(self,options):
+    def __init__( self, options ):
         self._stopevent = threading.Event()
-        threading.Thread.__init__(self)
+        threading.Thread.__init__( self )
         self.is_stop = False
         self.options = options
         __builtin__.testthread = self
 
-    def run(self):
+    def run( self ):
         '''
         Will execute the test.
         '''
-        while not self.is_stop :
+        while not self.is_stop:
             if not self._stopevent.isSet():
-                self.test_on = TestON(self.options)
-                try :
+                self.test_on = TestON( self.options )
+                try:
                     if self.test_on.init_result:
                         result = self.test_on.run()
-                        if not self.is_stop :
+                        if not self.is_stop:
                             result = self.test_on.cleanup()
                         self.is_stop = True
                 except KeyboardInterrupt:
@@ -517,7 +513,7 @@ class TestThread(threading.Thread):
 
         __builtin__.testthread = False
 
-    def pause(self):
+    def pause( self ):
         '''
         Will pause the test.
         '''
@@ -533,14 +529,14 @@ class TestThread(threading.Thread):
             result = self.test_on.cleanup()
             self.is_stop = True
 
-    def play(self):
+    def play( self ):
         '''
         Will resume the paused test.
         '''
         self._stopevent.clear()
         cli.pause = False
 
-    def stop(self):
+    def stop( self ):
         '''
         Will stop the test execution.
         '''
@@ -550,39 +546,40 @@ class TestThread(threading.Thread):
         cli.stop = True
         __builtin__.testthread = False
 
-def output(msg):
+def output( msg ):
     '''
     Simply, print the message in console
     '''
     print msg
 
-def error(msg):
+def error( msg ):
     '''
     print the error message.
     '''
     print msg
 
-def dictToObj(dictionary):
+def dictToObj( dictionary ):
     '''
     This will facilitates the converting of the dictionary to the object.
     This method will help to send options as object format to the test.
     '''
-    if isinstance(dictionary, list):
-        dictionary = [dictToObj(x) for x in dictionary]
-    if not isinstance(dictionary, dict):
+    if isinstance( dictionary, list ):
+        dictionary = [ dictToObj( x ) for x in dictionary ]
+    if not isinstance( dictionary, dict ):
         return dictionary
-    class Convert(object):
+
+    class Convert( object ):
         pass
     obj = Convert()
     for k in dictionary:
-        obj.__dict__[k] = dictToObj(dictionary[k])
+        obj.__dict__[ k ] = dictToObj( dictionary[ k ] )
     return obj
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
+    if len( sys.argv ) > 1:
         __builtin__.COLORS = True
-        CLI("test").onecmd(' '.join(sys.argv[1:]))
+        CLI( "test" ).onecmd( ' '.join( sys.argv[ 1: ] ) )
     else:
         __builtin__.COLORS = False
-        CLI("test").cmdloop()
+        CLI( "test" ).cmdloop()

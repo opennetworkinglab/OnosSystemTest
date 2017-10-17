@@ -38,8 +38,8 @@ class Thread( threading.Thread ):
             if self.target is not None:
                 self.result = self.target( *self.args, **self.kwargs )
         except Exception as e:
-            print "ThreadID:" + str( self.threadID ) + ", Name:" +\
-                  self.name + "- something went wrong with " +\
-                  str( self.target.im_class ) + "." +\
+            print "ThreadID:" + str( self.threadID ) + ", Name:" + \
+                  self.name + "- something went wrong with " + \
+                  str( self.target.im_class ) + "." + \
                   str( self.target.im_func ) + " method: "
             print e

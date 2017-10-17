@@ -1,4 +1,4 @@
-#/usr/bin/env python
+# /usr/bin/env python
 '''
 Created on 07-Jan-2013
 Copyright 2013 Open Networking Foundation (ONF)
@@ -28,45 +28,44 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 import xmldict
 import re
 
-class xmlparser :
+class xmlparser:
 
-    def __init__(self) :
+    def __init__( self ):
         self.default = ''
 
-    def parse(self,fileName) :
+    def parse( self, fileName ):
         '''
          This will parse the params or topo or cfg file and return content in the file as Dictionary
         '''
         self.fileName = fileName
-        matchFileName = re.match(r'(.*)\.(params|topo|cfg)', self.fileName, re.M | re.I)
+        matchFileName = re.match( r'(.*)\.(params|topo|cfg)', self.fileName, re.M | re.I )
         if matchFileName:
-            xml = open(fileName).read()
-            try :
-                parsedInfo = xmldict.xml_to_dict(xml)
+            xml = open( fileName ).read()
+            try:
+                parsedInfo = xmldict.xml_to_dict( xml )
                 return parsedInfo
             except StandardError as e:
                 print "Error parsing file " + fileName + ": " + e.message
-        else :
+        else:
             print "File name is not correct"
 
-    def parseParams(self,paramsPath):
+    def parseParams( self, paramsPath ):
         '''
          It will take the params file path and will return the params dictionary
         '''
-        paramsPath = re.sub("\.","/",paramsPath)
-        paramsPath = re.sub("tests|examples","",paramsPath)
-        params = self.parse(main.tests_path+paramsPath+".params")
-        paramsAsString = str(params)
-        return eval(paramsAsString)
+        paramsPath = re.sub( "\.", "/", paramsPath )
+        paramsPath = re.sub( "tests|examples", "", paramsPath )
+        params = self.parse( main.tests_path + paramsPath + ".params" )
+        paramsAsString = str( params )
+        return eval( paramsAsString )
 
-    def parseTopology(self,topologyPath):
+    def parseTopology( self, topologyPath ):
         '''
           It will take topology file path and will return topology dictionary
         '''
-        topologyPath = re.sub("\.","/",topologyPath)
-        topologyPath = re.sub("tests|examples","",topologyPath)
-        #topology = self.parse(main.tests_path+"/"+topologyPath+".topo")
-        topology = self.parse(main.tests_path+topologyPath+".topo")
-        topoAsString = str(topology)
-        return eval(topoAsString)
+        topologyPath = re.sub( "\.", "/", topologyPath )
+        topologyPath = re.sub( "tests|examples", "", topologyPath )
+        topology = self.parse( main.tests_path + topologyPath + ".topo" )
+        topoAsString = str( topology )
+        return eval( topoAsString )
 

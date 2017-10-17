@@ -120,7 +120,7 @@ print( "Creating main plot." )
 #        - x: x-axis values (usually iterative, but it will become build # later)
 #        - y: y-axis values (usually tests)
 #        - color: the category of the colored lines (usually status of test)
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 26 ) )   # set the default text size of the graph.
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = Tests, color = Status ) )
 
 print( "Formatting main plot." )
@@ -129,18 +129,21 @@ failedColor <- geom_ribbon( aes( ymin = 0, ymax = dataFrame$num_failed ), fill =
 passedColor <- geom_ribbon( aes( ymin = 0, ymax = dataFrame$num_passed ), fill = "green", linetype = 0, alpha = 0.05 )
 plannedColor <- geom_ribbon( aes( ymin = 0, ymax = dataFrame$num_planned ), fill = "blue", linetype = 0, alpha = 0.01 )
 
+colors <- scale_color_manual( values=c( "#E80000", "#00B208", "#00A5FF") )
+
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$Build )
 yScaleConfig <- scale_y_continuous( breaks = seq( 0, max( dataFrame$Tests ), by = ceiling( max( dataFrame$Tests ) / 10 ) ) )
 
 xLabel <- xlab( "Build Number" )
 yLabel <- ylab( "Test Cases" )
 fillLabel <- labs( fill="Type" )
-legendLabels <- scale_colour_discrete( labels = c( "Failed", "Passed", "Planned" ) )
+legendLabels <- scale_colour_discrete( labels = c( "Failed Cases", "Passed Cases", "Planned Cases" ) )
 centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( plot.title = element_text( size = 28, face='bold' ), axis.text.x = element_text( angle = 45, size = 10 ) )
+theme <- theme( plot.title = element_text( size = 32, face='bold' ), axis.text.x = element_text( angle = 0, size = 14 ), legend.position="bottom", legend.text=element_text( size=18, face="bold" ), legend.title = element_blank()  )
+
 
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + plannedColor + passedColor + failedColor + xScaleConfig + yScaleConfig + xLabel + yLabel + fillLabel + legendLabels + centerTitle + theme
+fundamentalGraphData <- mainPlot + plannedColor + passedColor + failedColor + xScaleConfig + yScaleConfig + xLabel + yLabel + fillLabel + colors + legendLabels + centerTitle + theme
 
 print( "Generating line graph." )
 
@@ -152,5 +155,5 @@ result <- fundamentalGraphData + lineGraphFormat + pointFormat + title
 
 # Save graph to file
 print( paste( "Saving result graph to", outputFile ) )
-ggsave( outputFile, width = 10, height = 6, dpi = 200 )
+ggsave( outputFile, width = 15, height = 10, dpi = 200 )
 print( paste( "Successfully wrote result graph out to", outputFile ) )

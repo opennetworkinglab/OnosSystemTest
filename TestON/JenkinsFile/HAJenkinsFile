@@ -184,7 +184,8 @@ def HATest( testName, toBeRun, prop ) {
         }catch (all) {
             catchError{
                 if( prop["manualRun"] == "false" )
-                    slackSend(color:"FF0000", message: "[" + prop["TestONBranch"] + "]" + testName + " : Failed!\nURL:${BUILD_URL}")
+                    slackSend(color:"FF0000", message: "[" + prop["ONOSBranch"] + "]" + testName + " : Failed!\n"
+                    + "https://onos-jenkins.onlab.us/blue/organizations/jenkins/${env.JOB_NAME}/detail/${env.JOB_NAME}/${env.BUILD_NUMBER}/pipeline" )
                 Failed
             }
         }

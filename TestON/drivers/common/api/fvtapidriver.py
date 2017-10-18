@@ -188,4 +188,3 @@ class FvtApiDriver( API, templatetest.TemplateTest ):
         #    self.logfile_handler.close()
 
         return main.TRUE
-

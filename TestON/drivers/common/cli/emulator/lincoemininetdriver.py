@@ -32,6 +32,7 @@ from drivers.common.cli.emulator.mininetclidriver import MininetCliDriver
 
 
 class LincOEMininetDriver( MininetCliDriver ):
+
     def runOpticalMnScript( self, onosDirectory = 'onos', ctrllerIP = None, topology = 'opticalTest' ):
         import time
         import types
@@ -49,14 +50,14 @@ class LincOEMininetDriver( MininetCliDriver ):
                 $OC1 can be accepted
         """
         try:
-            if ctrllerIP == None:
+            if ctrllerIP is None:
                 main.log.error( "You need to specify the IP" )
                 return main.FALSE
             else:
                 controller = ''
                 if isinstance( ctrllerIP, types.ListType ):
                     for i in xrange( len( ctrllerIP ) ):
-                        controller += ctrllerIP[i] + ' '
+                        controller += ctrllerIP[ i ] + ' '
                     main.log.info( "Mininet topology is being loaded with " +
                                    "controllers: " + controller )
                 elif isinstance( ctrllerIP, types.StringType ):
@@ -70,12 +71,12 @@ class LincOEMininetDriver( MininetCliDriver ):
                 cmd = "sudo -E python {0} {1}".format( topoFile, controller )
                 main.log.info( self.name + ": cmd = " + cmd )
                 self.handle.sendline( cmd )
-                lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ],timeout=120 )
+                lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ], timeout=120 )
                 if lincStart == 1:
                     self.handle.sendline( "\x03" )
                     self.handle.sendline( "sudo mn -c" )
                     self.handle.sendline( cmd )
-                    lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ],timeout=120 )
+                    lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ], timeout=120 )
                 if lincStart == 1:
                     main.log.error( "OpticalTest.py failed to start." )
                     return main.FALSE
@@ -85,7 +86,7 @@ class LincOEMininetDriver( MininetCliDriver ):
             main.log.error( self.name + ":     " + self.handle.before )
             return main.FALSE
         except Exception:
-            main.log.exception(self.name + ": Uncaught exception!")
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
             return main.FALSE
 
@@ -120,7 +121,7 @@ class LincOEMininetDriver( MininetCliDriver ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except Exception:
-            main.log.exception(self.name + ": Uncaught exception!")
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
         main.log.info( self.name + ": Ping Response: " + response )
         if re.search( ',\s0\%\spacket\sloss', response ):

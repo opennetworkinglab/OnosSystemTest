@@ -44,4 +44,3 @@ class API( Component ):
         super( API, self ).connect()
 
         return main.TRUE
-

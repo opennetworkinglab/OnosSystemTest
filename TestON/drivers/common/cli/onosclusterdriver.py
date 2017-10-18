@@ -34,10 +34,12 @@ from drivers.common.clidriver import CLI
 
 # FIXME: Move this to it's own file?
 class Controller():
+
     def __str__( self ):
         return self.name
+
     def __repr__( self ):
-        #TODO use repr() for components?
+        # TODO use repr() for components?
         return "%s<IP=%s, CLI=%s, REST=%s, Bench=%s >" % ( self.name,
                                                            self.ipAddress,
                                                            self.CLI,
@@ -77,10 +79,8 @@ class Controller():
             return f
         raise AttributeError( "Could not find the attribute %s in %r or it's component handles" % ( name, self ) )
 
-
-
     def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None, userName=None, server=None ):
-        #TODO: validate these arguments
+        # TODO: validate these arguments
         self.name = str( name )
         self.ipAddress = ipAddress
         self.CLI = CLI
@@ -131,7 +131,7 @@ class OnosClusterDriver( CLI ):
                 elif key == "cluster_name":
                     prefix = self.options[ key ]
 
-            self.home = self.checkOptions(self.home, "~/onos")
+            self.home = self.checkOptions(self.home, "~/onos" )
             self.karafUser = self.checkOptions(self.karafUser, self.user_name)
             self.karafPass = self.checkOptions(self.karafPass, self.pwd )
             prefix = self.checkOptions( prefix, "ONOS" )
@@ -366,7 +366,6 @@ class OnosClusterDriver( CLI ):
             main.log.error( name + " component already exists!" )
             main.cleanAndExit()
 
-
     def setServerOptions( self, name, ipAddress ):
         """
         Parse the cluster options to create an ONOS "server" component with the given name
@@ -382,7 +381,6 @@ class OnosClusterDriver( CLI ):
         main.componentDictionary[name]['home'] = self.checkOptions( home, None )
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
         main.log.debug( main.componentDictionary[name] )
-
 
     def createServerComponent( self, name, ipAddress ):
         """
@@ -413,7 +411,6 @@ class OnosClusterDriver( CLI ):
             # namespace is not clear!
             main.log.error( name + " component already exists!" )
             main.cleanAndExit()
-
 
     def createComponents( self, prefix='', createServer=True ):
         """

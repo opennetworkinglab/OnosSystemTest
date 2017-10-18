@@ -51,11 +51,11 @@ class OvsdbDriver( CLI ):
     def connect( self, **connectargs ):
         try:
             for key in connectargs:
-                vars( self)[ key ] = connectargs[ key ]
+                vars( self )[ key ] = connectargs[ key ]
 
             self.name = self.options[ 'name' ]
-            if os.getenv( str( self.ip_address ) ) != None:
-                self.ip_address = os.getenv(str ( self.ip_address ) )
+            if os.getenv( str( self.ip_address ) ) is not None:
+                self.ip_address = os.getenv( str( self.ip_address ) )
             else:
                 main.log.info( self.name + ": Trying to connect to " +
                                self.ip_address )
@@ -63,7 +63,7 @@ class OvsdbDriver( CLI ):
                     user_name=self.user_name,
                     ip_address=self.ip_address,
                     port=self.port,
-                    pwd=self.pwd)
+                    pwd=self.pwd )
 
             if self.handle:
                 main.log.info( "Connection successful to the ovsdb node " +
@@ -91,7 +91,7 @@ class OvsdbDriver( CLI ):
         return response
 
     def setManager( self, ip, port, delaytime="5" ):
-        command= "sudo ovs-vsctl set-manager tcp:" + str( ip ) + ":" + str( port )
+        command = "sudo ovs-vsctl set-manager tcp:" + str( ip ) + ":" + str( port )
         try:
             handle = self.execute(
                 cmd=command,
@@ -102,7 +102,7 @@ class OvsdbDriver( CLI ):
                 return main.FALSE
             else:
                 main.log.info( "Ovsdb manager " + str( ip ) + " set" )
-                #delay time  for ovsdb connection create
+                # delay time  for ovsdb connection create
                 main.log.info( "Wait " + str( delaytime ) + " seconds for ovsdb connection create" )
                 time.sleep( int( delaytime ) )
                 return main.TRUE
@@ -112,7 +112,7 @@ class OvsdbDriver( CLI ):
             main.cleanAndExit()
 
     def delManager( self, delaytime="5" ):
-        command= "sudo ovs-vsctl del-manager"
+        command = "sudo ovs-vsctl del-manager"
         try:
             handle = self.execute(
                 cmd=command,
@@ -123,7 +123,7 @@ class OvsdbDriver( CLI ):
                 return main.FALSE
             else:
                 main.log.info( "Ovsdb manager delete" )
-                #delay time  for ovsdb connection delete
+                # delay time  for ovsdb connection delete
                 main.log.info( "Wait " + str( delaytime ) + " seconds for ovsdb connection delete" )
                 time.sleep( int( delaytime ) )
                 return main.TRUE
@@ -133,7 +133,7 @@ class OvsdbDriver( CLI ):
             main.cleanAndExit()
 
     def getManager( self ):
-        command= "sudo ovs-vsctl get-manager"
+        command = "sudo ovs-vsctl get-manager"
         try:
             response = self.execute(
                 cmd=command,
@@ -152,7 +152,7 @@ class OvsdbDriver( CLI ):
             The output of the command from the linux
             or main.FALSE on timeout
         """
-        command= "sudo ovs-vsctl list-br"
+        command = "sudo ovs-vsctl list-br"
         try:
             response = self.execute(
                 cmd=command,
@@ -174,7 +174,7 @@ class OvsdbDriver( CLI ):
             The output of the command from the linux
             or main.FALSE on timeout
         """
-        command= "sudo ovs-vsctl list-ports " + str( sw )
+        command = "sudo ovs-vsctl list-ports " + str( sw )
         try:
             response = self.execute(
                 cmd=command,
@@ -199,7 +199,7 @@ class OvsdbDriver( CLI ):
         try:
             response = self.execute(
                 cmd=command,
-                timeout=10)
+                timeout=10 )
             if response:
                 return response
             else:
@@ -220,7 +220,7 @@ class OvsdbDriver( CLI ):
         try:
             response = self.execute(
                 cmd=command,
-                timeout=10)
+                timeout=10 )
             if response:
                 return response
             else:
@@ -251,8 +251,8 @@ class OvsdbDriver( CLI ):
             else:
                 return main.FALSE
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
 
     def createHost( self, hostname ):
@@ -260,7 +260,7 @@ class OvsdbDriver( CLI ):
         try:
             handle = self.execute(
                 cmd=command,
-                timeout=10)
+                timeout=10 )
             if re.search( "Error", handle ):
                 main.log.error( "Error in create host" + str( hostname ) )
                 main.log.error( handle )
@@ -269,20 +269,20 @@ class OvsdbDriver( CLI ):
                 main.log.info( "Create " + str( hostname ) + " sucess" )
                 return main.TRUE
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
 
-    def createHostport(self, hostname="host1", hostport="host1-eth0", ovsport="port1", hostportmac="000000000001" ):
-        command = "sudo ip link add " + str(hostport) +" type veth peer name " + str(ovsport)
-        command += ";" + "sudo ip link set " + str(hostport) + " up"
-        command += ";" + "sudo ip link set " + str(ovsport) + " up"
-        command += ";" +" sudo ifconfig " + str(hostport) + " hw ether " + str(hostportmac)
-        command += ";" +" sudo ip link set " + str(hostport) + " netns " + str(hostname)
+    def createHostport( self, hostname="host1", hostport="host1-eth0", ovsport="port1", hostportmac="000000000001" ):
+        command = "sudo ip link add " + str( hostport ) + " type veth peer name " + str( ovsport )
+        command += ";" + "sudo ip link set " + str( hostport ) + " up"
+        command += ";" + "sudo ip link set " + str( ovsport ) + " up"
+        command += ";" + " sudo ifconfig " + str( hostport ) + " hw ether " + str( hostportmac )
+        command += ";" + " sudo ip link set " + str( hostport ) + " netns " + str( hostname )
         try:
             handle = self.execute(
                 cmd=command,
-                timeout=10)
+                timeout=10 )
             if re.search( "Error", handle ):
                 main.log.error( "Error in create host port " + str( hostport ) + " on " + str( hostname ) )
                 main.log.error( handle )
@@ -291,40 +291,40 @@ class OvsdbDriver( CLI ):
                 main.log.info( "Create host port " + str( hostport ) + " on " + str( hostname ) + " sucess" )
                 return main.TRUE
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
 
-    def addPortToOvs(self, ifaceId, attachedMac, vmuuid, port="port1", ovsname="br-int" ):
-        command = "sudo ovs-vsctl add-port " + str(ovsname) +" " + str(port)
+    def addPortToOvs( self, ifaceId, attachedMac, vmuuid, port="port1", ovsname="br-int" ):
+        command = "sudo ovs-vsctl add-port " + str( ovsname ) + " " + str( port )
         if ifaceId:
-            command += " -- set Interface " + str(port) + " external-ids:iface-id=" + str(ifaceId) + " external-ids:iface-status=active"
+            command += " -- set Interface " + str( port ) + " external-ids:iface-id=" + str( ifaceId ) + " external-ids:iface-status=active"
         if attachedMac:
-            command += " external-ids:attached-mac=" + str(attachedMac)
+            command += " external-ids:attached-mac=" + str( attachedMac )
         if vmuuid:
-            command += " external-ids:vm-uuid=" + str(vmuuid)
+            command += " external-ids:vm-uuid=" + str( vmuuid )
         try:
             handle = self.execute(
                 cmd=command,
-                timeout=10)
+                timeout=10 )
             if re.search( "Error", handle ):
-                main.log.error( "Error in add port " + str(port) + " to ovs " + str( ovsname ) )
+                main.log.error( "Error in add port " + str( port ) + " to ovs " + str( ovsname ) )
                 main.log.error( handle )
                 return main.FALSE
             else:
-                main.log.info( "Add port " + str(port) + " to ovs " + str( ovsname )  + " sucess" )
+                main.log.info( "Add port " + str( port ) + " to ovs " + str( ovsname ) + " sucess" )
                 return main.TRUE
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
 
-    def setHostportIp(self, ip, hostname="host1", hostport1="host1-eth0" ):
-        command = "sudo ip netns exec " + str(hostname) +" ifconfig " + str(hostport1) + " " + str(ip)
+    def setHostportIp( self, ip, hostname="host1", hostport1="host1-eth0" ):
+        command = "sudo ip netns exec " + str( hostname ) + " ifconfig " + str( hostport1 ) + " " + str( ip )
         try:
             handle = self.execute(
                 cmd=command,
-                timeout=10)
+                timeout=10 )
             if re.search( "Error", handle ):
                 main.log.error( "Error in set host ip for " + str( hostport1 ) + " on host " + str( hostname ) )
                 main.log.error( handle )
@@ -333,32 +333,32 @@ class OvsdbDriver( CLI ):
                 main.log.info( "Set host ip for " + str( hostport1 ) + " on host " + str( hostname ) + " sucess" )
                 return main.TRUE
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
 
-    def hostPing(self, src, target, hostname="host1" ):
+    def hostPing( self, src, target, hostname="host1" ):
         if src:
-            command = "sudo ip netns exec " + str( hostname ) +" ping -c 1 -S " +\
-             str( src ) + " " + str( target )
+            command = "sudo ip netns exec " + str( hostname ) + " ping -c 1 -S " +\
+                str( src ) + " " + str( target )
         else:
-            command = "sudo ip netns exec " + str( hostname ) +" ping -c 1 " + str( target )
+            command = "sudo ip netns exec " + str( hostname ) + " ping -c 1 " + str( target )
         try:
-            for i in range(1,5):
+            for i in range( 1, 5 ):
                 handle = self.execute(
                     cmd=command,
-                    timeout=10)
-                if re.search(',\s0\%\spacket\sloss', handle):
-                    main.log.info(self.name + ": no packets lost, host is reachable")
+                    timeout=10 )
+                if re.search( ',\s0\%\spacket\sloss', handle ):
+                    main.log.info( self.name + ": no packets lost, host is reachable" )
                     return main.TRUE
                     break
-                time.sleep(5)
+                time.sleep( 5 )
             else:
-                main.log.info(self.name + ": packets lost, host is unreachable")
+                main.log.info( self.name + ": packets lost, host is unreachable" )
                 return main.FALSE
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
 
     def delBr( self, sw ):
@@ -368,7 +368,7 @@ class OvsdbDriver( CLI ):
         Return:
             Delete sucess return main.TRUE or main.FALSE on delete failed
         """
-        command= "sudo ovs-vsctl del-br " + str( sw )
+        command = "sudo ovs-vsctl del-br " + str( sw )
         try:
             response = self.execute(
                 cmd=command,
@@ -389,7 +389,7 @@ class OvsdbDriver( CLI ):
         Return:
             Delete sucess return main.TRUE or main.FALSE on delete failed
         """
-        command= "sudo ip netns delete " + str( hostname )
+        command = "sudo ip netns delete " + str( hostname )
         try:
             response = self.execute(
                 cmd=command,

@@ -38,9 +38,9 @@ class DPCliDriver( CLI ):
 
         self.name = self.options[ 'name' ]
         self.handle = super( DPCliDriver, self ).connect( user_name=self.user_name,
-                        ip_address=self.ip_address,
-                        port=self.port,
-                        pwd=self.pwd )
+                                                          ip_address=self.ip_address,
+                                                          port=self.port,
+                                                          pwd=self.pwd )
 
         if self.handle:
             return self.handle
@@ -148,7 +148,7 @@ class DPCliDriver( CLI ):
         self.handle.sendline( "sudo fping -S " + str( netsrc ) + "." +
                               str( netstrt ) + ".1.1 -f /tmp/ip_table" +
                               str( netdst ) + ".txt" )
-        while 1:
+        while True:
             i = self.handle.expect( [
                                     "reachable",
                                     "unreachable",
@@ -210,4 +210,3 @@ class DPCliDriver( CLI ):
             main.log.exception( "Connection failed to the host" )
             response = main.FALSE
         return response
-

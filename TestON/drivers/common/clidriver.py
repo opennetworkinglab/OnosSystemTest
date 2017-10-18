@@ -10,7 +10,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    ( at your option ) any later version.
+    (at your option) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -34,10 +34,10 @@ class CLI( Component ):
     def __init__( self ):
         super( CLI, self ).__init__()
 
-    def checkPrompt(self):
+    def checkPrompt( self ):
         for key in self.options:
-            if key == "prompt" and self.options['prompt'] is not None:
-                self.prompt = self.options['prompt']
+            if key == "prompt" and self.options[ 'prompt' ] is not None:
+                self.prompt = self.options[ 'prompt' ]
                 break
 
     def connect( self, **connectargs ):
@@ -100,7 +100,7 @@ class CLI( Component ):
                 else:
                     main.log.info( "Server asked for password, but none was "
                                     "given in the .topo file. Trying "
-                                    "no password.")
+                                    "no password." )
                     self.pwd = ""
                 self.handle.sendline( self.pwd )
                 j = self.handle.expect( [
@@ -181,8 +181,8 @@ class CLI( Component ):
         if index == 0:
             self.LASTRSP = self.LASTRSP + \
                 self.handle.before + self.handle.after
-            main.log.info( "Executed :" + str(cmd ) +
-                           " \t\t Expected Prompt '" + str( expectPrompt) +
+            main.log.info( "Executed :" + str( cmd ) +
+                           " \t\t Expected Prompt '" + str( expectPrompt ) +
                            "' Found" )
         elif index == 1:
             self.LASTRSP = self.LASTRSP + self.handle.before
@@ -397,7 +397,7 @@ class CLI( Component ):
                 else:
                     main.log.info( "Server asked for password, but none was "
                                     "given in the .topo file. Trying "
-                                    "no password.")
+                                    "no password." )
                     pwd = ""
                 handle.sendline( pwd )
                 j = handle.expect( [ self.prompt,
@@ -479,16 +479,16 @@ class CLI( Component ):
             assert "cannot access" not in output
             assert "command not found" not in output
             main.log.debug( output )
-            lines = [ line for line in output.split('\r\n') ]
+            lines = [ line for line in output.split( '\r\n' ) ]
             retValue = True
             if ignoreRoot:
                 lastIndex = -2
             else:
                 lastIndex = -1
-            for line in lines[1:lastIndex]:
+            for line in lines[ 1:lastIndex ]:
                 parsed = line.split()
-                sizeMatch = parsed[0]
-                folder = parsed[1]
+                sizeMatch = parsed[ 0 ]
+                folder = parsed[ 1 ]
                 match = re.search( sizeRe, sizeMatch )
                 num = match.group( 'number' )
                 unitMatch = match.group( 'unit' )

@@ -199,8 +199,8 @@ class ScapyCliDriver( Emulator ):
             getattr( main, name )
         except AttributeError:
             # namespace is clear, creating component
-            main.componentDictionary[name] = main.componentDictionary[self.name].copy()
-            main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+            main.componentDictionary[ name ] = main.componentDictionary[ self.name ].copy()
+            main.componentDictionary[ name ][ 'connect_order' ] = str( int( main.componentDictionary[ name ][ 'connect_order' ] ) + 1 )
             main.componentInit( name )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
@@ -228,7 +228,7 @@ class ScapyCliDriver( Emulator ):
             # Delete component
             delattr( main, name )
             # Delete component from ComponentDictionary
-            del( main.componentDictionary[name] )
+            del( main.componentDictionary[ name ] )
             return main.TRUE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
@@ -267,12 +267,12 @@ class ScapyCliDriver( Emulator ):
             mplsPath - The path where the MPLS class is located
             NOTE: This can be a relative path from the user's home dir
         """
-        mplsLines = ['import imp',
-            'imp.load_source( "mplsClass", "{}mplsClass.py" )'.format(mplsPath),
-            'from mplsClass import MPLS',
-            'bind_layers(Ether, MPLS, type = 0x8847)',
-            'bind_layers(MPLS, MPLS, bottom_of_label_stack = 0)',
-            'bind_layers(MPLS, IP)']
+        mplsLines = [ 'import imp',
+                      'imp.load_source( "mplsClass", "{}mplsClass.py" )'.format( mplsPath ),
+                      'from mplsClass import MPLS',
+                      'bind_layers(Ether, MPLS, type = 0x8847)',
+                      'bind_layers(MPLS, MPLS, bottom_of_label_stack = 0)',
+                      'bind_layers(MPLS, IP)' ]
 
         try:
             self.handle.sendline( "scapy" )
@@ -649,7 +649,7 @@ class ScapyCliDriver( Emulator ):
                 self.handle.sendline( "packet = ether/ipv6/sctp" )
             else:
                 main.log.error( "Unrecognized option for ipVersion, given " +
-                               repr( ipVersion ) )
+                                repr( ipVersion ) )
                 return main.FALSE
             self.handle.expect( self.scapyPrompt )
             if "Traceback" in self.handle.before:
@@ -777,7 +777,7 @@ class ScapyCliDriver( Emulator ):
                 self.handle.sendline( "packet = ether/ipv6/icmp6" )
             else:
                 main.log.error( "Unrecognized option for ipVersion, given " +
-                               repr( ipVersion ) )
+                                repr( ipVersion ) )
                 return main.FALSE
             self.handle.expect( self.scapyPrompt )
             if "Traceback" in self.handle.before:
@@ -991,7 +991,7 @@ class ScapyCliDriver( Emulator ):
             match = re.search( pattern, self.handle.before )
             if match:
                 # NOTE: The command will return 0.0.0.0 if the iface doesn't exist
-                if IPv6 != True:
+                if IPv6 is not True:
                     if match.group() == '0.0.0.0':
                         main.log.warn( 'iface {0} has no IPv4 address'.format( ifaceName ) )
                 return match.group()
@@ -1006,14 +1006,14 @@ class ScapyCliDriver( Emulator ):
                         if ifaceName == "lo":
                             continue
                         ip = getIPofInterface( ifaceName )
-                        if ip != None:
-                            newip =ip
+                        if ip is not None:
+                            newip = ip
                             tmp = newip.split( "\\x" )
                             ip = ""
                             counter = 0
                             for i in tmp:
                                 if i != "":
-                                    counter = counter + 1;
+                                    counter = counter + 1
                                     if counter % 2 == 0 and counter < 16:
                                         ip = ip + i + ":"
                                     else:
@@ -1049,7 +1049,7 @@ class ScapyCliDriver( Emulator ):
             self.handle.sendline( 'get_if_list()' )
             self.handle.expect( self.scapyPrompt )
             ifList = self.handle.before.split( '\r\n' )
-            ifList = ifList[ 1 ].replace( "'","" )[ 1:-1 ].split( ', ' )
+            ifList = ifList[ 1 ].replace( "'", "" )[ 1:-1 ].split( ', ' )
             return ifList
 
         except pexpect.TIMEOUT:

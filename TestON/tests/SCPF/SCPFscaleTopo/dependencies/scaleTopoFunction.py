@@ -446,7 +446,7 @@ def checkingONOSStablility( main ):
     while compareRetry < 3 and main.postResult:
         for controller in main.Cluster.active():
             if controller.CLI.summary() is None:
-                main.info.error( "Something happened to ONOS. Skip the rest of the steps" )
+                main.log.error( "Something happened to ONOS. Skip the rest of the steps" )
                 main.postResult = False
                 break
             time.sleep( 5 )

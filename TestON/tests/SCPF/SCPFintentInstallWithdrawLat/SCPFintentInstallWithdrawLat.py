@@ -34,6 +34,8 @@ class SCPFintentInstallWithdrawLat:
         self.default = ''
 
     def CASE0( self, main ):
+        import imp
+        import os
         """
         - GIT
         - BUILDING ONOS
@@ -69,9 +71,12 @@ class SCPFintentInstallWithdrawLat:
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
             main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.verifyAttempts = int( main.params[ 'ATTEMPTS' ][ 'verify' ] )
+            main.cfgRetry = int( main.params[ 'ATTEMPTS' ][ 'cfg' ] )
+            main.maxInvalidRun = int( main.params[ 'ATTEMPTS' ][ 'maxInvalidRun' ] )
             main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
             main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
             main.intentsList = ( main.params[ 'TEST' ][ 'intents' ] ).split( "," )
+            main.deviceCount = int( main.params[ 'TEST' ][ 'deviceCount' ] )
             main.ingress = main.params[ 'TEST' ][ 'ingress' ]
             main.egress = main.params[ 'TEST' ][ 'egress' ]
             main.debug = main.params[ 'TEST' ][ 'debug' ]
@@ -92,6 +97,9 @@ class SCPFintentInstallWithdrawLat:
             main.log.info( "Create Database file " + main.dbFileName )
             resultsDB = open( main.dbFileName, "w+" )
             resultsDB.close()
+            file1 = main.params[ "DEPENDENCY" ][ "FILE1" ]
+            main.dependencyPath = os.path.dirname( os.getcwd() ) + main.params[ "DEPENDENCY" ][ "PATH" ]
+            main.intentFuncs = imp.load_source( file1, main.dependencyPath + file1 + ".py" )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
@@ -104,149 +112,191 @@ class SCPFintentInstallWithdrawLat:
         main.maxNumBatch = 0
         main.testSetUp.ONOSSetUp( main.MN1Ip, main.Cluster, True,
                                   cellName=main.cellName, killRemoveMax=False )
+        configRetry = 0
+        main.cfgCheck = False
+        while configRetry < main.cfgRetry:
+            # configure apps
+            stepResult = main.TRUE
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                                              "deviceCount", value=main.deviceCount )
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                                              "topoShape", value="linear" )
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                                              "enabled", value="true" )
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.setCfg( main.intentManagerCfg,
+                                                              "skipReleaseResourcesOnWithdrawal",
+                                                              value="true" )
+            if main.flowObj:
+                stepResult = stepResult and \
+                             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                                                  "useFlowObjectives", value="true" )
+                stepResult = stepResult and \
+                             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                                                  "defaultFlowObjectiveCompiler",
+                                                                  value=main.linkCollectionIntentCfg )
+            time.sleep( main.startUpSleep )
 
-        # configure apps
-        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
-                                             "deviceCount", value=7 )
-        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
-                                             "topoShape", value="linear" )
-        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
-                                             "enabled", value="true" )
-        main.Cluster.active( 0 ).CLI.setCfg( main.intentManagerCfg,
-                                             "skipReleaseResourcesOnWithdrawal",
-                                             value="true" )
-        if main.flowObj:
-            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                                 "useFlowObjectives", value="true" )
-            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                                 "defaultFlowObjectiveCompiler",
-                                                 value=main.linkCollectionIntentCfg )
-        time.sleep( main.startUpSleep )
+            # balanceMasters
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.balanceMasters()
+            if stepResult:
+                main.cfgCheck = True
+                break
+            configRetry += 1
+            time.sleep( main.verifySleep )
 
-        # balanceMasters
-        main.Cluster.active( 0 ).CLI.balanceMasters()
         time.sleep( main.startUpSleep )
+        if not main.cfgCheck:
+            main.log.error( "Setting configuration to the ONOS failed. Skip the rest of the steps" )
 
     def CASE2( self, main ):
         import time
         import numpy
         import json
-        print( main.intentsList )
-        for batchSize in main.intentsList:
-            main.log.report( "Intent Batch size: {}".format( batchSize ) )
-            main.installLatList = []
-            main.withdrawLatList = []
-            validrun = 0
-            invalidrun = 0
-            # we use two variables to control the iteration
-            while validrun <= main.warmUp + main.sampleSize and invalidrun < 20:
-                if validrun >= main.warmUp:
-                    main.log.info( "================================================" )
-                    main.log.info( "Starting test iteration " + str( validrun - main.warmUp ) )
-                    main.log.info( "Total test iteration: " + str( invalidrun + validrun ) )
-                    main.log.info( "================================================" )
-                else:
-                    main.log.info( "====================Warm Up=====================" )
+        testResult = main.TRUE
+        main.case( "Installing/Withdrawing intents start" )
+        main.step( "Checking starts" )
+        if main.cfgCheck:
+            print( main.intentsList )
+            for batchSize in main.intentsList:
+                main.log.report( "Intent Batch size: {}".format( batchSize ) )
+                main.batchSize = batchSize
+                main.installLatList = []
+                main.withdrawLatList = []
+                main.validrun = 0
+                main.invalidrun = 0
+                # we use two variables to control the iteration
+                while main.validrun <= main.warmUp + main.sampleSize and main.invalidrun <= main.maxInvalidRun:
+                    if main.validrun >= main.warmUp:
+                        main.log.info( "================================================" )
+                        main.log.info( "Starting test iteration " + str( main.validrun - main.warmUp ) )
+                        main.log.info( "Total test iteration: " + str( main.invalidrun + main.validrun ) )
+                        main.log.info( "================================================" )
+                    else:
+                        main.log.info( "====================Warm Up=====================" )
 
-                # push intents
-                installResult = main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
-                                                                              main.egress,
-                                                                              batchSize,
-                                                                              offset=1,
-                                                                              options="-i",
-                                                                              timeout=main.timeout,
-                                                                              getResponse=True )
-                if isinstance( installResult, str ):
-                    if "Failure" in installResult:
-                        main.log.error( "Install Intents failure, ignore this iteration." )
-                        if validrun < main.warmUp:
-                            validrun += 1
-                            continue
-                        else:
-                            invalidrun += 1
-                            continue
+                    # push intents
+                    installResult = main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                                                  main.egress,
+                                                                                  batchSize,
+                                                                                  offset=1,
+                                                                                  options="-i",
+                                                                                  timeout=main.timeout,
+                                                                                  getResponse=True )
 
-                    try:
-                        latency = int( installResult.split()[ 5 ] )
-                        main.log.info( installResult )
-                    except:
-                        main.log.error( "Failed to get latency, ignore this iteration." )
-                        main.log.error( "Response from ONOS:" )
-                        print( installResult )
-                        if validrun < main.warmUp:
-                            validrun += 1
-                            continue
-                        else:
-                            invalidrun += 1
-                            continue
+                    time.sleep( 2 )
+                    main.intentFuncs.sanityCheck( main,
+                                                  ( main.deviceCount - 1 ) * 2,
+                                                  batchSize * main.deviceCount,
+                                                  main.batchSize )
+                    if not main.verify:
+                        main.log.warn( "Sanity check failed, skipping this iteration..." )
+                        continue
+                    if isinstance( installResult, str ):
+                        if "Failure" in installResult:
+                            main.log.error( "Install Intents failure, ignore this iteration." )
+                            if main.validrun < main.warmUp:
+                                main.validrun += 1
+                                continue
+                            else:
+                                main.invalidrun += 1
+                                continue
 
-                    if validrun >= main.warmUp:
-                        main.installLatList.append( latency )
-                else:
-                    invalidrun += 1
-                    continue
-                time.sleep( 2 )
-                # Withdraw Intents
-                withdrawResult = main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
-                                                                               main.egress,
-                                                                               batchSize,
-                                                                               offset=1,
-                                                                               options="-w",
-                                                                               timeout=main.timeout,
-                                                                               getResponse=True )
+                        try:
+                            latency = int( installResult.split()[ 5 ] )
+                            main.log.info( installResult )
+                        except:
+                            main.log.error( "Failed to get latency, ignore this iteration." )
+                            main.log.error( "Response from ONOS:" )
+                            print( installResult )
+                            if main.validrun < main.warmUp:
+                                main.validrun += 1
+                                continue
+                            else:
+                                main.invalidrun += 1
+                                continue
 
-                if isinstance( withdrawResult, str ):
-                    if "Failure" in withdrawResult:
-                        main.log.error( "withdraw Intents failure, ignore this iteration." )
-                        if validrun < main.warmUp:
-                            validrun += 1
-                            continue
-                        else:
-                            invalidrun += 1
-                            continue
+                        if main.validrun >= main.warmUp:
+                            main.installLatList.append( latency )
+                    else:
+                        main.invalidrun += 1
+                        continue
+                    # Withdraw Intents
+                    withdrawResult = main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                                                   main.egress,
+                                                                                   batchSize,
+                                                                                   offset=1,
+                                                                                   options="-w",
+                                                                                   timeout=main.timeout,
+                                                                                   getResponse=True )
+                    time.sleep( 5 )
+                    main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
+                    main.intentFuncs.sanityCheck( main, ( main.deviceCount - 1 ) * 2, 0, 0 )
+                    if not main.verify:
+                        main.log.warn( "Sanity check failed, skipping this iteration..." )
+                        continue
+                    if isinstance( withdrawResult, str ):
+                        if "Failure" in withdrawResult:
+                            main.log.error( "withdraw Intents failure, ignore this iteration." )
+                            if main.validrun < main.warmUp:
+                                main.validrun += 1
+                                continue
+                            else:
+                                main.invalidrun += 1
+                                continue
 
-                    try:
-                        latency = int( withdrawResult.split()[ 5 ] )
-                        main.log.info( withdrawResult )
-                    except:
-                        main.log.error( "Failed to get latency, ignore this iteration." )
-                        main.log.error( "Response from ONOS:" )
-                        print( withdrawResult )
-                        if validrun < main.warmUp:
-                            validrun += 1
-                            continue
-                        else:
-                            invalidrun += 1
-                            continue
+                        try:
+                            latency = int( withdrawResult.split()[ 5 ] )
+                            main.log.info( withdrawResult )
+                        except:
+                            main.log.error( "Failed to get latency, ignore this iteration." )
+                            main.log.error( "Response from ONOS:" )
+                            print( withdrawResult )
+                            if main.validrun < main.warmUp:
+                                main.validrun += 1
+                                continue
+                            else:
+                                main.invalidrun += 1
+                                continue
 
-                    if validrun >= main.warmUp:
-                        main.withdrawLatList.append( latency )
-                else:
-                    invalidrun += 1
-                    continue
-                time.sleep( 2 )
-                main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
-                validrun += 1
-            installave = numpy.average( main.installLatList )
-            installstd = numpy.std( main.installLatList )
-            withdrawave = numpy.average( main.withdrawLatList )
-            withdrawstd = numpy.std( main.withdrawLatList )
-            # log report
-            main.log.report( "----------------------------------------------------" )
-            main.log.report( "Scale: " + str( main.Cluster.numCtrls ) )
-            main.log.report( "Intent batch: " + str( batchSize ) )
-            main.log.report( "Install average: {}    std: {}".format( installave, installstd ) )
-            main.log.report( "Withdraw average: {}   std: {}".format( withdrawave, withdrawstd ) )
-            # write result to database file
-            if not ( numpy.isnan( installave ) or numpy.isnan( installstd ) or
-                     numpy.isnan( withdrawstd ) or numpy.isnan( withdrawave ) ):
-                databaseString = "'" + main.commit + "',"
-                databaseString += str( main.Cluster.numCtrls ) + ","
-                databaseString += str( batchSize ) + ","
-                databaseString += str( installave ) + ","
-                databaseString += str( installstd ) + ","
-                databaseString += str( withdrawave ) + ","
-                databaseString += str( withdrawstd ) + "\n"
-                resultsDB = open( main.dbFileName, "a" )
-                resultsDB.write( databaseString )
-                resultsDB.close()
+                        if main.validrun >= main.warmUp:
+                            main.withdrawLatList.append( latency )
+                    else:
+                        main.invalidrun += 1
+                        continue
+                    main.validrun += 1
+                result = ( main.TRUE if main.invalidrun <= main.maxInvalidRun else main.FALSE )
+                installave = numpy.average( main.installLatList ) if main.installLatList and result else 0
+                installstd = numpy.std( main.installLatList ) if main.installLatList and result else 0
+                withdrawave = numpy.average( main.withdrawLatList ) if main.withdrawLatList and result else 0
+                withdrawstd = numpy.std( main.withdrawLatList ) if main.withdrawLatList and result else 0
+                testResult = testResult and result
+                # log report
+                main.log.report( "----------------------------------------------------" )
+                main.log.report( "Scale: " + str( main.Cluster.numCtrls ) )
+                main.log.report( "Intent batch: " + str( batchSize ) )
+                main.log.report( "Install average: {}    std: {}".format( installave, installstd ) )
+                main.log.report( "Withdraw average: {}   std: {}".format( withdrawave, withdrawstd ) )
+                # write result to database file
+                if not ( numpy.isnan( installave ) or numpy.isnan( installstd ) or
+                         numpy.isnan( withdrawstd ) or numpy.isnan( withdrawave ) ):
+                    databaseString = "'" + main.commit + "',"
+                    databaseString += str( main.Cluster.numCtrls ) + ","
+                    databaseString += str( batchSize ) + ","
+                    databaseString += str( installave ) + ","
+                    databaseString += str( installstd ) + ","
+                    databaseString += str( withdrawave ) + ","
+                    databaseString += str( withdrawstd ) + "\n"
+                    resultsDB = open( main.dbFileName, "a" )
+                    resultsDB.write( databaseString )
+                    resultsDB.close()
+        else:
+            testResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass="Installing and withdrawing intents properly",
+                                 onfail="There was something wrong installing and withdrawing intents" )

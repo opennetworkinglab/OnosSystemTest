@@ -72,6 +72,7 @@ class SCPFintentRerouteLat:
             main.setMasterSleep = int( main.params[ 'SLEEP' ][ 'setmaster' ] )
             main.verifyAttempts = int( main.params[ 'ATTEMPTS' ][ 'verify' ] )
             main.maxInvalidRun = int( main.params[ 'ATTEMPTS' ][ 'maxInvalidRun' ] )
+            main.cfgRetry = int( main.params[ 'ATTEMPTS' ][ 'cfg' ] )
             main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
             main.intentManagerCfg = main.params[ 'CFG' ][ 'intentManager' ]
             main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
@@ -122,18 +123,44 @@ class SCPFintentRerouteLat:
         main.maxNumBatch = 0
         main.testSetUp.ONOSSetUp( main.MN1Ip, main.Cluster, True,
                                   cellName=main.cellName, killRemoveMax=False )
-        # configure apps
-        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg, "deviceCount", value=main.deviceCount )
-        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg, "topoShape", value="reroute" )
-        main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg, "enabled", value="true" )
-        main.Cluster.active( 0 ).CLI.setCfg( main.intentManagerCfg, "skipReleaseResourcesOnWithdrawal",
-                                             value="true" )
-        if main.flowObj:
-            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                                 "useFlowObjectives", value="true" )
-            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                                 "defaultFlowObjectiveCompiler",
-                                                 value=main.linkCollectionIntentCfg )
+        configRetry = 0
+        main.cfgCheck = False
+        while configRetry < main.cfgRetry:
+            # configure apps
+            stepResult = main.TRUE
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                                              "deviceCount",
+                                                              value=main.deviceCount )
+
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                                              "topoShape",
+                                                              value="reroute" )
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
+                                                              "enabled",
+                                                              value="true" )
+
+            stepResult = stepResult and \
+                         main.Cluster.active( 0 ).CLI.setCfg( main.intentManagerCfg,
+                                                              "skipReleaseResourcesOnWithdrawal",
+                                                              value="true" )
+            if main.flowObj:
+                stepResult = stepResult and \
+                             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                                                  "useFlowObjectives",
+                                                                  value="true" )
+                stepResult = stepResult and \
+                             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
+                                                                  "defaultFlowObjectiveCompiler",
+                                                                  value=main.linkCollectionIntentCfg )
+            if stepResult:
+                main.cfgCheck = True
+                break
+            configRetry += 1
+            time.sleep( main.verifySleep )
+
         time.sleep( main.startUpSleep )
         for ctrl in main.Cluster.active():
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.metrics.topology" )
@@ -145,6 +172,8 @@ class SCPFintentRerouteLat:
             main.Cluster.active( 0 ).CLI.deviceRole( main.end1[ 'name' ], main.Cluster.active( 0 ).ipAddress )
             main.Cluster.active( 0 ).CLI.deviceRole( main.end2[ 'name' ], main.Cluster.active( 0 ).ipAddress )
         time.sleep( main.setMasterSleep )
+        if not main.cfgCheck:
+            main.log.error( "Setting configuration to the ONOS failed. Skip the rest of the steps" )
 
     def CASE2( self, main ):
         import time
@@ -152,162 +181,174 @@ class SCPFintentRerouteLat:
         import datetime
         import json
         # from scipy import stats
+        testResult = main.TRUE
+        main.case( "Intent Reroute starts" )
+        main.step( "Checking intent reroute" )
+        if main.cfgCheck:
+            print( main.intentsList )
+            for batchSize in main.intentsList:
+                main.batchSize = batchSize
+                main.log.report( "Intent Batch size: " + str( batchSize ) + "\n      " )
+                firstLocalLatencies = []
+                lastLocalLatencies = []
+                firstGlobalLatencies = []
+                lastGlobalLatencies = []
+                main.startLine = {}
+                main.validRun = 0
+                main.invalidRun = 0
+                while main.validRun <= main.warmUp + main.sampleSize and main.invalidRun <= main.maxInvalidRun:
+                    if main.validRun >= main.warmUp:
+                        main.log.info( "================================================" )
+                        main.log.info( "Valid iteration: {} ".format( main.validRun - main.warmUp ) )
+                        main.log.info( "Total iteration: {}".format( main.validRun + main.invalidRun ) )
+                        main.log.info( "================================================" )
+                    else:
+                        main.log.info( "====================Warm Up=====================" )
 
-        print( main.intentsList )
-        for batchSize in main.intentsList:
-            main.batchSize = batchSize
-            main.log.report( "Intent Batch size: " + str( batchSize ) + "\n      " )
-            firstLocalLatencies = []
-            lastLocalLatencies = []
-            firstGlobalLatencies = []
-            lastGlobalLatencies = []
-            main.startLine = {}
-            main.validRun = 0
-            main.invalidRun = 0
-            while main.validRun <= main.warmUp + main.sampleSize and main.invalidRun <= main.maxInvalidRun:
-                if main.validRun >= main.warmUp:
-                    main.log.info( "================================================" )
-                    main.log.info( "Valid iteration: {} ".format( main.validRun - main.warmUp ) )
-                    main.log.info( "Total iteration: {}".format( main.validRun + main.invalidRun ) )
-                    main.log.info( "================================================" )
-                else:
-                    main.log.info( "====================Warm Up=====================" )
+                    # push intents
+                    main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                                  main.egress,
+                                                                  main.batchSize,
+                                                                  offset=1,
+                                                                  options="-i",
+                                                                  timeout=main.timeout )
 
-                # push intents
-                main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
-                                                              main.egress,
-                                                              main.batchSize,
-                                                              offset=1,
-                                                              options="-i",
-                                                              timeout=main.timeout )
+                    # check links, flows and intents
+                    main.intentRerouteLatFuncs.sanityCheck( main,
+                                                            main.deviceCount * 2,
+                                                            batchSize * ( main.deviceCount - 1 ),
+                                                            main.batchSize )
+                    if not main.verify:
+                        main.log.warn( "Sanity check failed, skipping this iteration..." )
+                        continue
 
-                # check links, flows and intents
-                main.intentRerouteLatFuncs.sanityCheck( main,
-                                                        main.deviceCount * 2,
-                                                        batchSize * ( main.deviceCount - 1 ),
-                                                        main.batchSize )
-                if not main.verify:
-                    main.log.warn( "Sanity check failed, skipping this iteration..." )
-                    continue
+                    # Insert one line in karaf.log before link down
+                    main.Cluster.command( "log",
+                                          args=[ "\'Scale: {}, Batch:{}, Iteration: {}\'".format(
+                                              main.Cluster.numCtrls, batchSize, main.validRun + main.invalidRun ) ],
+                                          returnBool=True, specificDriver=2 )
+                    # bring link down
+                    main.Cluster.active( 0 ).CLI.link( main.end1[ 'port' ], main.end2[ 'port' ], "down",
+                                                       timeout=main.timeout, showResponse=False )
 
-                # Insert one line in karaf.log before link down
-                main.Cluster.command( "log",
-                                      args=[ "\'Scale: {}, Batch:{}, Iteration: {}\'".format(
-                                          main.Cluster.numCtrls, batchSize, main.validRun + main.invalidRun ) ],
-                                      returnBool=True, specificDriver=2 )
-                # bring link down
-                main.Cluster.active( 0 ).CLI.link( main.end1[ 'port' ], main.end2[ 'port' ], "down",
-                                                   timeout=main.timeout, showResponse=False )
+                    # check links, flows and intents
+                    main.intentRerouteLatFuncs.sanityCheck( main,
+                                                            ( main.deviceCount - 1 ) * 2,
+                                                            batchSize * main.deviceCount,
+                                                            main.batchSize )
+                    if not main.verify:
+                        main.log.warn( "Sanity check failed, skipping this iteration..." )
+                        continue
 
-                # check links, flows and intents
-                main.intentRerouteLatFuncs.sanityCheck( main,
-                                                        ( main.deviceCount - 1 ) * 2,
-                                                        batchSize * main.deviceCount,
-                                                        main.batchSize )
-                if not main.verify:
-                    main.log.warn( "Sanity check failed, skipping this iteration..." )
-                    continue
-
-                # Get timestamp of last LINK_REMOVED event as separator between iterations
-                skip = False
-                for i in range( main.Cluster.numCtrls ):
-                    logNum = main.intentRerouteLatFuncs.getLogNum( main, i )
-                    timestamp = str( main.Cluster.active( i ).CLI.getTimeStampFromLog( "last",
-                                                                                       "LINK_REMOVED",
-                                                                                       "time = ", " ",
-                                                                                       logNum=logNum ) )
-                    if timestamp == main.ERROR:
-                        # Try again in case that the log number just increased
+                    # Get timestamp of last LINK_REMOVED event as separator between iterations
+                    skip = False
+                    for i in range( main.Cluster.numCtrls ):
                         logNum = main.intentRerouteLatFuncs.getLogNum( main, i )
                         timestamp = str( main.Cluster.active( i ).CLI.getTimeStampFromLog( "last",
                                                                                            "LINK_REMOVED",
                                                                                            "time = ", " ",
                                                                                            logNum=logNum ) )
-                    if timestamp == main.ERROR:
-                        main.log.warn( "Cannot find the event we want in the log, skipping this iteration..." )
+                        if timestamp == main.ERROR:
+                            # Try again in case that the log number just increased
+                            logNum = main.intentRerouteLatFuncs.getLogNum( main, i )
+                            timestamp = str( main.Cluster.active( i ).CLI.getTimeStampFromLog( "last",
+                                                                                               "LINK_REMOVED",
+                                                                                               "time = ", " ",
+                                                                                               logNum=logNum ) )
+                        if timestamp == main.ERROR:
+                            main.log.warn( "Cannot find the event we want in the log, skipping this iteration..." )
+                            main.intentRerouteLatFuncs.bringBackTopology( main )
+                            if main.validRun >= main.warmUp:
+                                main.invalidRun += 1
+                            else:
+                                main.validRun += 1
+                            skip = True
+                            break
+                        else:
+                            main.startLine[ i ] = timestamp
+                            main.log.info( "Timestamp of last LINK_REMOVED event on node {} is {}".format( i + 1,
+                                                                                                           main.startLine[ i ] ) )
+                    if skip:
+                        continue
+
+                    # calculate values
+                    topologyTimestamps = main.intentRerouteLatFuncs.getTopologyTimestamps( main )
+                    intentTimestamps = main.intentRerouteLatFuncs.getIntentTimestamps( main )
+                    if intentTimestamps == main.ERROR or topologyTimestamps == main.ERROR:
+                        main.log.info( "Got invalid timestamp, skipping this iteration..." )
                         main.intentRerouteLatFuncs.bringBackTopology( main )
                         if main.validRun >= main.warmUp:
                             main.invalidRun += 1
                         else:
                             main.validRun += 1
-                        skip = True
-                        break
+                        continue
                     else:
-                        main.startLine[ i ] = timestamp
-                        main.log.info( "Timestamp of last LINK_REMOVED event on node {} is {}".format( i + 1,
-                                                                                                       main.startLine[ i ] ) )
-                if skip:
-                    continue
+                        main.log.info( "Got valid timestamps" )
 
-                # calculate values
-                topologyTimestamps = main.intentRerouteLatFuncs.getTopologyTimestamps( main )
-                intentTimestamps = main.intentRerouteLatFuncs.getIntentTimestamps( main )
-                if intentTimestamps == main.ERROR or topologyTimestamps == main.ERROR:
-                    main.log.info( "Got invalid timestamp, skipping this iteration..." )
-                    main.intentRerouteLatFuncs.bringBackTopology( main )
-                    if main.validRun >= main.warmUp:
-                        main.invalidRun += 1
+                    firstLocalLatnecy, lastLocalLatnecy, firstGlobalLatency, lastGlobalLatnecy \
+                        = main.intentRerouteLatFuncs.calculateLatency( main, topologyTimestamps, intentTimestamps )
+                    if firstLocalLatnecy < 0:
+                        main.log.info( "Got negative latency, skipping this iteration..." )
+                        main.intentRerouteLatFuncs.bringBackTopology( main )
+                        if main.validRun >= main.warmUp:
+                            main.invalidRun += 1
+                        else:
+                            main.validRun += 1
+                        continue
                     else:
+                        main.log.info( "Got valid latencies" )
                         main.validRun += 1
-                    continue
-                else:
-                    main.log.info( "Got valid timestamps" )
 
-                firstLocalLatnecy, lastLocalLatnecy, firstGlobalLatency, lastGlobalLatnecy \
-                    = main.intentRerouteLatFuncs.calculateLatency( main, topologyTimestamps, intentTimestamps )
-                if firstLocalLatnecy < 0:
-                    main.log.info( "Got negative latency, skipping this iteration..." )
-                    main.intentRerouteLatFuncs.bringBackTopology( main )
                     if main.validRun >= main.warmUp:
-                        main.invalidRun += 1
-                    else:
-                        main.validRun += 1
-                    continue
-                else:
-                    main.log.info( "Got valid latencies" )
-                    main.validRun += 1
+                        firstLocalLatencies.append( firstLocalLatnecy )
+                        lastLocalLatencies.append( lastLocalLatnecy )
+                        firstGlobalLatencies.append( firstGlobalLatency )
+                        lastGlobalLatencies.append( lastGlobalLatnecy )
 
-                firstLocalLatencies.append( firstLocalLatnecy )
-                lastLocalLatencies.append( lastLocalLatnecy )
-                firstGlobalLatencies.append( firstGlobalLatency )
-                lastGlobalLatencies.append( lastGlobalLatnecy )
+                    # bring up link and withdraw intents
+                    main.Cluster.active( 0 ).CLI.link( main.end1[ 'port' ],
+                                                       main.end2[ 'port' ],
+                                                       "up",
+                                                       timeout=main.timeout )
+                    main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
+                                                                  main.egress,
+                                                                  batchSize,
+                                                                  offset=1,
+                                                                  options="-w",
+                                                                  timeout=main.timeout )
+                    main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
 
-                # bring up link and withdraw intents
-                main.Cluster.active( 0 ).CLI.link( main.end1[ 'port' ],
-                                                   main.end2[ 'port' ],
-                                                   "up",
-                                                   timeout=main.timeout )
-                main.Cluster.active( 0 ).CLI.pushTestIntents( main.ingress,
-                                                              main.egress,
-                                                              batchSize,
-                                                              offset=1,
-                                                              options="-w",
-                                                              timeout=main.timeout )
-                main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
+                    # check links, flows and intents
+                    main.intentRerouteLatFuncs.sanityCheck( main, main.deviceCount * 2, 0, 0 )
+                    if not main.verify:
+                        main.log.warn( "Sanity check failed, skipping this iteration..." )
+                        continue
+                result = ( main.TRUE if main.invalidRun <= main.maxInvalidRun else main.FALSE )
+                aveLocalLatency = numpy.average( lastLocalLatencies ) if lastLocalLatencies and result else 0
+                aveGlobalLatency = numpy.average( lastGlobalLatencies ) if lastGlobalLatencies and result else 0
+                stdLocalLatency = numpy.std( lastLocalLatencies ) if lastLocalLatencies and result else 0
+                stdGlobalLatency = numpy.std( lastGlobalLatencies ) if lastGlobalLatencies and result else 0
+                testResult = testResult and result
 
-                # check links, flows and intents
-                main.intentRerouteLatFuncs.sanityCheck( main, main.deviceCount * 2, 0, 0 )
-                if not main.verify:
-                    continue
+                main.log.report( "Scale: " + str( main.Cluster.numCtrls ) + "  \tIntent batch: " + str( batchSize ) )
+                main.log.report( "Local latency average:................" + str( aveLocalLatency ) )
+                main.log.report( "Global latency average:................" + str( aveGlobalLatency ) )
+                main.log.report( "Local latency std:................" + str( stdLocalLatency ) )
+                main.log.report( "Global latency std:................" + str( stdGlobalLatency ) )
+                main.log.report( "________________________________________________________" )
 
-            aveLocalLatency = numpy.average( lastLocalLatencies )
-            aveGlobalLatency = numpy.average( lastGlobalLatencies )
-            stdLocalLatency = numpy.std( lastLocalLatencies )
-            stdGlobalLatency = numpy.std( lastGlobalLatencies )
-
-            main.log.report( "Scale: " + str( main.Cluster.numCtrls ) + "  \tIntent batch: " + str( batchSize ) )
-            main.log.report( "Local latency average:................" + str( aveLocalLatency ) )
-            main.log.report( "Global latency average:................" + str( aveGlobalLatency ) )
-            main.log.report( "Local latency std:................" + str( stdLocalLatency ) )
-            main.log.report( "Global latency std:................" + str( stdGlobalLatency ) )
-            main.log.report( "________________________________________________________" )
-
-            if not ( numpy.isnan( aveLocalLatency ) or numpy.isnan( aveGlobalLatency ) ):
-                # check if got NaN for result
-                resultsDB = open( main.dbFileName, "a" )
-                resultsDB.write( "'" + main.commit + "'," )
-                resultsDB.write( str( main.Cluster.numCtrls ) + "," )
-                resultsDB.write( str( batchSize ) + "," )
-                resultsDB.write( str( aveLocalLatency ) + "," )
-                resultsDB.write( str( stdLocalLatency ) + "\n" )
-                resultsDB.close()
+                if not ( numpy.isnan( aveLocalLatency ) or numpy.isnan( aveGlobalLatency ) ):
+                    # check if got NaN for result
+                    resultsDB = open( main.dbFileName, "a" )
+                    resultsDB.write( "'" + main.commit + "'," )
+                    resultsDB.write( str( main.Cluster.numCtrls ) + "," )
+                    resultsDB.write( str( batchSize ) + "," )
+                    resultsDB.write( str( aveLocalLatency ) + "," )
+                    resultsDB.write( str( stdLocalLatency ) + "\n" )
+                    resultsDB.close()
+        else:
+            testResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass="Installing and withdrawing intents reroute properly",
+                                 onfail="There was something wrong installing and withdrawing intents reroute" )

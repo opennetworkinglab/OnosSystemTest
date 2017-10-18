@@ -51,15 +51,16 @@
     </GIT>
 
     <ATTEMPTS>
-        <verify>5</verify>
-        <maxInvalidRun>10</maxInvalidRun>
+        <verify>6</verify>
+        <maxInvalidRun>5</maxInvalidRun>
+        <cfg>5</cfg>
     </ATTEMPTS>
 
     <SLEEP>
         <startup>5</startup>
         <setmaster>5</setmaster>
         <install>10</install>
-        <verify>10</verify>
+        <verify>5</verify>
         # timeout for pexpect
         <timeout>300</timeout>
     </SLEEP>

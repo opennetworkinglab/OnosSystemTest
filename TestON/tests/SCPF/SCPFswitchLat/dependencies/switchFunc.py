@@ -131,7 +131,7 @@ def check( result ):
 
     """
     if result < int( main.resultRange[ 'Min' ] ) or result > int( main.resultRange[ 'Max' ] ):
-        main.log.debug( str( result ) + " is not meet the requirement" )
+        main.log.warn( str( result ) + " is not meet the requirement" )
         return 0
     return 1
 
@@ -290,8 +290,15 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
             # get onos metrics timestamps
             try:
                 response = json.loads( main.Cluster.active( i - 1 ).CLI.topologyEventsMetrics() )
+
+                # Just to show the other event times.
+                main.log.info( "ONOS{} device Event timestamp: {}".format(
+                    i, int( response.get( "topologyDeviceEventTimestamp" ).get( "value" ) ) ) )
+                main.log.info( "ONOS{} graph reason Event timestamp: {}".format(
+                    i, int( response.get( "topologyGraphReasonsEventTimestamp" ).get( "value" ) ) ) )
+
                 DeviceTime = getTimestampFromLog( i - 1, searchTerm=main.searchTerm[ switchStatus ] )
-                main.log.info( "ONOS{} device Event timestamp: {}".format( i, "%.2f" % DeviceTime ) )
+                main.log.info( "ONOS{} device from karaf log: {}".format( i, DeviceTime ) )
                 GraphTime = int( response.get( "topologyGraphEventTimestamp" ).get( "value" ) )
                 main.log.info( "ONOS{} Graph Event timestamp: {}".format( i, GraphTime ) )
             except TypeError:
@@ -370,8 +377,14 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
             # get onos metrics timestamps
             try:
                 response = json.loads( main.Cluster.active( i - 1 ).CLI.topologyEventsMetrics() )
+                # Just to show the other event times.
+                main.log.info( "ONOS{} device Event timestamp: {}".format(
+                    i, int( response.get( "topologyDeviceEventTimestamp" ).get( "value" ) ) ) )
+                main.log.info( "ONOS{} graph reason Event timestamp: {}".format(
+                    i, int( response.get( "topologyGraphReasonsEventTimestamp" ).get( "value" ) ) ) )
+
                 DeviceTime = getTimestampFromLog( i - 1, searchTerm=main.searchTerm[ switchStatus ] )
-                main.log.info( "ONOS{} device Event timestamp: {}".format( i, DeviceTime ) )
+                main.log.info( "ONOS{} device from karaf log: {}".format( i, DeviceTime ) )
                 GraphTime = int( response.get( "topologyGraphEventTimestamp" ).get( "value" ) )
                 main.log.info( "ONOS{} Graph Event timestamp: {}".format( i, GraphTime ) )
             except TypeError:

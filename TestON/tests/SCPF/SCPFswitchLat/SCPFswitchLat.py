@@ -170,13 +170,23 @@ class SCPFswitchLat:
                                                "up", resultDict, True )
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "down", resultDict, True )
+                main.log.warn( "Before devices : " + str( main.Cluster.active( 0 ).CLI.devices() ) )
                 main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
+                main.log.warn( "After devices : " + str( main.Cluster.active( 0 ).CLI.devices() ) )
+                while main.Cluster.active( 0 ).CLI.devices() != "[]":
+                    main.log.error( "DEVICE NOT REMOVED !!!!!")
+                    main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
             else:
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                "up", resultDict, False )
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
                                                 "down", resultDict, False )
+                main.log.warn( "Before devices : " + str( main.Cluster.active( 0 ).CLI.devices() ) )
                 main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
+                main.log.warn("After devices : " + str(main.Cluster.active(0).CLI.devices()))
+                while main.Cluster.active( 0 ).CLI.devices() != "[]":
+                    main.log.error( "DEVICE NOT REMOVED !!!!!")
+                    main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
 
         # Dictionary for result
         maxDict = {}

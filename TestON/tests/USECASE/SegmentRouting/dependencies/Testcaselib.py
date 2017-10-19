@@ -73,6 +73,24 @@ class Testcaselib:
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
+
+        # Additional files for topology building
+        try:
+            main.topologyLib1 = main.params[ 'DEPENDENCY' ][ 'lib1' ]
+            main.topologyLib2 = main.params[ 'DEPENDENCY' ][ 'lib2' ]
+            copyResult2 = main.ONOSbench.scp(main.Mininet1,
+                                             main.dependencyPath +
+                                             main.topologyLib1,
+                                             main.Mininet1.home,
+                                             direction="to")
+            copyResult3 = main.ONOSbench.scp(main.Mininet1,
+                                             main.dependencyPath +
+                                             main.topologyLib2,
+                                             main.Mininet1.home,
+                                             direction="to")
+        except:
+            pass
+
         main.testSetUp.evnSetupConclusion( stepResult )
 
     @staticmethod
@@ -102,25 +120,20 @@ class Testcaselib:
         # kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
-        for ctrl in main.Cluster.runningNodes:
-            main.ONOSbench.onosDie( ctrl.ipAddress )
+        main.testSetUp.killingAllOnos(main.Cluster, True, False)
 
-        main.testSetUp.buildOnos( main.Cluster )
+        main.testSetUp.uninstallOnos(main.Cluster, False)
+        main.testSetUp.buildOnos(main.Cluster)
 
-        main.testSetUp.installOnos( main.Cluster, False )
+        main.testSetUp.installOnos(main.Cluster, False)
 
-        main.testSetUp.setupSsh( main.Cluster )
+        main.testSetUp.setupSsh(main.Cluster)
 
-        main.testSetUp.checkOnosService( main.Cluster )
+        main.testSetUp.checkOnosService(main.Cluster)
 
         cliResult = main.TRUE
-        main.step( "Checking if ONOS CLI is ready" )
-        for ctrl in main.Cluster.runningNodes:
-            ctrl.CLI.startCellCli()
-            cliResult = cliResult and ctrl.CLI.startOnosCli( ctrl.ipAddress,
-                                                             commandlineTimeout=60,
-                                                             onosStartTimeout=100 )
-            ctrl.active = True
+        main.step("Checking if ONOS CLI is ready")
+        cliResult = main.testSetUp.startOnosClis(main.Cluster)
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cliResult,
                                  onpass="ONOS CLI is ready",
@@ -154,7 +167,7 @@ class Testcaselib:
     @staticmethod
     def startMininet( main, topology, args="" ):
         main.step( "Starting Mininet Topology" )
-        arg = "--onos %d %s" % ( main.Cluster.numCtrls, args )
+        arg = "--onos-ip=%s %s" % (",".join([ctrl.ipAddress for ctrl in main.Cluster.runningNodes]), args)
         main.topology = topology
         topoResult = main.Mininet1.startNet(
                 topoFile=main.Mininet1.home + main.topology, args=arg )
@@ -229,7 +242,7 @@ class Testcaselib:
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={ 'isPENDING': False },
-                                     attempts=2,
+                                     attempts=4,
                                      sleep=10 )
         utilities.assertEquals(
                 expect=main.TRUE,
@@ -253,9 +266,13 @@ class Testcaselib:
         for entry in main.pingChart.itervalues():
             print entry
             hosts, expect = entry[ 'hosts' ], entry[ 'expect' ]
-            expect = main.TRUE if expect else main.FALSE
+            try:
+                expect = main.TRUE if str(expect).lower() == 'true' else main.FALSE
+            except:
+                expect = main.FALSE
             main.step( "Connectivity for %s %s" % ( str( hosts ), tag ) )
             pa = main.Mininet1.pingallHosts( hosts )
+
             utilities.assert_equals( expect=expect, actual=pa,
                                      onpass="IP connectivity successfully tested",
                                      onfail="IP connectivity failed" )
@@ -422,7 +439,7 @@ class Testcaselib:
 
         if len( nodes ) < main.Cluster.numCtrls:
 
-            nodeResults = utilities.retry( Testcaselib.nodesCheck,
+            nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                            False,
                                            attempts=5,
                                            sleep=10 )
@@ -478,9 +495,8 @@ class Testcaselib:
                                      onfail="ONOS CLI is not ready" )
 
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( Testcaselib.nodesCheck,
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       args=[ nodes ],
                                        attempts=5,
                                        sleep=10 )
         utilities.assert_equals( expect=True, actual=nodeResults,
@@ -587,28 +603,3 @@ class Testcaselib:
         main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="apps",
                                                     subjectKey="org.onosproject.segmentrouting",
                                                     configKey="xconnect" )
-
-    @staticmethod
-    def nodesCheck( nodes ):
-        results = True
-        nodesOutput = main.Cluster.command( "nodes", specificDriver=2 )
-        ips = sorted( main.Cluster.getIps( activeOnly=True ) )
-        for i in nodesOutput:
-            try:
-                current = json.loads( i )
-                activeIps = []
-                currentResult = False
-                for node in current:
-                    if node[ 'state' ] == 'READY':
-                        activeIps.append( node[ 'ip' ] )
-                currentResult = True
-                for ip in ips:
-                    if ip not in activeIps:
-                        currentResult = False
-                        break
-            except ( ValueError, TypeError ):
-                main.log.error( "Error parsing nodes output" )
-                main.log.warn( repr( i ) )
-                currentResult = False
-            results = results and currentResult
-        return results

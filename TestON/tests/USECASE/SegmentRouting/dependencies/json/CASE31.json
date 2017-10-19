@@ -1,0 +1,35 @@
+{
+    "ports" : {
+        "of:0000000000000001/1" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.0.1.254/24" ],
+                    "vlan-tagged": [10],
+                    "vlan-native": 20
+                }
+            ]
+        },
+        "of:0000000000000001/2" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.0.1.254/24" ],
+                    "vlan-untagged": 20
+                }
+            ]
+        }
+    },
+    "devices" : {
+        "of:0000000000000001" : {
+            "segmentrouting" : {
+                "ipv4NodeSid" : 1,
+                "ipv4Loopback" : "192.168.0.1",
+                "routerMac" : "00:00:00:00:00:01",
+                "isEdgeRouter" : true,
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "driver" : "ofdpa-ovs"
+            }
+        }
+    }
+}

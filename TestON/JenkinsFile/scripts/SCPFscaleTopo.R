@@ -126,11 +126,11 @@ xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
 chartTitle <- paste( "Scale Topology Latency Test" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
-values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.02 * max( sum ), label = format( sum, big.mark = ",", scientific = FALSE ), fontface = "bold" ) )
-
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.02 * max( sum ), label = format( sum, big.mark = ",", scientific = FALSE ), fontface = "bold" ), size = 7.0 )
+wrapLegend <- guides( fill=guide_legend( nrow=2, byrow=TRUE ) )
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + values
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + values + wrapLegend
 
 print( "Generating bar graph." )
 barGraphFormat <- geom_bar( stat = "identity", width = width )
@@ -139,5 +139,5 @@ result <- fundamentalGraphData + barGraphFormat + title
 
 # Save graph to file
 print( paste( "Saving bar chart to", outputFile ) )
-ggsave( outputFile, width = 10, height = 6, dpi = 200 )
+ggsave( outputFile, width = 15, height = 10, dpi = 200 )
 print( paste( "Successfully wrote bar chart out to", outputFile ) )

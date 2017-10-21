@@ -133,7 +133,7 @@ print( "Generating fundamental graph data." )
 #        - x: x-axis values (usually node scaling)
 #        - y: y-axis values (usually time in milliseconds)
 #        - fill: the category of the colored side-by-side bars (usually type)
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = throughput, fill = type ) )
 
@@ -154,8 +154,8 @@ if ( args[ 8 ] == 'y' ){
     chartTitle <- paste( chartTitle, "0" )
 }
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
-values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$throughput + 0.04 * max( dataFrame$throughput ), label = format( dataFrame$throughput, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=18, face="bold" ), legend.title = element_blank() )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$throughput + 0.03 * max( dataFrame$throughput ), label = format( dataFrame$throughput, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7, fontface = "bold" )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + values
@@ -168,6 +168,6 @@ result <- fundamentalGraphData + barGraphFormat + title
 
 # Save graph to file
 print( paste( "Saving bar chart to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote bar chart out to", errBarOutputFile ) )

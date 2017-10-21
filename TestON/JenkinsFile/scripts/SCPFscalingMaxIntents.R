@@ -110,27 +110,28 @@ print( dataFrame )
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Max Number of Intents/Flow Rules" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
-
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
+wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + wrapLegend
 
 
 print( "Generating bar graph bars." )
 width <- 1.3
 barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width )
-values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.02 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 3.2, fontface = "bold", position=position_dodge( width=1.25 ) )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.015 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5.2, fontface = "bold", position=position_dodge( width=1.25 ) )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title + values
+result <- fundamentalGraphData + barGraphFormat + colors + title + values
 
 
 print( paste( "Saving bar chart to", outputFile ) )
-ggsave( outputFile, width = 10, height = 6, dpi = 200 )
+ggsave( outputFile, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote bar chart out to", outputFile ) )

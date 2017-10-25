@@ -77,7 +77,7 @@ avgs <- c( fileData[ 'last_role_request_to_last_topology' ], fileData[ 'last_con
 # Parse lists into data frames.
 dataFrame <- melt( avgs )              # This is where reshape2 comes in. Avgs list is converted to data frame
 dataFrame$scale <- fileData$scale      # Add node scaling to the data frame.
-colnames( dataFrame ) <- c( "ms", "type", "scale")
+colnames( dataFrame ) <- c( "s", "type", "scale")
 
 
 # Format data frame so that the data is in the same order as it appeared in the file.
@@ -117,13 +117,13 @@ theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the g
 #        - x: x-axis values (usually node scaling)
 #        - y: y-axis values (usually time in milliseconds)
 #        - fill: the category of the colored side-by-side bars (usually type)
-mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
+mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = s, fill = type ) )
 
 # Formatting the plot
 width <- 0.6  # Width of the bars.
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$scale )
 xLabel <- xlab( "Scale" )
-yLabel <- ylab( "Latency (ms)" )
+yLabel <- ylab( "Latency (s)" )
 fillLabel <- labs( fill="Type" )
 chartTitle <- paste( "Scale Topology Latency Test" )
 theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )

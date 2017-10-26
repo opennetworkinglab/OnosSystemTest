@@ -80,6 +80,7 @@ Prefix_organizer = [
 
 onos_branch = "master"
 onos_tag = params.ONOSTag
+isOldFlow = false
 // Set tests based on day of week
 def now = new Date()
 echo(now.toString())
@@ -116,6 +117,20 @@ if ( manually_run ){
     println "Defaulting to " + day + " tests:"
 }
 print_tests( testcases )
+def runTest = [
+    "VM" : [:],
+    "BM" : [:]
+]
+for( String test in testcases.keySet() ){
+    println test
+    if (testcases[test]["tests"] != ""){
+        runTest[testcases[test]["nodeName"]][test] = trigger_pipeline( onos_branch, testcases[test]["tests"], testcases[test]["nodeName"], test, manually_run, onos_tag )
+    }
+}
+def finalList = [:]
+finalList["VM"] = runTestSeq( runTest["VM"] )
+finalList["BM"] = runTestSeq( runTest["BM"] )
+parallel finalList
 
 def testDivider( today ){
     switch (today) {
@@ -201,6 +216,7 @@ def wednesday( getDay, getResult ){
     SCPF_choices += adder( "SCPF", "basic", getDay, "W", getResult )
     SCPF_choices += adder( "SCPF", "extra_A", getDay, "W", getResult )
     SCPF_choices += adder( "SCPF", "new_Test", getDay, "W", getResult )
+    isOldFlow = true
 }
 def thursday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "Th", getResult )
@@ -209,6 +225,7 @@ def thursday( getDay, getResult ){
     HA_choices += adder( "HA", "extra_B", getDay, "Th", getResult )
     SCPF_choices += adder( "SCPF", "basic", getDay, "Th", getResult )
     SCPF_choices += adder( "SCPF", "extra_B", getDay, "Th", getResult )
+    isOldFlow = true
 }
 def friday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "F", getResult )
@@ -260,21 +277,6 @@ def adder( testCat, set, dayAdding, day, getResult ){
 def dayAdder( testCat, testName, dayOfWeek ){
     AllTheTests[ testCat ][ testName ][ "day" ] += dayOfWeek + ","
 }
-def runTest = [
-    "VM" : [:],
-    "BM" : [:]
-]
-for( String test in testcases.keySet() ){
-    println test
-    if (testcases[test]["tests"] != ""){
-        runTest[testcases[test]["nodeName"]][test] = trigger_pipeline( onos_branch, testcases[test]["tests"], testcases[test]["nodeName"], test, manually_run, onos_tag )
-    }
-}
-def finalList = [:]
-finalList["VM"] = runTestSeq( runTest["VM"] )
-finalList["BM"] = runTestSeq( runTest["BM"] )
-parallel finalList
-
 def runTestSeq( testList ){
     return{
         for ( test in testList.keySet() ){
@@ -396,7 +398,7 @@ def envSetup( onos_branch, test_branch, onos_tag ){
         cat ~/onos/tools/package/bin/onos-service
 
         export JAVA_HOME=/usr/lib/jvm/java-8-oracle
-
+        ''' + oldFlowCheck() + '''
         echo -e "\n##### build ONOS skip unit tests ######"
         #mvn clean install -DskipTests
         # Force buck update
@@ -417,5 +419,12 @@ def tagCheck(onos_tag, onos_branch){
         result += onos_branch //create new local branch
     else
         result += onos_tag //checkout the tag
+    return result
+}
+def oldFlowCheck(){
+    result = ""
+    if( isOldFlow )
+        result = '''sed -i -e 's/@Component(immediate = true)/@Component(enabled = false)/g' ~/onos/core/store/dist/src/main/java/org/onosproject/store/flow/impl/DistributedFlowRuleStore.java
+        sed -i -e 's/@Component(enabled = false)/@Component(immediate = true)/g' ~/onos/core/store/dist/src/main/java/org/onosproject/store/flow/impl/ECFlowRuleStore.java'''
     return result
 }

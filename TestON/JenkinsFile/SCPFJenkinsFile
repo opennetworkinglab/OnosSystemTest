@@ -13,7 +13,7 @@ SCPF = [
     SCPFcbench: [ test:'SCPFcbench', table:'cbench_bm_tests', results:'cbench_bm_results', file:'CbenchDB', rFile:'SCPFcbench.R', extra:none, finalResult:1, graphTitle:['Cbench Test'], dbCols:'avg', dbWhere:'', y_axis:'Throughput (Responses/sec)'],
     SCPFhostLat: [ test:'SCPFhostLat', table:'host_latency_tests', results:'host_latency_results', file:'HostAddLatency', rFile:'SCPFhostLat.R', extra:none,finalResult:1, graphTitle:['Host Latency Test'], dbCols:'avg', dbWhere:'AND scale=5', y_axis:'Latency (ms)'],
     SCPFportLat: [ test:'SCPFportLat', table:'port_latency_details', results:'port_latency_results', file:'/tmp/portEventResultDb', rFile:'SCPFportLat.R', extra:none, finalResult:1, graphTitle:['Port Latency Test - Port Up','Port Latency Test - Port Down'], dbCols:[ 'up_ofp_to_dev_avg,up_dev_to_link_avg,up_link_to_graph_avg', 'down_ofp_to_dev_avg,down_dev_to_link_avg,down_link_to_graph_avg' ], dbWhere:'AND scale=5', y_axis:'Latency (ms)' ],
-    SCPFflowTp1g: [ test:'SCPFflowTp1g --params TEST/flows=12250', table:'flow_tp_tests', results:'flow_tp_results', file:'flowTP1gDB', rFile:'SCPFflowTp1g.R n', extra:neighbors,finalResult:1, graphTitle:['Flow Throughput Test - neighbors=0','Flow Throughput Test - neighbors=4'], dbCols:'avg', dbWhere:[ 'AND scale=5 AND neighbors=0 ','AND scale=5 AND NOT neighbors=0' ],  y_axis:'Throughput (,000 Flows/sec)' ],
+    SCPFflowTp1g: [ test:'SCPFflowTp1g', table:'flow_tp_tests', results:'flow_tp_results', file:'flowTP1gDB', rFile:'SCPFflowTp1g.R n', extra:neighbors,finalResult:1, graphTitle:['Flow Throughput Test - neighbors=0','Flow Throughput Test - neighbors=4'], dbCols:'avg', dbWhere:[ 'AND scale=5 AND neighbors=0 ','AND scale=5 AND NOT neighbors=0' ],  y_axis:'Throughput (,000 Flows/sec)' ],
     SCPFflowTp1gWithFlowObj: [ test:'SCPFflowTp1g --params TEST/flowObj=True', table:'flow_tp_fobj_tests', results:'flow_tp_fobj_results', file:'flowTP1gDBFlowObj', rFile:'SCPFflowTp1g.R y', extra:neighbors, finalResult:0],
     SCPFscaleTopo: [ test:'SCPFscaleTopo', table:'scale_topo_latency_details', results:'scale_topo_latency_results', file:'/tmp/scaleTopoResultDb', rFile:'SCPFscaleTopo.R', extra:none, finalResult:1, graphTitle:['Scale Topology Test'], dbCols:[ 'first_connection_to_last_connection, last_connection_to_last_role_request, last_role_request_to_last_topology' ], dbWhere:'AND scale=20' , y_axis:'Latency (s)'],
     SCPFswitchLat: [ test:'SCPFswitchLat', table:'switch_latency_details', results:'switch_latency_results', file:'/tmp/switchEventResultDb', rFile:'SCPFswitchLat.R', extra:none, finalResult:1, graphTitle:['Switch Latency Test - Switch Up','Switch Latency Test - Switch Down'], dbCols:[ 'tcp_to_feature_reply_avg,feature_reply_to_role_request_avg,role_request_to_role_reply_avg,role_reply_to_device_avg,up_device_to_graph_avg', 'fin_ack_to_ack_avg,ack_to_device_avg,down_device_to_graph_avg' ], dbWhere:'AND scale=5', y_axis:'Latency (ms)' ],
@@ -54,15 +54,19 @@ def now = new Date()
 for ( test in tests.keySet() ){
     tests[test].call()
 }
-if( prop["manualRun"] == "false" ){
-    def end = new Date()
-    TimeDuration duration = TimeCategory.minus( end, now )
-    slackSend( color:"#5816EE", message: "SCPF tests ended at: " + end.toString() + "\nTime took : " + duration )
+try{
+    if( prop["manualRun"] == "false" ){
+        def end = new Date()
+        TimeDuration duration = TimeCategory.minus( end, now )
+        slackSend( color:"#5816EE", message: "SCPF tests ended at: " + end.toString() + "\nTime took : " + duration )
+    }
 }
+catch(all){}
+
 // The testName should be the key from the SCPF map
 def SCPFTest( testName, toBeRun, prop ) {
     return {
-        try{
+        catchError{
             stage(testName) {
                 if ( toBeRun ){
                     workSpace = "/var/jenkins/workspace/"+testName
@@ -161,24 +165,20 @@ def SCPFTest( testName, toBeRun, prop ) {
                         def post = build job: "Pipeline_postjob_BM", propagate: false
                     }
                     node("TestStation-BMs"){
-                        sh '''#!/bin/bash
-
-                        if [ -e ''' + workSpace + "/*Result.txt ] && grep -q \"1\" " + workSpace + "/*Result.txt" + '''
-                        then
-                            echo ''' + testName + " : All passed." + '''
-                        else
-                            echo ''' + testName + " : not all passed." + '''
-                            DoingThisToSetTheResultFalse
-                        fi'''
+                        resultContents = readFile workSpace + "/" + testName + "Result.txt"
+                        resultContents = resultContents.split("\n")
+                        if( resultContents[ 0 ] == "1" ){
+                            print "All passed"
+                        }else{
+                            print "Failed"
+                            if( prop["manualRun"] == "false" )
+                                slackSend(color:"FF0000", message: "[" + prop["ONOSBranch"] + "]" + testName + " : Failed!\n"
+                                                                    + resultContents[ 1 ] + "\n"
+                                                                    + "https://onos-jenkins.onlab.us/blue/organizations/jenkins/${env.JOB_NAME}/detail/${env.JOB_NAME}/${env.BUILD_NUMBER}/pipeline" )
+                            Failed
+                        }
                     }
                 }
-            }
-        }catch (all) {
-            catchError{
-                if( prop["manualRun"] == "false" )
-                    slackSend(color:"FF0000", message: "[" + prop["ONOSBranch"] + "]" + testName + " : Failed!\n"
-                    + "https://onos-jenkins.onlab.us/blue/organizations/jenkins/${env.JOB_NAME}/detail/${env.JOB_NAME}/${env.BUILD_NUMBER}/pipeline" )
-                Failed
             }
         }
     }

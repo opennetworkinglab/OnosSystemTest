@@ -309,6 +309,7 @@ class Logger:
             executedStatus.write("1\n")
         else:
             executedStatus.write("0\n")
+            executedStatus.write( "[Total]:" + str( main.TOTAL_TC_PLANNED ) + " [Executed]:" + str( main.TOTAL_TC_RUN ) + " [Failed]:" + str( main.TOTAL_TC_FAIL ) + "\n" )
         executedStatus.close()
 
     def updateCaseResults(self,main):

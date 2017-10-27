@@ -24,7 +24,7 @@ def sanityCheck( main, linkNumExpected, flowNumExpected, intentNumExpected ):
         time.sleep( main.verifySleep )
         summary = json.loads( main.Cluster.active( 0 ).CLI.summary( timeout=main.timeout ) )
         linkNum = summary.get( "links" )
-        flowNum = summary.get( "flows" )
+        flowNum = main.Cluster.active( 0 ).CLI.getTotalFlowsNum( timeout=600, noExit=True )
         intentNum = summary.get( "intents" )
         if linkNum == linkNumExpected and flowNum == flowNumExpected and intentNum == intentNumExpected:
             main.log.info( "links: {}, flows: {}, intents: {}".format( linkNum, flowNum, intentNum ) )
@@ -33,7 +33,8 @@ def sanityCheck( main, linkNumExpected, flowNumExpected, intentNumExpected ):
         attemps += 1
     if not main.verify:
         main.log.warn( "Links or flows or intents number not as expected" )
-        main.log.warn( "links: {}, flows: {}, intents: {}".format( linkNum, flowNum, intentNum ) )
+        main.log.warn( "[Expected] links: {}, flows: {}, intents: {}".format( linkNumExpected, flowNumExpected, intentNumExpected ) )
+        main.log.warn( "[Actual]   links: {}, flows: {}, intents: {}".format( linkNum, flowNum, intentNum ) )
         # bring back topology
         bringBackTopology( main )
         if main.validRun >= main.warmUp:
@@ -57,6 +58,9 @@ def bringBackTopology( main ):
     main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
                                          "enabled",
                                          value="false" )
+    time.sleep( main.startUpSleep )
+    main.Cluster.active( 0 ).CLI.wipeout()
+    time.sleep( main.startUpSleep )
     main.Cluster.active( 0 ).CLI.setCfg( main.nullProviderCfg,
                                          "deviceCount",
                                          value=main.deviceCount )

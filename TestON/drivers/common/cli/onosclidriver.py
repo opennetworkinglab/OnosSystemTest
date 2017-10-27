@@ -1956,6 +1956,30 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def wipeout( self ):
+        """
+        Wipe out the flows,intents,links,devices,hosts, and groups from the ONOS.
+        """
+        try:
+            cmdStr = "wipe-out please"
+            handle = self.sendline( cmdStr, timeout=60 )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def routes( self, jsonFormat=False ):
         """
         NOTE: This method should be used after installing application:
@@ -5710,3 +5734,4 @@ class OnosCliDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+

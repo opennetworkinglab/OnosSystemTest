@@ -13,6 +13,7 @@
     <TEST>
         <warmUp>5</warmUp>
         <sampleSize>20</sampleSize>
+        <deviceCount>7</deviceCount>
         <intents>1,100,1000</intents>                       #list format, will be split on ','
         <ingress>null:0000000000000001/6</ingress>
         <egress>null:0000000000000007/5</egress>
@@ -24,19 +25,24 @@
         <pull>False</pull>
         <branch>master</branch>
     </GIT>
-
+    <DEPENDENCY>
+        <FILE1>intentInstallLatFuncs</FILE1>
+        <PATH>/tests/SCPF/SCPFintentInstallWithdrawLat/dependencies/</PATH>
+    </DEPENDENCY>
     <DATABASE>
         <dbName>/tmp/IntentInstallWithdrawLatDB</dbName>
         <dbFlowObj>/tmp/IntentInstallWithdrawLatDBWFO</dbFlowObj>
     </DATABASE>
     <ATTEMPTS>
-        <verify>3</verify>
+        <verify>6</verify>
+        <maxInvalidRun>5</maxInvalidRun>
+        <cfg>5</cfg>
     </ATTEMPTS>
 
     <SLEEP>
         <startup>10</startup>
         <install>10</install>
-        <verify>3</verify>
+        <verify>5</verify>
         <reroute>3</reroute>
         # timeout for pexpect
         <timeout>300</timeout>

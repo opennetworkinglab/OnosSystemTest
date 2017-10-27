@@ -40,15 +40,18 @@ def now = new Date()
 for ( test in tests.keySet() ){
     tests[test].call()
 }
-if( prop["manualRun"] == "false" ){
-    def end = new Date()
-    TimeDuration duration = TimeCategory.minus( end, now )
-    slackSend( color:"#5816EE", message: "FUNC tests ended at: " + end.toString() + "\nTime took : " + duration )
+try{
+    if( prop["manualRun"] == "false" ){
+        def end = new Date()
+        TimeDuration duration = TimeCategory.minus( end, now )
+        slackSend( color:"#5816EE", message: "FUNC tests ended at: " + end.toString() + "\nTime took : " + duration )
+    }
 }
+catch(all){}
 // The testName should be the key from the FUNC
 def FUNCTest( testName, toBeRun, prop ) {
     return {
-        try{
+        catchError{
             stage(testName) {
                 if ( toBeRun ){
                     workSpace = "/var/jenkins/workspace/"+testName
@@ -168,24 +171,20 @@ def FUNCTest( testName, toBeRun, prop ) {
                             ]
                     }
                     node("TestStation-VMs"){
-                        sh '''#!/bin/bash
-
-                        if [ -e ''' + workSpace + "/" + testName + "Result.txt ] && grep -q \"1\" " + workSpace + "/" + testName + "Result.txt" + '''
-                        then
-                            echo ''' + testName + " : All passed." + '''
-                        else
-                            echo ''' + testName + " : not all passed." + '''
-                            DoingThisToSetTheResultFalse
-                        fi'''
+                        resultContents = readFile workSpace + "/" + testName + "Result.txt"
+                        resultContents = resultContents.split("\n")
+                        if( resultContents[ 0 ] == "1" ){
+                            print "All passed"
+                        }else{
+                            print "Failed"
+                            if( prop["manualRun"] == "false" )
+                                slackSend(color:"FF0000", message: "[" + prop["ONOSBranch"] + "]" + testName + " : Failed!\n"
+                                                                    + resultContents[ 1 ] + "\n"
+                                                                    + "https://onos-jenkins.onlab.us/blue/organizations/jenkins/${env.JOB_NAME}/detail/${env.JOB_NAME}/${env.BUILD_NUMBER}/pipeline" )
+                            Failed
+                        }
                     }
                 }
-            }
-        }catch (all) {
-            catchError{
-                if( prop["manualRun"] == "false" )
-                    slackSend(color:"FF0000", message: "[" + prop["ONOSBranch"] + "]" + testName + " : Failed!\n"
-                    + "https://onos-jenkins.onlab.us/blue/organizations/jenkins/${env.JOB_NAME}/detail/${env.JOB_NAME}/${env.BUILD_NUMBER}/pipeline" )
-                Failed
             }
         }
     }

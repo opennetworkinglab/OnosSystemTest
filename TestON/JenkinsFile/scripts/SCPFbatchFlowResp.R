@@ -93,15 +93,16 @@ print( dataFrame )
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
 xLabel <- xlab( "Build Date" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
-
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
+wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 
@@ -109,13 +110,13 @@ print( "Generating bar graph." )
 width <- 0.3
 barGraphFormat <- geom_bar( stat="identity", width = width )
 sum <- fileData[ 'posttoconfrm' ] + fileData[ 'elapsepost' ]
-values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.03 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title + values
+result <- fundamentalGraphData + barGraphFormat + colors + title + values
 
 
 print( paste( "Saving bar chart to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote stacked bar chart out to", errBarOutputFile ) )
 
@@ -151,32 +152,33 @@ print( dataFrame )
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
 xLabel <- xlab( "Build Date" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
-
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
+wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + wrapLegend
 
 
 print( "Generating bar graph." )
 width <- 0.3
 barGraphFormat <- geom_bar( stat="identity", width = width )
 sum <- fileData[ 'deltoconfrm' ] + fileData[ 'elapsedel' ]
-values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.03 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
 chartTitle <- paste( "Single Bench Flow Latency - Del", "Last 3 Builds", sep = "\n" )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title + values
+result <- fundamentalGraphData + barGraphFormat + colors + title + values
 
 errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
 errBarOutputFile <- paste( errBarOutputFile, "_DelGraph.jpg", sep="" )
 
 print( paste( "Saving bar chart to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote stacked bar chart out to", errBarOutputFile ) )

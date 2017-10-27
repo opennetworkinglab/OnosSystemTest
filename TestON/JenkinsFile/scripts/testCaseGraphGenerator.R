@@ -139,7 +139,7 @@ yLabel <- ylab( "Test Cases" )
 fillLabel <- labs( fill="Type" )
 legendLabels <- scale_colour_discrete( labels = c( "Failed Cases", "Passed Cases", "Planned Cases" ) )
 centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( plot.title = element_text( size = 32, face='bold' ), axis.text.x = element_text( angle = 0, size = 14 ), legend.position="bottom", legend.text=element_text( size=18, face="bold" ), legend.title = element_blank()  )
+theme <- theme( plot.title = element_text( size = 32, face='bold' ), axis.text.x = element_text( angle = 0, size = 14 ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
 
 
 # Store plot configurations as 1 variable

@@ -130,8 +130,9 @@ yLabel <- ylab( args[ 9 ] )
 fillLabel <- labs( fill="Type" )
 legendLabels <- scale_colour_discrete( labels = names( fileData ) )
 centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( axis.text.x = element_blank(), axis.ticks.x = element_blank(), plot.title = element_text( size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=13.3, face="bold" ), legend.title = element_blank() )
+theme <- theme( axis.text.x = element_blank(), axis.ticks.x = element_blank(), plot.title = element_text( size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ), legend.direction = 'horizontal' )
 colors <- scale_color_manual( values=c( "#111111", "#008CFF", "#FF3700", "#00E043", "#EEB600", "#E500FF") )
+wrapLegend <- guides( color=guide_legend( nrow=2, byrow=TRUE ) )
 
 fundamentalGraphData <- fundamentalGraphData + yScaleConfig + xLabel + yLabel + fillLabel + legendLabels + centerTitle + theme + colors
 print( "Generating line graph." )
@@ -140,8 +141,8 @@ lineGraphFormat <- geom_line( size = 0.75 )
 pointFormat <- geom_point( size = 1.75 )
 title <- ggtitle( title )
 
-result <- fundamentalGraphData + lineGraphFormat + pointFormat + title
-6
+result <- fundamentalGraphData + lineGraphFormat + pointFormat + title + wrapLegend
+
 # Save graph to file
 print( paste( "Saving result graph to", outputFile ) )
 ggsave( outputFile, width = 15, height = 10, dpi = 200 )

@@ -111,29 +111,31 @@ print( avgData )
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
-mainPlot <- ggplot( data = avgData, aes( x = scale, y = ms, ymin = ms - stdData$ms, ymax = ms + stdData$ms,fill = type ) )
+mainPlot <- ggplot( data = avgData, aes( x = scale, y = ms, ymin = ms, ymax = ms + stdData$ms,fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
 
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + wrapLegend
 
 
 print( "Generating bar graph with error bars." )
 width <- 0.9
 barGraphFormat <- geom_bar( stat="identity", position=position_dodge(), width = width )
+colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
 errorBarFormat <- geom_errorbar( width = width, position=position_dodge(), color=rgb( 140, 140, 140, maxColorValue=255 ) )
-values <- geom_text( aes( x=avgData$scale, y=avgData$ms + 0.04 * max( avgData$ms ), label = format( avgData$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold", position=position_dodge( 0.9 ) )
+values <- geom_text( aes( x=avgData$scale, y=avgData$ms + 0.02 * max( avgData$ms ), label = format( avgData$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold", position=position_dodge( 0.9 ) )
 title <- ggtitle( paste( chartTitle, "" ) )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
+result <- fundamentalGraphData + barGraphFormat + colors + errorBarFormat + title + values
 
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 
 print( paste( "Successfully wrote bar chart with error bars out to", errBarOutputFile ) )
@@ -143,12 +145,12 @@ print( "Generating stacked bar chart." )
 stackedBarFormat <- geom_bar( stat="identity", width=width )
 title <- ggtitle( paste( chartTitle, "" ) )
 sum <- fileData[ 'deact_role_avg' ] + fileData[ 'kill_deact_avg' ]
-values <- geom_text( aes( x=avgData$scale, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
-result <- fundamentalGraphData + stackedBarFormat + title + values
+values <- geom_text( aes( x=avgData$scale, y=sum + 0.02 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
+result <- fundamentalGraphData + stackedBarFormat + colors + title + values
 
 
 print( paste( "Saving stacked bar chart to", stackedBarOutputFile ) )
-ggsave( stackedBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( stackedBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 
 print( paste( "Successfully wrote stacked bar chart out to", stackedBarOutputFile ) )

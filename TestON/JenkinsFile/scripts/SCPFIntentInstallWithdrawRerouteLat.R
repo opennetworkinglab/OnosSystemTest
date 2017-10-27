@@ -149,9 +149,9 @@ print( "STEP 3: Generate graphs." )
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
-mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, ymin = ms - stds, ymax = ms + stds,fill = type ) )
+mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, ymin = ms, ymax = ms + stds, fill = type ) )
 
 # Formatting the plot
 width <- 1.3  # Width of the bars.
@@ -166,9 +166,7 @@ if ( args[ 1 ] == "y" ){
 chartTitle <- paste( chartTitle, "\nBatch Size =" )
 chartTitle <- paste( chartTitle, fileData1[ 1,'batch_size' ] )
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 22, face='bold' ) )
-
-
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
@@ -179,14 +177,16 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 #    - width: the width of the bar types (declared above)
 # geom_errorbar contains similar arguments as geom_bar.
 print( "Generating bar graph with error bars." )
+colors <- scale_fill_manual( values=c( "#F77670", "#619DFA", "#18BA48" ) )
 barGraphFormat <- geom_bar( stat = "identity", width = width, position = "dodge" )
-errorBarFormat <- geom_errorbar( width = width, position = "dodge", color=rgb( 140, 140, 140, maxColorValue=255 ) )
-title <- ggtitle( chartTitle )
-values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.035 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), position=position_dodge( width=1.3 ), size = 3.2, fontface = "bold" )
+errorBarFormat <- geom_errorbar( width = width, position = position_dodge( width ), color=rgb( 140, 140, 140, maxColorValue=255 ) )
 
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
+title <- ggtitle( chartTitle )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.035 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), position=position_dodge( width=width ), size = 5.5, fontface = "bold" )
+wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
+result <- fundamentalGraphData + barGraphFormat + colors + errorBarFormat + title + values + wrapLegend
 
 # Save graph to file
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 print( paste( "Successfully wrote bar chart with error bars out to", errBarOutputFile ) )

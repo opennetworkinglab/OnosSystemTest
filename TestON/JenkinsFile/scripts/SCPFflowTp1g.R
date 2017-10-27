@@ -135,9 +135,9 @@ print( "Generating fundamental graph data." )
 #        - y: y-axis values (usually time in milliseconds)
 #        - fill: the category of the colored side-by-side bars (usually type)
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
-mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = throughput, ymin = throughput - std, ymax = throughput + std, fill = type ) )
+mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = throughput, ymin = throughput, ymax = throughput + std, fill = type ) )
 
 # Formatting the plot
 width <- 0.7  # Width of the bars.
@@ -156,7 +156,7 @@ if ( args[ 8 ] == 'y' ){
     chartTitle <- paste( chartTitle, "0" )
 }
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ) )
 
 
 # Store plot configurations as 1 variable
@@ -169,13 +169,13 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 #    - width: the width of the bar types (declared above)
 # geom_errorbar contains similar arguments as geom_bar.
 print( "Generating bar graph with error bars." )
-barGraphFormat <- geom_bar( stat = "identity", width = width, fill="#FFA94F" )
+barGraphFormat <- geom_bar( stat = "identity", width = width, fill="#FFAA3C" )
 errorBarFormat <- geom_errorbar( width = width, position=position_dodge(), color=rgb( 140,140,140, maxColorValue=255 ) )
-values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$throughput + 0.04 * max( dataFrame$throughput ), label = format( dataFrame$throughput, digits=3, big.mark = ",", scientific = FALSE ) ), size = 5, fontface = "bold" )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$throughput + 0.03 * max( dataFrame$throughput ), label = format( dataFrame$throughput, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
 title <- ggtitle( paste( chartTitle, "" ) )
 result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 # Save graph to file
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 print( paste( "Successfully wrote bar chart with error bars out to", errBarOutputFile ) )

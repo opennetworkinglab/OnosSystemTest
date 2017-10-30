@@ -21,172 +21,308 @@
 # please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
-# STEP 1: File management.
+# STEP 1: Data management.
 # **********************************************************
 
-print( "STEP 1: File management." )
+print( "**********************************************************" )
+print( "STEP 1: Data management." )
+print( "**********************************************************" )
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
-# Import libraries to be used for graphing and organizing data, respectively.
-# Find out more about ggplot2: https://github.com/tidyverse/ggplot2
-#                     reshape2: https://github.com/hadley/reshape
+# ----------------
+# Import Libraries
+# ----------------
+
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )    # For databases
 
-# Check if sufficient args are provided.
+# -------------------
+# Check CLI Arguments
+# -------------------
+
+print( "Verifying CLI args." )
+
 if ( is.na( args[ 9 ] ) ){
-    print( "Usage: Rscript SCPFIntentInstallWithdrawRerouteLat.R <isFlowObj> <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <batch-size> <directory-to-save-graphs>" )
+
+    print( paste( "Usage: Rscript SCPFIntentInstallWithdrawRerouteLat.R",
+                                  "<isFlowObj>" ,
+                                  "<database-host>",
+                                  "<database-port>",
+                                  "<database-user-id>",
+                                  "<database-password>",
+                                  "<test-name>",
+                                  "<branch-name>",
+                                  "<batch-size>",
+                                  "<directory-to-save-graphs>",
+                                  sep=" " ) )
+
     q()  # basically exit(), but in R
 }
 
-flowObjFileModifier <- ""
-if ( args[ 1 ] == "y" ){
-    flowObjFileModifier <- "fobj_"
-}
+# -----------------------------------
+# Create File Name and Title of Graph
+# -----------------------------------
 
-# paste() is used to concatenate strings
-errBarOutputFile <- paste( args[ 9 ], "SCPFIntentInstallWithdrawRerouteLat", sep="" )
-errBarOutputFile <- paste( errBarOutputFile, args[ 7 ], sep="_" )
+print( "Creating filename and title of graph." )
+
+chartTitle <- "Intent Install, Withdraw, & Reroute Latencies"
+flowObjFileModifier <- ""
+errBarOutputFile <- paste( args[ 9 ],
+                    "SCPFIntentInstallWithdrawRerouteLat_",
+                    args[ 7 ],
+                    sep="" )
+
 if ( args[ 1 ] == "y" ){
     errBarOutputFile <- paste( errBarOutputFile, "_fobj", sep="" )
+    flowObjFileModifier <- "fobj_"
+    chartTitle <- paste( chartTitle, "w/ FlowObj" )
 }
-errBarOutputFile <- paste( errBarOutputFile, "_", sep="" )
-errBarOutputFile <- paste( errBarOutputFile, args[ 8 ], sep="" )
-errBarOutputFile <- paste( errBarOutputFile, "-batchSize", sep="" )
-errBarOutputFile <- paste( errBarOutputFile, "_graph.jpg", sep="" )
 
-print( "Reading from databases." )
+errBarOutputFile <- paste( errBarOutputFile,
+                           "_",
+                           args[ 8 ],
+                           "-batchSize_graph.jpg",
+                           sep="" )
 
-con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 2 ], port=strtoi( args[ 3 ] ), user=args[ 4 ],password=args[ 5 ] )
+chartTitle <- paste( chartTitle,
+                     "\nBatch Size =",
+                     args[ 8 ],
+                     sep=" " )
 
-command1 <- paste( "SELECT * FROM intent_latency_", flowObjFileModifier, sep="" )
-command1 <- paste( command1, "tests WHERE batch_size=", sep="" )
-command1 <- paste( command1, args[ 8 ], sep="" )
-command1 <- paste( command1, " AND branch = '", sep="" )
-command1 <- paste( command1, args[ 7 ], sep="" )
-command1 <- paste( command1, "' AND date IN ( SELECT MAX( date ) FROM intent_latency_", sep="" )
-command1 <- paste( command1, flowObjFileModifier, sep="" )
-command1 <- paste( command1,  "tests WHERE branch='", sep="" )
-command1 <- paste( command1,  args[ 7 ], sep="" )
-command1 <- paste( command1,  "')", sep="" )
+# ------------------
+# SQL Initialization
+# ------------------
 
-print( paste( "Sending SQL command:", command1 ) )
+print( "Initializing SQL" )
 
-fileData1 <- dbGetQuery( con, command1 )
+con <- dbConnect( dbDriver( "PostgreSQL" ),
+                  dbname = "onostest",
+                  host = args[ 2 ],
+                  port = strtoi( args[ 3 ] ),
+                  user = args[ 4 ],
+                  password = args[ 5 ] )
 
-command2 <- paste( "SELECT * FROM intent_reroute_latency_", flowObjFileModifier, sep="" )
-command2 <- paste( command2, "tests WHERE batch_size=", sep="" )
-command2 <- paste( command2, args[ 8 ], sep="" )
-command2 <- paste( command2, " AND branch = '", sep="" )
-command2 <- paste( command2, args[ 7 ], sep="" )
-command2 <- paste( command2, "' AND date IN ( SELECT MAX( date ) FROM intent_reroute_latency_", sep="" )
-command2 <- paste( command2, flowObjFileModifier, sep="" )
-command2 <- paste( command2,  "tests WHERE branch='", sep="" )
-command2 <- paste( command2,  args[ 7 ], sep="" )
-command2 <- paste( command2,  "')", sep="" )
+# ---------------------------------------
+# Intent Install and Withdraw SQL Command
+# ---------------------------------------
+print( "Generating Intent Install and Withdraw SQL Command" )
 
-print( paste( "Sending SQL command:", command2 ) )
+installWithdrawSQLCommand <- paste( "SELECT * FROM intent_latency_",
+                                    flowObjFileModifier,
+                                    "tests WHERE batch_size=",
+                                    args[ 8 ],
+                                    " AND branch = '",
+                                    args[ 7 ],
+                                    "' AND date IN ( SELECT MAX( date ) FROM intent_latency_",
+                                    flowObjFileModifier,
+                                    "tests WHERE branch='",
+                                    args[ 7 ],
+                                    "')",
+                                    sep="" )
 
-fileData2 <- dbGetQuery( con, command2 )
+print( "Sending Intent Install and Withdraw SQL command:" )
+print( installWithdrawSQLCommand )
+installWithdrawData <- dbGetQuery( con, installWithdrawSQLCommand )
+
+# --------------------------
+# Intent Reroute SQL Command
+# --------------------------
+
+print( "Generating Intent Reroute SQL Command" )
+
+rerouteSQLCommand <- paste( "SELECT * FROM intent_reroute_latency_",
+                            flowObjFileModifier,
+                            "tests WHERE batch_size=",
+                            args[ 8 ],
+                            " AND branch = '",
+                            args[ 7 ],
+                            "' AND date IN ( SELECT MAX( date ) FROM intent_reroute_latency_",
+                            flowObjFileModifier,
+                            "tests WHERE branch='",
+                            args[ 7 ],
+                            "')",
+                            sep="" )
+
+print( "Sending Intent Reroute SQL command:" )
+print( rerouteSQLCommand )
+rerouteData <- dbGetQuery( con, rerouteSQLCommand )
 
 # **********************************************************
-# STEP 2: Organize data.
+# STEP 2: Organize Data.
 # **********************************************************
 
-print( "STEP 2: Organize data." )
+print( "**********************************************************" )
+print( "STEP 2: Organize Data." )
+print( "**********************************************************" )
 
-# Create lists c() and organize data into their corresponding list.
-print( "Sorting data." )
-if ( ncol( fileData2 ) == 0 ){
-    avgs <- c( fileData1[ 'install_avg' ], fileData1[ 'withdraw_avg' ] )
+# -------------------------------------------------------
+# Combining Install, Withdraw, and Reroute Latencies Data
+# -------------------------------------------------------
+
+print( "Combining Install, Withdraw, and Reroute Latencies Data" )
+
+if ( ncol( rerouteData ) == 0 ){  # Checks if rerouteData exists, so we can exclude it if necessary
+    avgs <- c( installWithdrawData[ 'install_avg' ],
+               installWithdrawData[ 'withdraw_avg' ] )
 } else{
-    colnames( fileData2 ) <- c( "date", "name", "date", "branch", "commit", "scale", "batch_size", "reroute_avg", "reroute_std" )
-    avgs <- c( fileData1[ 'install_avg' ], fileData1[ 'withdraw_avg' ], fileData2[ 'reroute_avg' ] )
+    colnames( rerouteData ) <- c( "date",
+                                  "name",
+                                  "date",
+                                  "branch",
+                                  "commit",
+                                  "scale",
+                                  "batch_size",
+                                  "reroute_avg",
+                                  "reroute_std" )
+
+    avgs <- c( installWithdrawData[ 'install_avg' ],
+               installWithdrawData[ 'withdraw_avg' ],
+               rerouteData[ 'reroute_avg' ] )
 }
 
-# Parse lists into data frames.
-dataFrame <- melt( avgs )              # This is where reshape2 comes in. Avgs list is converted to data frame
+# Combine lists into data frames.
+dataFrame <- melt( avgs )
 
-if ( ncol( fileData2 ) == 0 ){
-    dataFrame$scale <- c( fileData1$scale, fileData1$scale )      # Add node scaling to the data frame.
-    dataFrame$stds <- c( fileData1$install_std, fileData1$withdraw_std )
+# --------------------
+# Construct Data Frame
+# --------------------
+
+print( "Constructing data frame." )
+
+if ( ncol( rerouteData ) == 0 ){  # Checks if rerouteData exists (due to batch size) for the dataFrame this time
+    dataFrame$scale <- c( installWithdrawData$scale,
+                          installWithdrawData$scale )
+
+    dataFrame$stds <- c( installWithdrawData$install_std,
+                         installWithdrawData$withdraw_std )
 } else{
-    dataFrame$scale <- c( fileData1$scale, fileData1$scale, fileData2$scale )      # Add node scaling to the data frame.
-    dataFrame$stds <- c( fileData1$install_std, fileData1$withdraw_std, fileData2$reroute_std )
+    dataFrame$scale <- c( installWithdrawData$scale,
+                          installWithdrawData$scale,
+                          rerouteData$scale )
+
+    dataFrame$stds <- c( installWithdrawData$install_std,
+                         installWithdrawData$withdraw_std,
+                         rerouteData$reroute_std )
 }
-colnames( dataFrame ) <- c( "ms", "type", "scale", "stds" )
+
+colnames( dataFrame ) <- c( "ms",
+                            "type",
+                            "scale",
+                            "stds" )
 
 # Format data frame so that the data is in the same order as it appeared in the file.
 dataFrame$type <- as.character( dataFrame$type )
 dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 
-dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
-
-
+dataFrame <- na.omit( dataFrame ) # Omit any data that doesn't exist
 
 print( "Data Frame Results:" )
 print( dataFrame )
 
 # **********************************************************
-# STEP 3: Generate graphs.
+# STEP 3: Generate graph.
 # **********************************************************
 
-print( "STEP 3: Generate graphs." )
+print( "**********************************************************" )
+print( "STEP 3: Generate Graph." )
+print( "**********************************************************" )
 
-# 1. Graph fundamental data is generated first.
-#    These are variables that apply to all of the graphs being generated, regardless of type.
-#
-# 2. Type specific graph data is generated.
-#     Data specific for the error bar and stacked bar graphs are generated.
-#
-# 3. Generate and save the graphs.
-#      Graphs are saved to the filename above, in the directory provided in command line args
+# -------------------
+# Main Plot Generated
+# -------------------
+
+print( "Creating the main plot." )
+
+mainPlot <- ggplot( data = dataFrame, aes( x = scale,
+                                           y = ms,
+                                           ymin = ms,
+                                           ymax = ms + stds,
+                                           fill = type ) )
+
+# ------------------------------
+# Fundamental Variables Assigned
+# ------------------------------
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
-
-mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, ymin = ms, ymax = ms + stds, fill = type ) )
-
-# Formatting the plot
-width <- 1.3  # Width of the bars.
-xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
+theme_set( theme_grey( base_size = 22 ) )
+barWidth <- 1.3
+xScaleConfig <- scale_x_continuous( breaks = c( 1, 3, 5, 7, 9) )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-chartTitle <- "Intent Install, Withdraw, & Reroute Latencies"
-if ( args[ 1 ] == "y" ){
-    chartTitle <- paste( chartTitle, "w/ FlowObj" )
-}
-chartTitle <- paste( chartTitle, "\nBatch Size =" )
-chartTitle <- paste( chartTitle, fileData1[ 1,'batch_size' ] )
+title <- ggtitle( chartTitle )
+imageWidth <- 15
+imageHeight <- 10
+imageDPI <- 200
+errorBarColor <- rgb( 140, 140, 140, maxColorValue=255 )
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ),
+                legend.position="bottom",
+                legend.text=element_text( size=22 ),
+                legend.title = element_blank(),
+                legend.key.size = unit( 1.5, 'lines' ) )
+
+colors <- scale_fill_manual( values=c( "#F77670",
+                                       "#619DFA",
+                                       "#18BA48" ) )
 
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot +
+                        xScaleConfig +
+                        xLabel +
+                        yLabel +
+                        fillLabel +
+                        theme +
+                        title +
+                        colors
 
-# Create the bar graph with error bars.
-# geom_bar contains:
-#    - stat: data formatting (usually "identity")
-#    - width: the width of the bar types (declared above)
-# geom_errorbar contains similar arguments as geom_bar.
+# ---------------------------
+# Generating Bar Graph Format
+# ---------------------------
+
 print( "Generating bar graph with error bars." )
-colors <- scale_fill_manual( values=c( "#F77670", "#619DFA", "#18BA48" ) )
-barGraphFormat <- geom_bar( stat = "identity", width = width, position = "dodge" )
-errorBarFormat <- geom_errorbar( width = width, position = position_dodge( width ), color=rgb( 140, 140, 140, maxColorValue=255 ) )
 
-title <- ggtitle( chartTitle )
-values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.035 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), position=position_dodge( width=width ), size = 5.5, fontface = "bold" )
-wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
-result <- fundamentalGraphData + barGraphFormat + colors + errorBarFormat + title + values + wrapLegend
+barGraphFormat <- geom_bar( stat = "identity",
+                            width = barWidth,
+                            position = "dodge" )
 
-# Save graph to file
+errorBarFormat <- geom_errorbar( width = barWidth,
+                                 position = position_dodge( barWidth ),
+                                 color = errorBarColor )
+
+values <- geom_text( aes( x = dataFrame$scale,
+                          y = dataFrame$ms + 0.035 * max( dataFrame$ms ),
+                          label = format( dataFrame$ms,
+                                          digits = 3,
+                                          big.mark = ",",
+                                          scientific = FALSE ) ),
+                          position = position_dodge( width = barWidth ),
+                          size = 5.5,
+                          fontface = "bold" )
+
+wrapLegend <- guides( fill = guide_legend( nrow = 1, byrow = TRUE ) )
+
+result <- fundamentalGraphData +
+          barGraphFormat +
+          errorBarFormat +
+          values +
+          wrapLegend
+
+# -----------------------
+# Exporting Graph to File
+# -----------------------
+
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
-print( paste( "Successfully wrote bar chart with error bars out to", errBarOutputFile ) )
+
+ggsave( errBarOutputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
+
+print( paste( "[SUCCESS] Successfully wrote bar chart with error bars out to", errBarOutputFile ) )

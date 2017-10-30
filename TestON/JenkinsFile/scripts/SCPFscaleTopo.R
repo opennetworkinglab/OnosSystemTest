@@ -21,64 +21,121 @@
 # please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
-# STEP 1: File management.
+# STEP 1: Data management.
 # **********************************************************
 
-print( "STEP 1: File management." )
+print( "**********************************************************" )
+print( "STEP 1: Data management." )
+print( "**********************************************************" )
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
-# Import libraries to be used for graphing and organizing data, respectively.
-# Find out more about ggplot2: https://github.com/tidyverse/ggplot2
-#                     reshape2: https://github.com/hadley/reshape
+# ----------------
+# Import Libraries
+# ----------------
+
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )    # For databases
 
-# Check if sufficient args are provided.
+# -------------------
+# Check CLI Arguments
+# -------------------
+
+print( "Verifying CLI args." )
+
 if ( is.na( args[ 7 ] ) ){
-    print( "Usage: Rscript SCPFgraphGenerator <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
+
+    print( paste( "Usage: Rscript SCPFgraphGenerator",
+                                  "<database-host>",
+                                  "<database-port>",
+                                  "<database-user-id>",
+                                  "<database-password>",
+                                  "<test-name>",
+                                  "<branch-name>",
+                                  "<directory-to-save-graphs>",
+                                  sep=" ") )
+
     q()  # basically exit(), but in R
 }
 
-# paste() is used to concatenate strings
-outputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
-outputFile <- paste( outputFile, args[ 6 ], sep="_" )
-outputFile <- paste( outputFile, "_graph.jpg", sep="" )
+# -----------------
+# Create File Names
+# -----------------
 
-print( "Reading from databases." )
+print( "Creating filenames and title of graph." )
 
-con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
+outputFile <- paste( args[ 7 ],
+                     args[ 5 ],
+                     "_",
+                     args[ 6 ],
+                     "_graph.jpg",
+                     sep="" )
 
-command  <- paste( "SELECT * FROM scale_topo_latency_details WHERE branch = '", args[ 6 ], sep = "" )
-command <- paste( command, "' AND date IN ( SELECT MAX( date ) FROM scale_topo_latency_details WHERE branch = '", sep = "" )
-command <- paste( command, args[ 6 ], sep = "" )
-command <- paste( command, "' ) ", sep="" )
+chartTitle <- "Scale Topology Latency Test"
 
-print( paste( "Sending SQL command:", command ) )
+# ------------------
+# SQL Initialization
+# ------------------
 
+print( "Initializing SQL" )
+
+con <- dbConnect( dbDriver( "PostgreSQL" ),
+                  dbname = "onostest",
+                  host = args[ 1 ],
+                  port = strtoi( args[ 2 ] ),
+                  user = args[ 3 ],
+                  password = args[ 4 ] )
+
+# --------------------------
+# Scale Topology SQL Command
+# --------------------------
+
+print( "Generating Scale Topology SQL Command" )
+
+command <- paste( "SELECT * FROM scale_topo_latency_details WHERE branch = '",
+                  args[ 6 ],
+                  "' AND date IN ( SELECT MAX( date ) FROM scale_topo_latency_details WHERE branch = '",
+                  args[ 6 ],
+                  "' ) ",
+                  sep = "" )
+
+print( "Sending SQL command:" )
+print( command )
 fileData <- dbGetQuery( con, command )
-
-title <- paste( args[ 5 ], args[ 6 ], sep="_" )
 
 # **********************************************************
 # STEP 2: Organize data.
 # **********************************************************
 
-print( "STEP 2: Organize data." )
+print( "**********************************************************" )
+print( "STEP 2: Organize Data." )
+print( "**********************************************************" )
 
-# Create lists c() and organize data into their corresponding list.
+# ------------
+# Data Sorting
+# ------------
+
 print( "Sorting data." )
-avgs <- c( fileData[ 'last_role_request_to_last_topology' ], fileData[ 'last_connection_to_last_role_request' ], fileData[ 'first_connection_to_last_connection' ] )
+avgs <- c( fileData[ 'last_role_request_to_last_topology' ],
+           fileData[ 'last_connection_to_last_role_request' ],
+           fileData[ 'first_connection_to_last_connection' ] )
+
+# --------------------
+# Construct Data Frame
+# --------------------
+
+print( "Constructing Data Frame" )
 
 # Parse lists into data frames.
-dataFrame <- melt( avgs )              # This is where reshape2 comes in. Avgs list is converted to data frame
-dataFrame$scale <- fileData$scale      # Add node scaling to the data frame.
-colnames( dataFrame ) <- c( "s", "type", "scale")
-
+dataFrame <- melt( avgs )
+dataFrame$scale <- fileData$scale
+colnames( dataFrame ) <- c( "s",
+                            "type",
+                            "scale")
 
 # Format data frame so that the data is in the same order as it appeared in the file.
 dataFrame$type <- as.character( dataFrame$type )
@@ -87,7 +144,9 @@ dataFrame$iterative <- seq( 1, nrow( fileData ), by = 1 )
 
 dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
 
-sum <- fileData[ 'last_role_request_to_last_topology' ] + fileData[ 'last_connection_to_last_role_request' ] + fileData[ 'first_connection_to_last_connection' ]
+sum <- fileData[ 'last_role_request_to_last_topology' ] +
+       fileData[ 'last_connection_to_last_role_request' ] +
+       fileData[ 'first_connection_to_last_connection' ]
 
 print( "Data Frame Results:" )
 print( dataFrame )
@@ -96,48 +155,86 @@ print( dataFrame )
 # STEP 3: Generate graphs.
 # **********************************************************
 
-print( "STEP 3: Generate graphs." )
+print( "**********************************************************" )
+print( "STEP 3: Generate Graph." )
+print( "**********************************************************" )
 
-# 1. Graph fundamental data is generated first.
-#    These are variables that apply to all of the graphs being generated, regardless of type.
-#
-# 2. Type specific graph data is generated.
-#
-# 3. Generate and save the graphs.
-#      Graphs are saved to the filename above, in the directory provided in command line args
+# ------------------
+# Generate Main Plot
+# ------------------
+
+print( "Creating main plot." )
+
+mainPlot <- ggplot( data = dataFrame, aes( x = iterative,
+                                           y = s,
+                                           fill = type ) )
+
+# ------------------------------
+# Fundamental Variables Assigned
+# ------------------------------
 
 print( "Generating fundamental graph data." )
 
 theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
-
-# Create the primary plot here.
-# ggplot contains the following arguments:
-#     - data: the data frame that the graph will be based off of
-#     - aes: the asthetics of the graph which require:
-#        - x: x-axis values (usually node scaling)
-#        - y: y-axis values (usually time in milliseconds)
-#        - fill: the category of the colored side-by-side bars (usually type)
-mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = s, fill = type ) )
-
-# Formatting the plot
 width <- 0.6  # Width of the bars.
-xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$scale )
+xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative,
+                                    label = dataFrame$scale )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (s)" )
 fillLabel <- labs( fill="Type" )
-chartTitle <- paste( "Scale Topology Latency Test" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
-values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.02 * max( sum ), label = format( sum, big.mark = ",", scientific = FALSE ), fontface = "bold" ), size = 7.0 )
-wrapLegend <- guides( fill=guide_legend( nrow=2, byrow=TRUE ) )
+imageWidth <- 15
+imageHeight <- 10
+imageDPI <- 200
+
+theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face = 'bold' ),
+                legend.position = "bottom",
+                legend.text = element_text( size=22 ),
+                legend.title = element_blank(),
+                legend.key.size = unit( 1.5, 'lines' ) )
+
+values <- geom_text( aes( x = dataFrame$iterative,
+                          y = sum + 0.02 * max( sum ),
+                          label = format( sum,
+                                          big.mark = ",",
+                                          scientific = FALSE ),
+                          fontface = "bold" ),
+                          size = 7.0 )
+
+wrapLegend <- guides( fill = guide_legend( nrow=2, byrow=TRUE ) )
+
+title <- ggtitle( chartTitle, "" )
+
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + values + wrapLegend
+fundamentalGraphData <- mainPlot +
+                        xScaleConfig +
+                        xLabel +
+                        yLabel +
+                        fillLabel +
+                        theme +
+                        values +
+                        wrapLegend +
+                        title
+
+# ---------------------------
+# Generating Bar Graph Format
+# ---------------------------
 
 print( "Generating bar graph." )
-barGraphFormat <- geom_bar( stat = "identity", width = width )
-title <- ggtitle( paste( chartTitle, "" ) )
-result <- fundamentalGraphData + barGraphFormat + title
 
-# Save graph to file
+barGraphFormat <- geom_bar( stat = "identity", width = width )
+
+result <- fundamentalGraphData +
+          barGraphFormat
+
+# -----------------------
+# Exporting Graph to File
+# -----------------------
+
 print( paste( "Saving bar chart to", outputFile ) )
-ggsave( outputFile, width = 15, height = 10, dpi = 200 )
-print( paste( "Successfully wrote bar chart out to", outputFile ) )
+
+ggsave( outputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
+
+print( paste( "[SUCCESS] Successfully wrote bar chart out to", outputFile ) )

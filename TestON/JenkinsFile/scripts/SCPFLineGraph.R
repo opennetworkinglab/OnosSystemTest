@@ -22,20 +22,29 @@
 
 # This is the R script that generates the SCPF front page graphs.
 
+
 # **********************************************************
 # STEP 1: Data management.
 # **********************************************************
 
+print( "**********************************************************" )
 print( "STEP 1: Data management." )
+print( "**********************************************************" )
 
-# Import libraries to be used for graphing and organizing data, respectively.
-# Find out more about ggplot2: https://github.com/tidyverse/ggplot2
-#                     reshape2: https://github.com/hadley/reshape
-#                     RPostgreSQL: https://code.google.com/archive/p/rpostgresql/
+# ----------------
+# Import Libraries
+# ----------------
+
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )
+
+# -------------------
+# Check CLI Arguments
+# -------------------
+
+print( "Verifying CLI args." )
 
 # Command line arguments are read. Args include the database credentials, test name, branch name, and the directory to output files.
 print( "Reading commmand-line args." )
@@ -43,37 +52,72 @@ args <- commandArgs( trailingOnly=TRUE )
 
 # Check if sufficient args are provided.
 if ( is.na( args[ 10 ] ) ){
-    print( "Usage: Rscript testresultgraph.R <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <#-dates> <SQL-command> <y-axis> <directory-to-save-graph>" )
+
+    print( paste( "Usage: Rscript testresultgraph.R",
+                                    "<database-host>",
+                                    "<database-port>",
+                                    "<database-user-id>",
+                                    "<database-password>",
+                                    "<graph-title>",    # part of the output filename as well
+                                    "<branch-name>",    # part of the output filename
+                                    "<#-dates>",        # part of the output filename
+                                    "<SQL-command>",
+                                    "<y-axis-title>",   # y-axis may be different among other SCPF graphs (ie: batch size, latency, etc. )
+                                    "<directory-to-save-graph>",
+                  sep = " " ) )
+
     q()  # basically exit(), but in R
 }
 
-# Filenames for the output graph include the testname, branch, and the graph type.
+# -------------------------------
+# Create Title and Graph Filename
+# -------------------------------
 
-outputFile <- paste( args[ 10 ], "SCPF_Front_Page" , sep="" )
-outputFile <- paste( outputFile, gsub( " ", "_", args[ 5 ] ), sep="_" )
-outputFile <- paste( outputFile, args[ 6 ], sep="_" )
-outputFile <- paste( outputFile, args[ 7 ], sep="_" )
-outputFile <- paste( outputFile, "dates", sep="-" )
-outputFile <- paste( outputFile, "_graph.jpg", sep="" )
-
-# From RPostgreSQL
-print( "Reading from databases." )
-con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
-
-print( "Sending SQL command." )
-fileData <- dbGetQuery( con, args[ 8 ] )
+print( "Creating title of graph" )
 
 # Title of graph based on command line args.
 title <- args[ 5 ]
+
+print( "Creating graph filename." )
+
+# Filenames for the output graph include the testname, branch, and the graph type.
+outputFile <- paste( args[ 10 ],
+                    "SCPF_Front_Page_",
+                    gsub( " ", "_", args[ 5 ] ),
+                    "_",
+                    args[ 6 ],
+                    "_",
+                    args[ 7 ],
+                    "-dates_graph.jpg",
+                    sep="" )
+
+# ------------------
+# SQL Initialization
+# ------------------
+
+print( "Initializing SQL" )
+con <- dbConnect( dbDriver( "PostgreSQL" ),
+                  dbname = "onostest",
+                  host = args[ 1 ],
+                  port = strtoi( args[ 2 ] ),
+                  user = args[ 3 ],
+                  password = args[ 4 ] )
+
+print( "Sending SQL command:" )
+print( args[ 8 ] )
+fileData <- dbGetQuery( con, args[ 8 ] )
+
 
 # **********************************************************
 # STEP 2: Organize data.
 # **********************************************************
 
-print( "STEP 2: Organize data." )
+print( "**********************************************************" )
+print( "STEP 2: Organize Data." )
+print( "**********************************************************" )
 
 # Create lists c() and organize data into their corresponding list.
-print( "Sorting data into new data frame." )
+print( "Combine data retrieved from databases into a list." )
 
 if ( ncol( fileData ) > 1 ){
     for ( i in 2:ncol( fileData ) ){
@@ -81,13 +125,17 @@ if ( ncol( fileData ) > 1 ){
     }
 }
 
-# Parse lists into data frames.
-# This is where reshape2 comes in. Avgs list is converted to data frame.
-dataFrame <- melt( fileData )
+# --------------------
+# Construct Data Frame
+# --------------------
 
+print( "Constructing data frame from combined data." )
+
+dataFrame <- melt( fileData )
 dataFrame$date <- fileData$date
 
-colnames( dataFrame ) <- c( "Legend", "Values" )
+colnames( dataFrame ) <- c( "Legend",
+                            "Values" )
 
 # Format data frame so that the data is in the same order as it appeared in the file.
 dataFrame$Legend <- as.character( dataFrame$Legend )
@@ -105,7 +153,13 @@ print( dataFrame )
 # STEP 3: Generate graphs.
 # **********************************************************
 
-print( "STEP 3: Generate graphs." )
+print( "**********************************************************" )
+print( "STEP 3: Generate Graph." )
+print( "**********************************************************" )
+
+# -------------------
+# Main Plot Generated
+# -------------------
 
 print( "Creating main plot." )
 # Create the primary plot here.
@@ -115,35 +169,91 @@ print( "Creating main plot." )
 #        - x: x-axis values (usually iterative, but it will become date # later)
 #        - y: y-axis values (usually tests)
 #        - color: the category of the colored lines (usually legend of test)
-theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
-mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = Values, color = Legend ) )
+
+mainPlot <- ggplot( data = dataFrame, aes( x = iterative,
+                                           y = Values,
+                                           color = Legend ) )
+
+# -------------------
+# Main Plot Formatted
+# -------------------
 
 print( "Formatting main plot." )
 
-# Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + expand_limits( y = 0 )
+limitExpansion <- expand_limits( y = 0 )
 
-yScaleConfig <- scale_y_continuous( breaks = seq( 0, max( dataFrame$Values ) * 1.05, by = ceiling( max( dataFrame$Values ) / 10 ) ) )
+maxYDisplay <- max( dataFrame$Values ) * 1.05
+yBreaks <- ceiling( max( dataFrame$Values ) / 10 )
+yScaleConfig <- scale_y_continuous( breaks = seq( 0, maxYDisplay, by = yBreaks ) )
 
-xLabel <- xlab( "Time" )
+# ------------------------------
+# Fundamental Variables Assigned
+# ------------------------------
+
+print( "Generating fundamental graph data." )
+
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
+xLabel <- xlab( "Build" )
 yLabel <- ylab( args[ 9 ] )
-fillLabel <- labs( fill="Type" )
-legendLabels <- scale_colour_discrete( labels = names( fileData ) )
-centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( axis.text.x = element_blank(), axis.ticks.x = element_blank(), plot.title = element_text( size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ), legend.direction = 'horizontal' )
-colors <- scale_color_manual( values=c( "#111111", "#008CFF", "#FF3700", "#00E043", "#EEB600", "#E500FF") )
-wrapLegend <- guides( color=guide_legend( nrow=2, byrow=TRUE ) )
 
-fundamentalGraphData <- fundamentalGraphData + yScaleConfig + xLabel + yLabel + fillLabel + legendLabels + centerTitle + theme + colors
+imageWidth <- 15
+imageHeight <- 10
+imageDPI <- 200
+
+# Set other graph configurations here.
+theme <- theme( axis.text.x = element_blank(),
+                axis.ticks.x = element_blank(),
+                plot.title = element_text( size = 32, face='bold', hjust = 0.5 ),
+                legend.position = "bottom",
+                legend.text = element_text( size=22 ),
+                legend.title = element_blank(),
+                legend.key.size = unit( 1.5, 'lines' ),
+                legend.direction = 'horizontal' )
+
+# Colors used for the lines.
+# Note: graphs that have X lines will use the first X colors in this list.
+colors <- scale_color_manual( values=c( "#111111",   # black
+                                        "#008CFF",   # blue
+                                        "#FF3700",   # red
+                                        "#00E043",   # green
+                                        "#EEB600",   # yellow
+                                        "#E500FF") ) # purple (not used)
+
+wrapLegend <- guides( color = guide_legend( nrow = 2, byrow = TRUE ) )
+title <- ggtitle( title )
+
+fundamentalGraphData <- mainPlot +
+                        limitExpansion +
+                        yScaleConfig +
+                        xLabel +
+                        yLabel +
+                        theme +
+                        colors +
+                        wrapLegend +
+                        title
+
+# ----------------------------
+# Generating Line Graph Format
+# ----------------------------
+
 print( "Generating line graph." )
 
 lineGraphFormat <- geom_line( size = 0.75 )
 pointFormat <- geom_point( size = 1.75 )
-title <- ggtitle( title )
 
-result <- fundamentalGraphData + lineGraphFormat + pointFormat + title + wrapLegend
+result <- fundamentalGraphData +
+          lineGraphFormat +
+          pointFormat
 
-# Save graph to file
+# -----------------------
+# Exporting Graph to File
+# -----------------------
+
 print( paste( "Saving result graph to", outputFile ) )
-ggsave( outputFile, width = 15, height = 10, dpi = 200 )
-print( paste( "Successfully wrote result graph out to", outputFile ) )
+
+ggsave( outputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
+
+print( paste( "[SUCCESS] Successfully wrote result graph out to", outputFile ) )

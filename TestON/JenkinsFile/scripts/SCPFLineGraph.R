@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # This is the R script that generates the SCPF front page graphs.
 
@@ -31,7 +31,7 @@ print( "STEP 1: Data management." )
 # Import libraries to be used for graphing and organizing data, respectively.
 # Find out more about ggplot2: https://github.com/tidyverse/ggplot2
 #                     reshape2: https://github.com/hadley/reshape
-#                      RPostgreSQL: https://code.google.com/archive/p/rpostgresql/
+#                     RPostgreSQL: https://code.google.com/archive/p/rpostgresql/
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
@@ -115,7 +115,7 @@ print( "Creating main plot." )
 #        - x: x-axis values (usually iterative, but it will become date # later)
 #        - y: y-axis values (usually tests)
 #        - color: the category of the colored lines (usually legend of test)
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = Values, color = Legend ) )
 
 print( "Formatting main plot." )
@@ -125,23 +125,25 @@ fundamentalGraphData <- mainPlot + expand_limits( y = 0 )
 
 yScaleConfig <- scale_y_continuous( breaks = seq( 0, max( dataFrame$Values ) * 1.05, by = ceiling( max( dataFrame$Values ) / 10 ) ) )
 
-xLabel <- xlab( "Date" )
+xLabel <- xlab( "Time" )
 yLabel <- ylab( args[ 9 ] )
 fillLabel <- labs( fill="Type" )
 legendLabels <- scale_colour_discrete( labels = names( fileData ) )
 centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( axis.text.x = element_blank(), axis.ticks.x = element_blank(), plot.title = element_text( size = 28, face='bold' ) )
+theme <- theme( axis.text.x = element_blank(), axis.ticks.x = element_blank(), plot.title = element_text( size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ), legend.direction = 'horizontal' )
+colors <- scale_color_manual( values=c( "#111111", "#008CFF", "#FF3700", "#00E043", "#EEB600", "#E500FF") )
+wrapLegend <- guides( color=guide_legend( nrow=2, byrow=TRUE ) )
 
-fundamentalGraphData <- fundamentalGraphData + yScaleConfig + xLabel + yLabel + fillLabel + legendLabels + centerTitle + theme
+fundamentalGraphData <- fundamentalGraphData + yScaleConfig + xLabel + yLabel + fillLabel + legendLabels + centerTitle + theme + colors
 print( "Generating line graph." )
 
-lineGraphFormat <- geom_line()
-pointFormat <- geom_point( size = 0.2 )
+lineGraphFormat <- geom_line( size = 0.75 )
+pointFormat <- geom_point( size = 1.75 )
 title <- ggtitle( title )
 
-result <- fundamentalGraphData + lineGraphFormat + pointFormat + title
+result <- fundamentalGraphData + lineGraphFormat + pointFormat + title + wrapLegend
 
 # Save graph to file
 print( paste( "Saving result graph to", outputFile ) )
-ggsave( outputFile, width = 10, height = 6, dpi = 200 )
+ggsave( outputFile, width = 15, height = 10, dpi = 200 )
 print( paste( "Successfully wrote result graph out to", outputFile ) )

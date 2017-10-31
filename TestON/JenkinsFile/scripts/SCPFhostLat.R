@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,7 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
+# Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -47,9 +45,7 @@ if ( is.na( args[ 7 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
-
+# paste() is used to concatenate strings
 errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
 errBarOutputFile <- paste( errBarOutputFile, "_errGraph.jpg", sep="" )
@@ -98,26 +94,27 @@ print( dataFrame )
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
-mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, ymin = ms - std, ymax = ms + std ) )
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
+mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, ymin = ms, ymax = ms + std ) )
 xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ) )
 
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 
 print( "Generating bar graph with error bars." )
 width <- 0.9
-barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width, fill="#E8BD00" )
-errorBarFormat <- geom_errorbar( position=position_dodge( ), width = width )
-title <- ggtitle( paste( chartTitle, "with Standard Error Bars" ) )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width, fill="#A700EF" )
+errorBarFormat <- geom_errorbar( position=position_dodge(), width = width, color=rgb( 140, 140, 140, maxColorValue=255 ) )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.06 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
+title <- ggtitle( paste( chartTitle, "" ) )
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote bar chart out to", errBarOutputFile ) )

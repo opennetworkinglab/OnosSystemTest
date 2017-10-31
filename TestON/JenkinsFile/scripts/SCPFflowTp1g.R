@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,7 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
+# Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -47,9 +45,7 @@ if ( is.na( args[ 9 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
-
+# paste() is used to concatenate strings.
 errBarOutputFile <- paste( args[ 9 ], args[ 6 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 7 ], sep="_" )
 if ( args[ 8 ] == 'y' ){
@@ -139,9 +135,9 @@ print( "Generating fundamental graph data." )
 #        - y: y-axis values (usually time in milliseconds)
 #        - fill: the category of the colored side-by-side bars (usually type)
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
-mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = throughput, ymin = throughput - std, ymax = throughput + std, fill = type ) )
+mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = throughput, ymin = throughput, ymax = throughput + std, fill = type ) )
 
 # Formatting the plot
 width <- 0.7  # Width of the bars.
@@ -160,7 +156,8 @@ if ( args[ 8 ] == 'y' ){
     chartTitle <- paste( chartTitle, "0" )
 }
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ) )
+
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
@@ -172,12 +169,13 @@ fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + 
 #    - width: the width of the bar types (declared above)
 # geom_errorbar contains similar arguments as geom_bar.
 print( "Generating bar graph with error bars." )
-barGraphFormat <- geom_bar( stat = "identity", width = width, fill="#FFA94F" )
-errorBarFormat <- geom_errorbar( position=position_dodge( ), width = width )
+barGraphFormat <- geom_bar( stat = "identity", width = width, fill="#FFAA3C" )
+errorBarFormat <- geom_errorbar( width = width, position=position_dodge(), color=rgb( 140,140,140, maxColorValue=255 ) )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$throughput + 0.03 * max( dataFrame$throughput ), label = format( dataFrame$throughput, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
 title <- ggtitle( paste( chartTitle, "" ) )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
 # Save graph to file
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 print( paste( "Successfully wrote bar chart with error bars out to", errBarOutputFile ) )

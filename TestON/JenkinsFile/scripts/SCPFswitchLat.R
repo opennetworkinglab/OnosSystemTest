@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,7 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
+# Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -46,8 +44,7 @@ if ( is.na( args[ 7 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
+# paste() is used to concatenate strings.
 errBarOutputFileUp <- paste( args[ 7 ], "SCPFswitchLat_", sep = "" )
 errBarOutputFileUp <- paste( errBarOutputFileUp, args[ 6 ], sep = "" )
 errBarOutputFileUp <- paste( errBarOutputFileUp, "_UpErrBarWithStack.jpg", sep = "" )
@@ -109,64 +106,55 @@ print( downAvgsData )
 
 print( "Generating fundamental graph data (Switch Up Latency)." )
 width <- 1
- if ( min( fileData[ 'up_end_to_end_avg' ] - upAvgsData$stds ) < 0 ) {
-     yMin <- min( fileData[ 'up_end_to_end_avg' ] + upAvgsData$stds ) * 1.05
- } else {
-     yMin <- 0
- }
-yMax <- max( fileData[ 'up_end_to_end_avg' ] + upAvgsData$stds )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
-mainPlot <- ggplot( data = upAvgsData, aes( x = scale, y = ms, fill = type, ymin = fileData[ 'up_end_to_end_avg' ] - stds, ymax = fileData[ 'up_end_to_end_avg' ] + stds ) )
+mainPlot <- ggplot( data = upAvgsData, aes( x = scale, y = ms, fill = type, ymin = fileData[ 'up_end_to_end_avg' ], ymax = fileData[ 'up_end_to_end_avg' ] + stds ) )
 xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
-yLimit <- ylim( yMin, yMax )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
 
-fundamentalGraphData <- mainPlot + yLimit + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 print( "Generating bar graph with error bars (Switch Up Latency)." )
 barGraphFormat <- geom_bar( stat="identity", width = width )
-errorBarFormat <- geom_errorbar( width = width )
-
+errorBarFormat <- geom_errorbar( width = width, color=rgb( 140, 140, 140, maxColorValue=255 ) )
+sum <- fileData[ 'up_device_to_graph_avg' ] + fileData[ 'role_reply_to_device_avg' ] + fileData[ 'role_request_to_role_reply_avg' ] + fileData[ 'feature_reply_to_role_request_avg' ] + fileData[ 'tcp_to_feature_reply_avg' ]
+values <- geom_text( aes( x=upAvgsData$scale, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
 title <- ggtitle( "Switch Up Latency" )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
+wrapLegend <- guides( fill=guide_legend( nrow=2, byrow=TRUE ) )
+result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values + wrapLegend
 
 
 print( paste( "Saving bar chart with error bars (Switch Up Latency) to", errBarOutputFileUp ) )
-ggsave( errBarOutputFileUp, width = 10, height = 6, dpi = 200 )
-
+ggsave( errBarOutputFileUp, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote bar chart with error bars (Switch Up Latency) out to", errBarOutputFileUp ) )
 
+# Generate switch down latency graph
 
 print( "Generating fundamental graph data (Switch Down Latency)." )
- if ( min( fileData[ 'down_end_to_end_avg' ] - downAvgsData$stds ) < 0 ) {
-     yMin <- min( fileData[ 'down_end_to_end_avg' ] - downAvgsData$stds )
- } else {
-     yMin <- 0
- }
- yMax <- max( fileData[ 'down_end_to_end_avg' ] + downAvgsData$stds )
 
-mainPlot <- ggplot( data = downAvgsData, aes( x = scale, y = ms, fill = type, ymin = fileData[ 'down_end_to_end_avg' ] - stds, ymax = fileData[ 'down_end_to_end_avg' ] + stds ) )
-yLimit <- ylim( yMin, yMax )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+mainPlot <- ggplot( data = downAvgsData, aes( x = scale, y = ms, fill = type, ymin = fileData[ 'down_end_to_end_avg' ], ymax = fileData[ 'down_end_to_end_avg' ] + stds ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+colors <- scale_fill_manual( values=c( "#F77670", "#619DFA", "#18BA48" ) )
 
-fundamentalGraphData <- mainPlot + yLimit + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 print( "Generating bar graph with error bars (Switch Down Latency)." )
 barGraphFormat <- geom_bar( stat="identity", width = width )
-errorBarFormat <- geom_errorbar( width = width )
+errorBarFormat <- geom_errorbar( width = width, color=rgb( 140, 140, 140, maxColorValue=255 ) )
 
 title <- ggtitle( "Switch Down Latency" )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title
-
+sum <- fileData[ 'down_device_to_graph_avg' ] + fileData[ 'ack_to_device_avg' ] + fileData[ 'fin_ack_to_ack_avg' ]
+values <- geom_text( aes( x=downAvgsData$scale, y=sum + 0.04 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
+wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
+result <- fundamentalGraphData + barGraphFormat + colors + errorBarFormat + title + values + wrapLegend
 
 print( paste( "Saving bar chart with error bars (Switch Down Latency) to", errBarOutputFileDown ) )
-ggsave( errBarOutputFileDown, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFileDown, width = 15, height = 10, dpi = 200 )
 
 
 print( paste( "Successfully wrote bar chart with error bars (Switch Down Latency) out to", errBarOutputFileDown ) )

@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -28,7 +28,6 @@ print( "STEP 1: File management." )
 
 # Command line arguments are read. Args usually include the database filename and the output
 # directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -47,9 +46,7 @@ if ( is.na( args[ 9 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
-
+# paste() is used to concatenate strings.
 errBarOutputFile <- paste( args[ 9 ], args[ 6 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 7 ], sep="_" )
 if ( args[ 8 ] == 'y' ){
@@ -123,7 +120,6 @@ print( "STEP 3: Generate graphs." )
 #    These are variables that apply to all of the graphs being generated, regardless of type.
 #
 # 2. Type specific graph data is generated.
-#     Data specific for the error bar and stacked bar graphs are generated.
 #
 # 3. Generate and save the graphs.
 #      Graphs are saved to the filename above, in the directory provided in command line args
@@ -137,7 +133,7 @@ print( "Generating fundamental graph data." )
 #        - x: x-axis values (usually node scaling)
 #        - y: y-axis values (usually time in milliseconds)
 #        - fill: the category of the colored side-by-side bars (usually type)
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = throughput, fill = type ) )
 
@@ -158,17 +154,13 @@ if ( args[ 8 ] == 'y' ){
     chartTitle <- paste( chartTitle, "0" )
 }
 
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=18, face="bold" ), legend.title = element_blank() )
+values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$throughput + 0.03 * max( dataFrame$throughput ), label = format( dataFrame$throughput, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7, fontface = "bold" )
 
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + values
 
 
-# Create the stacked bar graph with error bars.
-# geom_bar contains:
-#    - stat: data formatting (usually "identity")
-#    - width: the width of the bar types (declared above)
-# geom_errorbar contains similar arguments as geom_bar.
 print( "Generating bar graph." )
 barGraphFormat <- geom_bar( stat = "identity", width = width, fill="#169EFF" )
 title <- ggtitle( paste( chartTitle, "" ) )
@@ -176,6 +168,6 @@ result <- fundamentalGraphData + barGraphFormat + title
 
 # Save graph to file
 print( paste( "Saving bar chart to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote bar chart out to", errBarOutputFile ) )

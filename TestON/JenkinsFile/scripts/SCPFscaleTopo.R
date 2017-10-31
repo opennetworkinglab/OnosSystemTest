@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,7 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
+# Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -46,9 +44,7 @@ if ( is.na( args[ 7 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
-
+# paste() is used to concatenate strings
 outputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 outputFile <- paste( outputFile, args[ 6 ], sep="_" )
 outputFile <- paste( outputFile, "_graph.jpg", sep="" )
@@ -80,8 +76,8 @@ avgs <- c( fileData[ 'last_role_request_to_last_topology' ], fileData[ 'last_con
 
 # Parse lists into data frames.
 dataFrame <- melt( avgs )              # This is where reshape2 comes in. Avgs list is converted to data frame
-dataFrame$scale <- fileData$scale          # Add node scaling to the data frame.
-colnames( dataFrame ) <- c( "ms", "type", "scale")
+dataFrame$scale <- fileData$scale      # Add node scaling to the data frame.
+colnames( dataFrame ) <- c( "s", "type", "scale")
 
 
 # Format data frame so that the data is in the same order as it appeared in the file.
@@ -89,10 +85,9 @@ dataFrame$type <- as.character( dataFrame$type )
 dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
 dataFrame$iterative <- seq( 1, nrow( fileData ), by = 1 )
 
-# Obtain the sum of the averages for the plot size and center of standard deviation bars.
-avgsSum <- fileData$total_time
-
 dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+sum <- fileData[ 'last_role_request_to_last_topology' ] + fileData[ 'last_connection_to_last_role_request' ] + fileData[ 'first_connection_to_last_connection' ]
 
 print( "Data Frame Results:" )
 print( dataFrame )
@@ -107,56 +102,42 @@ print( "STEP 3: Generate graphs." )
 #    These are variables that apply to all of the graphs being generated, regardless of type.
 #
 # 2. Type specific graph data is generated.
-#     Data specific for the error bar and stacked bar graphs are generated.
 #
 # 3. Generate and save the graphs.
 #      Graphs are saved to the filename above, in the directory provided in command line args
 
 print( "Generating fundamental graph data." )
 
-# Calculate window to display graph, based on the lowest and highest points of the data.
-if ( min( avgsSum ) < 0){
-    yWindowMin <- min( avgsSum ) * 1.05
-} else {
-    yWindowMin <- 0
-}
-yWindowMax <- max( avgsSum )
-
 theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
 
 # Create the primary plot here.
 # ggplot contains the following arguments:
 #     - data: the data frame that the graph will be based off of
-#    - aes: the asthetics of the graph which require:
+#     - aes: the asthetics of the graph which require:
 #        - x: x-axis values (usually node scaling)
 #        - y: y-axis values (usually time in milliseconds)
 #        - fill: the category of the colored side-by-side bars (usually type)
-mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
+mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = s, fill = type ) )
 
 # Formatting the plot
 width <- 0.6  # Width of the bars.
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$scale )
-yLimit <- ylim( yWindowMin, yWindowMax )
 xLabel <- xlab( "Scale" )
-yLabel <- ylab( "Latency (ms)" )
+yLabel <- ylab( "Latency (s)" )
 fillLabel <- labs( fill="Type" )
 chartTitle <- paste( "Scale Topology Latency Test" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
-
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.02 * max( sum ), label = format( sum, big.mark = ",", scientific = FALSE ), fontface = "bold" ), size = 7.0 )
+wrapLegend <- guides( fill=guide_legend( nrow=2, byrow=TRUE ) )
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + xScaleConfig + yLimit + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + values + wrapLegend
 
-# Create the stacked bar graph with error bars.
-# geom_bar contains:
-#    - stat: data formatting (usually "identity")
-#    - width: the width of the bar types (declared above)
-# geom_errorbar contains similar arguments as geom_bar.
-print( "Generating bar graph with error bars." )
+print( "Generating bar graph." )
 barGraphFormat <- geom_bar( stat = "identity", width = width )
 title <- ggtitle( paste( chartTitle, "" ) )
 result <- fundamentalGraphData + barGraphFormat + title
 
 # Save graph to file
-print( paste( "Saving bar chart with error bars to", outputFile ) )
-ggsave( outputFile, width = 10, height = 6, dpi = 200 )
-print( paste( "Successfully wrote bar chart with error bars out to", outputFile ) )
+print( paste( "Saving bar chart to", outputFile ) )
+ggsave( outputFile, width = 15, height = 10, dpi = 200 )
+print( paste( "Successfully wrote bar chart out to", outputFile ) )

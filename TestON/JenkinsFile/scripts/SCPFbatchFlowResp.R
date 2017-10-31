@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # If you have any questions, or if you don't understand R,
-# please contact Jeremy Ronquillo: jeremyr@opennetworking.org
+# please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
 # STEP 1: File management.
@@ -26,9 +26,7 @@
 
 print( "STEP 1: File management." )
 
-# Command line arguments are read. Args usually include the database filename and the output
-# directory for the graphs to save to.
-# ie: Rscript SCPFgraphGenerator SCPFsampleDataDB.csv ~/tmp/
+# Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
@@ -46,9 +44,7 @@ if ( is.na( args[ 7 ] ) ){
     q()  # basically exit(), but in R
 }
 
-# Filenames for output graphs include the testname and the graph type.
-# See the examples below. paste() is used to concatenate strings.
-
+# paste() is used to concatenate strings.
 errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
 errBarOutputFile <- paste( errBarOutputFile, "_PostGraph.jpg", sep="" )
@@ -97,27 +93,30 @@ print( dataFrame )
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
-xLabel <- xlab( "date" )
+xLabel <- xlab( "Build Date" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
-
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
+wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
 fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
 
-print( "Generating bar graph with error bars." )
+print( "Generating bar graph." )
 width <- 0.3
 barGraphFormat <- geom_bar( stat="identity", width = width )
+sum <- fileData[ 'posttoconfrm' ] + fileData[ 'elapsepost' ]
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.03 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title
+result <- fundamentalGraphData + barGraphFormat + colors + title + values
 
 
 print( paste( "Saving bar chart to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote stacked bar chart out to", errBarOutputFile ) )
 
@@ -153,30 +152,33 @@ print( dataFrame )
 
 print( "Generating fundamental graph data." )
 
-theme_set( theme_grey( base_size = 20 ) )   # set the default text size of the graph.
+theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 
 mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
 xLabel <- xlab( "Build Date" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 28, face='bold' ) )
+theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
+wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
+fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + wrapLegend
 
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
 
-
-print( "Generating bar graph with error bars." )
+print( "Generating bar graph." )
 width <- 0.3
 barGraphFormat <- geom_bar( stat="identity", width = width )
+sum <- fileData[ 'deltoconfrm' ] + fileData[ 'elapsedel' ]
+values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.03 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
 chartTitle <- paste( "Single Bench Flow Latency - Del", "Last 3 Builds", sep = "\n" )
 title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + title
+result <- fundamentalGraphData + barGraphFormat + colors + title + values
 
 errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
 errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
 errBarOutputFile <- paste( errBarOutputFile, "_DelGraph.jpg", sep="" )
 
 print( paste( "Saving bar chart to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 10, height = 6, dpi = 200 )
+ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
 print( paste( "Successfully wrote stacked bar chart out to", errBarOutputFile ) )

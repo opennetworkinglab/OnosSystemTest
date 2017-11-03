@@ -186,11 +186,11 @@ class SCPFmastershipFailoverLat:
                 for line in reversed( eventOutput ):
                     if "INSTANCE_DEACTIVATED" in line and len( instanceDeactivatedLats ) == CLInum:
                         deactivateTime = float( datetime.datetime.strptime(
-                                            line.split()[ 0 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
+                                            line.split()[ 0 ][ : 23 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
                         instanceDeactivatedLats.append( deactivateTime - time1 )
                     elif "MASTER_CHANGED" in line and len( masterChangedLats ) == CLInum:
                         changedTime = float( datetime.datetime.strptime(
-                                            line.split()[ 0 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
+                                            line.split()[ 0 ][ : 23 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
                         masterChangedLats.append( changedTime - time1 )
                     if len( instanceDeactivatedLats ) > CLInum and len( masterChangedLats ) > CLInum:
                         break

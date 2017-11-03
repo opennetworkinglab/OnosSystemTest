@@ -23,10 +23,16 @@
 # **********************************************************
 # STEP 1: Data management.
 # **********************************************************
-
 print( "**********************************************************" )
 print( "STEP 1: Data management." )
 print( "**********************************************************" )
+database_host = 1
+database_port = 2
+database_u_id = 3
+database_pw = 4
+test_name = 5
+branch_name = 6
+save_directory = 7
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
@@ -47,7 +53,7 @@ library( RPostgreSQL )    # For databases
 
 print( "Verifying CLI args." )
 
-if ( is.na( args[ 7 ] ) ){
+if ( is.na( args[ save_directory ] ) ){
 
     print( paste( "Usage: Rscript SCPFportLat",
                                   "<database-host>",
@@ -67,31 +73,29 @@ if ( is.na( args[ 7 ] ) ){
 # -----------------
 
 print( "Creating filenames and title of graph." )
-
-errBarOutputFileUp <- paste( args[ 7 ],
+errBarOutputFileUp <- paste( args[ save_directory ],
                              "SCPFportLat_",
-                             args[ 6 ],
+                             args[ branch_name ],
                              "_UpErrBarWithStack.jpg",
                              sep = "" )
 
-errBarOutputFileDown <- paste( args[ 7 ],
+errBarOutputFileDown <- paste( args[ save_directory ],
                              "SCPFportLat_",
-                             args[ 6 ],
+                             args[ branch_name ],
                              "_DownErrBarWithStack.jpg",
                              sep = "" )
 
 # ------------------
 # SQL Initialization
 # ------------------
-
 print( "Initializing SQL" )
 
 con <- dbConnect( dbDriver( "PostgreSQL" ),
                   dbname = "onostest",
-                  host = args[ 1 ],
-                  port = strtoi( args[ 2 ] ),
-                  user = args[ 3 ],
-                  password = args[ 4 ] )
+                  host = args[ database_host ],
+                  port = strtoi( args[ database_port ] ),
+                  user = args[ database_u_id ],
+                  password = args[ database_pw ] )
 
 # ------------------------
 # Port Latency SQL Command
@@ -100,9 +104,9 @@ con <- dbConnect( dbDriver( "PostgreSQL" ),
 print( "Generating Port Latency SQL Command" )
 
 command <- paste( "SELECT * FROM port_latency_details WHERE branch = '",
-                  args[ 6 ],
+                  args[ branch_name ],
                   "' AND date IN ( SELECT MAX( date ) FROM port_latency_details WHERE branch = '",
-                  args[ 6 ],
+                  args[ branch_name ],
                   "' ) ",
                   sep = "" )
 

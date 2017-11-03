@@ -27,6 +27,15 @@
 print( "**********************************************************" )
 print( "STEP 1: Data management." )
 print( "**********************************************************" )
+has_flow_obj = 1
+database_host = 2
+database_port = 3
+database_u_id = 4
+database_pw = 5
+test_name = 6
+branch_name = 7
+old_flow = 8
+save_directory = 9
 
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
@@ -46,8 +55,7 @@ library( RPostgreSQL )    # For databases
 
 print( "Verifying CLI args." )
 
-if ( is.na( args[ 8 ] ) ){
-
+if ( is.na( args[ save_directory ] ) ){
     print( paste( "Usage: Rscript SCPFInstalledIntentsFlows",
                                   "<has-flowObj>",
                                   "<database-host>",
@@ -56,6 +64,7 @@ if ( is.na( args[ 8 ] ) ){
                                   "<database-password>",
                                   "<test-name>",
                                   "<branch-name>",
+                                  "<using-old-flow>",
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
 
@@ -72,17 +81,23 @@ fileFlowObjModifier <- ""
 sqlFlowObjModifier <- ""
 chartTitle <- "Number of Installed Intents & Flows"
 
-if ( args[ 1 ] == "y" ){
+if ( args[ has_flow_obj ] == "y" ){
     fileFlowObjModifier <- "_flowObj"
     sqlFlowObjModifier <- "fobj_"
     chartTitle <- "Number of Installed Intents & Flows\n with Flow Objectives"
 }
+fileOldFlowModifier <- ""
+if ( args[ old_flow ] == 'y' ){
+    fileOldFlowModifier <- "_OldFlow"
+    chartTitle <- paste( chartTitle, "With Old Flow", sep="\n" )
+}
 
-outputFile <- paste( args[ 8 ],
-                     args[ 6 ],
+outputFile <- paste( args[ save_directory ],
+                     args[ test_name ],
                      fileFlowObjModifier,
+                     fileOldFlowModifier,
                      "_",
-                     args[ 7 ],
+                     args[ branch_name ],
                      "_errGraph.jpg",
                      sep="" )
 
@@ -94,10 +109,10 @@ print( "Initializing SQL" )
 
 con <- dbConnect( dbDriver( "PostgreSQL" ),
                   dbname = "onostest",
-                  host = args[ 2 ],
-                  port = strtoi( args[ 3 ] ),
-                  user = args[ 4 ],
-                  password = args[ 5 ] )
+                  host = args[ database_host ],
+                  port = strtoi( args[ database_port ] ),
+                  user = args[ database_u_id ],
+                  password = args[ database_pw ] )
 
 # -------------------------------
 # Scaling Max Intents SQL Command
@@ -108,12 +123,15 @@ print( "Scaling Max Intents SQL Command" )
 command <- paste( "SELECT * FROM max_intents_",
                   sqlFlowObjModifier,
                   "tests WHERE branch = '",
-                  args[ 7 ],
+                  args[ branch_name ],
                   "' AND date IN ( SELECT MAX( date ) FROM max_intents_",
                   sqlFlowObjModifier,
                   "tests WHERE branch = '",
-                  args[ 7 ],
-                  "' ) ",
+                  args[ branch_name ],
+                  "' AND ",
+                  ( if( args[ old_flow ] == 'y' ) "" else "NOT " ),
+                  "is_old_flow",
+                  " ) ",
                   sep="" )
 
 print( "Sending SQL command:" )

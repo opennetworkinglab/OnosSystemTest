@@ -1,6 +1,8 @@
 #!groovy
 // This is a Jenkinsfile for a scripted pipeline for the SCPF tests
 // Define sets of tests
+previous_version = "1.11"
+before_previous_version = "1.10"
 AllTheTests=
 [
     "FUNC":[
@@ -32,7 +34,7 @@ AllTheTests=
             "SCPFintentEventTp":                       ["basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
             "SCPFhostLat":                             ["basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
             // batch will be on extra_A after fixing from the ONOS side.
-            "SCPFbatchFlowResp":                       ["basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
+            "SCPFbatchFlowResp":                       ["basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
             "SCPFintentRerouteLat":                    ["basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
             "SCPFintentInstallWithdrawLat":            ["basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
             "SCPFflowTp1gWithFlowObj":                 ["basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:""],
@@ -79,6 +81,7 @@ Prefix_organizer = [
 ]
 
 onos_branch = "master"
+test_branch = ""
 onos_tag = params.ONOSTag
 isOldFlow = false
 // Set tests based on day of week
@@ -107,7 +110,7 @@ if( !manually_run ){
 if ( manually_run ){
     organize_tests( params.Tests )
     onos_branch = params.ONOSVersion
-    test_branch = params.TestONBranch
+    isOldFlow = params.isOldFlow
     println "Tests to be run manually : "
 }else{
     testcases["SCPF"]["tests"] = SCPF_choices
@@ -152,22 +155,25 @@ def testDivider( today ){
             day = "Wednesday"
             break
         case Calendar.THURSDAY:
-            thursday( true, true)
+            thursday( true, true )
             day = "Thursday"
+            isOldFlow = true
             break
         case Calendar.FRIDAY:
-            friday( true, true)
+            friday( true, true )
             day = "Friday"
+            isOldFlow = true
             break
         case Calendar.SATURDAY:
             saturday()
-            onos_branch= "1.11"
+            onos_branch= previous_version
             day = "Saturday"
             break
         case Calendar.SUNDAY:
             sunday()
-            onos_branch= "1.10"
+            onos_branch= before_previous_version
             day = "Sunday"
+            isOldFlow = true
             break
     }
 }
@@ -216,7 +222,6 @@ def wednesday( getDay, getResult ){
     SCPF_choices += adder( "SCPF", "basic", getDay, "W", getResult )
     SCPF_choices += adder( "SCPF", "extra_A", getDay, "W", getResult )
     SCPF_choices += adder( "SCPF", "new_Test", getDay, "W", getResult )
-    isOldFlow = true
 }
 def thursday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "Th", getResult )
@@ -225,7 +230,6 @@ def thursday( getDay, getResult ){
     HA_choices += adder( "HA", "extra_B", getDay, "Th", getResult )
     SCPF_choices += adder( "SCPF", "basic", getDay, "Th", getResult )
     SCPF_choices += adder( "SCPF", "extra_B", getDay, "Th", getResult )
-    isOldFlow = true
 }
 def friday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "F", getResult )
@@ -308,16 +312,14 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
             onos_branch = "onos-" + branch
         }
         wiki = branch
-        if ( !manuallyRun )
-            test_branch = onos_branch
-        if (onos_branch == "onos-1.11")
+        test_branch = onos_branch
+        if (onos_branch == previous_version)
             test_branch = "master"
         println jobOn + "_Pipeline_" + manuallyRun ? "manually" : branch
         node("TestStation-" + nodeName + "s"){
-            if (!manuallyRun)
-                envSetup(onos_branch, test_branch, onosTag)
+            envSetup(onos_branch, test_branch, onosTag, jobOn, manuallyRun )
 
-            exportEnvProperty( onos_branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag )
+            exportEnvProperty( onos_branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
         }
 
         jobToRun = jobOn + "_Pipeline_" + ( manuallyRun ? "manually" : branch )
@@ -326,7 +328,7 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 }
 
 // export Environment properties.
-def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manually_run, onosTag ){
+def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manually_run, onosTag, isOldFlow ){
     stage("export Property"){
         sh '''
             echo "ONOSBranch=''' + onos_branch +'''" > /var/jenkins/TestONOS.property
@@ -337,6 +339,8 @@ def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manual
             echo "Tests=''' + tests +'''" >> /var/jenkins/TestONOS.property
             echo "postResult=''' + postResult +'''" >> /var/jenkins/TestONOS.property
             echo "manualRun=''' + manually_run +'''" >> /var/jenkins/TestONOS.property
+            echo "isOldFlow=''' + isOldFlow +'''" >> /var/jenkins/TestONOS.property
+
         '''
     }
 }
@@ -344,14 +348,29 @@ def sendToSlack( color, message ){
     slackSend(color:color, message: message)
 }
 // Initialize the environment Setup for the onos and OnosSystemTest
-def envSetup( onos_branch, test_branch, onos_tag ){
+def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
     stage("envSetup") {
         sh '''#!/bin/bash -l
         set +e
         . ~/.bashrc
         env
-
-        echo -e "\n#####  Set TestON Branch #####"
+        ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun ) + '''
+        ''' + oldFlowCheck( jobOn ) + '''
+        ''' + postSetup( onos_branch, test_branch, onos_tag, manuallyRun )
+    }
+}
+def tagCheck(onos_tag, onos_branch){
+    result = "git checkout "
+    if (onos_tag == "" )
+        result += onos_branch //create new local branch
+    else
+        result += onos_tag //checkout the tag
+    return result
+}
+def preSetup( onos_branch, test_branch, onos_tag, isManual ){
+    result = ""
+    if( !isManual ){
+        result = '''echo -e "\n#####  Set TestON Branch #####"
         echo "TestON Branch is set on: ''' + test_branch + '''"
 
         cd ~/OnosSystemTest/
@@ -397,9 +416,21 @@ def envSetup( onos_branch, test_branch, onos_tag ){
         echo "##### Check onos-service setting..... #####"
         cat ~/onos/tools/package/bin/onos-service
 
-        export JAVA_HOME=/usr/lib/jvm/java-8-oracle
-        ''' + oldFlowCheck() + '''
-        echo -e "\n##### build ONOS skip unit tests ######"
+        export JAVA_HOME=/usr/lib/jvm/java-8-oracle'''
+    }
+    return result
+}
+def oldFlowCheck( jobOn ){
+    result = ""
+    if( isOldFlow && jobOn == "SCPF" )
+        result = '''sed -i -e 's/@Component(immediate = true)/@Component(enabled = false)/g' ~/onos/core/store/dist/src/main/java/org/onosproject/store/flow/impl/DistributedFlowRuleStore.java
+        sed -i -e 's/@Component(enabled = false)/@Component(immediate = true)/g' ~/onos/core/store/dist/src/main/java/org/onosproject/store/flow/impl/ECFlowRuleStore.java'''
+    return result
+}
+def postSetup( onos_branch, test_branch, onos_tag, isManual ){
+    result = ""
+    if( !isManual ){
+        result = '''echo -e "\n##### build ONOS skip unit tests ######"
         #mvn clean install -DskipTests
         # Force buck update
         rm -f ~/onos/bin/buck
@@ -412,19 +443,5 @@ def envSetup( onos_branch, test_branch, onos_tag ){
 
         git branch'''
     }
-}
-def tagCheck(onos_tag, onos_branch){
-    result = "git checkout "
-    if (onos_tag == "" )
-        result += onos_branch //create new local branch
-    else
-        result += onos_tag //checkout the tag
-    return result
-}
-def oldFlowCheck(){
-    result = ""
-    if( isOldFlow )
-        result = '''sed -i -e 's/@Component(immediate = true)/@Component(enabled = false)/g' ~/onos/core/store/dist/src/main/java/org/onosproject/store/flow/impl/DistributedFlowRuleStore.java
-        sed -i -e 's/@Component(enabled = false)/@Component(immediate = true)/g' ~/onos/core/store/dist/src/main/java/org/onosproject/store/flow/impl/ECFlowRuleStore.java'''
     return result
 }

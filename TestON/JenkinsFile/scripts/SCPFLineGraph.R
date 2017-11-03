@@ -27,6 +27,18 @@
 # STEP 1: Data management.
 # **********************************************************
 
+database_host = 1
+database_port = 2
+database_u_id = 3
+database_pw = 4
+graph_title = 5
+branch_name = 6
+num_dates = 7
+sql_commands = 8
+y_axis = 9
+old_flow = 10
+save_directory = 11
+
 print( "**********************************************************" )
 print( "STEP 1: Data management." )
 print( "**********************************************************" )
@@ -51,7 +63,7 @@ print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
 # Check if sufficient args are provided.
-if ( is.na( args[ 10 ] ) ){
+if ( is.na( args[ save_directory ] ) ){
 
     print( paste( "Usage: Rscript testresultgraph.R",
                                     "<database-host>",
@@ -63,9 +75,9 @@ if ( is.na( args[ 10 ] ) ){
                                     "<#-dates>",        # part of the output filename
                                     "<SQL-command>",
                                     "<y-axis-title>",   # y-axis may be different among other SCPF graphs (ie: batch size, latency, etc. )
+                                    "<using-old-flow>",
                                     "<directory-to-save-graph>",
                   sep = " " ) )
-
     q()  # basically exit(), but in R
 }
 
@@ -76,19 +88,23 @@ if ( is.na( args[ 10 ] ) ){
 print( "Creating title of graph" )
 
 # Title of graph based on command line args.
-title <- args[ 5 ]
+
+title <- args[ graph_title ]
+title <- paste( title, if( args[ old_flow ] == "y" ) "\nWith Old Flow" else "" )
 
 print( "Creating graph filename." )
 
 # Filenames for the output graph include the testname, branch, and the graph type.
-outputFile <- paste( args[ 10 ],
+outputFile <- paste( args[ save_directory ],
                     "SCPF_Front_Page_",
-                    gsub( " ", "_", args[ 5 ] ),
+                    gsub( " ", "_", args[ graph_title ] ),
                     "_",
-                    args[ 6 ],
+                    args[ branch_name ],
                     "_",
-                    args[ 7 ],
-                    "-dates_graph.jpg",
+                    args[ num_dates ],
+                    "-dates",
+                    if( args[ old_flow ] == "y" ) "_OldFlow" else "",
+                    "_graph.jpg",
                     sep="" )
 
 # ------------------
@@ -98,15 +114,14 @@ outputFile <- paste( args[ 10 ],
 print( "Initializing SQL" )
 con <- dbConnect( dbDriver( "PostgreSQL" ),
                   dbname = "onostest",
-                  host = args[ 1 ],
-                  port = strtoi( args[ 2 ] ),
-                  user = args[ 3 ],
-                  password = args[ 4 ] )
+                  host = args[ database_host ],
+                  port = strtoi( args[ database_port ] ),
+                  user = args[ database_u_id ],
+                  password = args[ database_pw ] )
 
 print( "Sending SQL command:" )
-print( args[ 8 ] )
-fileData <- dbGetQuery( con, args[ 8 ] )
-
+print( args[ sql_commands ] )
+fileData <- dbGetQuery( con, args[ sql_commands ] )
 
 # **********************************************************
 # STEP 2: Organize data.
@@ -194,7 +209,7 @@ print( "Generating fundamental graph data." )
 
 theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 xLabel <- xlab( "Build" )
-yLabel <- ylab( args[ 9 ] )
+yLabel <- ylab( args[ y_axis ] )
 
 imageWidth <- 15
 imageHeight <- 10

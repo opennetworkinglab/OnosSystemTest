@@ -23,10 +23,16 @@
 # **********************************************************
 # STEP 1: Data management.
 # **********************************************************
-
 print( "**********************************************************" )
 print( "STEP 1: Data management." )
 print( "**********************************************************" )
+database_host = 1
+database_port = 2
+database_u_id = 3
+database_pw = 4
+test_name = 5
+branch_name = 6
+save_directory = 7
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
@@ -47,7 +53,7 @@ library( RPostgreSQL )    # For databases
 
 print( "Verifying CLI args." )
 
-if ( is.na( args[ 7 ] ) ){
+if ( is.na( args[ save_directory ] ) ){
 
     print( paste( "Usage: Rscript SCPFgraphGenerator",
                                   "<database-host>",
@@ -68,10 +74,10 @@ if ( is.na( args[ 7 ] ) ){
 
 print( "Creating filenames and title of graph." )
 
-outputFile <- paste( args[ 7 ],
-                     args[ 5 ],
+outputFile <- paste( args[ save_directory ],
+                     args[ test_name ],
                      "_",
-                     args[ 6 ],
+                     args[ branch_name ],
                      "_graph.jpg",
                      sep="" )
 
@@ -85,10 +91,10 @@ print( "Initializing SQL" )
 
 con <- dbConnect( dbDriver( "PostgreSQL" ),
                   dbname = "onostest",
-                  host = args[ 1 ],
-                  port = strtoi( args[ 2 ] ),
-                  user = args[ 3 ],
-                  password = args[ 4 ] )
+                  host = args[ database_host ],
+                  port = strtoi( args[ database_port ] ),
+                  user = args[ database_u_id ],
+                  password = args[ database_pw ] )
 
 # --------------------------
 # Scale Topology SQL Command
@@ -97,9 +103,9 @@ con <- dbConnect( dbDriver( "PostgreSQL" ),
 print( "Generating Scale Topology SQL Command" )
 
 command <- paste( "SELECT * FROM scale_topo_latency_details WHERE branch = '",
-                  args[ 6 ],
+                  args[ branch_name ],
                   "' AND date IN ( SELECT MAX( date ) FROM scale_topo_latency_details WHERE branch = '",
-                  args[ 6 ],
+                  args[ branch_name ],
                   "' ) ",
                   sep = "" )
 

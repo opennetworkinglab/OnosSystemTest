@@ -23,10 +23,19 @@
 # **********************************************************
 # STEP 1: Data management.
 # **********************************************************
-
 print( "**********************************************************" )
 print( "STEP 1: Data management." )
 print( "**********************************************************" )
+has_flow_obj = 1
+database_host = 2
+database_port = 3
+database_u_id = 4
+database_pw = 5
+test_name = 6
+branch_name = 7
+batch_size = 8
+old_flow = 9
+save_directory = 10
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
@@ -47,7 +56,7 @@ library( RPostgreSQL )    # For databases
 
 print( "Verifying CLI args." )
 
-if ( is.na( args[ 9 ] ) ){
+if ( is.na( args[ save_directory ] ) ){
 
     print( paste( "Usage: Rscript SCPFIntentInstallWithdrawRerouteLat.R",
                                   "<isFlowObj>" ,
@@ -58,9 +67,9 @@ if ( is.na( args[ 9 ] ) ){
                                   "<test-name>",
                                   "<branch-name>",
                                   "<batch-size>",
+                                  "<using-old-flow>",
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
-
     q()  # basically exit(), but in R
 }
 
@@ -72,26 +81,31 @@ print( "Creating filename and title of graph." )
 
 chartTitle <- "Intent Install, Withdraw, & Reroute Latencies"
 flowObjFileModifier <- ""
-errBarOutputFile <- paste( args[ 9 ],
+errBarOutputFile <- paste( args[ save_directory ],
                     "SCPFIntentInstallWithdrawRerouteLat_",
-                    args[ 7 ],
+                    args[ branch_name ],
                     sep="" )
 
-if ( args[ 1 ] == "y" ){
+if ( args[ has_flow_obj ] == "y" ){
     errBarOutputFile <- paste( errBarOutputFile, "_fobj", sep="" )
     flowObjFileModifier <- "fobj_"
     chartTitle <- paste( chartTitle, "w/ FlowObj" )
 }
-
+if ( args[ old_flow ] == "y" ){
+    errBarOutputFile <- paste( errBarOutputFile, "_OldFlow", sep="" )
+    chartTitle <- paste( chartTitle,
+                         "With Old Flow",
+                         sep="\n" )
+}
 errBarOutputFile <- paste( errBarOutputFile,
                            "_",
-                           args[ 8 ],
+                           args[ batch_size ],
                            "-batchSize_graph.jpg",
                            sep="" )
 
 chartTitle <- paste( chartTitle,
                      "\nBatch Size =",
-                     args[ 8 ],
+                     args[ batch_size ],
                      sep=" " )
 
 # ------------------
@@ -102,10 +116,10 @@ print( "Initializing SQL" )
 
 con <- dbConnect( dbDriver( "PostgreSQL" ),
                   dbname = "onostest",
-                  host = args[ 2 ],
-                  port = strtoi( args[ 3 ] ),
-                  user = args[ 4 ],
-                  password = args[ 5 ] )
+                  host = args[ database_host ],
+                  port = strtoi( args[ database_port ] ),
+                  user = args[ database_u_id ],
+                  password = args[ database_pw ] )
 
 # ---------------------------------------
 # Intent Install and Withdraw SQL Command
@@ -115,14 +129,17 @@ print( "Generating Intent Install and Withdraw SQL Command" )
 installWithdrawSQLCommand <- paste( "SELECT * FROM intent_latency_",
                                     flowObjFileModifier,
                                     "tests WHERE batch_size=",
-                                    args[ 8 ],
+                                    args[ batch_size ],
                                     " AND branch = '",
-                                    args[ 7 ],
+                                    args[ branch_name ],
                                     "' AND date IN ( SELECT MAX( date ) FROM intent_latency_",
                                     flowObjFileModifier,
                                     "tests WHERE branch='",
-                                    args[ 7 ],
-                                    "')",
+                                    args[ branch_name ],
+                                    "' AND ",
+                                    ( if( args[ old_flow ] == 'y' ) "" else "NOT " ) ,
+                                    "is_old_flow",
+                                    ")",
                                     sep="" )
 
 print( "Sending Intent Install and Withdraw SQL command:" )
@@ -138,14 +155,17 @@ print( "Generating Intent Reroute SQL Command" )
 rerouteSQLCommand <- paste( "SELECT * FROM intent_reroute_latency_",
                             flowObjFileModifier,
                             "tests WHERE batch_size=",
-                            args[ 8 ],
+                            args[ batch_size ],
                             " AND branch = '",
-                            args[ 7 ],
+                            args[ branch_name ],
                             "' AND date IN ( SELECT MAX( date ) FROM intent_reroute_latency_",
                             flowObjFileModifier,
                             "tests WHERE branch='",
-                            args[ 7 ],
-                            "')",
+                            args[ branch_name ],
+                            "' AND ",
+                            ( if( args[ old_flow ] == 'y' ) "" else "NOT " ) ,
+                            "is_old_flow",
+                            ")",
                             sep="" )
 
 print( "Sending Intent Reroute SQL command:" )
@@ -174,6 +194,7 @@ if ( ncol( rerouteData ) == 0 ){  # Checks if rerouteData exists, so we can excl
                                   "name",
                                   "date",
                                   "branch",
+                                  "is_old_flow",
                                   "commit",
                                   "scale",
                                   "batch_size",

@@ -27,6 +27,16 @@
 print( "**********************************************************" )
 print( "STEP 1: Data management." )
 print( "**********************************************************" )
+has_flow_obj = 1
+database_host = 2
+database_port = 3
+database_u_id = 4
+database_pw = 5
+test_name = 6
+branch_name = 7
+has_neighbors = 8
+old_flow = 9
+save_directory = 10
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
@@ -47,7 +57,7 @@ library( RPostgreSQL )    # For databases
 
 print( "Verifying CLI args." )
 
-if ( is.na( args[ 9 ] ) ){
+if ( is.na( args[ save_directory ] ) ){
 
     print( paste( "Usage: Rscript SCPFIntentEventTp.R",
                                   "<has-flow-obj>",
@@ -58,6 +68,7 @@ if ( is.na( args[ 9 ] ) ){
                                   "<test-name>",
                                   "<branch-name>",
                                   "<has-neighbors>",
+                                  "<using-old-flow>",
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
 
@@ -76,7 +87,7 @@ commandNeighborModifier <- ""
 fileFlowObjModifier <- ""
 sqlFlowObjModifier <- ""
 
-if ( args[ 1 ] == 'y' ){
+if ( args[ has_flow_obj ] == 'y' ){
     fileFlowObjModifier <- "_flowObj"
     sqlFlowObjModifier <- "_fobj"
     chartTitle <- paste( chartTitle, " with Flow Objectives", sep="" )
@@ -84,22 +95,28 @@ if ( args[ 1 ] == 'y' ){
 
 chartTitle <- paste( chartTitle, "\nevents/second with Neighbors =", sep="" )
 
-if ( args[ 8 ] == 'y' ){
+fileOldFlowModifier <- ""
+if ( args[ has_neighbors ] == 'y' ){
     fileNeighborsModifier <- "all"
     commandNeighborModifier <- "scale=1 OR NOT "
     chartTitle <- paste( chartTitle, "all" )
 } else {
     chartTitle <- paste( chartTitle, "0" )
 }
+if ( args[ old_flow ] == 'y' ){
+    fileOldFlowModifier <- "_OldFlow"
+    chartTitle <- paste( chartTitle, "With Old Flow", sep="\n" )
+}
 
-errBarOutputFile <- paste( args[ 9 ],
-                           args[ 6 ],
+errBarOutputFile <- paste( args[ save_directory ],
+                           args[ test_name ],
                            "_",
-                           args[ 7 ],
+                           args[ branch_name ],
                            "_",
                            fileNeighborsModifier,
                            "-neighbors",
                            fileFlowObjModifier,
+                           fileOldFlowModifier,
                            "_graph.jpg",
                            sep="" )
 
@@ -111,10 +128,10 @@ print( "Initializing SQL" )
 
 con <- dbConnect( dbDriver( "PostgreSQL" ),
                   dbname = "onostest",
-                  host = args[ 2 ],
-                  port = strtoi( args[ 3 ] ),
-                  user = args[ 4 ],
-                  password = args[ 5 ] )
+                  host = args[ database_host ],
+                  port = strtoi( args[ database_port ] ),
+                  user = args[ database_u_id ],
+                  password = args[ database_pw ] )
 
 # -----------------------------------
 # Intent Event Throughput SQL Command
@@ -127,12 +144,15 @@ command <- paste( "SELECT scale, SUM( avg ) as avg FROM intent_tp",
                   "_tests WHERE (",
                   commandNeighborModifier,
                   "neighbors = 0 ) AND branch = '",
-                  args[ 7 ],
+                  args[ branch_name ],
                   "' AND date IN ( SELECT max( date ) FROM intent_tp",
                   sqlFlowObjModifier,
                   "_tests WHERE branch='",
-                  args[ 7 ],
-                  "' ) GROUP BY scale ORDER BY scale",
+                  args[ branch_name ],
+                  "' AND ",
+                  ( if( args[ old_flow ] == 'y' ) "" else "NOT " ),
+                  "is_old_flow",
+                  " ) GROUP BY scale ORDER BY scale",
                   sep="" )
 
 print( "Sending SQL command:" )

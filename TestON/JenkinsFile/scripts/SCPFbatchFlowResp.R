@@ -23,6 +23,14 @@
 # **********************************************************
 # STEP 1: Data management.
 # **********************************************************
+database_host = 1
+database_port = 2
+database_u_id = 3
+database_pw = 4
+test_name = 5
+branch_name = 6
+old_flow = 7
+save_directory = 8
 
 print( "**********************************************************" )
 print( "STEP 1: Data management." )
@@ -47,7 +55,7 @@ library( RPostgreSQL )    # For databases
 
 print( "Verifying CLI args." )
 
-if ( is.na( args[ 7 ] ) ){
+if ( is.na( args[ save_directory ] ) ){
 
     print( paste( "Usage: Rscript SCPFbatchFlowResp",
                                   "<database-host>",
@@ -56,6 +64,7 @@ if ( is.na( args[ 7 ] ) ){
                                   "<database-password>",
                                   "<test-name>",
                                   "<branch-name>",
+                                  "<using-old-flow>",
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
 
@@ -68,22 +77,30 @@ if ( is.na( args[ 7 ] ) ){
 
 print( "Creating filenames and title of graph." )
 
-postOutputFile <- paste( args[ 7 ],
-                         args[ 5 ],
+postOutputFile <- paste( args[ save_directory ],
+                         args[ test_name ],
                          "_",
-                         args[ 6 ],
+                         args[ branch_name ],
+                         if( args[ old_flow ] == "y" ) "_OldFlow" else "",
                          "_PostGraph.jpg",
                          sep="" )
 
-delOutputFile <- paste( args[ 7 ],
-                        args[ 5 ],
+delOutputFile <- paste( args[ save_directory ],
+                        args[ test_name ],
                         "_",
-                        args[ 6 ],
+                        args[ branch_name ],
+                        if( args[ old_flow ] == "y" ) "_OldFlow" else "",
                         "_DelGraph.jpg",
                         sep="" )
 
-postChartTitle <- paste( "Single Bench Flow Latency - Post", "Last 3 Builds", sep = "\n" )
-delChartTitle <- paste( "Single Bench Flow Latency - Del", "Last 3 Builds", sep = "\n" )
+postChartTitle <- paste( "Single Bench Flow Latency - Post\n",
+                         "Last 3 Builds",
+                         if( args[ old_flow ] == "y" ) " With Old Flow" else "",
+                         sep = "" )
+delChartTitle <- paste( "Single Bench Flow Latency - Del\n",
+                        "Last 3 Builds",
+                        if( args[ old_flow ] == "y" ) " With Old Flow" else "",
+                        sep = "" )
 
 # ------------------
 # SQL Initialization
@@ -93,10 +110,10 @@ print( "Initializing SQL" )
 
 con <- dbConnect( dbDriver( "PostgreSQL" ),
                   dbname = "onostest",
-                  host = args[ 1 ],
-                  port = strtoi( args[ 2 ] ),
-                  user = args[ 3 ],
-                  password = args[ 4 ] )
+                  host = args[ database_host ],
+                  port = strtoi( args[ database_port ] ),
+                  user = args[ database_u_id ],
+                  password = args[ database_pw ] )
 
 # ---------------------------
 # Batch Flow Resp SQL Command
@@ -105,8 +122,11 @@ con <- dbConnect( dbDriver( "PostgreSQL" ),
 print( "Generating Batch Flow Resp SQL Command" )
 
 command <- paste( "SELECT * FROM batch_flow_tests WHERE branch='",
-                  args[ 6 ],
-                  "' ORDER BY date DESC LIMIT 3",
+                  args[ branch_name ],
+                  "' AND " ,
+                  ( if( args[ old_flow ] == 'y' ) "" else "NOT " ) ,
+                  "is_old_flow",
+                  " ORDER BY date DESC LIMIT 3",
                   sep="" )
 
 print( "Sending SQL command:" )

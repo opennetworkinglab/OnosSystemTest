@@ -21,164 +21,337 @@
 # please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
-# STEP 1: File management.
+# STEP 1: Data management.
 # **********************************************************
 
-print( "STEP 1: File management." )
+print( "**********************************************************" )
+print( "STEP 1: Data management." )
+print( "**********************************************************" )
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
-# Import libraries to be used for graphing and organizing data, respectively.
-# Find out more about ggplot2: https://github.com/tidyverse/ggplot2
-#                     reshape2: https://github.com/hadley/reshape
+# ----------------
+# Import Libraries
+# ----------------
+
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )    # For databases
 
-# Check if sufficient args are provided.
+# -------------------
+# Check CLI Arguments
+# -------------------
+
+print( "Verifying CLI args." )
+
 if ( is.na( args[ 7 ] ) ){
-    print( "Usage: Rscript SCPFbatchFlowResp <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
+
+    print( paste( "Usage: Rscript SCPFbatchFlowResp",
+                                  "<database-host>",
+                                  "<database-port>",
+                                  "<database-user-id>",
+                                  "<database-password>",
+                                  "<test-name>",
+                                  "<branch-name>",
+                                  "<directory-to-save-graphs>",
+                                  sep=" " ) )
+
     q()  # basically exit(), but in R
 }
 
-# paste() is used to concatenate strings.
-errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
-errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
-errBarOutputFile <- paste( errBarOutputFile, "_PostGraph.jpg", sep="" )
+# -----------------
+# Create File Names
+# -----------------
 
-print( "Reading from databases." )
+print( "Creating filenames and title of graph." )
 
-con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
+postOutputFile <- paste( args[ 7 ],
+                         args[ 5 ],
+                         "_",
+                         args[ 6 ],
+                         "_PostGraph.jpg",
+                         sep="" )
 
-command <- paste( "SELECT * FROM batch_flow_tests WHERE branch='", args[ 6 ], sep="" )
-command <- paste( command, "' ORDER BY date DESC LIMIT 3", sep="" )
+delOutputFile <- paste( args[ 7 ],
+                        args[ 5 ],
+                        "_",
+                        args[ 6 ],
+                        "_DelGraph.jpg",
+                        sep="" )
 
-print( paste( "Sending SQL command:", command ) )
+postChartTitle <- paste( "Single Bench Flow Latency - Post", "Last 3 Builds", sep = "\n" )
+delChartTitle <- paste( "Single Bench Flow Latency - Del", "Last 3 Builds", sep = "\n" )
+
+# ------------------
+# SQL Initialization
+# ------------------
+
+print( "Initializing SQL" )
+
+con <- dbConnect( dbDriver( "PostgreSQL" ),
+                  dbname = "onostest",
+                  host = args[ 1 ],
+                  port = strtoi( args[ 2 ] ),
+                  user = args[ 3 ],
+                  password = args[ 4 ] )
+
+# ---------------------------
+# Batch Flow Resp SQL Command
+# ---------------------------
+
+print( "Generating Batch Flow Resp SQL Command" )
+
+command <- paste( "SELECT * FROM batch_flow_tests WHERE branch='",
+                  args[ 6 ],
+                  "' ORDER BY date DESC LIMIT 3",
+                  sep="" )
+
+print( "Sending SQL command:" )
+print( command )
 
 fileData <- dbGetQuery( con, command )
 
-chartTitle <- paste( "Single Bench Flow Latency - Post", "Last 3 Builds", sep = "\n" )
 
 # **********************************************************
 # STEP 2: Organize data.
 # **********************************************************
 
-avgs <- c()
+print( "**********************************************************" )
+print( "STEP 2: Organize Data." )
+print( "**********************************************************" )
 
-print( "Sorting data." )
-avgs <- c( fileData[ 'posttoconfrm' ], fileData[ 'elapsepost' ] )
+# -----------------
+# Post Data Sorting
+# -----------------
 
-dataFrame <- melt( avgs )
-dataFrame$scale <- fileData$scale
-dataFrame$date <- fileData$date
-dataFrame$iterative <- dataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
+print( "Sorting data for Post." )
 
-colnames( dataFrame ) <- c( "ms", "type", "scale", "date", "iterative" )
+postAvgs <- c( fileData[ 'posttoconfrm' ],
+               fileData[ 'elapsepost' ] )
+
+# -------------------------
+# Post Construct Data Frame
+# -------------------------
+
+postDataFrame <- melt( postAvgs )
+postDataFrame$scale <- fileData$scale
+postDataFrame$date <- fileData$date
+postDataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
+
+colnames( postDataFrame ) <- c( "ms",
+                                "type",
+                                "scale",
+                                "date",
+                                "iterative" )
 
 # Format data frame so that the data is in the same order as it appeared in the file.
-dataFrame$type <- as.character( dataFrame$type )
-dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
+postDataFrame$type <- as.character( postDataFrame$type )
+postDataFrame$type <- factor( postDataFrame$type,
+                              levels = unique( postDataFrame$type ) )
 
-dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+postDataFrame <- na.omit( postDataFrame )   # Omit any data that doesn't exist
 
-print( "Data Frame Results:" )
-print( dataFrame )
+print( "Post Data Frame Results:" )
+print( postDataFrame )
+
+# ----------------
+# Del Data Sorting
+# ----------------
+
+print( "Sorting data for Del." )
+avgs <- c( fileData[ 'deltoconfrm' ],
+           fileData[ 'elapsedel' ] )
+
+# ------------------------
+# Del Construct Data Frame
+# ------------------------
+
+delDataFrame <- melt( avgs )
+delDataFrame$scale <- fileData$scale
+delDataFrame$date <- fileData$date
+delDataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
+
+colnames( delDataFrame ) <- c( "ms",
+                               "type",
+                               "scale",
+                               "date",
+                               "iterative" )
+
+# Format data frame so that the data is in the same order as it appeared in the file.
+delDataFrame$type <- as.character( delDataFrame$type )
+delDataFrame$type <- factor( delDataFrame$type,
+                             levels = unique( delDataFrame$type ) )
+
+delDataFrame <- na.omit( delDataFrame )   # Omit any data that doesn't exist
+
+print( "Del Data Frame Results:" )
+print( delDataFrame )
 
 # **********************************************************
 # STEP 3: Generate graphs.
 # **********************************************************
 
-print( "Generating fundamental graph data." )
+print( "**********************************************************" )
+print( "STEP 3: Generate Graph." )
+print( "**********************************************************" )
+
+# ------------------------------------------
+# Initializing variables used in both graphs
+# ------------------------------------------
+
+print( "Initializing variables used in both graphs." )
 
 theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
-
-mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
-xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
 xLabel <- xlab( "Build Date" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
 colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
 wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+barWidth <- 0.3
+imageWidth <- 15
+imageHeight <- 10
+imageDPI <- 200
+
+theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face = 'bold' ),
+                legend.position = "bottom",
+                legend.text = element_text( size = 22 ),
+                legend.title = element_blank(),
+                legend.key.size = unit( 1.5, 'lines' ) )
+
+barGraphFormat <- geom_bar( stat = "identity",
+                            width = barWidth )
+
+# -----------------------
+# Post Generate Main Plot
+# -----------------------
+
+print( "Creating main plot for Post graph." )
+
+mainPlot <- ggplot( data = postDataFrame, aes( x = iterative,
+                                               y = ms,
+                                               fill = type ) )
+
+# -----------------------------------
+# Post Fundamental Variables Assigned
+# -----------------------------------
+
+print( "Generating fundamental graph data for Post graph." )
+
+xScaleConfig <- scale_x_continuous( breaks = postDataFrame$iterative,
+                                    label = postDataFrame$date )
+title <- ggtitle( postChartTitle )
 
 
-print( "Generating bar graph." )
-width <- 0.3
-barGraphFormat <- geom_bar( stat="identity", width = width )
-sum <- fileData[ 'posttoconfrm' ] + fileData[ 'elapsepost' ]
-values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.03 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
-title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + colors + title + values
+fundamentalGraphData <- mainPlot +
+                        xScaleConfig +
+                        xLabel +
+                        yLabel +
+                        fillLabel +
+                        theme +
+                        wrapLegend +
+                        colors +
+                        title
 
+# --------------------------------
+# Post Generating Bar Graph Format
+# --------------------------------
 
-print( paste( "Saving bar chart to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
+print( "Generating bar graph for Post graph." )
 
-print( paste( "Successfully wrote stacked bar chart out to", errBarOutputFile ) )
+sum <- fileData[ 'posttoconfrm' ] +
+       fileData[ 'elapsepost' ]
 
+values <- geom_text( aes( x = postDataFrame$iterative,
+                          y = sum + 0.03 * max( sum ),
+                          label = format( sum,
+                                          digits = 3,
+                                          big.mark = ",",
+                                          scientific = FALSE ) ),
+                          size = 7.0,
+                          fontface = "bold" )
 
-# **********************************************************
-# STEP 2: Organize data.
-# **********************************************************
+result <- fundamentalGraphData +
+          barGraphFormat +
+          values
 
-avgs <- c()
+# ----------------------------
+# Post Exporting Graph to File
+# ----------------------------
 
-print( "Sorting data." )
-avgs <- c( fileData[ 'deltoconfrm' ], fileData[ 'elapsedel' ] )
+print( paste( "Saving Post bar chart to", postOutputFile ) )
 
-dataFrame <- melt( avgs )
-dataFrame$scale <- fileData$scale
-dataFrame$date <- fileData$date
-dataFrame$iterative <- dataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
+ggsave( postOutputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
 
-colnames( dataFrame ) <- c( "ms", "type", "scale", "date", "iterative" )
+print( paste( "[SUCCESS] Successfully wrote stacked bar chart out to", postOutputFile ) )
 
-# Format data frame so that the data is in the same order as it appeared in the file.
-dataFrame$type <- as.character( dataFrame$type )
-dataFrame$type <- factor( dataFrame$type, levels=unique( dataFrame$type ) )
+# ----------------------
+# Del Generate Main Plot
+# ----------------------
 
-dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+print( "Creating main plot for Del graph." )
 
-print( "Data Frame Results:" )
-print( dataFrame )
+mainPlot <- ggplot( data = delDataFrame, aes( x = iterative,
+                                              y = ms,
+                                              fill = type ) )
 
-# **********************************************************
-# STEP 3: Generate graphs.
-# **********************************************************
+# ----------------------------------
+# Del Fundamental Variables Assigned
+# ----------------------------------
 
-print( "Generating fundamental graph data." )
+print( "Generating fundamental graph data for Del graph." )
 
-theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
+xScaleConfig <- scale_x_continuous( breaks = delDataFrame$iterative,
+                                    label = delDataFrame$date )
+title <- ggtitle( delChartTitle )
 
-mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = ms, fill = type ) )
-xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$date )
-xLabel <- xlab( "Build Date" )
-yLabel <- ylab( "Latency (ms)" )
-fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
-colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
-wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + wrapLegend
+fundamentalGraphData <- mainPlot +
+                        xScaleConfig +
+                        xLabel +
+                        yLabel +
+                        fillLabel +
+                        theme +
+                        wrapLegend +
+                        colors +
+                        title
 
+# -------------------------------
+# Del Generating Bar Graph Format
+# -------------------------------
 
-print( "Generating bar graph." )
-width <- 0.3
-barGraphFormat <- geom_bar( stat="identity", width = width )
-sum <- fileData[ 'deltoconfrm' ] + fileData[ 'elapsedel' ]
-values <- geom_text( aes( x=dataFrame$iterative, y=sum + 0.03 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
-chartTitle <- paste( "Single Bench Flow Latency - Del", "Last 3 Builds", sep = "\n" )
-title <- ggtitle( chartTitle )
-result <- fundamentalGraphData + barGraphFormat + colors + title + values
+print( "Generating bar graph for Del graph." )
 
-errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
-errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
-errBarOutputFile <- paste( errBarOutputFile, "_DelGraph.jpg", sep="" )
+sum <- fileData[ 'deltoconfrm' ] +
+       fileData[ 'elapsedel' ]
 
-print( paste( "Saving bar chart to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
+values <- geom_text( aes( x = delDataFrame$iterative,
+                          y = sum + 0.03 * max( sum ),
+                          label = format( sum,
+                                          digits = 3,
+                                          big.mark = ",",
+                                          scientific = FALSE ) ),
+                          size = 7.0,
+                          fontface = "bold" )
 
-print( paste( "Successfully wrote stacked bar chart out to", errBarOutputFile ) )
+result <- fundamentalGraphData +
+          barGraphFormat +
+          title +
+          values
+
+# ---------------------------
+# Del Exporting Graph to File
+# ---------------------------
+
+print( paste( "Saving Del bar chart to", delOutputFile ) )
+
+ggsave( delOutputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
+
+print( paste( "[SUCCESS] Successfully wrote stacked bar chart out to", delOutputFile ) )

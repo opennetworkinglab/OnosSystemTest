@@ -26,72 +26,137 @@
 # STEP 1: Data management.
 # **********************************************************
 
+print( "**********************************************************" )
 print( "STEP 1: Data management." )
+print( "**********************************************************" )
 
 # Command line arguments are read. Args include the database credentials, test name, branch name, and the directory to output files.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
-# Import libraries to be used for graphing and organizing data, respectively.
-# Find out more about ggplot2: https://github.com/tidyverse/ggplot2
-#                     reshape2: https://github.com/hadley/reshape
-#                      RPostgreSQL: https://code.google.com/archive/p/rpostgresql/
+# ----------------
+# Import Libraries
+# ----------------
+
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )
 
-# Check if sufficient args are provided.
+# -------------------
+# Check CLI Arguments
+# -------------------
+
+print( "Verifying CLI args." )
+
 if ( is.na( args[ 8 ] ) ){
-    print( "Usage: Rscript testCaseGraphGenerator.R <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <#-builds-to-show> <directory-to-save-graphs>" )
+
+    print( paste( "Usage: Rscript testCaseGraphGenerator.R",
+                                  "<database-host>",
+                                  "<database-port>",
+                                  "<database-user-id>",
+                                  "<database-password>",
+                                  "<test-name>",                      # part of the output filename
+                                  "<branch-name>",                    # for sql and output filename
+                                  "<#-builds-to-show>",               # for sql and output filename
+                                  "<directory-to-save-graphs>",
+                                  sep=" " ) )
+
     q()  # basically exit(), but in R
 }
 
-# Filenames for the output graph include the testname, branch, and the graph type.
-outputFile <- paste( args[ 8 ], args[ 5 ], sep="" )
-outputFile <- paste( outputFile, args[ 6 ], sep="_" )
-outputFile <- paste( outputFile, args[ 7 ], sep="_" )
-outputFile <- paste( outputFile, "builds", sep="-" )
-outputFile <- paste( outputFile, "_graph.jpg", sep="" )
+# -------------------------------
+# Create Title and Graph Filename
+# -------------------------------
 
-# From RPostgreSQL
-print( "Reading from databases." )
-con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
+print( "Creating title of graph." )
 
-print( "Creating SQL command." )
-# Creating SQL command based on command line args.
-command <- paste( "SELECT * FROM executed_test_tests WHERE actual_test_name='", args[ 5 ], sep="" )
-command <- paste( command, "' AND branch='", sep="" )
-command <- paste( command, args[ 6 ], sep="" )
-command <- paste( command, "' ORDER BY date DESC LIMIT ", sep="" )
-command <- paste( command, args[ 7 ], sep="" )
+title <- paste( args[ 5 ],
+                " - ",
+                args[ 6 ],
+                " \n Results of Last ",
+                args[ 7 ],
+                " Builds",
+                sep="" )
+
+print( "Creating graph filename." )
+
+outputFile <- paste( args[ 8 ],
+                     args[ 5 ],
+                     "_",
+                     args[ 6 ],
+                     "_",
+                     args[ 7 ],
+                     "-builds_graph.jpg",
+                     sep="" )
+
+# ------------------
+# SQL Initialization
+# ------------------
+
+print( "Initializing SQL" )
+
+con <- dbConnect( dbDriver( "PostgreSQL" ),
+                  dbname = "onostest",
+                  host = args[ 1 ],
+                  port = strtoi( args[ 2 ] ),
+                  user = args[ 3 ],
+                  password = args[ 4 ] )
+
+# ---------------------
+# Test Case SQL Command
+# ---------------------
+print( "Generating Test Case SQL command." )
+
+command <- paste( "SELECT * FROM executed_test_tests WHERE actual_test_name='",
+                  args[ 5 ],
+                  "' AND branch='",
+                  args[ 6 ],
+                  "' ORDER BY date DESC LIMIT ",
+                  args[ 7 ],
+                  sep="" )
+
+print( "Sending SQL command:" )
+print( command )
 fileData <- dbGetQuery( con, command )
 
-# Title of graph based on command line args.
-title <- paste( args[ 5 ], args[ 6 ], sep=" - " )
-title <- paste( title, "Results of Last ", sep=" \n " )
-title <- paste( title, args[ 7 ], sep="" )
-title <- paste( title, " Builds", sep="" )
 
 # **********************************************************
 # STEP 2: Organize data.
 # **********************************************************
 
-print( "STEP 2: Organize data." )
+print( "**********************************************************" )
+print( "STEP 2: Organize Data." )
+print( "**********************************************************" )
 
-# Create lists c() and organize data into their corresponding list.
-print( "Sorting data into new data frame." )
-categories <- c( fileData[ 'num_failed' ], fileData[ 'num_passed' ], fileData[ 'num_planned' ] )
+# -------------------------------------------------------
+# Combining Passed, Failed, and Planned Data
+# -------------------------------------------------------
 
-# Parse lists into data frames.
-# This is where reshape2 comes in. Avgs list is converted to data frame.
+print( "Combining Passed, Failed, and Planned Data." )
+
+categories <- c( fileData[ 'num_failed' ],
+                 fileData[ 'num_passed' ],
+                 fileData[ 'num_planned' ] )
+
+# --------------------
+# Construct Data Frame
+# --------------------
+
+print( "Constructing data frame from combined data." )
+
 dataFrame <- melt( categories )
+
+# Rename column names in dataFrame
+colnames( dataFrame ) <- c( "Tests",
+                            "Status" )
+
+# Add build dates to the dataFrame
 dataFrame$build <- fileData$build
-colnames( dataFrame ) <- c( "Tests", "Status", "Build" )
 
 # Format data frame so that the data is in the same order as it appeared in the file.
 dataFrame$Status <- as.character( dataFrame$Status )
-dataFrame$Status <- factor( dataFrame$Status, levels=unique( dataFrame$Status ) )
+dataFrame$Status <- factor( dataFrame$Status, levels = unique( dataFrame$Status ) )
 
 # Add planned, passed, and failed results to the dataFrame (for the fill below the lines)
 dataFrame$num_planned <- fileData$num_planned
@@ -101,7 +166,8 @@ dataFrame$num_failed <- fileData$num_failed
 # Adding a temporary reversed iterative list to the dataFrame so that there are no gaps in-between build numbers.
 dataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
 
-dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+# Omit any data that doesn't exist
+dataFrame <- na.omit( dataFrame )
 
 print( "Data Frame Results:" )
 print( dataFrame )
@@ -110,7 +176,13 @@ print( dataFrame )
 # STEP 3: Generate graphs.
 # **********************************************************
 
-print( "STEP 3: Generate graphs." )
+print( "**********************************************************" )
+print( "STEP 3: Generate Graph." )
+print( "**********************************************************" )
+
+# -------------------
+# Main Plot Generated
+# -------------------
 
 print( "Creating main plot." )
 # Create the primary plot here.
@@ -120,40 +192,111 @@ print( "Creating main plot." )
 #        - x: x-axis values (usually iterative, but it will become build # later)
 #        - y: y-axis values (usually tests)
 #        - color: the category of the colored lines (usually status of test)
-theme_set( theme_grey( base_size = 26 ) )   # set the default text size of the graph.
-mainPlot <- ggplot( data = dataFrame, aes( x = iterative, y = Tests, color = Status ) )
+
+mainPlot <- ggplot( data = dataFrame, aes( x = iterative,
+                                           y = Tests,
+                                           color = Status ) )
+
+# -------------------
+# Main Plot Formatted
+# -------------------
 
 print( "Formatting main plot." )
+
 # geom_ribbon is used so that there is a colored fill below the lines. These values shouldn't be changed.
-failedColor <- geom_ribbon( aes( ymin = 0, ymax = dataFrame$num_failed ), fill = "red", linetype = 0, alpha = 0.07 )
-passedColor <- geom_ribbon( aes( ymin = 0, ymax = dataFrame$num_passed ), fill = "green", linetype = 0, alpha = 0.05 )
-plannedColor <- geom_ribbon( aes( ymin = 0, ymax = dataFrame$num_planned ), fill = "blue", linetype = 0, alpha = 0.01 )
+failedColor <- geom_ribbon( aes( ymin = 0,
+                                 ymax = dataFrame$num_failed ),
+                                 fill = "red",
+                                 linetype = 0,
+                                 alpha = 0.07 )
 
-colors <- scale_color_manual( values=c( "#E80000", "#00B208", "#00A5FF") )
+passedColor <- geom_ribbon( aes( ymin = 0,
+                                 ymax = dataFrame$num_passed ),
+                                 fill = "green",
+                                 linetype = 0,
+                                 alpha = 0.05 )
 
-xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative, label = dataFrame$Build )
-yScaleConfig <- scale_y_continuous( breaks = seq( 0, max( dataFrame$Tests ), by = ceiling( max( dataFrame$Tests ) / 10 ) ) )
+plannedColor <- geom_ribbon( aes( ymin = 0,
+                                  ymax = dataFrame$num_planned ),
+                                  fill = "blue",
+                                  linetype = 0,
+                                  alpha = 0.01 )
+
+# Colors for the lines
+lineColors <- scale_color_manual( values=c( "#E80000",      # red
+                                            "#00B208",      # green
+                                            "#00A5FF") )    # blue
+
+# ------------------------------
+# Fundamental Variables Assigned
+# ------------------------------
+
+print( "Generating fundamental graph data." )
+
+theme_set( theme_grey( base_size = 26 ) )   # set the default text size of the graph.
+
+xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative,
+                                    label = dataFrame$Build )
+yScaleConfig <- scale_y_continuous( breaks = seq( 0, max( dataFrame$Tests ),
+                                    by = ceiling( max( dataFrame$Tests ) / 10 ) ) )
 
 xLabel <- xlab( "Build Number" )
 yLabel <- ylab( "Test Cases" )
-fillLabel <- labs( fill="Type" )
-legendLabels <- scale_colour_discrete( labels = c( "Failed Cases", "Passed Cases", "Planned Cases" ) )
-centerTitle <- theme( plot.title=element_text( hjust = 0.5 ) )  # To center the title text
-theme <- theme( plot.title = element_text( size = 32, face='bold' ), axis.text.x = element_text( angle = 0, size = 14 ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
 
+imageWidth <- 15
+imageHeight <- 10
+imageDPI <- 200
+
+legendLabels <- scale_colour_discrete( labels = c( "Failed Cases",
+                                                   "Passed Cases",
+                                                   "Planned Cases" ) )
+
+# Set other graph configurations here.
+theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face ='bold' ),
+                axis.text.x = element_text( angle = 0, size = 14 ),
+                legend.position = "bottom",
+                legend.text = element_text( size = 22 ),
+                legend.title = element_blank(),
+                legend.key.size = unit( 1.5, 'lines' ) )
+
+title <- ggtitle( title )
 
 # Store plot configurations as 1 variable
-fundamentalGraphData <- mainPlot + plannedColor + passedColor + failedColor + xScaleConfig + yScaleConfig + xLabel + yLabel + fillLabel + colors + legendLabels + centerTitle + theme
+fundamentalGraphData <- mainPlot +
+                        plannedColor +
+                        passedColor +
+                        failedColor +
+                        xScaleConfig +
+                        yScaleConfig +
+                        xLabel +
+                        yLabel +
+                        lineColors +
+                        legendLabels +
+                        theme +
+                        title
+
+# ----------------------------
+# Generating Line Graph Format
+# ----------------------------
 
 print( "Generating line graph." )
 
 lineGraphFormat <- geom_line( size = 1.1 )
 pointFormat <- geom_point( size = 3 )
-title <- ggtitle( title )
 
-result <- fundamentalGraphData + lineGraphFormat + pointFormat + title
+result <- fundamentalGraphData +
+           lineGraphFormat +
+           pointFormat
 
-# Save graph to file
+# -----------------------
+# Exporting Graph to File
+# -----------------------
+
 print( paste( "Saving result graph to", outputFile ) )
-ggsave( outputFile, width = 15, height = 10, dpi = 200 )
-print( paste( "Successfully wrote result graph out to", outputFile ) )
+
+ggsave( outputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
+
+print( paste( "[SUCCESS] Successfully wrote result graph out to", outputFile ) )

@@ -21,136 +21,300 @@
 # please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
-# STEP 1: File management.
+# STEP 1: Data management.
 # **********************************************************
 
-print( "STEP 1: File management." )
+print( "**********************************************************" )
+print( "STEP 1: Data management." )
+print( "**********************************************************" )
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
-# Import libraries to be used for graphing and organizing data, respectively.
-# Find out more about ggplot2: https://github.com/tidyverse/ggplot2
-#                     reshape2: https://github.com/hadley/reshape
+# ----------------
+# Import Libraries
+# ----------------
+
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )    # For databases
 
-# Check if sufficient args are provided.
+# -------------------
+# Check CLI Arguments
+# -------------------
+
+print( "Verifying CLI args." )
+
 if ( is.na( args[ 7 ] ) ){
-    print( "Usage: Rscript SCPFmastershipFailoverLat <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
+
+    print( paste( "Usage: Rscript SCPFmastershipFailoverLat",
+                                  "<database-host>",
+                                  "<database-port>",
+                                  "<database-user-id>",
+                                  "<database-password>",
+                                  "<test-name>",
+                                  "<branch-name>",
+                                  "<directory-to-save-graphs>",
+                                  sep=" " ) )
+
         q()  # basically exit(), but in R
 }
 
-# paste() is used to concatenate strings.
-errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
-errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
-errBarOutputFile <- paste( errBarOutputFile, "_errGraph.jpg", sep="" )
+# -----------------
+# Create File Names
+# -----------------
 
-stackedBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
-stackedBarOutputFile <- paste( stackedBarOutputFile, args[ 6 ], sep="_" )
-stackedBarOutputFile <- paste( stackedBarOutputFile, "_stackedGraph.jpg", sep="" )
-
-print( "Reading from databases." )
-
-con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
-
-command  <- paste( "SELECT * FROM mastership_failover_tests WHERE branch = '", args[ 6 ], sep = "" )
-command <- paste( command, "' AND date IN ( SELECT MAX( date ) FROM mastership_failover_tests WHERE branch = '", sep = "" )
-command <- paste( command, args[ 6 ], sep = "" )
-command <- paste( command, "' ) ", sep="" )
-
-print( paste( "Sending SQL command:", command ) )
-
-fileData <- dbGetQuery( con, command )
+print( "Creating filenames and title of graph." )
 
 chartTitle <- "Mastership Failover Latency"
 
+errBarOutputFile <- paste( args[ 7 ],
+                           args[ 5 ],
+                           "_",
+                           args[ 6 ],
+                           "_errGraph.jpg",
+                           sep="" )
+
+stackedBarOutputFile <- paste( args[ 7 ],
+                        args[ 5 ],
+                        "_",
+                        args[ 6 ],
+                        "_stackedGraph.jpg",
+                        sep="" )
+
+# ------------------
+# SQL Initialization
+# ------------------
+
+print( "Initializing SQL" )
+
+con <- dbConnect( dbDriver( "PostgreSQL" ),
+                  dbname = "onostest",
+                  host = args[ 1 ],
+                  port = strtoi( args[ 2 ] ),
+                  user = args[ 3 ],
+                  password = args[ 4 ] )
+
+# ---------------------------------------
+# Mastership Failover Latency SQL Command
+# ---------------------------------------
+
+print( "Generating Mastership Failover Latency SQL command" )
+
+command  <- paste( "SELECT * FROM mastership_failover_tests WHERE branch = '",
+                   args[ 6 ],
+                   "' AND date IN ( SELECT MAX( date ) FROM mastership_failover_tests WHERE branch = '",
+                   args[ 6 ],
+                   "' ) ",
+                   sep = "" )
+
+print( "Sending SQL command:" )
+print( command )
+
+fileData <- dbGetQuery( con, command )
 
 # **********************************************************
 # STEP 2: Organize data.
 # **********************************************************
 
-fileDataNames <- names( fileData )
+print( "**********************************************************" )
+print( "STEP 2: Organize Data." )
+print( "**********************************************************" )
 
-avgs <- c()
-stds <- c()
+# ------------
+# Data Sorting
+# ------------
 
+print( "Combining averages into a list." )
 
-print( "Sorting data." )
-for ( name in fileDataNames ){
-    nameLen <- nchar( name )
-    if ( nameLen > 2 ){
-        if ( substring( name, nameLen - 2, nameLen ) == "avg" ){
-            avgs <- c( avgs, fileData[ name ] )
-        }
-        if ( substring( name, nameLen - 2, nameLen ) == "std" ){
-            stds <- c( stds, fileData[ name  ] )
-        }
-    }
-}
+avgs <- c( fileData[ 'kill_deact_avg' ],
+           fileData[ 'deact_role_avg' ] )
 
-avgData <- melt( avgs )
-avgData$scale <- fileData$scale
-colnames( avgData ) <- c( "ms", "type", "scale" )
+# --------------------
+# Construct Data Frame
+# --------------------
 
-stdData <- melt( stds )
-colnames( stdData ) <- c( "ms", "type" )
+print( "Constructing Data Frame from list." )
 
-dataFrame <- na.omit( avgData )   # Omit any data that doesn't exist
+dataFrame <- melt( avgs )
+dataFrame$scale <- fileData$scale
+dataFrame$stds <- c( fileData$kill_deact_std,
+                     fileData$deact_role_std )
+
+colnames( dataFrame ) <- c( "ms",
+                            "type",
+                            "scale",
+                            "stds" )
+
+dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
+
+sum <- fileData[ 'deact_role_avg' ] +
+       fileData[ 'kill_deact_avg' ]
 
 print( "Data Frame Results:" )
-print( avgData )
+print( dataFrame )
 
 
 # **********************************************************
 # STEP 3: Generate graphs.
 # **********************************************************
 
-print( "Generating fundamental graph data." )
+print( "**********************************************************" )
+print( "STEP 3: Generate Graph." )
+print( "**********************************************************" )
+
+# ------------------------------------
+# Initialize Variables for Both Graphs
+# ------------------------------------
+
+print( "Initializing variables used in both graphs." )
 
 theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
-
-mainPlot <- ggplot( data = avgData, aes( x = scale, y = ms, ymin = ms, ymax = ms + stdData$ms,fill = type ) )
-xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
+xScaleConfig <- scale_x_continuous( breaks = c( 1, 3, 5, 7, 9) )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
-fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ), legend.position="bottom", legend.text=element_text( size=22 ), legend.title = element_blank(), legend.key.size = unit( 1.5, 'lines' ) )
+fillLabel <- labs( fill = "Type" )
+barWidth <- 0.9
+imageWidth <- 15
+imageHeight <- 10
+imageDPI <- 200
+
+theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face='bold' ),
+                legend.position = "bottom",
+                legend.text = element_text( size=22 ),
+                legend.title = element_blank(),
+                legend.key.size = unit( 1.5, 'lines' ) )
+
+barColors <- scale_fill_manual( values=c( "#F77670",
+                                       "#619DFA" ) )
+
 wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
 
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme + wrapLegend
+# ----------------------------------
+# Error Bar Graph Generate Main Plot
+# ----------------------------------
 
+print( "Creating main plot." )
+
+mainPlot <- ggplot( data = dataFrame, aes( x = scale,
+                                           y = ms,
+                                           ymin = ms,
+                                           ymax = ms + stds,
+                                           fill = type ) )
+
+# ----------------------------------------------
+# Error Bar Graph Fundamental Variables Assigned
+# ----------------------------------------------
+
+print( "Generating fundamental graph data for the error bar graph." )
+
+errorBarColor <- rgb( 140, 140, 140, maxColorValue=255 )
+
+title <- ggtitle( chartTitle )
+
+fundamentalGraphData <- mainPlot +
+                        xScaleConfig +
+                        xLabel +
+                        yLabel +
+                        fillLabel +
+                        theme +
+                        title +
+                        wrapLegend
+
+# -------------------------------------------
+# Error Bar Graph Generating Bar Graph Format
+# -------------------------------------------
 
 print( "Generating bar graph with error bars." )
-width <- 0.9
-barGraphFormat <- geom_bar( stat="identity", position=position_dodge(), width = width )
-colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
-errorBarFormat <- geom_errorbar( width = width, position=position_dodge(), color=rgb( 140, 140, 140, maxColorValue=255 ) )
-values <- geom_text( aes( x=avgData$scale, y=avgData$ms + 0.02 * max( avgData$ms ), label = format( avgData$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold", position=position_dodge( 0.9 ) )
-title <- ggtitle( paste( chartTitle, "" ) )
-result <- fundamentalGraphData + barGraphFormat + colors + errorBarFormat + title + values
 
+barGraphFormat <- geom_bar( stat = "identity",
+                            position = position_dodge(),
+                            width = barWidth )
+
+errorBarFormat <- geom_errorbar( width = barWidth,
+                                 position = position_dodge(),
+                                 color = errorBarColor )
+
+values <- geom_text( aes( x = dataFrame$scale,
+                          y = dataFrame$ms + 0.02 * max( dataFrame$ms ),
+                          label = format( dataFrame$ms,
+                                          digits = 3,
+                                          big.mark = ",",
+                                          scientific = FALSE ) ),
+                          size = 7.0,
+                          fontface = "bold",
+                          position = position_dodge( 0.9 ) )
+
+result <- fundamentalGraphData +
+          barGraphFormat +
+          barColors +
+          errorBarFormat +
+          values
+
+# ---------------------------------------
+# Error Bar Graph Exporting Graph to File
+# ---------------------------------------
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
+ggsave( errBarOutputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
 
-print( paste( "Successfully wrote bar chart with error bars out to", errBarOutputFile ) )
+print( paste( "[SUCCESS] Successfully wrote bar chart with error bars out to", errBarOutputFile ) )
 
+# ------------------------------------------------
+# Stacked Bar Graph Fundamental Variables Assigned
+# ------------------------------------------------
+
+print( "Generating fundamental graph data for the stacked bar graph." )
+
+title <- ggtitle( chartTitle )
+
+fundamentalGraphData <- mainPlot +
+                        xScaleConfig +
+                        xLabel +
+                        yLabel +
+                        fillLabel +
+                        theme +
+                        title +
+                        wrapLegend
+
+# ---------------------------------------------
+# Stacked Bar Graph Generating Bar Graph Format
+# ---------------------------------------------
 
 print( "Generating stacked bar chart." )
-stackedBarFormat <- geom_bar( stat="identity", width=width )
-title <- ggtitle( paste( chartTitle, "" ) )
-sum <- fileData[ 'deact_role_avg' ] + fileData[ 'kill_deact_avg' ]
-values <- geom_text( aes( x=avgData$scale, y=sum + 0.02 * max( sum ), label = format( sum, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
-result <- fundamentalGraphData + stackedBarFormat + colors + title + values
+stackedBarFormat <- geom_bar( stat = "identity",
+                              width = barWidth )
 
+values <- geom_text( aes( x = dataFrame$scale,
+                          y = sum + 0.02 * max( sum ),
+                          label = format( sum,
+                                          digits = 3,
+                                          big.mark = ",",
+                                          scientific = FALSE ) ),
+                          size = 7.0,
+                          fontface = "bold" )
+
+result <- fundamentalGraphData +
+          stackedBarFormat +
+          barColors +
+          title +
+          values
+
+# -----------------------------------------
+# Stacked Bar Graph Exporting Graph to File
+# -----------------------------------------
 
 print( paste( "Saving stacked bar chart to", stackedBarOutputFile ) )
-ggsave( stackedBarOutputFile, width = 15, height = 10, dpi = 200 )
 
+ggsave( stackedBarOutputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
 
-print( paste( "Successfully wrote stacked bar chart out to", stackedBarOutputFile ) )
+print( paste( "[SUCCESS] Successfully wrote stacked bar chart out to", stackedBarOutputFile ) )

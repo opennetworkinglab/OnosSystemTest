@@ -21,67 +21,123 @@
 # please contact Jeremy Ronquillo: j_ronquillo@u.pacific.edu
 
 # **********************************************************
-# STEP 1: File management.
+# STEP 1: Data management.
 # **********************************************************
 
-print( "STEP 1: File management." )
+print( "**********************************************************" )
+print( "STEP 1: Data management." )
+print( "**********************************************************" )
 
 # Command line arguments are read.
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
-# Import libraries to be used for graphing and organizing data, respectively.
-# Find out more about ggplot2: https://github.com/tidyverse/ggplot2
-#                     reshape2: https://github.com/hadley/reshape
+# ----------------
+# Import Libraries
+# ----------------
+
 print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )    # For databases
 
+# -------------------
+# Check CLI Arguments
+# -------------------
 
-# Check if sufficient args are provided.
+print( "Verifying CLI args." )
+
 if ( is.na( args[ 7 ] ) ){
-    print( "Usage: Rscript SCPFhostLat <database-host> <database-port> <database-user-id> <database-password> <test-name> <branch-name> <directory-to-save-graphs>" )
+
+    print( paste( "Usage: Rscript SCPFhostLat",
+                                  "<database-host>",
+                                  "<database-port>",
+                                  "<database-user-id>",
+                                  "<database-password>",
+                                  "<test-name>",
+                                  "<branch-name>",
+                                  "<directory-to-save-graphs>",
+                                  sep=" " ) )
+
     q()  # basically exit(), but in R
 }
 
-# paste() is used to concatenate strings
-errBarOutputFile <- paste( args[ 7 ], args[ 5 ], sep="" )
-errBarOutputFile <- paste( errBarOutputFile, args[ 6 ], sep="_" )
-errBarOutputFile <- paste( errBarOutputFile, "_errGraph.jpg", sep="" )
+# -----------------
+# Create File Names
+# -----------------
 
-print( "Reading from databases." )
+print( "Creating filenames and title of graph." )
 
-con <- dbConnect( dbDriver( "PostgreSQL" ), dbname="onostest", host=args[ 1 ], port=strtoi( args[ 2 ] ), user=args[ 3 ],password=args[ 4 ] )
-
-command  <- paste( "SELECT * FROM host_latency_tests WHERE branch = '", args[ 6 ], sep = "" )
-command <- paste( command, "' AND date IN ( SELECT MAX( date ) FROM host_latency_tests WHERE branch = '", sep = "" )
-command <- paste( command, args[ 6 ], sep = "" )
-command <- paste( command, "' ) ", sep="" )
-
-print( paste( "Sending SQL command:", command ) )
-
-fileData <- dbGetQuery( con, command )
+errBarOutputFile <- paste( args[ 7 ],
+                           args[ 5 ],
+                           "_",
+                           args[ 6 ],
+                           "_errGraph.jpg",
+                           sep="" )
 
 chartTitle <- "Host Latency"
+
+# ------------------
+# SQL Initialization
+# ------------------
+
+print( "Initializing SQL" )
+
+con <- dbConnect( dbDriver( "PostgreSQL" ),
+                  dbname = "onostest",
+                  host = args[ 1 ],
+                  port = strtoi( args[ 2 ] ),
+                  user = args[ 3 ],
+                  password = args[ 4 ] )
+
+# ------------------------
+# Host Latency SQL Command
+# ------------------------
+
+print( "Generating Host Latency SQL Command" )
+
+command  <- paste( "SELECT * FROM host_latency_tests WHERE branch = '",
+                   args[ 6 ],
+                   "' AND date IN ( SELECT MAX( date ) FROM host_latency_tests WHERE branch = '",
+                   args[ 6 ],
+                   "' ) ",
+                   sep = "" )
+
+print( "Sending SQL command:" )
+print( command )
+
+fileData <- dbGetQuery( con, command )
 
 
 # **********************************************************
 # STEP 2: Organize data.
 # **********************************************************
 
-print( "STEP 2: Organize data." )
+print( "**********************************************************" )
+print( "STEP 2: Organize Data." )
+print( "**********************************************************" )
 
-avgs <- c()
+# ------------
+# Data Sorting
+# ------------
 
 print( "Sorting data." )
 avgs <- c( fileData[ 'avg' ] )
+
+# --------------------
+# Construct Data Frame
+# --------------------
+
+print( "Constructing Data Frame" )
 
 dataFrame <- melt( avgs )
 dataFrame$scale <- fileData$scale
 dataFrame$std <- fileData$std
 
-colnames( dataFrame ) <- c( "ms", "type", "scale", "std" )
+colnames( dataFrame ) <- c( "ms",
+                            "type",
+                            "scale",
+                            "std" )
 
 dataFrame <- na.omit( dataFrame )   # Omit any data that doesn't exist
 
@@ -92,29 +148,86 @@ print( dataFrame )
 # STEP 3: Generate graphs.
 # **********************************************************
 
+print( "**********************************************************" )
+print( "STEP 3: Generate Graph." )
+print( "**********************************************************" )
+
+# ------------------
+# Generate Main Plot
+# ------------------
+
+print( "Creating main plot." )
+
+mainPlot <- ggplot( data = dataFrame, aes( x = scale,
+                                           y = ms,
+                                           ymin = ms,
+                                           ymax = ms + std ) )
+
+# ------------------------------
+# Fundamental Variables Assigned
+# ------------------------------
+
 print( "Generating fundamental graph data." )
 
 theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
-mainPlot <- ggplot( data = dataFrame, aes( x = scale, y = ms, ymin = ms, ymax = ms + std ) )
-xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9) )
+xScaleConfig <- scale_x_continuous( breaks=c( 1, 3, 5, 7, 9 ) )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ) )
+theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face ='bold' ) )
+title <- ggtitle( chartTitle )
+errorBarColor <- rgb( 140, 140, 140, maxColorValue = 255 )
+imageWidth <- 15
+imageHeight <- 10
+imageDPI <- 200
 
-fundamentalGraphData <- mainPlot + xScaleConfig + xLabel + yLabel + fillLabel + theme
+fundamentalGraphData <- mainPlot +
+                        xScaleConfig +
+                        xLabel +
+                        yLabel +
+                        fillLabel +
+                        theme +
+                        title
 
+# ---------------------------
+# Generating Bar Graph Format
+# ---------------------------
 
 print( "Generating bar graph with error bars." )
-width <- 0.9
-barGraphFormat <- geom_bar( stat="identity", position=position_dodge( ), width = width, fill="#A700EF" )
-errorBarFormat <- geom_errorbar( position=position_dodge(), width = width, color=rgb( 140, 140, 140, maxColorValue=255 ) )
-values <- geom_text( aes( x=dataFrame$scale, y=dataFrame$ms + 0.06 * max( dataFrame$ms ), label = format( dataFrame$ms, digits=3, big.mark = ",", scientific = FALSE ) ), size = 7.0, fontface = "bold" )
-title <- ggtitle( paste( chartTitle, "" ) )
-result <- fundamentalGraphData + barGraphFormat + errorBarFormat + title + values
 
+barWidth <- 0.9
+barGraphFormat <- geom_bar( stat = "identity",
+                            position = position_dodge(),
+                            width = barWidth,
+                            fill = "#A700EF" )
+
+errorBarFormat <- geom_errorbar( position = position_dodge(),
+                                 width = barWidth,
+                                 color = errorBarColor )
+
+values <- geom_text( aes( x=dataFrame$scale,
+                          y=dataFrame$ms + 0.06 * max( dataFrame$ms ),
+                          label = format( dataFrame$ms,
+                                          digits=3,
+                                          big.mark = ",",
+                                          scientific = FALSE ) ),
+                          size = 7.0,
+                          fontface = "bold" )
+
+result <- fundamentalGraphData +
+          barGraphFormat +
+          errorBarFormat +
+          values
+
+# -----------------------
+# Exporting Graph to File
+# -----------------------
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
-ggsave( errBarOutputFile, width = 15, height = 10, dpi = 200 )
 
-print( paste( "Successfully wrote bar chart out to", errBarOutputFile ) )
+ggsave( errBarOutputFile,
+        width = imageWidth,
+        height = imageHeight,
+        dpi = imageDPI )
+
+print( paste( "[SUCCESS] Successfully wrote bar chart out to", errBarOutputFile ) )

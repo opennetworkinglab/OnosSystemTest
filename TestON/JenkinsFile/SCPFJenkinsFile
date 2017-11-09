@@ -208,7 +208,7 @@ def checkIfList( testName, forWhich, pos ){
     return SCPF[testName][forWhich].getClass().getName() != "java.lang.String" ? SCPF[testName][forWhich][pos] :  SCPF[testName][forWhich]
 }
 def sqlOldFlow( isOldFlow, testName ){
-    return SCPF[ testName ][ 'flows' ] ? " AND " + ( isOldFlow == "true" ? "" : "NOT " ) + "is_old_flow" : ""
+    return SCPF[ testName ][ 'flows' ] ? " AND " + ( isOldFlow == "true" ? "" : "NOT " ) + "is_old_flow " : ""
 }
 def oldFlowRuleCheck( isOldFlow ){
     if( isOldFlow == "false" ){

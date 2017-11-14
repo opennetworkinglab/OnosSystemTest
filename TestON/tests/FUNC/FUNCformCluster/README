@@ -1,0 +1,13 @@
+Summary:
+        This test is checking the functionality of onos-form-cluster.
+        It will first run 7 single node of ONOS and check the number of the node and app.
+        Since it is single node, each of them should have 1 node.
+        Then, it will form 7 clusters to the ONOS and re-check the number of the nodes, status of nodes,
+        and app.
+        This time, it should have 7 nodes and installing app from one node should affect the other nodes.
+        The status of the Nodes should be "READY"
+        Lastly, it will run the Mininet with controllers of 7 nodes to pingall and compare topology
+        of ONOS and Mininet.
+
+Required:
+        Since it is fixed with 7 nodes, test will be forced to exit unless it has 7 clusters.

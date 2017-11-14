@@ -6,15 +6,16 @@ before_previous_version = "1.10"
 AllTheTests=
 [
     "FUNC":[
-            "FUNCipv6Intent" : ["basic":true, "extra_A":false, "extra_B":false, "day":""],
-            "FUNCoptical" :    ["basic":true, "extra_A":false, "extra_B":false, "day":""],
-            "FUNCflow" :       ["basic":true, "extra_A":false, "extra_B":false, "day":""],
-            "FUNCnetCfg":      ["basic":true, "extra_A":false, "extra_B":false, "day":""],
-            "FUNCovsdbtest" :  ["basic":true, "extra_A":false, "extra_B":false, "day":""],
-            "FUNCnetconf" :    ["basic":true, "extra_A":false, "extra_B":false, "day":""],
-            "FUNCgroup" :      ["basic":true, "extra_A":false, "extra_B":false, "day":""],
-            "FUNCintent" :     ["basic":false, "extra_A":true, "extra_B":false, "day":""],
-            "FUNCintentRest" : ["basic":false, "extra_A":false, "extra_B":true, "day":""]
+            "FUNCipv6Intent" : ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCoptical" :    ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCflow" :       ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCnetCfg":      ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCovsdbtest" :  ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCnetconf" :    ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCgroup" :      ["basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCformCluster" :["basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":""],
+            "FUNCintent" :     ["basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":""],
+            "FUNCintentRest" : ["basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":""],
     ],
     "HA":[
             "HAsanity" :                ["basic":true, "extra_A":false, "extra_B":false, "day":""],
@@ -197,6 +198,7 @@ def lastCommaRemover( str ){
 }
 def monday( getResult ){
     FUNC_choices += adder( "FUNC", "basic", true, "M", getResult )
+    FUNC_choices += adder( "FUNC", "new_Test", true, "M", getResult )
     FUNC_choices += adder( "FUNC", "extra_A", true, "M", getResult )
     HA_choices += adder( "HA", "basic", true, "M", getResult )
     HA_choices += adder( "HA", "extra_A", true, "M", getResult )
@@ -205,6 +207,7 @@ def monday( getResult ){
 }
 def tuesday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "T", getResult )
+    FUNC_choices += adder( "FUNC", "new_Test", getDay, "T", getResult )
     FUNC_choices += adder( "FUNC", "extra_B", getDay, "T", getResult )
     HA_choices += adder( "HA", "basic", getDay, "T", getResult )
     HA_choices += adder( "HA", "extra_B", getDay, "T", getResult )
@@ -216,6 +219,7 @@ def tuesday( getDay, getResult ){
 }
 def wednesday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "W", getResult )
+    FUNC_choices += adder( "FUNC", "new_Test", getDay, "W", getResult )
     FUNC_choices += adder( "FUNC", "extra_A", getDay, "W", getResult )
     HA_choices += adder( "HA", "basic", getDay, "W", getResult )
     HA_choices += adder( "HA", "extra_A", getDay, "W", getResult )
@@ -225,6 +229,7 @@ def wednesday( getDay, getResult ){
 }
 def thursday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "Th", getResult )
+    FUNC_choices += adder( "FUNC", "new_Test", getDay, "Th", getResult )
     FUNC_choices += adder( "FUNC", "extra_B", getDay, "Th", getResult )
     HA_choices += adder( "HA", "basic", getDay, "Th", getResult )
     HA_choices += adder( "HA", "extra_B", getDay, "Th", getResult )
@@ -233,6 +238,7 @@ def thursday( getDay, getResult ){
 }
 def friday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "F", getResult )
+    FUNC_choices += adder( "FUNC", "new_Test", getDay, "F", getResult )
     FUNC_choices += adder( "FUNC", "extra_A", getDay, "F", getResult )
     HA_choices += adder( "HA", "basic", getDay, "F", getResult )
     HA_choices += adder( "HA", "extra_A", getDay, "F", getResult )
@@ -422,7 +428,7 @@ def preSetup( onos_branch, test_branch, onos_tag, isManual ){
 }
 def oldFlowCheck( jobOn, onos_branch ){
     result = ""
-    if( isOldFlow && jobOn == "SCPF" && onos_branch="master" )
+    if( isOldFlow && jobOn == "SCPF" && onos_branch== "master" )
         result = '''sed -i -e 's/@Component(immediate = true)/@Component(enabled = false)/g' ~/onos/core/store/dist/src/main/java/org/onosproject/store/flow/impl/DistributedFlowRuleStore.java
         sed -i -e 's/@Component(enabled = false)/@Component(immediate = true)/g' ~/onos/core/store/dist/src/main/java/org/onosproject/store/flow/impl/ECFlowRuleStore.java'''
     return result

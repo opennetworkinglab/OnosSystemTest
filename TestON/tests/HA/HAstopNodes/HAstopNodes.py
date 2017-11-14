@@ -160,9 +160,8 @@ class HAstopNodes:
                                  onfail="ONOS nodes NOT successfully stopped" )
 
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.HA.nodesCheck,
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       args=[ main.Cluster.active() ],
                                        sleep=15,
                                        attempts=5 )
 

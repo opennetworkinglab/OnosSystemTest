@@ -18,6 +18,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
+import json
 class Cluster():
 
     def __str__( self ):
@@ -338,6 +339,28 @@ class Cluster():
             result = result and cliResults[ i ]
             self.controllers[ i ].active = True
         return result
+
+    def nodesCheck( self ):
+        results = True
+        nodesOutput = self.command( "nodes", specificDriver=2 )
+        ips = sorted( self.getIps( activeOnly=True ) )
+        for i in nodesOutput:
+            try:
+                current = json.loads( i )
+                activeIps = []
+                currentResult = False
+                for node in current:
+                    if node[ 'state' ] == 'READY':
+                        activeIps.append( node[ 'ip' ] )
+                activeIps.sort()
+                if ips == activeIps:
+                    currentResult = True
+            except ( ValueError, TypeError ):
+                main.log.error( "Error parsing nodes output" )
+                main.log.warn( repr( i ) )
+                currentResult = False
+            results = results and currentResult
+        return results
 
     def printResult( self, results, activeList, logLevel="debug" ):
         """

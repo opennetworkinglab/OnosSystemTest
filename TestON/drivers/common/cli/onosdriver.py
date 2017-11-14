@@ -2437,3 +2437,37 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def formCluster( self, onosIPs ):
+        """
+            From ONOS cluster for IP addresses in onosIPs list
+        """
+        try:
+            onosIPs = " ".join( onosIPs )
+            command = "onos-form-cluster {}".format(  onosIPs )
+            main.log.info( "Sending: " + command )
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( command )
+            self.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( handle )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Error" not in handle, handle
+            assert "Exception:" not in handle, handle
+            assert "curl:" not in handle, handle
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "{} Error in onos-form-cluster output:".format( self.name ) )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

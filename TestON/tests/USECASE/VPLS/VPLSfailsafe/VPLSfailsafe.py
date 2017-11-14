@@ -421,9 +421,8 @@ class VPLSfailsafe:
 
             # Checking if all nodes appear with status READY using 'nodes' command
             main.step( "Checking ONOS nodes." )
-            nodeResults = utilities.retry( main.HA.nodesCheck,
+            nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                            False,
-                                           args=[ main.Cluster.runningNodes ],
                                            sleep=main.timeSleep,
                                            attempts=main.numAttempts )
 

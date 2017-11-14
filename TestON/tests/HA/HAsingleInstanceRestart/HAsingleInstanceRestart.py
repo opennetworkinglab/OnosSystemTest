@@ -716,9 +716,8 @@ class HAsingleInstanceRestart:
                                  onpass="Topology Check Test successful",
                                  onfail="Topology Check Test NOT successful" )
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.HA.nodesCheck,
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       args=[ main.Cluster.active() ],
                                        attempts=5 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,

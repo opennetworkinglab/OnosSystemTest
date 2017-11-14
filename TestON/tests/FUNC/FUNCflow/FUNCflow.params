@@ -23,6 +23,11 @@
 
     <testcases>1,2,10,1000,3000,1100,3000,1200,3000,1300,3000,1400,3000,1500,3000,1600,3000,1700,3000,1800,3000,1900,3000,2000,100</testcases>
 
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <SCALE>
         <max>1</max>
     </SCALE>

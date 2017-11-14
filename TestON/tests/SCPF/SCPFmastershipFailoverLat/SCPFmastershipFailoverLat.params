@@ -1,6 +1,11 @@
 <PARAMS>
     <testcases>0,[1,2,3]*3</testcases>
 
+    <GRAPH>
+        <nodeCluster>BM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <SCALE>3,5,7</SCALE>
     <max>7</max>
 

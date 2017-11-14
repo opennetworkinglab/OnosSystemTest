@@ -93,7 +93,6 @@ class HAswapNodes:
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
-        main.HA.generateGraph( "HAswapNodes" )
 
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=[ main.HA.setServerForCluster,

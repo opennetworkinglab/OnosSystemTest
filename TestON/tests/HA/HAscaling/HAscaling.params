@@ -19,6 +19,11 @@
     #CASE17: Check for basic functionality with distributed primitives
     <testcases>1,2,8,21,3,8,4,5,14,16,17,[6,8,7,4,15,17]*9,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
 
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <scaling>1,3b,5b,7b,7,7b,5b,3b,1</scaling>
     <server>
         <port>8000</port>

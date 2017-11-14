@@ -125,7 +125,42 @@ class ONOSSetup:
                                         "test variables ",
                                  onfail="Failed to construct test variables" )
 
+        url = self.generateGraphURL()
+        main.log.wiki( url )
+
         main.commit = main.ONOSbench.getVersion( report=True )
+
+    def generateGraphURL( self, width=525, height=350 ):
+        """
+        Description:
+            Obtain the URL for the graph that corresponds to the test being run.
+        """
+
+        nodeCluster = main.params[ 'GRAPH' ][ 'nodeCluster' ]
+        testname = main.TEST
+        branch = main.ONOSbench.getBranchName()
+        maxBuildsToShow = main.params[ 'GRAPH' ][ 'builds' ]
+
+        return '<ac:structured-macro ac:name="html">\n' + \
+                '<ac:plain-text-body><![CDATA[\n' + \
+                '<img src="https://onos-jenkins.onlab.us/job/Pipeline_postjob_' + \
+                nodeCluster + \
+                '/lastSuccessfulBuild/artifact/' + \
+                testname + \
+                '_' + \
+                branch + \
+                '_' + \
+                maxBuildsToShow + \
+                '-builds_graph.jpg", alt="' + \
+                testname + \
+                '", style="width:' + \
+                str( width ) + \
+                'px;height:' + \
+                str( height ) + \
+                'px;border:0"' + \
+                '>' + \
+                ']]></ac:plain-text-body>\n' + \
+                '</ac:structured-macro>\n'
 
     def setNumCtrls( self, hasMultiNodeRounds ):
         """

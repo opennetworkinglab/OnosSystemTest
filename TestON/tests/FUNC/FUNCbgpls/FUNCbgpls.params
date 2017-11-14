@@ -12,6 +12,11 @@
 
     <testcases>1,2,3,4,5,6</testcases>
 
+    <GRAPH>
+        <nodeCluster>BM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <DEPENDENCY>
         <path>/tests/FUNC/FUNCbgpls/Dependencies/</path>
     </DEPENDENCY>

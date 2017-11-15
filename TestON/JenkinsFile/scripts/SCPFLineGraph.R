@@ -90,7 +90,7 @@ print( "Creating title of graph" )
 # Title of graph based on command line args.
 
 title <- args[ graph_title ]
-title <- paste( title, if( args[ old_flow ] == "y" ) "\nWith Old Flow" else "" )
+title <- paste( title, if( args[ old_flow ] == "y" ) "\nWith Eventually Consistent Flow Rule Store" else "" )
 
 print( "Creating graph filename." )
 

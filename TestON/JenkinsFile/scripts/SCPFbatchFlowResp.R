@@ -95,11 +95,11 @@ delOutputFile <- paste( args[ save_directory ],
 
 postChartTitle <- paste( "Single Bench Flow Latency - Post\n",
                          "Last 3 Builds",
-                         if( args[ old_flow ] == "y" ) " With Old Flow" else "",
+                         if( args[ old_flow ] == "y" ) "\nWith Eventually Consistent Flow Rule Store" else "",
                          sep = "" )
 delChartTitle <- paste( "Single Bench Flow Latency - Del\n",
                         "Last 3 Builds",
-                        if( args[ old_flow ] == "y" ) " With Old Flow" else "",
+                        if( args[ old_flow ] == "y" ) "\nWith Eventually Consistent Flow Rule Store" else "",
                         sep = "" )
 
 # ------------------

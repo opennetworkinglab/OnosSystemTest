@@ -89,7 +89,7 @@ if ( args[ has_flow_obj ] == "y" ){
 fileOldFlowModifier <- ""
 if ( args[ old_flow ] == 'y' ){
     fileOldFlowModifier <- "_OldFlow"
-    chartTitle <- paste( chartTitle, "With Old Flow", sep="\n" )
+    chartTitle <- paste( chartTitle, "With Eventually Consistent Flow Rule Store", sep="\n" )
 }
 
 outputFile <- paste( args[ save_directory ],

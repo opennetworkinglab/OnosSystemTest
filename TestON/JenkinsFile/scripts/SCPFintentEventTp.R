@@ -105,7 +105,7 @@ if ( args[ has_neighbors ] == 'y' ){
 }
 if ( args[ old_flow ] == 'y' ){
     fileOldFlowModifier <- "_OldFlow"
-    chartTitle <- paste( chartTitle, "With Old Flow", sep="\n" )
+    chartTitle <- paste( chartTitle, "With Eventually Consistent Flow Rule Store", sep="\n" )
 }
 
 errBarOutputFile <- paste( args[ save_directory ],

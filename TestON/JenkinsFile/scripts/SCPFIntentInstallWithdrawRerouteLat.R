@@ -94,7 +94,7 @@ if ( args[ has_flow_obj ] == "y" ){
 if ( args[ old_flow ] == "y" ){
     errBarOutputFile <- paste( errBarOutputFile, "_OldFlow", sep="" )
     chartTitle <- paste( chartTitle,
-                         "With Old Flow",
+                         "With Eventually Consistent Flow Rule Store",
                          sep="\n" )
 }
 errBarOutputFile <- paste( errBarOutputFile,

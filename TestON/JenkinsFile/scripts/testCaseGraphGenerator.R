@@ -236,7 +236,7 @@ print( "Generating fundamental graph data." )
 theme_set( theme_grey( base_size = 26 ) )   # set the default text size of the graph.
 
 xScaleConfig <- scale_x_continuous( breaks = dataFrame$iterative,
-                                    label = dataFrame$Build )
+                                    label = dataFrame$build )
 yScaleConfig <- scale_y_continuous( breaks = seq( 0, max( dataFrame$Tests ),
                                     by = ceiling( max( dataFrame$Tests ) / 10 ) ) )
 

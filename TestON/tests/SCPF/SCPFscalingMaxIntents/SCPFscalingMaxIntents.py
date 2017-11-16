@@ -440,6 +440,6 @@ class SCPFscalingMaxIntents:
             # how many flows we installed before crash
             temp += "," + str( totalFlows )
             # other columns in database, but we didn't use in this test
-            temp += "," + "0,0,0,0,0,0"
+            temp += "," + "0,0,0,0,0,0,0,0"
             temp += "\n"
             dbFile.write( temp )

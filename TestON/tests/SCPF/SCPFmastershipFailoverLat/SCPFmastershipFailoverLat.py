@@ -261,9 +261,8 @@ class SCPFmastershipFailoverLat:
                 criticalError = True
 
             main.log.info( "Checking ONOS nodes." )
-            nodeResults = utilities.retry( main.HA.nodesCheck,
+            nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                            False,
-                                           args=[ main.Cluster.active() ],
                                            sleep=1,
                                            attempts=3 )
 

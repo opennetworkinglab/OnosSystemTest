@@ -422,7 +422,7 @@ class Testcaselib:
 
         if len( nodes ) < main.Cluster.numCtrls:
 
-            nodeResults = utilities.retry( Testcaselib.nodesCheck,
+            nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                            False,
                                            attempts=5,
                                            sleep=10 )
@@ -478,9 +478,8 @@ class Testcaselib:
                                      onfail="ONOS CLI is not ready" )
 
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( Testcaselib.nodesCheck,
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       args=[ nodes ],
                                        attempts=5,
                                        sleep=10 )
         utilities.assert_equals( expect=True, actual=nodeResults,
@@ -587,28 +586,3 @@ class Testcaselib:
         main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="apps",
                                                     subjectKey="org.onosproject.segmentrouting",
                                                     configKey="xconnect" )
-
-    @staticmethod
-    def nodesCheck( nodes ):
-        results = True
-        nodesOutput = main.Cluster.command( "nodes", specificDriver=2 )
-        ips = sorted( main.Cluster.getIps( activeOnly=True ) )
-        for i in nodesOutput:
-            try:
-                current = json.loads( i )
-                activeIps = []
-                currentResult = False
-                for node in current:
-                    if node[ 'state' ] == 'READY':
-                        activeIps.append( node[ 'ip' ] )
-                currentResult = True
-                for ip in ips:
-                    if ip not in activeIps:
-                        currentResult = False
-                        break
-            except ( ValueError, TypeError ):
-                main.log.error( "Error parsing nodes output" )
-                main.log.warn( repr( i ) )
-                currentResult = False
-            results = results and currentResult
-        return results

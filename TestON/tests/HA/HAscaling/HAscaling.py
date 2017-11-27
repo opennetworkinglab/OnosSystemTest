@@ -203,9 +203,8 @@ class HAscaling:
         main.Cluster.startCLIs()
 
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.HA.nodesCheck,
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       args=[ main.Cluster.active() ],
                                        attempts=5 )
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",

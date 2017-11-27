@@ -15,7 +15,8 @@ FUNC = [
 "FUNCnetconf" : [wiki_link:prop["WikiPrefix"]+"-"+"FUNCnetconf", wiki_file:"FUNCnetconfWiki.txt"],
 "FUNCgroup" : [wiki_link:prop["WikiPrefix"]+"-"+"FUNCgroup", wiki_file:"FUNCgroupWiki.txt"],
 "FUNCintent" : [wiki_link:prop["WikiPrefix"]+"-"+"FUNCintent", wiki_file:"FUNCintentWiki.txt"],
-"FUNCintentRest" : [wiki_link:prop["WikiPrefix"]+"-"+"FUNCintentRest", wiki_file:"FUNCintentRestWiki.txt"]
+"FUNCintentRest" : [wiki_link:prop["WikiPrefix"]+"-"+"FUNCintentRest", wiki_file:"FUNCintentRestWiki.txt"],
+"FUNCformCluster" : [wiki_link:prop["WikiPrefix"]+"-"+"FUNCformCluster", wiki_file:"FUNCformClusterWiki.txt"]
 ]
 table_name = "executed_test_tests"
 result_name = "executed_test_results"
@@ -118,7 +119,7 @@ def FUNCTest( testName, toBeRun, prop ) {
                             done
                             ls -al
                             cd '''
-                            if( prop["manualRun"] == "false" ){
+                            if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
                                 // Post Results
                                 withCredentials([
                                     string(credentialsId: 'db_pass', variable: 'pass'),
@@ -163,7 +164,7 @@ def FUNCTest( testName, toBeRun, prop ) {
                         }
                     }
 
-                    if( prop["manualRun"] == "false" ){
+                    if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
                         def post = build job: "Pipeline_postjob_VM", propagate: false,
                             parameters: [
                                 string(name: 'Wiki_Contents', value: fileContents),

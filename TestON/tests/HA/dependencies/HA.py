@@ -271,39 +271,6 @@ class HA():
         main.log.error( "Inconsistent leaderboards:" + str( leaderList ) )
         return ( result, leaderList )
 
-    def nodesCheck( self, nodes ):
-        nodesOutput = []
-        results = True
-        threads = []
-        for node in nodes:
-            t = main.Thread( target=node.nodes,
-                             name="nodes-" + str( node ),
-                             args=[] )
-            threads.append( t )
-            t.start()
-
-        for t in threads:
-            t.join()
-            nodesOutput.append( t.result )
-        ips = sorted( main.Cluster.getIps( activeOnly=True ) )
-        for i in nodesOutput:
-            try:
-                current = json.loads( i )
-                activeIps = []
-                currentResult = False
-                for node in current:
-                    if node[ 'state' ] == 'READY':
-                        activeIps.append( node[ 'ip' ] )
-                activeIps.sort()
-                if ips == activeIps:
-                    currentResult = True
-            except ( ValueError, TypeError ):
-                main.log.error( "Error parsing nodes output" )
-                main.log.warn( repr( i ) )
-                currentResult = False
-            results = results and currentResult
-        return results
-
     def generateGraph( self, testName, plotName="Plot-HA", index=2 ):
         # GRAPHS
         # NOTE: important params here:
@@ -342,9 +309,8 @@ class HA():
             main.ONOSbench.handle.expect( "\$" )
 
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( self.nodesCheck,
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       args=[ main.Cluster.active() ],
                                        attempts=5 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,
@@ -2759,9 +2725,8 @@ class HA():
         main.log.debug( "Restart time: " + str( main.restartTime ) )
         # TODO: MAke this configurable. Also, we are breaking the above timer
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( self.nodesCheck,
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       args=[ main.Cluster.active() ],
                                        sleep=15,
                                        attempts=5 )
 
@@ -3378,9 +3343,8 @@ class HA():
 
         # FIXME: move this to an ONOS state case
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( self.nodesCheck,
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       args=[ main.Cluster.active() ],
                                        attempts=5 )
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",

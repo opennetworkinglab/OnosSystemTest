@@ -65,7 +65,7 @@ if ( is.na( args[ save_directory ] ) ){
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
 
-    q()  # basically exit(), but in R
+    quit( status = 1 )  # basically exit(), but in R
 }
 
 # -----------------
@@ -129,9 +129,21 @@ print( "**********************************************************" )
 
 print( "Sorting data for Port Up Averages." )
 
-upAvgs <- c( fileData[ 'up_ofp_to_dev_avg' ],
-             fileData[ 'up_dev_to_link_avg' ],
-             fileData[ 'up_link_to_graph_avg' ] )
+requiredColumns <- c( "up_ofp_to_dev_avg", "up_dev_to_link_avg", "up_link_to_graph_avg" )
+
+tryCatch( upAvgs <- c( fileData[ requiredColumns] ),
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+              print( "Required columns: " )
+              print( requiredColumns )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
+
 
 # ----------------------------
 # Port Up Construct Data Frame
@@ -166,9 +178,20 @@ print( upAvgsDataFrame )
 
 print( "Sorting data for Port Down Averages." )
 
-downAvgs <- c( fileData[ 'down_ofp_to_dev_avg' ],
-               fileData[ 'down_dev_to_link_avg' ],
-               fileData[ 'down_link_to_graph_avg' ] )
+requiredColumns <- c( "down_ofp_to_dev_avg", "down_dev_to_link_avg", "down_link_to_graph_avg" )
+
+tryCatch( downAvgs <- c( fileData[ requiredColumns] ),
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+              print( "Required columns: " )
+              print( requiredColumns )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
 
 # ------------------------------
 # Port Down Construct Data Frame
@@ -294,10 +317,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving bar chart with error bars (Port Up Latency) to", errBarOutputFileUp ) )
 
-ggsave( errBarOutputFileUp,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( errBarOutputFileUp,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote bar chart with error bars (Port Up Latency) out to", errBarOutputFileUp ) )
 
@@ -362,9 +391,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving bar chart with error bars (Port Down Latency) to", errBarOutputFileDown ) )
 
-ggsave( errBarOutputFileDown,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( errBarOutputFileDown,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote bar chart with error bars (Port Down Latency) out to", errBarOutputFileDown ) )
+quit( status = 0 )

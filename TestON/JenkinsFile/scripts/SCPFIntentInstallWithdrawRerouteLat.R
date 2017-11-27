@@ -70,7 +70,7 @@ if ( is.na( args[ save_directory ] ) ){
                                   "<using-old-flow>",
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
-    q()  # basically exit(), but in R
+    quit( status = 1 )  # basically exit(), but in R
 }
 
 # -----------------------------------
@@ -187,8 +187,22 @@ print( "**********************************************************" )
 print( "Combining Install, Withdraw, and Reroute Latencies Data" )
 
 if ( ncol( rerouteData ) == 0 ){  # Checks if rerouteData exists, so we can exclude it if necessary
-    avgs <- c( installWithdrawData[ 'install_avg' ],
-               installWithdrawData[ 'withdraw_avg' ] )
+
+    requiredColumns <- c( "install_avg",
+                          "withdraw_avg"  )
+
+    tryCatch( avgs <- c( installWithdrawData[ requiredColumns] ),
+              error = function( e ) {
+                  print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+                  print( "Required columns: " )
+                  print( requiredColumns )
+                  print( "Actual columns: " )
+                  print( names( fileData ) )
+                  print( "Error dump:" )
+                  print( e )
+                  quit( status = 1 )
+              }
+             )
 } else{
     colnames( rerouteData ) <- c( "date",
                                   "name",
@@ -201,9 +215,21 @@ if ( ncol( rerouteData ) == 0 ){  # Checks if rerouteData exists, so we can excl
                                   "reroute_avg",
                                   "reroute_std" )
 
-    avgs <- c( installWithdrawData[ 'install_avg' ],
-               installWithdrawData[ 'withdraw_avg' ],
-               rerouteData[ 'reroute_avg' ] )
+    tryCatch( avgs <- c( installWithdrawData[ 'install_avg' ],
+                         installWithdrawData[ 'withdraw_avg' ],
+                         rerouteData[ 'reroute_avg' ] ),
+              error = function( e ) {
+                  print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+                  print( "Required columns: " )
+                  print( requiredColumns )
+                  print( "Actual columns: " )
+                  print( names( fileData ) )
+                  print( "Error dump:" )
+                  print( e )
+                  quit( status = 1 )
+              }
+             )
+
 }
 
 # Combine lists into data frames.
@@ -341,9 +367,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
 
-ggsave( errBarOutputFile,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( errBarOutputFile,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote bar chart with error bars out to", errBarOutputFile ) )
+quit( status = 0 )

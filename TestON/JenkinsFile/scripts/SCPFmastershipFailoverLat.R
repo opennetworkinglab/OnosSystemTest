@@ -64,7 +64,7 @@ if ( is.na( args[ save_directory ] ) ){
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
 
-        q()  # basically exit(), but in R
+        quit( status = 1 )  # basically exit(), but in R
 }
 
 # -----------------
@@ -134,8 +134,20 @@ print( "**********************************************************" )
 
 print( "Combining averages into a list." )
 
-avgs <- c( fileData[ 'kill_deact_avg' ],
-           fileData[ 'deact_role_avg' ] )
+requiredColumns <- c( "kill_deact_avg", "deact_role_avg" )
+
+tryCatch( avgs <- c( fileData[ requiredColumns] ),
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+              print( "Required columns: " )
+              print( requiredColumns )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
 
 # --------------------
 # Construct Data Frame
@@ -193,7 +205,7 @@ theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face='bold' )
                 legend.key.size = unit( 1.5, 'lines' ) )
 
 barColors <- scale_fill_manual( values=c( "#F77670",
-                                       "#619DFA" ) )
+                                          "#619DFA" ) )
 
 wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
 
@@ -264,10 +276,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving bar chart with error bars to", errBarOutputFile ) )
 
-ggsave( errBarOutputFile,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( errBarOutputFile,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote bar chart with error bars out to", errBarOutputFile ) )
 
@@ -317,9 +335,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving stacked bar chart to", stackedBarOutputFile ) )
 
-ggsave( stackedBarOutputFile,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( stackedBarOutputFile,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote stacked bar chart out to", stackedBarOutputFile ) )
+quit( status = 0 )

@@ -66,7 +66,7 @@ if ( is.na( args[ save_directory ] ) ){
                             "<directory-to-save-graphs>",
                             sep=" ") )
 
-    q()  # basically exit(), but in R
+    quit( status = 1 )  # basically exit(), but in R
 }
 
 # -----------------
@@ -131,11 +131,24 @@ print( "**********************************************************" )
 
 print( "Sorting data for Switch Up Averages." )
 
-upAvgs <- c( fileData[ 'up_device_to_graph_avg' ],
-             fileData[ 'role_reply_to_device_avg' ],
-             fileData[ 'role_request_to_role_reply_avg' ],
-             fileData[ 'feature_reply_to_role_request_avg' ],
-             fileData[ 'tcp_to_feature_reply_avg' ] )
+requiredColumns <- c( "up_device_to_graph_avg",
+                      "role_reply_to_device_avg",
+                      "role_request_to_role_reply_avg",
+                      "feature_reply_to_role_request_avg",
+                      "tcp_to_feature_reply_avg" )
+
+tryCatch( upAvgs <- c( fileData[ requiredColumns] ),
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+              print( "Required columns: " )
+              print( requiredColumns )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
 
 # ------------------------------
 # Switch Up Construct Data Frame
@@ -171,9 +184,22 @@ print( upAvgsData )
 
 print( "Sorting data for Switch Down Averages." )
 
-downAvgs <- c( fileData[ 'down_device_to_graph_avg' ],
-               fileData[ 'ack_to_device_avg' ],
-               fileData[ 'fin_ack_to_ack_avg' ] )
+requiredColumns <- c( "down_device_to_graph_avg",
+                      "ack_to_device_avg",
+                      "fin_ack_to_ack_avg" )
+
+tryCatch( downAvgs <- c( fileData[ requiredColumns] ),
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+              print( "Required columns: " )
+              print( requiredColumns )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
 
 # --------------------------------
 # Switch Down Construct Data Frame
@@ -291,10 +317,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving bar chart with error bars (Switch Up Latency) to", errBarOutputFileUp ) )
 
-ggsave( errBarOutputFileUp,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( errBarOutputFileUp,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote bar chart with error bars (Switch Up Latency) out to", errBarOutputFileUp ) )
 
@@ -361,9 +393,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving bar chart with error bars (Switch Down Latency) to", errBarOutputFileDown ) )
 
-ggsave( errBarOutputFileDown,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( errBarOutputFileDown,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote bar chart with error bars (Switch Down Latency) out to", errBarOutputFileDown ) )
+quit( status = 0 )

@@ -78,7 +78,7 @@ if ( is.na( args[ save_directory ] ) ){
                                     "<using-old-flow>",
                                     "<directory-to-save-graph>",
                   sep = " " ) )
-    q()  # basically exit(), but in R
+    quit( status = 1 )  # basically exit(), but in R
 }
 
 # -------------------------------
@@ -134,11 +134,21 @@ print( "**********************************************************" )
 # Create lists c() and organize data into their corresponding list.
 print( "Combine data retrieved from databases into a list." )
 
-if ( ncol( fileData ) > 1 ){
-    for ( i in 2:ncol( fileData ) ){
-        fileData[ i ] <- fileData[ i - 1 ] + fileData[ i ]
-    }
-}
+tryCatch( if ( ncol( fileData ) > 1 ){
+              for ( i in 2:ncol( fileData ) ){
+                  fileData[ i ] <- fileData[ i - 1 ] + fileData[ i ]
+              }
+          },
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing or invalid. Please check that the SQL command is valid, then try again." )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
+
 
 # --------------------
 # Construct Data Frame
@@ -266,9 +276,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving result graph to", outputFile ) )
 
-ggsave( outputFile,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( outputFile,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote result graph out to", outputFile ) )
+quit( status = 0 )

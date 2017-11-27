@@ -57,7 +57,7 @@ print( "Verifying CLI args." )
 
 if ( is.na( args[ save_directory ] ) ){
 
-    print( paste( "Usage: Rscript SCPFbatchFlowResp",
+    print( paste( "Usage: Rscript SCPFbatchFlowResp.R",
                                   "<database-host>",
                                   "<database-port>",
                                   "<database-user-id>",
@@ -68,7 +68,7 @@ if ( is.na( args[ save_directory ] ) ){
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
 
-    q()  # basically exit(), but in R
+    quit( status = 1 )  # basically exit(), but in R
 }
 
 # -----------------
@@ -149,8 +149,20 @@ print( "**********************************************************" )
 
 print( "Sorting data for Post." )
 
-postAvgs <- c( fileData[ 'posttoconfrm' ],
-               fileData[ 'elapsepost' ] )
+requiredColumns <- c( "posttoconfrm", "elapsepost" )
+
+tryCatch( postAvgs <- c( fileData[ requiredColumns] ),
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+              print( "Required columns: " )
+              print( requiredColumns )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
 
 # -------------------------
 # Post Construct Data Frame
@@ -181,15 +193,27 @@ print( postDataFrame )
 # Del Data Sorting
 # ----------------
 
-print( "Sorting data for Del." )
-avgs <- c( fileData[ 'deltoconfrm' ],
-           fileData[ 'elapsedel' ] )
+requiredColumns <- c( "deltoconfrm", "elapsedel" )
+
+tryCatch( delAvgs <- c( fileData[ requiredColumns] ),
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+              print( "Required columns: " )
+              print( requiredColumns )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
+
 
 # ------------------------
 # Del Construct Data Frame
 # ------------------------
 
-delDataFrame <- melt( avgs )
+delDataFrame <- melt( delAvgs )
 delDataFrame$scale <- fileData$scale
 delDataFrame$date <- fileData$date
 delDataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
@@ -303,10 +327,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving Post bar chart to", postOutputFile ) )
 
-ggsave( postOutputFile,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( postOutputFile,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote stacked bar chart out to", postOutputFile ) )
 
@@ -369,9 +399,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving Del bar chart to", delOutputFile ) )
 
-ggsave( delOutputFile,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( delOutputFile,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote stacked bar chart out to", delOutputFile ) )
+quit( status = 0 )

@@ -72,7 +72,7 @@ if ( is.na( args[ save_directory ] ) ){
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
 
-    q()  # basically exit(), but in R
+    quit( status = 1 )  # basically exit(), but in R
 }
 
 # -----------------
@@ -173,7 +173,21 @@ print( "**********************************************************" )
 # ------------
 
 print( "Sorting data." )
-avgs <- c( fileData[ 'avg' ] )
+
+requiredColumns <- c( "avg" )
+
+tryCatch( avgs <- c( fileData[ requiredColumns] ),
+          error = function( e ) {
+              print( "[ERROR] One or more expected columns are missing from the data. Please check that the data and SQL command are valid, then try again." )
+              print( "Required columns: " )
+              print( requiredColumns )
+              print( "Actual columns: " )
+              print( names( fileData ) )
+              print( "Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+         )
 
 # --------------------
 # Construct Data Frame
@@ -278,9 +292,16 @@ result <- fundamentalGraphData +
 
 print( paste( "Saving bar chart to", errBarOutputFile ) )
 
-ggsave( errBarOutputFile,
-        width = imageWidth,
-        height = imageHeight,
-        dpi = imageDPI )
+tryCatch( ggsave( errBarOutputFile,
+                  width = imageWidth,
+                  height = imageHeight,
+                  dpi = imageDPI ),
+          error = function( e ){
+              print( "[ERROR] There was a problem saving the graph due to a graph formatting exception.  Error dump:" )
+              print( e )
+              quit( status = 1 )
+          }
+        )
 
 print( paste( "[SUCCESS] Successfully wrote bar chart out to", errBarOutputFile ) )
+quit( status = 0 )

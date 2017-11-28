@@ -87,7 +87,6 @@ class HAkillNodes:
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
-        main.HA.generateGraph( "HAkillNodes" )
 
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=[ main.HA.startingMininet,

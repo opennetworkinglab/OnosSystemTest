@@ -2,6 +2,11 @@
 
     <testcases>1,2,3,4,5,6,7,8</testcases>
 
+    <GRAPH>
+        <nodeCluster>BM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <SCALE>
         <size>3</size>
         <max>3</max>

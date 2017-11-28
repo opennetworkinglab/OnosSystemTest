@@ -2,6 +2,11 @@
 
     <testcases>1,2,10,11,12,13,14,15,16,11</testcases>
 
+    <GRAPH>
+        <nodeCluster>BM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <num_controllers>3</num_controllers>
 
     <GIT>

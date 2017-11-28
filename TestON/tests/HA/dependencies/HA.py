@@ -272,22 +272,9 @@ class HA():
         return ( result, leaderList )
 
     def generateGraph( self, testName, plotName="Plot-HA", index=2 ):
-        # GRAPHS
-        # NOTE: important params here:
-        #       job = name of Jenkins job
-        #       Plot Name = Plot-HA, only can be used if multiple plots
-        #       index = The number of the graph under plot name
-        job = testName
-        graphs = '<ac:structured-macro ac:name="html">\n'
-        graphs += '<ac:plain-text-body><![CDATA[\n'
-        graphs += '<iframe src="https://onos-jenkins.onlab.us/job/' + job +\
-                  '/plot/' + plotName + '/getPlot?index=' + str( index ) +\
-                  '&width=500&height=300"' +\
-                  'noborder="0" width="500" height="300" scrolling="yes" ' +\
-                  'seamless="seamless"></iframe>\n'
-        graphs += ']]></ac:plain-text-body>\n'
-        graphs += '</ac:structured-macro>\n'
-        main.log.wiki( graphs )
+        # DEPRECATED: ONOSSetup.py now creates these graphs.
+
+        main.log.debug( "HA.generateGraph() is deprecated; ONOSSetup now creates these graphs." )
 
     def initialSetUp( self, serviceClean=False ):
         """

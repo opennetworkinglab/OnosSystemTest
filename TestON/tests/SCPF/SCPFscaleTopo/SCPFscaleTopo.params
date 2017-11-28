@@ -10,6 +10,11 @@
     # 1,[2,10,300,11,100,300,11,200,300,11,1000]*3
     <testcases>1,[3,2,10,300,11,1000]*7,3</testcases>
 
+    <GRAPH>
+        <nodeCluster>BM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <DEPENDENCY>
         <path>/tests/SCPF/SCPFscaleTopo/dependencies/</path>
         <wrapper1>startUp</wrapper1>

@@ -12,6 +12,11 @@
     # 100  - Check logs for Errors and Warnings
     <testcases>1,2,3,5,6,7,6,100</testcases>
 
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <SCALE>
         <max>1</max>
     </SCALE>

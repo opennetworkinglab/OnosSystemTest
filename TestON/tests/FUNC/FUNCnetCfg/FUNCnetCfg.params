@@ -18,6 +18,11 @@
 
     <testcases>1,25,2,20,11,27,26,21,22,23,24</testcases>
 
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <DEPENDENCY>
         <path>/tests/FUNC/FUNCnetCfg/dependencies/</path>
         <wrapper1>startUp</wrapper1>

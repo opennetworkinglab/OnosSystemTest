@@ -90,7 +90,6 @@ class HAclusterRestart:
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
-        main.HA.generateGraph( "HAclusterRestart" )
 
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=main.HA.startingMininet )

@@ -10,6 +10,11 @@
 
     <testcases>1,[2,100,200,300,19]*2</testcases>
 
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <SCALE>
         <size>1,3</size>
     </SCALE>

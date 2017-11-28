@@ -97,7 +97,6 @@ class HAsingleInstanceRestart:
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
-        main.HA.generateGraph( "HAsingleInstanceRestart" )
         main.Cluster.setRunningNode( int( main.params[ 'num_controllers' ] ) )
         ip = main.Cluster.getIps( allNode=True )
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName="SingleHA", removeLog=True,

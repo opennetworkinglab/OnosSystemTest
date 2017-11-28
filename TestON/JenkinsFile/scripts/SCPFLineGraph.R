@@ -121,7 +121,14 @@ con <- dbConnect( dbDriver( "PostgreSQL" ),
 
 print( "Sending SQL command:" )
 print( args[ sql_commands ] )
+
 fileData <- dbGetQuery( con, args[ sql_commands ] )
+
+# Check if data has been received
+if ( nrow( fileData ) == 0 ){
+    print( "[ERROR]: No data received from the databases. Please double check this by manually running the SQL command." )
+    quit( status = 1 )
+}
 
 # **********************************************************
 # STEP 2: Organize data.
@@ -134,20 +141,11 @@ print( "**********************************************************" )
 # Create lists c() and organize data into their corresponding list.
 print( "Combine data retrieved from databases into a list." )
 
-tryCatch( if ( ncol( fileData ) > 1 ){
-              for ( i in 2:ncol( fileData ) ){
-                  fileData[ i ] <- fileData[ i - 1 ] + fileData[ i ]
-              }
-          },
-          error = function( e ) {
-              print( "[ERROR] One or more expected columns are missing or invalid. Please check that the SQL command is valid, then try again." )
-              print( "Actual columns: " )
-              print( names( fileData ) )
-              print( "Error dump:" )
-              print( e )
-              quit( status = 1 )
-          }
-         )
+if ( ncol( fileData ) > 1 ){
+    for ( i in 2:ncol( fileData ) ){
+        fileData[ i ] <- fileData[ i - 1 ] + fileData[ i ]
+    }
+}
 
 
 # --------------------

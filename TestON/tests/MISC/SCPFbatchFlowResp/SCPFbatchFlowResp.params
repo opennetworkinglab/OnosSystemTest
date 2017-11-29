@@ -15,6 +15,10 @@
 
     <!-- <testcases>1,10,100,1000,100,2000,100,110</testcases> -->
     <testcases>1,2,10,100,1000,2100,100,3100,100,110,210</testcases>
+    <GRAPH>
+        <nodeCluster>BM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
     <GIT>
         <pull>False</pull>
         <branch>master</branch>

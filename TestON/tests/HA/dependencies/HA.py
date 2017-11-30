@@ -298,7 +298,7 @@ class HA():
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       attempts=5 )
+                                       attempts=9 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
@@ -812,7 +812,7 @@ class HA():
         main.step( "Check Intent state" )
         installedCheck = False
         loopCount = 0
-        while not installedCheck and loopCount < 40:
+        while not installedCheck and loopCount < 90:
             installedCheck = True
             # Print the intent states
             intents = onosCli.CLI.intents()
@@ -2532,16 +2532,16 @@ class HA():
         else:
             main.log.debug( "skipping saving log files" )
 
+        main.step( "Checking ONOS Logs for errors" )
+        for ctrl in main.Cluster.runningNodes:
+            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
+
         main.step( "Stopping Mininet" )
         mnResult = main.Mininet1.stopNet()
         utilities.assert_equals( expect=main.TRUE, actual=mnResult,
                                  onpass="Mininet stopped",
                                  onfail="MN cleanup NOT successful" )
-
-        main.step( "Checking ONOS Logs for errors" )
-        for ctrl in main.Cluster.runningNodes:
-            main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
         try:
             timerLog = open( main.logdir + "/Timers.csv", 'w' )
@@ -2663,9 +2663,9 @@ class HA():
                    "controller",
             onfail="Switches were not successfully reassigned" )
 
-    def bringUpStoppedNode( self, main ):
+    def bringUpStoppedNodes( self, main ):
         """
-        The bring up stopped nodes
+        The bring up stopped nodes.
         """
         import time
         assert main, "main not defined"
@@ -2696,7 +2696,7 @@ class HA():
                                  onpass="ONOS restarted successfully",
                                  onfail="ONOS restart NOT successful" )
 
-        main.step( "Restarting ONOS nodes" )
+        main.step( "Restarting ONOS CLI" )
         cliResults = main.TRUE
         for ctrl in main.kill:
             cliResults = cliResults and\
@@ -2706,8 +2706,7 @@ class HA():
                                  onpass="ONOS node(s) restarted",
                                  onfail="ONOS node(s) did not restart" )
 
-        # Grab the time of restart so we chan check how long the gossip
-        # protocol has had time to work
+        # Grab the time of restart so we can have some idea of average time
         main.restartTime = time.time() - restartTime
         main.log.debug( "Restart time: " + str( main.restartTime ) )
         # TODO: MAke this configurable. Also, we are breaking the above timer
@@ -2738,7 +2737,96 @@ class HA():
                          ctrl.electionTestRun()
         utilities.assert_equals( expect=main.TRUE, actual=runResults,
                                  onpass="ONOS nodes reran for election topic",
-                                 onfail="Errror rerunning for election" )
+                                 onfail="Error rerunning for election" )
+
+    def upgradeNodes( self, main ):
+        """
+        Reinstall some nodes with an upgraded version.
+
+        This will reinstall nodes in main.kill with an upgraded version.
+        """
+        import time
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert main.kill, "main.kill not defined"
+        nodeNames = [ node.name for node in main.kill ]
+        main.step( "Upgrading" + str( nodeNames ) + " ONOS nodes" )
+
+        stopResults = main.TRUE
+        uninstallResults = main.TRUE
+        startResults = main.TRUE
+        sshResults = main.TRUE
+        isup = main.TRUE
+        restartTime = time.time()
+        for ctrl in main.kill:
+            stopResults = stopResults and\
+                          ctrl.onosStop( ctrl.ipAddress )
+            uninstallResults = uninstallResults and\
+                               ctrl.onosUninstall( ctrl.ipAddress )
+            # Install the new version of onos
+            startResults = startResults and\
+                           ctrl.onosInstall( options="-fv", node=ctrl.ipAddress )
+            sshResults = sshResults and\
+                           ctrl.onosSecureSSH( node=ctrl.ipAddress )
+            isup = isup and ctrl.isup( ctrl.ipAddress )
+        utilities.assert_equals( expect=main.TRUE, actual=stopResults,
+                                 onpass="ONOS nodes stopped successfully",
+                                 onfail="ONOS nodes NOT successfully stopped" )
+        utilities.assert_equals( expect=main.TRUE, actual=uninstallResults,
+                                 onpass="ONOS nodes uninstalled successfully",
+                                 onfail="ONOS nodes NOT successfully uninstalled" )
+        utilities.assert_equals( expect=main.TRUE, actual=startResults,
+                                 onpass="ONOS nodes started successfully",
+                                 onfail="ONOS nodes NOT successfully started" )
+        utilities.assert_equals( expect=main.TRUE, actual=sshResults,
+                                 onpass="Successfully secured onos ssh",
+                                 onfail="Failed to secure onos ssh" )
+        utilities.assert_equals( expect=main.TRUE, actual=isup,
+                                 onpass="ONOS nodes fully started",
+                                 onfail="ONOS nodes NOT fully started" )
+
+        main.step( "Restarting ONOS CLI" )
+        cliResults = main.TRUE
+        for ctrl in main.kill:
+            cliResults = cliResults and\
+                         ctrl.startOnosCli( ctrl.ipAddress )
+            ctrl.active = True
+        utilities.assert_equals( expect=main.TRUE, actual=cliResults,
+                                 onpass="ONOS node(s) restarted",
+                                 onfail="ONOS node(s) did not restart" )
+
+        # Grab the time of restart so we can have some idea of average time
+        main.restartTime = time.time() - restartTime
+        main.log.debug( "Restart time: " + str( main.restartTime ) )
+        # TODO: Make this configurable.
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
+                                       False,
+                                       sleep=15,
+                                       attempts=5 )
+
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+        if not nodeResults:
+            for ctrl in main.Cluster.active():
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to start ONOS, stopping test" )
+            main.cleanAndExit()
+
+        self.commonChecks()
+
+        main.step( "Rerun for election on the node(s) that were killed" )
+        runResults = main.TRUE
+        for ctrl in main.kill:
+            runResults = runResults and\
+                         ctrl.electionTestRun()
+        utilities.assert_equals( expect=main.TRUE, actual=runResults,
+                                 onpass="ONOS nodes reran for election topic",
+                                 onfail="Error rerunning for election" )
 
     def tempCell( self, cellName, ipList ):
         main.step( "Create cell file" )
@@ -3048,8 +3136,8 @@ class HA():
 
             elapsed = time.time() - startTime
             cliTime = time.time() - cliStart
-            print "Elapsed time: " + str( elapsed )
-            print "CLI time: " + str( cliTime )
+            main.log.debug( "Elapsed time: " + str( elapsed ) )
+            main.log.debug( "CLI time: " + str( cliTime ) )
 
             if all( e is None for e in devices ) and\
                all( e is None for e in hosts ) and\
@@ -3493,15 +3581,18 @@ class HA():
             onfail="Inconsistent leaderboards" )
 
         if sameResult:
+            # Check that the leader is one of the active nodes
+            ips = sorted( main.Cluster.getIps( activeOnly=True ) )
             leader = leaders[ 0 ][ 0 ]
-            if onosCli.ipAddress in leader:
-                correctLeader = True
+            if leader in ips:
+                legitimate = True
             else:
-                correctLeader = False
-            main.step( "First node was elected leader" )
+                legitimate = False
+                main.log.debug( leaders )
+            main.step( "Active node was elected leader?" )
             utilities.assert_equals(
                 expect=True,
-                actual=correctLeader,
+                actual=legitimate,
                 onpass="Correct leader was elected",
                 onfail="Incorrect leader" )
             main.Cluster.testLeader = leader
@@ -3620,18 +3711,6 @@ class HA():
             else:
                 main.log.info( "Expected no leader, got: " + str( newLeader ) )
                 correctCandidateResult = main.FALSE
-        elif len( oldLeaders[ 0 ] ) >= 3:
-            if newLeader == oldLeaders[ 0 ][ 2 ]:
-                # correct leader was elected
-                correctCandidateResult = main.TRUE
-            else:
-                correctCandidateResult = main.FALSE
-                main.log.error( "Candidate {} was elected. {} should have had priority.".format(
-                                    newLeader, oldLeaders[ 0 ][ 2 ] ) )
-        else:
-            main.log.warn( "Could not determine who should be the correct leader" )
-            main.log.debug( oldLeaders[ 0 ] )
-            correctCandidateResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
             actual=correctCandidateResult,
@@ -3659,24 +3738,10 @@ class HA():
         time.sleep( 5 )  # Paremterize
         positionResult, reRunLeaders = self.consistentLeaderboards( activeCLIs )
 
-        # Check that the re-elected node is last on the candidate List
-        if not reRunLeaders[ 0 ]:
-            positionResult = main.FALSE
-        elif oldLeader != reRunLeaders[ 0 ][ -1 ]:
-            main.log.error( "Old Leader ({}) not in the proper position: {} ".format( str( oldLeader ),
-                                                                                      str( reRunLeaders[ 0 ] ) ) )
-            positionResult = main.FALSE
-        utilities.assert_equals(
-            expect=True,
-            actual=positionResult,
-            onpass="Old leader successfully re-ran for election",
-            onfail="Something went wrong with Leadership election after " +
-                   "the old leader re-ran for election" )
-
     def installDistributedPrimitiveApp( self, main ):
-        """
+        '''
         Install Distributed Primitives app
-        """
+        '''
         import time
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"

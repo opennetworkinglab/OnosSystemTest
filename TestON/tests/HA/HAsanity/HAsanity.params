@@ -34,7 +34,7 @@
     </ONOS_Configuration>
     <ENV>
         <cellName>HA</cellName>
-        <appString>drivers,openflow,proxyarp,mobility</appString>
+        <appString>events,drivers,openflow,proxyarp,mobility</appString>
     </ENV>
     <GIT>
         <pull>False</pull>

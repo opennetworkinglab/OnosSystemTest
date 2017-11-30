@@ -142,7 +142,7 @@ class HAcontinuousStopNodes:
             assert main.killCount is not None, "main.killCount not defined"
         except AttributeError as e:
             main.log.warn( "Node to kill not selected, defaulting to node 1" )
-            main.nodeIndex = 0
+            main.nodeIndex = -1
             main.killCount = 1
 
         main.case( "Stopping ONOS nodes - iteration " + str( main.killCount ) )
@@ -168,6 +168,7 @@ class HAcontinuousStopNodes:
         utilities.assert_equals( expect=main.TRUE, actual=killResults,
                                  onpass="ONOS nodes stopped successfully",
                                  onfail="ONOS nodes NOT successfully stopped" )
+        main.Cluster.reset()
 
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.Cluster.nodesCheck,
@@ -193,7 +194,7 @@ class HAcontinuousStopNodes:
         """
         The bring up stopped nodes
         """
-        main.HA.bringUpStoppedNode( main )
+        main.HA.bringUpStoppedNodes( main )
 
     def CASE7( self, main ):
         """

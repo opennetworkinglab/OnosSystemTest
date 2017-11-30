@@ -494,6 +494,7 @@ class Cluster():
         maxSize = float( segmentSize ) * float( multiplier )
         ret = True
         for n in self.runningNodes:
-            ret = ret and n.server.folderSize( "/opt/onos/apache-karaf-*/data/partitions/*/*.log",
+            # Partition logs
+            ret = ret and n.server.folderSize( "/opt/onos/apache-karaf-*/data/db/partitions/*/*.log",
                                                size=maxSize, unit=units, ignoreRoot=False )
         return ret

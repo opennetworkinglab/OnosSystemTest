@@ -180,7 +180,7 @@ class HAstopNodes:
         """
         The bring up stopped nodes
         """
-        main.HA.bringUpStoppedNode( main )
+        main.HA.bringUpStoppedNodes( main )
 
     def CASE7( self, main ):
         """

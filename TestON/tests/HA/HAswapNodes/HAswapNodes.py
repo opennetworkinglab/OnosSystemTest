@@ -65,9 +65,6 @@ class HAswapNodes:
         start cli sessions
         start tcpdump
         """
-        import time
-        import os
-        import re
         main.log.info( "ONOS HA test: Restart all ONOS nodes - " +
                          "initialization" )
         # set global variables
@@ -139,7 +136,6 @@ class HAswapNodes:
         The Scaling case.
         """
         import time
-        import re
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         try:

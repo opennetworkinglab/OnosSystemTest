@@ -65,9 +65,6 @@ class HAsingleInstanceRestart:
         start cli sessions
         start tcpdump
         """
-        import imp
-        import time
-        import json
         main.log.info( "ONOS Single node cluster restart " +
                          "HA test - initialization" )
         main.case( "Setting up test environment" )
@@ -167,6 +164,11 @@ class HAsingleInstanceRestart:
             main.log.warn( "ONOS1 intents response: " + repr( ONOSIntents ) )
         else:
             intentCheck = main.TRUE
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=intentCheck,
+            onpass="Intents are consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of intents" )
 
         main.step( "Get the flows from each controller" )
         global flowState
@@ -227,9 +229,6 @@ class HAsingleInstanceRestart:
             main.log.exception( "Error parsing clusters[0]: " +
                                 repr( clusters[ 0 ] ) )
             numClusters = "ERROR"
-        clusterResults = main.FALSE
-        if numClusters == 1:
-            clusterResults = main.TRUE
         utilities.assert_equals(
             expect=1,
             actual=numClusters,
@@ -321,13 +320,6 @@ class HAsingleInstanceRestart:
         import time
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-
-        # Reset non-persistent variables
-        try:
-            iCounterValue = 0
-        except NameError:
-            main.log.error( "iCounterValue not defined, setting to 0" )
-            iCounterValue = 0
 
         main.case( "Restart ONOS node" )
         main.caseExplanation = "Killing ONOS process and restart cli " +\
@@ -556,7 +548,7 @@ class HAsingleInstanceRestart:
                                 mnSwitches,
                                 json.loads( devices[ controller ] ),
                                 json.loads( ports[ controller ] ) )
-                    except ( TypeError, ValueError ) as e:
+                    except ( TypeError, ValueError ):
                         main.log.exception( "Object not as expected; devices={!r}\nports={!r}".format(
                             devices[ controller ], ports[ controller ] ) )
                 else:

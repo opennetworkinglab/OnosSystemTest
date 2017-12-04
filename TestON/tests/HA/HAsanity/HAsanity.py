@@ -168,7 +168,7 @@ class HAsanity:
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leaderN is None:
-                main.log.error( cli.name +
+                main.log.error( ctrl.name +
                                  " shows no leader for the election-app was" +
                                  " elected after the old one died" )
                 leaderResult = main.FALSE

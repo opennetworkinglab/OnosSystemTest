@@ -66,10 +66,6 @@ class HAfullNetPartition:
         start cli sessions
         start tcpdump
         """
-        import imp
-        import pexpect
-        import time
-        import json
         main.log.info( "ONOS HA test: Partition ONOS nodes into two sub-clusters - " +
                          "initialization" )
         # set global variables
@@ -134,7 +130,8 @@ class HAfullNetPartition:
         """
         The Failure case.
         """
-        import math
+        import pexpect
+        import time
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Partition ONOS nodes into two distinct partitions" )
@@ -163,37 +160,43 @@ class HAfullNetPartition:
             if i not in main.partition:
                 for j in main.partition:
                     foe = main.Cluster.runningNodes[ j ]
-                    main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress, foe.ipAddress ) )
+                    main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress,
+                                                                                    foe.ipAddress ) )
                     # CMD HERE
                     try:
-                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", iCtrl.ipAddress, foe.ipAddress )
+                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT",
+                                                                                   iCtrl.ipAddress,
+                                                                                   foe.ipAddress )
                         this.sendline( cmdStr )
                         this.expect( "\$" )
                         main.log.debug( this.before )
                     except pexpect.EOF:
-                        main.log.error( self.name + ": EOF exception found" )
-                        main.log.error( self.name + ":    " + self.handle.before )
+                        main.log.error( iCtrl.name + ": EOF exception found" )
+                        main.log.error( iCtrl.name + ":    " + this.before )
                         main.cleanAndExit()
                     except Exception:
-                        main.log.exception( self.name + ": Uncaught exception!" )
+                        main.log.exception( iCtrl.name + ": Uncaught exception!" )
                         main.cleanAndExit()
             else:
                 for j in range( 0, n ):
                     if j not in main.partition:
                         foe = main.Cluster.runningNodes[ j ]
-                        main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress, foe.ipAddress ) )
+                        main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress,
+                                                                                        foe.ipAddress ) )
                         # CMD HERE
-                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT", iCtrl.ipAddress, foe.ipAddress )
+                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT",
+                                                                                   iCtrl.ipAddress,
+                                                                                   foe.ipAddress )
                         try:
                             this.sendline( cmdStr )
                             this.expect( "\$" )
                             main.log.debug( this.before )
                         except pexpect.EOF:
-                            main.log.error( self.name + ": EOF exception found" )
-                            main.log.error( self.name + ":    " + self.handle.before )
+                            main.log.error( iCtrl.name + ": EOF exception found" )
+                            main.log.error( iCtrl.name + ":    " + this.before )
                             main.cleanAndExit()
                         except Exception:
-                            main.log.exception( self.name + ": Uncaught exception!" )
+                            main.log.exception( iCtrl.name + ": Uncaught exception!" )
                             main.cleanAndExit()
                 main.Cluster.runningNodes[ i ].active = False
             iCtrl.Bench.exitFromSsh( this, iCtrl.ipAddress )
@@ -210,7 +213,6 @@ class HAfullNetPartition:
         """
         Healing Partition
         """
-        import time
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert main.partition, "main.partition not defined"
@@ -232,21 +234,11 @@ class HAfullNetPartition:
         for node in main.partition:
             main.Cluster.runningNodes[ node ].active = True
 
-        """
-        # NOTE : Not sure if this can be removed
-         main.activeNodes.sort()
-        try:
-            assert list( set( main.activeNodes ) ) == main.activeNodes,\
-                   "List of active nodes has duplicates, this likely indicates something was run out of order"
-        except AssertionError:
-            main.log.exception( "" )
-            main.cleanAndExit()
-        """
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
                                        sleep=15,
-                                       attempts=5 )
+                                       attempts=50 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",

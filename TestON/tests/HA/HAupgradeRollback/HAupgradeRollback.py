@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation ( ONF )
+Copyright 2015 Open Networking Foundation (ONF)
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    ( at your option ) any later version.
+    (at your option) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,9 +18,10 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 """
 Description: This test is to determine if ONOS can handle
-    all of it's nodes restarting
+    a minority of it's nodes restarting
 
 List of test cases:
 CASE1: Compile ONOS and push it to the test machines
@@ -29,7 +30,8 @@ CASE21: Assign mastership to controllers
 CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
-CASE6: The Failure case.
+CASE61: The Failure inducing case.
+CASE62: The Failure recovery case.
 CASE7: Check state after control plane failure
 CASE8: Compare topo
 CASE9: Link s3-s28 down
@@ -42,7 +44,7 @@ CASE15: Check that Leadership Election is still functional
 CASE16: Install Distributed Primitives app
 CASE17: Check for basic functionality with distributed primitives
 """
-class HAclusterRestart:
+class HAupgradeRollback:
 
     def __init__( self ):
         self.default = ''
@@ -65,7 +67,7 @@ class HAclusterRestart:
         start cli sessions
         start tcpdump
         """
-        main.log.info( "ONOS HA test: Restart all ONOS nodes - " +
+        main.log.info( "ONOS HA test: Stop a minority of ONOS nodes - " +
                          "initialization" )
         # These are for csv plotting in jenkins
         main.HAlabels = []
@@ -74,24 +76,26 @@ class HAclusterRestart:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
         except ImportError:
-            main.log.error( "ONOSSetup not found exiting the test" )
+            main.log.error( "ONOSSetup not found. exiting the test" )
             main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-            # load some variables from the params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
+        main.HA.generateGraph( "HAupgrade" )
 
         main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
-                                  extraApply=main.HA.startingMininet )
+                                  extraApply=[ main.HA.startingMininet,
+                                               main.HA.copyBackupConfig ],
+                                  extraClean=main.HA.cleanUpGenPartition )
 
-        main.HA.initialSetUp()
+        main.HA.initialSetUp( serviceClean=True )
 
     def CASE2( self, main ):
         """
@@ -123,82 +127,166 @@ class HAclusterRestart:
         """
         main.HA.readingState( main )
 
-    def CASE6( self, main ):
+    def CASE60( self, main ):
         """
-        The Failure case.
+        Initialize the upgrade.
         """
-        import time
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        try:
-            main.HAlabels
-        except ( NameError, AttributeError ):
-            main.log.error( "main.HAlabels not defined, setting to []" )
-            main.HAlabels = []
-        try:
-            main.HAdata
-        except ( NameError, AttributeError ):
-            main.log.error( "main.HAdata not defined, setting to []" )
-            main.HAdata = []
+        main.case( "Initialize upgrade" )
+        main.HA.upgradeInit( main )
 
-        main.case( "Restart entire ONOS cluster" )
+    def CASE61( self, main ):
+        """
+        Upgrade a minority of nodes PHASE 1
+        """
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        main.case( "Upgrade minority of ONOS nodes" )
 
         main.step( "Checking ONOS Logs for errors" )
         for ctrl in main.Cluster.active():
             main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
-            main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
-        killTime = time.time()
-        main.testSetUp.killingAllOnos( main.Cluster, True, False )
+            main.log.warn( ctrl.checkLogs( ctrl.ipAddress ) )
 
-        main.testSetUp.checkOnosService( main.Cluster )
+        main.kill = []
+        n = len( main.Cluster.runningNodes )  # Number of nodes
+        p = n / 2  # Number of nodes in the minority
+        for i in range( p ):
+            main.kill.append( main.Cluster.runningNodes[ i ] )  # ONOS node to kill, listed by index in main.nodes
+        main.HA.upgradeNodes( main )
 
-        main.testSetUp.startOnosClis( main.Cluster )
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
+                                       False,
+                                       sleep=15,
+                                       attempts=5 )
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
 
-        ready = utilities.retry( main.Cluster.command,
-                                 False,
-                                 kwargs={ "function": "summary", "contentCheck": True },
-                                 sleep=30,
-                                 attempts=10 )
-        utilities.assert_equals( expect=True, actual=ready,
-                                 onpass="ONOS summary command succeded",
-                                 onfail="ONOS summary command failed" )
-        if not ready:
+        if not nodeResults:
+            for ctrl in main.Cluster.active():
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanAndExit()
 
-        # Grab the time of restart so we chan check how long the gossip
-        # protocol has had time to work
-        main.restartTime = time.time() - killTime
-        main.log.debug( "Restart time: " + str( main.restartTime ) )
-        main.HAlabels.append( "Restart" )
-        main.HAdata.append( str( main.restartTime ) )
+    def CASE62( self, main ):
+        """
+        Transfer to new version. PHASE 2
+        """
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        main.case( "Start the upgrade" )
 
-        # Rerun for election on restarted nodes
-        runResults = main.Cluster.command( "electionTestRun", returnBool=True )
-        utilities.assert_equals( expect=True, actual=runResults,
-                                 onpass="Reran for election",
-                                 onfail="Failed to rerun for election" )
+        main.step( "Send the command to switch to new version" )
+        ctrl = main.Cluster.next().CLI
+        upgraded = ctrl.issuUpgrade()
+        utilities.assert_equals( expect=main.TRUE, actual=upgraded,
+                                 onpass="Cluster has moved to the upgraded nodes",
+                                 onfail="Error transitioning to the upgraded nodes" )
 
-        # TODO: Make this configurable
-        time.sleep( 60 )
+        main.step( "Check the status of the upgrade" )
+        ctrl = main.Cluster.next().CLI
+        status = ctrl.issu()
+        main.log.debug( status )
+        # TODO: check things here?
 
-        main.HA.commonChecks()
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
+                                       False,
+                                       sleep=15,
+                                       attempts=5 )
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+    def CASE63( self, main ):
+        """
+        Rollback the upgrade
+        """
+        main.case( "Rollback the upgrade" )
+        main.step( "Rollbak the upgrade" )
+        # send rollback command
+        ctrl = main.Cluster.next().CLI
+        rollback = ctrl.issuRollback()
+        utilities.assert_equals( expect=main.TRUE, actual=rollback,
+                                 onpass="Upgrade has been rolled back",
+                                 onfail="Error rolling back the upgrade" )
+
+        main.step( "Check the status of the upgrade" )
+        ctrl = main.Cluster.next().CLI
+        status = ctrl.issu()
+        main.log.debug( status )
+
+        # restart and reinstall old version on upgrade nodes
+        for ctrl in main.kill:
+            ctrl.onosStop( ctrl.ipAddress )
+            ctrl.onosUninstall( ctrl.ipAddress )
+            ctrl.onosInstall( options="-f", node=ctrl.ipAddress )
+            ctrl.onosSecureSSH( node=ctrl.ipAddress )
+            ctrl.startOnosCli( ctrl.ipAddress, waitForStart=True )
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
+                                       False,
+                                       sleep=15,
+                                       attempts=5 )
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+        if not nodeResults:
+            for ctrl in main.Cluster.active():
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to start ONOS, stopping test" )
+            main.cleanAndExit()
+
+    def CASE64( self, main ):
+        """
+        Reset the upgrade state.
+        """
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        main.case( "Reset the upgrade state" )
+
+        main.step( "Send the command to reset the upgrade" )
+        ctrl = main.Cluster.next().CLI
+        committed = ctrl.issuCommit()
+        utilities.assert_equals( expect=main.TRUE, actual=committed,
+                                 onpass="Upgrade has been committed",
+                                 onfail="Error committing the upgrade" )
+
+        main.step( "Check the status of the upgrade" )
+        ctrl = main.Cluster.next().CLI
+        status = ctrl.issu()
+        main.log.debug( status )
+        # TODO: check things here?
 
     def CASE7( self, main ):
         """
         Check state after ONOS failure
         """
-        # NOTE: Store has no durability, so intents are lost across system
-        #       restarts
-        main.HA.checkStateAfterEvent( main, afterWhich=0, isRestart=True )
+        try:
+            main.kill
+        except AttributeError:
+            main.kill = []
 
+        main.HA.checkStateAfterEvent( main, afterWhich=0 )
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
         leaderList = []
+
+        restarted = []
+        for ctrl in main.kill:
+            restarted.append( ctrl.ipAddress )
         leaderResult = main.TRUE
 
         for ctrl in main.Cluster.active():
-            ctrl.CLI.electionTestLeader()
-            leaderN = ctrl.CLI.electionTestLeader()
+            leaderN = ctrl.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
                 # error in response
@@ -208,7 +296,13 @@ class HAclusterRestart:
                 leaderResult = main.FALSE
             elif leaderN is None:
                 main.log.error( ctrl.name +
-                                 " shows no leader for the election-app." )
+                                 " shows no leader for the election-app was" +
+                                 " elected after the old one died" )
+                leaderResult = main.FALSE
+            elif leaderN in restarted:
+                main.log.error( ctrl.name + " shows " + str( leaderN ) +
+                                 " as leader for the election-app, but it " +
+                                 "was restarted" )
                 leaderResult = main.FALSE
         if len( set( leaderList ) ) != 1:
             leaderResult = main.FALSE
@@ -257,6 +351,8 @@ class HAclusterRestart:
         """
         Clean up
         """
+        main.HAlabels.append( "Restart" )
+        main.HAdata.append( str( main.restartTime ) )
         main.HA.cleanUp( main )
 
     def CASE14( self, main ):

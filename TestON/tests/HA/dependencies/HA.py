@@ -20,6 +20,8 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 import json
 import time
+import pexpect
+import re
 
 
 class HA():
@@ -69,7 +71,6 @@ class HA():
                                  onfail="Error starting Mininet" )
 
     def scalingMetadata( self ):
-        import re
         main.step( "Generate initial metadata file" )
         main.scaling = main.params[ 'scaling' ].split( "," )
         main.log.debug( main.scaling )
@@ -759,7 +760,6 @@ class HA():
 
         pendingMap = main.Cluster.next().pendingMap()
         if not intentAddResult or "key" in pendingMap:
-            import time
             installedCheck = True
             main.log.info( "Sleeping 60 seconds to see if intents are found" )
             time.sleep( 60 )
@@ -1007,7 +1007,6 @@ class HA():
         Reading state of ONOS
         """
         import json
-        import time
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         try:
@@ -2477,8 +2476,6 @@ class HA():
         """
         Clean up
         """
-        import os
-        import time
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -3763,3 +3760,29 @@ class HA():
                                  onfail="Primitives app not activated" )
         # TODO check on all nodes instead of sleeping
         time.sleep( 5 )  # To allow all nodes to activate
+
+    def upgradeInit( self, main ):
+        '''
+        Initiates an update
+        '''
+        main.step( "Send the command to initialize the upgrade" )
+        ctrl = main.Cluster.next().CLI
+        initialized = ctrl.issuInit()
+        utilities.assert_equals( expect=main.TRUE, actual=initialized,
+                                 onpass="ISSU initialized",
+                                 onfail="Error initializing the upgrade" )
+
+        main.step( "Check the status of the upgrade" )
+        ctrl = main.Cluster.next().CLI
+        status = ctrl.issu()
+        main.log.debug( status )
+        # TODO: check things here?
+
+        main.step( "Checking ONOS nodes" )
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
+                                       False,
+                                       sleep=15,
+                                       attempts=5 )
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )

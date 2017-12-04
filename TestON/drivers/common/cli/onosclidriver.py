@@ -2376,9 +2376,11 @@ class OnosCliDriver( CLI ):
             # get total and installed number, see if they are match
             allState = response.get( 'all' )
             if allState.get( 'total' ) == allState.get( 'installed' ):
-                main.log.info( 'Total Intents: {}   Installed Intents: {}'.format( allState.get( 'total' ), allState.get( 'installed' ) ) )
+                main.log.info( 'Total Intents: {}   Installed Intents: {}'.format(
+                    allState.get( 'total' ), allState.get( 'installed' ) ) )
                 return main.TRUE
-            main.log.info( 'Verified Intents failed Excepte intetnes: {} installed intents: {}'.format( allState.get( 'total' ), allState.get( 'installed' ) ) )
+            main.log.info( 'Verified Intents failed Expected intents: {} installed intents: {}'.format(
+                allState.get( 'total' ), allState.get( 'installed' ) ) )
             return main.FALSE
 
         except ( TypeError, ValueError ):
@@ -5055,7 +5057,8 @@ class OnosCliDriver( CLI ):
                 logPaths = logPath + str( i ) + " " + logPaths
             cmd = "cat " + logPaths
             if startLine:
-                # 100000000 is just a extreme large number to make sure this function can grep all the lines after startLine
+                # 100000000 is just a extreme large number to make sure this function can
+                # grep all the lines after startLine
                 cmd = cmd + " | grep -A 100000000 \'" + startLine + "\'"
             if mode == 'all':
                 cmd = cmd + " | grep \'" + searchTerm + "\'"
@@ -5722,6 +5725,240 @@ class OnosCliDriver( CLI ):
         """
         try:
             return str( self.getRole( deviceID )[ 'master' ] )
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def issu( self ):
+        """
+        Short summary of In-Service Software Upgrade status
+
+        Returns the output of the cli command or None on Error
+        """
+        try:
+            cmdStr = "issu"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def issuInit( self ):
+        """
+        Initiates an In-Service Software Upgrade
+
+        Returns main.TRUE on success, main.ERROR on error, else main.FALSE
+        """
+        try:
+            cmdStr = "issu init"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            if "Initialized" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def issuUpgrade( self ):
+        """
+        Transitions stores to upgraded nodes
+
+        Returns main.TRUE on success, main.ERROR on error, else main.FALSE
+        """
+        try:
+            cmdStr = "issu upgrade"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            if "Upgraded" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def issuCommit( self ):
+        """
+        Finalizes an In-Service Software Upgrade
+
+        Returns main.TRUE on success, main.ERROR on error, else main.FALSE
+        """
+        try:
+            cmdStr = "issu commit"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            # TODO: Check the version returned by this command
+            if "Committed version" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def issuRollback( self ):
+        """
+        Rolls back an In-Service Software Upgrade
+
+        Returns main.TRUE on success, main.ERROR on error, else main.FALSE
+        """
+        try:
+            cmdStr = "issu rollback"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            # TODO: Check the version returned by this command
+            if "Rolled back to version" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def issuReset( self ):
+        """
+        Resets the In-Service Software Upgrade status after a rollback
+
+        Returns main.TRUE on success, main.ERROR on error, else main.FALSE
+        """
+        try:
+            cmdStr = "issu reset"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            # TODO: Check the version returned by this command
+            if "Reset version" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def issuStatus( self ):
+        """
+        Status of an In-Service Software Upgrade
+
+        Returns the output of the cli command or None on Error
+        """
+        try:
+            cmdStr = "issu status"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def issuVersion( self ):
+        """
+        Get the version of an In-Service Software Upgrade
+
+        Returns the output of the cli command or None on Error
+        """
+        try:
+            cmdStr = "issu version"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            return handle
         except AssertionError:
             main.log.exception( "" )
             return None

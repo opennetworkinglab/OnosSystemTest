@@ -66,10 +66,6 @@ class HAcontinuousStopNodes:
         start cli sessions
         start tcpdump
         """
-        import imp
-        import pexpect
-        import time
-        import json
         main.log.info( "ONOS HA test: Stop a minority of ONOS nodes - " +
                          "initialization" )
         # set global variables
@@ -140,7 +136,7 @@ class HAcontinuousStopNodes:
         try:
             assert main.nodeIndex is not None, "main.nodeIndex not defined"
             assert main.killCount is not None, "main.killCount not defined"
-        except AttributeError as e:
+        except AttributeError:
             main.log.warn( "Node to kill not selected, defaulting to node 1" )
             main.nodeIndex = -1
             main.killCount = 1
@@ -211,9 +207,6 @@ class HAcontinuousStopNodes:
         # Test of LeadershipElection
         leaderList = []
 
-        restarted = []
-        for ctrl in main.kill:
-            restarted.append( ctrl.ipAddress )
         leaderResult = main.TRUE
 
         for ctrl in main.Cluster.active():
@@ -229,11 +222,6 @@ class HAcontinuousStopNodes:
                 main.log.error( ctrl.name +
                                  " shows no leader for the election-app was" +
                                  " elected after the old one died" )
-                leaderResult = main.FALSE
-            elif leaderN in restarted:
-                main.log.error( ctrl.name + " shows " + str( leaderN ) +
-                                 " as leader for the election-app, but it " +
-                                 "was restarted" )
                 leaderResult = main.FALSE
         if len( set( leaderList ) ) != 1:
             leaderResult = main.FALSE

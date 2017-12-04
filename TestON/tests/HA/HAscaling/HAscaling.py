@@ -65,9 +65,6 @@ class HAscaling:
         start cli sessions
         start tcpdump
         """
-        import time
-        import os
-        import re
         main.log.info( "ONOS HA test: Restart all ONOS nodes - " +
                          "initialization" )
         # set global variables
@@ -81,6 +78,7 @@ class HAscaling:
             main.log.error( "ONOSSetup not found. exiting the test" )
             main.cleanAndExit()
         main.testSetUp.envSetupDescription()
+        main.Cluster.numCtrls = 1
         try:
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
@@ -260,7 +258,7 @@ class HAscaling:
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leaderN is None:
-                main.log.error( cli.name +
+                main.log.error( ctrl.name +
                                  " shows no leader for the election-app." )
                 leaderResult = main.FALSE
         if len( set( leaderList ) ) != 1:

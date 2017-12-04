@@ -14,7 +14,7 @@
         <file>formClusterFuncs</file>
     </DEPENDENCY>
     <GRAPH>
-        <nodeCluster>BM</nodeCluster>
+        <nodeCluster>VM</nodeCluster>
         <builds>20</builds>
     </GRAPH>
     <ENV>

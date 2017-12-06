@@ -39,7 +39,6 @@ from mininet.util import quietRun
 QUAGGA_DIR = '/usr/lib/quagga'
 QUAGGA_RUN_DIR = '/usr/local/var/run/quagga'
 QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE/USECASE_SdnipFunction/dependencies/'
-# onos1IP = '10.254.1.201'
 numSw = 39
 
 

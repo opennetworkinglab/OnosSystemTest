@@ -1,228 +1,31 @@
 #!groovy
-import groovy.time.*
+SCPFfuncs = evaluate readTrusted( 'PerformanceFuncs.groovy' )
+SCPFfuncs.init()
+funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
+funcs.initialize( "SCPF", SCPFfuncs );
 // This is a Jenkinsfile for a scripted pipeline for the SCPF tests
-// properties([pipelineTriggers([cron('30 19 * * *')])])
-
-// TODO: Exception handling around steps
-
-none = [ "" ]
-batches = [1,100,1000]
-neighbors = ['y', 'n']
-times = [ 'y', 'n' ]
-SCPF = [
-    SCPFcbench: [ flows:false, test:'SCPFcbench', table:'cbench_bm_tests', results:'cbench_bm_results', file:'CbenchDB', rFile:'SCPFcbench.R', extra:none, finalResult:1, graphTitle:['Cbench Test'], dbCols:'avg', dbWhere:'', y_axis:'Throughput (Responses/sec)'],
-    SCPFhostLat: [ flows:false, test:'SCPFhostLat', table:'host_latency_tests', results:'host_latency_results', file:'HostAddLatency', rFile:'SCPFhostLat.R', extra:none,finalResult:1, graphTitle:['Host Latency Test'], dbCols:'avg', dbWhere:'AND scale=5', y_axis:'Latency (ms)'],
-    SCPFportLat: [ flows:false, test:'SCPFportLat', table:'port_latency_details', results:'port_latency_results', file:'/tmp/portEventResultDb', rFile:'SCPFportLat.R', extra:none, finalResult:1, graphTitle:['Port Latency Test - Port Up','Port Latency Test - Port Down'], dbCols:[ 'up_ofp_to_dev_avg,up_dev_to_link_avg,up_link_to_graph_avg', 'down_ofp_to_dev_avg,down_dev_to_link_avg,down_link_to_graph_avg' ], dbWhere:'AND scale=5', y_axis:'Latency (ms)' ],
-    SCPFflowTp1g: [ flows:true, test:'SCPFflowTp1g', table:'flow_tp_tests', results:'flow_tp_results', file:'flowTP1gDB', rFile:'SCPFflowTp1g.R n', extra:neighbors,finalResult:1, graphTitle:['Flow Throughput Test - neighbors=0','Flow Throughput Test - neighbors=4'], dbCols:'avg', dbWhere:[ 'AND scale=5 AND neighbors=0 ','AND scale=5 AND NOT neighbors=0' ],  y_axis:'Throughput (,000 Flows/sec)' ],
-    SCPFflowTp1gWithFlowObj: [ flows:true, test:'SCPFflowTp1g --params TEST/flowObj=True', table:'flow_tp_fobj_tests', results:'flow_tp_fobj_results', file:'flowTP1gDBFlowObj', rFile:'SCPFflowTp1g.R y', extra:neighbors, finalResult:0],
-    SCPFscaleTopo: [ flows:false, test:'SCPFscaleTopo', table:'scale_topo_latency_details', results:'scale_topo_latency_results', file:'/tmp/scaleTopoResultDb', rFile:'SCPFscaleTopo.R', extra:none, finalResult:1, graphTitle:['Scale Topology Test'], dbCols:[ 'first_connection_to_last_connection, last_connection_to_last_role_request, last_role_request_to_last_topology' ], dbWhere:'AND scale=20' , y_axis:'Latency (s)'],
-    SCPFswitchLat: [ flows:false, test:'SCPFswitchLat', table:'switch_latency_details', results:'switch_latency_results', file:'/tmp/switchEventResultDb', rFile:'SCPFswitchLat.R', extra:none, finalResult:1, graphTitle:['Switch Latency Test - Switch Up','Switch Latency Test - Switch Down'], dbCols:[ 'tcp_to_feature_reply_avg,feature_reply_to_role_request_avg,role_request_to_role_reply_avg,role_reply_to_device_avg,up_device_to_graph_avg', 'fin_ack_to_ack_avg,ack_to_device_avg,down_device_to_graph_avg' ], dbWhere:'AND scale=5', y_axis:'Latency (ms)' ],
-    SCPFbatchFlowResp: [ flows:true, test:'SCPFbatchFlowResp', table:'batch_flow_tests', results:'batch_flow_results', file:'SCPFbatchFlowRespData', rFile:'SCPFbatchFlowResp.R', extra:none, finalResult:1, graphTitle:['Batch Flow Test - Post', 'Batch Flow Test - Del'], dbCols:[ 'elapsepost, posttoconfrm', 'elapsedel, deltoconfrm' ], dbWhere:'', y_axis:'Latency (ms)'],
-    SCPFintentEventTp: [ flows:true, test:'SCPFintentEventTp', table:'intent_tp_tests', results:'intent_tp_results', file:'IntentEventTPDB', rFile:'SCPFintentEventTp.R n', extra:neighbors, finalResult:1, graphTitle:['Intent Throughput Test - neighbors=0','Intent Throughput Test - neighbors=4'], dbCols:'SUM( avg ) as avg', dbWhere:[ 'AND scale=5 AND neighbors=0 GROUP BY date','AND scale=5 AND NOT neighbors=0 GROUP BY date' ], y_axis:'Throughput (Ops/sec)'],
-    SCPFintentRerouteLat: [ flows:true, test:'SCPFintentRerouteLat', table:'intent_reroute_latency_tests', results:'intent_reroute_latency_results', file:'IntentRerouteLatDB', rFile:'SCPFIntentInstallWithdrawRerouteLat.R n', extra:batches, finalResult:1, graphTitle:['Intent Reroute Test'], dbCols:'avg', dbWhere:'AND scale=5 AND batch_size=100', y_axis:'Latency (ms)'],
-    SCPFscalingMaxIntents: [ flows:true, test:'SCPFscalingMaxIntents', table:'max_intents_tests', results:'max_intents_results', file:'ScalingMaxIntentDB', rFile:'SCPFscalingMaxIntents.R n', extra:times, finalResult:0],
-    SCPFintentEventTpWithFlowObj: [ flows:true, test:'SCPFintentEventTp --params TEST/flowObj=True', table:'intent_tp_fobj_tests', results:'intent_tp_fobj_results', file:'IntentEventTPflowObjDB', rFile:'SCPFintentEventTp.R y', extra:neighbors,finalResult:0],
-    SCPFintentInstallWithdrawLat: [ flows:true, test:'SCPFintentInstallWithdrawLat', table:'intent_latency_tests', results:'intent_latency_results', file:'IntentInstallWithdrawLatDB', rFile:'SCPFIntentInstallWithdrawRerouteLat.R n', extra:batches,finalResult:1, graphTitle:['Intent Installation Test','Intent Withdrawal Test'], dbCols:[ 'install_avg','withdraw_avg' ], dbWhere:'AND scale=5 AND batch_size=100', y_axis:'Latency (ms)'],
-    SCPFintentRerouteLatWithFlowObj: [ flows:true, test:'SCPFintentRerouteLat --params TEST/flowObj=True', table:'intent_reroute_latency_fobj_tests', results:'intent_reroute_latency_fobj_results', file:'IntentRerouteLatDBWithFlowObj', rFile:'SCPFIntentInstallWithdrawRerouteLat.R y', extra:batches, finalResult:0],
-    SCPFscalingMaxIntentsWithFlowObj: [ flows:true, test:'SCPFscalingMaxIntents --params TEST/flowObj=True', table:'max_intents_fobj_tests', results:'max_intents_fobj_results', file:'ScalingMaxIntentDBWFO', rFile:'SCPFscalingMaxIntents.R y', extra:times, finalResult:0],
-    SCPFintentInstallWithdrawLatWithFlowObj: [ flows:true, test:'SCPFintentInstallWithdrawLat --params TEST/flowObj=True', table:'intent_latency_fobj_tests', results:'intent_latency_fobj_results', file:'IntentInstallWithdrawLatDBWFO', rFile:'SCPFIntentInstallWithdrawRerouteLat.R y', extra:batches, finalResult:0],
-    SCPFmastershipFailoverLat: [ flows:false, test:'SCPFmastershipFailoverLat', table:'mastership_failover_tests', results:'mastership_failover_results', file:'mastershipFailoverLatDB', rFile:'SCPFmastershipFailoverLat.R', extra:none, finalResult:1, graphTitle:['Mastership Failover Test'], dbCols:[ 'kill_deact_avg,deact_role_avg' ], dbWhere:'AND scale=5', y_axis:'Latency (ms)' ]
-]
-
-echo("Testcases:")
-graph_generator_directory = "~/OnosSystemTest/TestON/JenkinsFile/scripts/"
-graph_saved_directory = "/var/jenkins/workspace/Pipeline_postjob_BM/"
-def testsToRun = null
 def prop = null
-node("TestStation-BMs"){
-    prop = readProperties(file:'/var/jenkins/TestONOS.property') // TODO set defaults
-    testsToRun = prop["Tests"].tokenize("\n;, ")
-    for ( String test : testsToRun ) {
-        println test
-    }
-}
+prop = funcs.getProperties()
+
+echo( "Testcases:" )
+def testsToRun = null
+testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
+funcs.printTestToRun( testsToRun )
+
 isOldFlow = prop[ "isOldFlow" ]
-oldFlowRuleCheck( isOldFlow )
+SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
 def tests = [:]
-for( String test : SCPF.keySet() ){
+for( String test : SCPFfuncs.SCPF.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    tests[stepName] = SCPFTest(test, toBeRun, prop)
+
+    pureTestName = test.replaceAll( "WithFlowObj", "" )
+    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false, SCPFfuncs.SCPF, "", "" )
 }
 
-def now = new Date()
+start = funcs.getCurrentTime()
 // run the tests
 for ( test in tests.keySet() ){
-    tests[test].call()
+    tests[ test ].call()
 }
-try{
-    if( prop["manualRun"] == "false" ){
-        def end = new Date()
-        TimeDuration duration = TimeCategory.minus( end, now )
-        slackSend( color:"#5816EE", message: "SCPF tests ended at: " + end.toString() + "\nTime took : " + duration )
-    }
-}
-catch(all){}
-
-// The testName should be the key from the SCPF map
-def SCPFTest( testName, toBeRun, prop ) {
-    return {
-        catchError{
-            stage(testName) {
-                if ( toBeRun ){
-                    workSpace = "/var/jenkins/workspace/"+testName
-                    node("TestStation-BMs"){
-                        withEnv(['ONOSBranch='+prop["ONOSBranch"],
-                                 'ONOSJVMHeap='+prop["ONOSJVMHeap"],
-                                 'TestONBranch='+prop["TestONBranch"],
-                                 'ONOSTag='+prop["ONOSTag"],
-                                 'WikiPrefix='+prop["WikiPrefix"],
-                                 'WORKSPACE='+workSpace]){
-                            sh '''#!/bin/bash -l
-                            set -i # interactive
-                            set +e
-                            shopt -s expand_aliases # expand alias in non-interactive mode
-                            export PYTHONUNBUFFERED=1
-
-                            ifconfig
-
-                            echo "ONOS Branch is: $ONOSBranch"
-                            echo "TestON Branch is: $TestONBranch"
-                            echo "Test date: "
-                            date
-
-                            cd ~
-                            export PATH=$PATH:onos/tools/test/bin
-
-                            timeout 240 stc shutdown | head -100
-                            timeout 240 stc teardown | head -100
-                            timeout 240 stc shutdown | head -100
-
-                            cd ~/OnosSystemTest/TestON/bin
-                            git log |head
-                            ./cleanup.sh
-                            ''' + "./cli.py run " + SCPF[testName]['test']
-
-                            // For moving results
-                            sh '''#!/bin/bash -i
-                            set +e
-                            # remove any leftover files from previous tests
-                            sudo rm ${WORKSPACE}/*Result.txt
-
-                            #copy files to workspace
-                            cd `ls -t ~/OnosSystemTest/TestON/logs/*/ | head -1 | sed 's/://'`
-                            sudo cp *Result.txt ${WORKSPACE}/
-                            cd ${WORKSPACE}/
-                            ls -al
-                            cd '''
-                            // Post Results
-                            if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
-                                withCredentials([
-                                    string(credentialsId: 'db_pass', variable: 'pass'),
-                                    string(credentialsId: 'db_user', variable: 'user'),
-                                    string(credentialsId: 'db_host', variable: 'host'),
-                                    string(credentialsId: 'db_port', variable: 'port')]) {
-                                        def database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + "','\$BUILD_NUMBER', '\$ONOSBranch', " + affectedByOldFlow( isOldFlow, testName ) + "\$line);\""
-                                        if (testName == "SCPFscaleTopo" || testName == "SCPFswitchLat" || testName == "SCPFportLat") {
-                                            database_command = pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c \"INSERT INTO " + SCPF[testName]['table'] + " VALUES('\$DATE','" + SCPF[testName]['results'] + "','\$BUILD_NUMBER', \$line, '\$ONOSBranch');\""
-                                        }
-                                        sh '''#!/bin/bash
-
-                                        export DATE=\$(date +%F_%T)
-                                        cd ~
-                                        pwd
-                                        cd /tmp
-                                        while read line
-                                        do
-
-                                        echo \$line
-                                        echo ''' + database_command + '''
-
-                                        done< ''' + SCPF[testName]['file'] + '''
-                                        ''' + getGraphCommand( SCPF[testName]['rFile'], SCPF[testName]['extra'], host, port, user, pass, testName, prop["ONOSBranch"], isOldFlow ) + '''
-                                        ''' + ( SCPF[testName]['finalResult'] ? generateCombinedResultGraph( host,port, user, pass, testName, prop["ONOSBranch"], , isOldFlow ) : "" )
-                                }
-                            }
-                            // Fetch Logs
-                            sh '''#!/bin/bash
-                            set +e
-                            cd ~/OnosSystemTest/TestON/logs
-                            echo "Job Name is: ${JOB_NAME}"
-                            TestONlogDir=$(ls -t | grep ${TEST_NAME}_  |head -1)
-                            echo "########################################################################################"
-                            echo "#####  copying ONOS logs from all nodes to TestON/logs directory: ${TestONlogDir}"
-                            echo "########################################################################################"
-                            cd $TestONlogDir
-                            if [ $? -eq 1 ]
-                            then
-                                echo "Job name does not match any test suite name to move log!"
-                            else
-                                pwd
-                                for i in $OC{1..7}; do onos-fetch-logs $i || echo log does not exist; done
-                            fi'''
-                        }
-                    }
-                    if( prop["manualRun"] == "false" || prop["postResult"] == "true" ){
-                        def post = build job: "Pipeline_postjob_BM", propagate: false
-                    }
-                    node("TestStation-BMs"){
-                        resultContents = readFile workSpace + "/" + testName.replaceAll("WithFlowObj","") + "Result.txt"
-                        resultContents = resultContents.split("\n")
-                        if( resultContents[ 0 ] == "1" ){
-                            print "All passed"
-                        }else{
-                            print "Failed"
-                            if( prop["manualRun"] == "false" )
-                                slackSend(color:"FF0000", message: "[" + prop["ONOSBranch"] + "]" + testName + " : Failed!\n"
-                                + resultContents[ 1 ] + "\n"
-                                + "https://onos-jenkins.onlab.us/blue/organizations/jenkins/${env.JOB_NAME}/detail/${env.JOB_NAME}/${env.BUILD_NUMBER}/pipeline" )
-                            Failed
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-def getGraphCommand( rFileName, extras, host, port, user, pass, testName, branchName, isOldFlow ){
-    result = ""
-    for( extra in extras ){
-        result += generateGraph( rFileName, " " + extra, host, port, user, pass, testName, branchName, isOldFlow ) + ";"
-    }
-    return result
-}
-def generateGraph( rFileName, batch, host, port, user, pass, testName, branchName, isOldFlow ){
-    return "Rscript " + graph_generator_directory + rFileName + " " + host + " " + port + " " + user + " " + pass + " " +
-            testName + " " + branchName +  " " + batch + " " + usingOldFlow( isOldFlow, testName ) + graph_saved_directory
-}
-def generateCombinedResultGraph( host, port, user, pass, testName, branchName, isOldFlow ){
-    result = ""
-    for ( int i=0; i< SCPF[testName]['graphTitle'].size(); i++){
-        result += "Rscript " + graph_generator_directory + "SCPFLineGraph.R " + host + " " + port + " " + user + " " + pass + " \"" + SCPF[testName]['graphTitle'][i] + "\" " +
-        branchName + " " + 50 + " \"SELECT " + checkIfList( testName, 'dbCols', i ) + " FROM " + SCPF[testName]['table'] + " WHERE  branch=\'" + branchName + "\' " + sqlOldFlow( isOldFlow, testName ) +
-        checkIfList( testName, 'dbWhere', i ) + " ORDER BY date DESC LIMIT 50\" \"" + SCPF[testName]['y_axis'] + "\" " + hasOldFlow( isOldFlow, testName ) + graph_saved_directory + ";"
-    }
-    return result
-}
-def checkIfList( testName, forWhich, pos ){
-    return SCPF[testName][forWhich].getClass().getName() != "java.lang.String" ? SCPF[testName][forWhich][pos] :  SCPF[testName][forWhich]
-}
-def sqlOldFlow( isOldFlow, testName ){
-    return SCPF[ testName ][ 'flows' ] ? " AND " + ( isOldFlow == "true" ? "" : "NOT " ) + "is_old_flow " : ""
-}
-def oldFlowRuleCheck( isOldFlow ){
-    if( isOldFlow == "false" ){
-        SCPF[ 'SCPFflowTp1g' ][ 'test' ] += " --params TEST/flows=6125"
-        SCPF[ 'SCPFbatchFlowResp' ][ 'test' ] += " --params CASE1000/batchSize=100"
-        SCPF[ 'SCPFintentEventTp' ][ 'test' ] += " --params TEST/numKeys=4000"
-    }
-}
-def affectedByOldFlow( isOldFlow, testName ){
-    return SCPF[ testName ][ 'flows' ] ? "" + isOldFlow + ", " : ""
-}
-def usingOldFlow( isOldFlow, testName ){
-    return SCPF[ testName ][ 'flows' ] ? ( isOldFlow == "true" ? "y" : "n" ) + " " : ""
-}
-def hasOldFlow( isOldFlow, testName ){
-    return ( SCPF[ testName ][ 'flows' ] && isOldFlow == "true" ? "y" : "n" ) + " "
-}
+funcs.sendResultToSlack( start,  prop["manualRun"], prop[ "WikiPrefix" ] )

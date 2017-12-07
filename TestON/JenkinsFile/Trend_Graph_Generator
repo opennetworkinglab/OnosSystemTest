@@ -1,0 +1,27 @@
+#!groovy
+funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
+//generalFuncs = evaluate readTrusted( 'GeneralFuncs.groovy' )
+nodeCluster = params.NodeCluster
+
+graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
+graph_saved_directory = "/var/jenkins/workspace/postjob-" + nodeCluster + "/"
+
+funcs.initializeTrend( nodeCluster );
+def prop = null
+prop = funcs.getProperties()
+
+def Tests = params.Test
+prop[ "ONOSBranch" ] = params.ONOSbranch
+
+def testsToRun = null
+testsToRun = funcs.getTestsToRun( Tests )
+
+def tests = [:]
+for( String test : testsToRun ){
+    println test
+    tests[ test ] = funcs.runTest( test, true, prop, test, true, [], graph_generator_file, graph_saved_directory )
+}
+
+for ( test in tests.keySet() ){
+    tests[ test ].call()
+}

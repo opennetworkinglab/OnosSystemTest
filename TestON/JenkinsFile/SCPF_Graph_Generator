@@ -1,0 +1,28 @@
+#!groovy
+SCPFfuncs = evaluate readTrusted( 'PerformanceFuncs.groovy' )
+SCPFfuncs.init()
+funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
+funcs.initialize( "SCPF", SCPFfuncs );
+
+def prop = null
+prop = funcs.getProperties()
+
+def Tests = params.Test
+isOldFlow = params.isOldFlow
+prop[ "ONOSBranch" ] = params.ONOSbranch
+
+SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
+
+def testsToRun = null
+testsToRun = funcs.getTestsToRun( Tests )
+
+def tests = [:]
+for( String test : testsToRun ){
+    println test
+    pureTestName = test.replaceAll( "WithFlowObj", "" )
+    tests[ test ] = funcs.runTest( test, true, prop, pureTestName, true, [], "", "" )
+}
+
+for ( test in tests.keySet() ){
+    tests[ test ].call()
+}

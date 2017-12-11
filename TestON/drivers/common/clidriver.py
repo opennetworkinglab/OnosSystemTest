@@ -56,20 +56,22 @@ class CLI( Component ):
             self.ip_address + " port 22: Connection refused"
         if self.port:
             self.handle = pexpect.spawn(
-                'ssh -p ' +
+                'ssh -X -p ' +
                 self.port +
                 ' ' +
                 self.user_name +
                 '@' +
-                self.ip_address,
+                self.ip_address +
+                ' -o ServerAliveInterval=120 -o TCPKeepAlive=yes',
                 env={ "TERM": "xterm-mono" },
-                maxread=50000 )
+                maxread=1000000 )
         else:
             self.handle = pexpect.spawn(
                 'ssh -X ' +
                 self.user_name +
                 '@' +
-                self.ip_address,
+                self.ip_address +
+                ' -o ServerAliveInterval=120 -o TCPKeepAlive=yes',
                 env={ "TERM": "xterm-mono" },
                 maxread=1000000,
                 timeout=60 )

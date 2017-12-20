@@ -141,6 +141,10 @@ print( "**********************************************************" )
 # Create lists c() and organize data into their corresponding list.
 print( "Combine data retrieved from databases into a list." )
 
+buildNums <- fileData$build
+fileData$build <- c()
+print( fileData )
+
 if ( ncol( fileData ) > 1 ){
     for ( i in 2:ncol( fileData ) ){
         fileData[ i ] <- fileData[ i - 1 ] + fileData[ i ]
@@ -163,6 +167,7 @@ colnames( dataFrame ) <- c( "Legend",
 # Format data frame so that the data is in the same order as it appeared in the file.
 dataFrame$Legend <- as.character( dataFrame$Legend )
 dataFrame$Legend <- factor( dataFrame$Legend, levels=unique( dataFrame$Legend ) )
+dataFrame$build <- buildNums
 
 # Adding a temporary iterative list to the dataFrame so that there are no gaps in-between date numbers.
 dataFrame$iterative <- rev( seq( 1, nrow( fileData ), by = 1 ) )
@@ -205,9 +210,14 @@ print( "Formatting main plot." )
 
 limitExpansion <- expand_limits( y = 0 )
 
+tickLength <- 3
+breaks <- seq( max( dataFrame$iterative ) %% tickLength, max( dataFrame$iterative ), by = tickLength )
+breaks <- breaks[ which( breaks != 0 ) ]
+
 maxYDisplay <- max( dataFrame$Values ) * 1.05
 yBreaks <- ceiling( max( dataFrame$Values ) / 10 )
 yScaleConfig <- scale_y_continuous( breaks = seq( 0, maxYDisplay, by = yBreaks ) )
+xScaleConfig <- scale_x_continuous( breaks = breaks, label = rev( dataFrame$build )[ breaks ] )
 
 # ------------------------------
 # Fundamental Variables Assigned
@@ -224,8 +234,7 @@ imageHeight <- 10
 imageDPI <- 200
 
 # Set other graph configurations here.
-theme <- theme( axis.text.x = element_blank(),
-                axis.ticks.x = element_blank(),
+theme <- theme( axis.text.x = element_text( angle = 0, size = 13 ),
                 plot.title = element_text( size = 32, face='bold', hjust = 0.5 ),
                 legend.position = "bottom",
                 legend.text = element_text( size=22 ),
@@ -251,6 +260,7 @@ wrapLegend <- guides( color = guide_legend( nrow = 2, byrow = TRUE ) )
 
 fundamentalGraphData <- mainPlot +
                         limitExpansion +
+                        xScaleConfig +
                         yScaleConfig +
                         xLabel +
                         yLabel +

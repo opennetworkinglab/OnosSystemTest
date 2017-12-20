@@ -38,23 +38,29 @@ class SRBridgingTest ():
         # topo[ '2x3' ] = ( 2, 3, True, '2x3 leaf-spine topology with dual ToR and single ToR' )
         topo[ '2x4' ] = ( 2, 4, True, '2x4 dual-homed leaf-spine topology', 116 )
 
+        skipPackage = False
+        init = False
         if not hasattr( main, 'apps' ):
+            init = True
             run.initTest( main )
+        # Skip onos packaging if the clusrer size stays the same
+        if not init and onosNodes == main.Cluster.numCtrls:
+            skipPackage = True
 
         main.case( '%s, with %s and %d ONOS instance%s' %
                    ( description, topo[ topology ][ 3 ], onosNodes, 's' if onosNodes > 1 else '' ) )
 
         main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
         main.Cluster.setRunningNode( onosNodes )
-        run.installOnos( main )
+        run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
         mininet_args = ' --spine=%d --leaf=%d' % ( topo[ topology ][ 0 ], topo[ topology ][ 1 ] )
         if topo[ topology ][ 2 ]:
             mininet_args += ' --dual-homed'
         if len( vlan ) > 0 :
             mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
 
-        run.startMininet( main, 'trellis_fabric.py', args = mininet_args )
+        run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
         # TODO: Need to check correct number of minFlowCount
-        run.checkFlows( main, minFlowCount = topo[ topology ][ 4 ] )
+        run.checkFlows( main, minFlowCount=topo[ topology ][ 4 ], sleep=5 )
         run.pingAll( main, 'CASE%02d' % test_idx )
         run.cleanup( main )

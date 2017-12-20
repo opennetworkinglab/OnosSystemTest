@@ -94,7 +94,7 @@ class Testcaselib:
         main.testSetUp.evnSetupConclusion( stepResult )
 
     @staticmethod
-    def installOnos( main, vlanCfg=True ):
+    def installOnos( main, vlanCfg=True, skipPackage=False, cliSleep=10 ):
         """
         - Set up cell
             - Create cell file
@@ -114,33 +114,11 @@ class Testcaselib:
         main.log.info( "NODE COUNT = " + str( main.Cluster.numCtrls ) )
         main.log.info( ''.join( main.Cluster.getIps() ) )
         main.dynamicHosts = [ 'in1', 'out1' ]
-        main.testSetUp.createApplyCell( main.Cluster, newCell=True, cellName=main.cellName,
-                                        Mininet=main.Mininet1, useSSH=Testcaselib.useSSH,
-                                        ips=main.Cluster.getIps() )
-        # kill off all onos processes
-        main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating environment setup" )
-        main.testSetUp.killingAllOnos(main.Cluster, True, False)
-
-        main.testSetUp.uninstallOnos(main.Cluster, False)
-        main.testSetUp.buildOnos(main.Cluster)
-
-        main.testSetUp.installOnos(main.Cluster, False)
-
-        main.testSetUp.setupSsh(main.Cluster)
-
-        main.testSetUp.checkOnosService(main.Cluster)
-
-        cliResult = main.TRUE
-        main.step("Checking if ONOS CLI is ready")
-        cliResult = main.testSetUp.startOnosClis(main.Cluster)
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=cliResult,
-                                 onpass="ONOS CLI is ready",
-                                 onfail="ONOS CLI is not ready" )
+        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, newCell=True, cellName=main.cellName,
+                                  skipPack=skipPackage, useSSH=Testcaselib.useSSH )
         ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
                                  main.FALSE,
-                                 sleep=10,
+                                 sleep=cliSleep,
                                  attempts=10 )
         if ready:
             ready = main.TRUE
@@ -224,14 +202,14 @@ class Testcaselib:
             main.cleanAndExit()
 
     @staticmethod
-    def checkFlows( main, minFlowCount, dumpflows=True ):
+    def checkFlows( main, minFlowCount, dumpflows=True, sleep=10 ):
         main.step(
                 " Check whether the flow count is bigger than %s" % minFlowCount )
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowCount,
                                  main.FALSE,
                                  kwargs={ 'min': minFlowCount },
                                  attempts=10,
-                                 sleep=10 )
+                                 sleep=sleep )
         utilities.assertEquals(
                 expect=True,
                 actual=( count > 0 ),
@@ -243,7 +221,7 @@ class Testcaselib:
                                      main.FALSE,
                                      kwargs={ 'isPENDING': False },
                                      attempts=4,
-                                     sleep=10 )
+                                     sleep=sleep )
         utilities.assertEquals(
                 expect=main.TRUE,
                 actual=flowCheck,

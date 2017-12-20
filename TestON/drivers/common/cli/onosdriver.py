@@ -820,11 +820,9 @@ class OnosDriver( CLI ):
         """
         Calls 'cell <name>' to set the environment variables on ONOSbench
         """
-        import re
         try:
             if not cellname:
-                main.log.error( "Must define cellname" )
-
+                main.log.error( self.name + ": Must define cellname" )
                 main.cleanAndExit()
             else:
                 self.handle.sendline( "cell " + str( cellname ) )
@@ -832,21 +830,25 @@ class OnosDriver( CLI ):
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
                 self.handle.expect( str( cellname ) )
-                handleBefore = self.handle.before
-                handleAfter = self.handle.after
-                # Get the rest of the handle
-                self.handle.expect( self.prompt )
-                time.sleep( 10 )
-                handleMore = self.handle.before
-
-                cell_result = handleBefore + handleAfter + handleMore
-                # print cell_result
-                if( re.search( "No such cell", cell_result ) ):
-                    main.log.error( "Cell call returned: " + handleBefore +
-                                    handleAfter + handleMore )
-
+                i = self.handle.expect( [ "No such cell",
+                                          self.prompt,
+                                          pexpect.TIMEOUT ], timeout=10 )
+                if i == 0:
+                    main.log.error( self.name + ": No such cell. Response: " + str( self.handle.before ) )
+                    main.cleanAndExit()
+                elif i == 1:
+                    main.log.info( self.name + ": Successfully set cell: " + str( self.handle.before ) )
+                elif i == 2:
+                    main.log.error( self.name + ": Set cell timed out. Response: " + str( self.handle.before ) )
+                    main.cleanAndExit()
+                else:
+                    main.log.error( self.name + ": Unexpected response: " + str( self.handle.before ) )
                     main.cleanAndExit()
                 return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

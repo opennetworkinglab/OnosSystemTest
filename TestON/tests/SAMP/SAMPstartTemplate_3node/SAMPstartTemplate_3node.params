@@ -15,7 +15,10 @@
         <pull>False</pull>
         <branch>master</branch>
     </GIT>
-
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
     <CASE0>
         <gitPull>False</gitPull> # False or True
         <gitBranch>master</gitBranch>

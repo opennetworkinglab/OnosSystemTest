@@ -117,7 +117,7 @@ class SAMPstartTemplate_3node:
                                  onpass="Successfully started basic ONOS cluster ",
                                  onfail="Failed to start basic ONOS Cluster " )
 
-        main.testSetUp.startOnosClis()
+        main.testSetUp.startOnosClis( main.Cluster )
 
         main.step( "Activate onos apps." )
         main.apps = main.params[ 'CASE10' ].get( 'Apps' )

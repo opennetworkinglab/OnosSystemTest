@@ -303,7 +303,6 @@ xScaleConfig <- scale_x_continuous( breaks = c( 1, 3, 5, 7, 9) )
 xLabel <- xlab( "Scale" )
 yLabel <- ylab( "Latency (ms)" )
 fillLabel <- labs( fill="Type" )
-title <- ggtitle( chartTitle )
 imageWidth <- 15
 imageHeight <- 10
 imageDPI <- 200
@@ -313,7 +312,12 @@ theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ),
                 legend.position="bottom",
                 legend.text=element_text( size=22 ),
                 legend.title = element_blank(),
-                legend.key.size = unit( 1.5, 'lines' ) )
+                legend.key.size = unit( 1.5, 'lines' ),
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
+
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
+
+title <- labs( title = chartTitle, subtitle = subtitle )
 
 colors <- scale_fill_manual( values=c( "#F77670",
                                        "#619DFA",

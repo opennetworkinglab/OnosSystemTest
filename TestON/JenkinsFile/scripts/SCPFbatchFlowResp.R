@@ -263,7 +263,10 @@ theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face = 'bold'
                 legend.position = "bottom",
                 legend.text = element_text( size = 22 ),
                 legend.title = element_blank(),
-                legend.key.size = unit( 1.5, 'lines' ) )
+                legend.key.size = unit( 1.5, 'lines' ),
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
+
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
 
 barGraphFormat <- geom_bar( stat = "identity",
                             width = barWidth )
@@ -286,8 +289,8 @@ print( "Generating fundamental graph data for Post graph." )
 
 xScaleConfig <- scale_x_continuous( breaks = postDataFrame$iterative,
                                     label = postDataFrame$date )
-title <- ggtitle( postChartTitle )
 
+title <- labs( title = postChartTitle, subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +
@@ -358,7 +361,8 @@ print( "Generating fundamental graph data for Del graph." )
 
 xScaleConfig <- scale_x_continuous( breaks = delDataFrame$iterative,
                                     label = delDataFrame$date )
-title <- ggtitle( delChartTitle )
+
+title <- labs( title = delChartTitle, subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

@@ -231,7 +231,12 @@ theme <- theme( axis.text.x = element_blank(),
                 legend.text = element_text( size=22 ),
                 legend.title = element_blank(),
                 legend.key.size = unit( 1.5, 'lines' ),
-                legend.direction = 'horizontal' )
+                legend.direction = 'horizontal',
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
+
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
+
+title <- labs( title = title, subtitle = subtitle )
 
 # Colors used for the lines.
 # Note: graphs that have X lines will use the first X colors in this list.
@@ -243,7 +248,6 @@ colors <- scale_color_manual( values=c( "#111111",   # black
                                         "#E500FF") ) # purple (not used)
 
 wrapLegend <- guides( color = guide_legend( nrow = 2, byrow = TRUE ) )
-title <- ggtitle( title )
 
 fundamentalGraphData <- mainPlot +
                         limitExpansion +

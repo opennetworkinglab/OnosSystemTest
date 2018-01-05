@@ -204,9 +204,12 @@ errorBarColor <- rgb( 140,140,140, maxColorValue=255 )
 theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face = 'bold' ),
                 legend.position = "bottom",
                 legend.text = element_text( size = 18, face = "bold" ),
-                legend.title = element_blank() )
+                legend.title = element_blank(),
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
 
-title <- ggtitle( chartTitle )
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
+
+title <- labs( title = chartTitle, subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

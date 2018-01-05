@@ -208,7 +208,10 @@ theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face = 'bold'
                 legend.position = "bottom",
                 legend.text = element_text( size=22 ),
                 legend.title = element_blank(),
-                legend.key.size = unit( 1.5, 'lines' ) )
+                legend.key.size = unit( 1.5, 'lines' ),
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
+
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
 
 values <- geom_text( aes( x = dataFrame$iterative,
                           y = sum + 0.02 * max( sum ),
@@ -220,7 +223,7 @@ values <- geom_text( aes( x = dataFrame$iterative,
 
 wrapLegend <- guides( fill = guide_legend( nrow=2, byrow=TRUE ) )
 
-title <- ggtitle( chartTitle, "" )
+title <- labs( title = chartTitle, subtitle = subtitle )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot +

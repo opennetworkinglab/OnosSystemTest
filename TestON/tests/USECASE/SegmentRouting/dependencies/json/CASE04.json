@@ -140,7 +140,7 @@
                 "ipv4Loopback" : "192.168.0.4",
                 "routerMac" : "00:00:00:00:00:02",
                 "isEdgeRouter" : true,
-                "pairDeviceId" : "of:0000000000000002",
+                "pairDeviceId" : "of:0000000000000003",
                 "pairLocalPort" : 5,
                 "adjacencySids" : []
             },

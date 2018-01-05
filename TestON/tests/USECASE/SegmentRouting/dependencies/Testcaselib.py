@@ -220,7 +220,7 @@ class Testcaselib:
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
                                      main.FALSE,
                                      kwargs={ 'isPENDING': False },
-                                     attempts=4,
+                                     attempts=5,
                                      sleep=sleep )
         utilities.assertEquals(
                 expect=main.TRUE,
@@ -236,6 +236,21 @@ class Testcaselib:
                                         "groups",
                                         main.logdir,
                                         "groupsBefore" + main.cfgName )
+
+    @staticmethod
+    def checkFlowsByDpid( main, dpid, minFlowCount, sleep=10 ):
+        main.step(
+                " Check whether the flow count of device %s is bigger than %s" % ( dpid, minFlowCount ) )
+        count = utilities.retry( main.Cluster.active( 0 ).CLI.flowAddedCount,
+                                 None,
+                                 args=( dpid, ),
+                                 attempts=5,
+                                 sleep=sleep )
+        utilities.assertEquals(
+                expect=True,
+                actual=( int( count ) > minFlowCount ),
+                onpass="Flow count looks correct: " + count ,
+                onfail="Flow count looks wrong: " + count )
 
     @staticmethod
     def pingAll( main, tag="", dumpflows=True ):

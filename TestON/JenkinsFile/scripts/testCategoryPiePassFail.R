@@ -40,7 +40,8 @@ testSuiteName <- 5
 branchName <- 6
 testsToInclude <- 7
 buildToShow <- 8
-saveDirectory <- 9
+isDisplayingPlan <- 9
+saveDirectory <- 10
 
 # ----------------
 # Import Libraries
@@ -59,15 +60,16 @@ print( "Verifying CLI args." )
 
 if ( is.na( args[ saveDirectory ] ) ){
 
-    print( paste( "Usage: Rscript testCategoryBuildStats.R",
+    print( paste( "Usage: Rscript testCategoryPiePassFail.R",
                                   "<database-host>",
                                   "<database-port>",
                                   "<database-user-id>",
                                   "<database-password>",
                                   "<test-suite-name>",
                                   "<branch-name>",
-                                  "<tests-to-include-(as-one-string-sep-groups-by-semicolon-title-as-first-group-item-sep-by-dash)>",
+                                  "<tests-to-include-(as-one-string)>",
                                   "<build-to-show>",
+                                  "<is-displaying-plan>",
                                   "<directory-to-save-graphs>",
                                   sep=" " ) )
 
@@ -107,50 +109,36 @@ if ( args[ buildToShow ] == "latest" ){
     operator <- ">= "
     args[ buildToShow ] <- "1000"
 } else {
-    buildTitle <- paste( " \n Build #", args[ buildToShow ] , sep="" )
+    buildTitle <- paste( " \n Build #", args[ buildToShow ], sep="" )
 }
 
-tests <- strsplit( args[ testsToInclude ], ";" )
-dbResults <- list()
-titles <- list()
+command <- paste( "SELECT * ",
+                  "FROM executed_test_tests a ",
+                  "WHERE ( SELECT COUNT( * ) FROM executed_test_tests b ",
+                  "WHERE b.branch='",
+                  args[ branchName ],
+                  "' AND b.actual_test_name IN (",
+                  tests,
+                  ") AND a.actual_test_name = b.actual_test_name AND a.date <= b.date AND b.build ", operator,
+                  args[ buildToShow ],
+                  " ) = ",
+                  1,
+                  " AND a.branch='",
+                  args[ branchName ],
+                  "' AND a.actual_test_name IN (",
+                  tests,
+                  ") AND a.build ", operator,
+                  args[ buildToShow ],
+                  " ORDER BY a.actual_test_name DESC, a.date DESC",
+                  sep="")
 
-for ( i in 1:length( tests[[1]] ) ){
-    splitTestList <- strsplit( tests[[1]][ i ], "-" )
-    testList <- splitTestList[[1]][2]
-    titles[[i]] <- splitTestList[[1]][1]
+print( "Sending SQL command:" )
+print( command )
 
-    testsCommand <- "'"
-    for ( test in as.list( strsplit( testList, "," )[[1]] ) ){
-        testsCommand <- paste( testsCommand, test, "','", sep="" )
-    }
-    testsCommand <- substr( testsCommand, 0, nchar( testsCommand ) - 2 )
-
-    command <- paste( "SELECT * ",
-                      "FROM executed_test_tests a ",
-                      "WHERE ( SELECT COUNT( * ) FROM executed_test_tests b ",
-                      "WHERE b.branch='",
-                      args[ branchName ],
-                      "' AND b.actual_test_name IN (",
-                      testsCommand,
-                      ") AND a.actual_test_name = b.actual_test_name AND a.date <= b.date AND b.build ", operator,
-                      args[ buildToShow ],
-                      " ) = ",
-                      1,
-                      " AND a.branch='",
-                      args[ branchName ],
-                      "' AND a.actual_test_name IN (",
-                      testsCommand,
-                      ") AND a.build ", operator,
-                      args[ buildToShow ],
-                      " ORDER BY a.actual_test_name DESC, a.date DESC",
-                      sep="")
-    print( "Sending SQL command:" )
-    print( command )
-    dbResults[[i]] <- dbGetQuery( con, command )
-}
+dbResult <- dbGetQuery( con, command )
 
 print( "dbResult:" )
-print( dbResults )
+print( dbResult )
 
 # -------------------------------
 # Create Title and Graph Filename
@@ -158,13 +146,20 @@ print( dbResults )
 
 print( "Creating title of graph." )
 
-titlePrefix <- paste( args[ testSuiteName ], " ", sep="" )
-if ( args[ testSuiteName ] == "ALL" ){
-    titlePrefix <- ""
+typeOfPieTitle <- "Executed Results"
+typeOfPieFile <- "_passfail"
+isPlannedPie <- FALSE
+if ( args[ isDisplayingPlan ] == "y" ){
+    typeOfPieTitle <- "Test Execution"
+    typeOfPieFile <- "_executed"
+    isPlannedPie <- TRUE
 }
 
-title <- paste( titlePrefix,
-                "Summary of Test Suites - ",
+title <- paste( args[ testSuiteName ],
+                " Tests: Summary of ",
+                typeOfPieTitle,
+                "",
+                " - ",
                 args[ branchName ],
                 buildTitle,
                 sep="" )
@@ -177,7 +172,8 @@ outputFile <- paste( args[ saveDirectory ],
                      args[ branchName ],
                      "_build-",
                      fileBuildToShow,
-                     "_test-suite-summary.jpg",
+                     typeOfPieFile,
+                     "_pieChart.jpg",
                      sep="" )
 
 # **********************************************************
@@ -188,93 +184,48 @@ print( "**********************************************************" )
 print( "STEP 2: Organize Data." )
 print( "**********************************************************" )
 
-passNum <- list()
-failNum <- list()
-exeNum <- list()
-skipNum <- list()
-totalNum <- list()
+t <- subset( dbResult, select=c( "actual_test_name", "num_passed", "num_failed", "num_planned" ) )
 
-passPercent <- list()
-failPercent <- list()
-exePercent <- list()
-nonExePercent <- list()
-
-actualPassPercent <- list()
-actualFailPercent <- list()
-
-appName <- c()
-afpName <- c()
-nepName <- c()
-
-tmpPos <- c()
-tmpCases <- c()
-
-for ( i in 1:length( dbResults ) ){
-    t <- dbResults[[i]]
-
-    passNum[[i]] <- sum( t$num_passed )
-    failNum[[i]] <- sum( t$num_failed )
-    exeNum[[i]] <- passNum[[i]] + failNum[[i]]
-    totalNum[[i]] <- sum( t$num_planned )
-    skipNum[[i]] <- totalNum[[i]] - exeNum[[i]]
-
-    passPercent[[i]] <- passNum[[i]] / exeNum[[i]]
-    failPercent[[i]] <- failNum[[i]] / exeNum[[i]]
-    exePercent[[i]] <- exeNum[[i]] / totalNum[[i]]
-    nonExePercent[[i]] <- ( 1 - exePercent[[i]] ) * 100
-
-    actualPassPercent[[i]] <- passPercent[[i]] * exePercent[[i]] * 100
-    actualFailPercent[[i]] <- failPercent[[i]] * exePercent[[i]] * 100
-
-    appName <- c( appName, "Passed" )
-    afpName <- c( afpName, "Failed" )
-    nepName <- c( nepName, "Skipped/Unexecuted" )
-
-    tmpPos <- c( tmpPos, 100 - ( nonExePercent[[i]] / 2 ), actualPassPercent[[i]] + actualFailPercent[[i]] - ( actualFailPercent[[i]] / 2 ), actualPassPercent[[i]] - ( actualPassPercent[[i]] / 2 ) )
-    tmpCases <- c( tmpCases, skipNum[[i]], failNum[[i]], passNum[[i]] )
-}
-
-relativePosLength <- length( dbResults ) * 3
-
-relativePos <- c()
-relativeCases <- c()
-
-for ( i in 1:3 ){
-    relativePos <- c( relativePos, tmpPos[ seq( i, relativePosLength, 3 ) ] )
-    relativeCases <- c( relativeCases, tmpCases[ seq( i, relativePosLength, 3 ) ] )
-}
-names( actualPassPercent ) <- appName
-names( actualFailPercent ) <- afpName
-names( nonExePercent ) <- nepName
-
-labels <- paste( titles, "\n", totalNum, " Test Cases", sep="" )
+executedTests <- sum( t$num_passed ) + sum( t$num_failed )
 
 # --------------------
 # Construct Data Frame
 # --------------------
 
-print( "Constructing Data Frame" )
+print( "Constructing Data Frame." )
 
-dataFrame <- melt( c( nonExePercent, actualFailPercent, actualPassPercent ) )
-dataFrame$title <- seq( 1, length( dbResults ), by = 1 )
-colnames( dataFrame ) <- c( "perc", "key", "suite" )
+if ( isPlannedPie ){
 
-dataFrame$xtitles <- labels
-dataFrame$relativePos <- relativePos
-dataFrame$relativeCases <- relativeCases
-dataFrame$valueDisplay <- c( paste( round( dataFrame$perc, digits = 2 ), "% - ", relativeCases, " Tests", sep="" ) )
+    nonExecutedTests <- sum( t$num_planned ) - executedTests
+    totalTests <- sum( t$num_planned )
 
-dataFrame$key <- factor( dataFrame$key, levels=unique( dataFrame$key ) )
+    executedPercent <- round( executedTests / totalTests * 100, digits = 2 )
+    nonExecutedPercent <- 100 - executedPercent
 
-dataFrame$willDisplayValue <- dataFrame$perc > 15.0 / length( dbResults )
+    dfData <- c( nonExecutedPercent, executedPercent )
 
-for ( i in 1:nrow( dataFrame ) ){
-    if ( relativeCases[[i]] == "1" ){
-        dataFrame[ i, "valueDisplay" ] <- c( paste( round( dataFrame$perc[[i]], digits = 2 ), "% - ", relativeCases[[i]], " Test", sep="" ) )
-    }
-    if ( !dataFrame[ i, "willDisplayValue" ] ){
-        dataFrame[ i, "valueDisplay" ] <- ""
-    }
+    labels <- c( "Executed Test Cases", "Skipped Test Cases" )
+
+    dataFrame <- data.frame(
+        rawData <- dfData,
+        displayedData <- c( paste( nonExecutedPercent, "%\n", nonExecutedTests, " / ", totalTests, " Tests", sep="" ), paste( executedPercent, "%\n", executedTests, " / ", totalTests," Tests", sep="" ) ),
+        names <- factor( rev( labels ), levels = labels ) )
+} else {
+
+    sumPassed <- sum( t$num_passed )
+    sumFailed <- sum( t$num_failed )
+    sumExecuted <- sumPassed + sumFailed
+
+    percentPassed <- sumPassed / sumExecuted
+    percentFailed <- sumFailed / sumExecuted
+
+    dfData <- c( percentFailed, percentPassed )
+    labels <- c( "Failed Test Cases", "Passed Test Cases" )
+
+    dataFrame <- data.frame(
+        rawData <- dfData,
+        displayedData <- c( paste( round( percentFailed * 100, 2 ), "%\n", sumFailed, " / ", sumExecuted, " Tests", sep="" ), paste( round( percentPassed * 100, 2 ), "%\n", sumPassed, " / ", sumExecuted, " Tests", sep="" ) ),
+        names <- factor( labels, levels = rev( labels ) ) )
 }
 
 print( "Data Frame Results:" )
@@ -301,14 +252,14 @@ print( "Creating main plot." )
 #        - y: y-axis values (usually tests)
 #        - color: the category of the colored lines (usually status of test)
 
+mainPlot <- ggplot( data = dataFrame,
+                    aes( x = "", y=rawData, fill = names ) )
+
 # -------------------
 # Main Plot Formatted
 # -------------------
 
 print( "Formatting main plot." )
-mainPlot <- ggplot( data = dataFrame, aes( x = suite,
-                                           y = perc,
-                                           fill = key ) )
 
 # ------------------------------
 # Fundamental Variables Assigned
@@ -318,21 +269,18 @@ print( "Generating fundamental graph data." )
 
 theme_set( theme_grey( base_size = 26 ) )   # set the default text size of the graph.
 
-xScaleConfig <- scale_x_continuous( breaks = dataFrame$suite,
-                                    label = dataFrame$xtitles )
-yScaleConfig <- scale_y_continuous( breaks = seq( 0, 100,
-                                    by = 10 ) )
-
-xLabel <- xlab( "" )
-yLabel <- ylab( "Total Test Cases (%)" )
-
-imageWidth <- 15
+imageWidth <- 12
 imageHeight <- 10
 imageDPI <- 200
 
 # Set other graph configurations here.
-theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face ='bold' ),
-                axis.text.x = element_text( angle = 0, size = 25 - 1.25 * length( dbResults ) ),
+theme <- theme( plot.title = element_text( hjust = 0.5, size = 30, face ='bold' ),
+                axis.text.x = element_blank(),
+                axis.title.x = element_blank(),
+                axis.title.y = element_blank(),
+                axis.ticks = element_blank(),
+                panel.border = element_blank(),
+                panel.grid=element_blank(),
                 legend.position = "bottom",
                 legend.text = element_text( size = 22 ),
                 legend.title = element_blank(),
@@ -345,39 +293,33 @@ title <- labs( title = title, subtitle = subtitle )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot +
-                        xScaleConfig +
-                        yScaleConfig +
-                        xLabel +
-                        yLabel +
                         theme +
                         title
 
-# ---------------------------
-# Generating Bar Graph Format
-# ---------------------------
+# ----------------------------
+# Generating Line Graph Format
+# ----------------------------
 
-print( "Generating bar graph." )
+print( "Generating line graph." )
 
-unexecutedColor <- "#CCCCCC"    # Gray
-failedColor <- "#E02020"        # Red
-passedColor <- "#16B645"        # Green
+if ( isPlannedPie ){
+    executedColor <- "#00A5FF"      # Blue
+    nonExecutedColor <- "#CCCCCC"   # Gray
+    pieColors <- scale_fill_manual( values = c( executedColor, nonExecutedColor ) )
+} else {
+    passColor <- "#16B645"          # Green
+    failColor <- "#E02020"          # Red
+    pieColors <- scale_fill_manual( values = c( passColor, failColor ) )
+}
 
-colors <- scale_fill_manual( values=c( if ( "Skipped/Unexecuted" %in% dataFrame$key ){ unexecutedColor },
-                                       if ( "Failed" %in% dataFrame$key ){ failedColor },
-                                       if ( "Passed" %in% dataFrame$key ){ passedColor } ) )
+pieFormat <- geom_bar( width = 1, stat = "identity" )
+pieLabels <- geom_text( aes( y = rawData / length( rawData ) + c( 0, cumsum( rawData )[ -length( rawData ) ] ) ),
+                             label = dataFrame$displayedData,
+                             size = 7, fontface = "bold" )
 
-barGraphFormat <- geom_bar( stat = "identity", width = 0.8 )
-
-barGraphValues <- geom_text( aes( x = dataFrame$suite,
-                                  y = dataFrame$relativePos,
-                                  label = format( paste( dataFrame$valueDisplay ) ) ),
-                                  size = 15.50 / length( dbResults ) + 2.33, fontface = "bold" )
 
 result <- fundamentalGraphData +
-          colors +
-          barGraphFormat +
-          barGraphValues
-
+          pieFormat + coord_polar( "y" ) + pieLabels + pieColors
 # -----------------------
 # Exporting Graph to File
 # -----------------------

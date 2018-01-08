@@ -250,7 +250,10 @@ theme <- theme( plot.title=element_text( hjust = 0.5, size = 32, face='bold' ),
                 legend.position="bottom",
                 legend.text=element_text( size=22 ),
                 legend.title = element_blank(),
-                legend.key.size = unit( 1.5, 'lines' ) )
+                legend.key.size = unit( 1.5, 'lines' ),
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
+
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
 
 colors <- scale_fill_manual( values=c( "#F77670",
                                        "#619DFA",
@@ -274,7 +277,7 @@ mainPlot <- ggplot( data = upAvgsDataFrame, aes( x = scale,
 
 print( "Generating fundamental graph data (Port Up Latency)." )
 
-title <- ggtitle( "Port Up Latency" )
+title <- labs( title = "Port Up Latency", subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +
@@ -348,7 +351,7 @@ mainPlot <- ggplot( data = downAvgsDataFrame, aes( x = scale,
 
 print( "Generating fundamental graph data (Port Down Latency)." )
 
-title <- ggtitle( "Port Down Latency" )
+title <- labs( title = "Port Down Latency", subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

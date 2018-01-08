@@ -202,7 +202,10 @@ theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face='bold' )
                 legend.position = "bottom",
                 legend.text = element_text( size=22 ),
                 legend.title = element_blank(),
-                legend.key.size = unit( 1.5, 'lines' ) )
+                legend.key.size = unit( 1.5, 'lines' ),
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
+
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
 
 barColors <- scale_fill_manual( values=c( "#F77670",
                                           "#619DFA" ) )
@@ -229,7 +232,7 @@ print( "Generating fundamental graph data for the error bar graph." )
 
 errorBarColor <- rgb( 140, 140, 140, maxColorValue=255 )
 
-title <- ggtitle( chartTitle )
+title <- labs( title = chartTitle, subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +
@@ -295,7 +298,7 @@ print( paste( "[SUCCESS] Successfully wrote bar chart with error bars out to", e
 
 print( "Generating fundamental graph data for the stacked bar graph." )
 
-title <- ggtitle( chartTitle )
+title <- labs( title = chartTitle, subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

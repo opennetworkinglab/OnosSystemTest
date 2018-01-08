@@ -258,8 +258,12 @@ errorBarColor <- rgb( 140, 140, 140, maxColorValue=255 )
 
 theme <- theme( plot.title = element_text( hjust = 0.5,
                                            size = 32,
-                                           face = 'bold' ) )
-title <- ggtitle( chartTitle )
+                                           face = 'bold' ),
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
+
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
+
+title <- labs( title = chartTitle, subtitle = subtitle )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot +

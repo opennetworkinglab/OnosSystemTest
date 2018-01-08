@@ -256,7 +256,10 @@ theme <- theme( plot.title = element_text( hjust = 0.5, size = 32, face = 'bold'
                 legend.position = "bottom",
                 legend.text = element_text( size = 22 ),
                 legend.title = element_blank(),
-                legend.key.size = unit( 1.5, 'lines' ) )
+                legend.key.size = unit( 1.5, 'lines' ),
+                plot.subtitle = element_text( size=16, hjust=1.0 ) )
+
+subtitle <- paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
 
 # ----------------------------
 # Switch Up Generate Main Plot
@@ -276,7 +279,7 @@ mainPlot <- ggplot( data = upAvgsData, aes( x = scale,
 
 print( "Generating fundamental graph data (Switch Up Latency)." )
 
-title <- ggtitle( "Switch Up Latency" )
+title <- labs( title = "Switch Up Latency", subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +
@@ -352,7 +355,7 @@ colors <- scale_fill_manual( values=c( "#F77670",       # Red
                                        "#619DFA",       # Blue
                                        "#18BA48" ) )    # Green
 
-title <- ggtitle( "Switch Down Latency" )
+title <- labs( title = "Switch Down Latency", subtitle = subtitle )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

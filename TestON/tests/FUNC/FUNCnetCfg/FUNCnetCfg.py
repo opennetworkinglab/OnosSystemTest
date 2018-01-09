@@ -685,11 +685,17 @@ class FUNCnetCfg:
                                                          subjectKey="of:0000000000000005",
                                                          configKey="basic" )
 
+        # Wait 5 secs after set up netCfg
+        time.sleep( main.SetNetCfgSleep )
+
         s6Json = main.s6Json
         setS1 = main.Cluster.active( 0 ).REST.setNetCfg( s6Json,
                                                          subjectClass="devices",
                                                          subjectKey="of:0000000000000006",
                                                          configKey="basic" )
+
+        # Wait 5 secs after set up netCfg
+        time.sleep( main.SetNetCfgSleep )
 
     def CASE27( self, main ):
         """

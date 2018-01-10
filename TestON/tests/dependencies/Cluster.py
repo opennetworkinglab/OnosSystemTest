@@ -149,23 +149,28 @@ class Cluster():
         """
         self.iterator = iter( self.active() )
 
-    def createCell( self, cellName, Mininet, useSSH, ips, installMax=False ):
+    def createCell( self, cellName, cellApps, Mininet, useSSH, ips, installMax=False ):
         """
         Description:
             create a new cell
         Required:
             * cellName - The name of the cell.
+            * cellApps - The ONOS apps string.
             * Mininet - a mininet driver that will be used.
             * useSSH - True for using ssh when creating a cell
             * ips - ip( s ) of the node( s ).
         Returns:
         """
+        try:
+            apps = main.apps
+        except ( NameError, AttributeError ):
+            apps = cellApps
         self.command( "createCellFile",
                       args=[ main.ONOSbench.ip_address,
                              cellName,
                              Mininet if isinstance( Mininet, str ) else
                              Mininet.ip_address,
-                             main.apps,
+                             apps,
                              ips,
                              main.ONOScell.karafUser,
                              useSSH ],

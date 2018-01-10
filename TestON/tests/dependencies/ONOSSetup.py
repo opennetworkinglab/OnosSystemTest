@@ -197,7 +197,7 @@ class ONOSSetup:
 
         return cluster.kill( killRemoveMax, stopOnos )
 
-    def createApplyCell( self, cluster, newCell, cellName,
+    def createApplyCell( self, cluster, newCell, cellName, cellApps,
                          Mininet, useSSH, ips, installMax=False ):
         """
         Description:
@@ -207,6 +207,7 @@ class ONOSSetup:
             * cluster - the cluster driver that will be used.
             * newCell - True for making a new cell and False for not making it.
             * cellName - The name of the cell.
+            * cellApps - The onos apps string.
             * Mininet - a mininet driver that will be used.
             * useSSH - True for using ssh when creating a cell
             * ips - ip( s ) of the node( s ).
@@ -214,7 +215,7 @@ class ONOSSetup:
             Returns main.TRUE if it successfully executed.
         """
         if newCell:
-            cluster.createCell( cellName, Mininet, useSSH, ips )
+            cluster.createCell( cellName, cellApps, Mininet, useSSH, ips )
         main.step( "Apply cell to environment" )
         stepResult = cluster.applyCell( cellName )
         utilities.assert_equals( expect=main.TRUE,
@@ -352,9 +353,9 @@ class ONOSSetup:
                 functions( *args ) if args is not None else functions()
 
     def ONOSSetUp( self, Mininet, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
-                   cellName="temp", removeLog=False, extraApply=None, applyArgs=None, extraClean=None,
-                   cleanArgs=None, skipPack=False, installMax=False, useSSH=True, killRemoveMax=True,
-                   stopOnos=False, installParallel=True ):
+                   cellName="temp", cellApps="drivers", removeLog=False, extraApply=None, applyArgs=None,
+                   extraClean=None, cleanArgs=None, skipPack=False, installMax=False, useSSH=True,
+                   killRemoveMax=True, stopOnos=False, installParallel=True ):
         """
         Description:
             Initial ONOS setting up of the tests. It will also verify the result of each steps.
@@ -377,6 +378,7 @@ class ONOSSetup:
             * startOnos - True if wish to start onos.
             * newCell - True for making a new cell and False for not making it.
             * cellName - Name of the cell that will be used.
+            * cellApps - The cell apps string.
             * removeLog - True if wish to remove raft logs
             * extraApply - Function( s ) that will be called before building ONOS. Default to None.
             * applyArgs - argument of the functon( s ) of the extraApply. Should be in list.
@@ -410,9 +412,9 @@ class ONOSSetup:
             for ctrl in cluster.runningNodes:
                 tempOnosIp.append( ctrl.ipAddress )
             cellResult = self.createApplyCell( cluster, newCell,
-                                               cellName, Mininet,
-                                               useSSH, tempOnosIp,
-                                               installMax )
+                                               cellName, cellApps,
+                                               Mininet, useSSH,
+                                               tempOnosIp, installMax )
             if removeLog:
                 main.log.info( "Removing raft logs" )
                 main.ONOSbench.onosRemoveRaftLogs()

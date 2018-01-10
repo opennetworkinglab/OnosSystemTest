@@ -49,7 +49,7 @@
     <CASE10>
         <numNodes>1</numNodes>
         <Apps>
-            org.onosproject.openflow,org.onosproject.fwd
+            org.onosproject.openflow
         </Apps>
         <ONOS_Configuration>
             <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>

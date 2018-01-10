@@ -450,7 +450,7 @@ class FUNCbgpls:
         bgplsConfig = BgpLs()
         bgplsConfig.ipValue( main.ipList, main.scapy_ip )
 
-        main.testSetUp.createApplyCell( main.Cluster, True, main.cellName, main.scapy_ip, True, main.ipList )
+        main.testSetUp.createApplyCell( main.Cluster, True, main.cellName, main.apps, main.scapy_ip, True, main.ipList )
         bgplsConfig.Comments()
         main.testSetUp.startOnosClis( main.Cluster )
         bgplsConfig.Comments()

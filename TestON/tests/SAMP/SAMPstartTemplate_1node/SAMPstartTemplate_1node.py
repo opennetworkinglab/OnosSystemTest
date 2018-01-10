@@ -34,15 +34,8 @@ class SAMPstartTemplate_1node:
             test env. We want Jenkins jobs to pull&build for flexibility to handle
             different versions of ONOS.
         """
-        try:
-            from tests.dependencies.ONOSSetup import ONOSSetup
-        except ImportError:
-            main.log.error( "ONOSSetup not found. exiting the test" )
-            main.cleanAndExit()
-        try:
-            main.testSetUp
-        except ( NameError, AttributeError ):
-            main.testSetUp = ONOSSetup()
+        from tests.dependencies.ONOSSetup import ONOSSetup
+        main.testSetUp = ONOSSetup()
         main.testSetUp.gitPulling()
 
     def CASE1( self, main ):
@@ -51,16 +44,6 @@ class SAMPstartTemplate_1node:
             Uninstall all running cells in test env defined in .topo file
 
         """
-        try:
-            from tests.dependencies.ONOSSetup import ONOSSetup
-        except ImportError:
-            main.log.error( "ONOSSetup not found. exiting the test" )
-            main.cleanAndExit()
-        try:
-            main.testSetUp
-        except ( NameError, AttributeError ):
-            main.testSetUp = ONOSSetup()
-
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
@@ -95,26 +78,13 @@ class SAMPstartTemplate_1node:
         3 ) configure onos via ONOSCliDriver;
         """
         import time
-        try:
-            from tests.dependencies.ONOSSetup import ONOSSetup
-        except ImportError:
-            main.log.error( "ONOSSetup not found. exiting the test" )
-            main.cleanAndExit()
-        try:
-            main.testSetUp
-        except ( NameError, AttributeError ):
-            main.testSetUp = ONOSSetup()
         main.case( "Start up " + str( main.Cluster.numCtrls ) + "-node onos cluster." )
         main.step( "Start ONOS cluster with basic (drivers) app." )
-        stepResult = main.ONOSbench.startBasicONOS( nodeList=main.Cluster.getIps(),
-                                                    opSleep=200,
-                                                    onosUser=main.ONOScell.karafUser )
+        stepResult = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully started basic ONOS cluster ",
                                  onfail="Failed to start basic ONOS Cluster " )
-
-        main.testSetUp.startOnosClis( main.Cluster )
 
         main.step( "Activate onos apps." )
         main.apps = main.params[ 'CASE10' ].get( 'Apps' )

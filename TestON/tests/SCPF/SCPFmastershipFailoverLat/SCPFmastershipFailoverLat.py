@@ -82,7 +82,7 @@ class SCPFmastershipFailoverLat:
     def CASE1( self, main ):
         # Clean up test environment and set up
         import time
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True,
+        main.testSetUp.ONOSSetUp( main.Cluster, True,
                                   cellName=main.cellName, killRemoveMax=False )
         try:
             from tests.dependencies.utils import Utils

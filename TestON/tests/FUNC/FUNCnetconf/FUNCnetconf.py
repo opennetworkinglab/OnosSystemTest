@@ -105,7 +105,7 @@ class FUNCnetconf:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
+        main.testSetUp.ONOSSetUp( main.Cluster, True )
 
     def CASE19( self, main ):
         """

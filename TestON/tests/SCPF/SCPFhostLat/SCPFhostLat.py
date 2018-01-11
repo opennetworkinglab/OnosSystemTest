@@ -96,7 +96,7 @@ class SCPFhostLat:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True,
+        main.testSetUp.ONOSSetUp( main.Cluster, True,
                                   cellName=main.cellName, killRemoveMax=False )
 
     def CASE11( self, main ):

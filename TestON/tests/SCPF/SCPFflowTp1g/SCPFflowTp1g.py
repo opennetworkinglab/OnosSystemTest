@@ -66,7 +66,7 @@ class SCPFflowTp1g:
         main.commit = ( main.commit.split( " " ) )[ 1 ]
 
     def CASE1( self, main ):
-        main.testSetUp.ONOSSetUp( "localhost", main.Cluster, True, cellName=cellName )
+        main.testSetUp.ONOSSetUp( main.Cluster, True, cellName=cellName )
         main.log.info( "Startup sequence complete" )
         main.ONOSbench.logReport( main.Cluster.active( 0 ).ipAddress, [ "ERROR", "WARNING", "EXCEPT" ], outputMode="d" )
 

@@ -98,7 +98,7 @@ class CHOTestMonkey:
 
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        setupResult = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+        setupResult = main.testSetUp.ONOSSetUp( main.Cluster,
                                                 cellName=main.onosCell )
         for i in range( 1, main.Cluster.numCtrls + 1 ):
             newController = Controller( i )

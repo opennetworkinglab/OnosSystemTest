@@ -198,7 +198,7 @@ class ONOSSetup:
         return cluster.kill( killRemoveMax, stopOnos )
 
     def createApplyCell( self, cluster, newCell, cellName, cellApps,
-                         Mininet, useSSH, ips, installMax=False ):
+                         mininetIp, useSSH, ips, installMax=False ):
         """
         Description:
             create new cell ( optional ) and apply it. It will also verify the
@@ -208,14 +208,14 @@ class ONOSSetup:
             * newCell - True for making a new cell and False for not making it.
             * cellName - The name of the cell.
             * cellApps - The onos apps string.
-            * Mininet - a mininet driver that will be used.
+            * mininetIp - Mininet IP address.
             * useSSH - True for using ssh when creating a cell
             * ips - ip( s ) of the node( s ).
         Returns:
             Returns main.TRUE if it successfully executed.
         """
         if newCell:
-            cluster.createCell( cellName, cellApps, Mininet, useSSH, ips )
+            cluster.createCell( cellName, cellApps, mininetIp, useSSH, ips )
         main.step( "Apply cell to environment" )
         stepResult = cluster.applyCell( cellName )
         utilities.assert_equals( expect=main.TRUE,
@@ -352,8 +352,8 @@ class ONOSSetup:
             else:
                 functions( *args ) if args is not None else functions()
 
-    def ONOSSetUp( self, Mininet, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
-                   cellName="temp", cellApps="drivers", removeLog=False, extraApply=None, applyArgs=None,
+    def ONOSSetUp( self, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
+                   cellName="temp", cellApps="drivers", mininetIp="", removeLog=False, extraApply=None, applyArgs=None,
                    extraClean=None, cleanArgs=None, skipPack=False, installMax=False, useSSH=True,
                    killRemoveMax=True, stopOnos=False, installParallel=True ):
         """
@@ -372,13 +372,13 @@ class ONOSSetup:
                 checking the onos service
                 starting onos
         Required:
-            * Mininet - the mininet driver that will be used
             * cluster - the cluster driver that will be used.
             * hasMultiNodeRouds - True if the test is testing different set of nodes
             * startOnos - True if wish to start onos.
             * newCell - True for making a new cell and False for not making it.
             * cellName - Name of the cell that will be used.
             * cellApps - The cell apps string.
+            * mininetIp - Mininet IP address.
             * removeLog - True if wish to remove raft logs
             * extraApply - Function( s ) that will be called before building ONOS. Default to None.
             * applyArgs - argument of the functon( s ) of the extraApply. Should be in list.
@@ -411,9 +411,15 @@ class ONOSSetup:
             tempOnosIp = []
             for ctrl in cluster.runningNodes:
                 tempOnosIp.append( ctrl.ipAddress )
+            if mininetIp == "":
+                mininetIp = "localhost"
+                for key, value in main.componentDictionary.items():
+                    if value['type'] in ['MininetCliDriver', 'RemoteMininetDriver'] and hasattr( main, key ):
+                        mininetIp = getattr( main, key ).ip_address
+                        break
             cellResult = self.createApplyCell( cluster, newCell,
                                                cellName, cellApps,
-                                               Mininet, useSSH,
+                                               mininetIp, useSSH,
                                                tempOnosIp, installMax )
             if removeLog:
                 main.log.info( "Removing raft logs" )

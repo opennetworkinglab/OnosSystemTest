@@ -83,7 +83,7 @@ class FUNCnetCfg:
         - Connect to cli
         """
         import time
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
+        main.testSetUp.ONOSSetUp( main.Cluster )
 
     def CASE8( self, main ):
         """

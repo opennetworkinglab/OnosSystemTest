@@ -98,7 +98,7 @@ class FUNCipv6Intent:
         """
         import time
 
-        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
+        main.initialized = main.testSetUp.ONOSSetUp( main.Cluster, True )
 
         main.step( "Checking that ONOS is ready" )
 

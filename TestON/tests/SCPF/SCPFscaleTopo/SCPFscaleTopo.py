@@ -139,7 +139,7 @@ class SCPFscaleTopo:
         - Connect to cli
         """
         import time
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
+        main.testSetUp.ONOSSetUp( main.Cluster )
 
     def CASE3( self, main ):
         """

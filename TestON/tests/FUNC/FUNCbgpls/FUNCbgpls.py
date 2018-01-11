@@ -76,8 +76,8 @@ class FUNCbgpls:
         except Exception as e:
             main.testSetUp.envSetupException( e )
 
-        cliResults = main.testSetUp.ONOSSetUp( main.scapy_ip, main.Cluster,
-                                               cellName=main.cellName, removeLog=True )
+        cliResults = main.testSetUp.ONOSSetUp( main.Cluster, cellName=main.cellName,
+                                               mininetIp=main.scapy_ip, removeLog=True )
         main.step( "App Ids check" )
         appCheck = main.Cluster.active( 0 ).CLI.appToIDCheck()
 

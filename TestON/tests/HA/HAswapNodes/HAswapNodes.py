@@ -91,7 +91,7 @@ class HAswapNodes:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=[ main.HA.setServerForCluster,
                                                main.HA.swapNodeMetadata,
                                                main.HA.startingMininet,

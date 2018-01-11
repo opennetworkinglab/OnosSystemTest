@@ -83,7 +83,7 @@ class FUNCoptical:
             - Connect to cli
         """
         main.flowCompiler = "Flow Rules"
-        main.testSetUp.ONOSSetUp( main.LincOE, main.Cluster, True )
+        main.testSetUp.ONOSSetUp( main.Cluster, True, mininetIp=main.LincOE )
 
     def CASE10( self, main ):
         """

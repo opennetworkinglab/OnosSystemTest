@@ -37,12 +37,13 @@ class SAMPstartTemplate_1node:
         from tests.dependencies.ONOSSetup import ONOSSetup
         main.testSetUp = ONOSSetup()
         main.testSetUp.gitPulling()
+        from tests.dependencies.Network import Network
+        main.Network = Network()
 
     def CASE1( self, main ):
         """
             Set up global test variables;
             Uninstall all running cells in test env defined in .topo file
-
         """
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
@@ -80,7 +81,7 @@ class SAMPstartTemplate_1node:
         import time
         main.case( "Start up " + str( main.Cluster.numCtrls ) + "-node onos cluster." )
         main.step( "Start ONOS cluster with basic (drivers) app." )
-        stepResult = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
+        stepResult = main.testSetUp.ONOSSetUp( main.Cluster )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully started basic ONOS cluster ",
@@ -131,7 +132,7 @@ class SAMPstartTemplate_1node:
         main.case( "Start Mininet topology" )
 
         main.step( "Starting Mininet Topology" )
-        topoResult = main.Mininet1.startNet( mnCmd=topology )
+        topoResult = main.Network.startNet( mnCmd=topology )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -145,7 +146,7 @@ class SAMPstartTemplate_1node:
         assignResult = main.TRUE
         for i in range( 1, 8 ):
             assignResult = assignResult & \
-                           main.Mininet1.assignSwController( sw="s" + str( i ),
+                           main.Network.assignSwController( sw="s" + str( i ),
                                                              ip=main.Cluster.getIps(),
                                                              port='6653' )
         time.sleep( main.mnCfgSleep )
@@ -187,10 +188,10 @@ class SAMPstartTemplate_1node:
         main.step( "Run pingall to check connectivity. " )
         pingResult = main.FALSE
         passMsg = "Reactive Pingall test passed"
-        pingResult = main.Mininet1.pingall()
+        pingResult = main.Network.pingall()
         if not pingResult:
             main.log.warn( "First pingall failed. Trying again..." )
-            pingResult = main.Mininet1.pingall()
+            pingResult = main.Network.pingall()
             passMsg += "on the second try"
         utilities.assert_equals( expect=main.TRUE,
                                  actual=pingResult,

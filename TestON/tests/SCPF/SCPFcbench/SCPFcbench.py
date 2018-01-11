@@ -56,7 +56,7 @@ class SCPFcbench:
             main.commit = ( main.commit.split( " " ) )[ 1 ]
         # -- END OF INIT SECTION --#
 
-        main.testSetUp.ONOSSetUp( MN1Ip, main.Cluster, True,
+        main.testSetUp.ONOSSetUp( main.Cluster, True,
                                   cellName=main.cellName )
 
         for i in range( 5 ):

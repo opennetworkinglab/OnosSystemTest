@@ -96,7 +96,7 @@ class HAsingleInstanceRestart:
         main.testSetUp.evnSetupConclusion( stepResult )
         main.Cluster.setRunningNode( int( main.params[ 'num_controllers' ] ) )
         ip = main.Cluster.getIps( allNode=True )
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName="SingleHA", removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName="SingleHA", removeLog=True,
                                   extraApply=[ main.testSetUp.createApplyCell,
                                                main.HA.startingMininet,
                                                main.testSetUp.createApplyCell ],

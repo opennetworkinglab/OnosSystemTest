@@ -743,7 +743,7 @@ def pointIntentTcp( main,
     checkFlowsState( main )
 
     # Run iperf to both host
-    iperfTemp = main.Mininet1.iperftcp( host1, host2, 10 )
+    iperfTemp = main.Network.iperftcp( host1, host2, 10 )
     iperfResult = iperfResult and iperfTemp
     if iperfTemp:
         main.assertReturnString += 'Initial Iperf Passed\n'
@@ -773,7 +773,7 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcp( host1, host2, 10 )
+        iperfTemp = main.Network.iperftcp( host1, host2, 10 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
             main.assertReturnString += 'Link Down Iperf Passed\n'
@@ -822,7 +822,7 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcp( host1, host2, 10 )
+        iperfTemp = main.Network.iperftcp( host1, host2, 10 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
             main.assertReturnString += 'Link Up Iperf Passed\n'
@@ -1904,7 +1904,7 @@ def pingallHosts( main, hostList ):
         Ping all host in the hosts list variable
     """
     main.log.info( "Pinging: " + str( hostList ) )
-    return main.Mininet1.pingallHosts( hostList )
+    return main.Network.pingallHosts( hostList )
 
 
 def fwdPingall( main ):
@@ -1928,7 +1928,7 @@ def fwdPingall( main ):
 
     # Send pingall in mininet
     main.log.info( "Run Pingall" )
-    pingResult = main.Mininet1.pingall( timeout=600 )
+    pingResult = main.Network.pingall( timeout=600 )
 
     main.log.info( "Deactivating reactive forwarding app " )
     deactivateResult = main.Cluster.active( 0 ).CLI.deactivateApp( "org.onosproject.fwd" )
@@ -2025,12 +2025,12 @@ def populateHostData( main ):
     import json
     try:
         hostsJson = json.loads( main.Cluster.active( 0 ).CLI.hosts() )
-        hosts = main.Mininet1.getHosts().keys()
+        hosts = main.Network.getHosts().keys()
         # TODO: Make better use of new getHosts function
         for host in hosts:
             main.hostsData[ host ] = {}
             main.hostsData[ host ][ 'mac' ] =  \
-                main.Mininet1.getMacAddress( host ).upper()
+                main.Network.getMacAddress( host ).upper()
             for hostj in hostsJson:
                 if main.hostsData[ host ][ 'mac' ] == hostj[ 'mac' ]:
                     main.hostsData[ host ][ 'id' ] = hostj[ 'id' ]
@@ -2116,7 +2116,7 @@ def link( main, sw1, sw2, option ):
     # link down
     main.log.info( itemName + ": Bring link " + option + " between " +
                        sw1 + " and " + sw2 )
-    linkResult = main.Mininet1.link( end1=sw1, end2=sw2, option=option )
+    linkResult = main.Network.link( end1=sw1, end2=sw2, option=option )
     return linkResult
 
 

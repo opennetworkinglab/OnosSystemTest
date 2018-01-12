@@ -41,6 +41,10 @@
         <testDuration>86400</testDuration>
         <package>on</package>
     </TEST>
+    <GRAPH>
+        <nodeCluster>CHO</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
     <ENV>
         <cellName>choCell</cellName>
         <cellApps>drivers,openflow,proxyarp,events</cellApps>

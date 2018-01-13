@@ -36,6 +36,8 @@ class SRBridgingTest ():
         # TODO: Implement 2x3 topology
         # topo[ '2x3' ] = ( 2, 3, True, '2x3 leaf-spine topology with dual ToR and single ToR', 28 )
         topo[ '2x4' ] = ( 2, 4, True, '2x4 dual-homed leaf-spine topology', 53 )
+        switchNames = {}
+        switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
 
         skipPackage = False
         init = False
@@ -64,8 +66,7 @@ class SRBridgingTest ():
             run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
         else:
             # Run the test with physical devices
-            # TODO: connect TestON to the physical network
-            pass
+            run.connectToPhysicalNetwork( main, switchNames[ topology ] )
 
         run.checkFlows( main, minFlowCount=topo[ topology ][ 4 ] * topo[ topology ][ 1 ], sleep=5 )
         leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( topo[ topology ][ 1 ] ) ]

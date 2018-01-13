@@ -1,0 +1,82 @@
+<TOPOLOGY>
+    <COMPONENT>
+    <!--
+        This is a list of all components and their handles in the test setup.
+        Even with some handles not used in test cases, we want to define
+        all onos cells here, for cases to set up onos cluster.
+    -->
+        <ONOScell>
+            <host>localhost</host>  # ONOS "bench" machine
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosClusterDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost></diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
+                <karaf_username></karaf_username>
+                <karaf_password></karaf_password>
+                <web_user></web_user>
+                <web_pass></web_pass>
+                <rest_port></rest_port>
+                <prompt></prompt>  # TODO: we technically need a few of these, one per component
+                <onos_home></onos_home>  # defines where onos home is
+                <nodes> 3 </nodes>  # number of nodes in the cluster
+            </COMPONENTS>
+        </ONOScell>
+
+        <MininetSwitch1>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>MininetSwitchDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <shortName>s1</shortName>
+                <port1>1</port1>
+                <link1>MininetHost1</link1>
+                <port2>2</port2>
+                <link2>MininetHost2</link2>
+            </COMPONENTS>
+        </MininetSwitch1>
+
+        <MininetHost1>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>MininetHostDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+                <ip>10.0.0.1</ip>
+                <shortName>h1</shortName>
+                <port1>0</port1>
+                <link1>MininetSwitch1</link1>
+            </COMPONENTS>
+        </MininetHost1>
+
+        <MininetHost2>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>MininetHostDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+                <ip>10.0.0.2</ip>
+                <shortName>h2</shortName>
+                <port1>0</port1>
+                <link1>MininetSwitch1</link1>
+            </COMPONENTS>
+        </MininetHost2>
+
+        <NetworkBench>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>NetworkDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </NetworkBench>
+
+    </COMPONENT>
+</TOPOLOGY>

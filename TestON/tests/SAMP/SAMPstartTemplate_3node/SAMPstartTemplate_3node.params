@@ -5,12 +5,14 @@
         CASE2: get onos warnings, errors from log
         CASE10: start a 3-node ONOS Cluster
         CASE11: Start Mininet and assign controllers
-        CASE12: Sample case of using onos cli
-        CASE22: Sample case of using onos rest
-        CASE32: Configure fwd apps
+        CASE12: Connect to a physical network and assign controllers
+        CASE20: Sample case of using onos cli
+        CASE30: Sample case of using onos rest
+        CASE40: Configure fwd apps and run pingall
+        Sample testcases for physical network: 0,1,10,12,20,30,40,2
    -->
 
-    <testcases>0,1,10,11,12,22,2,32</testcases>
+    <testcases>0,1,10,11,20,30,40,2</testcases>
     <GIT>
         <pull>False</pull>
         <branch>master</branch>

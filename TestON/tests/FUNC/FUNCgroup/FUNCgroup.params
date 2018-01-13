@@ -4,13 +4,16 @@
     # 1    - Variable initialization and optional pull and build ONOS package
     # 2    - install ONOS
     # 3    - Start mininet and scapy and verify topology
+    # 11   - Connect to physical network and start scapy
     # 4    - Testing Scapy
     # 5    - Testing GROUP with type "ALL"
     # 6    - Deleting the Group and Flow
     # 7    - Testing GROUP with type "INDIRECT"
     # 8    - Deleting the group and flow
-    # 10    - Stop mininet and scapy
+    # 10   - Stop mininet and scapy
+    # 12   - Stop physical scapy hosts
     # 100  - Check logs for Errors and Warnings
+    # Sample testcases for physical network: 1,2,11,5,6,7,6,12,100
     <testcases>1,2,3,5,6,7,6,10,100</testcases>
 
     <GRAPH>

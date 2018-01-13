@@ -84,15 +84,6 @@ class FUNCgroup:
                                             bucket +
                                             ".py" )
 
-            copyResult = main.ONOSbench.scp( main.Mininet1,
-                                             main.dependencyPath + main.topology,
-                                             main.Mininet1.home + '/custom/',
-                                             direction="to" )
-
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=copyResult,
-                                     onpass="Successfully copy " + "test variables ",
-                                     onfail="Failed to copy test variables" )
             stepResult = main.testSetUp.envSetup()
 
         except Exception as e:
@@ -134,6 +125,16 @@ class FUNCgroup:
         main.caseExplanation = "Start mininet with custom topology and compare topology " +\
                 "elements between Mininet and ONOS"
 
+        main.step( "Copy Mininet topology file" )
+        copyResult = main.ONOSbench.scp( main.Mininet1,
+                                         main.dependencyPath + main.topology,
+                                         main.Mininet1.home + '/custom/',
+                                         direction="to" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=copyResult,
+                                 onpass="Successfully copy mininet topo file",
+                                 onfail="Failed to copy mininet topo file" )
+
         main.step( "Setup Mininet Topology" )
         topology = main.Mininet1.home + '/custom/' + main.topology
         stepResult = main.Mininet1.startNet( topoFile=topology )
@@ -164,6 +165,52 @@ class FUNCgroup:
         main.step( "Start scapy components" )
         for host in main.scapyHosts:
             host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully created Scapy Components",
+                                 onfail="Failed to discover Scapy Components" )
+
+    def CASE11( self, main ):
+        """
+            Connect to a physical network, assign controllers and start scapy
+        """
+        import time
+        main.case( "Connecting to physical network" )
+
+        main.step( "Connecting to physical network" )
+        topoResult = main.NetworkBench.connectToNet()
+        stepResult = topoResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully loaded topology",
+                                 onfail="Failed to load topology" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanAndExit()
+
+        main.step( "Assign switches to controllers." )
+        assignResult = main.TRUE
+        for i in range( 1, 2 ):
+            assignResult = assignResult & main.NetworkBench.assignSwController( sw="s" + str( i ),
+                                                                                ip=main.Cluster.getIps(),
+                                                                                port='6653' )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully assign switches to controllers",
+                                 onfail="Failed to assign switches to controllers" )
+
+        main.step( "Start scapy" )
+        scapyResult = main.TRUE
+        for hostName in main.scapyHostNames:
+            main.scapyHosts.append( getattr( main, hostName ) )
+
+        for host in main.scapyHosts:
             host.startScapy()
             host.updateSelf()
             main.log.debug( host.name )
@@ -556,6 +603,20 @@ class FUNCgroup:
         # Exit if topology did not load properly
         if not ( mininetResult and scapyResult ):
             main.cleanAndExit()
+
+    def CASE12( self, main ):
+        """
+        Stop Scapy on physical hosts
+        """
+        main.case( "Stop Scapy" )
+        main.step( "Stopping Scapy Hosts" )
+        scapyResult = main.TRUE
+        for host in main.scapyHosts:
+            host.stopScapy()
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully stopped scapy",
+                                 onfail="Failed to stop scapy" )
 
     def CASE100( self, main ):
         """

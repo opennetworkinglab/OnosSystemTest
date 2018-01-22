@@ -153,7 +153,7 @@ class MininetCliDriver( Emulator ):
                     # Sudo asking for password
                     main.log.info( self.name + ": Sending sudo password" )
                     self.handle.sendline( self.pwd )
-                    i = self.handle.expect( [ '%s:' % self.user,
+                    i = self.handle.expect( [ '%s:' % self.user_name,
                                               self.prompt,
                                               pexpect.EOF,
                                               pexpect.TIMEOUT ],

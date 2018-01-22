@@ -86,7 +86,7 @@ class FUNCvirNetNB:
 
         main.maxNodes = 1
 
-        cliResults = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+        cliResults = main.testSetUp.ONOSSetUp( main.Cluster,
                                                cellName=cellName, removeLog=True )
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )

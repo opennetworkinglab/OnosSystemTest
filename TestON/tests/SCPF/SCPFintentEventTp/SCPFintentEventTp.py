@@ -99,7 +99,7 @@ class SCPFintentEventTp:
         # Clean up test environment and set up
         import time
         main.maxNumBatch = 0
-        main.testSetUp.ONOSSetUp( main.MN1Ip, main.Cluster, True,
+        main.testSetUp.ONOSSetUp( main.Cluster, True,
                                   cellName=main.cellName, killRemoveMax=False )
         # config apps
         main.Cluster.active( 0 ).CLI.setCfg( main.intentManagerCfg,

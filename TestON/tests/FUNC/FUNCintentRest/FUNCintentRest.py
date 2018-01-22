@@ -112,7 +112,7 @@ class FUNCintentRest:
         - Connect to cli
         """
         main.flowCompiler = "Flow Rules"
-        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
+        main.initialized = main.testSetUp.ONOSSetUp( main.Cluster, True )
         main.intentFunction.report( main )
 
     def CASE8( self, main ):

@@ -114,7 +114,7 @@ class Testcaselib:
         main.log.info( "NODE COUNT = " + str( main.Cluster.numCtrls ) )
         main.log.info( ''.join( main.Cluster.getIps() ) )
         main.dynamicHosts = [ 'in1', 'out1' ]
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, newCell=True, cellName=main.cellName,
+        main.testSetUp.ONOSSetUp( main.Cluster, newCell=True, cellName=main.cellName,
                                   skipPack=skipPackage, useSSH=Testcaselib.useSSH )
         ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
                                  main.FALSE,

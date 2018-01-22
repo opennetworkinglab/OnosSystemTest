@@ -47,6 +47,9 @@ class FUNCintent:
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
 
+        from tests.dependencies.Network import Network
+        main.Network = Network()
+
         # Test variables
         try:
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
@@ -89,11 +92,12 @@ class FUNCintent:
                                             wrapperFile2 +
                                             ".py" )
 
-            copyResult1 = main.ONOSbench.scp( main.Mininet1,
-                                              main.dependencyPath +
-                                              main.topology,
-                                              main.Mininet1.home + "custom/",
-                                              direction="to" )
+            if hasattr( main, "Mininet1" ):
+                copyResult1 = main.ONOSbench.scp( main.Mininet1,
+                                                  main.dependencyPath +
+                                                  main.topology,
+                                                  main.Mininet1.home + "custom/",
+                                                  direction="to" )
 
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
@@ -113,7 +117,7 @@ class FUNCintent:
         - Connect to cli
         """
         main.flowCompiler = "Flow Rules"
-        main.initialized = main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True )
+        main.initialized = main.testSetUp.ONOSSetUp( main.Cluster, True )
         main.intents.report( main )
 
     def CASE8( self, main ):
@@ -212,7 +216,7 @@ class FUNCintent:
 
         tempONOSip = main.Cluster.getIps()
 
-        assignResult = main.Mininet1.assignSwController( sw=switchList,
+        assignResult = main.Network.assignSwController( sw=switchList,
                                                          ip=tempONOSip,
                                                          port="6653" )
         if not assignResult:
@@ -221,7 +225,7 @@ class FUNCintent:
             main.skipCase()
 
         for i in range( 1, ( main.numSwitch + 1 ) ):
-            response = main.Mininet1.getSwController( "s" + str( i ) )
+            response = main.Network.getSwController( "s" + str( i ) )
             main.log.debug( "Response is " + str( response ) )
             if re.search( "tcp:" + main.Cluster.active( 0 ).ipAddress, response ):
                 assignResult = assignResult and main.TRUE
@@ -462,12 +466,6 @@ class FUNCintent:
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
         assert main, "There is no main"
-        try:
-            assert main.Mininet1
-        except AssertionError:
-            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
         try:
             assert main.numSwitch
         except AssertionError:
@@ -756,12 +754,6 @@ class FUNCintent:
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
         assert main, "There is no main"
-        try:
-            assert main.Mininet1
-        except AssertionError:
-            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
         try:
             assert main.numSwitch
         except AssertionError:
@@ -1254,12 +1246,6 @@ class FUNCintent:
             main.skipCase()
         assert main, "There is no main"
         try:
-            assert main.Mininet1
-        except AssertionError:
-            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.numSwitch
         except AssertionError:
             main.log.error( "Place the total number of switch topology in " +
@@ -1549,12 +1535,6 @@ class FUNCintent:
             main.log.error( "Test components did not start correctly, skipping further tests" )
             main.skipCase()
         assert main, "There is no main"
-        try:
-            assert main.Mininet1
-        except AssertionError:
-            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
         try:
             assert main.numSwitch
         except AssertionError:
@@ -1875,12 +1855,6 @@ class FUNCintent:
             main.skipCase()
         assert main, "There is no main"
         try:
-            assert main.Mininet1
-        except AssertionError:
-            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
-        try:
             assert main.numSwitch
         except AssertionError:
             main.log.error( "Place the total number of switch topology in " +
@@ -1892,7 +1866,7 @@ class FUNCintent:
         main.step( "Testing host mobility by moving h1 from s5 to s6" )
 
         main.log.info( "Moving h1 from s5 to s6" )
-        main.Mininet1.moveHost( "h1", "s5", "s6" )
+        main.Network.moveHost( "h1", "s5", "s6" )
 
         # Send discovery ping from moved host
         # Moving the host brings down the default interfaces and creates a new one.
@@ -1956,12 +1930,6 @@ class FUNCintent:
             main.log.error( "Test components did not start correctly, skipping further tests" )
             main.skipCase()
         assert main, "There is no main"
-        try:
-            assert main.Mininet1
-        except AssertionError:
-            main.log.error( "Mininet handle should be named Mininet1, skipping test cases" )
-            main.initialized = main.FALSE
-            main.skipCase()
         try:
             assert main.numSwitch
         except AssertionError:

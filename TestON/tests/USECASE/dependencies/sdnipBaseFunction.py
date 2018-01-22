@@ -27,9 +27,7 @@ class SdnBase:
                                  actual=status,
                                  onpass="Copy config file succeeded",
                                  onfail="Copy config file failed" )
-        main.testSetUp.ONOSSetUp( main.Mininet,
-                                  main.Cluster,
-                                  cellName=cellName )
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName )
 
         main.step( "Checking if ONOS CLI is ready for issuing commands" )
         ready = utilities.retry( main.Cluster.command,

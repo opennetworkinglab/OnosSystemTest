@@ -91,7 +91,7 @@ class HAcontinuousStopNodes:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=[ main.HA.startingMininet,
                                                main.HA.customizeOnosGenPartitions ],
                                   extraClean=main.HA.cleanUpGenPartition )

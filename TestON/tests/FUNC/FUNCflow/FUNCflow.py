@@ -102,7 +102,7 @@ class FUNCflow:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
+        main.testSetUp.ONOSSetUp( main.Cluster )
 
     def CASE10( self, main ):
         """

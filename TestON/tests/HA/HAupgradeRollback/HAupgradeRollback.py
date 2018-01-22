@@ -90,7 +90,7 @@ class HAupgradeRollback:
         main.testSetUp.evnSetupConclusion( stepResult )
         main.HA.generateGraph( "HAupgrade" )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
                                   extraApply=[ main.HA.startingMininet,
                                                main.HA.copyBackupConfig ],
                                   extraClean=main.HA.cleanUpGenPartition )

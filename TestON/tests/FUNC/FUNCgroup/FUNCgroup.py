@@ -110,7 +110,7 @@ class FUNCgroup:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster )
+        main.testSetUp.ONOSSetUp( main.Cluster )
 
     def CASE3( self, main ):
         """

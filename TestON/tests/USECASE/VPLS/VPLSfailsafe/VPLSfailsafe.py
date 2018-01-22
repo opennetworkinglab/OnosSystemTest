@@ -77,7 +77,7 @@ class VPLSfailsafe:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+        main.testSetUp.ONOSSetUp( main.Cluster,
                                   cellName=cellName )
 
         main.step( "Starting Mininet" )

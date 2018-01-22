@@ -70,7 +70,7 @@ class VPLSBasic:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+        main.testSetUp.ONOSSetUp( main.Cluster,
                                   cellName=main.cellName )
 
         main.step( "Starting Mininet" )

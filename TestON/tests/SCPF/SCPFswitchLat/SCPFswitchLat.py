@@ -109,7 +109,7 @@ class SCPFswitchLat:
         except ( NameError, AttributeError ):
             main.Utils = Utils()
         main.maxNumBatch = 0
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster, True,
+        main.testSetUp.ONOSSetUp( main.Cluster, True,
                                   cellName=main.cellName, killRemoveMax=False )
 
         main.log.info( "Configure apps" )

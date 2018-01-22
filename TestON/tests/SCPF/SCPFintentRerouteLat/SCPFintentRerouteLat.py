@@ -121,7 +121,7 @@ class SCPFintentRerouteLat:
         import time
 
         main.maxNumBatch = 0
-        main.testSetUp.ONOSSetUp( main.MN1Ip, main.Cluster, True,
+        main.testSetUp.ONOSSetUp( main.Cluster, True,
                                   cellName=main.cellName, killRemoveMax=False )
         configRetry = 0
         main.cfgCheck = False

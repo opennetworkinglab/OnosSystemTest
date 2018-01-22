@@ -78,8 +78,8 @@ class FUNCovsdbtest:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        cliResults = main.testSetUp.ONOSSetUp( main.OVSDB1, main.Cluster,
-                                               cellName=cellName, removeLog=True )
+        cliResults = main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName,
+                                               mininetIp=main.OVSDB1, removeLog=True )
 
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )

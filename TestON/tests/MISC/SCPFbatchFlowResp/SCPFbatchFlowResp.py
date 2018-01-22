@@ -86,7 +86,7 @@ class SCPFbatchFlowResp:
         - Install ONOS cluster
         - Connect to cli
         """
-        main.testSetUp.ONOSSetUp( main.Mininet1, main.Cluster,
+        main.testSetUp.ONOSSetUp( main.Cluster,
                                   skipPack=main.skipPackaging )
 
     def CASE10( self, main ):

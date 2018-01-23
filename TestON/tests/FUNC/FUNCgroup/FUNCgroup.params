@@ -3,14 +3,15 @@
     # CASE - Description
     # 1    - Variable initialization and optional pull and build ONOS package
     # 2    - install ONOS
-    # 3    - Start mininet and verify topology
+    # 3    - Start mininet and scapy and verify topology
     # 4    - Testing Scapy
     # 5    - Testing GROUP with type "ALL"
     # 6    - Deleting the Group and Flow
     # 7    - Testing GROUP with type "INDIRECT"
     # 8    - Deleting the group and flow
+    # 10    - Stop mininet and scapy
     # 100  - Check logs for Errors and Warnings
-    <testcases>1,2,3,5,6,7,6,100</testcases>
+    <testcases>1,2,3,5,6,7,6,10,100</testcases>
 
     <GRAPH>
         <nodeCluster>VM</nodeCluster>
@@ -67,5 +68,9 @@
         <addGroup>10</addGroup>
         <delGroup>10</delGroup>
     </SLEEP>
+
+    <SCAPY>
+        <HOSTNAMES>h1,h2,h3,h4</HOSTNAMES>
+    </SCAPY>
 
 </PARAMS>

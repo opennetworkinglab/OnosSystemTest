@@ -45,8 +45,7 @@ class ScapyCliDriver( Emulator ):
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
         # TODO: Refactor driver to use these everywhere
-        self.hostPrompt = "~#"
-        self.bashPrompt = "\$"
+        self.hostPrompt = "\$"
         self.scapyPrompt = ">>>"
 
     def connect( self, **connectargs ):
@@ -56,15 +55,9 @@ class ScapyCliDriver( Emulator ):
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
-            self.home = "~/mininet"
+            self.home = self.options[ 'home' ] if 'home' in self.options.keys() else "~/"
             self.name = self.options[ 'name' ]
-            for key in self.options:
-                if key == "home":
-                    self.home = self.options[ 'home' ]
-                    break
-            if self.home is None or self.home == "":
-                self.home = "~/mininet"
-
+            self.ifaceName = self.options[ 'ifaceName' ] if 'ifaceName' in self.options.keys() else self.name + "-eth0"
             try:
                 if os.getenv( str( self.ip_address ) ) is not None:
                     self.ip_address = os.getenv( str( self.ip_address ) )
@@ -114,151 +107,18 @@ class ScapyCliDriver( Emulator ):
         Called at the end of the test to stop the scapy component and
         disconnect the handle.
         """
-        self.handle.sendline( '' )
-        i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
-                                timeout=2 )
         response = main.TRUE
-        if i == 0:
-            response = self.stopNet()
-        elif i == 1:
-            return main.TRUE
-        # print "Disconnecting Mininet"
-        if self.handle:
-            self.handle.sendline( "exit" )
-            self.handle.expect( "exit" )
-            self.handle.expect( "(.*)" )
-        else:
-            main.log.error( "Connection failed to the host" )
-        return response
-
-    def stopNet( self, fileName="", timeout=5 ):
-        """
-        Stops mininet.
-        Returns main.TRUE if the mininet successfully stops and
-                main.FALSE if the pexpect handle does not exist.
-
-        Will cleanup and exit the test if scapy fails to stop
-        """
-        main.log.info( self.name + ": Stopping scapy..." )
-        response = ''
-        if self.handle:
-            try:
-                self.handle.sendline( "" )
-                i = self.handle.expect( [ '>>>',
-                                          self.prompt,
-                                          pexpect.EOF,
-                                          pexpect.TIMEOUT ],
-                                        timeout )
-                if i == 0:
-                    main.log.info( "Exiting scapy..." )
-                response = self.execute(
-                    cmd="exit",
-                    prompt="(.*)",
-                    timeout=120 )
-                main.log.info( self.name + ": Stopped" )
-                response = main.TRUE
-
-                if i == 1:
-                    main.log.info( " Mininet trying to exit while not " +
-                                   "in the mininet prompt" )
-                elif i == 2:
-                    main.log.error( "Something went wrong exiting mininet" )
-                elif i == 3:  # timeout
-                    main.log.error( "Something went wrong exiting mininet " +
-                                    "TIMEOUT" )
-
-                if fileName:
-                    self.handle.sendline( "" )
-                    self.handle.expect( self.prompt )
-                    self.handle.sendline(
-                        "sudo kill -9 \`ps -ef | grep \"" +
-                        fileName +
-                        "\" | grep -v grep | awk '{print $2}'\`" )
-            except pexpect.EOF:
-                main.log.error( self.name + ": EOF exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanAndExit()
-        else:
-            main.log.error( self.name + ": Connection failed to the host" )
+        try:
+            if self.handle:
+                self.handle.sendline( "exit" )
+                self.handle.expect( "closed" )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+        except Exception:
+            main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
         return response
-
-    def createHostComponent( self, name ):
-        """
-        Creates a new mininet cli component with the same parameters as self.
-        This new component is intended to be used to login to the hosts created
-        by mininet.
-
-        Arguments:
-            name - The string of the name of this component. The new component
-                   will be assigned to main.<name> .
-                   In addition, main.<name>.name = str( name )
-        """
-        try:
-            # look to see if this component already exists
-            getattr( main, name )
-        except AttributeError:
-            # namespace is clear, creating component
-            main.componentDictionary[ name ] = main.componentDictionary[ self.name ].copy()
-            main.componentDictionary[ name ][ 'connect_order' ] = str( int( main.componentDictionary[ name ][ 'connect_order' ] ) + 1 )
-            main.componentInit( name )
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanAndExit()
-        else:
-            # namespace is not clear!
-            main.log.error( name + " component already exists!" )
-            main.cleanAndExit()
-
-    def removeHostComponent( self, name ):
-        """
-        Remove host component
-        Arguments:
-            name - The string of the name of the component to delete.
-        """
-        try:
-            # Get host component
-            component = getattr( main, name )
-        except AttributeError:
-            main.log.error( "Component " + name + " does not exist." )
-            return main.FALSE
-        try:
-            # Disconnect from component
-            component.disconnect()
-            # Delete component
-            delattr( main, name )
-            # Delete component from ComponentDictionary
-            del( main.componentDictionary[ name ] )
-            return main.TRUE
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanAndExit()
-
-    def startHostCli( self, host=None ):
-        """
-        Use the mininet m utility to connect to the host's cli
-        """
-        # These are fields that can be used by scapy packets. Initialized to None
-        self.hostIp = None
-        self.hostMac = None
-        try:
-            if not host:
-                host = self.name
-            self.handle.sendline( self.home + "/util/m " + host )
-            self.handle.sendline( "cd" )
-            self.handle.expect( self.hostPrompt )
-            self.handle.sendline( "" )
-            self.handle.expect( self.hostPrompt )
-            return main.TRUE
-        except pexpect.TIMEOUT:
-            main.log.exception( self.name + ": Command timed out" )
-            return main.FALSE
-        except pexpect.EOF:
-            main.log.exception( self.name + ": connection closed." )
-            main.cleanAndExit()
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanAndExit()
 
     def startScapy( self, mplsPath="" ):
         """
@@ -847,7 +707,7 @@ class ScapyCliDriver( Emulator ):
 
         Options:
         ifaceName - the name of the interface to listen on. If none is given,
-                    defaults to <host name>-eth0
+                    defaults to self.ifaceName which is <host name>-eth0
         pktFilter - A string in Berkeley Packet Filter (BPF) format which
                     specifies which packets to sniff
         sniffCount - The number of matching packets to capture before returning
@@ -856,7 +716,7 @@ class ScapyCliDriver( Emulator ):
         """
         try:
             # TODO: add all params, or use kwargs
-            ifaceName = str( ifaceName ) if ifaceName else self.name + "-eth0"
+            ifaceName = str( ifaceName ) if ifaceName else self.ifaceName
             # Set interface
             self.handle.sendline( ' conf.iface = "' + ifaceName + '"' )
             self.handle.expect( self.scapyPrompt )
@@ -946,7 +806,7 @@ class ScapyCliDriver( Emulator ):
         Save host's MAC address
         """
         try:
-            ifaceName = str( ifaceName ) if ifaceName else self.name + "-eth0"
+            ifaceName = str( ifaceName ) if ifaceName else self.ifaceName
             cmd = 'get_if_hwaddr("' + str( ifaceName ) + '")'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )

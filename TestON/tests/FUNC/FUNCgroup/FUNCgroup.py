@@ -73,6 +73,8 @@ class FUNCgroup:
             groupId = main.params[ 'TEST' ][ 'groupId' ]
             priority = main.params[ 'TEST' ][ 'priority' ]
             deviceId = main.params[ 'TEST' ][ 'swDPID' ]
+            main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
+            main.scapyHosts = []  # List of scapy hosts for iterating
 
             main.debug = True if "on" in main.debug else False
             # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -153,17 +155,33 @@ class FUNCgroup:
 
         main.topoRelated.compareTopos( main.Mininet1 )
 
+        main.step( "Create hosts and start scapy" )
+        scapyResult = main.TRUE
+        for hostName in main.scapyHostNames:
+            main.Scapy.createHostComponent( hostName )
+            main.scapyHosts.append( getattr( main, hostName ) )
+
+        main.step( "Start scapy components" )
+        for host in main.scapyHosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully created Scapy Components",
+                                 onfail="Failed to discover Scapy Components" )
+
     def CASE4( self, main ):
         """
         Testing scapy
         """
         main.case( "Testing scapy" )
-        main.step( "Creating Host1 component" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
             main.log.debug( host.name )
@@ -217,12 +235,6 @@ class FUNCgroup:
                                  actual="dst=00:00:00:00:00:02 src=00:00:00:00:00:01" in i,
                                  onpass="Pass",
                                  onfail="Fail" )
-
-        main.step( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
 
     def CASE5( self, main ):
         """
@@ -307,17 +319,14 @@ class FUNCgroup:
         Sends a packet using  scapy
         """
         main.step( "Testing Group by sending packet using Scapy" )
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        main.Scapy.createHostComponent( "h3" )
-        main.Scapy.createHostComponent( "h4" )
-
-        hosts = [ main.h1, main.h2, main.h3, main.h4 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
         main.log.info( "Constructing Packet" )
         main.h1.buildEther( dst=main.h1.hostMac )
         main.h1.buildIP( dst=main.h1.hostIp )
@@ -353,14 +362,6 @@ class FUNCgroup:
         else:
             main.log.info( "Failure!!!Packet sent to port 1 is not received at port 2,3 and 4" )
             stepResult = main.FALSE
-
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-        main.Mininet1.removeHostComponent( "h3" )
-        main.Mininet1.removeHostComponent( "h4" )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -489,15 +490,14 @@ class FUNCgroup:
         Sends a packet using scapy
         """
         main.step( "Testing Group by sending packet using Scapy" )
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
         main.log.info( "Constructing Packet" )
         main.h1.buildEther( dst=main.h1.hostMac )
         main.h1.buildIP( dst=main.h1.hostIp )
@@ -513,16 +513,49 @@ class FUNCgroup:
         else:
             main.h2.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResultH2,
                                  onpass="Packet sent to port 1 is received at port 2 successfully!!!",
                                  onfail="Failure!!!Packet sent to port 1 is not received at port 2" )
+
+    def CASE10( self, main ):
+        """
+            Stop mininet and remove scapy host
+        """
+        try:
+            from tests.dependencies.utils import Utils
+        except ImportError:
+            main.log.error( "Utils not found exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.Utils
+        except ( NameError, AttributeError ):
+            main.Utils = Utils()
+        main.log.report( "Stop Mininet and Scapy" )
+        main.case( "Stop Mininet and Scapy" )
+        main.caseExplanation = "Stopping the current mininet topology " +\
+                                "to start up fresh"
+        main.step( "Stopping and Removing Scapy Host Components" )
+        scapyResult = main.TRUE
+        for host in main.scapyHosts:
+            scapyResult = scapyResult and host.stopScapy()
+            main.log.info( "Stopped Scapy Host: {0}".format( host.name ) )
+
+        for host in main.scapyHosts:
+            scapyResult = scapyResult and main.Scapy.removeHostComponent( host.name )
+            main.log.info( "Removed Scapy Host Component: {0}".format( host.name ) )
+
+        main.scapyHosts = []
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully stopped scapy and removed host components",
+                                 onfail="Failed to stop mininet and scapy" )
+
+        mininetResult = main.Utils.mininetCleanup( main.Mininet1 )
+        # Exit if topology did not load properly
+        if not ( mininetResult and scapyResult ):
+            main.cleanAndExit()
 
     def CASE100( self, main ):
         """

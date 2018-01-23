@@ -25,7 +25,7 @@
             <host>OCN</host>
             <user>sdn</user>
             <password>rocks</password>
-            <type>ScapyCliDriver</type>
+            <type>MininetScapyCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
                 <prompt></prompt>

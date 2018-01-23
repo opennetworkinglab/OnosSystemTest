@@ -59,6 +59,8 @@ class FUNCflow:
             main.delFlowSleep = int( main.params[ 'SLEEP' ][ 'delFlow' ] )
             main.debug = main.params[ 'DEBUG' ]
             main.swDPID = main.params[ 'TEST' ][ 'swDPID' ]
+            main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
+            main.scapyHosts = []  # List of scapy hosts for iterating
 
             main.debug = True if "on" in main.debug else False
 
@@ -145,17 +147,77 @@ class FUNCflow:
 
         main.topoRelated.compareTopos( main.Mininet1 )
 
+    def CASE11( self, main ):
+        """
+            Start Scapy with Mininet
+        """
+        main.case( "Starting scapy with Mininet" )
+        main.step( "Creating Host component" )
+        scapyResult = main.TRUE
+        for hostName in main.scapyHostNames:
+            main.Scapy.createHostComponent( hostName )
+            main.scapyHosts.append( getattr( main, hostName ) )
+
+        main.step( "Start scapy components" )
+        for host in main.scapyHosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully created Scapy Components",
+                                 onfail="Failed to discover Scapy Components" )
+
+    def CASE12( self, main ):
+        """
+            Stop mininet and remove scapy host
+        """
+        try:
+            from tests.dependencies.utils import Utils
+        except ImportError:
+            main.log.error( "Utils not found exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.Utils
+        except ( NameError, AttributeError ):
+            main.Utils = Utils()
+        main.log.report( "Stop Mininet and Scapy" )
+        main.case( "Stop Mininet and Scapy" )
+        main.caseExplanation = "Stopping the current mininet topology " +\
+                                "to start up fresh"
+        main.step( "Stopping and Removing Scapy Host Components" )
+        scapyResult = main.TRUE
+        for host in main.scapyHosts:
+            scapyResult = scapyResult and host.stopScapy()
+            main.log.info( "Stopped Scapy Host: {0}".format( host.name ) )
+
+        for host in main.scapyHosts:
+            scapyResult = scapyResult and main.Scapy.removeHostComponent( host.name )
+            main.log.info( "Removed Scapy Host Component: {0}".format( host.name ) )
+
+        main.scapyHosts = []
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully stopped scapy and removed host components",
+                                 onfail="Failed to stop mininet and scapy" )
+
+        mininetResult = main.Utils.mininetCleanup( main.Mininet1 )
+        # Exit if topology did not load properly
+        if not ( mininetResult and scapyResult ):
+            main.cleanAndExit()
+
     def CASE66( self, main ):
         """
         Testing scapy
         """
         main.case( "Testing scapy" )
-        main.step( "Creating Host1 component" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
             main.log.debug( host.name )
@@ -210,12 +272,6 @@ class FUNCflow:
                                  onpass="Pass",
                                  onfail="Fail" )
 
-        main.step( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
     def CASE1000( self, main ):
         """
             Add flows with MAC selectors and verify the flows
@@ -229,15 +285,13 @@ class FUNCflow:
                 "send a packet that only specifies the MAC src and dst."
 
         main.step( "Add flows with MAC addresses as the only selectors" )
-
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         # Add a flow that connects host1 on port1 to host2 on port2
         # send output on port2
@@ -288,12 +342,6 @@ class FUNCflow:
         else:
             main.h2.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -312,15 +360,13 @@ class FUNCflow:
                 "send a packet that only specifies the IP src and dst."
 
         main.step( "Add flows with IPv4 addresses as the only selectors" )
-
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         # Add a flow that connects host1 on port1 to host2 on port2
         # send output on port2
@@ -371,12 +417,6 @@ class FUNCflow:
         else:
             main.h2.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -394,17 +434,13 @@ class FUNCflow:
                                "send a packet that only specifies the IP src and dst."
 
         main.step( "Add flows with IPv6 addresses as the only selectors" )
-
-        main.log.info( "Creating host components" )
-        ctrl = main.Cluster.active( 0 )
-        main.Scapy.createHostComponent( "h5" )
-        main.Scapy.createHostComponent( "h6" )
-        hosts = [ main.h5, main.h6 ]
-
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf( IPv6=True )
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         # Add a flow that connects host1 on port1 to host2 on port2
         # send output on port2
@@ -454,12 +490,6 @@ class FUNCflow:
         else:
             main.h6.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h5" )
-        main.Mininet1.removeHostComponent( "h6" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -477,16 +507,13 @@ class FUNCflow:
                 "specified, then verify the flow is added in ONOS, and finally " +\
                 "broadcast a packet with the correct VLAN tag."
 
-        # We do this here to utilize the hosts information
-        main.log.info( "Creating host components" )
-        ctrl = main.Cluster.active( 0 )
-        main.Scapy.createHostComponent( "h3" )
-        main.Scapy.createHostComponent( "h4" )
-        hosts = [ main.h3, main.h4 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         main.step( "Add a flow with the VLAN tag as the only selector" )
 
@@ -539,12 +566,6 @@ class FUNCflow:
         else:
             main.h4.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h3" )
-        main.Mininet1.removeHostComponent( "h4" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -563,16 +584,15 @@ class FUNCflow:
                                "send a packet via scapy that has a MPLS label."
 
         main.step( "Add a flow with a MPLS selector" )
-
-        main.log.info( "Creating host components" )
-        ctrl = main.Cluster.active( 0 )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy( main.dependencyPath )
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+        ctrl = main.Cluster.active( 0 )
 
         # ports
         egress = 2
@@ -655,12 +675,6 @@ class FUNCflow:
         else:
             main.h2.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -680,14 +694,13 @@ class FUNCflow:
 
         main.step( "Add a flow with a TCP selector" )
         ctrl = main.Cluster.active( 0 )
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 2
@@ -740,12 +753,6 @@ class FUNCflow:
         else:
             main.h2.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -765,14 +772,13 @@ class FUNCflow:
 
         main.step( "Add a flow with a UDP selector" )
         ctrl = main.Cluster.active( 0 )
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 2
@@ -825,12 +831,6 @@ class FUNCflow:
         else:
             main.h2.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -850,14 +850,13 @@ class FUNCflow:
 
         main.step( "Add a flow with a ICMPv4 selector" )
 
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 2
@@ -907,12 +906,6 @@ class FUNCflow:
         else:
             main.h2.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -932,14 +925,13 @@ class FUNCflow:
 
         main.step( "Add a flow with a ICMPv6 selector" )
 
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h5" )
-        main.Scapy.createHostComponent( "h6" )
-        hosts = [ main.h5, main.h6 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf( IPv6=True )
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 6
@@ -988,12 +980,6 @@ class FUNCflow:
             main.log.info( "Packet: %s" % main.h6.readPackets() )
         else:
             main.h6.killFilter()
-
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h5" )
-        main.Mininet1.removeHostComponent( "h6" )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1047,14 +1033,14 @@ class FUNCflow:
 
         main.step( "Add flows with ARP addresses as the only selectors" )
 
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
         ctrl = main.Cluster.active( 0 )
         # Add a flow that connects host1 on port1 to host2 on port2
         # send output on port2
@@ -1104,12 +1090,6 @@ class FUNCflow:
         else:
             main.h2.killFilter()
 
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully sent a packet",
@@ -1129,14 +1109,13 @@ class FUNCflow:
 
         main.step( "Add a flow with a SCTP selector" )
 
-        main.log.info( "Creating host components" )
-        main.Scapy.createHostComponent( "h1" )
-        main.Scapy.createHostComponent( "h2" )
-        hosts = [ main.h1, main.h2 ]
-        for host in hosts:
-            host.startHostCli()
+        for host in main.scapyHosts:
+            host.stopScapy()
             host.startScapy()
             host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
 
         # Add a flow that connects host1 on port1 to host2 on port2
         egress = 2
@@ -1185,12 +1164,6 @@ class FUNCflow:
             main.log.info( "Packet: %s" % main.h2.readPackets() )
         else:
             main.h2.killFilter()
-
-        main.log.info( "Clean up host components" )
-        for host in hosts:
-            host.stopScapy()
-        main.Mininet1.removeHostComponent( "h1" )
-        main.Mininet1.removeHostComponent( "h2" )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

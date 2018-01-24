@@ -54,7 +54,7 @@ class Utils:
                                  onfail="Failed to stopped mininet" )
         return topoResult
 
-    def copyKarafLog( self, copyFileName="" ):
+    def copyKarafLog( self, copyFileName="", before=False ):
         """
         Description:
             copy the karaf log and verify it.
@@ -78,7 +78,10 @@ class Utils:
                                                           "/tmp/karaf.log",
                                                           direction="from" )
             copyResult = copyResult and main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
-                                                                    copyFileName=( "karaf.log." + ctrl.name +
+                                                                    copyFileName= ( copyFileName + "_karaf.log." +
+                                                                                    ctrl.name + "_" )
+                                                                                  if before else
+                                                                                  ( "karaf.log." + ctrl.name +
                                                                                    "." + copyFileName ) )
             if scpResult and copyResult:
                 stepResult = main.TRUE and stepResult

@@ -47,6 +47,8 @@ class Testcaselib:
         except ImportError:
             main.log.error( "ONOSSetup not found. exiting the test" )
             main.cleanAndExit()
+        from tests.dependencies.Network import Network
+        main.Network = Network()
         main.testSetUp.envSetupDescription()
         stepResult = main.FALSE
         try:
@@ -63,13 +65,7 @@ class Testcaselib:
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
             # main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-            # -- INIT SECTION, ONLY RUNS ONCE -- #
 
-            copyResult1 = main.ONOSbench.scp( main.Mininet1,
-                                              main.dependencyPath +
-                                              main.topology,
-                                              main.Mininet1.home,
-                                              direction="to" )
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
@@ -78,16 +74,6 @@ class Testcaselib:
         try:
             main.topologyLib1 = main.params[ 'DEPENDENCY' ][ 'lib1' ]
             main.topologyLib2 = main.params[ 'DEPENDENCY' ][ 'lib2' ]
-            copyResult2 = main.ONOSbench.scp(main.Mininet1,
-                                             main.dependencyPath +
-                                             main.topologyLib1,
-                                             main.Mininet1.home,
-                                             direction="to")
-            copyResult3 = main.ONOSbench.scp(main.Mininet1,
-                                             main.dependencyPath +
-                                             main.topologyLib2,
-                                             main.Mininet1.home,
-                                             direction="to")
         except:
             pass
 
@@ -144,6 +130,24 @@ class Testcaselib:
 
     @staticmethod
     def startMininet( main, topology, args="" ):
+        try:
+            copyResult1 = main.ONOSbench.scp( main.Mininet1,
+                                              main.dependencyPath +
+                                              main.topology,
+                                              main.Mininet1.home,
+                                              direction="to" )
+            copyResult2 = main.ONOSbench.scp( main.Mininet1,
+                                              main.dependencyPath +
+                                              main.topologyLib1,
+                                              main.Mininet1.home,
+                                              direction="to" )
+            copyResult3 = main.ONOSbench.scp( main.Mininet1,
+                                              main.dependencyPath +
+                                              main.topologyLib2,
+                                              main.Mininet1.home,
+                                              direction="to" )
+        except:
+            pass
         main.step( "Starting Mininet Topology" )
         arg = "--onos-ip=%s %s" % (",".join([ctrl.ipAddress for ctrl in main.Cluster.runningNodes]), args)
         main.topology = topology
@@ -264,7 +268,7 @@ class Testcaselib:
             except:
                 expect = main.FALSE
             main.step( "Connectivity for %s %s" % ( str( hosts ), tag ) )
-            pa = main.Mininet1.pingallHosts( hosts )
+            pa = main.Network.pingallHosts( hosts )
 
             utilities.assert_equals( expect=expect, actual=pa,
                                      onpass="IP connectivity successfully tested",
@@ -288,8 +292,8 @@ class Testcaselib:
         """
         main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
         main.step( "Kill link between %s and %s" % ( end1, end2 ) )
-        LinkDown = main.Mininet1.link( END1=end1, END2=end2, OPTION="down" )
-        LinkDown = main.Mininet1.link( END2=end1, END1=end2, OPTION="down" )
+        LinkDown = main.Network.link( END1=end1, END2=end2, OPTION="down" )
+        LinkDown = main.Network.link( END2=end1, END1=end2, OPTION="down" )
         main.log.info(
                 "Waiting %s seconds for link down to be discovered" % main.linkSleep )
         time.sleep( main.linkSleep )
@@ -320,8 +324,8 @@ class Testcaselib:
         count = 0
         while True:
             count += 1
-            main.Mininet1.link( END1=end1, END2=end2, OPTION="up" )
-            main.Mininet1.link( END2=end1, END1=end2, OPTION="up" )
+            main.Network.link( END1=end1, END2=end2, OPTION="up" )
+            main.Network.link( END2=end1, END1=end2, OPTION="up" )
             main.log.info(
                     "Waiting %s seconds for link up to be discovered" % main.linkSleep )
             time.sleep( main.linkSleep )
@@ -351,7 +355,7 @@ class Testcaselib:
         main.switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
         main.step( "Kill " + switch )
         main.log.info( "Stopping" + switch )
-        main.Mininet1.switch( SW=switch, OPTION="stop" )
+        main.Network.switch( SW=switch, OPTION="stop" )
         # todo make this repeatable
         main.log.info( "Waiting %s seconds for switch down to be discovered" % (
             main.switchSleep ) )
@@ -375,7 +379,7 @@ class Testcaselib:
         # todo make this repeatable
         main.step( "Recovering " + switch )
         main.log.info( "Starting" + switch )
-        main.Mininet1.switch( SW=switch, OPTION="start" )
+        main.Network.switch( SW=switch, OPTION="start" )
         main.log.info( "Waiting %s seconds for switch up to be discovered" % (
             main.switchSleep ) )
         time.sleep( main.switchSleep )

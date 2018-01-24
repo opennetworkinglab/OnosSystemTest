@@ -53,17 +53,28 @@ class SRBridgingTest ():
         main.resultFileName = 'CASE%02d' % test_idx
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
-        mininet_args = ' --spine=%d --leaf=%d' % ( topo[ topology ][ 0 ], topo[ topology ][ 1 ] )
-        if topo[ topology ][ 2 ]:
-            mininet_args += ' --dual-homed'
-        if len( vlan ) > 0 :
-            mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
+        if hasattr( main, 'Mininet1' ):
+            # Run the test with Mininet
+            mininet_args = ' --spine=%d --leaf=%d' % ( topo[ topology ][ 0 ], topo[ topology ][ 1 ] )
+            if topo[ topology ][ 2 ]:
+                mininet_args += ' --dual-homed'
+            if len( vlan ) > 0 :
+                mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
 
-        run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
+            run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
+        else:
+            # Run the test with physical devices
+            # TODO: connect TestON to the physical network
+            pass
+
         run.checkFlows( main, minFlowCount=topo[ topology ][ 4 ] * topo[ topology ][ 1 ], sleep=5 )
-
         leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( topo[ topology ][ 1 ] ) ]
         for dpid in leaf_dpid:
             run.checkFlowsByDpid( main, dpid, topo[ topology ][ 4 ], sleep=5 )
         run.pingAll( main, 'CASE%02d' % test_idx )
-        run.cleanup( main )
+
+        if hasattr( main, 'Mininet1' ):
+            run.cleanup( main )
+        else:
+            # TODO: disconnect TestON from the physical network
+            pass

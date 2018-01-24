@@ -50,6 +50,7 @@ class SRBridgingTest ():
                    ( description, topo[ topology ][ 3 ], onosNodes, 's' if onosNodes > 1 else '' ) )
 
         main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
+        main.resultFileName = 'CASE%02d' % test_idx
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
         mininet_args = ' --spine=%d --leaf=%d' % ( topo[ topology ][ 0 ], topo[ topology ][ 1 ] )

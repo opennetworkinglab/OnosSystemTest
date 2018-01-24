@@ -231,11 +231,11 @@ class Testcaselib:
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "flows",
                                         main.logdir,
-                                        "flowsBefore" + main.cfgName )
+                                        "flowsBefore" + main.resultFileName )
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "groups",
                                         main.logdir,
-                                        "groupsBefore" + main.cfgName )
+                                        "groupsBefore" + main.resultFileName )
 
     @staticmethod
     def checkFlowsByDpid( main, dpid, minFlowCount, sleep=10 ):
@@ -408,7 +408,7 @@ class Testcaselib:
 
         main.utils.mininetCleanup( main.Mininet1 )
 
-        main.utils.copyKarafLog( main.cfgName )
+        main.utils.copyKarafLog( main.resultFileName + "_" )
 
         for ctrl in main.Cluster.active():
             main.ONOSbench.onosStop( ctrl.ipAddress )

@@ -128,6 +128,28 @@ function python_reqs {
     $cmd -r requirements.txt
 }
 
+function jenkins_req {
+    set +o nounset
+    if [ -z $1 ]
+    then
+        dir='/var/jenkins'
+    else
+        dir=$1
+    fi
+    set -o nounset
+    # make sure default jenkin's directory exists and is owned by current user?
+    set +e
+    sudo mkdir $dir
+    set -e
+    sudo chown $USER:$USER $dir
+    # Postgresql for storing results in the db
+    echo "Installing dependencies required for Jenkins test-station"
+    $install postgresql postgresql-contrib
+    # R for generating graphs for the wiki summary
+    $install r-base-core libpq-dev
+    echo 'cat(".Rprofile: Setting UK repository"); r = getOption("repos"); r["CRAN"] = "http://cran.uk.r-project.org"; options(repos = r); rm(r)' > ~/.Rprofile
+    sudo R -e 'install.packages( c( "ggplot2", "reshape2", "RPostgreSQL" ) )'
+}
 function symlinks {
     set +e
     # Add symbolic link to main TestON folder in Home dir
@@ -214,7 +236,7 @@ function finished {
 # TODO Add bash tab completion script to this
 
 function usage {
-    printf "Usage: $(basename $0) [-dgprsv] \n"
+    printf "Usage: $(basename $0) [-dgjprsv] \n"
     printf "Usage: $(basename $0) -y [PATH] \n\n"
     printf "This install script attempts to install deoendencies needed to run teston\n"
     printf "and any tests included in the official repository. If a test still does \n"
@@ -226,11 +248,12 @@ function usage {
     printf "Options:\n"
     printf "\t -d (default) requirements, symlinks and git hooks\n"
     printf "\t -g install git hooks\n"
+    printf "\t -j install requirments for running this node as a Jenkin's test-station\n"
     printf "\t -p install pypy in a virtual env\n"
     printf "\t -r install requirements for TestON/tests\n"
     printf "\t -s install symlinks\n"
     printf "\t -v install a python virtual environment for teston using the default python implementation\n"
-    printf "\t -y <PATH> install a python virtual environment for testonusing a specific python implementation at PATH.\n"
+    printf "\t -y <PATH> install a python virtual environment for teston using a specific python implementation at PATH.\n"
 
 }
 
@@ -243,16 +266,17 @@ then
     usage
 else
     init
-    while getopts 'dgprsvy:' OPTION
+    while getopts 'dgjprsvy:' OPTION
     do
       case $OPTION in
       d)    default;;
       g)    git;;
+      j)    jenkins_req;;
       p)    get_pypy;;
       r)    requirements;;
       s)    symlinks;;
       v)    venv;;
-      y)    venv  $OPTARG;;
+      y)    venv $OPTARG;;
       ?)    usage;;
       esac
   done

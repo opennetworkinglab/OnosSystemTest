@@ -58,7 +58,8 @@ class Testcaselib:
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             main.diff = main.params[ 'ENV' ][ 'diffApps' ]
             main.path = os.path.dirname( main.testFile )
-            main.dependencyPath = main.path + "/../dependencies/"
+            main.topoPath = main.path + "/../dependencies/"
+            main.configPath = main.path + "/../dependencies/"
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
@@ -113,10 +114,10 @@ class Testcaselib:
                                  onfail="ONOS summary command failed" )
 
         with open( "%s/json/%s.json" % (
-                main.dependencyPath, main.cfgName ) ) as cfg:
+                main.configPath, main.cfgName ) ) as cfg:
             main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
         with open( "%s/json/%s.chart" % (
-                main.dependencyPath, main.cfgName ) ) as chart:
+                main.configPath, main.cfgName ) ) as chart:
             main.pingChart = json.load( chart )
         if not ready:
             main.log.error( "ONOS startup failed!" )
@@ -132,17 +133,17 @@ class Testcaselib:
     def startMininet( main, topology, args="" ):
         try:
             copyResult1 = main.ONOSbench.scp( main.Mininet1,
-                                              main.dependencyPath +
+                                              main.topoPath +
                                               main.topology,
                                               main.Mininet1.home,
                                               direction="to" )
             copyResult2 = main.ONOSbench.scp( main.Mininet1,
-                                              main.dependencyPath +
+                                              main.topoPath +
                                               main.topologyLib1,
                                               main.Mininet1.home,
                                               direction="to" )
             copyResult3 = main.ONOSbench.scp( main.Mininet1,
-                                              main.dependencyPath +
+                                              main.topoPath +
                                               main.topologyLib2,
                                               main.Mininet1.home,
                                               direction="to" )
@@ -540,7 +541,7 @@ class Testcaselib:
         """
         import json
         hostCfg = {}
-        with open( main.dependencyPath + "/json/extra.json" ) as template:
+        with open( main.configPath + "/json/extra.json" ) as template:
             hostCfg = json.load( template )
         main.pingChart[ 'ip' ][ 'hosts' ] += [ 'in1' ]
         main.step( "Pushing new configuration" )
@@ -577,7 +578,7 @@ class Testcaselib:
         """
         import json
         hostCfg = {}
-        with open( main.dependencyPath + "/json/extra.json" ) as template:
+        with open( main.configPath + "/json/extra.json" ) as template:
             hostCfg = json.load( template )
         main.step( "Removing host configuration" )
         main.pingChart[ 'ip' ][ 'expect' ] = 0

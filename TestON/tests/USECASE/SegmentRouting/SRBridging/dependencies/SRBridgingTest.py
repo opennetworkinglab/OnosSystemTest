@@ -19,7 +19,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from Testcaselib import Testcaselib as run
+from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
 
 class SRBridgingTest ():
 
@@ -50,6 +50,7 @@ class SRBridgingTest ():
                    ( description, topo[ topology ][ 3 ], onosNodes, 's' if onosNodes > 1 else '' ) )
 
         main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
+        main.configPath = main.path + "/dependencies/"
         main.resultFileName = 'CASE%02d' % test_idx
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )

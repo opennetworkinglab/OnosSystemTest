@@ -319,6 +319,7 @@ class Cluster():
             else:
                 result = result and \
                             main.ONOSbench.onosInstall( node=ctrl.ipAddress, options=options )
+            i += 1
         if installParallel:
             for t in threads:
                 t.join()

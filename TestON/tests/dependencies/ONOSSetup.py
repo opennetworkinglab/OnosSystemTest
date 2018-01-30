@@ -355,7 +355,7 @@ class ONOSSetup:
     def ONOSSetUp( self, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
                    cellName="temp", cellApps="drivers", mininetIp="", removeLog=False, extraApply=None, applyArgs=None,
                    extraClean=None, cleanArgs=None, skipPack=False, installMax=False, useSSH=True,
-                   killRemoveMax=True, stopOnos=False, installParallel=True ):
+                   killRemoveMax=True, stopOnos=False, installParallel=True, cellApply=True ):
         """
         Description:
             Initial ONOS setting up of the tests. It will also verify the result of each steps.
@@ -405,9 +405,8 @@ class ONOSSetup:
         main.log.info( "NODE COUNT = " + str( cluster.numCtrls ) )
         cellResult = main.TRUE
         packageResult = main.TRUE
-        onosUninstallResult = main.TRUE
         onosCliResult = main.TRUE
-        if not skipPack:
+        if cellApply:
             tempOnosIp = []
             for ctrl in cluster.runningNodes:
                 tempOnosIp.append( ctrl.ipAddress )
@@ -421,13 +420,15 @@ class ONOSSetup:
                                                cellName, cellApps,
                                                mininetIp, useSSH,
                                                tempOnosIp, installMax )
-            if removeLog:
-                main.log.info( "Removing raft logs" )
-                main.ONOSbench.onosRemoveRaftLogs()
 
-            onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
-            self.processList( extraApply, applyArgs )
-            packageResult = self.buildOnos( cluster )
+        if removeLog:
+            main.log.info("Removing raft logs")
+            main.ONOSbench.onosRemoveRaftLogs()
+        onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
+        self.processList( extraApply, applyArgs )
+
+        if not skipPack:
+            packageResult = self.buildOnos(cluster)
 
         onosInstallResult = self.installOnos( cluster, installMax, installParallel )
 

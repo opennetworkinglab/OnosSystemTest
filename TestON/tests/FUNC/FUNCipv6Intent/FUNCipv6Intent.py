@@ -77,7 +77,7 @@ class FUNCipv6Intent:
             copyResult1 = main.ONOSbench.scp( main.Mininet1,
                                               main.dependencyPath +
                                               main.topology,
-                                              main.Mininet1.home,
+                                              main.Mininet1.home + "custom/",
                                               direction="to" )
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
@@ -137,8 +137,7 @@ class FUNCipv6Intent:
 
         main.step( "Starting Mininet topology with OF 1.3 switches" )
         args = "--switch ovs,protocols=OpenFlow13"
-        topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath +
-                                                      main.topology,
+        topoResult = main.Mininet1.startNet( topoFile=main.Mininet1.home + "custom/" + main.topology,
                                              args=args )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,

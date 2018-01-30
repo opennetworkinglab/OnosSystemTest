@@ -152,8 +152,7 @@ class FUNCintent:
 
         main.step( "Starting Mininet topology with OF 1.0 switches" )
         args = "--switch ovs,protocols=OpenFlow10"
-        topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath +
-                                                      main.topology,
+        topoResult = main.Mininet1.startNet( topoFile=main.Mininet1.home + "/custom/" + main.topology,
                                              args=args )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
@@ -182,8 +181,7 @@ class FUNCintent:
 
         main.step( "Starting Mininet topology with OF 1.3 switches" )
         args = "--switch ovs,protocols=OpenFlow13"
-        topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath +
-                                                      main.topology,
+        topoResult = main.Mininet1.startNet( topoFile=main.Mininet1.home + "/custom/" + main.topology,
                                              args=args )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,

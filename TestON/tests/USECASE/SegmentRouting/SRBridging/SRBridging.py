@@ -11,7 +11,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 1,
                                 topology = '0x1',
@@ -27,7 +27,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 2,
                                 topology = '0x2',
@@ -43,7 +43,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 3,
                                 topology = '2x2',
@@ -59,7 +59,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 4,
                                 topology = '2x4',
@@ -75,7 +75,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 5,
                                 topology = '0x1',
@@ -91,7 +91,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 6,
                                 topology = '0x2',
@@ -107,7 +107,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 7,
                                 topology = '2x2',
@@ -123,7 +123,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 8,
                                 topology = '2x4',
@@ -139,7 +139,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 11,
                                 topology = '0x1',
@@ -156,7 +156,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 12,
                                 topology = '0x2',
@@ -173,7 +173,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 13,
                                 topology = '2x2',
@@ -190,7 +190,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 14,
                                 topology = '2x4',
@@ -207,7 +207,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 15,
                                 topology = '0x1',
@@ -224,7 +224,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 16,
                                 topology = '0x2',
@@ -241,7 +241,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 17,
                                 topology = '2x2',
@@ -258,7 +258,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 18,
                                 topology = '2x4',
@@ -275,7 +275,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 21,
                                 topology = '0x1',
@@ -291,7 +291,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 22,
                                 topology = '0x2',
@@ -307,7 +307,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 23,
                                 topology = '2x2',
@@ -323,7 +323,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 24,
                                 topology = '2x4',
@@ -339,7 +339,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 25,
                                 topology = '0x1',
@@ -355,7 +355,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 26,
                                 topology = '0x2',
@@ -371,7 +371,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 27,
                                 topology = '2x2',
@@ -387,7 +387,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 28,
                                 topology = '2x4',
@@ -404,7 +404,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 31,
                                 topology = '0x1',
@@ -422,7 +422,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 32,
                                 topology = '0x2',
@@ -440,7 +440,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 33,
                                 topology = '2x2',
@@ -458,7 +458,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 34,
                                 topology = '2x4',
@@ -476,7 +476,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 35,
                                 topology = '0x1',
@@ -494,7 +494,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 36,
                                 topology = '0x2',
@@ -512,7 +512,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 37,
                                 topology = '2x2',
@@ -530,7 +530,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest(main,
                                test_idx = 38,
                                topology = '2x4',
@@ -548,7 +548,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 41,
                                 topology = '0x1',
@@ -566,7 +566,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 42,
                                 topology = '0x2',
@@ -584,7 +584,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 43,
                                 topology = '2x2',
@@ -602,7 +602,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 44,
                                 topology = '2x4',
@@ -620,7 +620,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 45,
                                 topology = '0x1',
@@ -638,7 +638,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 46,
                                 topology = '0x2',
@@ -656,7 +656,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 47,
                                 topology = '2x2',
@@ -674,7 +674,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 48,
                                 topology = '2x4',
@@ -691,7 +691,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 51,
                                 topology = '0x1',
@@ -707,7 +707,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 52,
                                 topology = '0x2',
@@ -723,7 +723,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 53,
                                 topology = '2x2',
@@ -739,7 +739,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 54,
                                 topology = '2x4',
@@ -755,7 +755,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 55,
                                 topology = '0x1',
@@ -771,7 +771,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 56,
                                 topology = '0x2',
@@ -787,7 +787,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 57,
                                 topology = '2x2',
@@ -803,7 +803,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 58,
                                 topology = '2x4',
@@ -819,7 +819,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 61,
                                 topology = '0x1',
@@ -836,7 +836,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 62,
                                 topology = '0x2',
@@ -853,7 +853,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 63,
                                 topology = '2x2',
@@ -870,7 +870,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 64,
                                 topology = '2x4',
@@ -887,7 +887,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 65,
                                 topology = '0x1',
@@ -904,7 +904,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 66,
                                 topology = '0x2',
@@ -921,7 +921,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 67,
                                 topology = '2x2',
@@ -938,7 +938,7 @@ class SRBridging:
         Start 2x4 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 68,
                                 topology = '2x4',
@@ -955,7 +955,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 71,
                                 topology = '0x1',
@@ -972,7 +972,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 72,
                                 topology = '0x2',
@@ -989,7 +989,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 73,
                                 topology = '2x2',
@@ -1006,7 +1006,7 @@ class SRBridging:
         Start 2x2 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 74,
                                 topology = '2x4',
@@ -1023,7 +1023,7 @@ class SRBridging:
         Start 0x1 single ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 75,
                                 topology = '0x1',
@@ -1040,7 +1040,7 @@ class SRBridging:
         Start 0x2 dual-homed ToR topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 76,
                                 topology = '0x2',
@@ -1057,7 +1057,7 @@ class SRBridging:
         Start 2x2 leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 77,
                                 topology = '2x2',
@@ -1074,7 +1074,7 @@ class SRBridging:
         Start 2x2 dual-homed leaf-spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.SRBridgingTest import SRBridgingTest
+        from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
         SRBridgingTest.runTest( main,
                                 test_idx = 78,
                                 topology = '2x4',

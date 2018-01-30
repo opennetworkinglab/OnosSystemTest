@@ -51,7 +51,6 @@ class SRBridgingTest ():
 
         main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
         main.configPath = main.path + "/dependencies/"
-        main.resultFileName = 'CASE%02d' % test_idx
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
         if hasattr( main, 'Mininet1' ):
@@ -72,7 +71,7 @@ class SRBridgingTest ():
         leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( topo[ topology ][ 1 ] ) ]
         for dpid in leaf_dpid:
             run.checkFlowsByDpid( main, dpid, topo[ topology ][ 4 ], sleep=5 )
-        run.pingAll( main, 'CASE%02d' % test_idx )
+        run.pingAll( main )
 
         if hasattr( main, 'Mininet1' ):
             run.cleanup( main )

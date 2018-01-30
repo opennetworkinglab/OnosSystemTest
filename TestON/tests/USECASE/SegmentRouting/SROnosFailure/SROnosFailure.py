@@ -48,12 +48,12 @@ class SROnosFailure:
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main, "CASE1" )
+        run.pingAll( main )
         run.killOnos( main, [ 0 ], '4', '8', '2' )
         run.pingAll( main, 'CASE1_Failure' )
         run.recoverOnos( main, [ 0 ], '4', '8', '3' )
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main, 'CASE1_Failure' )
+        run.checkFlows( main, minFlowCount=116, tag='CASE1_Recovery' )
+        run.pingAll( main, 'CASE1_Recovery' )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect
@@ -85,8 +85,8 @@ class SROnosFailure:
         run.killOnos( main, [ 0 ], '8', '32', '2' )
         run.pingAll( main, 'CASE2_Failure' )
         run.recoverOnos( main, [ 0 ], '8', '32', '3' )
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main, 'CASE3_Recovery' )
+        run.checkFlows( main, minFlowCount=350, tag='CASE2_Recovery' )
+        run.pingAll( main, 'CASE2_Recovery' )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect
@@ -118,8 +118,8 @@ class SROnosFailure:
         run.killOnos( main, [ 0 ], '1', '0', '2' )
         run.pingAll( main, 'CASE3_Failure' )
         run.recoverOnos( main, [ 0 ], '1', '0', '3' )
-        run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main, 'CASE3_Failure' )
+        run.checkFlows( main, minFlowCount=15, tag='CASE3_Recovery' )
+        run.pingAll( main, 'CASE3_Recovery' )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect

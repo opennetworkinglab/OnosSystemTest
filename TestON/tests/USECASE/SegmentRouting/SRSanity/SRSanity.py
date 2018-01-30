@@ -51,7 +51,7 @@ class SRSanity:
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main, "CASE1" )
+        run.pingAll( main )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect
@@ -77,7 +77,7 @@ class SRSanity:
         run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main, 'CASE2' )
+        run.pingAll( main )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect
@@ -103,7 +103,7 @@ class SRSanity:
         run.startMininet( main, 'cord_fabric.py', args="--leaf=1 --spine=0" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main, 'CASE3' )
+        run.pingAll( main )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect
@@ -129,7 +129,7 @@ class SRSanity:
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main, 'CASE4' )
+        run.pingAll( main )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect
@@ -155,7 +155,7 @@ class SRSanity:
         run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main, 'CASE5' )
+        run.pingAll( main )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect
@@ -181,7 +181,7 @@ class SRSanity:
         run.startMininet( main, 'cord_fabric.py', args="--leaf=1 --spine=0" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main, 'CASE4' )
+        run.pingAll( main )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect

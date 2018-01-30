@@ -54,7 +54,7 @@ class SRDynamic:
         run.pingAll( main, dumpflows=False, )
         run.addHostCfg( main )
         run.checkFlows( main, minFlowCount=140, dumpflows=False )
-        run.pingAll( main, "CASE1" )
+        run.pingAll( main )
         run.cleanup( main )
 
     def CASE2( self, main ):
@@ -79,7 +79,7 @@ class SRDynamic:
         run.pingAll( main, dumpflows=False )
         run.addHostCfg( main )
         run.checkFlows( main, minFlowCount=380, dumpflows=False )
-        run.pingAll( main, 'CASE2' )
+        run.pingAll( main )
         run.cleanup( main )
 
     def CASE3( self, main ):
@@ -104,7 +104,7 @@ class SRDynamic:
         run.pingAll( main, dumpflows=False )
         run.addHostCfg( main )
         run.checkFlows( main, minFlowCount=18, dumpflows=False )
-        run.pingAll( main, 'CASE3' )
+        run.pingAll( main )
         run.cleanup( main )
 
     def CASE4( self, main ):
@@ -129,7 +129,7 @@ class SRDynamic:
         run.pingAll( main, dumpflows=False )
         run.addHostCfg( main )
         run.checkFlows( main, minFlowCount=140, dumpflows=False )
-        run.pingAll( main, "CASE4" )
+        run.pingAll( main )
         run.killOnos( main, [ 0 ], '4', '8', '2' )
         run.delHostCfg( main )
         run.checkFlows( main, minFlowCount=116, dumpflows=False )
@@ -158,7 +158,7 @@ class SRDynamic:
         run.pingAll( main, dumpflows=False )
         run.addHostCfg( main )
         run.checkFlows( main, minFlowCount=380, dumpflows=False )
-        run.pingAll( main, 'CASE5' )
+        run.pingAll( main )
         run.killOnos( main, [ 0 ], '8', '32', '2' )
         run.delHostCfg( main )
         run.checkFlows( main, minFlowCount=350, dumpflows=False )
@@ -187,7 +187,7 @@ class SRDynamic:
         run.pingAll( main, dumpflows=False )
         run.addHostCfg( main )
         run.checkFlows( main, minFlowCount=20, dumpflows=False )
-        run.pingAll( main, 'CASE6' )
+        run.pingAll( main )
         run.killOnos( main, [ 0 ], '1', '0', '2' )
         run.delHostCfg( main )
         run.checkFlows( main, minFlowCount=15, dumpflows=False )

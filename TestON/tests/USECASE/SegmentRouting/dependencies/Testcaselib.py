@@ -200,9 +200,11 @@ class Testcaselib:
             main.cleanAndExit()
 
     @staticmethod
-    def checkFlows( main, minFlowCount, dumpflows=True, sleep=10 ):
+    def checkFlows( main, minFlowCount, tag="", dumpflows=True, sleep=10 ):
         main.step(
                 " Check whether the flow count is bigger than %s" % minFlowCount )
+        if tag == "":
+            tag = 'CASE%d' % main.CurrentTestCaseNumber
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowCount,
                                  main.FALSE,
                                  kwargs={ 'min': minFlowCount },
@@ -229,11 +231,11 @@ class Testcaselib:
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "flows",
                                         main.logdir,
-                                        main.resultFileName + "_FlowsBefore" )
+                                        tag + "_FlowsBefore" )
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "groups",
                                         main.logdir,
-                                        main.resultFileName + "_GroupsBefore" )
+                                        tag + "_GroupsBefore" )
 
     @staticmethod
     def checkFlowsByDpid( main, dpid, minFlowCount, sleep=10 ):
@@ -254,6 +256,8 @@ class Testcaselib:
     def pingAll( main, tag="", dumpflows=True ):
         main.log.report( "Check full connectivity" )
         print main.pingChart
+        if tag == "":
+            tag = 'CASE%d' % main.CurrentTestCaseNumber
         for entry in main.pingChart.itervalues():
             print entry
             hosts, expect = entry[ 'hosts' ], entry[ 'expect' ]
@@ -328,8 +332,8 @@ class Testcaselib:
                 ctrl = main.Cluster.runningNodes[ i ]
                 onosIsUp = main.ONOSbench.isup( ctrl.ipAddress )
                 if onosIsUp == main.TRUE:
-                    ctrl.CLI.portstate( dpid=dpid1, port=port1 )
-                    ctrl.CLI.portstate( dpid=dpid2, port=port2 )
+                    ctrl.CLI.portstate( dpid=dpid1, port=port1, state='Enable' )
+                    ctrl.CLI.portstate( dpid=dpid2, port=port2, state='Enable' )
             time.sleep( main.linkSleep )
 
             result = main.Cluster.active( 0 ).CLI.checkStatus( numoswitch=switches,
@@ -406,7 +410,7 @@ class Testcaselib:
 
         main.utils.mininetCleanup( main.Mininet1 )
 
-        main.utils.copyKarafLog( main.resultFileName, before=True )
+        main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True )
 
         for ctrl in main.Cluster.active():
             main.ONOSbench.onosStop( ctrl.ipAddress )
@@ -447,7 +451,7 @@ class Testcaselib:
                 main.log.error( "Failed to kill ONOS, stopping test" )
                 main.cleanAndExit()
 
-            topology = utilities.retry( main.Cluster.active( 0 ).checkStatus,
+            topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                         main.FALSE,
                                         kwargs={ 'numoswitch': switches,
                                                  'numolink': links,
@@ -475,7 +479,7 @@ class Testcaselib:
         for i in nodes:
             main.step( "Checking if ONOS CLI is ready" )
             ctrl = main.Cluster.runningNodes[ i ]
-            ctrl.CLI.startCellCli()
+            # ctrl.CLI.startCellCli()
             cliResult = ctrl.CLI.startOnosCli( ctrl.ipAddress,
                                                commandlineTimeout=60,
                                                onosStartTimeout=100 )

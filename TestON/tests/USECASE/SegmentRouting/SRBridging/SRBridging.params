@@ -12,17 +12,13 @@
     </SCALE>
 
     <DEPENDENCY>
-        <wrapper1>startUp</wrapper1>
         <topology>trellis_fabric.py</topology>
-        <lib1>routinglib.py</lib1>
-        <lib2>trellislib.py</lib2>
+        <lib>routinglib.py,trellislib.py</lib>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting,openflow,fpm</cellApps>
-        <diffApps>netcfghostprovider</diffApps>
-        <cellUser>sdn</cellUser>
+        <cellApps>drivers,segmentrouting,openflow,fpm,netcfghostprovider</cellApps>
     </ENV>
 
     <GIT>

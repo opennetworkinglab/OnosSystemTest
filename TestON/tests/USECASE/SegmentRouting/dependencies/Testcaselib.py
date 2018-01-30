@@ -56,27 +56,19 @@ class Testcaselib:
             # Test variables
             main.cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-            main.diff = main.params[ 'ENV' ][ 'diffApps' ]
             main.path = os.path.dirname( main.testFile )
             main.topoPath = main.path + "/../dependencies/"
             main.configPath = main.path + "/../dependencies/"
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
-            wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+            main.topologyLib = main.params[ 'DEPENDENCY' ][ 'lib' ] if 'lib' in main.params[ 'DEPENDENCY' ] else None
+            main.topologyConf = main.params[ 'DEPENDENCY' ][ 'conf' ] if 'conf' in main.params[ 'DEPENDENCY' ] else None
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
-            # main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
 
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
-
-        # Additional files for topology building
-        try:
-            main.topologyLib1 = main.params[ 'DEPENDENCY' ][ 'lib1' ]
-            main.topologyLib2 = main.params[ 'DEPENDENCY' ][ 'lib2' ]
-        except:
-            pass
 
         main.testSetUp.evnSetupConclusion( stepResult )
 
@@ -94,9 +86,7 @@ class Testcaselib:
         - Connect to cli
         """
         # main.scale[ 0 ] determines the current number of ONOS controller
-        if main.diff:
-            main.apps = main.apps + "," + main.diff
-        else:
+        if not main.apps:
             main.log.error( "App list is empty" )
         main.log.info( "NODE COUNT = " + str( main.Cluster.numCtrls ) )
         main.log.info( ''.join( main.Cluster.getIps() ) )
@@ -131,24 +121,27 @@ class Testcaselib:
 
     @staticmethod
     def startMininet( main, topology, args="" ):
-        try:
-            copyResult1 = main.ONOSbench.scp( main.Mininet1,
-                                              main.topoPath +
-                                              main.topology,
-                                              main.Mininet1.home,
-                                              direction="to" )
-            copyResult2 = main.ONOSbench.scp( main.Mininet1,
-                                              main.topoPath +
-                                              main.topologyLib1,
-                                              main.Mininet1.home,
-                                              direction="to" )
-            copyResult3 = main.ONOSbench.scp( main.Mininet1,
-                                              main.topoPath +
-                                              main.topologyLib2,
-                                              main.Mininet1.home,
-                                              direction="to" )
-        except:
-            pass
+        copyResult = main.ONOSbench.scp( main.Mininet1,
+                                         main.topoPath + main.topology,
+                                         main.Mininet1.home,
+                                         direction="to" )
+        if main.topologyLib:
+            for lib in main.topologyLib.split(","):
+                copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
+                                                                main.topoPath + lib,
+                                                                main.Mininet1.home,
+                                                                direction="to" )
+        if main.topologyConf:
+            for conf in main.topologyConf.split(","):
+                copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
+                                                                main.topoPath + "conf/" + conf,
+                                                                "~/",
+                                                                direction="to" )
+        stepResult = copyResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully copied topo files",
+                                 onfail="Failed to copy topo files" )
         main.step( "Starting Mininet Topology" )
         arg = "--onos-ip=%s %s" % (",".join([ctrl.ipAddress for ctrl in main.Cluster.runningNodes]), args)
         main.topology = topology

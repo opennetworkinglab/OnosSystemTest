@@ -13,15 +13,12 @@
     </SCALE>
 
     <DEPENDENCY>
-        <wrapper1>startUp</wrapper1>
         <topology>cord_fabric.py</topology>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting</cellApps>
-        <diffApps>openflow-base,netcfghostprovider,netcfglinksprovider</diffApps>
-        <cellUser>sdn</cellUser>
+        <cellApps>drivers,segmentrouting,openflow-base,netcfghostprovider,netcfglinksprovider</cellApps>
     </ENV>
 
     <GIT>

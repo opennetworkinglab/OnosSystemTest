@@ -73,7 +73,8 @@ class Testcaselib:
         main.testSetUp.evnSetupConclusion( stepResult )
 
     @staticmethod
-    def installOnos( main, vlanCfg=True, skipPackage=False, cliSleep=10 ):
+    def installOnos( main, vlanCfg=True, skipPackage=False, cliSleep=10,
+                     parallel=True ):
         """
         - Set up cell
             - Create cell file
@@ -92,7 +93,9 @@ class Testcaselib:
         main.log.info( ''.join( main.Cluster.getIps() ) )
         main.dynamicHosts = [ 'in1', 'out1' ]
         main.testSetUp.ONOSSetUp( main.Cluster, newCell=True, cellName=main.cellName,
-                                  skipPack=skipPackage, useSSH=Testcaselib.useSSH )
+                                  skipPack=skipPackage,
+                                  useSSH=Testcaselib.useSSH,
+                                  installParallel=parallel)
         ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
                                  main.FALSE,
                                  sleep=cliSleep,
@@ -103,12 +106,10 @@ class Testcaselib:
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
 
-        with open( "%s/json/%s.json" % (
-                main.configPath, main.cfgName ) ) as cfg:
-            main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
-        with open( "%s/json/%s.chart" % (
-                main.configPath, main.cfgName ) ) as chart:
-            main.pingChart = json.load( chart )
+        with open( "%s/json/%s.json" % (main.configPath, main.cfgName)) as cfg:
+            main.Cluster.active( 0 ).REST.setNetCfg(json.load(cfg))
+        with open("%s/json/%s.chart" % (main.configPath, main.cfgName)) as chart:
+            main.pingChart = json.load(chart)
         if not ready:
             main.log.error( "ONOS startup failed!" )
             main.cleanAndExit()

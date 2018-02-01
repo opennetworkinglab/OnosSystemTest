@@ -1,0 +1,41 @@
+<PARAMS>
+    <testcases>1</testcases>
+
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <topology>comcast_fabric.py</topology>
+        <lib>routinglib.py,trellislib.py,trellis_fabric.py</lib>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,segmentrouting,openflow,fpmi</cellApps>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+    </timers>
+
+    <SLEEP>
+        <startup>10</startup>
+    </SLEEP>
+</PARAMS>

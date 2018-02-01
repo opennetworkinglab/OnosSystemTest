@@ -300,7 +300,6 @@ class LeafSpineFabric (Topo) :
         rh1 = self.addHost('rh1', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
         self.addLink(r1, rh1)
 
-
 def config( opts ):
     spine = opts.spine
     leaf = opts.leaf

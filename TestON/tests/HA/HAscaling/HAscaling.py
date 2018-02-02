@@ -173,7 +173,7 @@ class HAscaling:
             else:
                 equal = False
             main.Cluster.setRunningNode( int( re.search( "\d+", scale ).group( 0 ) ) )
-            main.log.info( "Scaling to {} nodes".format( main.Cluster.numCtrls ) )
+            main.step( "Scaling to {} nodes".format( main.Cluster.numCtrls ) )
             genResult = main.Server.generateFile( main.Cluster.numCtrls, equal=equal )
             utilities.assert_equals( expect=main.TRUE, actual=genResult,
                                      onpass="New cluster metadata file generated",

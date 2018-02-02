@@ -239,15 +239,10 @@ class Cluster():
             ctrl = self.controllers[ i ]
             onosIsUp = onosIsUp and onosUp[ i ]
             if onosUp[ i ] == main.TRUE:
-                main.log.report( ctrl.name + " is up and ready" )
+                main.log.info( ctrl.name + " is up and ready" )
             else:
-                main.log.report( ctrl.name + " may not be up, stop and " +
-                                 "start ONOS again " )
-                stopResult = stopResult and main.ONOSbench.onosStop( ctrl.ipAddress )
-                startResult = startResult and main.ONOSbench.onosStart( ctrl.ipAddress )
-                if not startResult or stopResult:
-                    main.log.report( ctrl.name + " did not start correctly." )
-        return onosIsUp and stopResult and startResult
+                main.log.warn( ctrl.name + " may not be up." )
+        return onosIsUp
 
     def kill( self, killMax, stopOnos ):
         """

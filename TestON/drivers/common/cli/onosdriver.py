@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 """
+Copyright 2014 Open Networking Foundation (ONF)
+
 This driver interacts with ONOS bench, the OSGi platform
 that configures the ONOS nodes. ( aka ONOS-next )
 
@@ -950,7 +952,7 @@ class OnosDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
 
-            self.handle.sendline( "onos -w " + ONOSIp + " " + cmdstr )
+            self.handle.sendline( "onos-wait-for-start " + ONOSIp + " " + cmdstr )
             self.handle.expect( self.prompt )
 
             handleBefore = self.handle.before

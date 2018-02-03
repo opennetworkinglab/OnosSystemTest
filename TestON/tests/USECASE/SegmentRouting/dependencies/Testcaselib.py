@@ -108,10 +108,15 @@ class Testcaselib:
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
 
-        with open( "%s/json/%s.json" % (main.configPath, main.cfgName)) as cfg:
-            main.Cluster.active( 0 ).REST.setNetCfg(json.load(cfg))
-        with open("%s/json/%s.chart" % (main.configPath, main.cfgName)) as chart:
-            main.pingChart = json.load(chart)
+        with open( "%s/json/%s.json" % (
+                main.configPath, main.cfgName ) ) as cfg:
+            main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
+        try:
+            with open( "%s/json/%s.chart" % (
+                    main.configPath, main.cfgName ) ) as chart:
+                main.pingChart = json.load( chart )
+        except IOError:
+            main.log.warn( "No chart file found." )
         if not ready:
             main.log.error( "ONOS startup failed!" )
             main.cleanAndExit()
@@ -648,3 +653,39 @@ class Testcaselib:
         main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="apps",
                                                     subjectKey="org.onosproject.segmentrouting",
                                                     configKey="xconnect" )
+
+    @staticmethod
+    def verifyNetworkHostIp( main, attempts=10, sleep=10 ):
+        """
+        Verifies IP address assignment from the hosts
+        """
+        main.step( "Verify IP address assignment from hosts" )
+        ipResult = main.TRUE
+        for hostName, ip in main.expectedHosts[ "network" ].items():
+            ipResult = ipResult and utilities.retry( main.Network.verifyHostIp,
+                                                     main.FALSE,
+                                                     kwargs={ 'hostList': [ hostName ],
+                                                              'prefix': ip },
+                                                     attempts=attempts,
+                                                     sleep=sleep )
+        utilities.assert_equals( expect=main.TRUE, actual=ipResult,
+                                 onpass="Verify network host IP succeded",
+                                 onfail="Verify network host IP failed" )
+
+    @staticmethod
+    def verifyOnosHostIp( main, attempts=10, sleep=10 ):
+        """
+        Verifies host IP address assignment from ONOS
+        """
+        main.step( "Verify host IP address assignment in ONOS" )
+        ipResult = main.TRUE
+        for hostName, ip in main.expectedHosts[ "onos" ].items():
+            ipResult = ipResult and utilities.retry( main.Cluster.active( 0 ).verifyHostIp,
+                                                     main.FALSE,
+                                                     kwargs={ 'hostList': [ hostName ],
+                                                              'prefix': ip },
+                                                     attempts=attempts,
+                                                     sleep=sleep )
+        utilities.assert_equals( expect=main.TRUE, actual=ipResult,
+                                 onpass="Verify ONOS host IP succeded",
+                                 onfail="Verify ONOS host IP failed" )

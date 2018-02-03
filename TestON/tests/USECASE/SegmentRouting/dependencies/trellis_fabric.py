@@ -4,7 +4,7 @@ import re
 from optparse import OptionParser
 
 from ipaddress import ip_network
-from mininet.node import RemoteController, OVSBridge, Host
+from mininet.node import RemoteController, OVSBridge, Host, OVSSwitch
 from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.net import Mininet
@@ -13,7 +13,8 @@ from mininet.nodelib import NAT
 from mininet.cli import CLI
 
 from routinglib import BgpRouter
-from trellislib import TrellisHost
+from trellislib import TrellisHost, DhcpRelay
+from functools import partial
 
 # Parse command line options and dump results
 def parseOptions():
@@ -34,6 +35,14 @@ def parseOptions():
     parser.add_option( '--vlan', dest='vlan', type='str', default='',
                        help='list of vlan id for hosts, separated by comma(,).'
                             'Empty or id with 0 will be unconfigured.' )
+    parser.add_option( '--dhcp-client', action="store_true", dest='dhcpClient', default=False,
+                       help='Set hosts as DhcpClient if True' )
+    parser.add_option( '--dhcp-relay', action="store_true", dest='dhcpRelay', default=False,
+                       help='Connect half of the hosts to switch indirectly (via DHCP relay) if True' )
+    parser.add_option( '--multiple-dhcp-server', action="store_true", dest='multipleServer', default=False,
+                       help='Use another DHCP server for indirectly connected DHCP clients if True' )
+    parser.add_option( '--remote-dhcp-server', action="store_true", dest='remoteServer', default=False,
+                       help='Connect DHCP server indirectly (via gateway) if True' )
     ( options, args ) = parser.parse_args()
     return options, args
 
@@ -88,7 +97,10 @@ class DualHomedIpHost(IpHost):
 
 # TODO: Implement IPv6 support
 class DualHomedLeafSpineFabric (Topo) :
-    def __init__(self, spine = 2, leaf = 4, fanout = 2, vlan_id = [], **opts):
+    def __init__(self, spine = 2, leaf = 2, fanout = 2, vlan_id = [], ipv6 = False,
+                 dhcp_client = False, dhcp_relay = False,
+                 multiple_server = False, remote_server = False, **opts):
+        # TODO: add support to dhcp_relay, multiple_server and remote_server
         Topo.__init__(self, **opts)
         spines = dict()
         leafs = dict()
@@ -121,39 +133,27 @@ class DualHomedLeafSpineFabric (Topo) :
             dual_ls = ls / 2
             # Add hosts
             for f in range(fanout):
-                if vlan_id[ dual_ls * fanout + f] != 0:
-                    host = self.addHost(
-                        name='h%s' % ( dual_ls * fanout + f + 1),
-                        cls=TrellisHost,
-                        ips=['10.0.%d.%d/%d' % ( dual_ls + 2, f + 1, IP4_SUBNET_CLASS)],
-                        gateway='10.0.%d.254' % ( dual_ls + 2),
-                        mac='00:aa:00:00:00:%02x' % (dual_ls * fanout + f + 1),
-                        vlan=vlan_id[ dual_ls*fanout + f ],
-                        dualHomed=True
-                    )
+                name = 'h%s%s' % (dual_ls * fanout + f + 1, "v6" if ipv6 else "")
+                if ipv6:
+                    ips = ['2000::%d0%d/%d' % (dual_ls+2, f+1, IP6_SUBNET_CLASS)]
+                    gateway = '2000::%dff' % (dual_ls+2)
+                    mac = '00:bb:00:00:00:%02x' % (dual_ls * fanout + f + 1)
                 else:
-                    host = self.addHost(
-                        name='h%s' % (dual_ls * fanout + f + 1),
-                        cls=TrellisHost,
-                        ips=['10.0.%d.%d/%d' % (dual_ls+2, f+1, IP4_SUBNET_CLASS)],
-                        gateway='10.0.%d.254' % (dual_ls+2),
-                        mac='00:aa:00:00:00:%02x' % (dual_ls * fanout + f + 1),
-                        dualHomed=True
-                    )
+                    ips = ['10.0.%d.%d/%d' % (dual_ls+2, f+1, IP4_SUBNET_CLASS)]
+                    gateway = '10.0.%d.254' % (dual_ls+2)
+                    mac = '00:aa:00:00:00:%02x' % (dual_ls * fanout + f + 1)
+                host = self.addHost( name=name, cls=TrellisHost, ips=ips, gateway=gateway, mac=mac,
+                                     vlan=vlan_id[ dual_ls*fanout + f ] if vlan_id[dual_ls * fanout + f] != 0 else None,
+                                     dhcpClient=dhcp_client, ipv6=ipv6, dualHomed=True )
                 self.addLink(host, leafs[ls], **linkopts)
                 self.addLink(host, leafs[ls-1], **linkopts)
 
         last_ls = leafs[leaf-2]
         last_paired_ls = leafs[leaf-1]
         # Create common components
-        # DHCP server
-        dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01', ips=['10.0.3.253/24'],
-                            gateway='10.0.3.254', dhcpServer=True)
-
         # Control plane switch (for DHCP servers)
         cs1 = self.addSwitch('cs1', cls=OVSBridge)
         self.addLink(cs1, last_ls)
-        self.addLink(dhcp, cs1)
 
         # Control plane switch (for quagga fpm)
         cs0 = self.addSwitch('cs0', cls=OVSBridge)
@@ -169,8 +169,8 @@ class DualHomedLeafSpineFabric (Topo) :
                  'bgp1-eth1': {'ipAddrs': ['172.16.0.2/12']}}
         bgp1 = self.addHost('bgp1', cls=BgpRouter,
                             interfaces=intfs,
-                            quaggaConfFile='conf/bgpdbgp1.conf',
-                            zebraConfFile='conf/zebradbgp1.conf')
+                            quaggaConfFile='./bgpdbgp1.conf',
+                            zebraConfFile='./zebradbgp1.conf')
         self.addLink(bgp1, last_ls)
         self.addLink(bgp1, cs0)
 
@@ -180,8 +180,8 @@ class DualHomedLeafSpineFabric (Topo) :
                  'bgp2-eth1': {'ipAddrs': ['172.16.0.4/12']}}
         bgp2 = self.addHost('bgp2', cls=BgpRouter,
                             interfaces=intfs,
-                            quaggaConfFile='conf/bgpdbgp2.conf',
-                            zebraConfFile='conf/zebradbgp2.conf')
+                            quaggaConfFile='./bgpdbgp2.conf',
+                            zebraConfFile='./zebradbgp2.conf')
         self.addLink(bgp2, last_paired_ls)
         self.addLink(bgp2, cs0)
 
@@ -191,7 +191,7 @@ class DualHomedLeafSpineFabric (Topo) :
                  'r1-eth2': {'ipAddrs': ['10.0.99.1/16']}}
         r1 = self.addHost('r1', cls=BgpRouter,
                             interfaces=intfs,
-                            quaggaConfFile='conf/bgpdr1.conf')
+                            quaggaConfFile='./bgpdr1.conf')
         self.addLink(r1, last_ls)
         self.addLink(r1, last_paired_ls)
 
@@ -205,7 +205,7 @@ class DualHomedLeafSpineFabric (Topo) :
                  'r2-eth2': {'ipAddrs': ['10.0.99.1/16']}}
         r2 = self.addHost('r2', cls=BgpRouter,
                             interfaces=intfs,
-                            quaggaConfFile='conf/bgpdr2.conf')
+                            quaggaConfFile='./bgpdr2.conf')
         self.addLink(r2, last_ls)
         self.addLink(r2, last_paired_ls)
 
@@ -213,8 +213,23 @@ class DualHomedLeafSpineFabric (Topo) :
         rh2 = self.addHost('rh2', cls=TrellisHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
         self.addLink(r2, rh2)
 
+        # DHCP server
+        if ipv6:
+            dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01',
+                                ips=['2000::3fd/120'], gateway='2000::3ff',
+                                dhcpServer=True, ipv6=True)
+            self.addLink(dhcp, cs1)
+        else:
+            dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01',
+                                ips=['10.0.3.253/24'], gateway='10.0.3.254',
+                                dhcpServer=True)
+            self.addLink(dhcp, cs1)
+
+
 class LeafSpineFabric (Topo) :
-    def __init__(self, spine = 2, leaf = 2, fanout = 2, vlan_id = [], **opts):
+    def __init__(self, spine = 2, leaf = 2, fanout = 2, vlan_id = [], ipv6 = False,
+                 dhcp_client = False, dhcp_relay = False,
+                 multiple_server = False, remote_server = False, **opts):
         Topo.__init__(self, **opts)
         spines = dict()
         leafs = dict()
@@ -240,35 +255,56 @@ class LeafSpineFabric (Topo) :
 
             # Add hosts
             for f in range(fanout):
-                if vlan_id[ls * fanout + f] != 0:
-                    host = self.addHost(
-                        name='h%s' % (ls * fanout + f + 1),
-                        cls=TrellisHost,
-                        ips=['10.0.%d.%d/%d' % (ls+2, f+1, IP4_SUBNET_CLASS)],
-                        gateway='10.0.%d.254' % (ls+2),
-                        mac='00:aa:00:00:00:%02x' % (ls * fanout + f + 1),
-                        vlan=vlan_id[ ls*fanout + f ]
-                    )
+                name = 'h%s%s' % (ls * fanout + f + 1, "v6" if ipv6 else "")
+                if ipv6:
+                    ips = ['2000::%d0%d/%d' % (ls+2, f+1, IP6_SUBNET_CLASS)]
+                    gateway = '2000::%dff' % (ls+2)
+                    mac = '00:bb:00:00:00:%02x' % (ls * fanout + f + 1)
                 else:
-                    host = self.addHost(
-                        name='h%s' % (ls * fanout + f + 1),
-                        cls=TrellisHost,
-                        ips=['10.0.%d.%d/%d' % (ls+2, f+1, IP4_SUBNET_CLASS)],
-                        gateway='10.0.%d.254' % (ls+2),
-                        mac='00:aa:00:00:00:%02x' % (ls * fanout + f + 1)
-                    )
-                self.addLink(host, leafs[ls], **linkopts)
+                    ips = ['10.0.%d.%d/%d' % (ls+2, f+1, IP4_SUBNET_CLASS)]
+                    gateway = '10.0.%d.254' % (ls+2)
+                    mac = '00:aa:00:00:00:%02x' % (ls * fanout + f + 1)
+                host = self.addHost( name=name, cls=TrellisHost, ips=ips, gateway=gateway, mac=mac,
+                                     vlan=vlan_id[ ls*fanout + f ] if vlan_id[ls * fanout + f] != 0 else None,
+                                     dhcpClient=dhcp_client, ipv6=ipv6 )
+                if dhcp_relay and f % 2:
+                    relayIndex = ls * fanout + f + 1
+                    if ipv6:
+                        intfs = {
+                            'relay%s-eth0' % relayIndex: { 'ipAddrs': ['2000::%dff/%d' % (leaf + ls + 2, IP6_SUBNET_CLASS)] },
+                            'relay%s-eth1' % relayIndex: { 'ipAddrs': ['2000::%d5%d/%d' % (ls + 2, f, IP6_SUBNET_CLASS)] }
+                        }
+                        if remote_server:
+                            serverIp = '2000::99fd'
+                        elif multiple_server:
+                            serverIp = '2000::3fc'
+                        else:
+                            serverIp = '2000::3fd'
+                        dhcpRelay = self.addHost(name='relay%s' % relayIndex, cls=DhcpRelay, serverIp=serverIp,
+                                                 gateway='2000::%dff' % (ls+2), interfaces=intfs)
+                    else:
+                        intfs = {
+                            'relay%s-eth0' % relayIndex: { 'ipAddrs': ['10.0.%d.254/%d' % (leaf + ls + 2, IP4_SUBNET_CLASS)] },
+                            'relay%s-eth1' % relayIndex: { 'ipAddrs': ['10.0.%d.%d/%d' % (ls + 2, f + 99, IP4_SUBNET_CLASS)] }
+                        }
+                        if remote_server:
+                            serverIp = '10.0.99.3'
+                        elif multiple_server:
+                            serverIp = '10.0.3.252'
+                        else:
+                            serverIp = '10.0.3.253'
+                        dhcpRelay = self.addHost(name='relay%s' % relayIndex, cls=DhcpRelay, serverIp=serverIp,
+                                                 gateway='10.0.%d.254' % (ls+2), interfaces=intfs)
+                    self.addLink(host, dhcpRelay, **linkopts)
+                    self.addLink(dhcpRelay, leafs[ls], **linkopts)
+                else:
+                    self.addLink(host, leafs[ls], **linkopts)
 
         last_ls = leafs[leaf-1]
         # Create common components
-        # DHCP server
-        dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01', ips=['10.0.3.253/24'],
-                            gateway='10.0.3.254', dhcpServer=True)
-
         # Control plane switch (for DHCP servers)
         cs1 = self.addSwitch('cs1', cls=OVSBridge)
         self.addLink(cs1, last_ls)
-        self.addLink(dhcp, cs1)
 
         # Control plane switch (for quagga fpm)
         cs0 = self.addSwitch('cs0', cls=OVSBridge)
@@ -284,8 +320,8 @@ class LeafSpineFabric (Topo) :
                  'bgp1-eth1': {'ipAddrs': ['172.16.0.2/12']}}
         bgp1 = self.addHost('bgp1', cls=BgpRouter,
                             interfaces=intfs,
-                            quaggaConfFile='conf/bgpdbgp1.conf',
-                            zebraConfFile='conf/zebradbgp1.conf')
+                            quaggaConfFile='./bgpdbgp1.conf',
+                            zebraConfFile='./zebradbgp1.conf')
         self.addLink(bgp1, last_ls)
         self.addLink(bgp1, cs0)
 
@@ -295,18 +331,59 @@ class LeafSpineFabric (Topo) :
                  'r1-eth2': {'ipAddrs': ['2000::9901/120']}}
         r1 = self.addHost('r1', cls=BgpRouter,
                             interfaces=intfs,
-                            quaggaConfFile='conf/bgpdr1.conf')
+                            quaggaConfFile='./bgpdr1.conf')
         self.addLink(r1, last_ls)
+
+        # External switch behind r1
+        rs0 = self.addSwitch('rs0', cls=OVSBridge)
+        self.addLink(r1, rs0)
 
         # External IPv4 Host behind r1
         rh1 = self.addHost('rh1', cls=TrellisHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
         self.addLink(r1, rh1)
 
+        # External IPv6 Host behind r1
+        rh1v6 = self.addHost('rh1v6', cls=TrellisHost, ips=['2000::9902/120'], gateway='2000::9901')
+        self.addLink(r1, rh1v6)
+
+        # DHCP server
+        if ipv6:
+            if remote_server:
+                dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01',
+                                    ips=['2000::99fd/120'], gateway='2000::9901',
+                                    dhcpServer=True, ipv6=True)
+                self.addLink(rs0, dhcp)
+            else:
+                dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01',
+                                    ips=['2000::3fd/120'], gateway='2000::3ff',
+                                    dhcpServer=True, ipv6=True)
+                self.addLink(dhcp, cs1)
+                if multiple_server:
+                    dhcp2 = self.addHost('dhcp2', cls=TrellisHost, mac='00:99:00:00:00:02',
+                                         ips=['2000::3fc/120'], gateway='2000::3ff',
+                                         dhcpServer=True, ipv6=True)
+                    self.addLink(dhcp2, cs1)
+        else:
+            if remote_server:
+                dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01',
+                                    ips=['10.0.99.3/24'], gateway='10.0.99.1',
+                                    dhcpServer=True)
+                self.addLink(rs0, dhcp)
+            else:
+                dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01',
+                                    ips=['10.0.3.253/24'], gateway='10.0.3.254',
+                                    dhcpServer=True)
+                self.addLink(dhcp, cs1)
+                if multiple_server:
+                    dhcp2 = self.addHost('dhcp2', cls=TrellisHost, mac='00:99:00:00:00:02',
+                                         ips=['10.0.3.252/24'], gateway='10.0.3.254',
+                                         dhcpServer=True)
+                    self.addLink(dhcp2, cs1)
+
 def config( opts ):
     spine = opts.spine
     leaf = opts.leaf
     fanout = opts.fanout
-    ipv6 = opts.ipv6
     dualhomed = opts.dualhomed
     if opts.vlan == '':
         vlan = [0] * (((leaf / 2) if dualhomed else leaf) * fanout)
@@ -322,18 +399,23 @@ def config( opts ):
         print "Invalid vlan configuration is given."
         return
 
-    if not ipv6:
-        if dualhomed:
-            if leaf % 2 == 1 or leaf == 0:
-                print "Even number of leaf switches (at least two) are needed to build dual-homed topology."
-                return
-            else:
-                topo = DualHomedLeafSpineFabric(spine=spine, leaf=leaf, fanout=fanout, vlan_id=vlan)
+    if dualhomed:
+        if leaf % 2 == 1 or leaf == 0:
+            print "Even number of leaf switches (at least two) are needed to build dual-homed topology."
+            return
         else:
-            topo = LeafSpineFabric(spine=spine, leaf=leaf, fanout=fanout, vlan_id=vlan)
+            topo = DualHomedLeafSpineFabric(spine=spine, leaf=leaf, fanout=fanout, vlan_id=vlan,
+                                            ipv6=opts.ipv6,
+                                            dhcp_client=opts.dhcpClient,
+                                            dhcp_relay=opts.dhcpRelay,
+                                            multiple_server=opts.multipleServer,
+                                            remote_server=opts.remoteServer)
     else:
-        print "IPv6 hosts are not supported yet."
-        return
+        topo = LeafSpineFabric(spine=spine, leaf=leaf, fanout=fanout, vlan_id=vlan, ipv6=opts.ipv6,
+                               dhcp_client=opts.dhcpClient,
+                               dhcp_relay=opts.dhcpRelay,
+                               multiple_server=opts.multipleServer,
+                               remote_server=opts.remoteServer)
 
     net = Mininet( topo=topo, link=TCLink, build=False,
                    controller=None, autoSetMacs=True )

@@ -1,0 +1,42 @@
+<PARAMS>
+    <testcases>1,2,11,12,21,22,31,41,51,61,71</testcases>
+
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <topology>trellis_fabric.py</topology>
+        <lib>routinglib.py,trellislib.py</lib>
+        <testConf>dhcpd.conf,dhcpd6.conf,bgpdr1.conf,bgpdr2.conf,bgpdbgp1.conf,zebradbgp1.conf,bgpdbgp2.conf,zebradbgp2.conf</testConf>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement</cellApps>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+    </timers>
+
+    <SLEEP>
+        <startup>10</startup>
+    </SLEEP>
+</PARAMS>

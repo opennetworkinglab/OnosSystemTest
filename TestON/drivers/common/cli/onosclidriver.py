@@ -1151,6 +1151,55 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def verifyHostIp( self, hostList=[], prefix="" ):
+        """
+        Description:
+            Verify that all hosts have IP address assigned to them
+        Optional:
+            hostList: If specified, verifications only happen to the hosts
+            in hostList
+            prefix: at least one of the ip address assigned to the host
+            needs to have the specified prefix
+        Returns:
+            main.TRUE if all hosts have specific IP address assigned;
+            main.FALSE otherwise
+        """
+        import json
+        try:
+            hosts = self.hosts()
+            hosts = json.loads( hosts )
+            if not hostList:
+                hostList = [ host[ "id" ] for host in hosts ]
+            for host in hosts:
+                hostId = host[ "id" ]
+                if hostId not in hostList:
+                    continue
+                ipList = host[ "ipAddresses" ]
+                main.log.debug( self.name + ": IP list on host " + str( hostId ) + ": " + str( ipList ) )
+                if not ipList:
+                    main.log.warn( self.name + ": Failed to discover any IP addresses on host " + str( hostId ) )
+                else:
+                    if not any( ip.startswith( str( prefix ) ) for ip in ipList ):
+                        main.log.warn( self.name + ": None of the IPs on host " + str( hostId ) + " has prefix " + str( prefix ) )
+                    else:
+                        main.log.debug( self.name + ": Found matching IP on host " + str( hostId ) )
+                        hostList.remove( hostId )
+            if hostList:
+                main.log.warn( self.name + ": failed to verify IP on following hosts: " + str( hostList) )
+                return main.FALSE
+            else:
+                return main.TRUE
+        except KeyError:
+            main.log.exception( self.name + ": host data not as expected: " + hosts )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
     def addHostIntent( self, hostIdOne, hostIdTwo, vlanId="", setVlan="", encap="", bandwidth="" ):
         """
         Required:

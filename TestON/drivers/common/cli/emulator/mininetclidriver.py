@@ -2871,10 +2871,12 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getHosts( self, verbose=False, updateTimeout=1000 ):
+    def getHosts( self, verbose=False, updateTimeout=1000, hostClass=[ "Host", "DhcpClient", "Dhcp6Client", "DhcpServer", "Dhcp6Server", "DhcpRelay" ] ):
         """
         Read hosts from Mininet.
-
+        Optional:
+            hostClass: it is used to match the class of the mininet host. It
+                       can be a string or a list of strings.
         Returns a dictionary whose keys are the host names and the value is
         a dictionary containing information about the host.
         """
@@ -2888,7 +2890,10 @@ class MininetCliDriver( Emulator ):
         #       <Host h2: h2-eth0:10.0.0.2,h2-eth1:10.0.1.2 pid=14386>
         # FIXME: Fix that
         try:
-            hostRE = r"Host\s(?P<name>[^:]+)\:((\s(?P<ifname>[^:]+)\:" +\
+            if not isinstance( hostClass, types.ListType ):
+                hostClass = [ str( hostClass ) ]
+            classRE = "(" + "|".join([c for c in hostClass]) + ")"
+            hostRE = r"" + classRE + "\s(?P<name>[^:]+)\:((\s(?P<ifname>[^:]+)\:" +\
                 "(?P<ip>[^\s]+))|(\s)\spid=(?P<pid>[^>]+))"
             # update mn port info
             self.update( updateTimeout )
@@ -2896,8 +2901,8 @@ class MininetCliDriver( Emulator ):
             dump = self.dump().split( "\n" )
             hosts = {}
             for line in dump:
-                if "Host" in line :
-                    result = re.search( hostRE, line )
+                result = re.search( hostRE, line )
+                if result:
                     name = result.group( 'name' )
                     interfaces = []
                     response = self.getInterfaces( name )
@@ -3287,6 +3292,56 @@ class MininetCliDriver( Emulator ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def verifyHostIp( self, hostList=[], prefix="" ):
+        """
+        Description:
+            Verify that all hosts have IP address assigned to them
+        Optional:
+            hostList: If specified, verifications only happen to the hosts
+            in hostList
+            prefix: at least one of the ip address assigned to the host
+            needs to have the specified prefix
+        Returns:
+            main.TRUE if all hosts have specific IP address assigned;
+            main.FALSE otherwise
+        """
+        try:
+            hosts = self.getHosts()
+            if not hostList:
+                hostList = hosts.keys()
+            for hostName in hosts.keys():
+                if hostName not in hostList:
+                    continue
+                ipList = []
+                self.handle.sendline( str( hostName ) + " ip a" )
+                self.handle.expect( "mininet>" )
+                ipa = self.handle.before
+                ipv4Pattern = r'inet ((?:[0-9]{1,3}\.){3}[0-9]{1,3})/'
+                ipList += re.findall( ipv4Pattern, ipa )
+                # It's tricky to make regex for IPv6 addresses and this one is simplified
+                ipv6Pattern = r'inet6 ((?:[0-9a-fA-F]{1,4})?(?:[:0-9a-fA-F]{1,4}){1,7}(?:::)?(?:[:0-9a-fA-F]{1,4}){1,7})/'
+                ipList += re.findall( ipv6Pattern, ipa )
+                main.log.debug( self.name + ": IP list on host " + str( hostName ) + ": " + str( ipList ) )
+                if not ipList:
+                    main.log.warn( self.name + ": Failed to discover any IP addresses on host " + str( hostName ) )
+                else:
+                    if not any( ip.startswith( str( prefix ) ) for ip in ipList ):
+                        main.log.warn( self.name + ": None of the IPs on host " + str( hostName ) + " has prefix " + str( prefix ) )
+                    else:
+                        main.log.debug( self.name + ": Found matching IP on host " + str( hostName ) )
+                        hostList.remove( hostName )
+            return main.FALSE if hostList else main.TRUE
+        except KeyError:
+            main.log.exception( self.name + ": host data not as expected: " + hosts )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
 
     def getHostsOld( self ):
         """

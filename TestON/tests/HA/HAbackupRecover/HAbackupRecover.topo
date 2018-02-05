@@ -1,0 +1,53 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOScell>
+            <host>localhost</host>  # ONOS "bench" machine
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosClusterDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost></diff_clihost>  # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
+                <karaf_username></karaf_username>
+                <karaf_password></karaf_password>
+                <web_user></web_user>
+                <web_pass></web_pass>
+                <rest_port></rest_port>
+                <prompt></prompt>  # TODO: we technically need a few of these, one per component
+                <onos_home></onos_home>  # defines where onos home is
+                <nodes> 7 </nodes>  # number of nodes in the cluster
+            </COMPONENTS>
+        </ONOScell>
+
+        <Mininet1>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>MininetCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                #Specify the Option for mininet
+                <arg1> --custom ~/mininet/custom/obelisk.py </arg1>
+                <arg2> --topo obelisk </arg2>
+                <arg3> --switch ovs,protocols=OpenFlow13 </arg3>
+                <controller> none </controller>
+                <home>~/mininet/custom/</home>
+                <prompt></prompt>
+            </COMPONENTS>
+        </Mininet1>
+
+        <Mininet2>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>RemoteMininetDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </Mininet2>
+
+    </COMPONENT>
+</TOPOLOGY>

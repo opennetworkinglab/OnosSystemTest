@@ -1,0 +1,23 @@
+This test is designed to verify that an ONOS cluster behaves correctly when
+restoring an ONOS cluster from backups. We will take a backup of ONOS data
+for each node in the cluster. Then stop and reinstall ONOS on each node.
+Then copy the backup data to the correct locations, restart ONOS, and verify
+correct behavior as the cluster restarts.
+
+The gerneral structure for the test:
+- Startup
+- Assign switches
+- Verify ONOS state and functionality
+    - Device mastership
+    - Intents
+    - Leadership election
+    - Distributed Primitives
+- Take backup of ONOS data
+- Stop ONOS nodes
+- Reinstall ONOS nodes
+- Restore data from backups
+- Restart ONOS nodes
+- Verify ONOS state and functionality
+- Dataplane failures
+    - link down and up
+    - switch down and up

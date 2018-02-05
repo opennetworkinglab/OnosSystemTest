@@ -3805,12 +3805,12 @@ class OnosCliDriver( CLI ):
                     result = main.FALSE
                 # get the entry in ids that has the same appID
                 current = filter( lambda item: item[ 'id' ] == appID, ids )
-                # main.log.debug( "Comparing " + str( app ) + " to " +
-                #                 str( current ) )
                 if not current:  # if ids doesn't have this id
                     result = main.FALSE
                     main.log.error( "'app-ids' does not have the ID for " +
                                     str( appName ) + " that apps does." )
+                    main.log.debug( "apps command returned: " + str( app ) +
+                                    "; app-ids has: " + str( ids ) )
                 elif len( current ) > 1:
                     # there is more than one app with this ID
                     result = main.FALSE

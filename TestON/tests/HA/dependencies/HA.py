@@ -451,12 +451,21 @@ class HA():
         Check App IDs on all nodes
         """
         # FIXME: Rename this to appIDCheck? or add a check for isntalled apps
-        appResults = main.Cluster.command( "appToIDCheck" )
-        appCheck = all( i == main.TRUE for i in appResults )
+        for i in range( 15 ):
+            # TODO modify retry or add a new version that accepts looking for
+            # a value in a return list instead of needing to match the entire
+            # return value to retry
+            appResults = main.Cluster.command( "appToIDCheck" )
+            appCheck = all( i == main.TRUE for i in appResults )
+            if appCheck:
+                break
+            else:
+                time.sleep( 5 )
+
         if not appCheck:
             ctrl = main.Cluster.active( 0 )
-            main.log.debug( "%s apps: %s" % ( ctrl.name, ctrl.apps() ) )
-            main.log.debug( "%s appIDs: %s" % ( ctrl.name, ctrl.appIDs() ) )
+            main.log.debug( "%s apps: %s" % ( ctrl.name, ctrl.pprint( ctrl.apps() ) ) )
+            main.log.debug( "%s appIDs: %s" % ( ctrl.name, ctrl.pprint( ctrl.appIDs() ) ) )
         return appCheck
 
     def workQueueStatsCheck( self, workQueueName, completed, inProgress, pending ):

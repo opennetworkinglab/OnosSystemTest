@@ -1337,14 +1337,17 @@ class OnosDriver( CLI ):
             self.handle.sendline( "onos-wait-for-start " + node )
             self.handle.expect( "onos-wait-for-start" )
             # NOTE: this timeout is arbitrary"
-            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout )
+            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT, "Password:" ], timeout )
             if i == 0:
                 main.log.info( self.name + ": " + node + " is up" )
                 return main.TRUE
-            elif i == 1:
+            elif i == 1 or i == 2:
                 # NOTE: since this function won't return until ONOS is ready,
                 #   we will kill it on timeout
-                main.log.error( "ONOS has not started yet" )
+                if i == 1:
+                    main.log.error( "ONOS has not started yet" )
+                elif i == 2:
+                    main.log.error( "Cannot login to ONOS CLI, try using onos-secure-ssh" )
                 self.handle.send( "\x03" )  # Control-C
                 self.handle.expect( self.prompt )
                 return main.FALSE

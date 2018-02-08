@@ -29,7 +29,7 @@ class SRRoutingTest ():
         self.default = ''
 
     @staticmethod
-    def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6, h1, h2, description):
+    def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6, description):
 
         skipPackage = False
         init = False
@@ -63,7 +63,7 @@ class SRRoutingTest ():
             pass
 
         # ping hosts
-        main.Network.pingHost(src=h1, target=h2)
+        main.Network.pingAll()
 
         if hasattr(main, 'Mininet1'):
             run.cleanup(main)

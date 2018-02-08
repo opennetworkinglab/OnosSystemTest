@@ -5,8 +5,7 @@ class SRRouting:
 
     def CASE1( self, main ):
         """
-        Tests routing between single-homed untagged host and single-homed
-        untagged host residing on the same leaf.
+        Ping between all ipv4 hosts in the topology.
         """
 
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
@@ -18,9 +17,6 @@ class SRRouting:
                                 routers=0,
                                 ipv4=1,
                                 ipv6=0,
-                                h1="h1v4",
-                                h2="h2v4",
-                                description = "Routing test for untagged to\
-                              untagged single homed hosts residing on the same\
-                              leaf")
+                                description = "Ping between all ipv4 hosts in
+                              the topology")
 

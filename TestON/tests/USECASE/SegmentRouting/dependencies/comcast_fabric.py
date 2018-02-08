@@ -38,6 +38,7 @@ class DualHomedTaggedHostWithIpv4(Host):
 
     def __init__(self, name, ip, gateway, dhcp, vlan, *args, **kwargs):
         super(DualHomedTaggedHostWithIpv4, self).__init__(name, **kwargs)
+        self.vlanBond0 = None
         self.bond0 = None
         self.ip = ip
         self.gateway = gateway
@@ -70,8 +71,8 @@ class DualHomedTaggedHostWithIpv4(Host):
         self.cmd('ip route add default via %s' % self.gateway)
 
         default_intf = self.defaultIntf()
-        default_intf.name = self.bond0
-        self.nameToIntf[self.bond0] = default_intf
+        default_intf.name = self.vlanBondIntf
+        self.nameToIntf[self.vlanBond0] = default_intf
 
     def terminate(self, **kwargs):
         self.cmd('ip link set %s down' % self.bond0)

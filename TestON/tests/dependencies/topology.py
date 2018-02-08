@@ -130,7 +130,7 @@ class Topology:
 
         return currentCompareResult
 
-    def compareTopos( self, Mininet, attempts=1 ):
+    def compareTopos( self, Mininet, attempts=1, includeCaseDesc=True ):
         """
         Description:
             compares the links and hosts and switches of the onos to the mininet.
@@ -142,9 +142,10 @@ class Topology:
             Returns main.TRUE if the results are matching else
             Returns main.FALSE
         """
-        main.case( "Compare ONOS Topology view to Mininet topology" )
-        main.caseExplanation = "Compare topology elements between Mininet" +\
-                                " and ONOS"
+        if includeCaseDesc:
+            main.case( "Compare ONOS Topology view to Mininet topology" )
+            main.caseExplanation = "Compare topology elements between Mininet" +\
+                                   " and ONOS"
         main.log.info( "Gathering topology information from Mininet" )
         devicesResults = main.FALSE  # Overall Boolean for device correctness
         linksResults = main.FALSE  # Overall Boolean for link correctness

@@ -49,7 +49,7 @@ class Testcaselib:
             main.cleanAndExit()
         from tests.dependencies.Network import Network
         main.Network = Network()
-        main.testSetUp.envSetupDescription()
+        main.testSetUp.envSetupDescription( False )
         stepResult = main.FALSE
         try:
             main.step( "Constructing test variables" )
@@ -66,7 +66,7 @@ class Testcaselib:
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
 
-            stepResult = main.testSetUp.envSetup()
+            stepResult = main.testSetUp.envSetup( False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
 
@@ -95,7 +95,7 @@ class Testcaselib:
         main.testSetUp.ONOSSetUp( main.Cluster, newCell=True, cellName=main.cellName,
                                   skipPack=skipPackage,
                                   useSSH=Testcaselib.useSSH,
-                                  installParallel=parallel)
+                                  installParallel=parallel, includeCaseDesc=False )
         ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
                                  main.FALSE,
                                  sleep=cliSleep,
@@ -411,7 +411,7 @@ class Testcaselib:
 
         main.utils.mininetCleanup( main.Mininet1 )
 
-        main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True )
+        main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
 
         for ctrl in main.Cluster.active():
             main.ONOSbench.onosStop( ctrl.ipAddress )

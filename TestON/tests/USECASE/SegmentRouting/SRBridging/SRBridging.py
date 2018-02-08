@@ -16,7 +16,7 @@ class SRBridging:
                                 test_idx = 1,
                                 topology = '0x1',
                                 onosNodes = 1,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-untagged port" )
 
     def CASE2( self, main ):
         """
@@ -32,7 +32,7 @@ class SRBridging:
                                 test_idx = 2,
                                 topology = '0x2',
                                 onosNodes = 1,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-untagged port" )
 
     def CASE3( self, main ):
         """
@@ -48,7 +48,7 @@ class SRBridging:
                                 test_idx = 3,
                                 topology = '2x2',
                                 onosNodes = 1,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-untagged port" )
 
     def CASE4( self, main ):
         """
@@ -64,7 +64,7 @@ class SRBridging:
                                 test_idx = 4,
                                 topology = '2x4',
                                 onosNodes = 1,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-untagged port" )
 
     def CASE5( self, main ):
         """
@@ -80,7 +80,7 @@ class SRBridging:
                                 test_idx = 5,
                                 topology = '0x1',
                                 onosNodes = 3,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-untagged port" )
 
     def CASE6( self, main ):
         """
@@ -96,7 +96,7 @@ class SRBridging:
                                 test_idx = 6,
                                 topology = '0x2',
                                 onosNodes = 3,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-untagged port" )
 
     def CASE7( self, main ):
         """
@@ -112,7 +112,7 @@ class SRBridging:
                                 test_idx = 7,
                                 topology = '2x2',
                                 onosNodes = 3,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-untagged port" )
 
     def CASE8( self, main ):
         """
@@ -128,7 +128,7 @@ class SRBridging:
                                 test_idx = 8,
                                 topology = '2x4',
                                 onosNodes = 3,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-untagged port" )
 
     def CASE11( self, main ):
         """
@@ -280,7 +280,7 @@ class SRBridging:
                                 test_idx = 21,
                                 topology = '0x1',
                                 onosNodes = 1,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-native port" )
 
     def CASE22( self, main ):
         """
@@ -296,7 +296,7 @@ class SRBridging:
                                 test_idx = 22,
                                 topology = '0x2',
                                 onosNodes = 1,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-native port" )
 
     def CASE23( self, main ):
         """
@@ -312,7 +312,7 @@ class SRBridging:
                                 test_idx = 23,
                                 topology = '2x2',
                                 onosNodes = 1,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-native port" )
 
     def CASE24( self, main ):
         """
@@ -328,7 +328,7 @@ class SRBridging:
                                 test_idx = 24,
                                 topology = '2x4',
                                 onosNodes = 1,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-native port" )
 
     def CASE25( self, main ):
         """
@@ -344,7 +344,7 @@ class SRBridging:
                                 test_idx = 25,
                                 topology = '0x1',
                                 onosNodes = 3,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-native port" )
 
     def CASE26( self, main ):
         """
@@ -360,7 +360,7 @@ class SRBridging:
                                 test_idx = 26,
                                 topology = '0x2',
                                 onosNodes = 3,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-native port" )
 
     def CASE27( self, main ):
         """
@@ -376,7 +376,7 @@ class SRBridging:
                                 test_idx = 27,
                                 topology = '2x2',
                                 onosNodes = 3,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-native port" )
 
     def CASE28( self, main ):
         """
@@ -392,7 +392,7 @@ class SRBridging:
                                 test_idx = 28,
                                 topology = '2x4',
                                 onosNodes = 3,
-                                description = "Bridging test between two untagged hosts" )
+                                description = "Bridging test between two untagged hosts on vlan-native port" )
 
     def CASE31( self, main ):
         """

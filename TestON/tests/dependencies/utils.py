@@ -23,7 +23,7 @@ class Utils:
     def __init__( self ):
         self.default = ''
 
-    def mininetCleanIntro( self ):
+    def mininetCleanIntro( self, includeCaseDesc=True ):
         """
         Description:
             Introduction information of the mininet clean up
@@ -31,9 +31,9 @@ class Utils:
         Returns:
         """
         main.log.report( "Stop Mininet" )
-
-        main.case( "Stop Mininet" )
-        main.caseExplanation = "Stopping the current mininet to start up fresh"
+        if includeCaseDesc:
+            main.case( "Stop Mininet" )
+            main.caseExplanation = "Stopping the current mininet to start up fresh"
 
     def mininetCleanup( self, Mininet, timeout=5, exitTimeout=1000 ):
         """
@@ -54,7 +54,7 @@ class Utils:
                                  onfail="Failed to stopped mininet" )
         return topoResult
 
-    def copyKarafLog( self, copyFileName="", before=False ):
+    def copyKarafLog( self, copyFileName="", before=False, includeCaseDesc=True ):
         """
         Description:
             copy the karaf log and verify it.
@@ -65,9 +65,10 @@ class Utils:
         """
         # TODO: Also grab the rotated karaf logs
         main.log.report( "Copy karaf logs" )
-        main.case( "Copy karaf logs" )
-        main.caseExplanation = "Copying the karaf logs to preserve them through" +\
-                               "reinstalling ONOS"
+        if includeCaseDesc:
+            main.case( "Copy karaf logs" )
+            main.caseExplanation = "Copying the karaf logs to preserve them through" +\
+                                   "reinstalling ONOS"
         main.step( "Copying karaf logs" )
         stepResult = main.TRUE
         scpResult = main.TRUE
@@ -78,11 +79,10 @@ class Utils:
                                                           "/tmp/karaf.log",
                                                           direction="from" )
             copyResult = copyResult and main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
-                                                                    copyFileName= ( copyFileName + "_karaf.log." +
-                                                                                    ctrl.name + "_" )
-                                                                                  if before else
-                                                                                  ( "karaf.log." + ctrl.name +
-                                                                                   "." + copyFileName ) )
+                                                                    copyFileName=( copyFileName + "_karaf.log." +
+                                                                                   ctrl.name + "_" ) if before else
+                                                                                 ( "karaf.log." + ctrl.name +
+                                                                                    "." + copyFileName ) )
             if scpResult and copyResult:
                 stepResult = main.TRUE and stepResult
             else:

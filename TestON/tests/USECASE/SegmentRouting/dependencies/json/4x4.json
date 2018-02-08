@@ -3,158 +3,168 @@
     "of:0000000000000001/1" : {
         "interfaces" : [
         {
-            "ips" : [ "10.0.1.254/24" ]
+            "ips" : [ "10.0.1.254/24" ],
+            "vlan-untagged" : 100
         }
         ]
     },
     "of:0000000000000001/2" : {
         "interfaces" : [
         {
-            "ips" : [ "10.0.1.254/24" ]
+            "ips" : [ "10.0.1.254/24" ],
+            "vlan-untagged" : 100
         }
         ]
     },
     "of:0000000000000001/3" : {
         "interfaces" : [
             {
-                "ips" : [ "10.0.1.254/24" ]
+                "ips" : [ "10.0.1.254/24" ],
+            "vlan-untagged" : 100
             }
         ]
     },
     "of:0000000000000001/4" : {
         "interfaces" : [
             {
-                "ips" : [ "10.0.1.254/24" ]
+                "ips" : [ "10.0.1.254/24" ],
+            "vlan-untagged" : 100
             }
         ]
     },
     "of:0000000000000002/1" : {
         "interfaces" : [
         {
-            "ips" : [ "10.0.2.254/24" ]
+            "ips" : [ "10.0.2.254/24" ],
+            "vlan-untagged" : 200
         }
         ]
     },
     "of:0000000000000002/2" : {
         "interfaces" : [
         {
-            "ips" : [ "10.0.2.254/24" ]
+            "ips" : [ "10.0.2.254/24" ],
+            "vlan-untagged" : 200
         }
         ]
     },
     "of:0000000000000003/1" : {
         "interfaces" : [
         {
-            "ips" : [ "10.0.3.254/24" ]
+            "ips" : [ "10.0.3.254/24" ],
+            "vlan-untagged" : 300
         }
         ]
     },
     "of:0000000000000003/2" : {
         "interfaces" : [
         {
-            "ips" : [ "10.0.3.254/24" ]
+            "ips" : [ "10.0.3.254/24" ],
+            "vlan-untagged" : 300
         }
         ]
     },
     "of:0000000000000004/1" : {
         "interfaces" : [
         {
-            "ips" : [ "10.0.4.254/24" ]
+            "ips" : [ "10.0.4.254/24" ],
+            "vlan-untagged" : 400
         }
         ]
     },
     "of:0000000000000004/2" : {
         "interfaces" : [
         {
-            "ips" : [ "10.0.4.254/24"]
+            "ips" : [ "10.0.4.254/24"],
+            "vlan-untagged" : 400
         }
         ]
     }
     },
     "devices" : {
         "of:0000000000000001" : {
-            "basic":{ "driver" : "ofdpa-cpqd" },
+            "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R1",
-                "nodeSid" : 1,
-                "routerIp" : "192.168.0.1",
+                "ipv4NodeSid" : 1,
+                "ipv4Loopback" : "192.168.0.1",
                 "routerMac" : "10:00:00:00:00:01",
                 "isEdgeRouter" : true,
                 "adjacencySids" : []
             }
         },
         "of:0000000000000002" : {
-            "basic":{ "driver" : "ofdpa-cpqd" },
+            "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R2",
-                "nodeSid" : 2,
-                "routerIp" : "192.168.0.2",
+                "ipv4NodeSid" : 2,
+                "ipv4Loopback" : "192.168.0.2",
                 "routerMac" : "10:00:00:00:00:02",
                 "isEdgeRouter" : true,
                 "adjacencySids" : []
             }
         },
         "of:0000000000000003" : {
-            "basic" :{ "driver" : "ofdpa-cpqd" },
+            "basic" :{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R3",
-                "nodeSid" : 3,
-                "routerIp" : "192.168.0.3",
+                "ipv4NodeSid" : 3,
+                "ipv4Loopback" : "192.168.0.3",
                 "routerMac" : "10:00:00:00:00:03",
                 "isEdgeRouter" : true,
                 "adjacencySids" : []
             }
         },
         "of:0000000000000004" : {
-            "basic":{ "driver" : "ofdpa-cpqd" },
+            "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R4",
-                "nodeSid" : 4,
-                "routerIp" : "192.168.0.4",
+                "ipv4NodeSid" : 4,
+                "ipv4Loopback" : "192.168.0.4",
                 "routerMac" : "10:00:00:00:00:04",
                 "isEdgeRouter" : true,
                 "adjacencySids" : []
             }
         },
         "of:0000000000000101" : {
-            "basic":{ "driver" : "ofdpa-cpqd" },
+            "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Spine-R1",
-                "nodeSid" : 101,
-                "routerIp" : "192.168.0.101",
+                "ipv4NodeSid" : 101,
+                "ipv4Loopback" : "192.168.0.101",
                 "routerMac" : "10:00:00:00:01:01",
                 "isEdgeRouter" : false,
                 "adjacencySids" : []
             }
         },
         "of:0000000000000102" : {
-            "basic":{ "driver" : "ofdpa-cpqd" },
+            "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Spine-R2",
-                "nodeSid" : 102,
-                "routerIp" : "192.168.0.102",
+                "ipv4NodeSid" : 102,
+                "ipv4Loopback" : "192.168.0.102",
                 "routerMac" : "10:00:00:00:01:02",
                 "isEdgeRouter" : false,
                 "adjacencySids" : []
             }
         },
         "of:0000000000000103" : {
-            "basic":{ "driver" : "ofdpa-cpqd" },
+            "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Spine-R3",
-                "nodeSid" : 103,
-                "routerIp" : "192.168.0.103",
+                "ipv4NodeSid" : 103,
+                "ipv4Loopback" : "192.168.0.103",
                 "routerMac" : "10:00:00:00:01:03",
                 "isEdgeRouter" : false,
                 "adjacencySids" : []
             }
         },
         "of:0000000000000104" : {
-            "basic":{ "driver" : "ofdpa-cpqd" },
+            "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Spine-R4",
-                "nodeSid" : 104,
-                "routerIp" : "192.168.0.104",
+                "ipv4NodeSid" : 104,
+                "ipv4Loopback" : "192.168.0.104",
                 "routerMac" : "10:00:00:00:01:04",
                 "isEdgeRouter" : false,
                 "adjacencySids" : []
@@ -165,49 +175,49 @@
         "00:00:00:00:00:01/-1" : {
             "basic": {
                 "ips": ["10.0.1.1"],
-                "location": "of:0000000000000001/1"
+                "locations": ["of:0000000000000001/1"]
             }
         },
         "00:00:00:00:00:02/-1" : {
             "basic": {
                 "ips": ["10.0.1.2"],
-                "location": "of:0000000000000001/2"
+                "locations": ["of:0000000000000001/2"]
             }
         },
         "00:00:00:00:00:03/-1" : {
             "basic": {
                 "ips": ["10.0.2.1"],
-                "location": "of:0000000000000002/1"
+                "locations": ["of:0000000000000002/1"]
             }
         },
         "00:00:00:00:00:04/-1" : {
             "basic": {
                 "ips": ["10.0.2.2"],
-                "location": "of:0000000000000002/2"
+                "locations": ["of:0000000000000002/2"]
             }
         },
         "00:00:00:00:00:05/-1" : {
             "basic": {
                 "ips": ["10.0.3.1"],
-                "location": "of:0000000000000003/1"
+                "locations": ["of:0000000000000003/1"]
             }
         },
         "00:00:00:00:00:06/-1" : {
             "basic": {
                 "ips": ["10.0.3.2"],
-                "location": "of:0000000000000003/2"
+                "locations": ["of:0000000000000003/2"]
             }
         },
         "00:00:00:00:00:07/-1" : {
             "basic": {
                 "ips": ["10.0.4.1"],
-                "location": "of:0000000000000004/1"
+                "locations": ["of:0000000000000004/1"]
             }
         },
         "00:00:00:00:00:08/-1" : {
             "basic": {
                 "ips": ["10.0.4.2"],
-                "location": "of:0000000000000004/2"
+                "locations": ["of:0000000000000004/2"]
             }
         }
     },

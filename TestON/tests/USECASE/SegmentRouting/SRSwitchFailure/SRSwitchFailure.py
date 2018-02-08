@@ -58,7 +58,7 @@ class SRSwitchFailure:
         run.killSwitch( main, switch, switches='3', links='4' )
         run.pingAll( main, "CASE1_Failure" )
         run.recoverSwitch( main, switch, switches='4', links='8' )
-        run.checkFlows( main, minFlowCount=116 )
+        run.checkFlows( main, minFlowCount=116, tag="CASE1_Recovery" )
         run.pingAll( main, "CASE1_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -95,7 +95,7 @@ class SRSwitchFailure:
         time.sleep( main.switchSleep )
         run.pingAll( main, "CASE2_Failure" )
         run.recoverSwitch( main, switch, switches='8', links='32' )
-        run.checkFlows( main, minFlowCount=350 )
+        run.checkFlows( main, minFlowCount=350, tag="CASE2_Recovery" )
         run.pingAll( main, "CASE2_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -128,10 +128,10 @@ class SRSwitchFailure:
         # switch failure
         switch = main.params[ 'kill' ][ 'switch' ]
         run.killSwitch( main, switch, switches='3', links='4' )
-        run.pingAll( main, "CASE3_Failure" )
+        run.pingAll( main, "CASE4_Failure" )
         run.recoverSwitch( main, switch, switches='4', links='8' )
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main, "CASE3_Recovery" )
+        run.checkFlows( main, minFlowCount=116, tag="CASE4_Recovery" )
+        run.pingAll( main, "CASE4_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO Dynamic config of vlan xconnect
@@ -165,10 +165,10 @@ class SRSwitchFailure:
         switch = main.params[ 'kill' ][ 'switch' ]
         run.killSwitch( main, switch, switches='7', links='24' )
         time.sleep( main.switchSleep )
-        run.pingAll( main, "CASE4_Failure" )
+        run.pingAll( main, "CASE5_Failure" )
         run.recoverSwitch( main, switch, switches='8', links='32' )
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main, "CASE4_Recovery" )
+        run.checkFlows( main, minFlowCount=350, tag="CASE5_Recovery" )
+        run.pingAll( main, "CASE5_Recovery" )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
         # TODO preconfigured xconnect

@@ -27,7 +27,7 @@ from optparse import OptionParser
 from ipaddress import IPv6Network, IPv4Network
 from mininet.net import Mininet
 from mininet.topo import Topo
-from mininet.node import RemoteController, UserSwitch, Host, OVSBridge
+from mininet.node import RemoteController, Host, OVSBridge
 from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
@@ -43,8 +43,8 @@ def parseOptions():
                        help='number of leaf switches, default=2' )
     parser.add_option( '--fanout', dest='fanout', type='int', default=2,
                        help='number of hosts per leaf switch, default=2' )
-    parser.add_option( '--onos', dest='onos', type='int', default=0,
-                       help='number of ONOS Instances, default=0, 0 means localhost, 1 will use OC1 and so on' )
+    parser.add_option( '--onos-ip', dest='onosIp', type='str', default='',
+                       help='IP address list of ONOS instances, separated by comma(,). Overrides --onos option' )
     parser.add_option( '--vlan', dest='vlan', type='int', default=-1,
                        help='vid of cross connect, default=-1, -1 means utilize default value' )
     parser.add_option( '--ipv6', action="store_true", dest='ipv6',
@@ -266,9 +266,11 @@ def config( opts ):
     fanout = opts.fanout
     vlan = opts.vlan
     ipv6 = opts.ipv6
-    controllers = [ os.environ[ 'OC%s' % i ] for i in
-                    range( 1, opts.onos + 1 ) ] if ( opts.onos ) else [
-        '127.0.0.1' ]
+    if opts.onosIp != '':
+        controllers = opts.onosIp.split( ',' )
+    else:
+        controllers = ['127.0.0.1']
+
     if not ipv6:
         topo = LeafAndSpine(
             spine=spine,
@@ -285,7 +287,7 @@ def config( opts ):
             ipv6=ipv6
         )
     net = Mininet( topo=topo, link=TCLink, build=False,
-                   switch=UserSwitch, controller=None, autoSetMacs=True )
+                   controller=None, autoSetMacs=True )
     i = 0
     for ip in controllers:
         net.addController( "c%s" % ( i ), controller=RemoteController, ip=ip )

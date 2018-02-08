@@ -48,11 +48,11 @@ class SRClusterRestart:
         run.startMininet( main, 'cord_fabric.py' )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main, "CASE1" )
+        run.pingAll( main )
         run.killOnos( main, [ 0, 1, 2 ], '4', '8', '0' )
         run.pingAll( main, 'CASE1_Failure', dumpflows=False )
         run.recoverOnos( main, [ 0, 1, 2 ], '4', '8', '3' )
-        run.checkFlows( main, minFlowCount=116 )
+        run.checkFlows( main, minFlowCount=116, tag='CASE1_Failure' )
         run.pingAll( main, 'CASE1_Failure' )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -81,11 +81,11 @@ class SRClusterRestart:
         run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main, 'CASE2' )
+        run.pingAll( main )
         run.killOnos( main, [ 0, 1, 2 ], '8', '32', '0' )
         run.pingAll( main, 'CASE2_Failure', dumpflows=False )
         run.recoverOnos( main, [ 0, 1, 2 ], '8', '32', '3' )
-        run.checkFlows( main, minFlowCount=350 )
+        run.checkFlows( main, minFlowCount=350, tag='CASE2_Failure' )
         run.pingAll( main, 'CASE3_Recovery' )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet
@@ -114,11 +114,11 @@ class SRClusterRestart:
         run.startMininet( main, 'cord_fabric.py', args="--leaf=1 --spine=0" )
         # pre-configured routing and bridging test
         run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main, 'CASE3' )
+        run.pingAll( main )
         run.killOnos( main, [ 0, 1, 2 ], '1', '0', '0' )
         run.pingAll( main, 'CASE3_Failure', dumpflows=False )
         run.recoverOnos( main, [ 0, 1, 2 ], '1', '0', '3' )
-        run.checkFlows( main, minFlowCount=15 )
+        run.checkFlows( main, minFlowCount=15, tag='CASE3_Failure' )
         run.pingAll( main, 'CASE3_Failure' )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet

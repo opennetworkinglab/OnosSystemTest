@@ -12,8 +12,8 @@ from mininet.topo import Topo
 from mininet.nodelib import NAT
 from mininet.cli import CLI
 
-from routinglib import BgpRouter, RoutedHost
-from trellislib import DhcpServer, TaggedRoutedHost, DualHomedRoutedHost, DualHomedTaggedRoutedHost
+from routinglib import BgpRouter
+from trellislib import TrellisHost
 
 # Parse command line options and dump results
 def parseOptions():
@@ -124,19 +124,21 @@ class DualHomedLeafSpineFabric (Topo) :
                 if vlan_id[ dual_ls * fanout + f] != 0:
                     host = self.addHost(
                         name='h%s' % ( dual_ls * fanout + f + 1),
-                        cls=DualHomedTaggedRoutedHost,
+                        cls=TrellisHost,
                         ips=['10.0.%d.%d/%d' % ( dual_ls + 2, f + 1, IP4_SUBNET_CLASS)],
                         gateway='10.0.%d.254' % ( dual_ls + 2),
                         mac='00:aa:00:00:00:%02x' % (dual_ls * fanout + f + 1),
-                        vlan=vlan_id[ dual_ls*fanout + f ]
+                        vlan=vlan_id[ dual_ls*fanout + f ],
+                        dualHomed=True
                     )
                 else:
                     host = self.addHost(
                         name='h%s' % (dual_ls * fanout + f + 1),
-                        cls= DualHomedRoutedHost,
+                        cls=TrellisHost,
                         ips=['10.0.%d.%d/%d' % (dual_ls+2, f+1, IP4_SUBNET_CLASS)],
                         gateway='10.0.%d.254' % (dual_ls+2),
-                        mac='00:aa:00:00:00:%02x' % (dual_ls * fanout + f + 1)
+                        mac='00:aa:00:00:00:%02x' % (dual_ls * fanout + f + 1),
+                        dualHomed=True
                     )
                 self.addLink(host, leafs[ls], **linkopts)
                 self.addLink(host, leafs[ls-1], **linkopts)
@@ -145,8 +147,8 @@ class DualHomedLeafSpineFabric (Topo) :
         last_paired_ls = leafs[leaf-1]
         # Create common components
         # DHCP server
-        dhcp = self.addHost('dhcp', cls=DhcpServer, mac='00:99:00:00:00:01', ips=['10.0.3.253/24'],
-                            gateway='10.0.3.254')
+        dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01', ips=['10.0.3.253/24'],
+                            gateway='10.0.3.254', dhcpServer=True)
 
         # Control plane switch (for DHCP servers)
         cs1 = self.addSwitch('cs1', cls=OVSBridge)
@@ -194,7 +196,7 @@ class DualHomedLeafSpineFabric (Topo) :
         self.addLink(r1, last_paired_ls)
 
         # External IPv4 Host behind r1
-        rh1 = self.addHost('rh1', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
+        rh1 = self.addHost('rh1', cls=TrellisHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
         self.addLink(r1, rh1)
 
         # External Quagga r2
@@ -208,7 +210,7 @@ class DualHomedLeafSpineFabric (Topo) :
         self.addLink(r2, last_paired_ls)
 
         # External IPv4 Host behind r2
-        rh2 = self.addHost('rh2', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
+        rh2 = self.addHost('rh2', cls=TrellisHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
         self.addLink(r2, rh2)
 
 class LeafSpineFabric (Topo) :
@@ -241,7 +243,7 @@ class LeafSpineFabric (Topo) :
                 if vlan_id[ls * fanout + f] != 0:
                     host = self.addHost(
                         name='h%s' % (ls * fanout + f + 1),
-                        cls=TaggedRoutedHost,
+                        cls=TrellisHost,
                         ips=['10.0.%d.%d/%d' % (ls+2, f+1, IP4_SUBNET_CLASS)],
                         gateway='10.0.%d.254' % (ls+2),
                         mac='00:aa:00:00:00:%02x' % (ls * fanout + f + 1),
@@ -250,7 +252,7 @@ class LeafSpineFabric (Topo) :
                 else:
                     host = self.addHost(
                         name='h%s' % (ls * fanout + f + 1),
-                        cls= RoutedHost,
+                        cls=TrellisHost,
                         ips=['10.0.%d.%d/%d' % (ls+2, f+1, IP4_SUBNET_CLASS)],
                         gateway='10.0.%d.254' % (ls+2),
                         mac='00:aa:00:00:00:%02x' % (ls * fanout + f + 1)
@@ -260,8 +262,8 @@ class LeafSpineFabric (Topo) :
         last_ls = leafs[leaf-1]
         # Create common components
         # DHCP server
-        dhcp = self.addHost('dhcp', cls=DhcpServer, mac='00:99:00:00:00:01', ips=['10.0.3.253/24'],
-                            gateway='10.0.3.254')
+        dhcp = self.addHost('dhcp', cls=TrellisHost, mac='00:99:00:00:00:01', ips=['10.0.3.253/24'],
+                            gateway='10.0.3.254', dhcpServer=True)
 
         # Control plane switch (for DHCP servers)
         cs1 = self.addSwitch('cs1', cls=OVSBridge)
@@ -297,7 +299,7 @@ class LeafSpineFabric (Topo) :
         self.addLink(r1, last_ls)
 
         # External IPv4 Host behind r1
-        rh1 = self.addHost('rh1', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
+        rh1 = self.addHost('rh1', cls=TrellisHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
         self.addLink(r1, rh1)
 
 def config( opts ):

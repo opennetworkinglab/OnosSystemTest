@@ -252,6 +252,93 @@ class DualHomedDhcpClient(Host):
         self.cmd('rm -rf %s' % self.pidFile)
         super(DualHomedDhcpClient, self).terminate()
 
+class TrellisHost(Host):
+    def __init__(self, name, ips=[], gateway="", dualHomed=False, vlan=None, dhcpClient=False, dhcpServer=False, ipv6=False, *args, **kwargs):
+        super(TrellisHost, self).__init__(name, *args, **kwargs)
+        self.dualHomed = dualHomed
+        self.bond0 = None
+        self.vlan = vlan
+        self.vlanIntf = None
+        self.dhcpClient = dhcpClient
+        self.dhcpServer = dhcpServer
+        if dhcpClient:
+            self.pidFile = '/run/dhclient-%s.pid' % self.name
+            self.leaseFile = '/var/lib/dhcp/dhcpclient%s-%s.lease' % ("6" if ipv6 else "", self.name)
+        else:
+            self.ips = ips
+            self.gateway = gateway
+            if dhcpServer:
+                self.binFile = '/usr/sbin/dhcpd'
+                self.pidFile = '/run/dhcp-server-dhcpd%s.pid' % ("6" if ipv6 else "")
+                self.configFile = './dhcpd%s.conf' % ("6" if ipv6 else "")
+                self.leasesFile = '/var/lib/dhcp/dhcpd%s.leases' % ("6" if ipv6 else "")
+        self.ipv6 = ipv6
+
+    def config(self, **kwargs):
+        super(TrellisHost, self).config(**kwargs)
+
+        if self.dualHomed:
+            # Setup bond0 interface
+            intf0 = self.intfs[0].name
+            intf1 = self.intfs[1].name
+            self.bond0 = "%s-bond0" % self.name
+            self.cmd('modprobe bonding')
+            self.cmd('ip link add %s type bond' % self.bond0)
+            self.cmd('ip link set %s down' % intf0)
+            self.cmd('ip link set %s down' % intf1)
+            self.cmd('ip link set %s master %s' % (intf0, self.bond0))
+            self.cmd('ip link set %s master %s' % (intf1, self.bond0))
+            self.cmd('ip addr flush dev %s' % intf0)
+            self.cmd('ip addr flush dev %s' % intf1)
+            self.cmd('ip link set %s up' % self.bond0)
+            defaultIntf = self.defaultIntf()
+            defaultIntf.name = self.bond0
+            self.nameToIntf[self.bond0] = defaultIntf
+
+        self.cmd('ip %s addr flush dev %s' % ("-4" if self.ipv6 else "", self.defaultIntf()))
+
+        if self.vlan:
+            # Setup vlan interface
+            defaultIntf = self.defaultIntf()
+            self.vlanIntf = "%s.%s" % (defaultIntf, self.vlan)
+            self.cmd('ip link add link %s name %s type vlan id %s' % (defaultIntf, self.vlanIntf, self.vlan))
+            self.cmd('ip link set up %s' % self.vlanIntf)
+            defaultIntf.name = self.vlanIntf
+            self.nameToIntf[self.vlanIntf] = defaultIntf
+
+        if self.dhcpClient:
+            if self.vlan or self.dualHomed:
+                # Why leaseFile is not required here?
+                self.cmd('dhclient -q -%s -nw -pf %s %s' % (6 if self.ipv6 else 4, self.pidFile, self.defaultIntf()))
+            else:
+                self.cmd('dhclient -q -%s -nw -pf %s -lf %s %s' % (6 if self.ipv6 else 4, self.pidFile, self.leaseFile, self.defaultIntf()))
+        else:
+            # Setup IP addresses
+            for ip in self.ips:
+                self.cmd('ip addr add %s dev %s' % (ip, self.defaultIntf()))
+            self.cmd('ip route add default via %s' % self.gateway)
+
+            if self.dhcpServer:
+                if self.ipv6:
+                    linkLocalAddr = mac_to_ipv6_linklocal(kwargs['mac'])
+                    self.cmd('ip -6 addr add dev %s scope link %s' % (self.defaultIntf(), linkLocalAddr))
+                self.cmd('touch %s' % self.leasesFile)
+                self.cmd('%s -q -%s -pf %s -cf %s %s' % (self.binFile, 6 if self.ipv6 else 4, self.pidFile, self.configFile, self.defaultIntf()))
+
+    def terminate(self, **kwargs):
+        if self.vlan:
+            self.cmd('ip link remove link %s' % self.vlanIntf)
+        if self.dualHomed:
+            self.cmd('ip link set %s down' % self.bond0)
+            self.cmd('ip link delete %s' % self.bond0)
+        if self.dhcpClient:
+            self.cmd('kill -9 `cat %s`' % self.pidFile)
+            self.cmd('rm -rf %s' % self.pidFile)
+        if self.dhcpServer:
+            self.cmd('kill -9 `cat %s`' % self.pidFile)
+            self.cmd('rm -rf %s' % self.pidFile)
+        super(TrellisHost, self).terminate()
+
 # Utility for IPv6
 def mac_to_ipv6_linklocal(mac):
     '''

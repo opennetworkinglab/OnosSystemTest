@@ -84,6 +84,7 @@ class FUNCintent:
             main.scapyHosts = []  # List of scapy hosts for iterating
             main.assertReturnString = ''  # Assembled assert return string
             main.cycle = 0  # How many times FUNCintent has run through its tests
+            main.usePortstate = True if main.params[ 'TEST' ][ 'usePortstate' ] == "True" else False
 
             # -- INIT SECTION, ONLY RUNS ONCE -- #
 

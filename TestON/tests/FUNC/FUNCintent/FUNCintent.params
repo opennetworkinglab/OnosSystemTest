@@ -49,6 +49,10 @@
         <branch>master</branch>
     </GIT>
 
+    <TEST>
+        <usePortstate>False</usePortstate>
+    </TEST>
+
     <SLEEP>
         <startup>15</startup>
         <reroute>5</reroute>
@@ -73,6 +77,23 @@
     <MININET>
         <switch>7</switch>
         <links>20</links>
+        <dpids>
+            <s4>of:0000000000000004</s4>
+            <s5>of:0000000000000005</s5>
+            <s6>of:0000000000000006</s6>
+        </dpids>
+        <ports>
+            <s4>
+                <s1>1</s1>
+                <s3>2</s3>
+            </s4>
+            <s5>
+                <s2>10</s2>
+            </s5>
+            <s6>
+                <s2>9</s2>
+            </s6>
+        </ports>
     </MININET>
 
     <SCAPY>

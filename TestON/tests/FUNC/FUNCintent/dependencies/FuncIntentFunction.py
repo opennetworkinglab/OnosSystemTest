@@ -2112,12 +2112,19 @@ def checkFlowsState( main ):
 
 
 def link( main, sw1, sw2, option ):
-
-    # link down
-    main.log.info( itemName + ": Bring link " + option + " between " +
-                       sw1 + " and " + sw2 )
-    linkResult = main.Network.link( end1=sw1, end2=sw2, option=option )
-    return linkResult
+    if main.usePortstate:
+        # port down
+        dpid = main.params[ 'MININET' ][ 'dpids' ][ sw1 ]
+        port = main.params[ 'MININET' ][ 'ports' ][ sw1 ][ sw2 ]
+        main.log.info( itemName + ": Bring port " + sw1 + "/" + port + " " + option )
+        state = "disable" if option == "down" else "enable"
+        result = main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state=state )
+    else:
+        # link down
+        main.log.info( itemName + ": Bring link " + option + " between " +
+                           sw1 + " and " + sw2 )
+        result = main.Network.link( end1=sw1, end2=sw2, option=option )
+    return result
 
 
 def scapyCheckConnection( main,

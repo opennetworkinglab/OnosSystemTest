@@ -20,6 +20,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
+import time
 
 class SRRoutingTest ():
 
@@ -53,6 +54,9 @@ class SRRoutingTest ():
         run.installOnos(main, skipPackage=skipPackage, cliSleep=5,
                         parallel=False)
 
+        # wait some
+        time.sleep(5)
+
         if hasattr(main, 'Mininet1'):
             # Run the test with Mininet
             mininet_args = ' --dhcp=%s --routers=%s --ipv6=%s --ipv4=%s' % (dhcp, routers, ipv6, ipv4)
@@ -62,8 +66,11 @@ class SRRoutingTest ():
             # TODO: connect TestON to the physical network
             pass
 
+        # wait some time for onos to install the rules!
+        time.sleep(15)
+
         # ping hosts
-        main.Network.pingAll()
+        run.pingAllBasedOnIp( main, 'CASE%02d' % test_idx )
 
         if hasattr(main, 'Mininet1'):
             run.cleanup(main)

@@ -12,7 +12,7 @@ from mininet.nodelib import NAT
 from mininet.cli import CLI
 
 from routinglib import BgpRouter, RoutedHost
-from trellislib import DhcpServer, TaggedRoutedHost, DualHomedRoutedHost, DualHomedTaggedRoutedHost, DhcpClient, Dhcp6Client, DhcpServer, Dhcp6Server
+from trellislib import DhcpServer, TaggedRoutedHost, DualHomedRoutedHost, DualHomedTaggedRoutedHost, DhcpClient, Dhcp6Client, DhcpServer, Dhcp6Server, TrellisHost
 
 # Parse command line options and dump results
 def parseOptions():
@@ -34,138 +34,6 @@ def parseOptions():
 
 opts, args = parseOptions()
 
-class DualHomedTaggedHostWithIpv4(Host):
-
-    def __init__(self, name, ip, gateway, dhcp, vlan, *args, **kwargs):
-        super(DualHomedTaggedHostWithIpv4, self).__init__(name, **kwargs)
-        self.vlanBond0 = None
-        self.bond0 = None
-        self.ip = ip
-        self.gateway = gateway
-        self.dhcp = dhcp
-        self.vlan = vlan
-
-    def config(self, **kwargs):
-        super(DualHomedTaggedHostWithIpv4, self).config(**kwargs)
-        intf0 = self.intfs[0].name
-        intf1 = self.intfs[1].name
-
-        self.bond0 = "%s-bond0" % self.name
-        self.vlanBondIntf = "%s.%s" % (self.bond0, self.vlan)
-
-        self.cmd('modprobe bonding')
-        self.cmd('ip link add %s type bond' % self.bond0)
-        self.cmd('ip link set %s down' % intf0)
-        self.cmd('ip link set %s down' % intf1)
-        self.cmd('ip link set %s master %s' % (intf0, self.bond0))
-        self.cmd('ip link set %s master %s' % (intf1, self.bond0))
-        self.cmd('ip addr flush dev %s' % intf0)
-        self.cmd('ip addr flush dev %s' % intf1)
-        self.cmd('ip link set %s up' % self.bond0)
-
-        self.cmd('ip link add link %s name %s type vlan id %s' % (self.bond0,
-                                                                  self.vlanBondIntf, self.vlan))
-
-        self.cmd('ip link set up %s' % self.vlanBondIntf)
-        self.cmd('ip addr add %s/24 dev %s' % (self.ip, self.vlanBondIntf))
-        self.cmd('ip route add default via %s' % self.gateway)
-
-        default_intf = self.defaultIntf()
-        default_intf.name = self.vlanBondIntf
-        self.nameToIntf[self.vlanBond0] = default_intf
-
-    def terminate(self, **kwargs):
-        self.cmd('ip link set %s down' % self.bond0)
-        self.cmd('ip link delete %s' % self.bond0)
-        super(DualHomedTaggedHostWithIpv4, self).terminate()
-
-class DualHomedUntaggedHostWithIpv4(Host):
-
-    def __init__(self, name, ip, gateway, dhcp, *args, **kwargs):
-        super(DualHomedUntaggedHostWithIpv4, self).__init__(name, **kwargs)
-        self.bond0 = None
-        self.ip = ip
-        self.gateway = gateway
-        self.dhcp = dhcp
-
-    def config(self, **kwargs):
-        super(DualHomedUntaggedHostWithIpv4, self).config(**kwargs)
-        intf0 = self.intfs[0].name
-        intf1 = self.intfs[1].name
-
-        self.bond0 = "%s-bond0" % self.name
-        self.cmd('modprobe bonding')
-        self.cmd('ip link add %s type bond' % self.bond0)
-        self.cmd('ip link set %s down' % intf0)
-        self.cmd('ip link set %s down' % intf1)
-        self.cmd('ip link set %s master %s' % (intf0, self.bond0))
-        self.cmd('ip link set %s master %s' % (intf1, self.bond0))
-        self.cmd('ip addr flush dev %s' % intf0)
-        self.cmd('ip addr flush dev %s' % intf1)
-        self.cmd('ip link set %s up' % self.bond0)
-        self.cmd('ip addr add %s/24 dev %s' % (self.ip, self.bond0))
-        self.cmd('ip route add default via %s' % self.gateway)
-
-        default_intf = self.defaultIntf()
-        default_intf.name = self.bond0
-        self.nameToIntf[self.bond0] = default_intf
-
-    def terminate(self, **kwargs):
-        self.cmd('ip link set %s down' % self.bond0)
-        self.cmd('ip link delete %s' % self.bond0)
-        super(DualHomedUntaggedHostWithIpv4, self).terminate()
-
-class TaggedHostWithIpv4(Host):
-    '''
-        Tagged host configured with a static ip address.
-    '''
-    def __init__(self, name, ip, gateway, dhcp, vlan, *args, **kwargs):
-        super(TaggedHostWithIpv4, self).__init__(name, *args, **kwargs)
-        self.ip = ip
-        self.gateway = gateway
-        self.vlan = vlan
-        self.vlanIntf = None
-        self.dhcp = dhcp
-
-    def config(self, **kwargs):
-        Host.config(self, **kwargs)
-
-        intf = self.defaultIntf()
-        self.vlanIntf = "%s.%s" % (intf, self.vlan)
-        self.cmd('ip -4 addr flush dev %s' % intf)
-        self.cmd('ip link add link %s name %s type vlan id %s' % (intf, self.vlanIntf, self.vlan))
-        self.cmd('ip link set up %s' % self.vlanIntf)
-        self.cmd('ip addr add %s/24 dev %s' % (self.ip, self.vlanIntf))
-        self.cmd('ip route add default via %s' % self.gateway)
-        intf.name = self.vlanIntf
-        self.nameToIntf[self.vlanIntf] = intf
-
-    def terminate(self, **kwargs):
-        self.cmd('ip link remove link %s' % self.vlanIntf)
-        super(TaggedHostWithIpv4, self).terminate()
-
-
-class UnTaggedHostWithIpv4(Host):
-    '''
-        Untagged host configured with a static ip address.
-    '''
-    def __init__(self, name, ip, gateway, dhcp, *args, **kwargs):
-        super(UnTaggedHostWithIpv4, self).__init__(name, *args, **kwargs)
-        self.ip = ip
-        self.gateway = gateway
-        self.dhcp = dhcp
-
-    def config(self, **kwargs):
-        Host.config(self, **kwargs)
-
-        intf = self.defaultIntf()
-        self.cmd('ip -4 addr flush dev %s' % intf)
-        self.cmd('ip addr add %s/24 dev %s' % (self.ip, intf))
-        self.cmd('ip route add default via %s' % self.gateway)
-
-    def terminate(self, **kwargs):
-        super(UnTaggedHostWithIpv4, self).terminate()
-
 class ComcastLeafSpineFabric(Topo):
 
     spines = dict()
@@ -174,80 +42,158 @@ class ComcastLeafSpineFabric(Topo):
 
     def createIpv4Hosts(self, dhcp):
 
-        h1 = self.addHost('h1v4', cls=UnTaggedHostWithIpv4,
-                          mac='00:aa:00:00:00:01', ip='10.1.0.1',
-                          gateway='10.1.0.254', dhcp=dhcp)
+        h1 = self.addHost('h1v4', cls=TrellisHost,
+                           mac='00:aa:00:00:00:01', ips=['10.1.0.1/24'],
+                           gateway='10.1.0.254', dhcpClient=dhcp)
         self.addLink(h1, self.leafs[0])
         self.hosts_dict['h1v4'] = h1
 
-        h2 = self.addHost('h2v4', cls=UnTaggedHostWithIpv4,
-                          mac='00:aa:00:00:01:01', ip='10.1.10.1',
-                          gateway='10.1.10.254', dhcp=dhcp)
+        h2 = self.addHost('h2v4', cls=TrellisHost,
+                          mac='00:aa:00:00:01:01', ips=['10.1.10.1/24'],
+                          gateway='10.1.10.254', dhcpClient=dhcp)
         self.addLink(h2, self.leafs[0])
         self.hosts_dict['h2v4'] = h2
 
-        h3 = self.addHost('h3v4', cls=UnTaggedHostWithIpv4,
-                          mac='00:aa:00:00:00:02', ip='10.2.0.1',
-                          gateway='10.2.0.254', dhcp=dhcp)
+        h3 = self.addHost('h3v4', cls=TrellisHost,
+                          mac='00:aa:00:00:00:02', ips=['10.2.0.1/24'],
+                          gateway='10.2.0.254', dhcpClient=dhcp)
         self.addLink(h3, self.leafs[1])
         self.hosts_dict['h3v4'] = h3
 
-        h4 = self.addHost('h4v4', cls=DualHomedUntaggedHostWithIpv4,
-                          mac='00:aa:00:00:00:03', ip='10.2.30.1',
-                          gateway='10.2.30.254', dhcp=dhcp)
+        h4 = self.addHost('h4v4', cls=TrellisHost,
+                          mac='00:aa:00:00:00:03', ips=['10.2.30.1/24'],
+                          gateway='10.2.30.254', dhcpClient=dhcp,
+                          dualHomed=True)
         self.addLink(h4, self.leafs[1])
         self.addLink(h4, self.leafs[2])
         self.hosts_dict['h4v4'] = h4
 
-        h5 = self.addHost('h5v4', cls=DualHomedTaggedHostWithIpv4,
-                          mac='00:aa:00:00:00:04', ip='10.2.20.1',
-                          gateway='10.2.20.254', dhcp=dhcp, vlan=30)
+        h5 = self.addHost('h5v4', cls=TrellisHost,
+                          mac='00:aa:00:00:00:04', ips=['10.2.20.1/24'],
+                          gateway='10.2.20.254', dhcpClient=dhcp, vlan=30,
+                          dualHomed=True)
         self.addLink(h5, self.leafs[1])
         self.addLink(h5, self.leafs[2])
         self.hosts_dict['h5v4'] = h5
 
-        h6 = self.addHost('h6v4', cls=TaggedHostWithIpv4,
-                          mac='00:aa:00:00:00:05', ip='10.2.10.1',
-                          gateway='10.2.10.254', dhcp=dhcp, vlan=20)
+        h6 = self.addHost('h6v4', cls=TrellisHost,
+                          mac='00:aa:00:00:00:05', ips=['10.2.10.1/24'],
+                          gateway='10.2.10.254', dhcpClient=dhcp, vlan=20)
         self.addLink(h6, self.leafs[2])
         self.hosts_dict['h6v4'] = h6
 
-        h7 = self.addHost('h7v4', cls=TaggedHostWithIpv4,
-                          mac='00:aa:00:00:01:05', ip='10.2.40.1',
-                          gateway='10.2.40.254', dhcp=dhcp, vlan=40)
+        h7 = self.addHost('h7v4', cls=TrellisHost,
+                          mac='00:aa:00:00:01:05', ips=['10.2.40.1/24'],
+                          gateway='10.2.40.254', dhcpClient=dhcp, vlan=40)
         self.addLink(h7, self.leafs[2])
         self.hosts_dict['h7v4'] = h7
 
-        h8 = self.addHost('h8v4', cls=TaggedHostWithIpv4,
-                          mac='00:aa:00:00:00:06', ip='10.3.0.1',
-                          gateway='10.3.0.254', dhcp=dhcp, vlan=30)
+        h8 = self.addHost('h8v4', cls=TrellisHost,
+                          mac='00:aa:00:00:00:06', ips=['10.3.0.1/24'],
+                          gateway='10.3.0.254', dhcpClient=dhcp, vlan=30)
         self.addLink(h8, self.leafs[3])
         self.hosts_dict['h8v4'] = h8
 
-        h9 = self.addHost('h9v4', cls=DualHomedTaggedHostWithIpv4,
-                          mac='00:aa:00:00:00:07', ip='10.3.10.1',
-                          gateway='10.3.10.254', dhcp=dhcp, vlan=40)
+        h9 = self.addHost('h9v4', cls=TrellisHost,
+                          mac='00:aa:00:00:00:07', ips=['10.3.10.1/24'],
+                          gateway='10.3.10.254', dhcpClient=dhcp, vlan=40,
+                          dualHomed=True)
         self.addLink(h9, self.leafs[3])
         self.addLink(h9, self.leafs[4])
         self.hosts_dict['h9v4'] = h9
 
-        h10 = self.addHost('h10v4', cls=DualHomedTaggedHostWithIpv4,
-                           mac='00:aa:00:00:00:08', ip='10.3.30.1',
-                           gateway='10.3.30.254', dhcp=dhcp, vlan=40)
+        h10 = self.addHost('h10v4', cls=TrellisHost,
+                           mac='00:aa:00:00:00:08', ips=['10.3.30.1/24'],
+                           gateway='10.3.30.254', dhcpClient=dhcp, vlan=40,
+                           dualHomed=True)
         self.addLink(h10, self.leafs[3])
         self.addLink(h10, self.leafs[4])
         self.hosts_dict['h10v4'] = h10
 
-        h11 = self.addHost('h11v4', cls=TaggedHostWithIpv4,
-                           mac='00:aa:00:00:00:0a', ip='10.3.20.1',
-                           gateway='10.3.20.254', dhcp=dhcp, vlan=40)
+        h11 = self.addHost('h11v4', cls=TrellisHost,
+                           mac='00:aa:00:00:00:0a', ips=['10.3.20.1/24'],
+                           gateway='10.3.20.254', dhcpClient=dhcp, vlan=40)
         self.addLink(h11, self.leafs[4])
         self.hosts_dict['h11v4'] = h11
 
         return
 
     def createIpv6Hosts(self, dhcp):
-        print("NYI")
+
+        h1 = self.addHost('h1v6', cls=TrellisHost,
+                          mac='00:aa:00:00:00:01', ips=["1000::3fe/120"],
+                          gateway='1000::3ff', dhcpClient=dhcp)
+        self.addLink(h1, self.leafs[0])
+        self.hosts_dict['h1v6'] = h1
+
+        h2 = self.addHost('h2v6', cls=TrellisHost,
+                          mac='00:aa:00:00:01:01', ips=['1001::3fe/120'],
+                          gateway='1001::3ff', dhcpClient=dhcp)
+        self.addLink(h2, self.leafs[0])
+        self.hosts_dict['h2v6'] = h2
+
+        h3 = self.addHost('h3v6', cls=TrellisHost,
+                          mac='00:aa:00:00:00:02', ips=['1002::3fe/120'],
+                          gateway='1002::3ff', dhcpClient=dhcp)
+        self.addLink(h3, self.leafs[1])
+        self.hosts_dict['h3v6'] = h3
+
+        h4 = self.addHost('h4v6', cls=TrellisHost,
+                          mac='00:aa:00:00:00:03', ips=['1003::3fe/120'],
+                          gateway='1003::3ff', dhcpClient=dhcp,
+                          dualHomed=True)
+        self.addLink(h4, self.leafs[1])
+        self.addLink(h4, self.leafs[2])
+        self.hosts_dict['h4v6'] = h4
+
+        h5 = self.addHost('h5v6', cls=TrellisHost,
+                          mac='00:aa:00:00:00:04', ips=['1004::3fe/120'],
+                          gateway='1004::3ff', dhcpClient=dhcp, vlan=30,
+                          dualHomed=True)
+        self.addLink(h5, self.leafs[1])
+        self.addLink(h5, self.leafs[2])
+        self.hosts_dict['h5v6'] = h5
+
+        h6 = self.addHost('h6v6', cls=TrellisHost,
+                          mac='00:aa:00:00:00:05', ips=['1005::3fe/120'],
+                          gateway='1005::3ff', dhcpClient=dhcp, vlan=20)
+        self.addLink(h6, self.leafs[2])
+        self.hosts_dict['h6v6'] = h6
+
+        h7 = self.addHost('h7v6', cls=TrellisHost,
+                          mac='00:aa:00:00:01:05', ips=['1006::3fe/120'],
+                          gateway='1006::3ff', dhcpClient=dhcp, vlan=40)
+        self.addLink(h7, self.leafs[2])
+        self.hosts_dict['h7v6'] = h7
+
+        h8 = self.addHost('h8v6', cls=TrellisHost,
+                          mac='00:aa:00:00:00:06', ips=['1007::3fe/120'],
+                          gateway='1007::3ff', dhcpClient=dhcp, vlan=30)
+        self.addLink(h8, self.leafs[3])
+        self.hosts_dict['h8v6'] = h8
+
+        h9 = self.addHost('h9v6', cls=TrellisHost,
+                          mac='00:aa:00:00:00:07', ips=['1008::3fe/120'],
+                          gateway='1008::3ff', dhcpClient=dhcp, vlan=40,
+                          dualHomed=True)
+        self.addLink(h9, self.leafs[3])
+        self.addLink(h9, self.leafs[4])
+        self.hosts_dict['h9v6'] = h9
+
+        h10 = self.addHost('h10v6', cls=TrellisHost,
+                           mac='00:aa:00:00:00:08', ips=['1009::3fe/120'],
+                           gateway='1009::3ff', dhcpClient=dhcp, vlan=40,
+                           dualHomed=True)
+        self.addLink(h10, self.leafs[3])
+        self.addLink(h10, self.leafs[4])
+        self.hosts_dict['h10v6'] = h10
+
+        h11 = self.addHost('h11v6', cls=TrellisHost,
+                           mac='00:aa:00:00:00:0a', ips=['1010::3fe/120'],
+                           gateway='1010::3ff', dhcpClient=dhcp, vlan=40)
+        self.addLink(h11, self.leafs[4])
+        self.hosts_dict['h11v6'] = h11
+
         return
 
     '''
@@ -294,6 +240,22 @@ class ComcastLeafSpineFabric(Topo):
         # connect paired leafs
         self.addLink(self.leafs[1], self.leafs[2], **linkopts)
         self.addLink(self.leafs[3], self.leafs[4], **linkopts)
+
+        # create dhcp servers
+        if dhcp:
+            if ipv4:
+                dhcp4 = self.addHost( 'dhcp', cls=TrellisHost,
+                                      mac="00:bb:00:00:00:01", ips=["10.0.3.253/24"],
+                                      gateway="10.0.3.254", dhcpServer=True)
+                self.addLink(self.spines[1], dhcp4, **linkopts)
+            if ipv6:
+                dhcp6 = self.addHost( 'dhcp', cls=TrellisHost,
+                                      mac="00:bb:00:00:00:02", ips=["2000::3fd/120"],
+                                      gateway="2000::3ff")
+                self.addLink(self.spines[1], dhcp4, **linkopts)
+        # creatte quagga routers
+        if routers:
+            print("NYI (quagga)!")
 
         # create hosts
         if ipv6:

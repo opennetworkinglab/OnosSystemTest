@@ -303,5 +303,16 @@
 		 "longitude":-95
             }
         }   
+    },
+    "apps" : {
+	"org.onosproject.dhcprelay" : {
+		"default" : [ 
+			{
+				 "dhcpServerConnectPoint": "of:0000000000000102/10",
+				 "serverIps": ["10.0.3.253"]
+			}
+		]
+	}
     }
+
 }

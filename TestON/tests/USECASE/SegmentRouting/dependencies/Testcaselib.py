@@ -254,6 +254,42 @@ class Testcaselib:
                 onfail="Flow count looks wrong: " + count )
 
     @staticmethod
+    def pingAllBasedOnIp( main, tag="", dumpflows=True ):
+        main.log.report( "Check full connectivity" )
+        print main.pingChart
+        if tag == "":
+            tag = 'CASE%d' % main.CurrentTestCaseNumber
+        for entry in main.pingChart.itervalues():
+            print entry
+            hosts, expect = entry[ 'hosts' ], entry[ 'expect' ]
+            try:
+                expect = main.TRUE if str(expect).lower() == 'true' else main.FALSE
+            except:
+                expect = main.FALSE
+            main.step( "Connectivity for %s %s" % ( str( hosts ), tag ) )
+
+            if ("v4" in hosts[0]):
+                pa = main.Network.pingallHosts( hosts )
+                utilities.assert_equals( expect=expect, actual=pa,
+                                         onpass="IPv4 connectivity successfully tested",
+                                         onfail="IPv4 connectivity failed" )
+            if ("v6" in hosts[0]):
+                pa = main.Network.pingIpv6Hosts( hosts )
+                utilities.assert_equals( expect=expect, actual=pa,
+                                         onpass="IPv6 connectivity successfully tested",
+                                         onfail="IPv6 connectivity failed" )
+
+        if dumpflows:
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
+                                        "flows",
+                                        main.logdir,
+                                        tag + "_FlowsOn" )
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
+                                        "groups",
+                                        main.logdir,
+                                        tag + "_GroupsOn" )
+
+    @staticmethod
     def pingAll( main, tag="", dumpflows=True ):
         main.log.report( "Check full connectivity" )
         print main.pingChart

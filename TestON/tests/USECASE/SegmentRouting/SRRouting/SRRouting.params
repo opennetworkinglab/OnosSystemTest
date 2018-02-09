@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1</testcases>
+    <testcases>1, 2</testcases>
 
     <GRAPH>
         <nodeCluster>VM</nodeCluster>
@@ -13,12 +13,12 @@
 
     <DEPENDENCY>
         <topology>comcast_fabric.py</topology>
-        <lib>routinglib.py,trellislib.py,trellis_fabric.py</lib>
+        <lib>routinglib.py,trellislib.py,trellis_fabric.py, dhcpd.conf</lib>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting,openflow,fpmi</cellApps>
+        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement</cellApps>
     </ENV>
 
     <GIT>

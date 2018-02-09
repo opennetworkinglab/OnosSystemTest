@@ -27,14 +27,15 @@ class ONOSSetup:
     def __init__( self ):
         self.default = ''
 
-    def envSetupDescription( self ):
+    def envSetupDescription( self, includeCaseDesc=True ):
         """
         Introduction part of the test. It will initialize some basic vairables.
         """
-        main.case( "Constructing test variables and building ONOS package" )
-        main.step( "Constructing test variables" )
-        main.caseExplanation = "For loading from params file, and pull" + \
-                               " and build the latest ONOS package"
+        if includeCaseDesc:
+            main.case( "Constructing test variables and building ONOS package" )
+            main.caseExplanation = "For loading from params file, and pull" + \
+                                   " and build the latest ONOS package"
+        main.step("Constructing test variables")
         try:
             from tests.dependencies.Cluster import Cluster
         except ImportError:
@@ -47,11 +48,14 @@ class ONOSSetup:
         main.ONOSbench = main.Cluster.controllers[ 0 ].Bench
         main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
 
-    def gitPulling( self ):
+    def gitPulling( self, includeCaseDesc=True ):
         """
         it will do git checkout or pull if they are enabled from the params file.
         """
-        main.case( "Pull onos branch and build onos on Teststation." )
+
+        if includeCaseDesc:
+            main.case( "Pull onos branch and build onos on Teststation." )
+
         gitPull = main.params[ 'GIT' ][ 'pull' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         if gitPull == 'True':
@@ -76,7 +80,7 @@ class ONOSSetup:
         else:
             main.log.info( "Skipped git checkout and pull as they are disabled in params file" )
 
-    def envSetup( self, includeGitPull=True ):
+    def envSetup( self, includeGitPull=True, includeCaseDesc=True ):
         """
         Description:
             some environment setup for the test.
@@ -86,7 +90,7 @@ class ONOSSetup:
             Returns main.TRUE
         """
         if includeGitPull:
-            self.gitPulling()
+            self.gitPulling( includeCaseDesc )
 
         try:
             from tests.dependencies.Cluster import Cluster
@@ -355,7 +359,7 @@ class ONOSSetup:
     def ONOSSetUp( self, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
                    cellName="temp", cellApps="drivers", mininetIp="", removeLog=False, extraApply=None, applyArgs=None,
                    extraClean=None, cleanArgs=None, skipPack=False, installMax=False, useSSH=True,
-                   killRemoveMax=True, stopOnos=False, installParallel=True, cellApply=True ):
+                   killRemoveMax=True, stopOnos=False, installParallel=True, cellApply=True, includeCaseDesc=True ):
         """
         Description:
             Initial ONOS setting up of the tests. It will also verify the result of each steps.
@@ -395,11 +399,11 @@ class ONOSSetup:
             Returns main.TRUE if it everything successfully proceeded.
         """
         self.setNumCtrls( hasMultiNodeRounds )
-
-        main.case( "Starting up " + str( cluster.numCtrls ) +
-                   " node(s) ONOS cluster" )
-        main.caseExplanation = "Set up ONOS with " + str( cluster.numCtrls ) + \
-                               " node(s) ONOS cluster"
+        if includeCaseDesc:
+            main.case( "Starting up " + str( cluster.numCtrls ) +
+                       " node(s) ONOS cluster" )
+            main.caseExplanation = "Set up ONOS with " + str( cluster.numCtrls ) + \
+                                   " node(s) ONOS cluster"
         killResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
 
         main.log.info( "NODE COUNT = " + str( cluster.numCtrls ) )

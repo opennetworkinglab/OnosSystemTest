@@ -1,6 +1,6 @@
 #!groovy
 import groovy.time.*
-generalFuncs = evaluate readTrusted( 'GeneralFuncs.groovy' )
+generalFuncs = evaluate readTrusted( 'TestON/JenkinsFile/GeneralFuncs.groovy' )
 def initializeTrend( machine ){
   table_name = "executed_test_tests"
   result_name = "executed_test_results"

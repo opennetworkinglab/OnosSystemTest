@@ -1,5 +1,5 @@
 #!groovy
-SCPFfuncs = evaluate readTrusted( 'PerformanceFuncs.groovy' )
+SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/PerformanceFuncs.groovy' )
 SCPFfuncs.init()
 funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
 funcs.initialize( "SCPF", SCPFfuncs );

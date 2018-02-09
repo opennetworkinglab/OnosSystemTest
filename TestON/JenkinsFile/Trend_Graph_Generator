@@ -1,6 +1,5 @@
 #!groovy
-funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
-//generalFuncs = evaluate readTrusted( 'GeneralFuncs.groovy' )
+funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 nodeCluster = params.NodeCluster
 
 graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"

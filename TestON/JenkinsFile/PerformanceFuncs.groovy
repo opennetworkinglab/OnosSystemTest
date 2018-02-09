@@ -1,5 +1,5 @@
 #!groovy
-//generalFuncs = evaluate readTrusted( 'GeneralFuncs.groovy' )
+//generalFuncs = evaluate readTrusted( 'TestON/JenkinsFile/GeneralFuncs.groovy' )
 def init(){
     none = [ "" ]
     batches = [ 1, 100, 1000 ]

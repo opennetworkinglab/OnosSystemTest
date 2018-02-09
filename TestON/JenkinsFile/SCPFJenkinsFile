@@ -1,7 +1,7 @@
 #!groovy
-SCPFfuncs = evaluate readTrusted( 'PerformanceFuncs.groovy' )
+SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/PerformanceFuncs.groovy' )
 SCPFfuncs.init()
-funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
+funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 funcs.initialize( "SCPF", SCPFfuncs );
 // This is a Jenkinsfile for a scripted pipeline for the SCPF tests
 def prop = null

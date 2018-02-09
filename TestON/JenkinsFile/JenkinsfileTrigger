@@ -1,6 +1,6 @@
 #!groovy
 
-funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
+funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 funcs.initializeTrend( "VM" );
 previous_version = "1.12"
 before_previous_version = "1.11"

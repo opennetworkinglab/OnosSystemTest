@@ -1,5 +1,5 @@
 #!groovy
-funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
+funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 funcs.initialize( "FUNC" );
 // This is a Jenkinsfile for a scripted pipeline for the FUNC tests
 def prop = null

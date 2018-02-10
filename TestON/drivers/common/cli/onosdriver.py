@@ -2476,3 +2476,67 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def backupData( self, location ):
+        """
+            Backs up ONOS data and logs to a given location. Returns main.FALSE
+            if there is an error executing the command, and main.TRUE otherwise.
+            required arguments:
+            loaction - The file path to save the backup to
+        """
+        try:
+            cmd = "/opt/onos/bin/onos-backup " + str( location )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( handle )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Error" not in handle, handle
+            assert "Exception:" not in handle, handle
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "{} Error in onos-backup output:".format( self.name ) )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def restoreData( self, location ):
+        """
+            Restores ONOS data and logs from a given location. Returns main.FALSE
+            if there is an error executing the command, and main.TRUE otherwise.
+            required arguments:
+            loaction - The file path of a backup file
+        """
+        try:
+            cmd = "/opt/onos/bin/onos-restore " + str( location )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( handle )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Error" not in handle, handle
+            assert "Exception:" not in handle, handle
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "{} Error in onos-restore output:".format( self.name ) )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

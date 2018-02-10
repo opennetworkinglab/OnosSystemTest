@@ -3795,3 +3795,30 @@ class HA():
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
+
+    def backupData( self, main, location ):
+        """
+        Backs up ONOS data and logs to a given location on each active node in a cluster
+        """
+        result = True
+        for ctrl in main.Cluster.active():
+            try:
+                ctrl.server.handle.sendline( "rm " + location )
+                ctrl.server.handle.expect( ctrl.server.prompt )
+                main.log.debug( ctrl.server.handle.before + ctrl.server.handle.after )
+            except pexpect.ExceptionPexpect as e:
+                main.log.error( e )
+                main.cleanAndExit()
+            ctrl.CLI.log( "'Starting backup of onos data'", level="INFO" )
+            result = result and ( ctrl.server.backupData( location ) is main.TRUE )
+            ctrl.CLI.log( "'End of backup of onos data'", level="INFO" )
+        return result
+
+    def restoreData( self, main, location ):
+        """
+        Restores ONOS data and logs from a given location on each node in a cluster
+        """
+        result = True
+        for ctrl in main.Cluster.controllers:
+            result = result and ( ctrl.server.restoreData( location ) is main.TRUE )
+        return result

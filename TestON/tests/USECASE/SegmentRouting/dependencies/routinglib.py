@@ -146,6 +146,9 @@ class QuaggaRouter(Router):
 
         self.cmd('%s/zebra -d -f %s -z %s -i %s'
                  % (QuaggaRouter.binDir, self.zebraConfFile, self.socket, self.zebraPidFile))
+        print("\n")
+        print('%s/zebra -d -f %s -z %s -i %s'
+                 % (QuaggaRouter.binDir, self.zebraConfFile, self.socket, self.zebraPidFile))
 
         for p in self.protocols:
             p.config(**kwargs)

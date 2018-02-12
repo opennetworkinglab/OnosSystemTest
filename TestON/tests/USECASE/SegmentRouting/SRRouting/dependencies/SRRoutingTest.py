@@ -67,7 +67,10 @@ class SRRoutingTest ():
             pass
 
         # wait some time for onos to install the rules!
-        time.sleep(15)
+        time.sleep(25)
+
+        if (dhcp):
+            time.sleep(60)
 
         # ping hosts
         run.pingAllBasedOnIp( main, 'CASE%02d' % test_idx )

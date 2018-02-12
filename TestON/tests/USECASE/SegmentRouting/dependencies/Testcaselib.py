@@ -58,10 +58,12 @@ class Testcaselib:
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             main.path = os.path.dirname( main.testFile )
             main.topoPath = main.path + "/../dependencies/"
-            main.configPath = main.path + "/../dependencies/"
+            main.configPath = main.path + "/../dependencies/conf/"
+            main.testConfPath = main.path + "/dependencies/conf/"
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             main.topologyLib = main.params[ 'DEPENDENCY' ][ 'lib' ] if 'lib' in main.params[ 'DEPENDENCY' ] else None
             main.topologyConf = main.params[ 'DEPENDENCY' ][ 'conf' ] if 'conf' in main.params[ 'DEPENDENCY' ] else None
+            main.testConf = main.params[ 'DEPENDENCY' ][ 'testConf' ] if 'testConf' in main.params[ 'DEPENDENCY' ] else None
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
@@ -135,7 +137,13 @@ class Testcaselib:
         if main.topologyConf:
             for conf in main.topologyConf.split(","):
                 copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
-                                                                main.topoPath + "conf/" + conf,
+                                                                main.configPath + conf,
+                                                                "~/",
+                                                                direction="to" )
+        if main.testConf:
+            for conf in main.testConf.split(","):
+                copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
+                                                                main.testConfPath + conf,
                                                                 "~/",
                                                                 direction="to" )
         stepResult = copyResult

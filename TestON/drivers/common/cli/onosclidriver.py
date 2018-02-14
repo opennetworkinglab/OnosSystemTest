@@ -280,8 +280,8 @@ class OnosCliDriver( CLI ):
 
             # Not in CLI so login
             if waitForStart:
-                # Wait for onos start ( -w ) and enter onos cli
-                startCliCommand = "onos -w "
+                # Wait for onos start ( onos-wait-for-start ) and enter onos cli
+                startCliCommand = "onos-wait-for-start "
             else:
                 startCliCommand = "onos "
             self.handle.sendline( startCliCommand + str( ONOSIp ) )
@@ -362,7 +362,7 @@ class OnosCliDriver( CLI ):
                 main.log.info( "ONOS cli is already running" )
                 return main.TRUE
 
-            # Wait for onos start ( -w ) and enter onos cli
+            # Wait for onos start ( onos-wait-for-start ) and enter onos cli
             self.handle.sendline( "/opt/onos/bin/onos" )
             i = self.handle.expect( [
                 "onos>",

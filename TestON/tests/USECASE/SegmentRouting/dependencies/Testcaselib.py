@@ -57,13 +57,17 @@ class Testcaselib:
             main.cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             main.path = os.path.dirname( main.testFile )
-            main.topoPath = main.path + "/../dependencies/"
-            main.configPath = main.path + "/../dependencies/conf/"
-            main.testConfPath = main.path + "/dependencies/conf/"
+            main.useCommonTopo = main.params[ 'DEPENDENCY' ][ 'useCommonTopo' ] == 'True'
+            main.topoPath = main.path + ( "/.." if main.useCommonTopo else "" ) + "/dependencies/"
+            main.useCommonConf = main.params[ 'DEPENDENCY' ][ 'useCommonConf' ] == 'True'
+            main.configPath = main.path + ( "/.." if main.useCommonConf else "" ) + "/dependencies/"
+            main.forJson = "json/"
+            main.forChart = "chart/"
+            main.forConfig = "conf/"
+            main.forHost = "host/"
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             main.topologyLib = main.params[ 'DEPENDENCY' ][ 'lib' ] if 'lib' in main.params[ 'DEPENDENCY' ] else None
             main.topologyConf = main.params[ 'DEPENDENCY' ][ 'conf' ] if 'conf' in main.params[ 'DEPENDENCY' ] else None
-            main.testConf = main.params[ 'DEPENDENCY' ][ 'testConf' ] if 'testConf' in main.params[ 'DEPENDENCY' ] else None
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
@@ -107,16 +111,6 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
-
-        with open( "%s/json/%s.json" % (
-                main.configPath, main.cfgName ) ) as cfg:
-            main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
-        try:
-            with open( "%s/json/%s.chart" % (
-                    main.configPath, main.cfgName ) ) as chart:
-                main.pingChart = json.load( chart )
-        except IOError:
-            main.log.warn( "No chart file found." )
         if not ready:
             main.log.error( "ONOS startup failed!" )
             main.cleanAndExit()
@@ -126,6 +120,27 @@ class Testcaselib:
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.driver.pipeline" )
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.store.group.impl" )
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.net.flowobjective.impl" )
+
+    @staticmethod
+    def loadJson( main ):
+        with open( "%s%s.json" % ( main.configPath + main.forJson,
+                                   main.cfgName ) ) as cfg:
+            main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
+
+    @staticmethod
+    def loadChart( main ):
+        try:
+            with open( "%s%s.chart" % ( main.configPath + main.forChart,
+                                        main.cfgName ) ) as chart:
+                main.pingChart = json.load(chart)
+        except IOError:
+            main.log.warn( "No chart file found." )
+
+    @staticmethod
+    def loadHost( main ):
+        with open( "%s%s.host" % ( main.configPath + main.forHost,
+                                   main.cfgName ) ) as host:
+            main.expectedHosts = json.load( host )
 
     @staticmethod
     def startMininet( main, topology, args="" ):
@@ -142,13 +157,7 @@ class Testcaselib:
         if main.topologyConf:
             for conf in main.topologyConf.split(","):
                 copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
-                                                                main.configPath + conf,
-                                                                "~/",
-                                                                direction="to" )
-        if main.testConf:
-            for conf in main.testConf.split(","):
-                copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
-                                                                main.testConfPath + conf,
+                                                                main.configPath + main.forConfig + conf,
                                                                 "~/",
                                                                 direction="to" )
         stepResult = copyResult
@@ -593,7 +602,7 @@ class Testcaselib:
         """
         import json
         hostCfg = {}
-        with open( main.configPath + "/json/extra.json" ) as template:
+        with open( main.configPath + main.forJson + "extra.json" ) as template:
             hostCfg = json.load( template )
         main.pingChart[ 'ip' ][ 'hosts' ] += [ 'in1' ]
         main.step( "Pushing new configuration" )
@@ -630,7 +639,7 @@ class Testcaselib:
         """
         import json
         hostCfg = {}
-        with open( main.configPath + "/json/extra.json" ) as template:
+        with open( main.configPath + main.forJson + "extra.json" ) as template:
             hostCfg = json.load( template )
         main.step( "Removing host configuration" )
         main.pingChart[ 'ip' ][ 'expect' ] = 0

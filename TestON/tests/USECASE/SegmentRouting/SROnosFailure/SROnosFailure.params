@@ -13,6 +13,8 @@
     </SCALE>
 
     <DEPENDENCY>
+        <useCommonConf>True</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
         <topology>cord_fabric.py</topology>
     </DEPENDENCY>
 

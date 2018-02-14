@@ -13,6 +13,8 @@
     </SCALE>
 
     <DEPENDENCY>
+        <useCommonConf>False</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
     </DEPENDENCY>

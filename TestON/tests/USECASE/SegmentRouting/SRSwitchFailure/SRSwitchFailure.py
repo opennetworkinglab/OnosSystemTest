@@ -38,34 +38,17 @@ class SRSwitchFailure:
         Cause switch failure
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "Bridging and Routing sanity test with 2x2 Leaf-spine "
-        main.case( description )
-
-        main.cfgName = '2x2'
-        main.Cluster.setRunningNode( 1 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        # switch failure\
-        switch = main.params[ 'kill' ][ 'switch' ]
-        run.killSwitch( main, switch, switches='3', links='4' )
-        run.pingAll( main, "CASE1_Failure" )
-        run.recoverSwitch( main, switch, switches='4', links='8' )
-        run.checkFlows( main, minFlowCount=116, tag="CASE1_Recovery" )
-        run.pingAll( main, "CASE1_Recovery" )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSwitchFailure.dependencies.SRSwitchFailureFuncs import SRSwitchFailureFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSwitchFailureFuncs()
+        main.funcs.runTest( main, 1, 1,
+                            '2x2', 116 )
 
     def CASE2( self, main ):
         """
@@ -75,34 +58,17 @@ class SRSwitchFailure:
         Cause switch failure
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        import time
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
-        main.case( description )
-        main.cfgName = '4x4'
-        main.Cluster.setRunningNode( 1 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        # switch failure
-        switch = main.params[ 'kill' ][ 'switch' ]
-        run.killSwitch( main, switch, switches='7', links='24' )
-        time.sleep( main.switchSleep )
-        run.pingAll( main, "CASE2_Failure" )
-        run.recoverSwitch( main, switch, switches='8', links='32' )
-        run.checkFlows( main, minFlowCount=350, tag="CASE2_Recovery" )
-        run.pingAll( main, "CASE2_Recovery" )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO preconfigured xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSwitchFailure.dependencies.SRSwitchFailureFuncs import SRSwitchFailureFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSwitchFailureFuncs()
+        main.funcs.runTest( main, 2, 1,
+                            '4x4', 350 )
 
     def CASE4( self, main ):
         """
@@ -112,32 +78,17 @@ class SRSwitchFailure:
         Cause link failure
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 2x2 Leaf-spine "
-        main.case( description )
-        main.cfgName = '2x2'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        # switch failure
-        switch = main.params[ 'kill' ][ 'switch' ]
-        run.killSwitch( main, switch, switches='3', links='4' )
-        run.pingAll( main, "CASE4_Failure" )
-        run.recoverSwitch( main, switch, switches='4', links='8' )
-        run.checkFlows( main, minFlowCount=116, tag="CASE4_Recovery" )
-        run.pingAll( main, "CASE4_Recovery" )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSwitchFailure.dependencies.SRSwitchFailureFuncs import SRSwitchFailureFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSwitchFailureFuncs()
+        main.funcs.runTest( main, 4, 3,
+                            '2x2', 116 )
 
     def CASE5( self, main ):
         """
@@ -147,31 +98,14 @@ class SRSwitchFailure:
         Cause link failure
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        import time
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
-        main.case( description )
-        main.cfgName = '4x4'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        # switch failure
-        switch = main.params[ 'kill' ][ 'switch' ]
-        run.killSwitch( main, switch, switches='7', links='24' )
-        time.sleep( main.switchSleep )
-        run.pingAll( main, "CASE5_Failure" )
-        run.recoverSwitch( main, switch, switches='8', links='32' )
-        run.checkFlows( main, minFlowCount=350, tag="CASE5_Recovery" )
-        run.pingAll( main, "CASE5_Recovery" )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO preconfigured xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSwitchFailure.dependencies.SRSwitchFailureFuncs import SRSwitchFailureFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSwitchFailureFuncs()
+        main.funcs.runTest( main, 5, 3,
+                            '4x4', 350 )

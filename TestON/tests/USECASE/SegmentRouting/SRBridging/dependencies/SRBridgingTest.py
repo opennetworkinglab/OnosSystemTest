@@ -25,20 +25,18 @@ class SRBridgingTest ():
 
     def __init__( self ):
         self.default = ''
-
-    @staticmethod
-    def runTest( main, test_idx, topology, onosNodes, description, vlan = [] ):
-        topo = dict()
+        self.topo = dict()
         # (number of spine switch, number of leaf switch, dual-homed, description, minFlowCount - leaf)
-        topo[ '0x1' ] = ( 0, 1, False, 'single ToR', 28 )
-        topo[ '0x2' ] = ( 0, 2, True, 'dual-homed ToR', 37 )
-        topo[ '2x2' ] = ( 2, 2, False, '2x2 leaf-spine topology', 37 )
+        self.topo[ '0x1' ] = ( 0, 1, False, 'single ToR', 28 )
+        self.topo[ '0x2' ] = ( 0, 2, True, 'dual-homed ToR', 37 )
+        self.topo[ '2x2' ] = ( 2, 2, False, '2x2 leaf-spine topology', 37 )
         # TODO: Implement 2x3 topology
         # topo[ '2x3' ] = ( 2, 3, True, '2x3 leaf-spine topology with dual ToR and single ToR', 28 )
-        topo[ '2x4' ] = ( 2, 4, True, '2x4 dual-homed leaf-spine topology', 53 )
-        switchNames = {}
-        switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
+        self.topo[ '2x4' ] = ( 2, 4, True, '2x4 dual-homed leaf-spine topology', 53 )
+        self.switchNames = {}
+        self.switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
 
+    def runTest( self, main, test_idx, topology, onosNodes, description, vlan = [] ):
         skipPackage = False
         init = False
         if not hasattr( main, 'apps' ):
@@ -49,16 +47,17 @@ class SRBridgingTest ():
             skipPackage = True
 
         main.case( '%s, with %s and %d ONOS instance%s' %
-                   ( description, topo[ topology ][ 3 ], onosNodes, 's' if onosNodes > 1 else '' ) )
+                   ( description, self.topo[ topology ][ 3 ], onosNodes, 's' if onosNodes > 1 else '' ) )
 
         main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
-        main.configPath = main.path + "/dependencies/"
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
+        run.loadJson( main )
+        run.loadChart( main )
         if hasattr( main, 'Mininet1' ):
             # Run the test with Mininet
-            mininet_args = ' --spine=%d --leaf=%d' % ( topo[ topology ][ 0 ], topo[ topology ][ 1 ] )
-            if topo[ topology ][ 2 ]:
+            mininet_args = ' --spine=%d --leaf=%d' % ( self.topo[ topology ][ 0 ], self.topo[ topology ][ 1 ] )
+            if self.topo[ topology ][ 2 ]:
                 mininet_args += ' --dual-homed'
             if len( vlan ) > 0 :
                 mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
@@ -66,12 +65,12 @@ class SRBridgingTest ():
             run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
         else:
             # Run the test with physical devices
-            run.connectToPhysicalNetwork( main, switchNames[ topology ] )
+            run.connectToPhysicalNetwork( main, self.switchNames[ topology ] )
 
-        run.checkFlows( main, minFlowCount=topo[ topology ][ 4 ] * topo[ topology ][ 1 ], sleep=5 )
-        leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( topo[ topology ][ 1 ] ) ]
+        run.checkFlows( main, minFlowCount=self.topo[ topology ][ 4 ] * self.topo[ topology ][ 1 ], sleep=5 )
+        leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( self.topo[ topology ][ 1 ] ) ]
         for dpid in leaf_dpid:
-            run.checkFlowsByDpid( main, dpid, topo[ topology ][ 4 ], sleep=5 )
+            run.checkFlowsByDpid( main, dpid, self.topo[ topology ][ 4 ], sleep=5 )
         run.pingAll( main )
 
         if hasattr( main, 'Mininet1' ):

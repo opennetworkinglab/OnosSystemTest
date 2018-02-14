@@ -41,13 +41,11 @@ class SRDhcprelayTest ():
                    ( description, onosNodes, 's' if onosNodes > 1 else '' ) )
 
         main.cfgName = 'CASE%02d' % testIndex
-        main.configPath = main.path + "/dependencies/"
         main.resultFileName = 'CASE%02d' % testIndex
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
-        import json
-        with open( "%s/json/%s.host" % ( main.configPath, main.cfgName ) ) as host:
-            main.expectedHosts = json.load( host )
+        run.loadJson( main )
+        run.loadHost( main )
         if hasattr( main, 'Mininet1' ):
             # Run the test with Mininet
             if dualHomed:

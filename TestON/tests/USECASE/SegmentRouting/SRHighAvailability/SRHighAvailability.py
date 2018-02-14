@@ -43,27 +43,17 @@ class SRHighAvailability:
         5 ) Pingall
         6 ) Repeat 3 ), 4 ), 5 ) 'failures' times
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "High Availability tests - ONOS failures with 2x2 Leaf-spine "
-        main.case( description )
-        run.config( main, '2x2' )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        for i in range( 0, main.failures ):
-            toKill = i % main.Cluster.numCtrls
-            run.killOnos( main, [ toKill ], '4', '8', '2' )
-            run.pingAll( main, 'CASE1_Failure%d' % ( i + 1 ) )
-            run.recoverOnos( main, [ toKill ], '4', '8', '3' )
-            run.checkFlows( main, minFlowCount=116, tag='CASE1_Recovery%d' % ( i + 1 ) )
-            run.pingAll( main, 'CASE1_Recovery%d' % ( i + 1 ) )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRHighAvailability.dependencies.SRHAFuncs import SRHAFuncs
+        except ImportError:
+            main.log.error( "SRHAFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRHAFuncs()
+        main.funcs.runTest( main, 1, 3, '2x2',
+                            116, False, False )
 
     def CASE2( self, main ):
         """
@@ -74,31 +64,17 @@ class SRHighAvailability:
         5 ) Pingall
         6 ) Repeat 3 ), 4 ), 5 ) 'failures' times
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        import random
-        from random import randint
-        from datetime import datetime
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "High Availability tests - ONOS random failures with 2x2 Leaf-spine "
-        main.case( description )
-        run.config( main, '2x2' )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        random.seed( datetime.now() )
-        for i in range( 0, main.failures ):
-            toKill = randint( 0, ( main.Cluster.numCtrls - 1 ) )
-            run.killOnos( main, [ toKill ], '4', '8', '2' )
-            run.pingAll( main, 'CASE2_Failure%d' % ( i + 1 ) )
-            run.recoverOnos( main, [ toKill ], '4', '8', '3' )
-            run.checkFlows( main, minFlowCount=116, tag='CASE2_Recovery%d' % ( i + 1 ) )
-            run.pingAll( main, 'CASE2_Recovery%d' % ( i + 1 ) )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRHighAvailability.dependencies.SRHAFuncs import SRHAFuncs
+        except ImportError:
+            main.log.error( "SRHAFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRHAFuncs()
+        main.funcs.runTest( main, 2, 3, '2x2',
+                            116, True, False )
 
     def CASE3( self, main ):
         """
@@ -109,27 +85,17 @@ class SRHighAvailability:
         5 ) Pingall
         6 ) Repeat 3 ), 4 ), 5 ) 'failures' times
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "High Availability tests - ONOS failures with 4x4 Leaf-spine "
-        main.case( description )
-        run.config( main, '4x4' )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        for i in range( 0, main.failures ):
-            toKill = i % main.Cluster.numCtrls
-            run.killOnos( main, [ toKill ], '8', '32', '2' )
-            run.pingAll( main, 'CASE3_Failure%d' % ( i + 1 ) )
-            run.recoverOnos( main, [ toKill ], '8', '32', '3' )
-            run.checkFlows( main, minFlowCount=350, tag='CASE3_Recovery%d' % ( i + 1 ) )
-            run.pingAll( main, 'CASE3_Recovery%d' % ( i + 1 ) )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRHighAvailability.dependencies.SRHAFuncs import SRHAFuncs
+        except ImportError:
+            main.log.error( "SRHAFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRHAFuncs()
+        main.funcs.runTest( main, 3, 3, '4x4',
+                            350, False, False )
 
     def CASE4( self, main ):
         """
@@ -140,31 +106,17 @@ class SRHighAvailability:
         5 ) Pingall
         6 ) Repeat 3 ), 4 ), 5 ) 'failures' times
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        import random
-        from random import randint
-        from datetime import datetime
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "High Availability tests - ONOS random failures with 4x4 Leaf-spine "
-        main.case( description )
-        run.config( main, '4x4' )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        random.seed( datetime.now() )
-        for i in range( 0, main.failures ):
-            toKill = randint( 0, ( main.Cluster.numCtrls - 1 ) )
-            run.killOnos( main, [ toKill ], '8', '32', '2' )
-            run.pingAll( main, 'CASE4_Failure%d' % ( i + 1 ) )
-            run.recoverOnos( main, [ toKill ], '8', '32', '3' )
-            run.checkFlows( main, minFlowCount=350, tag='CASE4_Recovery%d' % ( i + 1 ) )
-            run.pingAll( main, 'CASE4_Recovery%d' % ( i + 1 ) )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRHighAvailability.dependencies.SRHAFuncs import SRHAFuncs
+        except ImportError:
+            main.log.error( "SRHAFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRHAFuncs()
+        main.funcs.runTest( main, 4, 3, '4x4',
+                            350, True, False )
 
     def CASE5( self, main ):
         """
@@ -177,35 +129,17 @@ class SRHighAvailability:
         7 ) Pingall
         8 ) Repeat 3 ), 4 ), 5 ), 6 ), 7 ), 'failures' times
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        import time
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "High Availability tests - ONOS failures and Switch failures with 2x2 Leaf-spine "
-        main.case( description )
-        run.config( main, '2x2' )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        for i in range( 0, main.failures ):
-            onosToKill = i % main.Cluster.numCtrls
-            switchToKill = i % len( main.spines )
-            run.killOnos( main, [ onosToKill ], '4', '8', '2' )
-            run.pingAll( main, 'CASE5_ONOS_Failure%d' % ( i + 1 ) )
-            run.killSwitch( main, main.spines[ switchToKill ][ 'name' ], switches='3', links='4' )
-            time.sleep( main.switchSleep )
-            run.pingAll( main, "CASE5_SWITCH_Failure%d" % ( i + 1 ) )
-            run.recoverSwitch( main, main.spines[ switchToKill ][ 'name' ], switches='4', links='8' )
-            run.checkFlows( main, minFlowCount=116, tag="CASE5_SWITCH_Recovery%d" % ( i + 1 ) )
-            run.pingAll( main, "CASE5_SWITCH_Recovery%d" % ( i + 1 ) )
-            run.recoverOnos( main, [ onosToKill ], '4', '8', '3' )
-            run.checkFlows( main, minFlowCount=116, tag='CASE5_ONOS_Recovery%d' % ( i + 1 ) )
-            run.pingAll( main, 'CASE5_ONOS_Recovery%d' % ( i + 1 ) )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRHighAvailability.dependencies.SRHAFuncs import SRHAFuncs
+        except ImportError:
+            main.log.error( "SRHAFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRHAFuncs()
+        main.funcs.runTest( main, 5, 3, '2x2',
+                            116, False, True )
 
     def CASE6( self, main ):
         """
@@ -218,38 +152,17 @@ class SRHighAvailability:
         7 ) Pingall
         8 ) Repeat 3 ), 4 ), 5 ), 6 ), 7 ) 'failures' times
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        import time
-        import random
-        from random import randint
-        from datetime import datetime
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "High Availability tests - ONOS random failures and Switch random failures with 2x2 Leaf-spine "
-        main.case( description )
-        run.config( main, '2x2' )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        for i in range( 0, main.failures ):
-            onosToKill = randint( 0, ( main.Cluster.numCtrls - 1 ) )
-            switchToKill = randint( 0, 1 )
-            run.killOnos( main, [ onosToKill ], '4', '8', '2' )
-            run.pingAll( main, 'CASE6_ONOS_Failure%d' % ( i + 1 ) )
-            run.killSwitch( main, main.spines[ switchToKill ][ 'name' ], switches='3', links='4' )
-            time.sleep( main.switchSleep )
-            run.pingAll( main, "CASE6_SWITCH_Failure%d" % ( i + 1 ) )
-            run.recoverSwitch( main, main.spines[ switchToKill ][ 'name' ], switches='4', links='8' )
-            run.checkFlows( main, minFlowCount=116, tag="CASE6_SWITCH_Recovery%d" % ( i + 1 ) )
-            run.pingAll( main, "CASE6_SWITCH_Recovery%d" % ( i + 1 ) )
-            run.recoverOnos( main, [ onosToKill ], '4', '8', '3' )
-            run.checkFlows( main, minFlowCount=116, tag='CASE6_ONOS_Recovery%d' % ( i + 1 ) )
-            run.pingAll( main, 'CASE6_ONOS_Recovery%d' % ( i + 1 ) )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRHighAvailability.dependencies.SRHAFuncs import SRHAFuncs
+        except ImportError:
+            main.log.error( "SRHAFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRHAFuncs()
+        main.funcs.runTest( main, 6, 3, '2x2',
+                            116, True, True )
 
     def CASE7( self, main ):
         """
@@ -262,35 +175,17 @@ class SRHighAvailability:
         7 ) Pingall
         8 ) Repeat 3 ), 4 ), 5 ), 6 ), 7 ), 'failures' times
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        import time
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "High Availability tests - ONOS failures and Switch failures with 4x4 Leaf-spine "
-        main.case( description )
-        run.config( main, '4x4' )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        for i in range( 0, main.failures ):
-            onosToKill = i % main.Cluster.numCtrls
-            switchToKill = i % len( main.spines )
-            run.killOnos( main, [ onosToKill ], '8', '32', '2' )
-            run.pingAll( main, 'CASE7_ONOS_Failure%d' % ( i + 1 ) )
-            run.killSwitch( main, main.spines[ switchToKill ][ 'name' ], switches='7', links='24' )
-            time.sleep( main.switchSleep )
-            run.pingAll( main, "CASE7_SWITCH_Failure%d" % ( i + 1 ) )
-            run.recoverSwitch( main, main.spines[ switchToKill ][ 'name' ], switches='8', links='32' )
-            run.checkFlows( main, minFlowCount=350, tag="CASE7_SWITCH_Recovery%d" % ( i + 1 ) )
-            run.pingAll( main, "CASE7_SWITCH_Recovery%d" % ( i + 1 ) )
-            run.recoverOnos( main, [ onosToKill ], '8', '32', '3' )
-            run.checkFlows( main, minFlowCount=350, tag='CASE7_ONOS_Recovery%d' % ( i + 1 ) )
-            run.pingAll( main, 'CASE7_ONOS_Recovery%d' % ( i + 1 ) )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRHighAvailability.dependencies.SRHAFuncs import SRHAFuncs
+        except ImportError:
+            main.log.error( "SRHAFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRHAFuncs()
+        main.funcs.runTest( main, 7, 3, '4x4',
+                            350, False, True )
 
     def CASE8( self, main ):
         """
@@ -303,35 +198,14 @@ class SRHighAvailability:
         7 ) Pingall
         8 ) Repeat 3 ), 4 ), 5 ), 6 ), 7 ), 'failures' times
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        import time
-        import random
-        from random import randint
-        from datetime import datetime
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "High Availability tests - ONOS random failures and Switch random failures with 4x4 Leaf-spine "
-        main.case( description )
-        run.config( main, '4x4' )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        for i in range( 0, main.failures ):
-            onosToKill = randint( 0, ( main.Cluster.numCtrls - 1 ) )
-            switchToKill = randint( 0, 3 )
-            run.killOnos( main, [ onosToKill ], '8', '32', '2' )
-            run.pingAll( main, 'CASE8_ONOS_Failure%d' % ( i + 1 ) )
-            run.killSwitch( main, main.spines[ switchToKill ][ 'name' ], switches='7', links='24' )
-            time.sleep( main.switchSleep )
-            run.pingAll( main, "CASE8_SWITCH_Failure%d" % ( i + 1 ) )
-            run.recoverSwitch( main, main.spines[ switchToKill ][ 'name' ], switches='8', links='32' )
-            run.checkFlows( main, minFlowCount=350, tag="CASE8_SWITCH_Recovery%d" % ( i + 1 ) )
-            run.pingAll( main, "CASE8_SWITCH_Recovery%d" % ( i + 1 ) )
-            run.recoverOnos( main, [ onosToKill ], '8', '32', '3' )
-            run.checkFlows( main, minFlowCount=350, tag='CASE8_ONOS_Recovery%d' % ( i + 1 ) )
-            run.pingAll( main, 'CASE8_ONOS_Recovery%d' % ( i + 1 ) )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRHighAvailability.dependencies.SRHAFuncs import SRHAFuncs
+        except ImportError:
+            main.log.error( "SRHAFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRHAFuncs()
+        main.funcs.runTest( main, 8, 3, '4x4',
+                            350, True, True )

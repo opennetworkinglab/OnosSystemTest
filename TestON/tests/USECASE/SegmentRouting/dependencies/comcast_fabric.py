@@ -121,59 +121,67 @@ class ComcastLeafSpineFabric(Topo):
     def createIpv6Hosts(self, dhcp):
 
         h1 = self.addHost('h1v6', cls=TrellisHost,
-                          mac='00:aa:00:00:00:01', ips=["1000::3fe/120"],
-                          gateway='1000::3ff', dhcpClient=dhcp)
+                          mac='00:bb:00:00:00:01', ips=["1000::3fe/120"],
+                          gateway='1000::3ff', dhcpClient=dhcp, ipv6=1)
         self.addLink(h1, self.leafs[0])
         self.hosts_dict['h1v6'] = h1
 
         h2 = self.addHost('h2v6', cls=TrellisHost,
-                          mac='00:aa:00:00:01:01', ips=['1001::3fe/120'],
-                          gateway='1001::3ff', dhcpClient=dhcp)
+                          mac='00:bb:00:00:01:01', ips=['1001::3fe/120'],
+                          gateway='1001::3ff', dhcpClient=dhcp, ipv6=1)
         self.addLink(h2, self.leafs[0])
         self.hosts_dict['h2v6'] = h2
 
         h3 = self.addHost('h3v6', cls=TrellisHost,
-                          mac='00:aa:00:00:00:02', ips=['1002::3fe/120'],
-                          gateway='1002::3ff', dhcpClient=dhcp)
+                          mac='00:bb:00:00:00:02', ips=['1002::3fe/120'],
+                          gateway='1002::3ff', dhcpClient=dhcp, ipv6=1)
         self.addLink(h3, self.leafs[1])
         self.hosts_dict['h3v6'] = h3
 
         h4 = self.addHost('h4v6', cls=TrellisHost,
-                          mac='00:aa:00:00:00:03', ips=['1003::3fe/120'],
-                          gateway='1003::3ff', dhcpClient=dhcp,
+                          mac='00:bb:00:00:00:03', ips=['1003::3fe/120'],
+                          gateway='1003::3ff', dhcpClient=dhcp, ipv6=1,
                           dualHomed=True)
         self.addLink(h4, self.leafs[1])
         self.addLink(h4, self.leafs[2])
         self.hosts_dict['h4v6'] = h4
 
+        # TODO: Remove this line when we
+        # find WHY dhcpv6 with tagged clients
+        # does not work.
+        dhcp = False
+
         h5 = self.addHost('h5v6', cls=TrellisHost,
-                          mac='00:aa:00:00:00:04', ips=['1004::3fe/120'],
-                          gateway='1004::3ff', dhcpClient=dhcp, vlan=30,
+                          mac='00:bb:00:00:00:04', ips=['1004::3fe/120'],
+                          gateway='1004::3ff', dhcpClient=dhcp, ipv6=1,
+                          vlan=30,
                           dualHomed=True)
         self.addLink(h5, self.leafs[1])
         self.addLink(h5, self.leafs[2])
         self.hosts_dict['h5v6'] = h5
 
         h6 = self.addHost('h6v6', cls=TrellisHost,
-                          mac='00:aa:00:00:00:05', ips=['1005::3fe/120'],
-                          gateway='1005::3ff', dhcpClient=dhcp, vlan=20)
+                          mac='00:bb:00:00:00:05', ips=['1005::3fe/120'],
+                          gateway='1005::3ff', dhcpClient=dhcp, vlan=20,
+                          ipv6=1)
         self.addLink(h6, self.leafs[2])
         self.hosts_dict['h6v6'] = h6
 
         h7 = self.addHost('h7v6', cls=TrellisHost,
-                          mac='00:aa:00:00:01:05', ips=['1006::3fe/120'],
-                          gateway='1006::3ff', dhcpClient=dhcp, vlan=40)
+                          mac='00:bb:00:00:01:05', ips=['1006::3fe/120'],
+                          gateway='1006::3ff', dhcpClient=dhcp, ipv6=1,
+                          vlan=40)
         self.addLink(h7, self.leafs[2])
         self.hosts_dict['h7v6'] = h7
 
         h8 = self.addHost('h8v6', cls=TrellisHost,
-                          mac='00:aa:00:00:00:06', ips=['1007::3fe/120'],
+                          mac='00:bb:00:00:00:06', ips=['1007::3fe/120'],
                           gateway='1007::3ff', dhcpClient=dhcp, vlan=30)
         self.addLink(h8, self.leafs[3])
         self.hosts_dict['h8v6'] = h8
 
         h9 = self.addHost('h9v6', cls=TrellisHost,
-                          mac='00:aa:00:00:00:07', ips=['1008::3fe/120'],
+                          mac='00:bb:00:00:00:07', ips=['1008::3fe/120'],
                           gateway='1008::3ff', dhcpClient=dhcp, vlan=40,
                           dualHomed=True)
         self.addLink(h9, self.leafs[3])
@@ -181,7 +189,7 @@ class ComcastLeafSpineFabric(Topo):
         self.hosts_dict['h9v6'] = h9
 
         h10 = self.addHost('h10v6', cls=TrellisHost,
-                           mac='00:aa:00:00:00:08', ips=['1009::3fe/120'],
+                           mac='00:bb:00:00:00:08', ips=['1009::3fe/120'],
                            gateway='1009::3ff', dhcpClient=dhcp, vlan=40,
                            dualHomed=True)
         self.addLink(h10, self.leafs[3])
@@ -189,7 +197,7 @@ class ComcastLeafSpineFabric(Topo):
         self.hosts_dict['h10v6'] = h10
 
         h11 = self.addHost('h11v6', cls=TrellisHost,
-                           mac='00:aa:00:00:00:0a', ips=['1010::3fe/120'],
+                           mac='00:bb:00:00:00:0a', ips=['1010::3fe/120'],
                            gateway='1010::3ff', dhcpClient=dhcp, vlan=40)
         self.addLink(h11, self.leafs[4])
         self.hosts_dict['h11v6'] = h11
@@ -212,7 +220,6 @@ class ComcastLeafSpineFabric(Topo):
     def __init__(self, dhcp=False, routers=False, ipv4=False, ipv6=False, **opts):
         Topo.__init__(self, **opts)
 
-        # TODO: support IPv6 hosts
         linkopts = dict( bw=10 )
 
         spine = 2
@@ -249,13 +256,10 @@ class ComcastLeafSpineFabric(Topo):
                                       gateway="10.0.3.254", dhcpServer=True)
                 self.addLink(self.spines[1], dhcp4, **linkopts)
             if ipv6:
-                dhcp6 = self.addHost( 'dhcp', cls=TrellisHost,
-                                      mac="00:bb:00:00:00:02", ips=["2000::3fd/120"],
-                                      gateway="2000::3ff")
-                self.addLink(self.spines[1], dhcp4, **linkopts)
-        # creatte quagga routers
-        if routers:
-            print("NYI (quagga)!")
+                dhcp6 = self.addHost( 'dhcp6', cls=TrellisHost,
+                                      mac="00:cc:00:00:00:01", ips=["2000::3fd/120"],
+                                      gateway="2000::3ff", dhcpServer=True, ipv6=True)
+                self.addLink(self.spines[1], dhcp6, **linkopts)
 
         # create hosts
         if ipv6:
@@ -266,6 +270,91 @@ class ComcastLeafSpineFabric(Topo):
 
         if not ipv4 and not ipv6:
             print("No hosts were created!")
+
+        # create quagga routers
+        if routers:
+            last_ls = self.leafs[4]
+            last_paired_ls = self. leafs[3]
+
+            # Control plane switch (for quagga fpm)
+            cs0 = self.addSwitch('cs0', cls=OVSBridge)
+
+            # Control plane NAT (for quagga fpm)
+            nat = self.addHost('nat', cls=NAT,
+                               ip='172.16.0.1/12',
+                               subnet=str(ip_network(u'172.16.0.0/12')), inNamespace=False)
+            self.addLink(cs0, nat)
+
+            # Internal Quagga bgp1
+            intfs = {'bgp1-eth0': [{'ipAddrs': ['10.0.1.2/24', '2000::102/120'], 'mac': '00:88:00:00:00:03', 'vlan': '110'},
+                                   {'ipAddrs': ['10.0.7.2/24', '2000::702/120'], 'mac': '00:88:00:00:00:03', 'vlan': '170'}],
+                     'bgp1-eth1': {'ipAddrs': ['172.16.0.3/12']}}
+            bgp1 = self.addHost('bgp1', cls=BgpRouter,
+                                interfaces=intfs,
+                                quaggaConfFile='./bgpdbgp1.conf',
+                                zebraConfFile='./zebradbgp1.conf')
+            self.addLink(bgp1, last_paired_ls)
+            self.addLink(bgp1, cs0)
+
+            # Internal Quagga bgp2
+            intfs = {'bgp2-eth0': [{'ipAddrs': ['10.0.5.2/24', '2000::502/120'], 'mac': '00:88:00:00:00:04', 'vlan': '150'},
+                                   {'ipAddrs': ['10.0.6.2/24', '2000::602/120'], 'mac': '00:88:00:00:00:04', 'vlan': '160'}],
+                     'bgp2-eth1': {'ipAddrs': ['172.16.0.4/12']}}
+            bgp2 = self.addHost('bgp2', cls=BgpRouter,
+                                interfaces=intfs,
+                                quaggaConfFile='./bgpdbgp2.conf',
+                                zebraConfFile='./zebradbgp2.conf')
+            self.addLink(bgp2, last_ls)
+            self.addLink(bgp2, cs0)
+
+            # External Quagga r1
+            intfs = {'r1-eth0': {'ipAddrs': ['10.0.1.1/24', '2000::101/120'], 'mac': '00:88:00:00:00:01'},
+                     'r1-eth1': {'ipAddrs': ['10.0.5.1/24', '2000::501/120'], 'mac': '00:88:00:00:00:11'},
+                     'r1-eth2': {'ipAddrs': ['10.0.99.1/16']},
+                     'r1-eth3': {'ipAddrs': ['2000::9901/120']},
+                     'r1-eth4': {'ipAddrs': ['2000::7701/120']}}
+            r1 = self.addHost('r1', cls=BgpRouter,
+                                interfaces=intfs,
+                                quaggaConfFile='./bgpdr1.conf')
+            self.addLink(r1, last_paired_ls)
+            self.addLink(r1, last_ls)
+
+            # External IPv4 Host behind r1
+            rh1 = self.addHost('rh1', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
+            self.addLink(r1, rh1)
+
+            # External IPv6 Host behind r1
+            rh1v6 = self.addHost('rh1v6', cls=RoutedHost, ips=['2000::9902/120'], gateway='2000::9901')
+            self.addLink(r1, rh1v6)
+
+            # Another external IPv6 Host behind r1
+            rh11v6 = self.addHost('rh11v6', cls=RoutedHost, ips=['2000::7702/120'], gateway='2000::7701')
+            self.addLink(r1, rh11v6)
+
+            # External Quagga r2
+            intfs = {'r2-eth0': {'ipAddrs': ['10.0.6.1/24', '2000::601/120'], 'mac': '00:88:00:00:00:02'},
+                     'r2-eth1': {'ipAddrs': ['10.0.7.1/24', '2000::701/120'], 'mac': '00:88:00:00:00:22'},
+                     'r2-eth2': {'ipAddrs': ['10.0.99.1/16']},
+                     'r2-eth3': {'ipAddrs': ['2000::9901/120']},
+                     'r2-eth4': {'ipAddrs': ['2000::8801/120']}}
+            r2 = self.addHost('r2', cls=BgpRouter,
+                                interfaces=intfs,
+                                quaggaConfFile='./bgpdr2.conf')
+            self.addLink(r2, last_ls)
+            self.addLink(r2, last_paired_ls)
+
+            # External IPv4 Host behind r2
+            rh2 = self.addHost('rh2', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
+            self.addLink(r2, rh2)
+
+            # External IPv6 Host behind r2
+            rh2v6 = self.addHost('rh126', cls=RoutedHost, ips=['2000::9902/120'], gateway='2000::9901')
+            self.addLink(r2, rh2v6)
+
+            # Another external IPv6 Host behind r1
+            rh22v6 = self.addHost('rh22v6', cls=RoutedHost, ips=['2000::8802/120'], gateway='2000::8801')
+            self.addLink(r2, rh22v6)
+
 
 def config( opts ):
 

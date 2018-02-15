@@ -952,7 +952,10 @@ class OnosDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
 
-            self.handle.sendline( "onos-wait-for-start " + ONOSIp + " " + cmdstr )
+            self.handle.sendline( "onos-wait-for-start " + ONOSIp )
+            self.handle.expect( self.prompt )
+
+            self.handle.sendline( "onos " + ONOSIp + " " + cmdstr )
             self.handle.expect( self.prompt )
 
             handleBefore = self.handle.before

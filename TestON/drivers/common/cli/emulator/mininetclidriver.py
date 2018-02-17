@@ -3663,6 +3663,84 @@ class MininetCliDriver( Emulator ):
                 response = self.handle.before
                 main.log.info( "====> %s ", response )
 
+                # update Mininet node variables
+                main.log.info( "Update Mininet node variables" )
+                cmd5 = "px %s.defaultIntf().name='%s'" % ( host, vintf )
+                self.handle.sendline( cmd5 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
+
+                cmd6 = "px %s.nameToIntf['%s']=%s.defaultIntf()" % ( host, vintf, host )
+                self.handle.sendline( cmd6 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
+
+                return main.TRUE
+            except pexpect.TIMEOUT:
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                main.cleanAndExit()
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                return main.FALSE
+            except Exception:
+                main.log.exception( self.name + ": Uncaught exception!" )
+                return main.FALSE
+
+    def removeVLAN( self, host, intf ):
+        """
+           Remove vlan tag from a host.
+           Dependencies:
+               This class depends on the "vlan" package
+               $ sudo apt-get install vlan
+           Configuration:
+               Load the 8021q module into the kernel
+               $sudo modprobe 8021q
+
+               To make this setup permanent:
+               $ sudo su -c 'echo "8021q" >> /etc/modules'
+           """
+        if self.handle:
+            try:
+                # get the ip address of the host
+                main.log.info( "Get the ip address of the host" )
+                ipaddr = self.getIPAddress( host )
+
+                # remove VLAN interface
+                # Ex: h1 vconfig rem h1-eth0.100
+                main.log.info( "Remove Vlan interface" )
+                cmd2 = host + " vconfig rem " + intf
+                self.handle.sendline( cmd2 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
+
+                # assign the host's IP to the original interface
+                # Ex: h1 ifconfig h1-eth0 inet 10.0.0.1
+                main.log.info( "Assign the host IP to the original interface" )
+                original_intf = intf.split(".")[0]
+                cmd3 = host + " ifconfig " + original_intf + " " + " inet " + ipaddr
+                self.handle.sendline( cmd3 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
+
+                # update Mininet node variables
+                cmd4 = "px %s.defaultIntf().name='%s'" % ( host, original_intf )
+                self.handle.sendline( cmd4 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
+
+                cmd5 = "px %s.nameToIntf['%s']=%s.defaultIntf()" % ( host, original_intf, host )
+                self.handle.sendline( cmd5 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
+
                 return main.TRUE
             except pexpect.TIMEOUT:
                 main.log.error( self.name + ": TIMEOUT exception found" )

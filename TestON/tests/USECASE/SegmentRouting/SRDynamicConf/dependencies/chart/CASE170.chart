@@ -1,0 +1,6 @@
+{
+  "leaf1": {"expect": "False",
+    "hosts":["h1", "h2"]},
+  "leaf1-20": {"expect": "True",
+    "hosts":["h1", "h3", "h4"]}
+}

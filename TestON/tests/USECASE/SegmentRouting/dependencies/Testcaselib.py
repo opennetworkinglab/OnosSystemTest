@@ -372,11 +372,12 @@ class Testcaselib:
         return
 
     @staticmethod
-    def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False ):
+    def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False, sleep=10, retryAttempts=1 ):
         '''
         Verify connectivity between hosts according to the ping chart
         acceptableFailed: max number of acceptable failed pings.
         basedOnIp: if True, run ping or ping6 based on suffix of host names
+        retryAttempts: the number of retry ping. Only works for IPv4 hosts.
         '''
         main.log.report( "Check host connectivity" )
         main.log.debug( "Ping chart: %s" % main.pingChart )
@@ -417,7 +418,11 @@ class Testcaselib:
                 main.step( "Verify full connectivity for %s with tag %s" % ( str( hosts ), tag ) )
                 if basedOnIp:
                     if ("v4" in hosts[0]):
-                        pa = main.Network.pingallHosts( hosts )
+                        pa = utilities.retry( main.Network.pingallHosts,
+                                              main.FALSE if expect else main.TRUE,
+                                              args=(hosts,),
+                                              attempts=retryAttempts,
+                                              sleep=sleep )
                         utilities.assert_equals( expect=expect, actual=pa,
                                                  onpass="IPv4 connectivity successfully tested",
                                                  onfail="IPv4 connectivity failed" )
@@ -796,3 +801,30 @@ class Testcaselib:
                                  onpass="Verify ONOS host IP succeded",
                                  onfail="Verify ONOS host IP failed" )
 
+    @staticmethod
+    def updateIntfCfg( main, connectPoint, ips=[], untagged=0, tagged=[], native=0 ):
+        """
+        Description:
+            Updates interface configuration in ONOS, with given IP and vlan parameters
+        Required:
+            * connectPoint: connect point to update configuration
+        Optional:
+            * ips: list of IP addresses, combined with '/xx' subnet representation,
+                   corresponding to 'ips' field in the configuration
+            * untagged: vlan ID as an integer, corresponding to 'vlan-untagged' field in the configuration
+            * tagged: integer list of vlan IDs, corresponding to 'vlan-tagged' field in the configuration
+            * native: vlan ID as an integer, corresponding to 'vlan-native' field in the configuration
+        """
+        cfg = dict()
+        cfg[ "ports" ] = dict()
+        cfg[ "ports" ][ connectPoint ] = dict()
+        cfg[ "ports" ][ connectPoint ][ "interfaces" ] = [ dict() ]
+        cfg[ "ports" ][ connectPoint ][ "interfaces" ][ 0 ][ "ips" ] = ips
+        if untagged > 0:
+            cfg[ "ports" ][ connectPoint ][ "interfaces" ][ 0 ][ "vlan-untagged" ] = untagged
+        else:
+            cfg[ "ports" ][ connectPoint ][ "interfaces" ][ 0 ][ "vlan-tagged" ] = tagged
+            if native > 0:
+                cfg[ "ports" ][ connectPoint ][ "interfaces" ][ 0 ][ "vlan-native" ] = native
+
+        main.Cluster.active( 0 ).REST.setNetCfg( json.loads( json.dumps( cfg ) ) )

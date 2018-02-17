@@ -307,11 +307,7 @@ class TrellisHost(Host):
             self.nameToIntf[self.vlanIntf] = defaultIntf
 
         if self.dhcpClient:
-            if self.vlan or self.dualHomed:
-                # Why leaseFile is not required here?
-                self.cmd('dhclient -q -%s -nw -pf %s %s' % (6 if self.ipv6 else 4, self.pidFile, self.defaultIntf()))
-            else:
-                self.cmd('dhclient -q -%s -nw -pf %s -lf %s %s' % (6 if self.ipv6 else 4, self.pidFile, self.leaseFile, self.defaultIntf()))
+            self.cmd('dhclient -q -%s -nw -pf %s -lf %s %s' % (6 if self.ipv6 else 4, self.pidFile, self.leaseFile, self.defaultIntf()))
         else:
             # Setup IP addresses
             for ip in self.ips:

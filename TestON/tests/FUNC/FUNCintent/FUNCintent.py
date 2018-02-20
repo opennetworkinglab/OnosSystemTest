@@ -440,6 +440,66 @@ class FUNCintent:
             main.Utils = Utils()
         main.Utils.copyKarafLog( "cycle" + str( main.cycle ) )
 
+    def CASE100( self, main):
+        """
+        Connect to a physical network, assign controllers and start scapy
+        """
+        import time
+        main.case( "Connecting to physical network" )
+        main.step( "Connecting to physical network" )
+        main.OFProtocol = "1.3"
+        topoResult = main.NetworkBench.connectToNet()
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=topoResult,
+                                 onpass="Successfully loaded topology",
+                                 onfail="Failed to load topology" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanAndExit()
+
+        main.step( "Assign switches to controllers." )
+        assignResult = main.TRUE
+        switchList = []
+        for i in range( 1, ( main.numSwitch + 1 ) ):
+            switchList.append( 's' + str( i ) )
+        tempONOSip = main.Cluster.getIps()
+        assignResult = main.Network.assignSwController( sw=switchList,
+                                                        ip=tempONOSip,
+                                                        port="6653" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=assignResult,
+                                 onpass="Successfully assigned switches to controller",
+                                 onfail="Failed to assgin switches to controller" )
+
+        main.step( "Start scapy" )
+        scapyResult = main.TRUE
+        for hostName in main.scapyHostNames:
+            main.scapyHosts.append( getattr( main, hostName ) )
+
+        for host in main.scapyHosts:
+            host.startScapy()
+            host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+        utilities.assert_equals( expect=main.TRUE, actual=scapyResult,
+                                 onpass="Successfully created Scapy Components",
+                                 onfail="Failed to discover Scapy Components" )
+
+    def CASE101( self, main ):
+        """
+        Stop Scapy on physical hosts
+        """
+        main.case( "Stop Scapy" )
+        main.step( "Stopping Scapy Hosts" )
+        scapyResult = main.TRUE
+        for host in main.scapyHosts:
+            host.stopScapy()
+        utilities.assert_equals( expect=main.TRUE, actual=scapyResult,
+                                 onpass="Successfully stopped scapy",
+                                 onfail="Failed to stop scapy" )
+
     def CASE1000( self, main ):
         """
             Add host intents between 2 host:

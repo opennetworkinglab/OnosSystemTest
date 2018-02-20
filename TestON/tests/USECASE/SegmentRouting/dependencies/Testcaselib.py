@@ -166,6 +166,30 @@ class Testcaselib:
             main.cleanAndExit()
 
     @staticmethod
+    def connectToPhysicalNetwork( main, switchNames ):
+        main.step( "Connecting to physical netowrk" )
+        topoResult = main.NetworkBench.connectToNet()
+        stepResult = topoResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully loaded topology",
+                                 onfail="Failed to load topology" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanAndExit()
+
+        main.step( "Assign switches to controllers." )
+        assignResult = main.TRUE
+        for name in switchNames:
+            assignResult = assignResult & main.NetworkBench.assignSwController( sw=name,
+                                                                                ip=main.Cluster.getIps(),
+                                                                                port='6653' )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully assign switches to controllers",
+                                 onfail="Failed to assign switches to controllers" )
+
+    @staticmethod
     def config( main, cfgName ):
         main.spines = []
 

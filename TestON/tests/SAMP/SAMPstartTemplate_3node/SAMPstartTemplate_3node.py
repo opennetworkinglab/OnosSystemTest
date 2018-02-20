@@ -137,7 +137,7 @@ class SAMPstartTemplate_3node:
         main.case( "Start Mininet topology" )
 
         main.step( "Starting Mininet Topology" )
-        topoResult = main.Network.startNet( mnCmd=topology )
+        topoResult = main.Mininet1.startNet( mnCmd=topology )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -150,7 +150,7 @@ class SAMPstartTemplate_3node:
         main.step( "Assign switches to controllers." )
         assignResult = main.TRUE
         for i in range( 1, 8 ):
-            assignResult = assignResult & main.Network.assignSwController( sw="s" + str( i ),
+            assignResult = assignResult & main.Mininet1.assignSwController( sw="s" + str( i ),
                                                                             ip=main.Cluster.getIps(),
                                                                             port='6653' )
         time.sleep( main.mnCfgSleep )
@@ -161,13 +161,42 @@ class SAMPstartTemplate_3node:
 
     def CASE12( self, main ):
         """
+            Connect to a physical network and assign controllers
+        """
+        main.case( "Connecting to physical network" )
+
+        main.step( "Connecting to physical network" )
+        topoResult = main.NetworkBench.connectToNet()
+        stepResult = topoResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully loaded topology",
+                                 onfail="Failed to load topology" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanAndExit()
+
+        main.step( "Assign switches to controllers." )
+        assignResult = main.TRUE
+        for i in range( 1, 2 ):
+            assignResult = assignResult & main.NetworkBench.assignSwController( sw="s" + str( i ),
+                                                                                ip=main.Cluster.getIps(),
+                                                                                port='6653' )
+        time.sleep( main.mnCfgSleep )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully assign switches to controllers",
+                                 onfail="Failed to assign switches to controllers" )
+
+    def CASE20( self, main ):
+        """
             Tests using through ONOS CLI handles
         """
         main.case( "Test some onos commands through CLI. " )
         main.log.debug( main.Cluster.active( 0 ).CLI.sendline( "summary" ) )
         main.log.debug( main.Cluster.active( 1 ).CLI.sendline( "devices" ) )
 
-    def CASE22( self, main ):
+    def CASE30( self, main ):
         """
             Tests using ONOS REST API handles
         """
@@ -175,7 +204,7 @@ class SAMPstartTemplate_3node:
         main.log.debug( main.Cluster.active( 0 ).REST.send( "/devices" ) )
         main.log.debug( main.Cluster.active( 2 ).REST.apps() )
 
-    def CASE32( self, main ):
+    def CASE40( self, main ):
         """
             Configure fwd app from .params json string with parameter configured
             Check if configuration successful

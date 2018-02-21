@@ -67,10 +67,6 @@ class HAsingleInstanceRestart:
         """
         main.log.info( "ONOS Single node cluster restart " +
                          "HA test - initialization" )
-        main.case( "Setting up test environment" )
-        main.caseExplanation = "Setup the test environment including " +\
-                                "installing ONOS, starting Mininet and ONOS" +\
-                                "cli sessions."
 
         # set global variables
         # These are for csv plotting in jenkins
@@ -90,28 +86,56 @@ class HAsingleInstanceRestart:
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
             main.numCtrls = int( main.params[ 'num_controllers' ] )
-            stepResult = main.testSetUp.envSetup()
+            stepResult = main.testSetUp.envSetup( includeCaseDesc=False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
+
+        applyFuncs = [ main.testSetUp.createApplyCell ]
+        applyArgs = [ [ main.Cluster, True, "SingleHA", "", "", True, main.Cluster.runningNodes[ 0 ].ipAddress ] ]
+        try:
+            if main.params[ 'topology' ][ 'topoFile' ]:
+                main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
+            else:
+                applyFuncs.append( main.HA.startingMininet )
+                applyArgs.append( None )
+        except (KeyError, IndexError):
+                applyFuncs.append( main.HA.startingMininet )
+                applyArgs.append( None )
+
         main.Cluster.setRunningNode( int( main.params[ 'num_controllers' ] ) )
         ip = main.Cluster.getIps( allNode=True )
         main.testSetUp.ONOSSetUp( main.Cluster, cellName="SingleHA", removeLog=True,
-                                  extraApply=[ main.testSetUp.createApplyCell,
-                                               main.HA.startingMininet,
-                                               main.testSetUp.createApplyCell ],
-                                  applyArgs=[ [ main.Cluster, True, cellName, "", "", True, ip ],
-                                              None,
-                                              [ main.Cluster, True, "SingleHA", "", "",
-                                                True, main.Cluster.runningNodes[ 0 ].ipAddress ] ] )
-
+                                  extraApply=applyFuncs,
+                                  applyArgs=applyArgs,
+                                  includeCaseDesc=False )
         main.HA.initialSetUp()
+
+        main.step( 'Set logging levels' )
+        logging = True
+        try:
+            logs = main.params.get( 'ONOS_Logging', False )
+            if logs:
+                for namespace, level in logs.items():
+                    for ctrl in main.Cluster.active():
+                        ctrl.CLI.logSet( level, namespace )
+        except AttributeError:
+            logging = False
+        utilities.assert_equals( expect=True, actual=logging,
+                                 onpass="Set log levels",
+                                 onfail="Failed to set log levels" )
 
     def CASE2( self, main ):
         """
         Assign devices to controllers
         """
         main.HA.assignDevices( main )
+
+    def CASE102( self, main ):
+        """
+        Set up Spine-Leaf fabric topology in Mininet
+        """
+        main.HA.startTopology( main )
 
     def CASE21( self, main ):
         """
@@ -131,187 +155,22 @@ class HAsingleInstanceRestart:
         """
         main.HA.pingAcrossHostIntent( main )
 
+    def CASE104( self, main ):
+        """
+        Ping Hosts
+        """
+        main.case( "Check connectivity" )
+        main.step( "Ping between all hosts" )
+        pingResult = main.Mininet1.pingall()
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="All Pings Passed",
+                                 onfail="Failed to ping between all hosts" )
+
     def CASE5( self, main ):
         """
         Reading state of ONOS
         """
-        import json
-        assert main, "main not defined"
-        assert utilities.assert_equals, "utilities.assert_equals not defined"
-
-        main.case( "Setting up and gathering data for current state" )
-        # The general idea for this test case is to pull the state of
-        # ( intents,flows, topology,... ) from each ONOS node
-        # We can then compare them with each other and also with past states
-
-        main.step( "Check that each switch has a master" )
-        global mastershipState
-        mastershipState = '[]'
-
-        # Assert that each device has a master
-        main.HA.checkRoleNotNull()
-
-        main.step( "Get the Mastership of each switch" )
-        main.HA.checkTheRole()
-
-        main.step( "Get the intents from each controller" )
-        global intentState
-        intentState = []
-        ONOSIntents = main.Cluster.runningNodes[ 0 ].CLI.intents( jsonFormat=True )
-        intentCheck = main.FALSE
-        if "Error" in ONOSIntents or not ONOSIntents:
-            main.log.error( "Error in getting ONOS intents" )
-            main.log.warn( "ONOS1 intents response: " + repr( ONOSIntents ) )
-        else:
-            intentCheck = main.TRUE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=intentCheck,
-            onpass="Intents are consistent across all ONOS nodes",
-            onfail="ONOS nodes have different views of intents" )
-
-        main.step( "Get the flows from each controller" )
-        global flowState
-        flowState = []
-        flowCheck = main.FALSE
-        ONOSFlows = main.Cluster.runningNodes[ 0 ].CLI.flows( jsonFormat=True )
-        if "Error" in ONOSFlows or not ONOSFlows:
-            main.log.error( "Error in getting ONOS flows" )
-            main.log.warn( "ONOS1 flows repsponse: " + ONOSFlows )
-        else:
-            # TODO: Do a better check, maybe compare flows on switches?
-            flowState = ONOSFlows
-            flowCheck = main.TRUE
-
-        main.step( "Get the OF Table entries" )
-        global flows
-        flows = []
-        for i in range( 1, 29 ):
-            flows.append( main.Mininet1.getFlowTable( "s" + str( i ), version="1.3", debug=False ) )
-        if flowCheck == main.FALSE:
-            for table in flows:
-                main.log.warn( table )
-        # TODO: Compare switch flow tables with ONOS flow tables
-
-        main.step( "Collecting topology information from ONOS" )
-        devices = []
-        devices.append( main.Cluster.runningNodes[ 0 ].CLI.devices() )
-        hosts = []
-        hosts.append( json.loads( main.Cluster.runningNodes[ 0 ].CLI.hosts() ) )
-        ports = []
-        ports.append( main.Cluster.runningNodes[ 0 ].CLI.ports() )
-        links = []
-        links.append( main.Cluster.runningNodes[ 0 ].CLI.links() )
-        clusters = []
-        clusters.append( main.Cluster.runningNodes[ 0 ].CLI.clusters() )
-
-        main.step( "Each host has an IP address" )
-        ipResult = main.TRUE
-        for controller in range( 0, len( hosts ) ):
-            controllerStr = str( main.Cluster.active( controller ) )
-            if hosts[ controller ]:
-                for host in hosts[ controller ]:
-                    if not host.get( 'ipAddresses', [] ):
-                        main.log.error( "Error with host ips on controller" +
-                                        controllerStr + ": " + str( host ) )
-                        ipResult = main.FALSE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=ipResult,
-            onpass="The ips of the hosts aren't empty",
-            onfail="The ip of at least one host is missing" )
-
-        # there should always only be one cluster
-        main.step( "There is only one dataplane cluster" )
-        try:
-            numClusters = len( json.loads( clusters[ 0 ] ) )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing clusters[0]: " +
-                                repr( clusters[ 0 ] ) )
-            numClusters = "ERROR"
-        utilities.assert_equals(
-            expect=1,
-            actual=numClusters,
-            onpass="ONOS shows 1 SCC",
-            onfail="ONOS shows " + str( numClusters ) + " SCCs" )
-
-        main.step( "Comparing ONOS topology to MN" )
-        devicesResults = main.TRUE
-        linksResults = main.TRUE
-        hostsResults = main.TRUE
-        mnSwitches = main.Mininet1.getSwitches()
-        mnLinks = main.Mininet1.getLinks()
-        mnHosts = main.Mininet1.getHosts()
-        for controller in main.Cluster.getRunningPos():
-            controllerStr = str( main.Cluster.active( controller ) )
-            if devices[ controller ] and ports[ controller ] and\
-                    "Error" not in devices[ controller ] and\
-                    "Error" not in ports[ controller ]:
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
-            else:
-                currentDevicesResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentDevicesResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " Switches view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " Switches view is incorrect" )
-            if links[ controller ] and "Error" not in links[ controller ]:
-                currentLinksResult = main.Mininet1.compareLinks(
-                        mnSwitches, mnLinks,
-                        json.loads( links[ controller ] ) )
-            else:
-                currentLinksResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentLinksResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " links view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " links view is incorrect" )
-
-            if hosts[ controller ] and "Error" not in hosts[ controller ]:
-                currentHostsResult = main.Mininet1.compareHosts(
-                        mnHosts,
-                        hosts[ controller ] )
-            else:
-                currentHostsResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentHostsResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " hosts exist in Mininet",
-                                     onfail="ONOS" + controllerStr +
-                                     " hosts don't match Mininet" )
-
-            devicesResults = devicesResults and currentDevicesResult
-            linksResults = linksResults and currentLinksResult
-            hostsResults = hostsResults and currentHostsResult
-
-        main.step( "Device information is correct" )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=devicesResults,
-            onpass="Device information is correct",
-            onfail="Device information is incorrect" )
-
-        main.step( "Links are correct" )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=linksResults,
-            onpass="Link are correct",
-            onfail="Links are incorrect" )
-
-        main.step( "Hosts are correct" )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=hostsResults,
-            onpass="Hosts are correct",
-            onfail="Hosts are incorrect" )
-
-        ONOSMastership, rolesResult, consistentMastership = main.HA.checkTheRole()
-        mastershipState = ONOSMastership[ 0 ]
+        main.HA.readingState( main )
 
     def CASE6( self, main ):
         """
@@ -370,119 +229,7 @@ class HAsingleInstanceRestart:
         """
         Check state after ONOS failure
         """
-        import json
-        assert main, "main not defined"
-        assert utilities.assert_equals, "utilities.assert_equals not defined"
-        main.case( "Running ONOS Constant State Tests" )
-
-        # Assert that each device has a master
-        main.HA.checkRoleNotNull()
-
-        main.step( "Check if switch roles are consistent across all nodes" )
-        ONOSMastership, rolesResult, consistentMastership = main.HA.checkTheRole()
-        ONOSMastership = ONOSMastership[ 0 ]
-        description2 = "Compare switch roles from before failure"
-        main.step( description2 )
-
-        currentJson = json.loads( ONOSMastership )
-        oldJson = json.loads( mastershipState )
-        mastershipCheck = main.TRUE
-        for i in range( 1, 29 ):
-            switchDPID = str(
-                main.Mininet1.getSwitchDPID( switch="s" + str( i ) ) )
-
-            current = [ switch[ 'master' ] for switch in currentJson
-                        if switchDPID in switch[ 'id' ] ]
-            old = [ switch[ 'master' ] for switch in oldJson
-                    if switchDPID in switch[ 'id' ] ]
-            if current == old:
-                mastershipCheck = mastershipCheck and main.TRUE
-            else:
-                main.log.warn( "Mastership of switch %s changed; old: %s, new: %s" % ( switchDPID,
-                                                                                       old, current ) )
-                mastershipCheck = main.FALSE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=mastershipCheck,
-            onpass="Mastership of Switches was not changed",
-            onfail="Mastership of some switches changed" )
-        mastershipCheck = mastershipCheck and consistentMastership
-
-        main.step( "Get the intents and compare across all nodes" )
-        ONOSIntents = main.Cluster.runningNodes[ 0 ].CLI.intents( jsonFormat=True )
-        intentCheck = main.FALSE
-        if "Error" in ONOSIntents or not ONOSIntents:
-            main.log.error( "Error in getting ONOS intents" )
-            main.log.warn( "ONOS1 intents response: " + repr( ONOSIntents ) )
-        else:
-            intentCheck = main.TRUE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=intentCheck,
-            onpass="Intents are consistent across all ONOS nodes",
-            onfail="ONOS nodes have different views of intents" )
-        # Print the intent states
-        intents = []
-        intents.append( ONOSIntents )
-        intentStates = []
-        for node in intents:  # Iter through ONOS nodes
-            nodeStates = []
-            # Iter through intents of a node
-            for intent in json.loads( node ):
-                nodeStates.append( intent[ 'state' ] )
-            intentStates.append( nodeStates )
-            out = [ ( i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
-            main.log.info( dict( out ) )
-
-        # NOTE: Store has no durability, so intents are lost across system
-        #       restarts
-        main.step( "Get the OF Table entries and compare to before " +
-                   "component failure" )
-        FlowTables = main.TRUE
-        for i in range( 28 ):
-            main.log.info( "Checking flow table on s" + str( i + 1 ) )
-            tmpFlows = main.Mininet1.getFlowTable( "s" + str( i + 1 ), version="1.3", debug=False )
-            curSwitch = main.Mininet1.flowTableComp( flows[ i ], tmpFlows )
-            FlowTables = FlowTables and curSwitch
-            if curSwitch == main.FALSE:
-                main.log.warn( "Differences in flow table for switch: s{}".format( i + 1 ) )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=FlowTables,
-            onpass="No changes were found in the flow tables",
-            onfail="Changes were found in the flow tables" )
-
-        main.step( "Leadership Election is still functional" )
-        # Test of LeadershipElection
-
-        leader = main.Cluster.runningNodes[ 0 ].ipAddress
-        leaderResult = main.TRUE
-        for ctrl in main.Cluster.active():
-            # loop through ONOScli handlers
-            leaderN = ctrl.CLI.electionTestLeader()
-            # verify leader is ONOS1
-            # NOTE even though we restarted ONOS, it is the only one so onos 1
-            # must be leader
-            if leaderN == leader:
-                # all is well
-                pass
-            elif leaderN == main.FALSE:
-                # error in response
-                main.log.error( "Something is wrong with " +
-                                 "electionTestLeader function, check the" +
-                                 " error logs" )
-                leaderResult = main.FALSE
-            elif leader != leaderN:
-                leaderResult = main.FALSE
-                main.log.error( ctrl.name + " sees " +
-                                 str( leaderN ) +
-                                 " as the leader of the election app. " +
-                                 "Leader should be " + str( leader ) )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=leaderResult,
-            onpass="Leadership election passed",
-            onfail="Something went wrong with Leadership election" )
+        main.HA.checkStateAfterEvent( main, afterWhich=0, compareSwitch=True, isRestart=True )
 
     def CASE8( self, main ):
         """
@@ -587,85 +334,57 @@ class HAsingleInstanceRestart:
                                          " hosts don't match Mininet" )
                 # CHECKING HOST ATTACHMENT POINTS
                 hostAttachment = True
-                zeroHosts = False
-                # FIXME: topo-HA/obelisk specific mappings:
-                # key is mac and value is dpid
-                mappings = {}
-                for i in range( 1, 29 ):  # hosts 1 through 28
-                    # set up correct variables:
-                    macId = "00:" * 5 + hex( i ).split( "0x" )[ 1 ].upper().zfill( 2 )
-                    if i == 1:
-                        deviceId = "1000".zfill( 16 )
-                    elif i == 2:
-                        deviceId = "2000".zfill( 16 )
-                    elif i == 3:
-                        deviceId = "3000".zfill( 16 )
-                    elif i == 4:
-                        deviceId = "3004".zfill( 16 )
-                    elif i == 5:
-                        deviceId = "5000".zfill( 16 )
-                    elif i == 6:
-                        deviceId = "6000".zfill( 16 )
-                    elif i == 7:
-                        deviceId = "6007".zfill( 16 )
-                    elif i >= 8 and i <= 17:
-                        dpid = '3' + str( i ).zfill( 3 )
-                        deviceId = dpid.zfill( 16 )
-                    elif i >= 18 and i <= 27:
-                        dpid = '6' + str( i ).zfill( 3 )
-                        deviceId = dpid.zfill( 16 )
-                    elif i == 28:
-                        deviceId = "2800".zfill( 16 )
-                    mappings[ macId ] = deviceId
-                if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                    if hosts[ controller ] == []:
-                        main.log.warn( "There are no hosts discovered" )
-                        zeroHosts = True
-                    else:
-                        for host in hosts[ controller ]:
-                            mac = None
-                            location = None
-                            device = None
-                            port = None
-                            try:
-                                mac = host.get( 'mac' )
-                                assert mac, "mac field could not be found for this host object"
+                if main.topoMappings:
+                    zeroHosts = False
+                    if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                        if hosts[ controller ] == []:
+                            main.log.warn( "There are no hosts discovered" )
+                            zeroHosts = True
+                        else:
+                            for host in hosts[ controller ]:
+                                mac = None
+                                location = None
+                                device = None
+                                port = None
+                                try:
+                                    mac = host.get( 'mac' )
+                                    assert mac, "mac field could not be found for this host object"
 
-                                location = host.get( 'locations' )[ 0 ]
-                                assert location, "location field could not be found for this host object"
+                                    location = host.get( 'locations' )[ 0 ]
+                                    assert location, "location field could not be found for this host object"
 
-                                # Trim the protocol identifier off deviceId
-                                device = str( location.get( 'elementId' ) ).split( ':' )[ 1 ]
-                                assert device, "elementId field could not be found for this host location object"
+                                    # Trim the protocol identifier off deviceId
+                                    device = str( location.get( 'elementId' ) ).split( ':' )[ 1 ]
+                                    assert device, "elementId field could not be found for this host location object"
 
-                                port = location.get( 'port' )
-                                assert port, "port field could not be found for this host location object"
+                                    port = location.get( 'port' )
+                                    assert port, "port field could not be found for this host location object"
 
-                                # Now check if this matches where they should be
-                                if mac and device and port:
-                                    if str( port ) != "1":
-                                        main.log.error( "The attachment port is incorrect for " +
-                                                        "host " + str( mac ) +
-                                                        ". Expected: 1 Actual: " + str( port ) )
+                                    # Now check if this matches where they should be
+                                    if mac and device and port:
+                                        if str( port ) != "1":
+                                            main.log.error( "The attachment port is incorrect for " +
+                                                            "host " + str( mac ) +
+                                                            ". Expected: 1 Actual: " + str( port ) )
+                                            hostAttachment = False
+                                        if device != main.topoMappings[ str( mac ) ]:
+                                            main.log.error( "The attachment device is incorrect for " +
+                                                            "host " + str( mac ) +
+                                                            ". Expected: " + main.topoMappings[ str( mac ) ] +
+                                                            " Actual: " + device )
+                                            hostAttachment = False
+                                    else:
                                         hostAttachment = False
-                                    if device != mappings[ str( mac ) ]:
-                                        main.log.error( "The attachment device is incorrect for " +
-                                                        "host " + str( mac ) +
-                                                        ". Expected: " + mappings[ str( mac ) ] +
-                                                        " Actual: " + device )
-                                        hostAttachment = False
-                                else:
+                                except AssertionError:
+                                    main.log.exception( "Json object not as expected" )
+                                    main.log.error( repr( host ) )
                                     hostAttachment = False
-                            except AssertionError:
-                                main.log.exception( "Json object not as expected" )
-                                main.log.error( repr( host ) )
-                                hostAttachment = False
-                else:
-                    main.log.error( "No hosts json output or \"Error\"" +
-                                    " in output. hosts = " +
-                                    repr( hosts[ controller ] ) )
-                if zeroHosts is False:
-                    hostAttachment = True
+                    else:
+                        main.log.error( "No hosts json output or \"Error\"" +
+                                        " in output. hosts = " +
+                                        repr( hosts[ controller ] ) )
+                    if zeroHosts is False:
+                        hostAttachment = True
 
                 devicesResults = devicesResults and currentDevicesResult
                 linksResults = linksResults and currentLinksResult
@@ -725,15 +444,19 @@ class HAsingleInstanceRestart:
 
     def CASE9( self, main ):
         """
-        Link s3-s28 down
+        Link down
         """
-        main.HA.linkDown( main )
+        src = main.params['kill']['linkSrc']
+        dst = main.params['kill']['linkDst']
+        main.HA.linkDown( main, src, dst )
 
     def CASE10( self, main ):
         """
-        Link s3-s28 up
+        Link up
         """
-        main.HA.linkUp( main )
+        src = main.params['kill']['linkSrc']
+        dst = main.params['kill']['linkDst']
+        main.HA.linkUp( main, src, dst )
 
     def CASE11( self, main ):
         """
@@ -759,7 +482,7 @@ class HAsingleInstanceRestart:
 
     def CASE14( self, main ):
         """
-        start election app on all onos nodes
+        Start election app on all onos nodes
         """
         main.HA.startElectionApp( main )
 

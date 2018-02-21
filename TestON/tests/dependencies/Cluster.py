@@ -75,11 +75,11 @@ class Cluster():
     def resetActive( self ):
         """
         Description:
-            reset the activeness of the runningNodes to be false
+            reset the activeness of the cluster to be false
         Required:
         Returns:
         """
-        for ctrl in self.runningNodes:
+        for ctrl in self.controllers:
             ctrl.active = False
 
     def getRunningPos( self ):

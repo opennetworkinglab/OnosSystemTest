@@ -46,26 +46,40 @@ class DualHomedRoutedHost(Host):
 
     def config(self, **kwargs):
         super(DualHomedRoutedHost, self).config(**kwargs)
-        intf0 = self.intfs[0].name
-        intf1 = self.intfs[1].name
-        self.bond0 = "%s-bond0" % self.name
-        self.cmd('modprobe bonding')
-        self.cmd('ip link add %s type bond' % self.bond0)
-        self.cmd('ip link set %s down' % intf0)
-        self.cmd('ip link set %s down' % intf1)
-        self.cmd('ip link set %s master %s' % (intf0, self.bond0))
-        self.cmd('ip link set %s master %s' % (intf1, self.bond0))
-        self.cmd('ip addr flush dev %s' % intf0)
-        self.cmd('ip addr flush dev %s' % intf1)
-        self.cmd('ip link set %s up' % self.bond0)
+        self.bondIntfs( self.intfs[0], self.intfs[1] )
 
         for ip in self.ips:
             self.cmd('ip addr add %s dev %s' % (ip, self.bond0))
 
         self.cmd('ip route add default via %s' % self.gateway)
-        default_intf = self.defaultIntf()
-        default_intf.name = self.bond0
-        self.nameToIntf[self.bond0] = default_intf
+
+    def bondIntfs( self, intf1, intf2, bondedName="bond0" ):
+        '''
+        Bond two interfaces together
+        intf1 - the first interface to bond
+        intf2 - the second interface to bond
+        bondedName - the prefix of the new interface name
+        '''
+        # Setup bonded interface
+        # TODO: support multiple bonded interfaces. Maybe just changed self.bond0 to a list of bonded intf names?
+        self.bond0 = "%s-%s" % ( self.name, bondedName )
+        self.cmd('modprobe bonding')
+        self.cmd('ip link add %s type bond' % self.bond0)
+        self.cmd('ip link set %s down' % intf1.name)
+        self.cmd('ip link set %s down' % intf2.name)
+        self.cmd('ip link set %s master %s' % (intf1.name, self.bond0))
+        self.cmd('ip link set %s master %s' % (intf2.name, self.bond0))
+        self.cmd('ip addr flush dev %s' % intf1.name)
+        self.cmd('ip addr flush dev %s' % intf2.name)
+        self.cmd('ip link set %s up' % self.bond0)
+        # NOTE: Issues with bonded intfs in mn data structures. Either only show bonded intf
+        #       or create a custom class to handle bonded infs??
+        lowestIntf = min( [ intf1, intf2 ] )
+        highestIntf = max( [ intf1, intf2 ] )
+        lowestIntf.name = self.bond0
+        self.nameToIntf[self.bond0] = lowestIntf
+        del self.intfs[ self.ports[ highestIntf ] ]
+        del self.ports[ highestIntf ]
 
     def terminate(self, **kwargs):
         self.cmd('ip link set %s down' % self.bond0)
@@ -231,19 +245,36 @@ class DualHomedDhcpClient(Host):
 
     def config(self, **kwargs):
         super(DualHomedDhcpClient, self).config(**kwargs)
-        intf0 = self.intfs[0].name
-        intf1 = self.intfs[1].name
-        self.bond0 = "%s-bond0" % self.name
+        self.bondIntfs( self.intfs[0], self.intfs[1] )
+        self.cmd('dhclient -q -4 -nw -pf %s %s' % (self.pidFile, self.bond0))
+
+    def bondIntfs( self, intf1, intf2, bondedName="bond0" ):
+        '''
+        Bond two interfaces together
+        intf1 - the first interface to bond
+        intf2 - the second interface to bond
+        bondedName - the prefix of the new interface name
+        '''
+        # Setup bonded interface
+        # TODO: support multiple bonded interfaces. Maybe just changed self.bond0 to a list of bonded intf names?
+        self.bond0 = "%s-%s" % ( self.name, bondedName )
         self.cmd('modprobe bonding')
         self.cmd('ip link add %s type bond' % self.bond0)
-        self.cmd('ip link set %s down' % intf0)
-        self.cmd('ip link set %s down' % intf1)
-        self.cmd('ip link set %s master %s' % (intf0, self.bond0))
-        self.cmd('ip link set %s master %s' % (intf1, self.bond0))
-        self.cmd('ip addr flush dev %s' % intf0)
-        self.cmd('ip addr flush dev %s' % intf1)
+        self.cmd('ip link set %s down' % intf1.name)
+        self.cmd('ip link set %s down' % intf2.name)
+        self.cmd('ip link set %s master %s' % (intf1.name, self.bond0))
+        self.cmd('ip link set %s master %s' % (intf2.name, self.bond0))
+        self.cmd('ip addr flush dev %s' % intf1.name)
+        self.cmd('ip addr flush dev %s' % intf2.name)
         self.cmd('ip link set %s up' % self.bond0)
-        self.cmd('dhclient -q -4 -nw -pf %s %s' % (self.pidFile, self.bond0))
+        # NOTE: Issues with bonded intfs in mn data structures. Either only show bonded intf
+        #       or create a custom class to handle bonded infs??
+        lowestIntf = min( [ intf1, intf2 ] )
+        highestIntf = max( [ intf1, intf2 ] )
+        lowestIntf.name = self.bond0
+        self.nameToIntf[self.bond0] = lowestIntf
+        del self.intfs[ self.ports[ highestIntf ] ]
+        del self.ports[ highestIntf ]
 
     def terminate(self, **kwargs):
         self.cmd('ip link set %s down' % self.bond0)
@@ -278,22 +309,7 @@ class TrellisHost(Host):
         super(TrellisHost, self).config(**kwargs)
 
         if self.dualHomed:
-            # Setup bond0 interface
-            intf0 = self.intfs[0].name
-            intf1 = self.intfs[1].name
-            self.bond0 = "%s-bond0" % self.name
-            self.cmd('modprobe bonding')
-            self.cmd('ip link add %s type bond' % self.bond0)
-            self.cmd('ip link set %s down' % intf0)
-            self.cmd('ip link set %s down' % intf1)
-            self.cmd('ip link set %s master %s' % (intf0, self.bond0))
-            self.cmd('ip link set %s master %s' % (intf1, self.bond0))
-            self.cmd('ip addr flush dev %s' % intf0)
-            self.cmd('ip addr flush dev %s' % intf1)
-            self.cmd('ip link set %s up' % self.bond0)
-            defaultIntf = self.defaultIntf()
-            defaultIntf.name = self.bond0
-            self.nameToIntf[self.bond0] = defaultIntf
+            self.bondIntfs( self.intfs[0], self.intfs[1] )
 
         self.cmd('ip %s addr flush dev %s' % ("-4" if self.ipv6 else "", self.defaultIntf()))
 
@@ -320,6 +336,34 @@ class TrellisHost(Host):
                     self.cmd('ip -6 addr add dev %s scope link %s' % (self.defaultIntf(), linkLocalAddr))
                 self.cmd('touch %s' % self.leasesFile)
                 self.cmd('%s -q -%s -pf %s -cf %s %s' % (self.binFile, 6 if self.ipv6 else 4, self.pidFile, self.configFile, self.defaultIntf()))
+
+    def bondIntfs( self, intf1, intf2, bondedName="bond0" ):
+        '''
+        Bond two interfaces together
+        intf1 - the first interface to bond
+        intf2 - the second interface to bond
+        bondedName - the prefix of the new interface name
+        '''
+        # Setup bonded interface
+        # TODO: support multiple bonded interfaces. Maybe just changed self.bond0 to a list of bonded intf names?
+        self.bond0 = "%s-%s" % ( self.name, bondedName )
+        self.cmd('modprobe bonding')
+        self.cmd('ip link add %s type bond' % self.bond0)
+        self.cmd('ip link set %s down' % intf1.name)
+        self.cmd('ip link set %s down' % intf2.name)
+        self.cmd('ip link set %s master %s' % (intf1.name, self.bond0))
+        self.cmd('ip link set %s master %s' % (intf2.name, self.bond0))
+        self.cmd('ip addr flush dev %s' % intf1.name)
+        self.cmd('ip addr flush dev %s' % intf2.name)
+        self.cmd('ip link set %s up' % self.bond0)
+        # NOTE: Issues with bonded intfs in mn data structures. Either only show bonded intf
+        #       or create a custom class to handle bonded infs??
+        lowestIntf = min( [ intf1, intf2 ] )
+        highestIntf = max( [ intf1, intf2 ] )
+        lowestIntf.name = self.bond0
+        self.nameToIntf[self.bond0] = lowestIntf
+        del self.intfs[ self.ports[ highestIntf ] ]
+        del self.ports[ highestIntf ]
 
     def terminate(self, **kwargs):
         if self.vlan:

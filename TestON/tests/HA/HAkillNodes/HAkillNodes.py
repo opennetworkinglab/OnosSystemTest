@@ -83,25 +83,57 @@ class HAkillNodes:
             main.HA = HA()
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            stepResult = main.testSetUp.envSetup()
+            stepResult = main.testSetUp.envSetup( includeCaseDesc=False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
-                                  extraApply=[ main.HA.startingMininet,
-                                               main.HA.customizeOnosGenPartitions,
-                                               main.HA.copyBackupConfig,
-                                               main.ONOSbench.preventAutoRespawn ],
-                                  extraClean=main.HA.cleanUpGenPartition )
+        applyFuncs = [ main.HA.customizeOnosGenPartitions,
+                       main.HA.copyBackupConfig,
+                       main.ONOSbench.preventAutoRespawn ]
+        applyArgs = [ None, None, None ]
+        try:
+            if main.params[ 'topology' ][ 'topoFile' ]:
+                main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
+            else:
+                applyFuncs.append( main.HA.startingMininet )
+                applyArgs.append( None )
+        except (KeyError, IndexError):
+                applyFuncs.append( main.HA.startingMininet )
+                applyArgs.append( None )
 
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
+                                  extraApply=applyFuncs,
+                                  applyArgs=applyArgs,
+                                  extraClean=main.HA.cleanUpGenPartition,
+                                  includeCaseDesc=False )
         main.HA.initialSetUp( serviceClean=True )
+
+        main.step( 'Set logging levels' )
+        logging = True
+        try:
+            logs = main.params.get( 'ONOS_Logging', False )
+            if logs:
+                for namespace, level in logs.items():
+                    for ctrl in main.Cluster.active():
+                        ctrl.CLI.logSet( level, namespace )
+        except AttributeError:
+            logging = False
+        utilities.assert_equals( expect=True, actual=logging,
+                                 onpass="Set log levels",
+                                 onfail="Failed to set log levels" )
 
     def CASE2( self, main ):
         """
         Assign devices to controllers
         """
         main.HA.assignDevices( main )
+
+    def CASE102( self, main ):
+        """
+        Set up Spine-Leaf fabric topology in Mininet
+        """
+        main.HA.startTopology( main )
 
     def CASE21( self, main ):
         """
@@ -120,6 +152,17 @@ class HAkillNodes:
         Ping across added host intents
         """
         main.HA.pingAcrossHostIntent( main )
+
+    def CASE104( self, main ):
+        """
+        Ping Hosts
+        """
+        main.case( "Check connectivity" )
+        main.step( "Ping between all hosts" )
+        pingResult = main.Mininet1.pingall()
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="All Pings Passed",
+                                 onfail="Failed to ping between all hosts" )
 
     def CASE5( self, main ):
         """
@@ -225,7 +268,7 @@ class HAkillNodes:
             leaderResult = main.FALSE
             main.log.error(
                 "Inconsistent view of leader for the election test app" )
-            # TODO: print the list
+            main.log.debug( leaderList )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=leaderResult,
@@ -240,15 +283,19 @@ class HAkillNodes:
 
     def CASE9( self, main ):
         """
-        Link s3-s28 down
+        Link down
         """
-        main.HA.linkDown( main )
+        src = main.params['kill']['linkSrc']
+        dst = main.params['kill']['linkDst']
+        main.HA.linkDown( main, src, dst )
 
     def CASE10( self, main ):
         """
-        Link s3-s28 up
+        Link up
         """
-        main.HA.linkUp( main )
+        src = main.params['kill']['linkSrc']
+        dst = main.params['kill']['linkDst']
+        main.HA.linkUp( main, src, dst )
 
     def CASE11( self, main ):
         """
@@ -268,13 +315,11 @@ class HAkillNodes:
         """
         Clean up
         """
-        main.HAlabels.append( "Restart" )
-        main.HAdata.append( str( main.restartTime ) )
         main.HA.cleanUp( main )
 
     def CASE14( self, main ):
         """
-        start election app on all onos nodes
+        Start election app on all onos nodes
         """
         main.HA.startElectionApp( main )
 

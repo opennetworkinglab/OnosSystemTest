@@ -205,7 +205,8 @@ class MininetCliDriver( Emulator ):
                                               'Exception',
                                               '\*\*\*',
                                               pexpect.EOF,
-                                              pexpect.TIMEOUT ],
+                                              pexpect.TIMEOUT,
+                                              "No such file or directory"],
                                             timeout )
                     if i == 0:
                         main.log.info( self.name + ": Mininet built\nTime Took : " + str( time.time() - startTime ) )
@@ -233,6 +234,9 @@ class MininetCliDriver( Emulator ):
                         main.log.error(
                             self.name +
                             ": Something took too long... " )
+                        return main.FALSE
+                    elif i == 5:
+                        main.log.error( self.name + ": " + self.handle.before + self.handle.after )
                         return main.FALSE
                 # Why did we hit this part?
                 main.log.error( "startNet did not return correctly" )
@@ -285,8 +289,8 @@ class MininetCliDriver( Emulator ):
                 numHostsPerSw = fanout
                 totalNumHosts = numSwitches * numHostsPerSw
                 numLinks = totalNumHosts + ( numSwitches - 1 )
-                print "num_switches for %s(%d,%d) = %d and links=%d" %\
-                    ( topoType, depth, fanout, numSwitches, numLinks )
+                main.log.debug( "num_switches for %s(%d,%d) = %d and links=%d" %
+                                ( topoType, depth, fanout, numSwitches, numLinks ) )
             topoDict = { "num_switches": int( numSwitches ),
                          "num_corelinks": int( numLinks ) }
             return topoDict
@@ -1650,7 +1654,9 @@ class MininetCliDriver( Emulator ):
             self.handle.expect( "mininet>" )
             response = self.handle.before
             main.log.info( response )
-
+            if "not in network" in response:
+                main.log.error( self.name + ": Could not find one of the endpoints of the link" )
+                return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
@@ -1807,7 +1813,12 @@ class MininetCliDriver( Emulator ):
                 prompt="mininet>",
                 timeout=10 )
             if response:
-                return response
+                if "no bridge named" in response:
+                    main.log.error( self.name + ": Error in getSwController: " +
+                                    self.handle.before )
+                    return main.FALSE
+                else:
+                    return response
             else:
                 return main.FALSE
         except pexpect.EOF:
@@ -1936,6 +1947,9 @@ class MininetCliDriver( Emulator ):
             for cmd in commandList:
                 try:
                     self.execute( cmd=cmd, prompt="mininet>", timeout=5 )
+                    if "no bridge named" in self.handle.before:
+                        main.log.error( self.name + ": Error in assignSwController: " +
+                                        self.handle.before )
                 except pexpect.TIMEOUT:
                     main.log.error( self.name + ": pexpect.TIMEOUT found" )
                     return main.FALSE
@@ -2581,7 +2595,8 @@ class MininetCliDriver( Emulator ):
                 sel = sel.split( "," )
                 # the priority is stuck in the selecter so put it back
                 # in the flow
-                parsedFlow.append( sel.pop( 0 ) )
+                if 'priority' in sel[0]:
+                    parsedFlow.append( sel.pop( 0 ) )
                 # parse selector
                 criteria = []
                 for item in sel:
@@ -2600,8 +2615,12 @@ class MininetCliDriver( Emulator ):
                 # parse treatment
                 action = []
                 for item in treat:
-                    field = item.split( ":" )
-                    action.append( { field[ 0 ]: field[ 1 ] } )
+                    if ":" in item:
+                        field = item.split( ":" )
+                        action.append( { field[ 0 ]: field[ 1 ] } )
+                    else:
+                        main.log.warn( "Do not know how to process this treatment:{}, ignoring.".format(
+                            item ) )
                 # create the treatment field and add the actions
                 treatment = { "treatment": { "action": sorted( action ) } }
                 # parse the rest of the flow
@@ -2961,7 +2980,9 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getHosts( self, verbose=False, updateTimeout=1000, hostClass=[ "Host", "DhcpClient", "Dhcp6Client", "DhcpServer", "Dhcp6Server", "DhcpRelay" ], getInterfaces=True ):
+    def getHosts( self, verbose=False, updateTimeout=1000,
+                  hostClass=[ "Host", "DhcpClient", "Dhcp6Client", "DhcpServer", "Dhcp6Server", "DhcpRelay" ],
+                  getInterfaces=True ):
         """
         Read hosts from Mininet.
         Optional:
@@ -2983,8 +3004,9 @@ class MininetCliDriver( Emulator ):
             if not isinstance( hostClass, types.ListType ):
                 hostClass = [ str( hostClass ) ]
             classRE = "(" + "|".join([c for c in hostClass]) + ")"
-            hostRE = r"" + classRE + "\s(?P<name>[^:]+)\:((\s(?P<ifname>[^:]+)\:" +\
-                "(?P<ip>[^\s]+))|(\s)\spid=(?P<pid>[^>]+))"
+            ifaceRE = r"(?P<ifname>[^:]+)\:(?P<ip>[^\s,]+),?"
+            ifacesRE = r"(?P<ifaces>[^:]+\:[^\s]+)"
+            hostRE = r"" + classRE + "\s(?P<name>[^:]+)\:(" + ifacesRE + "*\spid=(?P<pid>[^>]+))"
             # update mn port info
             self.update( updateTimeout )
             # Get mininet dump
@@ -3282,6 +3304,9 @@ class MininetCliDriver( Emulator ):
                                 onosPort2 ) == int( port2 ):
                             firstDir = main.TRUE
                         else:
+                            # The right switches, but wrong ports, could be
+                            # another link between these devices, or onos
+                            # discovered the links incorrectly
                             main.log.warn(
                                 'The port numbers do not match for ' +
                                 str( link ) +
@@ -3289,7 +3314,9 @@ class MininetCliDriver( Emulator ):
                                 'link %s/%s -> %s/%s' %
                                 ( node1, port1, node2, port2 ) +
                                 ' ONOS has the values %s/%s -> %s/%s' %
-                                ( onosNode1, onosPort1, onosNode2, onosPort2 ) )
+                                ( onosNode1, onosPort1, onosNode2, onosPort2 ) +
+                                '. This could be another link between these devices' +
+                                ' or a incorrectly discoved link' )
 
                     # check onos link from node2 to node1
                     elif ( str( onosNode1 ) == str( node2 ) and
@@ -3298,6 +3325,9 @@ class MininetCliDriver( Emulator ):
                                 and int( onosPort2 ) == int( port1 ) ):
                             secondDir = main.TRUE
                         else:
+                            # The right switches, but wrong ports, could be
+                            # another link between these devices, or onos
+                            # discovered the links incorrectly
                             main.log.warn(
                                 'The port numbers do not match for ' +
                                 str( link ) +
@@ -3305,7 +3335,9 @@ class MininetCliDriver( Emulator ):
                                 'link %s/%s -> %s/%s' %
                                 ( node1, port1, node2, port2 ) +
                                 ' ONOS has the values %s/%s -> %s/%s' %
-                                ( onosNode2, onosPort2, onosNode1, onosPort1 ) )
+                                ( onosNode2, onosPort2, onosNode1, onosPort1 ) +
+                                '. This could be another link between these devices' +
+                                ' or a incorrectly discoved link' )
                     else:  # this is not the link you're looking for
                         pass
                 if not firstDir:

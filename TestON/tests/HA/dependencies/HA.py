@@ -28,11 +28,12 @@ class HA():
 
     def __init__( self ):
         self.default = ''
+        main.topoMappings = {}
 
     def customizeOnosGenPartitions( self ):
         # copy gen-partions file to ONOS
         # NOTE: this assumes TestON and ONOS are on the same machine
-        srcFile = main.testDir + "/HA/dependencies/onos-gen-partitions"
+        srcFile = main.testsRoot + "/HA/dependencies/onos-gen-partitions"
         dstDir = main.ONOSbench.home + "/tools/test/bin/onos-gen-partitions"
         cpResult = main.ONOSbench.secureCopy( main.ONOSbench.user_name,
                                               main.ONOSbench.ip_address,
@@ -76,7 +77,7 @@ class HA():
         main.log.debug( main.scaling )
         scale = main.scaling.pop( 0 )
         main.log.debug( scale )
-        if "e" in scale:
+        if "b" in scale:
             equal = True
         else:
             equal = False
@@ -515,31 +516,62 @@ class HA():
         main.step( "Assign switches to controllers" )
 
         ipList = main.Cluster.getIps()
-        swList = []
-        for i in range( 1, 29 ):
-            swList.append( "s" + str( i ) )
+        swList = main.Mininet1.getSwitches().keys()
         main.Mininet1.assignSwController( sw=swList, ip=ipList )
 
         mastershipCheck = main.TRUE
-        for i in range( 1, 29 ):
-            response = main.Mininet1.getSwController( "s" + str( i ) )
+        for switch in swList:
+            response = main.Mininet1.getSwController( switch )
             try:
                 main.log.info( str( response ) )
+                for ctrl in main.Cluster.runningNodes:
+                    if re.search( "tcp:" + ctrl.ipAddress, response ):
+                        mastershipCheck = mastershipCheck and main.TRUE
+                    else:
+                        main.log.error( "Error, node " + repr( ctrl ) + " is " +
+                                        "not in the list of controllers " +
+                                        switch + " is connecting to." )
+                        mastershipCheck = main.FALSE
             except Exception:
-                main.log.info( repr( response ) )
-            for ctrl in main.Cluster.runningNodes:
-                if re.search( "tcp:" + ctrl.ipAddress, response ):
-                    mastershipCheck = mastershipCheck and main.TRUE
-                else:
-                    main.log.error( "Error, node " + repr( ctrl ) + " is " +
-                                    "not in the list of controllers s" +
-                                    str( i ) + " is connecting to." )
-                    mastershipCheck = main.FALSE
+                main.log.warn( "Error parsing get-controller response" )
+                mastershipCheck = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
             actual=mastershipCheck,
             onpass="Switch mastership assigned correctly",
             onfail="Switches not assigned correctly to controllers" )
+
+        # Mappings for attachmentPoints from host mac to deviceID
+        # TODO: make the key a dict with deviceIds and port #'s
+        # FIXME: topo-HA/obelisk specific mappings:
+        # key is mac and value is dpid
+        main.topoMappings = {}
+        for i in range( 1, 29 ):  # hosts 1 through 28
+            # set up correct variables:
+            macId = "00:" * 5 + hex( i ).split( "0x" )[ 1 ].upper().zfill( 2 )
+            if i == 1:
+                deviceId = "1000".zfill( 16 )
+            elif i == 2:
+                deviceId = "2000".zfill( 16 )
+            elif i == 3:
+                deviceId = "3000".zfill( 16 )
+            elif i == 4:
+                deviceId = "3004".zfill( 16 )
+            elif i == 5:
+                deviceId = "5000".zfill( 16 )
+            elif i == 6:
+                deviceId = "6000".zfill( 16 )
+            elif i == 7:
+                deviceId = "6007".zfill( 16 )
+            elif i >= 8 and i <= 17:
+                dpid = '3' + str( i ).zfill( 3 )
+                deviceId = dpid.zfill( 16 )
+            elif i >= 18 and i <= 27:
+                dpid = '6' + str( i ).zfill( 3 )
+                deviceId = dpid.zfill( 16 )
+            elif i == 28:
+                deviceId = "2800".zfill( 16 )
+            main.topoMappings[ macId ] = deviceId
 
     def assignIntents( self, main ):
         """
@@ -1194,55 +1226,58 @@ class HA():
 
         main.step( "Get the OF Table entries" )
         global flows
-        flows = []
-        for i in range( 1, 29 ):
-            flows.append( main.Mininet1.getFlowTable( "s" + str( i ), version="1.3", debug=False ) )
+        flows = {}
+        for swName, swDetails in main.Mininet1.getSwitches().items():
+            main.log.debug( repr( swName ) + repr( swDetails ) )
+            flows[ swName ] = main.Mininet1.getFlowTable( swName, version="1.3", debug=False )
         if flowCheck == main.FALSE:
             for table in flows:
                 main.log.warn( table )
         # TODO: Compare switch flow tables with ONOS flow tables
 
         main.step( "Start continuous pings" )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source1' ],
-            target=main.params[ 'PING' ][ 'target1' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source2' ],
-            target=main.params[ 'PING' ][ 'target2' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source3' ],
-            target=main.params[ 'PING' ][ 'target3' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source4' ],
-            target=main.params[ 'PING' ][ 'target4' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source5' ],
-            target=main.params[ 'PING' ][ 'target5' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source6' ],
-            target=main.params[ 'PING' ][ 'target6' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source7' ],
-            target=main.params[ 'PING' ][ 'target7' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source8' ],
-            target=main.params[ 'PING' ][ 'target8' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source9' ],
-            target=main.params[ 'PING' ][ 'target9' ],
-            pingTime=500 )
-        main.Mininet2.pingLong(
-            src=main.params[ 'PING' ][ 'source10' ],
-            target=main.params[ 'PING' ][ 'target10' ],
-            pingTime=500 )
+        if main.params.get( 'PING', False ):
+            # TODO: Make this more dynamic and less hardcoded, ie, # or ping pairs
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source1' ],
+                target=main.params[ 'PING' ][ 'target1' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source2' ],
+                target=main.params[ 'PING' ][ 'target2' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source3' ],
+                target=main.params[ 'PING' ][ 'target3' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source4' ],
+                target=main.params[ 'PING' ][ 'target4' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source5' ],
+                target=main.params[ 'PING' ][ 'target5' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source6' ],
+                target=main.params[ 'PING' ][ 'target6' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source7' ],
+                target=main.params[ 'PING' ][ 'target7' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source8' ],
+                target=main.params[ 'PING' ][ 'target8' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source9' ],
+                target=main.params[ 'PING' ][ 'target9' ],
+                pingTime=500 )
+            main.Mininet2.pingLong(
+                src=main.params[ 'PING' ][ 'source10' ],
+                target=main.params[ 'PING' ][ 'target10' ],
+                pingTime=500 )
 
         main.step( "Collecting topology information from ONOS" )
         devices = main.topoRelated.getAll( "devices" )
@@ -2889,9 +2924,8 @@ class HA():
                 main.log.debug( "mastershipState" + repr( mastershipState ) )
                 main.cleanAndExit()
             mastershipCheck = main.TRUE
-            for i in range( 1, 29 ):
-                switchDPID = str(
-                    main.Mininet1.getSwitchDPID( switch="s" + str( i ) ) )
+            for swName, swDetails in main.Mininet1.getSwitches().items():
+                switchDPID = swDetails[ 'dpid' ]
                 current = [ switch[ 'master' ] for switch in currentJson
                             if switchDPID in switch[ 'id' ] ]
                 old = [ switch[ 'master' ] for switch in oldJson
@@ -3033,13 +3067,13 @@ class HA():
             main.step( "Get the OF Table entries and compare to before " +
                        "component " + OnosAfterWhich[ afterWhich ] )
             FlowTables = main.TRUE
-            for i in range( 28 ):
-                main.log.info( "Checking flow table on s" + str( i + 1 ) )
-                tmpFlows = main.Mininet1.getFlowTable( "s" + str( i + 1 ), version="1.3", debug=False )
-                curSwitch = main.Mininet1.flowTableComp( flows[ i ], tmpFlows )
+            for switch in main.Mininet1.getSwitches().keys():
+                main.log.info( "Checking flow table on " + switch )
+                tmpFlows = main.Mininet1.getFlowTable( switch, version="1.3", debug=False )
+                curSwitch = main.Mininet1.flowTableComp( flows[ switch ], tmpFlows )
                 FlowTables = FlowTables and curSwitch
                 if curSwitch == main.FALSE:
-                    main.log.warn( "Differences in flow table for switch: s{}".format( i + 1 ) )
+                    main.log.warn( "Differences in flow table for switch: {}".format( switch ) )
             utilities.assert_equals(
                 expect=main.TRUE,
                 actual=FlowTables,
@@ -3194,94 +3228,68 @@ class HA():
                                          " hosts exist in Mininet",
                                          onfail=controllerStr +
                                          " hosts don't match Mininet" )
-                # CHECKING HOST ATTACHMENT POINTS
                 hostAttachment = True
-                zeroHosts = False
-                # FIXME: topo-HA/obelisk specific mappings:
-                # key is mac and value is dpid
-                mappings = {}
-                for i in range( 1, 29 ):  # hosts 1 through 28
-                    # set up correct variables:
-                    macId = "00:" * 5 + hex( i ).split( "0x" )[ 1 ].upper().zfill( 2 )
-                    if i == 1:
-                        deviceId = "1000".zfill( 16 )
-                    elif i == 2:
-                        deviceId = "2000".zfill( 16 )
-                    elif i == 3:
-                        deviceId = "3000".zfill( 16 )
-                    elif i == 4:
-                        deviceId = "3004".zfill( 16 )
-                    elif i == 5:
-                        deviceId = "5000".zfill( 16 )
-                    elif i == 6:
-                        deviceId = "6000".zfill( 16 )
-                    elif i == 7:
-                        deviceId = "6007".zfill( 16 )
-                    elif i >= 8 and i <= 17:
-                        dpid = '3' + str( i ).zfill( 3 )
-                        deviceId = dpid.zfill( 16 )
-                    elif i >= 18 and i <= 27:
-                        dpid = '6' + str( i ).zfill( 3 )
-                        deviceId = dpid.zfill( 16 )
-                    elif i == 28:
-                        deviceId = "2800".zfill( 16 )
-                    mappings[ macId ] = deviceId
-                if hosts[ controller ] is not None and "Error" not in hosts[ controller ]:
-                    if hosts[ controller ] == []:
-                        main.log.warn( "There are no hosts discovered" )
-                        zeroHosts = True
-                    else:
-                        for host in hosts[ controller ]:
-                            mac = None
-                            location = None
-                            device = None
-                            port = None
-                            try:
-                                mac = host.get( 'mac' )
-                                assert mac, "mac field could not be found for this host object"
-                                print host
-                                if 'locations' in host:
-                                    location = host.get( 'locations' )[ 0 ]
-                                elif 'location' in host:
-                                    location = host.get( 'location' )
-                                assert location, "location field could not be found for this host object"
+                if main.topoMappings:
+                    ctrl = main.Cluster.next()
+                    # CHECKING HOST ATTACHMENT POINTS
+                    zeroHosts = False
+                    if hosts[ controller ] is not None and "Error" not in hosts[ controller ]:
+                        if hosts[ controller ] == []:
+                            main.log.warn( "There are no hosts discovered" )
+                            zeroHosts = True
+                        else:
+                            for host in hosts[ controller ]:
+                                mac = None
+                                locations = []
+                                device = None
+                                port = None
+                                try:
+                                    mac = host.get( 'mac' )
+                                    assert mac, "mac field could not be found for this host object"
+                                    if 'locations' in host:
+                                        locations = host.get( 'locations' )
+                                    elif 'location' in host:
+                                        locations.append( host.get( 'location' ) )
+                                    assert locations, "locations field could not be found for this host object"
 
-                                # Trim the protocol identifier off deviceId
-                                device = str( location.get( 'elementId' ) ).split( ':' )[ 1 ]
-                                assert device, "elementId field could not be found for this host location object"
+                                    # Trim the protocol identifier off deviceId
+                                    device = str( locations[0].get( 'elementId' ) ).split( ':' )[ 1 ]
+                                    assert device, "elementId field could not be found for this host location object"
 
-                                port = location.get( 'port' )
-                                assert port, "port field could not be found for this host location object"
+                                    port = locations[0].get( 'port' )
+                                    assert port, "port field could not be found for this host location object"
+                                    main.log.debug( "Host: {}\nmac: {}\n location(s): {}\ndevice: {}\n port: {}".format(
+                                        ctrl.pprint( host ), mac, ctrl.pprint( locations ), device, port ) )
 
-                                # Now check if this matches where they should be
-                                if mac and device and port:
-                                    if str( port ) != "1":
-                                        main.log.error( "The attachment port is incorrect for " +
-                                                        "host " + str( mac ) +
-                                                        ". Expected: 1 Actual: " + str( port ) )
+                                    # Now check if this matches where they should be
+                                    if mac and device and port:
+                                        if str( port ) != "1":
+                                            main.log.error( "The attachment port is incorrect for " +
+                                                            "host " + str( mac ) +
+                                                            ". Expected: 1 Actual: " + str( port ) )
+                                            hostAttachment = False
+                                        if device != main.topoMappings[ str( mac ) ]:
+                                            main.log.error( "The attachment device is incorrect for " +
+                                                            "host " + str( mac ) +
+                                                            ". Expected: " + main.topoMppings[ str( mac ) ] +
+                                                            " Actual: " + device )
+                                            hostAttachment = False
+                                    else:
                                         hostAttachment = False
-                                    if device != mappings[ str( mac ) ]:
-                                        main.log.error( "The attachment device is incorrect for " +
-                                                        "host " + str( mac ) +
-                                                        ". Expected: " + mappings[ str( mac ) ] +
-                                                        " Actual: " + device )
-                                        hostAttachment = False
-                                else:
+                                except ( AssertionError, TypeError ):
+                                    main.log.exception( "Json object not as expected" )
+                                    main.log.error( repr( host ) )
                                     hostAttachment = False
-                            except ( AssertionError, TypeError ):
-                                main.log.exception( "Json object not as expected" )
-                                main.log.error( repr( host ) )
-                                hostAttachment = False
-                else:
-                    main.log.error( "No hosts json output or \"Error\"" +
-                                    " in output. hosts = " +
-                                    repr( hosts[ controller ] ) )
-                if zeroHosts is False:
-                    # TODO: Find a way to know if there should be hosts in a
-                    #       given point of the test
-                    hostAttachment = True
+                    else:
+                        main.log.error( "No hosts json output or \"Error\"" +
+                                        " in output. hosts = " +
+                                        repr( hosts[ controller ] ) )
+                    if zeroHosts is False:
+                        # TODO: Find a way to know if there should be hosts in a
+                        #       given point of the test
+                        hostAttachment = True
 
-                # END CHECKING HOST ATTACHMENT POINTS
+                    # END CHECKING HOST ATTACHMENT POINTS
                 devicesResults = devicesResults and currentDevicesResult
                 linksResults = linksResults and currentLinksResult
                 hostsResults = hostsResults and currentHostsResult
@@ -3439,9 +3447,9 @@ class HA():
         if not topoResult:
             main.cleanAndExit()
 
-    def linkDown( self, main, fromS="s3", toS="s28" ):
+    def linkDown( self, main, src="s3", dst="s28" ):
         """
-        Link fromS-toS down
+        Link src-dst down
         """
         import time
         assert main, "main not defined"
@@ -3454,8 +3462,8 @@ class HA():
                       "is working properly"
         main.case( description )
 
-        main.step( "Kill Link between " + fromS + " and " + toS )
-        LinkDown = main.Mininet1.link( END1=fromS, END2=toS, OPTION="down" )
+        main.step( "Kill Link between " + src + " and " + dst )
+        LinkDown = main.Mininet1.link( END1=src, END2=dst, OPTION="down" )
         main.log.info( "Waiting " + str( linkSleep ) +
                        " seconds for link down to be discovered" )
         time.sleep( linkSleep )
@@ -3464,9 +3472,9 @@ class HA():
                                  onfail="Failed to bring link down" )
         # TODO do some sort of check here
 
-    def linkUp( self, main, fromS="s3", toS="s28" ):
+    def linkUp( self, main, src="s3", dst="s28" ):
         """
-        Link fromS-toS up
+        Link src-dst up
         """
         import time
         assert main, "main not defined"
@@ -3479,8 +3487,8 @@ class HA():
                       "working properly"
         main.case( description )
 
-        main.step( "Bring link between " + fromS + " and " + toS + " back up" )
-        LinkUp = main.Mininet1.link( END1=fromS, END2=toS, OPTION="up" )
+        main.step( "Bring link between " + src + " and " + dst + " back up" )
+        LinkUp = main.Mininet1.link( END1=src, END2=dst, OPTION="up" )
         main.log.info( "Waiting " + str( linkSleep ) +
                        " seconds for link up to be discovered" )
         time.sleep( linkSleep )
@@ -3822,3 +3830,102 @@ class HA():
         for ctrl in main.Cluster.controllers:
             result = result and ( ctrl.server.restoreData( location ) is main.TRUE )
         return result
+
+    def startTopology( self, main ):
+        """
+        Starts Mininet using a topology file after pushing a network config file to ONOS.
+        """
+        import json
+        import time
+        main.case( "Starting Mininet Topology" )
+
+        main.step( "Pushing Network config" )
+        ctrl = main.Cluster.next()
+        cfgPath = main.testsRoot + main.params[ 'topology' ][ 'configPath' ]
+        cfgResult = ctrl.onosNetCfg( ctrl.ipAddress,
+                                     path=cfgPath,
+                                     fileName=main.params[ 'topology' ][ 'configName' ] )
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                 onpass="Pushed Network Configuration to ONOS",
+                                 onfail="Failed to push Network Configuration to ONOS" )
+
+        main.step( "Check Network config" )
+        try:
+            cfgFile = cfgPath + main.params[ 'topology' ][ 'configName' ]
+            with open( cfgFile, 'r' ) as contents:
+                pushedNetCfg = json.load( contents )
+                pushedNetCfg = json.loads( json.dumps( pushedNetCfg ).lower() )
+        except IOError:
+            main.log.exception( "Net Cfg file not found." )
+            main.cleanAndExit()
+        netCfgSleep = int( main.params[ 'timers' ][ 'NetCfg' ] )
+        time.sleep( netCfgSleep )
+        rawONOSNetCfg = utilities.retry( f=main.Cluster.next().REST.getNetCfg,
+                                         retValue=False,
+                                         attempts=5,
+                                         sleep=netCfgSleep )
+        # Fix differences between ONOS printing and Pushed Cfg
+        onosNetCfg = json.loads( rawONOSNetCfg.lower() )
+
+        # Compare pushed device config
+        cfgResult = True
+        for did, pushedDevice in pushedNetCfg[ 'devices' ].items():
+            onosDevice = onosNetCfg[ 'devices' ].get( did )
+            if pushedDevice != onosDevice:
+                cfgResult = False
+                main.log.error( "Pushed Network configuration does not match what is in " +
+                                "ONOS:\nPushed: {}\nONOS: {}".format( ctrl.pprint( pushedDevice ),
+                                                                      ctrl.pprint( onosDevice ) ) )
+
+        # Compare pushed port config
+        for portURI, pushedInterface in pushedNetCfg[ 'ports' ].items():
+            onosInterface = onosNetCfg[ 'ports' ].get( portURI )
+            # NOTE: pushed Cfg doesn't have macs
+            for i in xrange( 0, len( pushedInterface[ 'interfaces' ] ) ):
+                keys = pushedInterface[ 'interfaces' ][ i ].keys()
+                portCompare = True
+                for key in keys:
+                    if pushedInterface[ 'interfaces' ][ i ].get( key ) != onosInterface[ 'interfaces' ][ i ].get( key ) :
+                        main.log.debug( "{} mismatch for port {}".format( key, portURI ) )
+                        portCompare = False
+                    if not portCompare:
+                        cfgResult = False
+                        main.log.error( "Pushed Network configuration does not match what is in " +
+                                        "ONOS:\nPushed: {}\nONOS: {}".format( ctrl.pprint( pushedInterface ),
+                                                                              ctrl.pprint( onosInterface ) ) )
+
+        # Compare pushed host config
+        for hid, pushedHost in pushedNetCfg[ 'hosts' ].items():
+            onosHost = onosNetCfg[ 'hosts' ].get( hid.lower() )
+            if pushedHost != onosHost:
+                cfgResult = False
+                main.log.error( "Pushed Network configuration does not match what is in " +
+                                "ONOS:\nPushed: {}\nONOS: {}".format( ctrl.pprint( pushedHost),
+                                                                      ctrl.pprint( onosHost ) ) )
+        utilities.assert_equals( expect=True,
+                                 actual=cfgResult,
+                                 onpass="Net Cfg set",
+                                 onfail="Net Cfg not correctly set" )
+        if not cfgResult:
+            main.log.debug( "Pushed Network Config:" + ctrl.pprint( pushedNetCfg ) )
+            main.log.debug( "ONOS Network Config:" + ctrl.pprint( onosNetCfg ) )
+
+        main.step( "Start Mininet topology" )
+        for f in main.params[ 'topology' ][ 'files' ].values():
+            main.ONOSbench.scp( main.Mininet1,
+                                f,
+                                main.Mininet1.home,
+                                direction="to" )
+        topoName = main.params[ 'topology' ][ 'topoFile' ]
+        topo = main.Mininet1.home + topoName
+        ctrlList = ''
+        for ctrl in main.Cluster.controllers:
+            ctrlList += str( ctrl.ipAddress ) + ","
+        args = main.params[ 'topology' ][ 'args' ]
+        startResult = main.Mininet1.startNet( topoFile=topo,
+                                              args=" --onos-ip=" + ctrlList + " " + args )
+        utilities.assert_equals( expect=main.TRUE, actual=startResult,
+                                 onpass="Mininet Started",
+                                 onfail="Failed to start Mininet" )
+        # Give SR app time to configure the network
+        time.sleep( int( main.params[ 'timers' ][ 'SRSetup' ] ) )

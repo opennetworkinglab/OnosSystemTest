@@ -8,7 +8,8 @@
     #CASE4:   Ping across added host intents
     #CASE104: Ping between all hosts
     #CASE5:   Reading state of ONOS
-    #CASE6:   The Failure case.
+    #CASE61:  The Failure inducing case.
+    #CASE62:  The Failure recovery case.
     #CASE7:   Check state after control plane failure
     #CASE8:   Compare topo
     #CASE9:   Link down
@@ -20,22 +21,18 @@
     #CASE15:  Check that Leadership Election is still functional
     #CASE16:  Install Distributed Primitives app
     #CASE17:  Check for basic functionality with distributed primitives
-    <testcases>1,2,8,21,3,8,4,5,14,16,17,[6,8,7,4,15,17]*17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
+    <testcases>1,2,8,21,8,3,4,5,14,15,16,17,[61,8,7,4,15,17,62],8,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
 
     <GRAPH>
         <nodeCluster>VM</nodeCluster>
         <builds>20</builds>
     </GRAPH>
 
-    <scaling>1,3b,3,3b,5b,5,5b,7b,7,7b,5b,5,5b,3b,3,3b,1</scaling>
-    <server>
-        <port>8000</port>
-        <interface>eth0</interface>
-    </server>
     <apps></apps>
     <ONOS_Configuration>
         <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
             <useFlowObjectives>false</useFlowObjectives>
+            <defaultFlowObjectiveCompiler>org.onosproject.net.intent.impl.compiler.LinkCollectionIntentObjectiveCompiler</defaultFlowObjectiveCompiler>
         </org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
         <org.onosproject.store.flow.impl.ECFlowRuleStore>
             <backupCount>3</backupCount>

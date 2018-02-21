@@ -23,6 +23,7 @@ def getAllTheTests( wikiPrefix ){
                 "HAswapNodes" :             [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Swap Nodes", wiki_file:"HAswapNodesWiki.txt"  ],
                 "HAscaling" :               [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Scaling", wiki_file:"HAscalingWiki.txt"  ],
                 "HAkillNodes" :             [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Kill Nodes", wiki_file:"HAkillNodes.txt" ],
+                "HAbackupRecover" :         [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"", wiki_link:wikiPrefix + "-" + "HA Backup Recover", wiki_file:"HAbackupRecoverWiki.txt"  ],
                 "HAupgrade" :               [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"", wiki_link:wikiPrefix + "-" + "HA Upgrade", wiki_file:"HAupgradeWiki.txt"  ],
                 "HAupgradeRollback" :       [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"", wiki_link:wikiPrefix + "-" + "HA Upgrade Rollback", wiki_file:"HAupgradeRollbackWiki.txt" ]
         ],

@@ -795,7 +795,8 @@ class OnosDriver( CLI ):
                 tempCount = tempCount + 1
 
             cellFile.write( "export OCI=$OC1\n" )
-            cellFile.write( mnString + "\"" + str(mnIpAddrs) + "\"\n" )
+            if mnString:
+                cellFile.write( mnString + "\"" + str( mnIpAddrs ) + "\"\n" )
             cellFile.write( appString + "\n" )
             cellFile.write( onosGroup + "\n" )
             cellFile.write( onosUser + "\n" )
@@ -836,20 +837,19 @@ class OnosDriver( CLI ):
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
                 self.handle.expect( str( cellname ) )
+                response = self.handle.before + self.handle.after
                 i = self.handle.expect( [ "No such cell",
-                                          self.prompt,
-                                          pexpect.TIMEOUT ], timeout=10 )
+                                          "command not found",
+                                          self.prompt ], timeout=10 )
+                response += self.handle.before + self.handle.after
                 if i == 0:
-                    main.log.error( self.name + ": No such cell. Response: " + str( self.handle.before ) )
+                    main.log.error( self.name + ": No such cell. Response: " + str( response ) )
                     main.cleanAndExit()
                 elif i == 1:
-                    main.log.info( self.name + ": Successfully set cell: " + str( self.handle.before ) )
+                    main.log.error( self.name + ": Error setting cell. Response: " + str( response ) )
+                    main.cleanAndExit()
                 elif i == 2:
-                    main.log.error( self.name + ": Set cell timed out. Response: " + str( self.handle.before ) )
-                    main.cleanAndExit()
-                else:
-                    main.log.error( self.name + ": Unexpected response: " + str( self.handle.before ) )
-                    main.cleanAndExit()
+                    main.log.info( self.name + ": Successfully set cell: " + str( response ) )
                 return main.TRUE
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": TIMEOUT exception found" )

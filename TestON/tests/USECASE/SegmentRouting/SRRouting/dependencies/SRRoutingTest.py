@@ -73,7 +73,7 @@ class SRRoutingTest ():
             time.sleep(60)
 
         # ping hosts
-        run.pingAllBasedOnIp( main, 'CASE%02d' % test_idx )
+        run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
 
         if hasattr(main, 'Mininet1'):
             run.cleanup(main)

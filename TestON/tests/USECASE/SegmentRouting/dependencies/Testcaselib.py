@@ -273,17 +273,17 @@ class Testcaselib:
     @staticmethod
     def checkFlowsByDpid( main, dpid, minFlowCount, sleep=10 ):
         main.step(
-                " Check whether the flow count of device %s is bigger than %s" % ( dpid, minFlowCount ) )
-        count = utilities.retry( main.Cluster.active( 0 ).CLI.flowAddedCount,
-                                 None,
-                                 args=( dpid, ),
+            " Check whether the flow count of device %s is bigger than %s" % ( dpid, minFlowCount ) )
+        count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowAddedCount,
+                                 main.FALSE,
+                                 args=( dpid, minFlowCount ),
                                  attempts=5,
                                  sleep=sleep )
         utilities.assertEquals(
-                expect=True,
-                actual=( int( count ) > minFlowCount ),
-                onpass="Flow count looks correct: " + count ,
-                onfail="Flow count looks wrong: " + count )
+            expect=True,
+            actual=( count > minFlowCount ),
+            onpass="Flow count looks correct: " + str( count ),
+            onfail="Flow count looks wrong. " )
 
     @staticmethod
     def pingAllBasedOnIp( main, tag="", dumpflows=True ):

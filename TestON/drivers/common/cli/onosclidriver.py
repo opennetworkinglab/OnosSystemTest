@@ -2766,6 +2766,24 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def checkFlowAddedCount( self, deviceId, minFlowCount=0, core=False ):
+        """
+        Description:
+            Check whether the number of flow rules for the given device id that
+            are in ADDED state is bigger than minFlowCount.
+        Required:
+            * deviceId: device id to check the number of added flow rules
+        Optional:
+            * minFlowCount: the number of flow rules to compare
+            * core: if True, only check the number of core flows added
+        Return:
+            Returns the number of flow rules if it is bigger than minFlowCount,
+            returns main.FALSE otherwise.
+        """
+        count = self.flowAddedCount( deviceId, core )
+        count = int( count ) if count else 0
+        return count if (count > minFlowCount) else main.FALSE
+
     def getAllDevicesId( self ):
         """
         Use 'devices' function to obtain list of all devices

@@ -194,7 +194,7 @@ def analyzeResult( prop, workSpace, testName, otherTestName, resultURL, wikiLink
 def publishToConfluence( prop, wikiLink, file ){
   if( isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
     publishConfluence siteName: 'wiki.onosproject.org', pageName: wikiLink, spaceName: 'ONOS',
-                  attachArchivedArtifacts: true,
+                  attachArchivedArtifacts: true, buildIfUnstable: true,
                   editorList: [
                       confluenceWritePage( confluenceFile( file ) )
                   ]

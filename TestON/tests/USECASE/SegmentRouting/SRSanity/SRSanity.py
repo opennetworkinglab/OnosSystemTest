@@ -37,27 +37,17 @@ class SRSanity:
         Start 2x2 Leaf-Spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-
-        description = "Bridging and Routing sanity test with 2x2 Leaf-spine "
-        main.case( description )
-
-        main.cfgName = '2x2'
-        main.Cluster.setRunningNode( 1 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSanity.dependencies.SRSanityFuncs import SRSanityFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSanityFuncs()
+        main.funcs.runTest( main, 1, 1,
+                            '2x2', 116 )
 
     def CASE2( self, main ):
         """
@@ -65,25 +55,17 @@ class SRSanity:
         Start 4x4 Leaf-Spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
-        main.case( description )
-        main.cfgName = '4x4'
-        main.Cluster.setRunningNode( 1 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSanity.dependencies.SRSanityFuncs import SRSanityFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSanityFuncs()
+        main.funcs.runTest( main, 2, 1,
+                            '4x4', 350 )
 
     def CASE3( self, main ):
         """
@@ -91,25 +73,17 @@ class SRSanity:
         Start single switch topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with single switch "
-        main.case( description )
-        main.cfgName = '0x1'
-        main.numCtrls = 1
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=1 --spine=0" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSanity.dependencies.SRSanityFuncs import SRSanityFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSanityFuncs()
+        main.funcs.runTest( main, 3, 1,
+                            '0x1', 15 )
 
     def CASE4( self, main ):
         """
@@ -117,25 +91,17 @@ class SRSanity:
         Start 2x2 Leaf-Spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 2x2 Leaf-spine "
-        main.case( description )
-        main.cfgName = '2x2'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSanity.dependencies.SRSanityFuncs import SRSanityFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSanityFuncs()
+        main.funcs.runTest( main, 4, 3,
+                            '2x2', 116 )
 
     def CASE5( self, main ):
         """
@@ -143,25 +109,17 @@ class SRSanity:
         Start 4x4 Leaf-Spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
-        main.case( description )
-        main.cfgName = '4x4'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSanity.dependencies.SRSanityFuncs import SRSanityFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSanityFuncs()
+        main.funcs.runTest( main, 5, 3,
+                            '4x4', 350 )
 
     def CASE6( self, main ):
         """
@@ -169,22 +127,14 @@ class SRSanity:
         Start single switch topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with single switch "
-        main.case( description )
-        main.cfgName = '0x1'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=1 --spine=0" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRSanity.dependencies.SRSanityFuncs import SRSanityFuncs
+        except ImportError:
+            main.log.error( "SRSanityFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRSanityFuncs()
+        main.funcs.runTest( main, 6, 3,
+                            '0x1', 15 )

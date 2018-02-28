@@ -37,25 +37,17 @@ class SRDynamic:
         Start 2x2 Leaf-Spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRDynamic.dependencies.SRDynamicFuncs import SRDynamicFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRDynamicFuncs()
 
-        description = "Bridging and Routing sanity test with 2x2 Leaf-spine "
-        main.case( description )
-
-        main.cfgName = '2x2'
-        main.Cluster.setRunningNode( 1 )
-        run.installOnos( main, vlanCfg=False )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main, dumpflows=False, )
-        run.addHostCfg( main )
-        run.checkFlows( main, minFlowCount=140, dumpflows=False )
-        run.pingAll( main )
-        run.cleanup( main )
+        main.funcs.runTest( main, 1, 1, '2x2', 116, 140, False )
 
     def CASE2( self, main ):
         """
@@ -63,24 +55,17 @@ class SRDynamic:
         Start 4x4 Leaf-Spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
-        main.case( description )
-        main.cfgName = '4x4'
-        main.Cluster.setRunningNode( 1 )
-        run.installOnos( main, vlanCfg=False )
-        run.startMininet( main, 'cord_fabric.py',
-                          args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main, dumpflows=False )
-        run.addHostCfg( main )
-        run.checkFlows( main, minFlowCount=380, dumpflows=False )
-        run.pingAll( main )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRDynamic.dependencies.SRDynamicFuncs import SRDynamicFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRDynamicFuncs()
+
+        main.funcs.runTest( main, 2, 1, '4x4', 350, 380, False )
 
     def CASE3( self, main ):
         """
@@ -88,24 +73,17 @@ class SRDynamic:
         Start single switch topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with single switch "
-        main.case( description )
-        main.cfgName = '0x1'
-        main.Cluster.setRunningNode( 1 )
-        run.installOnos( main, vlanCfg=False )
-        run.startMininet( main, 'cord_fabric.py',
-                          args="--leaf=1 --spine=0" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main, dumpflows=False )
-        run.addHostCfg( main )
-        run.checkFlows( main, minFlowCount=18, dumpflows=False )
-        run.pingAll( main )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRDynamic.dependencies.SRDynamicFuncs import SRDynamicFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRDynamicFuncs()
+
+        main.funcs.runTest( main, 3, 1, '0x1', 15, 18, False )
 
     def CASE4( self, main ):
         """
@@ -113,28 +91,17 @@ class SRDynamic:
         Start 2x2 Leaf-Spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 2x2 Leaf-spine "
-        main.case( description )
+        try:
+            from tests.USECASE.SegmentRouting.SRDynamic.dependencies.SRDynamicFuncs import SRDynamicFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRDynamicFuncs()
 
-        main.cfgName = '2x2'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main, vlanCfg=False )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main, dumpflows=False )
-        run.addHostCfg( main )
-        run.checkFlows( main, minFlowCount=140, dumpflows=False )
-        run.pingAll( main )
-        run.killOnos( main, [ 0 ], '4', '8', '2' )
-        run.delHostCfg( main )
-        run.checkFlows( main, minFlowCount=116, dumpflows=False )
-        run.pingAll( main, "CASE4_after" )
-        run.cleanup( main )
+        main.funcs.runTest( main, 4, 3, '2x2', 116, 140, True )
 
     def CASE5( self, main ):
         """
@@ -142,28 +109,17 @@ class SRDynamic:
         Start 4x4 Leaf-Spine topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with 4x4 Leaf-spine "
-        main.case( description )
-        main.cfgName = '4x4'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main, vlanCfg=False )
-        run.startMininet( main, 'cord_fabric.py',
-                          args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main, dumpflows=False )
-        run.addHostCfg( main )
-        run.checkFlows( main, minFlowCount=380, dumpflows=False )
-        run.pingAll( main )
-        run.killOnos( main, [ 0 ], '8', '32', '2' )
-        run.delHostCfg( main )
-        run.checkFlows( main, minFlowCount=350, dumpflows=False )
-        run.pingAll( main, "CASE5_After" )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRDynamic.dependencies.SRDynamicFuncs import SRDynamicFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRDynamicFuncs()
+
+        main.funcs.runTest( main, 5, 3, '4x4', 350, 380, True )
 
     def CASE6( self, main ):
         """
@@ -171,25 +127,14 @@ class SRDynamic:
         Start single switch topology
         Pingall
         """
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        description = "Bridging and Routing sanity test with single switch "
-        main.case( description )
-        main.cfgName = '0x1'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main, vlanCfg=False )
-        run.startMininet( main, 'cord_fabric.py',
-                          args="--leaf=1 --spine=0" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main, dumpflows=False )
-        run.addHostCfg( main )
-        run.checkFlows( main, minFlowCount=20, dumpflows=False )
-        run.pingAll( main )
-        run.killOnos( main, [ 0 ], '1', '0', '2' )
-        run.delHostCfg( main )
-        run.checkFlows( main, minFlowCount=15, dumpflows=False )
-        run.pingAll( main, "CASE6_After" )
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRDynamic.dependencies.SRDynamicFuncs import SRDynamicFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRDynamicFuncs()
+
+        main.funcs.runTest( main, 6, 3, '0x1', 15, 20, True )

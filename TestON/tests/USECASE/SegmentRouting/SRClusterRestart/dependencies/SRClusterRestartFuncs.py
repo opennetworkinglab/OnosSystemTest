@@ -20,61 +20,48 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
-import time
 
-class SRRoutingTest ():
-
-    topo = {}
+class SRClusterRestartFuncs():
 
     def __init__( self ):
         self.default = ''
+        self.topo = dict()
+        self.topo[ '0x1' ] = ( 0, 1, '--leaf=1 --spine=0', 'single switch' )
+        self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
+        self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
 
-    @staticmethod
-    def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6, description ):
-
-        skipPackage = False
-        init = False
+    def runTest( self, main, caseNum, numNodes, Topo, minFlow, testing, killList=[ 0, 1, 2 ] ):
+        description = "Cluster Restart test with " + self.topo[ Topo ][ 3 ]
+        caseTitle = 'CASE{}_'.format( caseNum ) + testing
+        main.case( description )
         if not hasattr( main, 'apps' ):
-            init = True
             run.initTest( main )
-
-        # Skip onos packaging if the cluster size stays the same
-        if not init and onosNodes == main.Cluster.numCtrls:
-            skipPackage = True
-
-        main.case( '%s, ONOS instance%s' % ( description, onosNodes ) )
-
-        main.cfgName = 'COMCAST_CONFIG_ipv4=%d_ipv6=%d_dhcp=%d_routers=%d' % \
-            ( ipv4, ipv6, dhcp, routers )
-        main.resultFileName = 'CASE%02d' % test_idx
-        main.Cluster.setRunningNode( onosNodes )
-
-        run.installOnos( main, skipPackage=skipPackage, cliSleep=5,
-                         parallel=False )
+        main.cfgName = Topo
+        main.Cluster.setRunningNode( numNodes )
+        run.installOnos( main )
         run.loadJson( main )
         run.loadChart( main )
-
-        # wait some
-        time.sleep( 5 )
-
         if hasattr( main, 'Mininet1' ):
-            # Run the test with Mininet
-            mininet_args = ' --dhcp=%s --routers=%s --ipv6=%s --ipv4=%s' % ( dhcp, routers, ipv6, ipv4 )
-            run.startMininet( main, 'comcast_fabric.py', args=mininet_args )
+            run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
         else:
             # Run the test with physical devices
             # TODO: connect TestON to the physical network
             pass
-
-        # wait some time for onos to install the rules!
-        time.sleep( 25 )
-
-        if ( dhcp ):
-            time.sleep( 60 )
-
-        # ping hosts
-        run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
-
+        # pre-configured routing and bridging test
+        run.checkFlows( main, minFlowCount=minFlow )
+        run.pingAll( main )
+        switch = '{}'.format( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] )
+        link = '{}'.format( ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ] )
+        run.killOnos( main, killList, switch, link, '0' )
+        run.pingAll( main, caseTitle, dumpflows=False )
+        run.recoverOnos( main, killList, switch, link, '{}'.format( numNodes ) )
+        run.checkFlows( main, minFlowCount=minFlow, tag=caseTitle )
+        run.pingAll( main, caseTitle )
+        # TODO Dynamic config of hosts in subnet
+        # TODO Dynamic config of host not in subnet
+        # TODO Dynamic config of vlan xconnect
+        # TODO Vrouter integration
+        # TODO Mcast integration
         if hasattr( main, 'Mininet1' ):
             run.cleanup( main )
         else:

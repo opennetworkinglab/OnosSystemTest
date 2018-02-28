@@ -36,30 +36,17 @@ class SRClusterRestart:
         Induce CLUSTER restart
         Pingall
         """
-        description = "Cluster Restart test with 2x2 Leaf-spine "
-        main.case( description )
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        main.cfgName = '2x2'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py' )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=116 )
-        run.pingAll( main )
-        run.killOnos( main, [ 0, 1, 2 ], '4', '8', '0' )
-        run.pingAll( main, 'CASE1_Failure', dumpflows=False )
-        run.recoverOnos( main, [ 0, 1, 2 ], '4', '8', '3' )
-        run.checkFlows( main, minFlowCount=116, tag='CASE1_Failure' )
-        run.pingAll( main, 'CASE1_Failure' )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRClusterRestart.dependencies.SRClusterRestartFuncs import SRClusterRestartFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRClusterRestartFuncs()
+        main.funcs.runTest( main, 1, 3,
+                            '2x2', 116, 'Failure' )
 
     def CASE2( self, main ):
         """
@@ -69,30 +56,17 @@ class SRClusterRestart:
         Induce Cluster Restart
         Pingall
         """
-        description = "Cluster Restart test with 4x4 Leaf-spine "
-        main.case( description )
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        main.cfgName = '4x4'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=4 --spine=4" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=350 )
-        run.pingAll( main )
-        run.killOnos( main, [ 0, 1, 2 ], '8', '32', '0' )
-        run.pingAll( main, 'CASE2_Failure', dumpflows=False )
-        run.recoverOnos( main, [ 0, 1, 2 ], '8', '32', '3' )
-        run.checkFlows( main, minFlowCount=350, tag='CASE2_Failure' )
-        run.pingAll( main, 'CASE3_Recovery' )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRClusterRestart.dependencies.SRClusterRestartFuncs import SRClusterRestartFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRClusterRestartFuncs()
+        main.funcs.runTest( main, 2, 3,
+                            '4x4', 350, 'Failure' )
 
     def CASE3( self, main ):
         """
@@ -102,27 +76,15 @@ class SRClusterRestart:
         Induce Cluster Restart
         Pingall
         """
-        description = "Cluster Restart test with single switch "
-        main.case( description )
-        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
-            Testcaselib as run
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
-        main.cfgName = '0x1'
-        main.Cluster.setRunningNode( 3 )
-        run.installOnos( main )
-        run.startMininet( main, 'cord_fabric.py', args="--leaf=1 --spine=0" )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=15 )
-        run.pingAll( main )
-        run.killOnos( main, [ 0, 1, 2 ], '1', '0', '0' )
-        run.pingAll( main, 'CASE3_Failure', dumpflows=False )
-        run.recoverOnos( main, [ 0, 1, 2 ], '1', '0', '3' )
-        run.checkFlows( main, minFlowCount=15, tag='CASE3_Failure' )
-        run.pingAll( main, 'CASE3_Failure' )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        run.cleanup( main )
+        try:
+            from tests.USECASE.SegmentRouting.SRClusterRestart.dependencies.SRClusterRestartFuncs import SRClusterRestartFuncs
+        except ImportError:
+            main.log.error( "SRClusterRestartFuncs not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRClusterRestartFuncs()
+        main.funcs.runTest( main, 3, 3,
+                            '0x1', 15, 'Failure' )
+

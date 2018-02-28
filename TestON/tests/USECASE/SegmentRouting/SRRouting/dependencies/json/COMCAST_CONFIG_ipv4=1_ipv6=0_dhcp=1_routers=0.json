@@ -120,7 +120,7 @@
                 }
             ]
        } ,
-        "of:0000000000000102/10" : {
+        "of:0000000000000005/9" : {
             "interfaces" : [
                 {
                     "ips" : [ "10.0.3.254/24" ],
@@ -248,7 +248,7 @@
        "org.onosproject.dhcprelay" : {
             "default": [
                 {
-                    "dhcpServerConnectPoint": "of:0000000000000102/10",
+                    "dhcpServerConnectPoint": "of:0000000000000005/9",
                     "serverIps": ["10.0.3.253"]
                 }
             ]

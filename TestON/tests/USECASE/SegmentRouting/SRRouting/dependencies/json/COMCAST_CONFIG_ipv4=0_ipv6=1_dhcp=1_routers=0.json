@@ -120,7 +120,7 @@
                 }
             ]
        } ,
-        "of:0000000000000102/10" : {
+        "of:0000000000000005/9" : {
             "interfaces" : [
                 {
                     "ips" : [ "2000::3ff/120" ],
@@ -306,7 +306,7 @@
         "org.onosproject.dhcprelay" : {
             "default": [
                 {
-                    "dhcpServerConnectPoint": "of:0000000000000102/10",
+                    "dhcpServerConnectPoint": "of:0000000000000005/9",
                     "serverIps": ["2000::3fd"]
                 }
             ]

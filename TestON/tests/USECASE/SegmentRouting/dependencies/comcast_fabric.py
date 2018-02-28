@@ -248,19 +248,6 @@ class ComcastLeafSpineFabric(Topo):
         self.addLink(self.leafs[1], self.leafs[2], **linkopts)
         self.addLink(self.leafs[3], self.leafs[4], **linkopts)
 
-        # create dhcp servers
-        if dhcp:
-            if ipv4:
-                dhcp4 = self.addHost( 'dhcp', cls=TrellisHost,
-                                      mac="00:bb:00:00:00:01", ips=["10.0.3.253/24"],
-                                      gateway="10.0.3.254", dhcpServer=True)
-                self.addLink(self.spines[1], dhcp4, **linkopts)
-            if ipv6:
-                dhcp6 = self.addHost( 'dhcp6', cls=TrellisHost,
-                                      mac="00:cc:00:00:00:01", ips=["2000::3fd/120"],
-                                      gateway="2000::3ff", dhcpServer=True, ipv6=True)
-                self.addLink(self.spines[1], dhcp6, **linkopts)
-
         # create hosts
         if ipv6:
             self.createIpv6Hosts(dhcp)
@@ -354,6 +341,21 @@ class ComcastLeafSpineFabric(Topo):
             # Another external IPv6 Host behind r1
             rh22v6 = self.addHost('rh22v6', cls=RoutedHost, ips=['2000::8802/120'], gateway='2000::8801')
             self.addLink(r2, rh22v6)
+
+        # create dhcp servers
+        if dhcp:
+            cs1 = self.addSwitch('cs1', cls=OVSBridge)
+            self.addLink(cs1, self.leafs[4])
+            if ipv4:
+                dhcp4 = self.addHost( 'dhcp', cls=TrellisHost,
+                                      mac="00:bb:00:00:00:01", ips=["10.0.3.253/24"],
+                                      gateway="10.0.3.254", dhcpServer=True)
+                self.addLink(dhcp4, cs1, **linkopts)
+            if ipv6:
+                dhcp6 = self.addHost( 'dhcp6', cls=TrellisHost,
+                                      mac="00:cc:00:00:00:01", ips=["2000::3fd/120"],
+                                      gateway="2000::3ff", dhcpServer=True, ipv6=True)
+                self.addLink(dhcp6, cs1, **linkopts)
 
 
 def config( opts ):

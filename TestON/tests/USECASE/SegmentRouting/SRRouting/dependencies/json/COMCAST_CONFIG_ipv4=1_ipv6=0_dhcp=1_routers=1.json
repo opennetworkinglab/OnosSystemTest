@@ -119,14 +119,6 @@
                     "vlan-tagged": [40]
                 }
             ]
-       } ,
-        "of:0000000000000102/10" : {
-            "interfaces" : [
-                {
-                    "ips" : [ "10.0.3.254/24" ],
-                    "vlan-untagged": 15
-                }
-            ]
         },
         "of:0000000000000004/9" : {
             "interfaces" : [
@@ -176,6 +168,14 @@
                 {
                        "ips" : [ "10.0.6.254/24", "2000::6ff/120" ],
 	               "vlan-untagged": 160
+                }
+            ]
+        },
+        "of:0000000000000005/12" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.0.3.254/24" ],
+                    "vlan-untagged": 15
                 }
             ]
         }
@@ -299,7 +299,7 @@
        "org.onosproject.dhcprelay" : {
             "default": [
                 {
-                    "dhcpServerConnectPoint": "of:0000000000000102/10",
+                    "dhcpServerConnectPoint": "of:0000000000000005/12",
                     "serverIps": ["10.0.3.253"]
                 }
             ]

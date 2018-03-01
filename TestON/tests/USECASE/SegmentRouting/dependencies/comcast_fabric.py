@@ -259,9 +259,10 @@ class ComcastLeafSpineFabric(Topo):
             print("No hosts were created!")
 
         # create quagga routers
+        # Note: Change "fpm connection ip" to $OC1 in zebradbgp1.conf and zebradbgp2.conf to make quagga work correctly
         if routers:
             last_ls = self.leafs[4]
-            last_paired_ls = self. leafs[3]
+            last_paired_ls = self.leafs[3]
 
             # Control plane switch (for quagga fpm)
             cs0 = self.addSwitch('cs0', cls=OVSBridge)
@@ -307,8 +308,8 @@ class ComcastLeafSpineFabric(Topo):
             self.addLink(r1, last_ls)
 
             # External IPv4 Host behind r1
-            rh1 = self.addHost('rh1', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
-            self.addLink(r1, rh1)
+            rh1v4 = self.addHost('rh1v4', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
+            self.addLink(r1, rh1v4)
 
             # External IPv6 Host behind r1
             rh1v6 = self.addHost('rh1v6', cls=RoutedHost, ips=['2000::9902/120'], gateway='2000::9901')
@@ -331,11 +332,11 @@ class ComcastLeafSpineFabric(Topo):
             self.addLink(r2, last_paired_ls)
 
             # External IPv4 Host behind r2
-            rh2 = self.addHost('rh2', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
-            self.addLink(r2, rh2)
+            rh2v4 = self.addHost('rh2v4', cls=RoutedHost, ips=['10.0.99.2/24'], gateway='10.0.99.1')
+            self.addLink(r2, rh2v4)
 
             # External IPv6 Host behind r2
-            rh2v6 = self.addHost('rh126', cls=RoutedHost, ips=['2000::9902/120'], gateway='2000::9901')
+            rh2v6 = self.addHost('rh2v6', cls=RoutedHost, ips=['2000::9902/120'], gateway='2000::9901')
             self.addLink(r2, rh2v6)
 
             # Another external IPv6 Host behind r1
@@ -348,12 +349,12 @@ class ComcastLeafSpineFabric(Topo):
             self.addLink(cs1, self.leafs[4])
             if ipv4:
                 dhcp4 = self.addHost( 'dhcp', cls=TrellisHost,
-                                      mac="00:bb:00:00:00:01", ips=["10.0.3.253/24"],
+                                      mac="00:cc:00:00:00:01", ips=["10.0.3.253/24"],
                                       gateway="10.0.3.254", dhcpServer=True)
                 self.addLink(dhcp4, cs1, **linkopts)
             if ipv6:
                 dhcp6 = self.addHost( 'dhcp6', cls=TrellisHost,
-                                      mac="00:cc:00:00:00:01", ips=["2000::3fd/120"],
+                                      mac="00:dd:00:00:00:01", ips=["2000::3fd/120"],
                                       gateway="2000::3ff", dhcpServer=True, ipv6=True)
                 self.addLink(dhcp6, cs1, **linkopts)
 

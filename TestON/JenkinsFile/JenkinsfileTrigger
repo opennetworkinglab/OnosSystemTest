@@ -66,7 +66,8 @@ AllTheTests=
             "VPLSfailsafe" :                [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ]
     ],
     "SR":[
-            "SRBridging":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ]
+            "SRBridging":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
+            "SRRouting":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ]
     ]
 ]
 testcases = [
@@ -92,8 +93,8 @@ test_branch = ""
 onos_tag = params.ONOSTag
 isOldFlow = true
 // Set tests based on day of week
-def now = new Date()
-echo( now.toString() )
+def now = funcs.getCurrentTime()
+print now.toString()
 today = now[ Calendar.DAY_OF_WEEK ]
 day = ""
 SCPF_choices = ""
@@ -367,7 +368,7 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
             trigger( "1.11", "SRBridging", nodeName, jobOn, manuallyRun, onosTag )
             trigger( "1.12", "SRBridging", nodeName, jobOn, manuallyRun, onosTag )
             trigger( "master", "SRBridging", nodeName, jobOn, manuallyRun, onosTag )
-            returnCell( nodeName )
+            // returnCell( nodeName )
             }else{
             trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag )
         }
@@ -398,7 +399,7 @@ def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
         set +e
         . ~/.bashrc
         env
-        ''' + borrow_mn( jobOn ) + '''
+        //''' + borrow_mn( jobOn ) + '''
         ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun ) + '''
         ''' + oldFlowCheck( jobOn, onos_branch ) + '''
         ''' + postSetup( onos_branch, test_branch, onos_tag, manuallyRun )

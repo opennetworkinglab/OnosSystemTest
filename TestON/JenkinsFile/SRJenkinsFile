@@ -1,0 +1,31 @@
+#!groovy
+funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
+funcs.initialize( "SR" );
+// This is a Jenkinsfile for a scripted pipeline for the SR tests
+def prop = null
+prop = funcs.getProperties()
+SR = [
+"SRBridging" :  [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Bridging", wiki_file:"SRBridgingWiki.txt" ],
+"SRRouting" :  [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Routing", wiki_file:"SRRoutingWiki.txt" ]
+]
+graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
+graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
+echo( "Testcases:" )
+def testsToRun = null
+testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
+funcs.printTestToRun( testsToRun )
+
+def tests = [:]
+for( String test : SR.keySet() ){
+    toBeRun = testsToRun.contains( test )
+    def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
+    tests[stepName] = funcs.runTest( test, toBeRun, prop, test, false, SR, graph_generator_file, graph_saved_directory )
+}
+
+start = funcs.getCurrentTime()
+// run the tests
+for ( test in tests.keySet() ){
+    tests[ test ].call()
+}
+//funcs.generateOverallGraph( prop, SR, graph_saved_directory )
+funcs.sendResultToSlack( start,  prop[ "manualRun" ], prop[ "WikiPrefix" ] )

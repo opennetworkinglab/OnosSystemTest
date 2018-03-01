@@ -12,9 +12,11 @@
     </SCALE>
 
     <DEPENDENCY>
+        <useCommonConf>False</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
-        <testConf>dhcpd.conf,dhcpd6.conf,bgpdr1.conf,bgpdr2.conf,bgpdbgp1.conf,zebradbgp1.conf,bgpdbgp2.conf,zebradbgp2.conf</testConf>
+        <conf>dhcpd.conf,dhcpd6.conf,bgpdr1.conf,bgpdr2.conf,bgpdbgp1.conf,zebradbgp1.conf,bgpdbgp2.conf,zebradbgp2.conf</conf>
     </DEPENDENCY>
 
     <ENV>

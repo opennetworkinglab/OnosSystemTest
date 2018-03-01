@@ -147,7 +147,7 @@ class ONOSSetup:
 
         return '<ac:structured-macro ac:name="html">\n' + \
                 '<ac:plain-text-body><![CDATA[\n' + \
-                '<img src="https://onos-jenkins.onlab.us/job/Pipeline_postjob_' + \
+                '<img src="https://jenkins.onosproject.org/view/QA/job/postjob-' + \
                 nodeCluster + \
                 '/lastSuccessfulBuild/artifact/' + \
                 testname + \

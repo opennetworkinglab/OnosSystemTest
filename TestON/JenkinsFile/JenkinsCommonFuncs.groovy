@@ -77,7 +77,8 @@ def initAndRunTest( testName, testCategory ){
         shopt -s expand_aliases # expand alias in non-interactive mode
         export PYTHONUNBUFFERED=1
         ifconfig
-        // ''' + borrowCell( testName ) + '''
+        ''' //+ borrowCell( testName )
+        + '''
         echo "ONOS Branch is: $ONOSBranch"
         echo "TestON Branch is: $TestONBranch"
         echo "Test date: "

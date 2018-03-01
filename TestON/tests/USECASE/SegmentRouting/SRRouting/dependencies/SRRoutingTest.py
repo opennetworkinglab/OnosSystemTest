@@ -30,7 +30,7 @@ class SRRoutingTest ():
         self.default = ''
 
     @staticmethod
-    def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6, description, countFlowsGroups=False):
+    def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6, description, countFlowsGroups=False, checkExternalHost=False ):
 
         skipPackage = False
         init = False
@@ -46,6 +46,8 @@ class SRRoutingTest ():
 
         main.cfgName = 'COMCAST_CONFIG_ipv4=%d_ipv6=%d_dhcp=%d_routers=%d' % \
             ( ipv4, ipv6, dhcp, routers )
+        if checkExternalHost:
+            main.cfgName += '_external=1'
         main.resultFileName = 'CASE%02d' % test_idx
         main.Cluster.setRunningNode( onosNodes )
 
@@ -76,7 +78,7 @@ class SRRoutingTest ():
             time.sleep( 60 )
 
         # ping hosts
-        # run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+        run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
 
         # check flows / groups numbers
         if (countFlowsGroups):

@@ -355,38 +355,63 @@ class Testcaselib:
     @staticmethod
     def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False ):
         '''
-        acceptableFailed: max number of acceptable failed pings. Only works for ping6
+        Verify connectivity between hosts according to the ping chart
+        acceptableFailed: max number of acceptable failed pings.
         basedOnIp: if True, run ping or ping6 based on suffix of host names
         '''
-        main.log.report( "Check full connectivity" )
-        print main.pingChart
+        main.log.report( "Check host connectivity" )
+        main.log.debug( "Ping chart: %s" % main.pingChart )
         if tag == "":
             tag = 'CASE%d' % main.CurrentTestCaseNumber
         for entry in main.pingChart.itervalues():
-            print entry
-            hosts, expect = entry[ 'hosts' ], entry[ 'expect' ]
-            try:
-                expect = main.TRUE if str(expect).lower() == 'true' else main.FALSE
-            except:
-                expect = main.FALSE
-            main.step( "Connectivity for %s %s" % ( str( hosts ), tag ) )
-
-            if basedOnIp:
-                if ("v4" in hosts[0]):
+            main.log.debug( "Entry in ping chart: %s" % entry )
+            expect = entry[ 'expect' ]
+            if expect == "Unidirectional":
+                # Verify ping from each src host to each dst host
+                src = entry[ 'src' ]
+                dst = entry[ 'dst' ]
+                expect = main.TRUE
+                main.step( "Verify unidirectional connectivity from %s to %s with tag %s" % ( str( src ), str( dst ), tag ) )
+                if basedOnIp:
+                    if ("v4" in src[0]):
+                        pa = main.Network.pingallHostsUnidirectional( src, dst, acceptableFailed=acceptableFailed )
+                        utilities.assert_equals( expect=expect, actual=pa,
+                                                 onpass="IPv4 connectivity successfully tested",
+                                                 onfail="IPv4 connectivity failed" )
+                    if ("v6" in src[0]):
+                        pa = main.Network.pingallHostsUnidirectional( src, dst, ipv6=True, acceptableFailed=acceptableFailed )
+                        utilities.assert_equals( expect=expect, actual=pa,
+                                                 onpass="IPv6 connectivity successfully tested",
+                                                 onfail="IPv6 connectivity failed" )
+                else:
+                    pa = main.Network.pingallHostsUnidirectional( src, dst, acceptableFailed=acceptableFailed )
+                    utilities.assert_equals( expect=expect, actual=pa,
+                                             onpass="IP connectivity successfully tested",
+                                             onfail="IP connectivity failed" )
+            else:
+                # Verify ping between each host pair
+                hosts = entry[ 'hosts' ]
+                try:
+                    expect = main.TRUE if str(expect).lower() == 'true' else main.FALSE
+                except:
+                    expect = main.FALSE
+                main.step( "Verify full connectivity for %s with tag %s" % ( str( hosts ), tag ) )
+                if basedOnIp:
+                    if ("v4" in hosts[0]):
+                        pa = main.Network.pingallHosts( hosts )
+                        utilities.assert_equals( expect=expect, actual=pa,
+                                                 onpass="IPv4 connectivity successfully tested",
+                                                 onfail="IPv4 connectivity failed" )
+                    if ("v6" in hosts[0]):
+                        pa = main.Network.pingIpv6Hosts( hosts, acceptableFailed=acceptableFailed )
+                        utilities.assert_equals( expect=expect, actual=pa,
+                                                 onpass="IPv6 connectivity successfully tested",
+                                                 onfail="IPv6 connectivity failed" )
+                else:
                     pa = main.Network.pingallHosts( hosts )
                     utilities.assert_equals( expect=expect, actual=pa,
-                                             onpass="IPv4 connectivity successfully tested",
-                                             onfail="IPv4 connectivity failed" )
-                if ("v6" in hosts[0]):
-                    pa = main.Network.pingIpv6Hosts( hosts, acceptableFailed=acceptableFailed )
-                    utilities.assert_equals( expect=expect, actual=pa,
-                                             onpass="IPv6 connectivity successfully tested",
-                                             onfail="IPv6 connectivity failed" )
-            else:
-                pa = main.Network.pingallHosts( hosts )
-                utilities.assert_equals( expect=expect, actual=pa,
-                                         onpass="IP connectivity successfully tested",
-                                         onfail="IP connectivity failed" )
+                                             onpass="IP connectivity successfully tested",
+                                             onfail="IP connectivity failed" )
 
         if dumpflows:
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,

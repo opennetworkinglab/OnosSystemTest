@@ -525,7 +525,62 @@ class MininetCliDriver( Emulator ):
                         self.handle.expect( "mininet>", timeout=wait + 1 )
                         response = self.handle.before
                         if re.search( ',\s0\%\spacket\sloss', response ):
-                            pingResponse += str( " h" + str( temp[ 1: ] ) )
+                            pingResponse += " " + str( temp )
+                            break
+                        else:
+                            failedPings += 1
+                            time.sleep(1)
+                    if failedPings > acceptableFailed:
+                        # One of the host to host pair is unreachable
+                        pingResponse += " X"
+                        isReachable = main.FALSE
+                        failedPingsTotal += 1
+                pingResponse += "\n"
+            main.log.info( pingResponse + "Failed pings: " + str( failedPingsTotal ) )
+            return isReachable
+
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def pingallHostsUnidirectional( self, srcList, dstList, ipv6=False, wait=1, acceptableFailed=0 ):
+        """
+        Verify ping from each host in srcList to each host in dstList
+
+        acceptableFailed: max number of acceptable failed pings
+
+        Returns main.TRUE if all src hosts can reach all dst hosts
+        Returns main.FALSE if one or more of src hosts cannot reach one or more of dst hosts
+        """
+        try:
+            main.log.info( "Verifying ping from each src host to each dst host" )
+            isReachable = main.TRUE
+            wait = int( wait )
+            cmd = " ping" + ("6" if ipv6 else "") + " -c 1 -i 1 -W " + str( wait ) + " "
+            pingResponse = "Ping output:\n"
+            failedPingsTotal = 0
+            for host in srcList:
+                pingResponse += str( str( host ) + " -> " )
+                for temp in dstList:
+                    failedPings = 0
+                    if ipv6:
+                        pingCmd = str( host ) + cmd + str( self.getIPAddress( temp, proto='IPv6' ) )
+                    else:
+                        pingCmd = str( host ) + cmd + str( temp )
+                    while failedPings <= acceptableFailed:
+                        main.log.debug( "Pinging from " + str( host ) + " to " + str( temp ) )
+                        self.handle.sendline( pingCmd )
+                        self.handle.expect( "mininet>", timeout=wait + 1 )
+                        response = self.handle.before
+                        if re.search( ',\s0\%\spacket\sloss', response ):
+                            pingResponse += " " + str( temp )
                             break
                         else:
                             failedPings += 1

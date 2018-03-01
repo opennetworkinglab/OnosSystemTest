@@ -1,4 +1,4 @@
 {
-  "ipv4": {"expect": "True",
-    "hosts":["h1v4", "h2v4" ,"h3v4", "h4v4", "h5v4", "h6v4", "h7v4", "h8v4", "h9v4", "h10v4", "h11v4"]}
+  "ipv4": { "expect": "True",
+            "hosts": ["h1v4", "h2v4" ,"h3v4", "h4v4", "h5v4", "h6v4", "h7v4", "h8v4", "h9v4", "h10v4", "h11v4"] }
 }

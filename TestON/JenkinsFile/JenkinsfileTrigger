@@ -365,9 +365,9 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 // jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
     return{
         if( jobOn == "SR" ){
-            trigger( "1.11", "SRBridging", nodeName, jobOn, manuallyRun, onosTag )
-            trigger( "1.12", "SRBridging", nodeName, jobOn, manuallyRun, onosTag )
-            trigger( "master", "SRBridging", nodeName, jobOn, manuallyRun, onosTag )
+            trigger( "1.11", tests, nodeName, jobOn, manuallyRun, onosTag )
+            trigger( "1.12", tests, nodeName, jobOn, manuallyRun, onosTag )
+            trigger( "master", tests, nodeName, jobOn, manuallyRun, onosTag )
             // returnCell( nodeName )
             }else{
             trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag )
@@ -395,12 +395,11 @@ def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manual
 // Initialize the environment Setup for the onos and OnosSystemTest
 def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
     stage( "envSetup" ) {
+        // after env: ''' + borrow_mn( jobOn ) + '''
         sh '''#!/bin/bash -l
         set +e
         . ~/.bashrc
         env
-        ''' //+ borrow_mn( jobOn )
-        + '''
         ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun ) + '''
         ''' + oldFlowCheck( jobOn, onos_branch ) + '''
         ''' + postSetup( onos_branch, test_branch, onos_tag, manuallyRun )

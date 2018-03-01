@@ -71,14 +71,13 @@ def sendResultToSlack( start, isManualRun, branch ){
   catch( all ){}
 }
 def initAndRunTest( testName, testCategory ){
+  // after ifconfig : ''' + borrowCell( testName ) + '''
   return '''#!/bin/bash -l
         set -i # interactive
         set +e
         shopt -s expand_aliases # expand alias in non-interactive mode
         export PYTHONUNBUFFERED=1
         ifconfig
-        ''' //+ borrowCell( testName )
-        + '''
         echo "ONOS Branch is: $ONOSBranch"
         echo "TestON Branch is: $TestONBranch"
         echo "Test date: "

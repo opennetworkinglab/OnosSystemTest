@@ -88,6 +88,7 @@ class CLI( Component ):
                                       pexpect.TIMEOUT,
                                       refused,
                                       'teston>',
+                                      'Permission denied, please try again.',
                                       self.prompt ],
                                     120 )
             if i == 0:  # Accept key, then expect either a password prompt or access
@@ -106,12 +107,13 @@ class CLI( Component ):
                     self.pwd = ""
                 self.handle.sendline( self.pwd )
                 j = self.handle.expect( [
-                                        self.prompt,
                                         'password:|Password:',
+                                        'Permission denied, please try again.',
+                                        self.prompt,
                                         pexpect.EOF,
                                         pexpect.TIMEOUT ],
                                         120 )
-                if j != 0:
+                if j != 2:
                     main.log.error( "Incorrect Password" )
                     return main.FALSE
             elif i == 2:
@@ -130,7 +132,10 @@ class CLI( Component ):
                     self.ip_address +
                     " port 22: Connection refused" )
                 return main.FALSE
-            elif i == 6:
+            elif i == 6:  # Incorrect Password
+                main.log.error( "Incorrect Password" )
+                return main.FALSE
+            elif i == 7:  # Prompt
                 main.log.info( "Password not required logged in" )
 
         self.handle.sendline( "" )

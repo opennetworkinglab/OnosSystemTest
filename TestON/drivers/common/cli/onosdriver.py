@@ -365,6 +365,7 @@ class OnosDriver( CLI ):
                 i = self.handle.expect( [ "This does not appear to be the root of a Buck project.",
                                           "\n",
                                           "BUILD FAILED",
+                                          "no buck in",
                                           self.prompt ],
                                         timeout=timeout )
                 output += str( self.handle.before + self.handle.after )
@@ -379,6 +380,9 @@ class OnosDriver( CLI ):
                     main.log.error( "Build failed" )
                     ret = main.FALSE
                 elif i == 3:
+                    main.log.error( "Could not find buck in your PATH." )
+                    ret = main.FALSE
+                elif i == 4:
                     # Prompt returned
                     break
             main.log.debug( output )

@@ -90,6 +90,7 @@ class TestON:
         self.test_target = None
         self.lastcommand = None
         self.testDir = tests_path
+        self.testsRoot = tests_path
         self.configFile = config_path + "teston.cfg"
         self.parsingClass = "xmlparser"
         self.parserPath = core_path + "/xmlparser"
@@ -935,6 +936,7 @@ def verifyTestScript( options ):
                         main.classPath = directory[ index: ].replace( '/', '.' ) + "." + main.TEST
                         break
     openspeakfile = directory + "/" + main.TEST + ".ospk"
+    main.testDir = directory
     main.testFile = directory + "/" + main.TEST + ".py"
     if os.path.exists( openspeakfile ):
         # Openspeak file found, compiling to python
@@ -962,8 +964,10 @@ def verifyTestScript( options ):
     testClass = getattr( testModule, main.TEST )
     main.testObject = testClass()
     load_parser()
-    main.params = main.parser.parseParams( main.classPath )
-    main.topology = main.parser.parseTopology( main.classPath )
+    main.paramsFile = main.TEST + ".params" if options.paramsFile is None else options.paramsFile
+    main.topoFile = main.TEST + ".topo" if options.topoFile is None else options.topoFile
+    main.params = main.parser.parseFile( main.testDir + "/" + main.paramsFile )
+    main.topology = main.parser.parseFile( main.testDir + "/" + main.topoFile )
 
 def verifyParams( options ):
     try:
@@ -1039,8 +1043,7 @@ def load_parser():
                                             -1 )
                 parsingClass = getattr( parsingModule, parsingClass )
                 main.parser = parsingClass()
-                if hasattr( main.parser, "parseParams" ) and\
-                   hasattr( main.parser, "parseTopology" ) and\
+                if hasattr( main.parser, "parseFile" ) and\
                    hasattr( main.parser, "parse" ):
                     pass
                 else:
@@ -1072,8 +1075,7 @@ def load_defaultParser():
                                     -1 )
         parsingClass = getattr( parsingModule, parsingClass )
         main.parser = parsingClass()
-        if hasattr( main.parser, "parseParams" ) and\
-           hasattr( main.parser, "parseTopology" ) and\
+        if hasattr( main.parser, "parseFile" ) and\
            hasattr( main.parser, "parse" ):
             pass
         else:

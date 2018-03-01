@@ -173,7 +173,7 @@ class CHOTestMonkey:
         main.step( "Start Mininet topology" )
         newTopo = main.params[ 'TOPO' ][ main.topoIndex ][ 'fileName' ]
         mininetDir = main.Mininet1.home + "/custom/"
-        topoPath = main.testDir + "/" + main.TEST + "/dependencies/topologies/" + newTopo
+        topoPath = main.testDir + "/dependencies/topologies/" + newTopo
         main.ONOSbench.secureCopy( main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to" )
         topoPath = mininetDir + newTopo
         startStatus = main.Mininet1.startNet( topoFile=topoPath )

@@ -43,9 +43,9 @@ class Logger:
         for component in main.componentDictionary.keys():
             logmsg = logmsg + "\n\t" + component + " Session Log : " + main.logdir + "/" + component + ".session" + ""
 
-        logmsg = logmsg + "\n\tTest Script :" + path + "Tests/" + main.TEST + ".py" + ""
-        logmsg = logmsg + "\n\tTest Params : " + path + "Tests/" + main.TEST + ".params" + ""
-        logmsg = logmsg + "\n\tTopology : " + path + "Tests/" + main.TEST + ".topo" + ""
+        logmsg = logmsg + "\n\tTest Script : " + main.testFile + ""
+        logmsg = logmsg + "\n\tTest Params : " + main.testDir + "/" +  main.paramsFile + ""
+        logmsg = logmsg + "\n\tTopology : " + main.testDir + "/" + main.topoFile + ""
         logmsg = logmsg + "\n" + " " * 30 + "+" + "-" * 18 + "+" + "\n" + "-" * 27 + "  { Script Exec Params }  " + "-" * 27 + "\n" + " " * 30 + "+" + "-" * 18 + "+\n"
         values = "\n\t" + str( main.params )
         values = re.sub( ",", "\n\t", values )

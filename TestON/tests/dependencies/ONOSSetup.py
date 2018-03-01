@@ -46,7 +46,7 @@ class ONOSSetup:
         except ( NameError, AttributeError ):
             main.Cluster = Cluster( main.ONOScell.nodes )
         main.ONOSbench = main.Cluster.controllers[ 0 ].Bench
-        main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
+        main.testOnDirectory = re.sub( "(/tests)$", "", main.testsRoot )
 
     def gitPulling( self, includeCaseDesc=True ):
         """

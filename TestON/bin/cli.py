@@ -263,10 +263,16 @@ class CLI( threading.Thread, Cmd, object ):
             while index < len( args ):
                 option = args[ index ]
                 if index > 0:
-                    if re.match( "--params", option, flags=0 ):
+                    if re.match( "--params-file", option, flags=0 ):
+                        # The more specific match must be before --params
+                        options[ 'paramsFile' ] = args[ index + 1 ]
+                    elif re.match( "--topo-file", option, flags=0 ):
+                        options[ 'topoFile' ] = args[ index + 1 ]
+                    elif re.match( "--params", option, flags=0 ):
                         # check if there is a params
                         options[ 'params' ].append( args[ index + 1 ] )
-                    elif re.match( "logdir|mail|example|testdir|testcases|onoscell", option, flags = 0 ):
+                    elif re.match( "logdir|mail|example|testdir|testcases|onoscell",
+                                   option, flags=0 ):
                         options[ option ] = args[ index + 1 ]
                         options = self.testcasesInRange( index + 1, option, args, options )
                     index += 2
@@ -292,6 +298,8 @@ class CLI( threading.Thread, Cmd, object ):
         options[ 'onoscell' ] = None
         # init params as a empty list
         options[ 'params' ] = []
+        options[ 'paramsFile' ] = None
+        options[ 'topoFile' ] = None
         return options
 
     def testcasesInRange( self, index, option, args, options ):

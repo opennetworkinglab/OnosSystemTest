@@ -91,7 +91,7 @@ class PLATdockertest:
         NODElist = main.params[ "SCALE" ][ "nodelist" ].split( ',' )
         main.log.info( "onos container names are: " + ",".join( NODElist ) )
         IPlist = list()
-        main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
+        main.testOnDirectory = re.sub( "(/tests)$", "", main.testsRoot )
         CTIDlist = list()
 
         main.log.info( "Check docker status, it not running, try restart it" )

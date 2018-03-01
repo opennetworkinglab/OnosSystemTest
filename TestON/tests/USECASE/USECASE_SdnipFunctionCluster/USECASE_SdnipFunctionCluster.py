@@ -33,7 +33,7 @@ class USECASE_SdnipFunctionCluster:
         """
         import imp
         main.case( "Setup the Mininet testbed" )
-        main.dependencyPath = main.testDir + \
+        main.dependencyPath = main.testsRoot + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
 

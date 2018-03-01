@@ -27,6 +27,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
 import xmldict
 import re
+import os.path
 
 class xmlparser:
 
@@ -49,23 +50,10 @@ class xmlparser:
         else:
             print "File name is not correct"
 
-    def parseParams( self, paramsPath ):
+    def parseFile( self, fileName ):
         '''
-         It will take the params file path and will return the params dictionary
+         It will take a file path of an xml file and return the contents as a dictionary
         '''
-        paramsPath = re.sub( "\.", "/", paramsPath )
-        paramsPath = re.sub( "tests|examples", "", paramsPath )
-        params = self.parse( main.tests_path + paramsPath + ".params" )
-        paramsAsString = str( params )
-        return eval( paramsAsString )
-
-    def parseTopology( self, topologyPath ):
-        '''
-          It will take topology file path and will return topology dictionary
-        '''
-        topologyPath = re.sub( "\.", "/", topologyPath )
-        topologyPath = re.sub( "tests|examples", "", topologyPath )
-        topology = self.parse( main.tests_path + topologyPath + ".topo" )
-        topoAsString = str( topology )
-        return eval( topoAsString )
+        contents = self.parse( fileName )
+        return eval( str( contents ) )
 

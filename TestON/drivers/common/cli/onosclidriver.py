@@ -2815,7 +2815,56 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def checkFlowAddedCount( self, deviceId, minFlowCount=0, core=False ):
+    def groupAddedCount( self, deviceId, core=False ):
+        """
+        Determine the number of group rules for the given device id that are
+        in the added state
+        Params:
+            core: if True, only return the number of core groups added
+        """
+        try:
+            if core:
+                cmdStr = "groups any " + str( deviceId ) + " | " +\
+                         "grep 'state=ADDED' | grep org.onosproject.core | wc -l"
+            else:
+                cmdStr = "groups any " + str( deviceId ) + " | " +\
+                         "grep 'state=ADDED' | wc -l"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def checkGroupAddedCount( self, deviceId, expectedGroupCount=0, core=False, comparison=0):
+        """
+        Description:
+            Check whether the number of groups for the given device id that
+            are in ADDED state is bigger than minGroupCount.
+        Required:
+            * deviceId: device id to check the number of added group rules
+        Optional:
+            * minGroupCount: the number of groups to compare
+            * core: if True, only check the number of core groups added
+            * comparison: if 0, compare with greater than minFlowCount
+            *             if 1, compare with equal to minFlowCount
+        Return:
+            Returns the number of groups if it is bigger than minGroupCount,
+            returns main.FALSE otherwise.
+        """
+        count = self.groupAddedCount( deviceId, core )
+        count = int( count ) if count else 0
+        return count if ((count > expectedGroupCount) if (comparison == 0) else (count == expectedGroupCount)) else main.FALSE
+
+    def checkFlowAddedCount( self, deviceId, expectedFlowCount=0, core=False, comparison=0):
         """
         Description:
             Check whether the number of flow rules for the given device id that
@@ -2825,13 +2874,15 @@ class OnosCliDriver( CLI ):
         Optional:
             * minFlowCount: the number of flow rules to compare
             * core: if True, only check the number of core flows added
+            * comparison: if 0, compare with greater than minFlowCount
+            *             if 1, compare with equal to minFlowCount
         Return:
             Returns the number of flow rules if it is bigger than minFlowCount,
             returns main.FALSE otherwise.
         """
         count = self.flowAddedCount( deviceId, core )
         count = int( count ) if count else 0
-        return count if (count > minFlowCount) else main.FALSE
+        return count if ((count > expectedFlowCount) if (comparison == 0) else  (count == expectedFlowCount)) else main.FALSE
 
     def getAllDevicesId( self ):
         """

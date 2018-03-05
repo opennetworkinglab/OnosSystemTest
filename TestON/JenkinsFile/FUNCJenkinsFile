@@ -1,23 +1,16 @@
 #!groovy
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
+test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+
 funcs.initialize( "FUNC" );
 // This is a Jenkinsfile for a scripted pipeline for the FUNC tests
 def prop = null
 prop = funcs.getProperties()
-FUNC = [
-"FUNCipv6Intent" :  [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCipv6Intent", wiki_file:"FUNCipv6IntentWiki.txt" ],
-"FUNCoptical" :     [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCoptical", wiki_file:"FUNCopticalWiki.txt" ],
-"FUNCflow" :        [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCflow", wiki_file:"FUNCflowWiki.txt" ],
-"FUNCnetCfg":       [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCnetCfg", wiki_file:"FUNCnetCfgWiki.txt" ],
-"FUNCovsdbtest" :   [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCovsdbtestWiki", wiki_file:"FUNCovsdbtestWiki.txt" ],
-"FUNCnetconf" :     [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCnetconf", wiki_file:"FUNCnetconfWiki.txt" ],
-"FUNCgroup" :       [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCgroup", wiki_file:"FUNCgroupWiki.txt" ],
-"FUNCintent" :      [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCintent", wiki_file:"FUNCintentWiki.txt" ],
-"FUNCintentRest" :  [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCintentRest", wiki_file:"FUNCintentRestWiki.txt" ],
-"FUNCformCluster" : [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCformCluster", wiki_file:"FUNCformClusterWiki.txt" ]
-]
+FUNC = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "FUNC" ]
+
 graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
 graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
+
 echo( "Testcases:" )
 def testsToRun = null
 testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )

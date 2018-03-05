@@ -1,6 +1,7 @@
 #!groovy
 import groovy.time.*
 generalFuncs = evaluate readTrusted( 'TestON/JenkinsFile/GeneralFuncs.groovy' )
+
 def initializeTrend( machine ){
   table_name = "executed_test_tests"
   result_name = "executed_test_results"
@@ -329,4 +330,14 @@ def databasePart( wikiPrefix, testName, database_command ){
     echo ''' + database_command + '''
     done '''
 }
+def generateStatGraph( onos_branch, AllTheTests, stat_graph_generator_file, pie_graph_generator_file, graph_saved_directory ){
+    testListPart = createStatsList( "FUNC", AllTheTests[ "FUNC" ], true ) +
+                   createStatsList( "HA", AllTheTests[ "HA" ], true ) +
+                   createStatsList( "USECASE", AllTheTests[ "USECASE" ], false )
+    pieTestList = makeTestList( AllTheTests[ "FUNC" ], true ) +
+                  makeTestList( AllTheTests[ "HA" ], true ) +
+                  makeTestList( AllTheTests[ "USECASE" ], false )
+    generateCategoryStatsGraph( "false", "true", stat_graph_generator_file, pie_graph_generator_file, "ALL", onos_branch, testListPart, graph_saved_directory, pieTestList )
+}
+
 return this;

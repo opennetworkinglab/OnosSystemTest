@@ -1,25 +1,13 @@
 #!groovy
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
+test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+
 funcs.initialize( "USECASE" );
 // This is a Jenkinsfile for a scripted pipeline for the USECASE tests
 def prop = null
 prop = funcs.getProperties()
-USECASE = [
-    "FUNCvirNetNB" :                [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCvirNetNB", wiki_file:"FUNCvirNetNBWiki.txt" ],
-    "FUNCbgpls" :                   [ wiki_link:prop[ "WikiPrefix" ] + "-" + "FUNCbgpls", wiki_file:"FUNCbgplsWiki.txt" ],
-    "VPLSBasic" :                   [ wiki_link:prop[ "WikiPrefix" ] + "-" + "VPLSBasic", wiki_file:"VPLSBasicWiki.txt" ],
-    "VPLSfailsafe" :                [ wiki_link:prop[ "WikiPrefix" ] + "-" + "VPLSfailsafe", wiki_file:"VPLSfailsafeWiki.txt" ],
-    "PLATdockertest":               [ wiki_link:"Docker Images sanity test", wiki_file:"PLATdockertestTableWiki.txt" ],
-    "SRSanity":                     [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Sanity", wiki_file:"SRSanityWiki.txt" ],
-    "SRSwitchFailure":              [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Switch Failure", wiki_file:"SRSwitchFailureWiki.txt" ],
-    "SRLinkFailure":                [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Link Failure", wiki_file:"SRLinkFailureWiki.txt" ],
-    "SROnosFailure":                [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Onos node Failure", wiki_file:"SROnosFailureWiki.txt" ],
-    "SRClusterRestart":             [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Cluster Restart", wiki_file:"SRClusterRestartWiki.txt" ],
-    "SRDynamic":                    [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Dynamic Config", wiki_file:"SRDynamicWiki.txt" ],
-    "SRHighAvailability":           [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR High Availability", wiki_file:"SRHighAvailabilityWiki.txt" ],
-    "USECASE_SdnipFunction":        [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SDNIP Function", wiki_file:"USECASE_SdnipFunctionWiki.txt" ],
-    "USECASE_SdnipFunctionCluster": [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SDNIP Function Cluster", wiki_file:"USECASE_SdnipFunctionClusterWiki.txt" ]
-]
+USECASE = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "USECASE" ]
+
 graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
 graph_saved_directory = "/var/jenkins/workspace/postjob-BM/"
 

@@ -1,15 +1,16 @@
 #!groovy
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
+test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+
 funcs.initialize( "SR" );
 // This is a Jenkinsfile for a scripted pipeline for the SR tests
 def prop = null
 prop = funcs.getProperties()
-SR = [
-"SRBridging" :  [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Bridging", wiki_file:"SRBridgingWiki.txt" ],
-"SRRouting" :  [ wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Routing", wiki_file:"SRRoutingWiki.txt" ]
-]
+SR = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SR" ]
+
 graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
 graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
+
 echo( "Testcases:" )
 def testsToRun = null
 testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )

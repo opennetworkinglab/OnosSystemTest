@@ -1,19 +1,12 @@
 #!groovy
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
+test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+
 funcs.initialize( "HA" );
 // This is a Jenkinsfile for a scripted pipeline for the HA tests
 def prop = null
 prop = funcs.getProperties()
-HA = [
-"HAsanity" :                [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Sanity", wiki_file:"HAsanityWiki.txt" ],
-"HAswapNodes" :             [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Swap Nodes", wiki_file:"HAswapNodesWiki.txt" ],
-"HAscaling" :               [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Scaling", wiki_file:"HAscalingWiki.txt" ],
-"HAclusterRestart" :        [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Cluster Restart", wiki_file:"HAclusterRestartWiki.txt" ],
-"HAstopNodes" :             [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Stop Nodes", wiki_file:"HAstopNodes.txt" ],
-"HAfullNetPartition" :      [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Full Network Partition", wiki_file:"HAfullNetPartitionWiki.txt" ],
-"HAsingleInstanceRestart" : [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Single Instance Restart", wiki_file:"HAsingleInstanceRestartWiki.txt" ],
-"HAupgrade" :               [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Upgrade", wiki_file:"HAupgradeWiki.txt" ],
-"HAupgradeRollback" :       [ wiki_link:prop[ "WikiPrefix" ] + "-" + "HA Upgrade Rollback", wiki_file:"HAupgradeRollbackWiki.txt" ] ]
+HA = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "HA" ]
 
 graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
 graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"

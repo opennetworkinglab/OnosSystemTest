@@ -1,0 +1,14 @@
+#!groovy
+funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
+test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+
+stat_graph_generator_file = "testCategoryBuildStats.R"
+pie_graph_generator_file = "testCategoryPiePassFail.R"
+graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
+
+funcs.initializeTrend( "VM" )
+
+onos_branch = params.ONOSbranch
+AllTheTests = test_lists.getAllTheTests("")
+
+funcs.generateStatGraph( onos_branch, AllTheTests, stat_graph_generator_file, pie_graph_generator_file, graph_saved_directory )

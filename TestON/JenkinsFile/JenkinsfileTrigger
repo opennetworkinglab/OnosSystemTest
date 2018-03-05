@@ -1,75 +1,12 @@
 #!groovy
 
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
-funcs.initializeTrend( "VM" );
+test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+
 previous_version = "1.12"
 before_previous_version = "1.11"
-AllTheTests=
-[
-    "FUNC":[
-            "FUNCipv6Intent" : [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCoptical" :    [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCflow" :       [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCnetCfg":      [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCovsdbtest" :  [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCnetconf" :    [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCgroup" :      [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCformCluster" :[ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"" ],
-            "FUNCintent" :     [ "basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCintentRest" : [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"" ],
-    ],
-    "HA":[
-            "HAsanity" :                [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "HAclusterRestart" :        [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "HAsingleInstanceRestart" : [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "HAupgrade" :               [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"" ],
-            "HAupgradeRollback" :       [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"" ],
-            "HAstopNodes" :             [ "basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":"" ],
-            "HAfullNetPartition" :      [ "basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":"" ],
-            "HAswapNodes" :             [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"" ],
-            "HAscaling" :               [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"" ],
-            "HAkillNodes" :             [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"" ]
-    ],
-    "SCPF":[
-            "SCPFswitchLat":                           [ "basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFcbench":                              [ "basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFportLat":                             [ "basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFflowTp1g":                            [ "basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFintentEventTp":                       [ "basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFhostLat":                             [ "basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFbatchFlowResp":                       [ "basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFintentRerouteLat":                    [ "basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFintentInstallWithdrawLat":            [ "basic":false, "extra_A":true, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFflowTp1gWithFlowObj":                 [ "basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFintentEventTpWithFlowObj":            [ "basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFintentRerouteLatWithFlowObj":         [ "basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFscalingMaxIntentsWithFlowObj":        [ "basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFintentInstallWithdrawLatWithFlowObj": [ "basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFscaleTopo":                           [ "basic":false, "extra_A":false, "extra_B":false, "extra_C":true, "extra_D":false, "new_Test":false, day:"" ],
-            "SCPFscalingMaxIntents":                   [ "basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":true, "new_Test":false, day:"" ],
-            "SCPFmastershipFailoverLat":               [ "basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":true, day:"" ]
-    ],
-    "USECASE":[
-            "FUNCvirNetNB" :                [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "FUNCbgpls" :                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "VPLSBasic" :                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "USECASE_SdnipFunction":        [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "USECASE_SdnipFunctionCluster": [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "PLATdockertest":               [ "basic":true, "extra_A":true, "extra_B":false, "new_Test":false, "day":"" ],
-            "SRSanity":                     [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "SRSwitchFailure":              [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "SRLinkFailure":                [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "SROnosFailure":                [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "SRClusterRestart":             [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "SRDynamic":                    [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "SRHighAvailability":           [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "VPLSfailsafe" :                [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ]
-    ],
-    "SR":[
-            "SRBridging":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ],
-            "SRRouting":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"" ]
-    ]
-]
+funcs.initializeTrend( "VM" );
+
 testcases = [
     "FUNC" : [ tests : "" , nodeName : "VM" ],
     "HA" : [ tests : "" , nodeName : "VM" ],
@@ -92,10 +29,19 @@ onos_b = "master"
 test_branch = ""
 onos_tag = params.ONOSTag
 isOldFlow = true
+
 // Set tests based on day of week
 def now = funcs.getCurrentTime()
 print now.toString()
 today = now[ Calendar.DAY_OF_WEEK ]
+
+if( today == Calendar.SATURDAY ){
+    onos_b = previous_version
+} else if( today == Calendar.SUNDAY ){
+    onos_b = before_previous_version
+}
+AllTheTests = test_lists.getAllTheTests( onos_b )
+
 day = ""
 SCPF_choices = ""
 USECASE_choices = ""
@@ -134,7 +80,9 @@ if ( manually_run ){
     testcases[ "SR" ][ "tests" ] = SR_choices
     println "Defaulting to " + day + " tests:"
 }
+
 print_tests( testcases )
+
 def runTest = [
     "VM" : [:],
     "BM" : [:]
@@ -150,7 +98,10 @@ finalList[ "VM" ] = runTestSeq( runTest[ "VM" ] )
 finalList[ "BM" ] = runTestSeq( runTest[ "BM" ] )
 parallel finalList
 //finalList[ "BM" ].call()
-generateStatGraph()
+
+if ( !manually_run ){
+    funcs.generateStatGraph( onos_b, AllTheTests, stat_graph_generator_file, pie_graph_generator_file, graph_saved_directory )
+}
 
 def testDivider( today ){
     switch ( today ) {
@@ -183,12 +134,10 @@ def testDivider( today ){
             break
         case Calendar.SATURDAY:
             saturday()
-            onos_b= previous_version
             day = "Saturday"
             break
         case Calendar.SUNDAY:
             sunday()
-            onos_b= before_previous_version
             day = "Sunday"
             isOldFlow = false
             break
@@ -499,17 +448,5 @@ def returnCell( nodeName ){
             env
             ~/./return_cell.sh
             '''
-    }
-}
-
-def generateStatGraph(){
-    if( !manually_run ){
-        testListPart = funcs.createStatsList( "FUNC", AllTheTests[ "FUNC" ], true ) +
-                        funcs.createStatsList( "HA", AllTheTests[ "HA" ], true ) +
-                        funcs.createStatsList( "USECASE", AllTheTests[ "USECASE" ], false )
-        pieTestList = funcs.makeTestList( AllTheTests[ "FUNC" ], true ) +
-                      funcs.makeTestList( AllTheTests[ "HA" ], true ) +
-                      funcs.makeTestList( AllTheTests[ "USECASE" ], false )
-        funcs.generateCategoryStatsGraph( "false", "true", stat_graph_generator_file, pie_graph_generator_file, "ALL", onos_b, testListPart, graph_saved_directory, pieTestList )
     }
 }

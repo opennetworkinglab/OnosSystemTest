@@ -17,6 +17,7 @@ class SRRouting:
                                routers=1,
                                ipv4=1,
                                ipv6=0,
+                               countFlowsGroups=False,
                                description="Ping between all ipv4 hosts in the topology")
 
     def CASE2( self, main ):
@@ -33,6 +34,7 @@ class SRRouting:
                                routers=1,
                                ipv4=0,
                                ipv6=1,
+                               countFlowsGroups=False,
                                description="Ping between all ipv6 hosts in the topology")
 
     def CASE3( self, main ):
@@ -49,4 +51,5 @@ class SRRouting:
                                routers=1,
                                ipv4=1,
                                ipv6=1,
+                               countFlowsGroups=False,
                                description="Ping between all ipv4 and ipv6 hosts in the topology")

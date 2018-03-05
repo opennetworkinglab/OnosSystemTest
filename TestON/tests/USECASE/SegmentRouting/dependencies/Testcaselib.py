@@ -122,6 +122,11 @@ class Testcaselib:
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.net.flowobjective.impl" )
 
     @staticmethod
+    def loadCount( main ):
+        with open("%s/count/%s.count" % (main.configPath, main.cfgName)) as count:
+                main.count = json.load(count)
+
+    @staticmethod
     def loadJson( main ):
         with open( "%s%s.json" % ( main.configPath + main.forJson,
                                    main.cfgName ) ) as cfg:
@@ -298,6 +303,54 @@ class Testcaselib:
             actual=( count > minFlowCount ),
             onpass="Flow count looks correct: " + str( count ),
             onfail="Flow count looks wrong. " )
+
+    @staticmethod
+    def checkFlowEqualityByDpid( main, dpid, flowCount, sleep=10):
+        main.step(
+                " Check whether the flow count of device %s is equal to %s" % ( dpid, flowCount ) )
+        count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowAddedCount,
+                                 main.FALSE,
+                                 args=( dpid, flowCount, False, 1),
+                                 attempts=5,
+                                 sleep=sleep )
+
+        utilities.assertEquals(
+                expect=True,
+                actual=( int( count ) == flowCount ),
+                onpass="Flow count looks correct: " + str(count) ,
+                onfail="Flow count looks wrong, should be " + str(flowCount))
+
+    @staticmethod
+    def checkGroupEqualityByDpid( main, dpid, groupCount, sleep=10):
+        main.step(
+                " Check whether the group count of device %s is equal to %s" % ( dpid, groupCount ) )
+        count = utilities.retry( main.Cluster.active( 0 ).CLI.checkGroupAddedCount,
+                                 main.FALSE,
+                                 args=( dpid, groupCount, False, 1),
+                                 attempts=5,
+                                 sleep=sleep )
+
+        utilities.assertEquals(
+                expect=True,
+                actual=( count == groupCount ),
+                onpass="Group count looks correct: " + str(count) ,
+                onfail="Group count looks wrong: should be " + str(groupCount))
+
+    @staticmethod
+    def checkFlowsGroupsFromFile(main):
+
+        for dpid, values in main.count.items():
+            flowCount = values["flows"]
+            groupCount = values["groups"]
+            main.log.report( "Check flow count for dpid " + str(dpid) +
+                             ", should be " + str(flowCount))
+            Testcaselib.checkFlowEqualityByDpid(main, dpid, flowCount)
+
+            main.log.report( "Check group count for dpid " + str(dpid) +
+                             ", should be " + str(groupCount))
+            Testcaselib.checkGroupEqualityByDpid(main, dpid, groupCount)
+
+        return
 
     @staticmethod
     def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False ):

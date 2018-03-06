@@ -30,7 +30,9 @@ class SRRoutingTest ():
         self.default = ''
 
     @staticmethod
-    def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6, description, countFlowsGroups=False, checkExternalHost=False ):
+    def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6,
+                 description, countFlowsGroups=False, checkExternalHost=False,
+                 staticRouteConfigure=False):
 
         skipPackage = False
         init = False
@@ -48,6 +50,9 @@ class SRRoutingTest ():
             ( ipv4, ipv6, dhcp, routers )
         if checkExternalHost:
             main.cfgName += '_external=1'
+        if staticRouteConfigure:
+            main.cfgName += '_static=1'
+
         main.resultFileName = 'CASE%02d' % test_idx
         main.Cluster.setRunningNode( onosNodes )
 
@@ -55,6 +60,14 @@ class SRRoutingTest ():
                          parallel=False )
         run.loadJson( main )
         run.loadChart( main )
+
+        # if static route flag add routes
+        # these routes are topology specific
+        if (staticRouteConfigure):
+            if (ipv4):
+                run.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.1.1")
+            if (ipv6):
+                run.addStaticOnosRoute( main, "2000::8700/120", "2000::101")
 
         if (countFlowsGroups):
             run.loadCount( main )

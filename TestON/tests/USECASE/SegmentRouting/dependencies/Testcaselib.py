@@ -250,6 +250,18 @@ class Testcaselib:
         else:
             main.log.error( "Configuration failed!" )
             main.cleanAndExit()
+            
+    @staticmethod
+    def addStaticOnosRoute( main, subnet, intf):
+        """
+        Adds an ONOS static route with the use route-add command.
+        """
+        main.step("Add static route for subnet {0} towards router interface {1}".format(subnet, intf))
+        routeResult = main.Cluster.active( 0 ).addStaticRoute(subnet, intf)
+
+        utilities.assert_equals( expect=True, actual=( not routeResult ),
+                                 onpass="route-add command succeeded",
+                                 onfail="route-add command failed")
 
     @staticmethod
     def checkFlows( main, minFlowCount, tag="", dumpflows=True, sleep=10 ):
@@ -776,3 +788,4 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=ipResult,
                                  onpass="Verify ONOS host IP succeded",
                                  onfail="Verify ONOS host IP failed" )
+

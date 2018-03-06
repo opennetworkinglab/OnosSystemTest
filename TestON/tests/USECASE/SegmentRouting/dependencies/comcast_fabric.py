@@ -300,7 +300,9 @@ class ComcastLeafSpineFabric(Topo):
                      'r1-eth1': {'ipAddrs': ['10.0.5.1/24', '2000::501/120'], 'mac': '00:88:00:00:00:11'},
                      'r1-eth2': {'ipAddrs': ['10.0.99.1/16']},
                      'r1-eth3': {'ipAddrs': ['2000::9901/120']},
-                     'r1-eth4': {'ipAddrs': ['2000::7701/120']}}
+                     'r1-eth4': {'ipAddrs': ['2000::7701/120']},
+                     'r1-eth5': {'ipAddrs': ['10.0.88.1/24']},
+                     'r1-eth6': {'ipAddrs': ['2000::8701/120']}}
             r1 = self.addHost('r1', cls=BgpRouter,
                                 interfaces=intfs,
                                 quaggaConfFile='./bgpdr1.conf')
@@ -318,6 +320,16 @@ class ComcastLeafSpineFabric(Topo):
             # Another external IPv6 Host behind r1
             rh11v6 = self.addHost('rh11v6', cls=RoutedHost, ips=['2000::7702/120'], gateway='2000::7701')
             self.addLink(r1, rh11v6)
+
+            # Add an external ipv4 hosts that is not configured in the bgp conf
+            # files
+            rh5v4 = self.addHost('rh5v4', cls=RoutedHost, ips=['10.0.88.2/24'], gateway='10.0.88.1')
+            self.addLink(r1, rh5v4)
+
+            # Add an external ipv6 hosts that is not configured in the bgp conf
+            # files
+            rh5v6 = self.addHost('rh5v6', cls=RoutedHost, ips=['2000::8702/120'], gateway='2000::8701')
+            self.addLink(r1, rh5v6)
 
             # External Quagga r2
             intfs = {'r2-eth0': {'ipAddrs': ['10.0.6.1/24', '2000::601/120'], 'mac': '00:88:00:00:00:02'},

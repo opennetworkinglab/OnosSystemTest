@@ -69,7 +69,8 @@ class SRRouting:
                                ipv4=1,
                                ipv6=0,
                                description="Ping between all ipv4 hosts in the topology and check connectivity to external hosts",
-                               checkExternalHost=True )
+                               checkExternalHost=True,
+                               countFlowsGroups=False)
 
     def CASE5( self, main ):
         """
@@ -86,7 +87,8 @@ class SRRouting:
                                ipv4=0,
                                ipv6=1,
                                description="Ping between all ipv6 hosts in the topology and check connectivity to external hosts",
-                               checkExternalHost=True )
+                               checkExternalHost=True,
+                               countFlowsGroups=False)
 
     def CASE6( self, main ):
         """
@@ -103,4 +105,68 @@ class SRRouting:
                                ipv4=1,
                                ipv6=1,
                                description="Ping between all ipv4 and ipv6 hosts in the topology and check connectivity to external hosts",
-                               checkExternalHost=True )
+                               checkExternalHost=True,
+                               countFlowsGroups=False)
+
+    def CASE7( self, main ):
+        """
+        Ping between ipv4 hosts and an external host that is not configured in
+        external router config, but reachable through the use of route-add
+        command.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=7,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=1,
+                               ipv6=0,
+                               description="Ping between from ipv4 hosts to external host configured with route-add command.",
+                               checkExternalHost=False,
+                               countFlowsGroups=False,
+                               staticRouteConfigure=True)
+
+    def CASE8( self, main ):
+        """
+        Ping between ipv6 hosts and an external host that is not configured in
+        external router config, but reachable through the use of route-add
+        command.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=8,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=0,
+                               ipv6=1,
+                               description="Ping between from ipv6 hosts to external host configured with route-add command.",
+                               checkExternalHost=False,
+                               countFlowsGroups=False,
+                               staticRouteConfigure=True)
+
+    def CASE9( self, main ):
+        """
+        Ping between ipv4 and pv6 hosts and external hosts that is not configured in
+        external router config, but reachable through the use of route-add
+        command.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=9,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=1,
+                               ipv6=1,
+                               description="Ping between from ipv4 and ipv6 hosts to external hosts configured with route-add command.",
+                               checkExternalHost=False,
+                               countFlowsGroups=False,
+                               staticRouteConfigure=True)

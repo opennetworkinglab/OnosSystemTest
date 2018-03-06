@@ -2844,6 +2844,30 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def addStaticRoute( self, subnet, intf):
+        """
+        Adds a static route to onos.
+        Params:
+            subnet: The subnet reaching through this route
+            intf: The interface this route is reachable through
+        """
+        try:
+            cmdStr = "route-add " + subnet + " " + intf
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def checkGroupAddedCount( self, deviceId, expectedGroupCount=0, core=False, comparison=0):
         """
         Description:
@@ -2882,7 +2906,7 @@ class OnosCliDriver( CLI ):
         """
         count = self.flowAddedCount( deviceId, core )
         count = int( count ) if count else 0
-        return count if ((count > expectedFlowCount) if (comparison == 0) else  (count == expectedFlowCount)) else main.FALSE
+        return count if ((count > expectedFlowCount) if (comparison == 0) else (count == expectedFlowCount)) else main.FALSE
 
     def getAllDevicesId( self ):
         """

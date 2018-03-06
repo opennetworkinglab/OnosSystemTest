@@ -32,7 +32,7 @@ class SRRoutingTest ():
     @staticmethod
     def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6,
                  description, countFlowsGroups=False, checkExternalHost=False,
-                 staticRouteConfigure=False):
+                 staticRouteConfigure=False, switchFailure=False ):
 
         skipPackage = False
         init = False
@@ -58,6 +58,8 @@ class SRRoutingTest ():
 
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5,
                          parallel=False )
+
+        # Load configuration files
         run.loadJson( main )
         run.loadChart( main )
 
@@ -69,10 +71,12 @@ class SRRoutingTest ():
             if (ipv6):
                 run.addStaticOnosRoute( main, "2000::8700/120", "2000::101")
 
-        if (countFlowsGroups):
+        if countFlowsGroups:
             run.loadCount( main )
+        if switchFailure:
+            run.loadSwitchFailureChart( main )
 
-        # wait some
+        # wait some time
         time.sleep( 5 )
 
         if hasattr( main, 'Mininet1' ):
@@ -94,8 +98,20 @@ class SRRoutingTest ():
         run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
 
         # check flows / groups numbers
-        if (countFlowsGroups):
+        if countFlowsGroups:
             run.checkFlowsGroupsFromFile(main)
+
+        # Test switch failures
+        if switchFailure:
+            for switch, expected in main.switchFailureChart.items():
+                run.killSwitch( main, switch, expected['switches_after_failure'], expected['links_after_failure'] )
+                run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                if countFlowsGroups:
+                    run.checkFlowsGroupsFromFile(main)
+                run.recoverSwitch( main, switch, expected['switches_before_failure'], expected['links_before_failure'] )
+                run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                if countFlowsGroups:
+                    run.checkFlowsGroupsFromFile(main)
 
         if hasattr( main, 'Mininet1' ):
             run.cleanup( main )

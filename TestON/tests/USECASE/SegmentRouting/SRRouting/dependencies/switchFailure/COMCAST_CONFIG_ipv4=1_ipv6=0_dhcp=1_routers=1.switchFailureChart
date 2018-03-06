@@ -1,0 +1,10 @@
+{
+    "spine101": { "switches_before_failure": 7,
+                  "links_before_failure": 40,
+                  "switches_after_failure": 6,
+                  "links_after_failure": 22 },
+    "spine102": { "switches_before_failure": 7,
+                  "links_before_failure": 40,
+                  "switches_after_failure": 6,
+                  "links_after_failure": 22 }
+}

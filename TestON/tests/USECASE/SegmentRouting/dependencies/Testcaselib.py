@@ -65,6 +65,7 @@ class Testcaselib:
             main.forChart = "chart/"
             main.forConfig = "conf/"
             main.forHost = "host/"
+            main.forSwitchFailure = "switchFailure/"
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             main.topologyLib = main.params[ 'DEPENDENCY' ][ 'lib' ] if 'lib' in main.params[ 'DEPENDENCY' ] else None
             main.topologyConf = main.params[ 'DEPENDENCY' ][ 'conf' ] if 'conf' in main.params[ 'DEPENDENCY' ] else None
@@ -146,6 +147,12 @@ class Testcaselib:
         with open( "%s%s.host" % ( main.configPath + main.forHost,
                                    main.cfgName ) ) as host:
             main.expectedHosts = json.load( host )
+
+    @staticmethod
+    def loadSwitchFailureChart( main ):
+        with open( "%s%s.switchFailureChart" % ( main.configPath + main.forSwitchFailure,
+                                                 main.cfgName ) ) as sfc:
+            main.switchFailureChart = json.load( sfc )
 
     @staticmethod
     def startMininet( main, topology, args="" ):
@@ -250,7 +257,7 @@ class Testcaselib:
         else:
             main.log.error( "Configuration failed!" )
             main.cleanAndExit()
-            
+
     @staticmethod
     def addStaticOnosRoute( main, subnet, intf):
         """

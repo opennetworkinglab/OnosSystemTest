@@ -33,6 +33,8 @@ sudo pkill -f mn.pid
 sudo pkill bgpd
 sudo pkill zebra
 sudo pkill vrrpd
+sudo pkill dhclient
+sudo pkill dhcpd
 sudo kill -9 `ps -ef | grep "bird" | grep -v grep | awk '{print $2}'`
 
 

@@ -66,6 +66,7 @@ class Testcaselib:
             main.forConfig = "conf/"
             main.forHost = "host/"
             main.forSwitchFailure = "switchFailure/"
+            main.forLinkFailure = "linkFailure/"
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             main.topologyLib = main.params[ 'DEPENDENCY' ][ 'lib' ] if 'lib' in main.params[ 'DEPENDENCY' ] else None
             main.topologyConf = main.params[ 'DEPENDENCY' ][ 'conf' ] if 'conf' in main.params[ 'DEPENDENCY' ] else None
@@ -153,6 +154,12 @@ class Testcaselib:
         with open( "%s%s.switchFailureChart" % ( main.configPath + main.forSwitchFailure,
                                                  main.cfgName ) ) as sfc:
             main.switchFailureChart = json.load( sfc )
+
+    @staticmethod
+    def loadLinkFailureChart( main ):
+        with open( "%s%s.linkFailureChart" % ( main.configPath + main.forLinkFailure,
+                                                 main.cfgName ) ) as sfc:
+            main.linkFailureChart = json.load( sfc )
 
     @staticmethod
     def startMininet( main, topology, args="" ):
@@ -466,6 +473,54 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=result,
                                  onpass="Link down successful",
                                  onfail="Failed to turn off link?" )
+
+    @staticmethod
+    def killLinkBatch( main, links, linksAfter, switches=7):
+        """
+        links = list of links (src, dst) to bring down.
+        """
+
+        main.step("Killing a batch of links {0}".format(links))
+
+        for end1, end2 in links:
+            main.Network.link( END1=end1, END2=end2, OPTION="down")
+            main.Network.link( END1=end2, END2=end1, OPTION="down")
+
+        main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        main.log.info(
+                "Waiting %s seconds for links down to be discovered" % main.linkSleep )
+        time.sleep( main.linkSleep )
+
+        topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
+                                    main.FALSE,
+                                    kwargs={ 'numoswitch': switches,
+                                             'numolink': linksAfter },
+                                    attempts=10,
+                                    sleep=main.linkSleep )
+
+    @staticmethod
+    def restoreLinkBatch( main, links, linksAfter, switches=7):
+        """
+        links = list of link (src, dst) to bring up again.
+        """
+
+        main.step("Restoring a batch of links {0}".format(links))
+
+        for end1, end2 in links:
+            main.Network.link( END1=end1, END2=end2, OPTION="up")
+            main.Network.link( END1=end2, END2=end1, OPTION="up")
+
+        main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        main.log.info(
+                "Waiting %s seconds for links down to be discovered" % main.linkSleep )
+        time.sleep( main.linkSleep )
+
+        topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
+                                    main.FALSE,
+                                    kwargs={ 'numoswitch': switches,
+                                             'numolink': linksAfter },
+                                    attempts=10,
+                                    sleep=main.linkSleep )
 
     @staticmethod
     def restoreLink( main, end1, end2, dpid1, dpid2, port1, port2, switches,

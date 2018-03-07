@@ -32,7 +32,7 @@ class SRRoutingTest ():
     @staticmethod
     def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6,
                  description, countFlowsGroups=False, checkExternalHost=False,
-                 staticRouteConfigure=False, switchFailure=False ):
+                 staticRouteConfigure=False, switchFailure=False, linkFailure=False ):
 
         skipPackage = False
         init = False
@@ -75,6 +75,8 @@ class SRRoutingTest ():
             run.loadCount( main )
         if switchFailure:
             run.loadSwitchFailureChart( main )
+        if linkFailure:
+            run.loadLinkFailureChart( main )
 
         # wait some time
         time.sleep( 5 )
@@ -109,6 +111,22 @@ class SRRoutingTest ():
                 if countFlowsGroups:
                     run.checkFlowsGroupsFromFile(main)
                 run.recoverSwitch( main, switch, expected['switches_before_failure'], expected['links_before_failure'] )
+                run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                if countFlowsGroups:
+                    run.checkFlowsGroupsFromFile(main)
+
+        # Test link failures
+        if linkFailure:
+            for link_batch_name, info in main.linkFailureChart.items():
+
+                linksToRemove = info['links'].values()
+                linksBefore = info['links_before']
+                linksAfter = info['links_after']
+
+                run.killLinkBatch( main, linksToRemove, linksAfter )
+                run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+
+                run.restoreLinkBatch( main, linksToRemove, linksBefore )
                 run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
                 if countFlowsGroups:
                     run.checkFlowsGroupsFromFile(main)

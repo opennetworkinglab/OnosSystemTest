@@ -21,6 +21,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
 import time
+import json
 
 class SRRoutingTest ():
 
@@ -32,7 +33,8 @@ class SRRoutingTest ():
     @staticmethod
     def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6,
                  description, countFlowsGroups=False, checkExternalHost=False,
-                 staticRouteConfigure=False, switchFailure=False, linkFailure=False ):
+                 staticRouteConfigure=False, switchFailure=False, linkFailure=False,
+                 nodeFailure=False ):
 
         skipPackage = False
         init = False
@@ -53,7 +55,7 @@ class SRRoutingTest ():
         if staticRouteConfigure:
             main.cfgName += '_static=1'
 
-        main.resultFileName = 'CASE%02d' % test_idx
+        main.resultFileName = 'CASE%03d' % test_idx
         main.Cluster.setRunningNode( onosNodes )
 
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5,
@@ -97,7 +99,7 @@ class SRRoutingTest ():
             time.sleep( 60 )
 
         # ping hosts
-        run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+        run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
 
         # check flows / groups numbers
         if countFlowsGroups:
@@ -107,11 +109,11 @@ class SRRoutingTest ():
         if switchFailure:
             for switch, expected in main.switchFailureChart.items():
                 run.killSwitch( main, switch, expected['switches_after_failure'], expected['links_after_failure'] )
-                run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
                 if countFlowsGroups:
                     run.checkFlowsGroupsFromFile(main)
                 run.recoverSwitch( main, switch, expected['switches_before_failure'], expected['links_before_failure'] )
-                run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
                 if countFlowsGroups:
                     run.checkFlowsGroupsFromFile(main)
 
@@ -124,13 +126,32 @@ class SRRoutingTest ():
                 linksAfter = info['links_after']
 
                 run.killLinkBatch( main, linksToRemove, linksAfter )
-                run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
 
                 run.restoreLinkBatch( main, linksToRemove, linksBefore )
-                run.pingAll( main, 'CASE%02d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
                 if countFlowsGroups:
                     run.checkFlowsGroupsFromFile(main)
 
+        # Test node failures
+        if nodeFailure:
+            numCtrls = len( main.Cluster.runningNodes )
+            links = len( json.loads( main.Cluster.next().links() ) )
+            switches = len( json.loads( main.Cluster.next().devices() ) )
+            for ctrl in xrange( numCtrls ):
+                run.killOnos( main, [ ctrl ], switches, links, ( numCtrls - 1 ) )
+                main.Cluster.active(0).CLI.balanceMasters()
+                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                if countFlowsGroups:
+                    run.checkFlowsGroupsFromFile( main )
+
+                run.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
+                main.Cluster.active(0).CLI.balanceMasters()
+                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                if countFlowsGroups:
+                    run.checkFlowsGroupsFromFile( main )
+
+        # Cleanup
         if hasattr( main, 'Mininet1' ):
             run.cleanup( main )
         else:

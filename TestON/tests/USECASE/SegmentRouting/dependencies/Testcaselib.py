@@ -97,8 +97,8 @@ class Testcaselib:
         # main.scale[ 0 ] determines the current number of ONOS controller
         if not main.apps:
             main.log.error( "App list is empty" )
-        main.log.info( "NODE COUNT = " + str( main.Cluster.numCtrls ) )
-        main.log.info( ''.join( main.Cluster.getIps() ) )
+        main.log.info( "Cluster size: " + str( main.Cluster.numCtrls ) )
+        main.log.info( "Cluster ips: " + ', '.join( main.Cluster.getIps() ) )
         main.dynamicHosts = [ 'in1', 'out1' ]
         main.testSetUp.ONOSSetUp( main.Cluster, newCell=True, cellName=main.cellName,
                                   skipPack=skipPackage,
@@ -280,7 +280,7 @@ class Testcaselib:
     @staticmethod
     def checkFlows( main, minFlowCount, tag="", dumpflows=True, sleep=10 ):
         main.step(
-                " Check whether the flow count is bigger than %s" % minFlowCount )
+                "Check whether the flow count is bigger than %s" % minFlowCount )
         if tag == "":
             tag = 'CASE%d' % main.CurrentTestCaseNumber
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowCount,
@@ -638,7 +638,7 @@ class Testcaselib:
         switches, links, nodes: number of expected switches, links and nodes after KillOnos, ex.: '4', '6'
         Completely Kill an ONOS instance and verify the ONOS cluster can see the proper change
         """
-        main.step( "Killing ONOS instance" )
+        main.step( "Killing ONOS instances with index(es): {}".format( nodes ) )
 
         for i in nodes:
             killResult = main.ONOSbench.onosDie( main.Cluster.runningNodes[ i ].ipAddress )
@@ -685,7 +685,7 @@ class Testcaselib:
         switches, links, nodes: number of expected switches, links and nodes after recoverOnos, ex.: '4', '6'
         Recover an ONOS instance and verify the ONOS cluster can see the proper change
         """
-        main.step( "Recovering ONOS instance" )
+        main.step( "Recovering ONOS instances with index(es): {}".format( nodes ) )
         [ main.ONOSbench.onosStart( main.Cluster.runningNodes[ i ].ipAddress ) for i in nodes ]
         for i in nodes:
             isUp = main.ONOSbench.isup( main.Cluster.runningNodes[ i ].ipAddress )

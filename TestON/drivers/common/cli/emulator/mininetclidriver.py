@@ -478,10 +478,20 @@ class MininetCliDriver( Emulator ):
                         isReachable = main.FALSE
                         failedPings += 1
                 pingResponse += "\n"
+                if not isReachable:
+                    main.log.warn( "Cannot ping between {} and {}".format( host, temp ) )
             main.log.info( pingResponse + "Failed pings: " + str( failedPings ) )
             return isReachable
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
+            response = self.handle.before
+            # NOTE: Send ctrl-c to make sure command is stopped
+            self.handle.sendline( "\x03" )
+            self.handle.expect( "Interrupt" )
+            response += self.handle.before + self.handle.after
+            self.handle.expect( "mininet>" )
+            response += self.handle.before + self.handle.after
+            main.log.debug( response )
             return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -536,11 +546,21 @@ class MininetCliDriver( Emulator ):
                         isReachable = main.FALSE
                         failedPingsTotal += 1
                 pingResponse += "\n"
+                if not isReachable:
+                    main.log.warn( "Cannot ping between {} and {}".format( host, temp ) )
             main.log.info( pingResponse + "Failed pings: " + str( failedPingsTotal ) )
             return isReachable
 
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
+            response = self.handle.before
+            # NOTE: Send ctrl-c to make sure command is stopped
+            self.handle.sendline( "\x03" )
+            self.handle.expect( "Interrupt" )
+            response += self.handle.before + self.handle.after
+            self.handle.expect( "mininet>" )
+            response += self.handle.before + self.handle.after
+            main.log.debug( response )
             return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -596,6 +616,14 @@ class MininetCliDriver( Emulator ):
 
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
+            response = self.handle.before
+            # NOTE: Send ctrl-c to make sure command is stopped
+            self.handle.sendline( "\x03" )
+            self.handle.expect( "Interrupt" )
+            response += self.handle.before + self.handle.after
+            self.handle.expect( "mininet>" )
+            response += self.handle.before + self.handle.after
+            main.log.debug( response )
             return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -686,7 +714,6 @@ class MininetCliDriver( Emulator ):
                     self.name +
                     ": PACKET LOST, HOST IS NOT REACHABLE" )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -736,6 +763,14 @@ class MininetCliDriver( Emulator ):
                     isReachable = main.FALSE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
+            response = self.handle.before
+            # NOTE: Send ctrl-c to make sure command is stopped
+            self.handle.sendline( "\x03" )
+            self.handle.expect( "Interrupt" )
+            response += self.handle.before + self.handle.after
+            self.handle.expect( "mininet>" )
+            response += self.handle.before + self.handle.after
+            main.log.debug( response )
             isReachable = main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1224,6 +1259,8 @@ class MininetCliDriver( Emulator ):
             else:
                 pattern = "inet6\saddr:\s([\w,:]*)/\d+\sScope:Global"
             ipAddressSearch = re.search( pattern, response )
+            if not ipAddressSearch:
+                return None
             main.log.info(
                 self.name +
                 ": IP-Address of Host " +

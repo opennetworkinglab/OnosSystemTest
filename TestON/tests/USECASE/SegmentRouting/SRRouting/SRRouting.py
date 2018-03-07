@@ -558,4 +558,183 @@ class SRRouting:
                                staticRouteConfigure=True,
                                switchFailure=True )
 
+    def CASE301( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between all ipv4 hosts in the topology.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=301,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=1,
+                               ipv6=0,
+                               countFlowsGroups=False,
+                               description="Test node failures with IPv4 hosts",
+                               nodeFailure=True )
+
+    def CASE302( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between all ipv6 hosts in the topology.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=302,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=0,
+                               ipv6=1,
+                               countFlowsGroups=False,
+                               description="Test node failures with IPv6 hosts",
+                               nodeFailure=True )
+
+    def CASE303( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between all ipv4 and ipv6 hosts in the topology.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=303,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=1,
+                               ipv6=1,
+                               countFlowsGroups=False,
+                               description="Test node failures with IPv4 and IPv6 hosts",
+                               nodeFailure=True )
+
+    def CASE304( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between all ipv4 hosts in the topology and check connectivity to external ipv4 hosts
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=304,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=1,
+                               ipv6=0,
+                               description="Test node failures with IPv4 hosts (including external hosts)",
+                               checkExternalHost=True,
+                               nodeFailure=True )
+
+    def CASE305( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between all ipv6 hosts in the topology and check connectivity to external ipv6 hosts
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=305,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=0,
+                               ipv6=1,
+                               description="Test node failures with IPv6 hosts (including external hosts)",
+                               checkExternalHost=True,
+                               nodeFailure=True )
+
+    def CASE306( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between all ipv4 and ipv6 hosts in the topology and check connectivity to external ipv4 and ipv6 hosts
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=306,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=1,
+                               ipv6=1,
+                               description="Test node failures with IPv4 and IPv6 hosts (including external hosts)",
+                               checkExternalHost=True,
+                               nodeFailure=True )
+
+    def CASE307( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between ipv4 hosts and an external host that is not configured in
+        external router config, but reachable through the use of route-add command.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=307,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=1,
+                               ipv6=0,
+                               description="Test node failures with IPv4 hosts (including external host configured with route-add command)",
+                               checkExternalHost=False,
+                               countFlowsGroups=False,
+                               staticRouteConfigure=True,
+                               nodeFailure=True )
+
+    def CASE308( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between ipv6 hosts and an external host that is not configured in
+        external router config, but reachable through the use of route-add command.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=308,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=0,
+                               ipv6=1,
+                               description="Test node failures with IPv6 hosts (including external host configured with route-add command)",
+                               checkExternalHost=False,
+                               countFlowsGroups=False,
+                               staticRouteConfigure=True,
+                               nodeFailure=True )
+
+    def CASE309( self, main ):
+        """
+        Kill and recover ONOS nodes
+        Ping between ipv4 and pv6 hosts and external hosts that is not configured in
+        external router config, but reachable through the use of route-add command.
+        """
+
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import SRRoutingTest
+
+        SRRoutingTest.runTest( main,
+                               test_idx=309,
+                               onosNodes=3,
+                               dhcp=1,
+                               routers=1,
+                               ipv4=1,
+                               ipv6=1,
+                               description="Test node failures with IPv4 and IPv6 hosts (including external host configured with route-add command)",
+                               checkExternalHost=False,
+                               countFlowsGroups=False,
+                               staticRouteConfigure=True,
+                               nodeFailure=True )
 

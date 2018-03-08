@@ -66,7 +66,6 @@ class SCPFscalingMaxIntents:
             main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
-            main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.verifyAttempts = int( main.params[ 'ATTEMPTS' ][ 'verify' ] )
             main.ingress = main.params[ 'LINK' ][ 'ingress' ]
             main.egress = main.params[ 'LINK' ][ 'egress' ]
@@ -211,9 +210,6 @@ class SCPFscalingMaxIntents:
         if main.flowObj:
             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
                                                  "useFlowObjectives", value="true" )
-            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                                 "defaultFlowObjectiveCompiler",
-                                                 value=main.linkCollectionIntentCfg )
         main.step( 'Starting mininet topology' )
         mnStatus = main.Mininet1.startNet( topoFile='~/mininet/custom/rerouteTopo.py' )
         utilities.assert_equals( expect=main.TRUE,

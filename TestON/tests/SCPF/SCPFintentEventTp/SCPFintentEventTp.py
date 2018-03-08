@@ -71,7 +71,6 @@ class SCPFintentEventTp:
             main.intentManagerCfg = main.params[ 'CFG' ][ 'intentManager' ]
             main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
-            main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.intentPerfInstallerCfg = main.params[ 'CFG' ][ 'intentPerfInstaller' ]
             main.neighbor = ( main.params[ 'TEST' ][ 'neighbors' ] ).split( "," )
             main.timeout = int( main.params[ 'SLEEP' ][ 'timeout' ] )
@@ -111,9 +110,6 @@ class SCPFintentEventTp:
         if main.flowObj:
             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
                                                  "useFlowObjectives", value="true" )
-            main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                                 "defaultFlowObjectiveCompiler",
-                                                 value=main.linkCollectionIntentCfg )
         time.sleep( main.startUpSleep )
 
         # balanceMasters

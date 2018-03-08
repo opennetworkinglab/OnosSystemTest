@@ -139,14 +139,20 @@ class SRRoutingTest ():
             links = len( json.loads( main.Cluster.next().links() ) )
             switches = len( json.loads( main.Cluster.next().devices() ) )
             for ctrl in xrange( numCtrls ):
+                # Kill node
                 run.killOnos( main, [ ctrl ], switches, links, ( numCtrls - 1 ) )
+                time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
                 main.Cluster.active(0).CLI.balanceMasters()
+                time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
                 run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
                 if countFlowsGroups:
                     run.checkFlowsGroupsFromFile( main )
 
+                # Recover node
                 run.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
+                time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
                 main.Cluster.active(0).CLI.balanceMasters()
+                time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
                 run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
                 if countFlowsGroups:
                     run.checkFlowsGroupsFromFile( main )

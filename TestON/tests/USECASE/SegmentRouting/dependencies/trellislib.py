@@ -4,6 +4,7 @@
 Libraries for Trellis hosts.
 """
 
+import time
 import sys
 sys.path.append('..')
 from mininet.node import Host
@@ -323,6 +324,7 @@ class TrellisHost(Host):
             self.nameToIntf[self.vlanIntf] = defaultIntf
 
         if self.dhcpClient:
+            time.sleep(3)
             self.cmd('dhclient -q -%s -nw -pf %s -lf %s %s' % (6 if self.ipv6 else 4, self.pidFile, self.leaseFile, self.defaultIntf()))
         else:
             # Setup IP addresses

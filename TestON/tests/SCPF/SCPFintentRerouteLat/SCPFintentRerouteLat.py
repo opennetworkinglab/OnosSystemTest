@@ -77,7 +77,6 @@ class SCPFintentRerouteLat:
             main.intentManagerCfg = main.params[ 'CFG' ][ 'intentManager' ]
             main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
-            main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
             main.ingress = main.params[ 'TEST' ][ 'ingress' ]
             main.egress = main.params[ 'TEST' ][ 'egress' ]
@@ -151,10 +150,6 @@ class SCPFintentRerouteLat:
                              main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
                                                                   "useFlowObjectives",
                                                                   value="true" )
-                stepResult = stepResult and \
-                             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                                                  "defaultFlowObjectiveCompiler",
-                                                                  value=main.linkCollectionIntentCfg )
             if stepResult:
                 main.cfgCheck = True
                 break

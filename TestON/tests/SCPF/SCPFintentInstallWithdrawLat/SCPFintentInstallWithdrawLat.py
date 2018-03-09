@@ -69,7 +69,6 @@ class SCPFintentInstallWithdrawLat:
             main.intentManagerCfg = main.params[ 'CFG' ][ 'intentManager' ]
             main.intentConfigRegiCfg = main.params[ 'CFG' ][ 'intentConfigRegi' ]
             main.nullProviderCfg = main.params[ 'CFG' ][ 'nullProvider' ]
-            main.linkCollectionIntentCfg = main.params[ 'CFG' ][ 'linkCollectionIntent' ]
             main.verifyAttempts = int( main.params[ 'ATTEMPTS' ][ 'verify' ] )
             main.cfgRetry = int( main.params[ 'ATTEMPTS' ][ 'cfg' ] )
             main.maxInvalidRun = int( main.params[ 'ATTEMPTS' ][ 'maxInvalidRun' ] )
@@ -134,10 +133,6 @@ class SCPFintentInstallWithdrawLat:
                 stepResult = stepResult and \
                              main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
                                                                   "useFlowObjectives", value="true" )
-                stepResult = stepResult and \
-                             main.Cluster.active( 0 ).CLI.setCfg( main.intentConfigRegiCfg,
-                                                                  "defaultFlowObjectiveCompiler",
-                                                                  value=main.linkCollectionIntentCfg )
             time.sleep( main.startUpSleep )
 
             # balanceMasters

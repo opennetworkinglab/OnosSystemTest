@@ -63,8 +63,8 @@ def getAllTheTests( wikiPrefix ){
                 "USECASE_SdnipFunctionCluster": [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SDNIP Function Cluster", wiki_file:"USECASE_SdnipFunctionClusterWiki.txt" ]
         ],
         "SR":[
-                "SRBridging":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Bridging", wiki_file:"SRBridgingWiki.txt" ],
-                "SRRouting":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:prop[ "WikiPrefix" ] + "-" + "SR Routing", wiki_file:"SRRoutingWiki.txt" ]
+                "SRBridging":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Bridging", wiki_file:"SRBridgingWiki.txt" ],
+                "SRRouting":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Routing", wiki_file:"SRRoutingWiki.txt" ]
         ]
     ];
 }

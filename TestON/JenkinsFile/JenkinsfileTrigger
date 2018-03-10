@@ -25,6 +25,7 @@ Prefix_organizer = [
     "VP" : "USECASE"
 ]
 
+manually_run = params.manual_run
 onos_b = "master"
 test_branch = ""
 onos_tag = params.ONOSTag
@@ -35,10 +36,14 @@ def now = funcs.getCurrentTime()
 print now.toString()
 today = now[ Calendar.DAY_OF_WEEK ]
 
-if( today == Calendar.SATURDAY ){
-    onos_b = previous_version
-} else if( today == Calendar.SUNDAY ){
-    onos_b = before_previous_version
+if ( manually_run ){
+    onos_b = params.ONOSVersion
+} else {
+    if ( today == Calendar.SATURDAY ){
+        onos_b = previous_version
+    } else if( today == Calendar.SUNDAY ){
+        onos_b = before_previous_version
+    }
 }
 AllTheTests = test_lists.getAllTheTests( onos_b )
 
@@ -52,7 +57,6 @@ stat_graph_generator_file = "testCategoryBuildStats.R"
 pie_graph_generator_file = "testCategoryPiePassFail.R"
 graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
 
-manually_run = params.manual_run
 post_result = params.PostResult
 if( !manually_run ){
     slackSend( color:'#03CD9F',
@@ -69,7 +73,7 @@ if( !manually_run ){
 
 if ( manually_run ){
     organize_tests( params.Tests )
-    onos_b = params.ONOSVersion
+
     isOldFlow = params.isOldFlow
     println "Tests to be run manually : "
 }else{

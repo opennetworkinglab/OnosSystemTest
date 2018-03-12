@@ -1,0 +1,6 @@
+{
+  "leaf1": {"expect": "True",
+    "hosts":["h1", "h3", "h4"]},
+  "leaf1-fail": {"expect": "False",
+    "hosts":["h1", "h2"]}
+}

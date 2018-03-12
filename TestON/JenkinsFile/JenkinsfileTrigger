@@ -4,7 +4,7 @@ funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
 
 previous_version = "1.12"
-before_previous_version = "1.11"
+before_previous_version = "master"
 funcs.initializeTrend( "VM" );
 
 testcases = [
@@ -147,7 +147,7 @@ def testDivider( today ){
         case Calendar.SUNDAY:
             sunday()
             day = "Sunday"
-            isOldFlow = false
+            //isOldFlow = false
             break
     }
 }
@@ -256,6 +256,7 @@ def sunday(){
     HA_choices += adder( "HA", "extra_B", false, "S", true )
     SR_choices += adder( "SR", "basic", false, "S", true )
     SCPF_choices += adder( "SCPF", "basic", false, "S", true )
+    SCPF_choices += adder( "SCPF", "extra_A", false, "S", true )
     USECASE_choices += adder( "USECASE", "basic", false, "S", true )
 }
 def adder( testCat, set, dayAdding, day, getResult ){

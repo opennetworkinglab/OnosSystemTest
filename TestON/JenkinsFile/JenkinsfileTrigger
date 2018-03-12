@@ -104,7 +104,11 @@ parallel finalList
 //finalList[ "BM" ].call()
 
 if ( !manually_run ){
-    funcs.generateStatGraph( onos_b, AllTheTests, stat_graph_generator_file, pie_graph_generator_file, graph_saved_directory )
+    funcs.generateStatGraph( funcs.branchWithPrefix( onos_b ),
+                             AllTheTests,
+                             stat_graph_generator_file,
+                             pie_graph_generator_file,
+                             graph_saved_directory )
 }
 
 def testDivider( today ){
@@ -300,9 +304,7 @@ def borrow_mn( jobOn ){
 def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     println jobOn + "-pipeline-" + manuallyRun ? "manually" : branch
     wiki = branch
-    if ( branch != "master" ){
-        branch = "onos-" + branch
-    }
+    branch = funcs.branchWithPrefix( branch )
     test_branch = "master"
     node( "TestStation-" + nodeName + "s" ){
         envSetup( branch, test_branch, onosTag, jobOn, manuallyRun )

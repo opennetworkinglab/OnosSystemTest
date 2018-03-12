@@ -339,5 +339,7 @@ def generateStatGraph( onos_branch, AllTheTests, stat_graph_generator_file, pie_
                   makeTestList( AllTheTests[ "USECASE" ], false )
     generateCategoryStatsGraph( "false", "true", stat_graph_generator_file, pie_graph_generator_file, "ALL", onos_branch, testListPart, graph_saved_directory, pieTestList )
 }
-
+def branchWithPrefix( branch ){
+    return ( ( branch != "master" ) ? "onos-" : "" ) + branch
+}
 return this;

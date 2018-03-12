@@ -64,6 +64,7 @@ class SRRoutingTest ():
         # Load configuration files
         run.loadJson( main )
         run.loadChart( main )
+        run.loadHost( main )
 
         # if static route flag add routes
         # these routes are topology specific
@@ -94,28 +95,19 @@ class SRRoutingTest ():
 
         # wait some time for onos to install the rules!
         time.sleep( 25 )
-
         if ( dhcp ):
             time.sleep( 60 )
 
-        # ping hosts
-        run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
-
-        # check flows / groups numbers
-        if countFlowsGroups:
-            run.checkFlowsGroupsFromFile(main)
+        SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
         # Test switch failures
         if switchFailure:
             for switch, expected in main.switchFailureChart.items():
                 run.killSwitch( main, switch, expected['switches_after_failure'], expected['links_after_failure'] )
-                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
-                if countFlowsGroups:
-                    run.checkFlowsGroupsFromFile(main)
+                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
+
                 run.recoverSwitch( main, switch, expected['switches_before_failure'], expected['links_before_failure'] )
-                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
-                if countFlowsGroups:
-                    run.checkFlowsGroupsFromFile(main)
+                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
         # Test link failures
         if linkFailure:
@@ -126,12 +118,10 @@ class SRRoutingTest ():
                 linksAfter = info['links_after']
 
                 run.killLinkBatch( main, linksToRemove, linksAfter )
-                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
+                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
                 run.restoreLinkBatch( main, linksToRemove, linksBefore )
-                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
-                if countFlowsGroups:
-                    run.checkFlowsGroupsFromFile(main)
+                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
         # Test node failures
         if nodeFailure:
@@ -144,18 +134,14 @@ class SRRoutingTest ():
                 time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
                 main.Cluster.active(0).CLI.balanceMasters()
                 time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
-                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
-                if countFlowsGroups:
-                    run.checkFlowsGroupsFromFile( main )
+                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
                 # Recover node
                 run.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
                 time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
                 main.Cluster.active(0).CLI.balanceMasters()
                 time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
-                run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
-                if countFlowsGroups:
-                    run.checkFlowsGroupsFromFile( main )
+                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
         # Cleanup
         if hasattr( main, 'Mininet1' ):
@@ -163,3 +149,14 @@ class SRRoutingTest ():
         else:
             # TODO: disconnect TestON from the physical network
             pass
+
+    @staticmethod
+    def runChecks( main, test_idx, countFlowsGroups ):
+        # Verify host IP assignment
+        run.verifyOnosHostIp( main )
+        run.verifyNetworkHostIp( main )
+        # check flows / groups numbers
+        if countFlowsGroups:
+            run.checkFlowsGroupsFromFile( main )
+        # ping hosts
+        run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )

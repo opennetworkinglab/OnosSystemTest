@@ -58,19 +58,16 @@ class Controller():
         """
         usedDriver = False
         if hasattr( self.REST, name ):
-            main.log.warn( "Rest driver has attribute '%s'" % ( name ) )
             if not usedDriver:
                 usedDriver = True
                 main.log.debug("Using Rest driver's attribute for '%s'" % (name))
                 f = getattr( self.REST, name)
         if hasattr( self.CLI, name ):
-            main.log.warn( "CLI driver has attribute '%s'" % ( name ) )
             if not usedDriver:
                 usedDriver = True
                 main.log.debug("Using CLI driver's attribute for '%s'" % (name))
                 f = getattr( self.CLI, name)
         if hasattr( self.Bench, name ):
-            main.log.warn( "Bench driver has attribute '%s'" % ( name ) )
             if not usedDriver:
                 usedDriver = True
                 main.log.debug("Using Bench driver's attribute for '%s'" % (name))

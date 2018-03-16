@@ -2963,7 +2963,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getHosts( self, verbose=False, updateTimeout=1000, hostClass=[ "Host", "DhcpClient", "Dhcp6Client", "DhcpServer", "Dhcp6Server", "DhcpRelay" ] ):
+    def getHosts( self, verbose=False, updateTimeout=1000, hostClass=[ "Host", "DhcpClient", "Dhcp6Client", "DhcpServer", "Dhcp6Server", "DhcpRelay" ], getInterfaces=True ):
         """
         Read hosts from Mininet.
         Optional:
@@ -2997,36 +2997,37 @@ class MininetCliDriver( Emulator ):
                 if result:
                     name = result.group( 'name' )
                     interfaces = []
-                    response = self.getInterfaces( name )
-                    # Populate interface info
-                    for line in response.split( "\n" ):
-                        if line.startswith( "name=" ):
-                            portVars = {}
-                            for var in line.split( "," ):
-                                key, value = var.split( "=" )
-                                portVars[ key ] = value
-                            isUp = portVars.pop( 'enabled', "True" )
-                            isUp = "True" in isUp
-                            if verbose:
-                                main.log.info( "Reading host port %s(%s)" %
-                                               ( portVars[ 'name' ],
-                                                 portVars[ 'mac' ] ) )
-                            mac = portVars[ 'mac' ]
-                            if mac == 'None':
-                                mac = None
-                            ips = []
-                            ip = portVars[ 'ip' ]
-                            if ip == 'None':
-                                ip = None
-                            ips.append( ip )
-                            intfName = portVars[ 'name' ]
-                            if name == 'None':
-                                name = None
-                            interfaces.append( {
-                                "name": intfName,
-                                "ips": ips,
-                                "mac": str( mac ),
-                                "isUp": isUp } )
+                    if getInterfaces:
+                        response = self.getInterfaces( name )
+                        # Populate interface info
+                        for line in response.split( "\n" ):
+                            if line.startswith( "name=" ):
+                                portVars = {}
+                                for var in line.split( "," ):
+                                    key, value = var.split( "=" )
+                                    portVars[ key ] = value
+                                isUp = portVars.pop( 'enabled', "True" )
+                                isUp = "True" in isUp
+                                if verbose:
+                                    main.log.info( "Reading host port %s(%s)" %
+                                                   ( portVars[ 'name' ],
+                                                     portVars[ 'mac' ] ) )
+                                mac = portVars[ 'mac' ]
+                                if mac == 'None':
+                                    mac = None
+                                ips = []
+                                ip = portVars[ 'ip' ]
+                                if ip == 'None':
+                                    ip = None
+                                ips.append( ip )
+                                intfName = portVars[ 'name' ]
+                                if name == 'None':
+                                    name = None
+                                interfaces.append( {
+                                    "name": intfName,
+                                    "ips": ips,
+                                    "mac": str( mac ),
+                                    "isUp": isUp } )
                     hosts[ name ] = { "interfaces": interfaces }
             return hosts
         except pexpect.EOF:
@@ -3399,7 +3400,7 @@ class MininetCliDriver( Emulator ):
             main.FALSE otherwise
         """
         try:
-            hosts = self.getHosts()
+            hosts = self.getHosts( getInterfaces=False )
             if not hostList:
                 hostList = hosts.keys()
             for hostName in hosts.keys():

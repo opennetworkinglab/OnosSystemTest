@@ -122,9 +122,9 @@ class NetworkDriver( CLI ):
         try:
             for key, value in main.componentDictionary.items():
                 if hasattr( main, key ):
-                    if value[ 'type' ] in [ 'MininetSwitchDriver' ]:
+                    if value[ 'type' ] in [ 'MininetSwitchDriver', 'OFDPASwitchDriver' ]:
                         self.switches[ key ] = getattr( main, key )
-                    elif value[ 'type' ] in [ 'MininetHostDriver' ]:
+                    elif value[ 'type' ] in [ 'MininetHostDriver', 'HostDriver' ]:
                         self.hosts[ key ] = getattr( main, key )
             return main.TRUE
         except Exception:
@@ -138,7 +138,7 @@ class NetworkDriver( CLI ):
         hosts = {}
         try:
             for hostComponent in self.hosts.values():
-                #TODO: return more host data
+                # TODO: return more host data
                 hosts[ hostComponent.options[ 'shortName' ] ] = {}
         except Exception:
             main.log.error( self.name + ": host component not as expected" )

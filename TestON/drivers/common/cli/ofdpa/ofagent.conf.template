@@ -1,0 +1,99 @@
+# Controller
+#-----------------------
+#CTRL1_IP="127.0.0.1"
+#CTRL1_PORT="6653"
+#CTRL2_IP="127.0.0.1"
+#CTRL2_PORT="6653"
+#CTRL3_IP="127.0.0.1"
+#CTRL3_PORT="6653"
+
+#LISTEN_IP="0.0.0.0"
+#LISTEN_PORT="6653"
+
+# Datapath ID
+#-----------------------
+#DPID=`cat /sys/class/net/ma1/address | sed 's/://g'`
+#DPID="1"
+
+# In-band management
+#-----------------------
+#IB_MGMT_VLAN="1"
+#IB_MGMT_PORT_ARG="-p 5"
+
+# Debug options
+#-----------------------
+#OPT_ARGS="-a2 -d4 -c1 -c2 -c3 -c4 -c5"
+
+# Maximu number of log files (valid: 0-10; 0:disble logging)
+MAX_LOG_NUM=0
+
+#----------------------------------------------------------------------------
+# OPT_ARGS:
+#----------------------------------------------------------------------------
+#
+# Controllers:
+#  -i, --dpid=DATAPATHID      The Datapath ID for this switch.
+#  -l, --listen=IP[:PORT]     A local IP address on which to listen for
+#                             controllers (may use this option multiple times)
+#  -t, --controller=IP[:PORT] A Controller IP address (may use this option
+#                             multiple times)
+#
+# TLS:
+#      --cacert=CACERTIFICATE The Certificate Authority certficate
+#      --cert=CERTIFICATE     The SSL public certificate file for the switch
+#      --cipher=CIPHER        The list of ciphers to use
+#      --key=KEYFILE          The SSL private key file for the switch
+#
+# Management VLAN:
+#  -p, --port=MGMTPORT        A port in the mgmt VLAN (may use this option
+#                             multiple times)
+#  -v, --vlan=MGMTVLAN        The VLAN to be reserved for management.
+#
+# Debugging:
+#  -a, --agentdebuglvl=AGENTDEBUGLVL
+#                             The verbosity of OF Agent debug messages.
+#  -c, --ofdpadebugcomp=OFPDACOMPONENT
+#                             The OF-DPA component for which debug messages are
+#                             enabled.
+#  -d, --ofdpadebuglvl=OFDPADEBUGLVL
+#                             The verbosity of OF-DPA debug messages.
+#
+#
+# Note:
+# IPv6 address parameters are specified following RFC3986.
+# To include a port number, enclose the IPv6 address in square brackets:
+#         Example: -t [2001:db8:1f70::999:de8:7648:6e8]:6653
+#
+# To use TLS when connecting to a controller, prefix the IP address with "tls:".
+#         Example: -t tls:[2001:db8:1f70::999:de8:7648:6e8]:6653
+#
+# Note: it is necessary to have a private key and public certificate to use TLS.
+# If the CA certificate is not provided, then the switch does not validate
+# certificates.  This can be helpful if self-signed certificates are being used.
+#
+# Default values:
+# No controllers connections
+# Note: may listen on mutiple IP addresses.  E.g., IPv4 and IPv6.
+# OFAGENTDEBUGLVL  = 0
+# Valid OF Agent debug levels are 0 - 2.
+# OFDPADEBUGLVL  = 0
+# Valid OF-DPA debug levels are 0 - 4.
+# No components enabled for debug:
+# Valid OF-DPA components are:
+#         1 = API
+#         2 = Mapping
+#         3 = RPC
+#         4 = OFDB
+#         5 = Datapath
+#         6 = G8131
+#         7 = Y1731
+#         8 = sFlow
+#         9 = SDK
+# DATAPATHID = 0xda7a
+# No defaults for the management VLAN and port(s).  The management VLAN feature
+# is disabled by default.
+# CIPHER = HIGH
+# CACERTIFICATE =
+# KEYFILE = /etc/ssl/private/switch.key
+# CERTIFICATE = /etc/ssl/certs/switch.crt
+#----------------------------------------------------------------------------

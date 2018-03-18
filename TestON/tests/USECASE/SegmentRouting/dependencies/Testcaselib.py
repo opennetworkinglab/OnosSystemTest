@@ -316,6 +316,21 @@ class Testcaselib:
                                         tag + "_GroupsBefore" )
 
     @staticmethod
+    def checkDevices( main, switches, tag="", sleep=10 ):
+        main.step(
+                "Check whether the switches count is equal to %s" % switches )
+        if tag == "":
+            tag = 'CASE%d' % main.CurrentTestCaseNumber
+        result = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
+                                    main.FALSE,
+                                    kwargs={ 'numoswitch': switches},
+                                    attempts=10,
+                                    sleep=sleep )
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="Device up successful",
+                                 onfail="Failed to boot up devices?" )
+
+    @staticmethod
     def checkFlowsByDpid( main, dpid, minFlowCount, sleep=10 ):
         main.step(
             " Check whether the flow count of device %s is bigger than %s" % ( dpid, minFlowCount ) )
@@ -613,7 +628,7 @@ class Testcaselib:
                                  onfail="Failed to recover switch?" )
 
     @staticmethod
-    def cleanup( main ):
+    def cleanup( main, physical=False):
         """
         Stop Onos-cluster.
         Stops Mininet
@@ -629,7 +644,8 @@ class Testcaselib:
         except ( NameError, AttributeError ):
             main.utils = Utils()
 
-        main.utils.mininetCleanup( main.Mininet1 )
+        if not physical:
+            main.utils.mininetCleanup( main.Mininet1 )
 
         main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
 

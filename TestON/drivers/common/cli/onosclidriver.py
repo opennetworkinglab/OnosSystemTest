@@ -3035,7 +3035,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def checkStatus( self, numoswitch, numolink, numoctrl = -1, logLevel="info" ):
+    def checkStatus( self, numoswitch, numolink = -1, numoctrl = -1, logLevel="info" ):
         """
         Checks the number of switches & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
@@ -3071,7 +3071,7 @@ class OnosCliDriver( CLI ):
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )
             # Is the number of links is what we expected
-            linkCheck = ( int( links ) == int( numolink ) )
+            linkCheck = ( int( links ) == int( numolink ) ) or int( numolink ) == -1
             nodeCheck = ( int( nodes ) == int( numoctrl ) ) or int( numoctrl ) == -1
             if switchCheck and linkCheck and nodeCheck:
                 # We expected the correct numbers
@@ -3085,8 +3085,9 @@ class OnosCliDriver( CLI ):
                 result = main.FALSE
             output = output + "\n ONOS sees %i devices" % int( devices )
             output = output + " (%i expected) " % int( numoswitch )
-            output = output + "and %i links " % int( links )
-            output = output + "(%i expected)" % int( numolink )
+            if int( numolink ) > 0:
+                output = output + "and %i links " % int( links )
+                output = output + "(%i expected)" % int( numolink )
             if int( numoctrl ) > 0:
                 output = output + "and %i controllers " % int( nodes )
                 output = output + "(%i expected)" % int( numoctrl )

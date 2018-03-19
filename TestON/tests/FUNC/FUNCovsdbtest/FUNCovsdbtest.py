@@ -466,7 +466,7 @@ class FUNCovsdbtest:
         port2postdata = port2.DictoJson()
 
         main.step( "Post Network Data via HTTP(Post port need post network)" )
-        Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'networks/',
+        Poststatus, result = main.Cluster.active( 0 ).REST.send( 'networks/', ctrlip, httpport, path,
                                                                  'POST', None, networkpostdata )
         utilities.assert_equals(
                 expect='200',
@@ -475,7 +475,7 @@ class FUNCovsdbtest:
                 onfail="Post Network Failed " + str( Poststatus ) + "," + str( result ) )
 
         main.step( "Post Subnet Data via HTTP(Post port need post subnet)" )
-        Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'subnets/',
+        Poststatus, result = main.Cluster.active( 0 ).REST.send( 'subnets/', ctrlip, httpport, path,
                                                                  'POST', None, subnetpostdata )
         utilities.assert_equals(
                 expect='202',
@@ -484,7 +484,7 @@ class FUNCovsdbtest:
                 onfail="Post Subnet Failed " + str( Poststatus ) + "," + str( result ) )
 
         main.step( "Post Port1 Data via HTTP" )
-        Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'ports/',
+        Poststatus, result = main.Cluster.active( 0 ).REST.send( 'ports/', ctrlip, httpport, path,
                                                                  'POST', None, port1postdata )
         utilities.assert_equals(
                 expect='200',
@@ -493,7 +493,7 @@ class FUNCovsdbtest:
                 onfail="Post Port Failed " + str( Poststatus ) + "," + str( result ) )
 
         main.step( "Post Port2 Data via HTTP" )
-        Poststatus, result = main.Cluster.active( 0 ).REST.send( ctrlip, httpport, '', path + 'ports/',
+        Poststatus, result = main.Cluster.active( 0 ).REST.send( 'ports/', ctrlip, httpport, path,
                                                                  'POST', None, port2postdata )
         utilities.assert_equals(
                 expect='200',

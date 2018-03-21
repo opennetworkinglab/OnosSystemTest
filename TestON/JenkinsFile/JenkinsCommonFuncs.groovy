@@ -193,8 +193,8 @@ def analyzeResult( prop, workSpace, testName, otherTestName, resultURL, wikiLink
     }
   }
 }
-def publishToConfluence( prop, wikiLink, file ){
-  if( isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
+def publishToConfluence( isManualRun, isPostResult, wikiLink, file ){
+  if( isPostingResult( isManualRun, isPostResult ) ){
     publishConfluence siteName: 'wiki.onosproject.org', pageName: wikiLink, spaceName: 'ONOS',
                   attachArchivedArtifacts: true, buildIfUnstable: true,
                   editorList: [
@@ -226,7 +226,9 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                         if( ! graphOnly ){
                           sh fetchLogs( pureTestName )
                           if( !isSCPF )
-                            publishToConfluence( prop, testCategory[ testName ][ 'wiki_link' ], workSpace + "/" + testCategory[ testName ][ 'wiki_file' ] )
+                            publishToConfluence( prop[ "manualRun" ], prop[ "postResult" ],
+                                                 testCategory[ testName ][ 'wiki_link' ],
+                                                 workSpace + "/" + testCategory[ testName ][ 'wiki_file' ] )
                         }
                       }
 

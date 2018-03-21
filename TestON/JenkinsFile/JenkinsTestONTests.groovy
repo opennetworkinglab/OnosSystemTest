@@ -50,16 +50,16 @@ def getAllTheTests( wikiPrefix ){
                 "FUNCbgpls" :                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCbgpls", wiki_file:"FUNCbgplsWiki.txt"  ],
                 "VPLSBasic" :                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "VPLSBasic", wiki_file:"VPLSBasicWiki.txt"  ],
                 "VPLSfailsafe" :                [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "VPLSfailsafe", wiki_file:"VPLSfailsafeWiki.txt"  ],
-                "PLATdockertest":               [ "basic":true, "extra_A":true, "extra_B":false, "new_Test":false, "day":"", wiki_link:"Docker Images sanity test", wiki_file:"PLATdockertestTableWiki.txt"  ],
+                "USECASE_SdnipFunction":        [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SDNIP Function", wiki_file:"USECASE_SdnipFunctionWiki.txt"  ],
+                "USECASE_SdnipFunctionCluster": [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SDNIP Function Cluster", wiki_file:"USECASE_SdnipFunctionClusterWiki.txt" ],
+                "PLATdockertest":               [ "basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":"", wiki_link:"Docker Images sanity test", wiki_file:"PLATdockertestTableWiki.txt"  ],
                 "SRSanity":                     [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Sanity", wiki_file:"SRSanityWiki.txt"  ],
                 "SRSwitchFailure":              [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Switch Failure", wiki_file:"SRSwitchFailureWiki.txt"  ],
                 "SRLinkFailure":                [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Link Failure", wiki_file:"SRLinkFailureWiki.txt"  ],
                 "SROnosFailure":                [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Onos node Failure", wiki_file:"SROnosFailureWiki.txt"  ],
                 "SRClusterRestart":             [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Cluster Restart", wiki_file:"SRClusterRestartWiki.txt"  ],
                 "SRDynamic":                    [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Dynamic Config", wiki_file:"SRDynamicWiki.txt"  ],
-                "SRHighAvailability":           [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR High Availability", wiki_file:"SRHighAvailabilityWiki.txt"  ],
-                "USECASE_SdnipFunction":        [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SDNIP Function", wiki_file:"USECASE_SdnipFunctionWiki.txt"  ],
-                "USECASE_SdnipFunctionCluster": [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SDNIP Function Cluster", wiki_file:"USECASE_SdnipFunctionClusterWiki.txt" ]
+                "SRHighAvailability":           [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR High Availability", wiki_file:"SRHighAvailabilityWiki.txt"  ]
         ],
         "SR":[
                 "SRBridging":                   [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "SR Bridging", wiki_file:"SRBridgingWiki.txt" ],

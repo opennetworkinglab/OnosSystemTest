@@ -43,7 +43,7 @@ def generateCombinedResultGraph( host, port, user, pass, testName, branchName, i
 
     for ( int i=0; i< SCPF[ testName ][ 'graphTitle' ].size(); i++ ){
         result += generalFuncs.basicGraphPart( generalFuncs.rScriptLocation + "SCPFLineGraph.R", host, port, user, pass, "\"" + SCPF[ testName ][ 'graphTitle' ][ i ] + "\"", branchName ) +
-        " " + 50 + " \"SELECT " + checkIfList( testName, 'dbCols', i ) + " FROM " + SCPF[ testName ][ 'table' ] + " WHERE  branch=\'" + branchName + "\' " + sqlOldFlow( isOldFlow, testName ) +
+        " " + 50 + " \"SELECT " + checkIfList( testName, 'dbCols', i ) + ", build FROM " + SCPF[ testName ][ 'table' ] + " WHERE  branch=\'" + branchName + "\' " + sqlOldFlow( isOldFlow, testName ) +
         checkIfList( testName, 'dbWhere', i ) + " ORDER BY date DESC LIMIT 50\" \"" + SCPF[ testName ][ 'y_axis' ] + "\" " + hasOldFlow( isOldFlow, testName ) + graph_saved_directory + ";"
     }
     return result

@@ -477,9 +477,8 @@ class MininetCliDriver( Emulator ):
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
                         failedPings += 1
+                        main.log.warn( "Cannot ping between {} and {}".format( host, temp ) )
                 pingResponse += "\n"
-                if not isReachable:
-                    main.log.warn( "Cannot ping between {} and {}".format( host, temp ) )
             main.log.info( pingResponse + "Failed pings: " + str( failedPings ) )
             return isReachable
         except pexpect.TIMEOUT:
@@ -545,9 +544,8 @@ class MininetCliDriver( Emulator ):
                         pingResponse += " X"
                         isReachable = main.FALSE
                         failedPingsTotal += 1
+                        main.log.warn( "Cannot ping between {} and {}".format( host, temp ) )
                 pingResponse += "\n"
-                if not isReachable:
-                    main.log.warn( "Cannot ping between {} and {}".format( host, temp ) )
             main.log.info( pingResponse + "Failed pings: " + str( failedPingsTotal ) )
             return isReachable
 

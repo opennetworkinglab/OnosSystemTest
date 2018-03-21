@@ -795,7 +795,7 @@ class OnosDriver( CLI ):
                 tempCount = tempCount + 1
 
             cellFile.write( "export OCI=$OC1\n" )
-            cellFile.write( mnString + "\"" + mnIpAddrs + "\"\n" )
+            cellFile.write( mnString + "\"" + str(mnIpAddrs) + "\"\n" )
             cellFile.write( appString + "\n" )
             cellFile.write( onosGroup + "\n" )
             cellFile.write( onosUser + "\n" )

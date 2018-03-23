@@ -718,7 +718,7 @@ class ScapyCliDriver( Emulator ):
             # TODO: add all params, or use kwargs
             ifaceName = str( ifaceName ) if ifaceName else self.ifaceName
             # Set interface
-            self.handle.sendline( ' conf.iface = "' + ifaceName + '"' )
+            self.handle.sendline( 'conf.iface = "' + ifaceName + '"' )
             self.handle.expect( self.scapyPrompt )
             cmd = 'pkt = sniff(count = ' + str( sniffCount ) +\
                   ', filter = "' + str( pktFilter ) + '")'

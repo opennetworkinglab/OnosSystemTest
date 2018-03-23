@@ -485,7 +485,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": TIMEOUT exception" )
             response = self.handle.before
             # NOTE: Send ctrl-c to make sure command is stopped
-            self.handle.sendline( "\x03" )
+            self.handle.send( "\x03" )
             self.handle.expect( "Interrupt" )
             response += self.handle.before + self.handle.after
             self.handle.expect( "mininet>" )
@@ -553,7 +553,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": TIMEOUT exception" )
             response = self.handle.before
             # NOTE: Send ctrl-c to make sure command is stopped
-            self.handle.sendline( "\x03" )
+            self.handle.send( "\x03" )
             self.handle.expect( "Interrupt" )
             response += self.handle.before + self.handle.after
             self.handle.expect( "mininet>" )
@@ -616,7 +616,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": TIMEOUT exception" )
             response = self.handle.before
             # NOTE: Send ctrl-c to make sure command is stopped
-            self.handle.sendline( "\x03" )
+            self.handle.send( "\x03" )
             self.handle.expect( "Interrupt" )
             response += self.handle.before + self.handle.after
             self.handle.expect( "mininet>" )
@@ -763,7 +763,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": TIMEOUT exception" )
             response = self.handle.before
             # NOTE: Send ctrl-c to make sure command is stopped
-            self.handle.sendline( "\x03" )
+            self.handle.send( "\x03" )
             self.handle.expect( "Interrupt" )
             response += self.handle.before + self.handle.after
             self.handle.expect( "mininet>" )
@@ -1470,7 +1470,7 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + " response: " +
                             repr( self.handle.before ) )
             # NOTE: Send ctrl-c to make sure iperf is done
-            self.handle.sendline( "\x03" )
+            self.handle.send( "\x03" )
             self.handle.expect( "Interrupt" )
             self.handle.expect( "mininet>" )
             return main.FALSE
@@ -1505,7 +1505,7 @@ class MininetCliDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": TIMEOUT exception found" )
             main.log.error( self.name + " response: " + repr( self.handle.before ) )
-            self.handle.sendline( "\x03" )
+            self.handle.send( "\x03" )
             self.handle.expect( "Interrupt" )
             self.handle.expect( "mininet>" )
             return main.FALSE

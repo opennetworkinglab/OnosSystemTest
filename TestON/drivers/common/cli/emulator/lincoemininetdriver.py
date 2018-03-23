@@ -73,7 +73,7 @@ class LincOEMininetDriver( MininetCliDriver ):
                 self.handle.sendline( cmd )
                 lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ], timeout=120 )
                 if lincStart == 1:
-                    self.handle.sendline( "\x03" )
+                    self.handle.send( "\x03" )
                     self.handle.sendline( "sudo mn -c" )
                     self.handle.sendline( cmd )
                     lincStart = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ], timeout=120 )

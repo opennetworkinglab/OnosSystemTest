@@ -187,7 +187,7 @@ class FUNCbgpls:
         main.log.info( "Kill Scapy process" )
         bgplsConfig.Comments()
 
-        main.Scapy1.handle.sendline( "\x03" )
+        main.Scapy1.handle.send( "\x03" )
         time.sleep( 90 )  # This Sleep time gives time for the socket to close.
 
     def CASE3( self, main ):
@@ -282,7 +282,7 @@ class FUNCbgpls:
         bgplsConfig.Comments()
         main.log.info( "Kill Scapy process" )
         bgplsConfig.Comments()
-        main.Scapy1.handle.sendline( "\x03" )
+        main.Scapy1.handle.send( "\x03" )
         time.sleep( 90 )  # This Sleep time gives time for the socket to close.
 
     def CASE4( self, main ):
@@ -352,7 +352,7 @@ class FUNCbgpls:
         bgplsConfig.Comments()
         main.log.info( "Kill Scapy process" )
         bgplsConfig.Comments()
-        main.Scapy1.handle.sendline( "\x03" )
+        main.Scapy1.handle.send( "\x03" )
         time.sleep( 90 )
 
     def CASE5( self, main ):
@@ -423,7 +423,7 @@ class FUNCbgpls:
         bgplsConfig.Comments()
         main.log.info( "Kill Scapy process" )
         bgplsConfig.Comments()
-        main.Scapy1.handle.sendline( "\x03" )
+        main.Scapy1.handle.send( "\x03" )
         time.sleep( 90 )
 
     def CASE6( self, main ):

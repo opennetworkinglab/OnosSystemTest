@@ -46,7 +46,7 @@ class SRRoutingTest ():
         if not init and onosNodes == main.Cluster.numCtrls:
             skipPackage = True
 
-        main.case( '%s, ONOS instance%s' % ( description, onosNodes ) )
+        main.case( '%s, ONOS cluster size: %s' % ( description, onosNodes ) )
 
         main.cfgName = 'COMCAST_CONFIG_ipv4=%d_ipv6=%d_dhcp=%d_routers=%d' % \
             ( ipv4, ipv6, dhcp, routers )
@@ -103,9 +103,11 @@ class SRRoutingTest ():
         # Test switch failures
         if switchFailure:
             for switch, expected in main.switchFailureChart.items():
+                main.step( "Killing switch {}" % switch )
                 run.killSwitch( main, switch, expected['switches_after_failure'], expected['links_after_failure'] )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
+                main.step( "Restoring switch {}" % switch )
                 run.recoverSwitch( main, switch, expected['switches_before_failure'], expected['links_before_failure'] )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
@@ -117,9 +119,11 @@ class SRRoutingTest ():
                 linksBefore = info['links_before']
                 linksAfter = info['links_after']
 
+                main.step( "Killing links {}" % linksToRemove )
                 run.killLinkBatch( main, linksToRemove, linksAfter )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
+                main.step( "Restoring links {}" % linksToRemove )
                 run.restoreLinkBatch( main, linksToRemove, linksBefore )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 

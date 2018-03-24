@@ -63,6 +63,11 @@ if( !manually_run ){
                         + "\n:sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:" )
 
     SR_choices += adder( "SR", "basic", true )
+    if ( today == Calendar.FRIDAY ){
+        SR_choices += adder( "SR", "extra_A", true )
+    } else if( today == Calendar.SATURDAY ){
+        SR_choices += adder( "SR", "extra_B", true )
+    }
     SR_choices =  triggerFuncs.lastCommaRemover( SR_choices )
 }
 if ( manually_run ){

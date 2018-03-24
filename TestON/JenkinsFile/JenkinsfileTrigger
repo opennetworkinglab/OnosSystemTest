@@ -178,7 +178,6 @@ def monday( getResult ){
     closingHeader( "USECASE" )
 }
 def tuesday( getDay, getResult ){
-
     addingHeader( "FUNC" )
     FUNC_choices += adder( "FUNC", "basic", getDay, "T", getResult )
     FUNC_choices += adder( "FUNC", "new_Test", getDay, "T", getResult )
@@ -262,6 +261,7 @@ def friday( getDay, getResult ){
     closingHeader( "SCPF" )
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", getDay, "F", false )
+    SR_choices += adder( "SR", "extra_A", getDay, "F", false )
     closingHeader( "SR" )
     addingHeader( "USECASE" )
     closingHeader( "USECASE" )
@@ -289,6 +289,7 @@ def saturday( getDay, getResult ){
     closingHeader( "SCPF" )
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", getDay, "Sa", false )
+    SR_choices += adder( "SR", "extra_B", getDay, "Sa", false )
     closingHeader( "SR" )
     addingHeader( "USECASE" )
     USECASE_choices += adder( "USECASE", "basic", getDay, "Sa", getResult )

@@ -2,7 +2,7 @@
     <testcases>1</testcases>
 
     <GRAPH>
-        <nodeCluster>VM</nodeCluster>
+        <nodeCluster>Fabric</nodeCluster>
         <builds>20</builds>
     </GRAPH>
 

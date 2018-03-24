@@ -2,7 +2,7 @@
     <testcases>range(13, 251, 10)</testcases>
 
     <GRAPH>
-        <nodeCluster>VM</nodeCluster>
+        <nodeCluster>Fabric</nodeCluster>
         <builds>20</builds>
     </GRAPH>
 

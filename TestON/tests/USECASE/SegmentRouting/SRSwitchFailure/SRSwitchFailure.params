@@ -3,7 +3,7 @@
     <testcases>1,2,4,5</testcases>
 
     <GRAPH>
-        <nodeCluster>BM</nodeCluster>
+        <nodeCluster>Fabric</nodeCluster>
         <builds>20</builds>
     </GRAPH>
 

@@ -1,5 +1,0 @@
-{
-  "ipv6-remote": { "expect": "Unidirectional",
-                   "src": ["h1v6", "h2v6" ,"h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6"],
-                   "dst": ["rh5v6"] }
-}

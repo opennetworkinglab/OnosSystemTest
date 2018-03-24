@@ -1,0 +1,12 @@
+{
+  "ipv4": { "expect": "True",
+            "hosts": ["h1v4", "h2v4" ,"h3v4", "h4v4", "h5v4", "h6v4", "h7v4", "h8v4", "h9v4", "h10v4", "h11v4" ,"h12v4" ,"h13v4"] },
+  "ipv4-remote": { "expect": "Unidirectional",
+                   "src": ["h1v4", "h2v4" ,"h3v4", "h4v4", "h5v4", "h6v4", "h7v4", "h8v4", "h9v4", "h10v4", "h11v4" ,"h12v4" ,"h13v4"],
+                   "dst": ["rh1v4", "rh2v4"] },
+  "ipv6": { "expect": "True",
+            "hosts": ["h1v6", "h2v6" ,"h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6" ,"h12v6" ,"h13v6"] },
+  "ipv6-remote": { "expect": "Unidirectional",
+                   "src": ["h1v6", "h2v6" ,"h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6" ,"h12v6" ,"h13v6"],
+                   "dst": ["rh1v6", "rh11v6", "rh2v6", "rh22v6"] }
+}

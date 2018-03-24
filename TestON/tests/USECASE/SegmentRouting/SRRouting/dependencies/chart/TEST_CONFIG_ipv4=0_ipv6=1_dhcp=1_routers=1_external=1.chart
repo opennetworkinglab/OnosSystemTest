@@ -1,0 +1,7 @@
+{
+  "ipv6": { "expect": "True",
+            "hosts": ["h1v6", "h2v6" ,"h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6" ,"h12v6" ,"h13v6"] },
+  "ipv6-remote": { "expect": "Unidirectional",
+                   "src": ["h1v6", "h2v6" ,"h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6" ,"h12v6" ,"h13v6"],
+                   "dst": ["rh1v6", "rh11v6", "rh2v6", "rh22v6"] }
+}

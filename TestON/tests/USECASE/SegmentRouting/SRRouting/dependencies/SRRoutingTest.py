@@ -48,7 +48,7 @@ class SRRoutingTest ():
 
         main.case( '%s, ONOS cluster size: %s' % ( description, onosNodes ) )
 
-        main.cfgName = 'COMCAST_CONFIG_ipv4=%d_ipv6=%d_dhcp=%d_routers=%d' % \
+        main.cfgName = 'TEST_CONFIG_ipv4=%d_ipv6=%d_dhcp=%d_routers=%d' % \
             ( ipv4, ipv6, dhcp, routers )
         if checkExternalHost:
             main.cfgName += '_external=1'
@@ -87,7 +87,7 @@ class SRRoutingTest ():
         if hasattr( main, 'Mininet1' ):
             # Run the test with Mininet
             mininet_args = ' --dhcp=%s --routers=%s --ipv6=%s --ipv4=%s' % ( dhcp, routers, ipv6, ipv4 )
-            run.startMininet( main, 'comcast_fabric.py', args=mininet_args )
+            run.startMininet( main, 'hagg_fabric.py', args=mininet_args )
         else:
             # Run the test with physical devices
             # TODO: connect TestON to the physical network

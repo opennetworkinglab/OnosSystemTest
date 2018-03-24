@@ -28,7 +28,7 @@ def initialize( type ){
 def init( type ){
   machineType = [ "FUNC"    : "VM",
                   "HA"      : "VM",
-                  "SR"      : "VM",
+                  "SR"      : "Fabric",
                   "SCPF"    : "BM",
                   "USECASE" : "BM" ]
   testType = type;

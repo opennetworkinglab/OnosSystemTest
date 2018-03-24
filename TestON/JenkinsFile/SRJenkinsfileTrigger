@@ -1,0 +1,111 @@
+#!groovy
+
+funcs = evaluate readTrusted( 'JenkinsCommonFuncs.groovy' )
+test_lists = evaluate readTrusted( 'JenkinsTestONTests.groovy' )
+triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/TriggerFuncs.groovy' )
+
+previous_version = "1.12"
+before_previous_version = "1.11"
+funcs.initializeTrend( "Fabric" );
+funcs.initialize( "Fabric" )
+triggerFuncs.init( funcs )
+
+wikiContents = ""
+testcases = [
+    "FUNC" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
+    "HA" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
+    "SCPF" : [ tests : "" , nodeName : "BM", wikiContent : "" ],
+    "SR" : [ tests : "", nodeName : "Fabric", wikiContent : "" ],
+    "USECASE" : [ tests : "" , nodeName : "BM", wikiContent : "" ]
+]
+Prefix_organizer = [
+    "FU" : "FUNC",
+    "HA" : "HA",
+    "PL" : "USECASE",
+    "SA" : "USECASE",
+    "SC" : "SCPF",
+    "SR" : "SR",
+    "US" : "USECASE",
+    "VP" : "USECASE"
+]
+
+manually_run = params.manual_run
+onos_b = "master"
+test_branch = ""
+onos_tag = params.ONOSTag
+isOldFlow = true
+
+// Set tests based on day of week
+def now = funcs.getCurrentTime()
+print now.toString()
+today = now[ Calendar.DAY_OF_WEEK ]
+
+if ( manually_run ){
+    onos_b = params.ONOSVersion
+}
+AllTheTests = test_lists.getAllTheTests( onos_b )
+
+day = ""
+SCPF_choices = ""
+USECASE_choices = ""
+FUNC_choices = ""
+HA_choices = ""
+SR_choices = ""
+stat_graph_generator_file = "testCategoryBuildStats.R"
+pie_graph_generator_file = "testCategoryPiePassFail.R"
+graph_saved_directory = "/var/jenkins/workspace/postjob-Fabric/"
+
+post_result = params.PostResult
+if( !manually_run ){
+    slackSend( channel:'sr-failures', color:'#03CD9F',
+               message:":sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:\n"
+                        + "Starting tests on : " + now.toString()
+                        + "\n:sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:" )
+
+    SR_choices += adder( "SR", "basic", true )
+    SR_choices =  triggerFuncs.lastCommaRemover( SR_choices )
+}
+if ( manually_run ){
+    testcases = triggerFuncs.organize_tests( params.Tests, testcases )
+
+    isOldFlow = params.isOldFlow
+    println "Tests to be run manually : "
+}else{
+    testcases[ "SR" ][ "tests" ] = SR_choices
+    println "Defaulting to " + day + " tests:"
+}
+
+triggerFuncs.print_tests( testcases )
+
+def runTest = [
+    "VM" : [:],
+    "BM" : [:],
+    "Fabric" : [:]
+]
+for( String test in testcases.keySet() ){
+    println test
+    if ( testcases[ test ][ "tests" ] != "" ){
+        runTest[ testcases[ test ][ "nodeName" ] ][ test ] = triggerFuncs.trigger_pipeline( onos_b, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ], test, manually_run, onos_tag )
+    }
+}
+def finalList = [:]
+finalList[ "Fabric" ] = triggerFuncs.runTestSeq( runTest[ "Fabric" ] )
+parallel finalList
+/*
+if ( !manually_run ){
+    funcs.generateStatGraph( funcs.branchWithPrefix( onos_b ),
+                             AllTheTests,
+                             stat_graph_generator_file,
+                             pie_graph_generator_file,
+                             graph_saved_directory )
+}*/
+def adder( testCat, set, getResult ){
+    result = ""
+    for( String test in AllTheTests[ testCat ].keySet() ){
+        if( AllTheTests[ testCat ][ test ][ set ] ){
+            if( getResult )
+                result += test + ","
+        }
+    }
+    return result
+}

@@ -9,7 +9,7 @@ prop = funcs.getProperties()
 SR = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SR" ]
 
 graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
-graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
+graph_saved_directory = "/var/jenkins/workspace/postjob-Fabric/"
 
 echo( "Testcases:" )
 def testsToRun = null

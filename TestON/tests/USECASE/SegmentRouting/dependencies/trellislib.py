@@ -376,6 +376,7 @@ class TrellisHost(Host):
         if self.dhcpClient:
             self.cmd('kill -9 `cat %s`' % self.pidFile)
             self.cmd('rm -rf %s' % self.pidFile)
+            self.cmd('rm -rf %s' % self.leaseFile)
         if self.dhcpServer:
             self.cmd('kill -9 `cat %s`' % self.pidFile)
             self.cmd('rm -rf %s' % self.pidFile)

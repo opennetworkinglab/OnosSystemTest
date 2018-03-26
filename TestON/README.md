@@ -1,24 +1,11 @@
 Welcome to TestON !
 -------------------
-[![TestON](http://ubuntuone.com/3TWEPjl4zVaXSFDuCxz6Hq)](#TestON)
-
-Introduction
--------------
 TestON is a solution that aims to interact with OpenFlow/SDN components and automate the functionality of the components.
 
-TestON is an end to end automation solution for testing the Openflow/SDN components.
+TestON is an end to end automation solution for testing the Openflow/SDN components
 run across various components in an OpenFlow topology. This solution
-aims to provide an automation framework, that is not just exhaustive in
+aims to provide an automation framework that is not just exhaustive in
 coverage, but also makes it easy to debug and author scripts.
-It allows for authoring scripts in OpenSpeak (plain English) format and can be run standalone from the command line.
-
-
-Note:
------
-
-Please change the params parser file path and Parser name in ~/config/ofa.cfg
-
-
 
 Test Launch
 ------------
@@ -28,40 +15,35 @@ In order to run TestON, you must have:
 * A Linux 2.6.26 or greater kernel compiled with network namespace support
   enabled (see INSTALL for additional information.)
 
-* python 2.6 or higher versions.
+* Python 2.6 or higher versions.
 
-* Install python package configObj. It can be installed as :
+* Install python package ``configObj``. It can be installed as :
 
-     openflow@ETH-Tutorial:~$ sudo pip install configObj
+     ```
+     $ sudo pip install configObj
+     ```
 
+ How to launch a test:
 
-* Finally ,launching of test:
+ * Navigate to the ``bin/`` directory which
+   resides in the ``TestON/`` directory:
 
-* TestON providing two options to launch the test.
+    ```
+    $ ./cli.py
+    teston> run SAMPstartTemplate_1node
+    ```
 
-  1 .Console based :
+    or
 
-     * Launching of test must be from "bin" directory which
-
-       resides into "TestON-master" directory as following:
-
-            sdn@test-station:~/TestON/bin$ ./cli.py
-            teston>run MininetTest
-
-  2. TAI (Test Authoring Interface) UI based :
-
-     * Will provide TAI stand-alone application soon, now user can get the raw code from the TAI directory.
-
-  User can launch the test from TAI-UI by clicking the Run Button in tool-bar.
-
-[![RunTest](http://ubuntuone.com/0rPR4VLXF6WbExKeqeKLkN)](#RunTest)
+    ```
+    $ ./cli.py run SAMPstartTemplate_1node
+    ```
 
 
 Examples
 --------
-For more examples, refer 'examples' directory.
-Please find the below link for examples:
-     https://github.com/opennetworkinglab/OnosSystemTest/tree/master/TestON/examples
+For more examples, refer to the ``TestON/tests/SAMP/`` directory.
+Check out the [ONOS Wiki](https://wiki.onosproject.org/) for [guides](https://wiki.onosproject.org/display/ONOS/System+Testing+Guide) in creating a test.
 
 
 

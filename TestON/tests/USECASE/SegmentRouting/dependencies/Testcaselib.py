@@ -67,12 +67,12 @@ class Testcaselib:
             main.forHost = "host/"
             main.forSwitchFailure = "switchFailure/"
             main.forLinkFailure = "linkFailure/"
+            main.forMulticast = "multicast/"
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             main.topologyLib = main.params[ 'DEPENDENCY' ][ 'lib' ] if 'lib' in main.params[ 'DEPENDENCY' ] else None
             main.topologyConf = main.params[ 'DEPENDENCY' ][ 'conf' ] if 'conf' in main.params[ 'DEPENDENCY' ] else None
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
-            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
 
             stepResult = main.testSetUp.envSetup( False )
         except Exception as e:
@@ -160,8 +160,14 @@ class Testcaselib:
     @staticmethod
     def loadLinkFailureChart( main ):
         with open( "%s%s.linkFailureChart" % ( main.configPath + main.forLinkFailure,
-                                                 main.cfgName ) ) as sfc:
-            main.linkFailureChart = json.load( sfc )
+                                                 main.cfgName ) ) as lfc:
+            main.linkFailureChart = json.load( lfc )
+
+    @staticmethod
+    def loadMulticastConfig( main ):
+        with open( "%s%s.multicastConfig" % ( main.configPath + main.forMulticast,
+                                                 main.cfgName ) ) as cfg:
+            main.multicastConfig = json.load( cfg )
 
     @staticmethod
     def startMininet( main, topology, args="" ):
@@ -681,6 +687,16 @@ class Testcaselib:
         except ( NameError, AttributeError ):
             main.utils = Utils()
 
+        if hasattr( main, "scapyHosts" ):
+            scapyResult = main.TRUE
+            for host in main.scapyHosts:
+                scapyResult = host.stopScapy() and scapyResult
+                main.log.info( "Stopped Scapy Host: {0}".format( host.name ) )
+            for host in main.scapyHosts:
+                scapyResult = main.Scapy.removeHostComponent( host.name ) and scapyResult
+                main.log.info( "Removed Scapy Host Component: {0}".format( host.name ) )
+            main.scapyHosts = []
+
         if hasattr( main, 'Mininet1' ):
             main.utils.mininetCleanup( main.Mininet1 )
 
@@ -939,3 +955,67 @@ class Testcaselib:
                 cfg[ "ports" ][ connectPoint ][ "interfaces" ][ 0 ][ "vlan-native" ] = native
 
         main.Cluster.active( 0 ).REST.setNetCfg( json.loads( json.dumps( cfg ) ) )
+
+    @staticmethod
+    def startScapyHosts( main ):
+        """
+        Create host components and start Scapy CLIs
+        """
+        main.step( "Start Scapy CLIs" )
+        main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
+        main.scapyHosts = []
+        for hostName in main.scapyHostNames:
+            main.Scapy.createHostComponent( hostName )
+            main.scapyHosts.append( getattr( main, hostName ) )
+        for host in main.scapyHosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+    @staticmethod
+    def verifyMulticastTraffic( main, entry, expect, skipOnFail=False ):
+        """
+        Verify multicast traffic using scapy
+        """
+        srcEntry = entry["scapy"]["src"]
+        for dstEntry in entry["scapy"]["dst"]:
+            # Set up scapy receiver
+            receiver = getattr( main, dstEntry["host"] )
+            receiver.startFilter( pktFilter=srcEntry["filter"] )
+            # Set up scapy sender
+            main.Network.addRoute( str( srcEntry["host"] ),
+                                   str( entry["group"] ),
+                                   str( srcEntry["interface"] ),
+                                   True if entry["ipVersion"] == 6 else False )
+            sender = getattr( main, srcEntry["host"] )
+            sender.buildEther( dst=str( srcEntry["Ether"] ) )
+            if entry["ipVersion"] == 4:
+                sender.buildIP( dst=str( entry["group"] ) )
+            elif entry["ipVersion"] == 6:
+                sender.buildIPv6( dst=str( entry["group"] ) )
+            sender.buildUDP( ipVersion=entry["ipVersion"], dport=srcEntry["UDP"] )
+            # Send packet and check received packet
+            sender.sendPacket( iface=srcEntry["interface"] )
+            finished = receiver.checkFilter()
+            packet = ""
+            if finished:
+                packets = receiver.readPackets()
+                for packet in packets.splitlines():
+                    main.log.debug( packet )
+            else:
+                kill = receiver.killFilter()
+                main.log.debug( kill )
+                sender.handle.sendline( "" )
+                sender.handle.expect( sender.scapyPrompt )
+                main.log.debug( sender.handle.before )
+            if skipOnFail and finished != expect:
+                Testcaselib.saveOnosDiagnostics( main )
+                Testcaselib.cleanup( main, copyKarafLog=False )
+                main.skipCase()
+            utilities.assert_equals( expect=expect,
+                                     actual=srcEntry["packet"] in packet,
+                                     onpass="Pass",
+                                     onfail="Fail" )

@@ -1,0 +1,580 @@
+{
+    "ports" : {
+         "of:0000000000000006/3" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1011::3ff/120" ],
+                    "vlan-tagged": [10]
+                }
+            ]
+        },
+        "of:0000000000000006/4" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1012::3ff/120" ],
+                    "vlan-untagged": 20
+                }
+            ]
+        },
+	"of:0000000000000006/5" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.5.10.254/24" ],
+                    "vlan-tagged": [10]
+                }
+            ]
+        },
+        "of:0000000000000006/6" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.5.20.254/24" ],
+                    "vlan-untagged": 20
+                }
+            ]
+        },
+
+        "of:0000000000000001/3" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1000::3ff/120" ],
+                    "vlan-untagged": 10
+                }
+            ]
+        },
+        "of:0000000000000001/4" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1001::3ff/120" ],
+                    "vlan-untagged": 10
+                }
+            ]
+        },
+        "of:0000000000000001/5" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.1.0.254/24" ],
+                    "vlan-untagged": 10
+                }
+            ]
+        },
+        "of:0000000000000001/6" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.1.10.254/24" ],
+                    "vlan-untagged": 10
+                }
+            ]
+        },
+        "of:0000000000000002/6" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1002::3ff/120" ],
+                    "vlan-untagged": 10
+                }
+            ]
+        },
+        "of:0000000000000002/7" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1003::3ff/120" ],
+                    "vlan-untagged": 15
+                }
+            ]
+        },
+        "of:0000000000000002/8" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1004::3ff/120" ],
+                    "vlan-tagged": [30]
+                }
+            ]
+        },
+        "of:0000000000000002/9" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.2.0.254/24" ],
+                    "vlan-untagged": 10
+                }
+            ]
+        },
+        "of:0000000000000002/10" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.2.30.254/24" ],
+                    "vlan-untagged": 16
+                }
+            ]
+        },
+        "of:0000000000000002/11" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.2.20.254/24" ],
+                    "vlan-tagged": [30]
+                }
+            ]
+        },
+        "of:0000000000000003/6" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1003::3ff/120" ],
+                    "vlan-untagged": 15
+                }
+            ]
+        },
+        "of:0000000000000003/7" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1004::3ff/120" ],
+                    "vlan-tagged": [30]
+                }
+            ]
+        },
+        "of:0000000000000003/8" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1005::3ff/120" ],
+                    "vlan-tagged": [20]
+                }
+            ]
+        },
+	"of:0000000000000003/9" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1006::3ff/120" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000003/10" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.2.30.254/24" ],
+                    "vlan-untagged": 15
+                }
+            ]
+        },
+        "of:0000000000000003/11" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.2.20.254/24" ],
+                    "vlan-tagged": [30]
+                }
+            ]
+        },
+        "of:0000000000000003/12" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.2.10.254/24" ],
+                    "vlan-tagged": [20]
+                }
+            ]
+        },
+	"of:0000000000000003/13" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.2.40.254/24" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000004/6" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1007::3ff/120" ],
+                    "vlan-untagged": 30
+                }
+            ]
+        },
+        "of:0000000000000004/7" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1008::3ff/120" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000004/8" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1009::3ff/120" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000004/9" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.3.0.254/24" ],
+                    "vlan-untagged": 30
+                }
+            ]
+        },
+        "of:0000000000000004/10" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.3.10.254/24" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000004/11" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.3.30.254/24" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000004/12" : {
+            "interfaces" : [
+                {
+			"ips" : [ "10.0.1.254/24", "10.0.7.254/24", "2000::1ff/120", "2000::7ff/120" ],
+			"vlan-tagged": [110, 170]
+
+                }
+            ]
+        },
+        "of:0000000000000004/13" : {
+            "interfaces" : [
+                {
+			"ips" : [ "10.0.1.254/24", "2000::1ff/120"],
+			"vlan-untagged": 110
+
+                }
+            ]
+        },
+        "of:0000000000000004/14" : {
+            "interfaces" : [
+                {
+			"ips" : [ "10.0.7.254/24", "2000::7ff/120" ],
+			"vlan-untagged": 170
+
+                }
+            ]
+        },
+        "of:0000000000000005/6" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1008::3ff/120" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000005/7" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1009::3ff/120" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000005/8" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "1010::3ff/120" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000005/9" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.3.10.254/24" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000005/10" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.3.30.254/24" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000005/11" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.3.20.254/24" ],
+                    "vlan-tagged": [40]
+                }
+            ]
+        },
+        "of:0000000000000005/12" : {
+            "interfaces" : [
+                {
+                       "ips" : [ "10.0.5.254/24", "10.0.6.254/24", "2000::5ff/120", "2000::6ff/120" ],
+	               "vlan-tagged": [150, 160]
+                }
+            ]
+        },
+        "of:0000000000000005/13" : {
+            "interfaces" : [
+                {
+                       "ips" : [ "10.0.5.254/24", "2000::5ff/120"],
+	               "vlan-untagged": 150
+                }
+            ]
+        },
+        "of:0000000000000005/14" : {
+            "interfaces" : [
+                {
+                       "ips" : [ "10.0.6.254/24", "2000::6ff/120" ],
+	               "vlan-untagged": 160
+                }
+            ]
+        },
+        "of:0000000000000005/15" : {
+            "interfaces" : [
+                {
+                    "ips" : [ "10.0.3.254/24", "2000::3ff/120" ],
+                    "vlan-untagged": 15
+                }
+            ]
+        }
+    },
+    "hosts" : {
+	"00:BB:00:00:01:0A/10" : {
+		"basic": {
+			"locations": ["of:0000000000000006/3"],
+			"ips": ["1011::3fe"]
+		     }
+	    },
+	"00:bb:00:00:00:04/30" : {
+		"basic": {
+			"locations": ["of:0000000000000003/7","of:0000000000000002/8"],
+			"ips": ["1004::3fe"]
+		     }
+	    },
+	"00:bb:00:00:00:05/20" : {
+		"basic": {
+			"locations": ["of:0000000000000003/8"],
+			"ips": ["1005::3fe"]
+		     }
+	    },
+	"00:bb:00:00:01:05/40" : {
+		"basic": {
+			"locations": ["of:0000000000000003/9"],
+			"ips": ["1006::3fe"]
+		     }
+	    },
+	"00:bb:00:00:00:07/40" : {
+		"basic": {
+			"locations": ["of:0000000000000005/6", "of:0000000000000004/7"],
+			"ips": ["1008::3fe"]
+		     }
+	    },
+	"00:bb:00:00:00:08/40" : {
+		"basic": {
+			"locations": ["of:0000000000000004/8","of:0000000000000005/7"],
+			"ips": ["1009::3fe"]
+		     }
+	    },
+	"00:bb:00:00:00:0A/40" : {
+		"basic": {
+			"locations": ["of:0000000000000005/8"],
+			"ips": ["1010::3fe"]
+		     }
+	    }
+    },
+    "devices" : {
+	"of:0000000000000006" : {
+            "segmentrouting" : {
+                "name" : "s006",
+                "ipv4NodeSid" : 1006,
+		"ipv6NodeSid" : 2006,
+		"ipv6Loopback" : "2000::c0a8:0006",
+                "ipv4Loopback" : "192.168.0.6",
+                "routerMac" : "00:00:00:00:00:06",
+                "isEdgeRouter" : true,
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s006",
+                "driver" : "ofdpa-ovs",
+		"latitude":30,
+		"longitude":-110
+            }
+        },
+        "of:0000000000000103" : {
+            "segmentrouting" : {
+                "name" : "s103",
+                "ipv4NodeSid" : 1103,
+                "ipv4Loopback" : "192.168.0.103",
+		"ipv6NodeSid" : 2103,
+		"ipv6Loopback" : "2000::c0a8:0203",
+                "routerMac" : "00:00:00:00:01:03",
+                "isEdgeRouter" : false,
+                "adjacencySids" : []
+            },
+            "basic" : {
+                 "name" : "s103",
+                 "driver" : "ofdpa-ovs",
+		 "latitude":35,
+		 "longitude":-115
+            }
+        },
+        "of:0000000000000104" : {
+            "segmentrouting" : {
+                "name" : "s104",
+                "ipv4NodeSid" : 1104,
+                "ipv4Loopback" : "192.168.0.104",
+		"ipv6NodeSid" : 2104,
+		"ipv6Loopback" : "2000::c0a8:0204",
+                "routerMac" : "00:00:00:00:01:04",
+                "isEdgeRouter" : false,
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s104",
+                 "driver" : "ofdpa-ovs",
+		 "latitude":35,
+		 "longitude":-110
+            }
+    	},
+        "of:0000000000000001" : {
+            "segmentrouting" : {
+                "name" : "s001",
+                "ipv4NodeSid" : 1001,
+		"ipv6NodeSid" : 2001,
+		"ipv6Loopback" : "2000::c0a8:0001",
+                "ipv4Loopback" : "192.168.0.1",
+                "routerMac" : "00:00:00:00:00:01",
+                "isEdgeRouter" : true,
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s001",
+                "driver" : "ofdpa-ovs",
+		"latitude":30,
+		"longitude":-105
+            }
+        },
+        "of:0000000000000002" : {
+            "segmentrouting" : {
+                "name" : "s002",
+                "ipv4NodeSid" : 1002,
+                "ipv4Loopback" : "192.168.0.2",
+		"ipv6NodeSid" : 2002,
+		"ipv6Loopback" : "2000::c0a8:0002",
+                "routerMac" : "00:00:00:00:00:02",
+                "isEdgeRouter" : true,
+                "pairLocalPort" : 5,
+                "pairDeviceId": "of:0000000000000003",
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s002",
+                "driver" : "ofdpa-ovs",
+		"latitude":34,
+		"longitude":-95
+            }
+        },
+        "of:0000000000000003" : {
+            "segmentrouting" : {
+                "name" : "s003",
+                "ipv4NodeSid" : 1003,
+                "ipv4Loopback" : "192.168.0.3",
+        	"ipv6NodeSid" : 2003,
+		"ipv6Loopback" : "2000::c0a8:0003",
+                "routerMac" : "00:00:00:00:00:02",
+                "isEdgeRouter" : true,
+                "pairLocalPort" : 5,
+                "pairDeviceId": "of:0000000000000002",
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s003",
+                "driver" : "ofdpa-ovs",
+		"latitude":34,
+		"longitude":-90
+            }
+        },
+        "of:0000000000000004" : {
+            "segmentrouting" : {
+                "name" : "s004",
+                "ipv4NodeSid" : 1004,
+                "ipv4Loopback" : "192.168.0.4",
+		"ipv6NodeSid" : 2004,
+		"ipv6Loopback" : "2000::c0a8:0004",
+                "routerMac" : "00:00:00:00:00:04",
+                "isEdgeRouter" : true,
+                "pairLocalPort" : 5,
+                "pairDeviceId": "of:0000000000000005",
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s004",
+                "driver" : "ofdpa-ovs",
+		"latitude":34,
+		"longitude":-85
+            }
+        },
+        "of:0000000000000005" : {
+            "segmentrouting" : {
+                "name" : "s005",
+                "ipv4NodeSid" : 1005,
+                "ipv4Loopback" : "192.168.0.5",
+		"ipv6NodeSid" : 2005,
+		"ipv6Loopback" : "2000::c0a8:0005",
+                "routerMac" : "00:00:00:00:00:04",
+                "isEdgeRouter" : true,
+                "pairLocalPort" : 5,
+                "pairDeviceId": "of:0000000000000004",
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s005",
+                "driver" : "ofdpa-ovs",
+		"latitude":34,
+		"longitude":-80
+            }
+        },
+        "of:0000000000000101" : {
+            "segmentrouting" : {
+                "name" : "s101",
+                "ipv4NodeSid" : 1101,
+                "ipv4Loopback" : "192.168.0.101",
+		"ipv6NodeSid" : 2101,
+		"ipv6Loopback" : "2000::c0a8:0101",
+                "routerMac" : "00:00:00:00:01:01",
+                "isEdgeRouter" : false,
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s101",
+                "driver" : "ofdpa-ovs",
+		"latitude":42,
+                "longitude":-100
+            }
+        },
+        "of:0000000000000102" : {
+            "segmentrouting" : {
+                "name" : "s102",
+                "ipv4NodeSid" : 1102,
+                "ipv4Loopback" : "192.168.0.102",
+		"ipv6NodeSid" : 2102,
+		"ipv6Loopback" : "2000::c0a8:0202",
+                "routerMac" : "00:00:00:00:01:02",
+                "isEdgeRouter" : false,
+                "adjacencySids" : []
+            },
+            "basic" : {
+                "name" : "s102",
+                 "driver" : "ofdpa-ovs",
+		 "latitude":42,
+		 "longitude":-95
+            }
+        }
+    },
+    "apps" : {
+        "org.onosproject.dhcprelay" : {
+            "default": [
+                {
+                    "dhcpServerConnectPoint": "of:0000000000000005/15",
+                    "serverIps": ["10.0.3.253", "2000::3fd"]
+                }
+            ]
+        }
+    }
+}

@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1</testcases>
+    <testcases>1,2,3,4,5,6,7,8,101,102,103,201</testcases>
 
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
@@ -7,20 +7,21 @@
     </GRAPH>
 
     <SCALE>
-        <size>1</size>
-        <max>1</max>
+        <size>3</size>
+        <max>3</max>
     </SCALE>
 
     <DEPENDENCY>
         <useCommonConf>False</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
-        <topology>trellis_fabric.py</topology>
+        <topology>hagg_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
+        <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting,openflow,fpm,netcfghostprovider</cellApps>
+        <cellApps>drivers,segmentrouting,openflow,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3,mcast</cellApps>
     </ENV>
 
     <GIT>
@@ -33,11 +34,17 @@
     </CTRL>
 
     <timers>
-        <LinkDiscovery>12</LinkDiscovery>
-        <SwitchDiscovery>12</SwitchDiscovery>
+        <LinkDiscovery>30</LinkDiscovery>
+        <SwitchDiscovery>30</SwitchDiscovery>
+        <OnosDiscovery>30</OnosDiscovery>
+        <loadNetcfgSleep>5</loadNetcfgSleep>
+        <startMininetSleep>60</startMininetSleep>
+        <balanceMasterSleep>10</balanceMasterSleep>
+        <mcastSleep>5</mcastSleep>
     </timers>
 
-    <SLEEP>
-        <startup>10</startup>
-    </SLEEP>
+    <SCAPY>
+        <HOSTNAMES>h1v4,h3v4,h4v4,h8v4,h1v6,h3v6,h4v6,h8v6</HOSTNAMES>
+    </SCAPY>
+
 </PARAMS>

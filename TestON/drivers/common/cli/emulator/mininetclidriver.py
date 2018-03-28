@@ -1121,6 +1121,36 @@ class MininetCliDriver( Emulator ):
                 main.log.exception( self.name + ": Uncaught exception!" )
                 main.cleanAndExit()
 
+    def addRoute( self, host, dstIP, interface, ipv6=False ):
+        """
+        Add a route to host
+        Ex: h1 route add -host 224.2.0.1 h1-eth0
+        """
+        if self.handle:
+            try:
+                cmd = str( host )
+                if ipv6:
+                    cmd += " route -A inet6 add "
+                else:
+                    cmd += " route add -host "
+                cmd += str( dstIP ) + " " + str( interface )
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.debug( "response = " + response )
+                return main.TRUE
+            except pexpect.TIMEOUT:
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                main.cleanAndExit()
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                return main.FALSE
+            except Exception:
+                main.log.exception( self.name + ": Uncaught exception!" )
+                main.cleanAndExit()
+
     def addStaticMACAddress( self, host, GW, macaddr ):
         """
            Changes the mac address of a gateway host"""

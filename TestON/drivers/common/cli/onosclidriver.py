@@ -6115,3 +6115,205 @@ class OnosCliDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def mcastJoin( self, sIP, groupIP, sPort, dPorts ):
+        """
+        Create a multicast route by calling 'mcast-join' command
+        sIP: source IP of the multicast route
+        groupIP: group IP of the multicast route
+        sPort: source port (e.g. of:0000000000000001/3 ) of the multicast route
+        dPorts: a list of destination ports of the multicast route
+        Returns main.TRUE if mcast route is added; Otherwise main.FALSE
+        """
+        try:
+            cmdStr = "mcast-join"
+            cmdStr += " " + str( sIP )
+            cmdStr += " " + str( groupIP )
+            cmdStr += " " + str( sPort )
+            assert isinstance( dPorts, list )
+            for dPort in dPorts:
+                cmdStr += " " + str( dPort )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            if "Added the mcast route" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def mcastDelete( self, sIP, groupIP, dPorts ):
+        """
+        Delete a multicast route by calling 'mcast-delete' command
+        sIP: source IP of the multicast route
+        groupIP: group IP of the multicast route
+        dPorts: a list of destination ports of the multicast route
+        Returns main.TRUE if mcast route is deleted; Otherwise main.FALSE
+        """
+        try:
+            cmdStr = "mcast-delete"
+            cmdStr += " " + str( sIP )
+            cmdStr += " " + str( groupIP )
+            assert isinstance( dPorts, list )
+            for dPort in dPorts:
+                cmdStr += " " + str( dPort )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            if "Updated the mcast route" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def mcastHostJoin( self, sAddr, gAddr, srcs, sinks ):
+        """
+        Create a multicast route by calling 'mcast-host-join' command
+        sAddr: we can provide * for ASM or a specific address for SSM
+        gAddr: specifies multicast group address
+        srcs: a list of the source connect points e.g. ["of:0000000000000003/12"]
+        sinks: a list of HostId of the sinks e.g. ["00:AA:00:00:01:05/40"]
+        Returns main.TRUE if mcast route is added; Otherwise main.FALSE
+        """
+        try:
+            cmdStr = "mcast-host-join"
+            cmdStr += " -sAddr " + str( sAddr )
+            cmdStr += " -gAddr " + str( gAddr )
+            assert isinstance( srcs, list )
+            for src in srcs:
+                cmdStr += " -srcs " + str( src )
+            assert isinstance( sinks, list )
+            for sink in sinks:
+                cmdStr += " -sinks " + str( sink )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            if "Added the mcast route" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def mcastHostDelete( self, sAddr, gAddr, host=None ):
+        """
+        Delete multicast sink(s) by calling 'mcast-host-delete' command
+        sAddr: we can provide * for ASM or a specific address for SSM
+        gAddr: specifies multicast group address
+        hosts: HostId of the sink e.g. "00:AA:00:00:01:05/40",
+               will delete the route if not specified
+        Returns main.TRUE if the mcast sink is deleted; Otherwise main.FALSE
+        """
+        try:
+            cmdStr = "mcast-host-delete"
+            cmdStr += " -sAddr " + str( sAddr )
+            cmdStr += " -gAddr " + str( gAddr )
+            if host:
+                cmdStr += " -h " + str( host )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            if "Updated the mcast route" in handle:
+                return main.TRUE
+            elif "Deleted the mcast route" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def mcastSourceDelete( self, sAddr, gAddr, srcs=None ):
+        """
+        Delete multicast src(s) by calling 'mcast-source-delete' command
+        sAddr: we can provide * for ASM or a specific address for SSM
+        gAddr: specifies multicast group address
+        srcs: a list of connect points of the sources e.g. ["00:AA:00:00:01:05/40"],
+              will delete the route if not specified
+        Returns main.TRUE if mcast sink is deleted; Otherwise main.FALSE
+        """
+        try:
+            cmdStr = "mcast-source-delete"
+            cmdStr += " -sAddr " + str( sAddr )
+            cmdStr += " -gAddr " + str( gAddr )
+            if srcs:
+                assert isinstance( srcs, list )
+                for src in srcs:
+                    cmdStr += " -src " + str( src )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            if "Updated the mcast route" in handle:
+                return main.TRUE
+            elif "Deleted the mcast route" in handle:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

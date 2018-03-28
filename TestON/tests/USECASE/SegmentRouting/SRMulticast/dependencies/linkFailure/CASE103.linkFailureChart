@@ -1,0 +1,9 @@
+{
+    "link_batch_1" : { "links" : { "link1" : ["spine103", "spine101"] },
+                       "links_before" : 48,
+                       "links_after" : 46 },
+    "link_batch_2" : { "links" : { "link1" : ["spine104", "spine102"] },
+                       "links_before" : 48,
+                       "links_after" : 46 }
+}
+

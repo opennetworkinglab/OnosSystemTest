@@ -518,6 +518,10 @@ class Testcaselib:
                                     attempts=10,
                                     sleep=main.linkSleep )
 
+        utilities.assert_equals( expect=main.TRUE, actual=topology,
+                                 onpass="Link batch down successful",
+                                 onfail="Link batch down failed" )
+
     @staticmethod
     def restoreLinkBatch( main, links, linksAfter, switches=7):
         """
@@ -541,6 +545,10 @@ class Testcaselib:
                                              'numolink': linksAfter },
                                     attempts=10,
                                     sleep=main.linkSleep )
+
+        utilities.assert_equals( expect=main.TRUE, actual=topology,
+                                 onpass="Link batch up successful",
+                                 onfail="Link batch up failed" )
 
     @staticmethod
     def restoreLink( main, end1, end2, dpid1, dpid2, port1, port2, switches,

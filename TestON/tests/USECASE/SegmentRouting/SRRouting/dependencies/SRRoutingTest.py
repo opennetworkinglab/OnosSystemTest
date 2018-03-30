@@ -103,11 +103,9 @@ class SRRoutingTest ():
         # Test switch failures
         if switchFailure:
             for switch, expected in main.switchFailureChart.items():
-                main.step( "Killing switch {}" % switch )
                 run.killSwitch( main, switch, expected['switches_after_failure'], expected['links_after_failure'] )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
-                main.step( "Restoring switch {}" % switch )
                 run.recoverSwitch( main, switch, expected['switches_before_failure'], expected['links_before_failure'] )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
@@ -119,11 +117,9 @@ class SRRoutingTest ():
                 linksBefore = info['links_before']
                 linksAfter = info['links_after']
 
-                main.step( "Killing links {}" % linksToRemove )
                 run.killLinkBatch( main, linksToRemove, linksAfter )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
-                main.step( "Restoring links {}" % linksToRemove )
                 run.restoreLinkBatch( main, linksToRemove, linksBefore )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 

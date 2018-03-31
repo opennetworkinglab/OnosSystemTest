@@ -119,9 +119,11 @@ class Testcaselib:
 
         for ctrl in main.Cluster.active():
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.segmentrouting" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.driver.pipeline" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.store.group.impl" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.driver" )
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.net.flowobjective.impl" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.routeservice.impl" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.routeservice.store" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.routing.fpm" )
 
     @staticmethod
     def loadCount( main ):

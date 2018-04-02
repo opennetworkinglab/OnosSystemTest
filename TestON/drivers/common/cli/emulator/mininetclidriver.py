@@ -2390,6 +2390,10 @@ class MininetCliDriver( Emulator ):
                     main.log.error( "Something went wrong exiting mininet " +
                                     "TIMEOUT" )
 
+                self.handle.sendline( "" )
+                self.handle.expect( self.prompt )
+                self.handle.sendline( "sudo killall -9 dhclient dhcpd zebra bgpd" )
+
                 if fileName:
                     self.handle.sendline( "" )
                     self.handle.expect( self.prompt )

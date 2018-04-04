@@ -1,25 +1,30 @@
 <PARAMS>
     #List of test cases:
-    #CASE1: Compile ONOS and push it to the test machines
-    #CASE2: Assign devices to controllers
-    #CASE21: Assign mastership to controllers
-    #CASE3: Assign intents
-    #CASE4: Ping across added host intents
-    #CASE5: Reading state of ONOS
-    #CASE61: The Failure inducing case.
-    #CASE62: The Failure recovery case.
-    #CASE7: Check state after control plane failure
-    #CASE8: Compare topo
-    #CASE9: Link s3-s28 down
-    #CASE10: Link s3-s28 up
-    #CASE11: Switch down
-    #CASE12: Switch up
-    #CASE13: Clean up
-    #CASE14: start election app on all onos nodes
-    #CASE15: Check that Leadership Election is still functional
-    #CASE16: Install Distributed Primitives app
-    #CASE17: Check for basic functionality with distributed primitives
-    <testcases>1,2,8,21,[3,4,5,14,16,17]*1,[60,8,61,8,62,8,63,8,64,8,7,4,15,17],8,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
+    #CASE1:   Compile ONOS and push it to the test machines
+    #CASE2:   Assign mastership to controllers
+    #CASE21:  Assign mastership to controllers
+    #CASE102: Start Spine-Leaf Topology in Mininet
+    #CASE3:   Assign intents
+    #CASE4:   Ping across added host intents
+    #CASE104: Ping between all hosts
+    #CASE5:   Reading state of ONOS
+    #CASE60:  Initialize the upgrade.
+    #CASE61:  Upgrade a minority of nodes PHASE 1
+    #CASE62:  Transfer to new version. PHASE 2
+    #CASE63:  Upgrade the rest of the nodes
+    #CASE64:  Commit to the upgrade.
+    #CASE7:   Check state after control plane failure
+    #CASE8:   Compare topo
+    #CASE9:   Link down
+    #CASE10:  Link up
+    #CASE11:  Switch down
+    #CASE12:  Switch up
+    #CASE13:  Clean up
+    #CASE14:  Start election app on all onos nodes
+    #CASE15:  Check that Leadership Election is still functional
+    #CASE16:  Install Distributed Primitives app
+    #CASE17:  Check for basic functionality with distributed primitives
+    <testcases>1,2,8,21,[3,4,5,14,15,16,17]*1,[60,8,61,8,62,8,63,8,64,8,7,4,15,17],8,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
 
     <GRAPH>
         <nodeCluster>VM</nodeCluster>
@@ -31,10 +36,16 @@
         <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
             <useFlowObjectives>false</useFlowObjectives>
         </org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>
+        <org.onosproject.store.flow.impl.ECFlowRuleStore>
+            <backupCount>3</backupCount>
+        </org.onosproject.store.flow.impl.ECFlowRuleStore>
     </ONOS_Configuration>
+    <ONOS_Logging>
+        <org.onosproject.events>TRACE</org.onosproject.events>
+    </ONOS_Logging>
     <ENV>
         <cellName>HA</cellName>
-        <appString>drivers,openflow,proxyarp,mobility</appString>
+        <appString>events,drivers,openflow,proxyarp,mobility</appString>
     </ENV>
     <GIT>
         <pull>False</pull>
@@ -85,6 +96,8 @@
         <gossip>5</gossip>
     </timers>
     <kill>
+        <linkSrc> s28 </linkSrc>
+        <linkDst> s3 </linkDst>
         <switch> s5 </switch>
         <dpid> 0000000000005000 </dpid>
         <links> h5 s2 s1 s6 </links>

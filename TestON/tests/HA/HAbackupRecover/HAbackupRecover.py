@@ -74,7 +74,7 @@ class HAbackupRecover:
             from tests.dependencies.ONOSSetup import ONOSSetup
             main.testSetUp = ONOSSetup()
         except ImportError:
-            main.log.error( "ONOSSetup not found exiting the test" )
+            main.log.error( "ONOSSetup not found. exiting the test" )
             main.cleanAndExit()
         main.testSetUp.envSetupDescription()
         try:
@@ -83,21 +83,50 @@ class HAbackupRecover:
             # load some variables from the params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            stepResult = main.testSetUp.envSetup()
+            stepResult = main.testSetUp.envSetup( includeCaseDesc=False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
+        try:
+            if main.params[ 'topology' ][ 'topoFile' ]:
+                main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
+                applyFuncs = None
+            else:
+                applyFuncs = main.HA.startingMininet
+        except (KeyError, IndexError):
+            applyFuncs = main.HA.startingMininet
+
         main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
-                                  extraApply=main.HA.startingMininet )
+                                  extraApply=applyFuncs )
 
         main.HA.initialSetUp()
+
+        main.step( 'Set logging levels' )
+        logging = True
+        try:
+            logs = main.params.get( 'ONOS_Logging', False )
+            if logs:
+                for namespace, level in logs.items():
+                    for ctrl in main.Cluster.active():
+                        ctrl.CLI.logSet( level, namespace )
+        except AttributeError:
+            logging = False
+        utilities.assert_equals( expect=True, actual=logging,
+                                 onpass="Set log levels",
+                                 onfail="Failed to set log levels" )
 
     def CASE2( self, main ):
         """
         Assign devices to controllers
         """
         main.HA.assignDevices( main )
+
+    def CASE102( self, main ):
+        """
+        Set up Spine-Leaf fabric topology in Mininet
+        """
+        main.HA.startTopology( main )
 
     def CASE21( self, main ):
         """
@@ -116,6 +145,17 @@ class HAbackupRecover:
         Ping across added host intents
         """
         main.HA.pingAcrossHostIntent( main )
+
+    def CASE104( self, main ):
+        """
+        Ping Hosts
+        """
+        main.case( "Check connectivity" )
+        main.step( "Ping between all hosts" )
+        pingResult = main.Mininet1.pingall()
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="All Pings Passed",
+                                 onfail="Failed to ping between all hosts" )
 
     def CASE5( self, main ):
         """
@@ -222,7 +262,6 @@ class HAbackupRecover:
         leaderResult = main.TRUE
 
         for ctrl in main.Cluster.active():
-            ctrl.CLI.electionTestLeader()
             leaderN = ctrl.CLI.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
@@ -239,7 +278,7 @@ class HAbackupRecover:
             leaderResult = main.FALSE
             main.log.error(
                 "Inconsistent view of leader for the election test app" )
-            # TODO: print the list
+            main.log.debug( leaderList )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=leaderResult,
@@ -254,15 +293,19 @@ class HAbackupRecover:
 
     def CASE9( self, main ):
         """
-        Link s3-s28 down
+        Link down
         """
-        main.HA.linkDown( main )
+        src = main.params['kill']['linkSrc']
+        dst = main.params['kill']['linkDst']
+        main.HA.linkDown( main, src, dst )
 
     def CASE10( self, main ):
         """
-        Link s3-s28 up
+        Link up
         """
-        main.HA.linkUp( main )
+        src = main.params['kill']['linkSrc']
+        dst = main.params['kill']['linkDst']
+        main.HA.linkUp( main, src, dst )
 
     def CASE11( self, main ):
         """
@@ -286,7 +329,7 @@ class HAbackupRecover:
 
     def CASE14( self, main ):
         """
-        start election app on all onos nodes
+        Start election app on all onos nodes
         """
         try:
             main.HA.startElectionApp( main )

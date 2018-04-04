@@ -84,31 +84,62 @@ class HAscaling:
             main.HA = HA()
             from tests.HA.HAswapNodes.dependencies.Server import Server
             main.Server = Server()
-
             # load some variables from the params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
-            stepResult = main.testSetUp.envSetup()
+            stepResult = main.testSetUp.envSetup( includeCaseDesc=False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
-                                  extraApply=[ main.HA.setServerForCluster,
-                                               main.HA.scalingMetadata,
-                                               main.HA.startingMininet,
-                                               main.HA.copyBackupConfig,
-                                               main.HA.setMetadataUrl ],
-                                  extraClean=main.HA.cleanUpOnosService,
-                                  installMax=True )
+        applyFuncs = [ main.HA.setServerForCluster,
+                       main.HA.scalingMetadata,
+                       main.HA.copyBackupConfig,
+                       main.HA.setMetadataUrl ]
+        applyArgs = [ None, None, None, None ]
+        try:
+            if main.params[ 'topology' ][ 'topoFile' ]:
+                main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
+            else:
+                applyFuncs.append( main.HA.startingMininet )
+                applyArgs.append( None )
+        except (KeyError, IndexError):
+                applyFuncs.append( main.HA.startingMininet )
+                applyArgs.append( None )
 
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
+                                  extraApply=applyFuncs,
+                                  applyArgs=applyArgs,
+                                  extraClean=main.HA.cleanUpOnosService,
+                                  installMax=True,
+                                  includeCaseDesc=False )
         main.HA.initialSetUp( serviceClean=True )
+
+        main.step( 'Set logging levels' )
+        logging = True
+        try:
+            logs = main.params.get( 'ONOS_Logging', False )
+            if logs:
+                for namespace, level in logs.items():
+                    for ctrl in main.Cluster.active():
+                        ctrl.CLI.logSet( level, namespace )
+        except AttributeError:
+            logging = False
+        utilities.assert_equals( expect=True, actual=logging,
+                                 onpass="Set log levels",
+                                 onfail="Failed to set log levels" )
 
     def CASE2( self, main ):
         """
         Assign devices to controllers
         """
         main.HA.assignDevices( main )
+
+    def CASE102( self, main ):
+        """
+        Set up Spine-Leaf fabric topology in Mininet
+        """
+        main.HA.startTopology( main )
 
     def CASE21( self, main ):
         """
@@ -127,6 +158,17 @@ class HAscaling:
         Ping across added host intents
         """
         main.HA.pingAcrossHostIntent( main )
+
+    def CASE104( self, main ):
+        """
+        Ping Hosts
+        """
+        main.case( "Check connectivity" )
+        main.step( "Ping between all hosts" )
+        pingResult = main.Mininet1.pingall()
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="All Pings Passed",
+                                 onfail="Failed to ping between all hosts" )
 
     def CASE5( self, main ):
         """
@@ -168,12 +210,12 @@ class HAscaling:
         try:
             prevNodes = main.Cluster.active()
             scale = main.scaling.pop( 0 )
-            if "e" in scale:
+            if "b" in scale:
                 equal = True
             else:
                 equal = False
             main.Cluster.setRunningNode( int( re.search( "\d+", scale ).group( 0 ) ) )
-            main.step( "Scaling to {} nodes".format( main.Cluster.numCtrls ) )
+            main.step( "Scaling to {} nodes; Equal partitions: {}".format( main.Cluster.numCtrls, equal ) )
             genResult = main.Server.generateFile( main.Cluster.numCtrls, equal=equal )
             utilities.assert_equals( expect=main.TRUE, actual=genResult,
                                      onpass="New cluster metadata file generated",
@@ -182,7 +224,7 @@ class HAscaling:
         except IndexError:
             main.cleanAndExit()
 
-        activeNodes = [ i for i in range( 0, main.Cluster.numCtrls ) ]
+        activeNodes = range( 0, main.Cluster.numCtrls )
         newNodes = [ x for x in activeNodes if x not in prevNodes ]
         main.Cluster.resetActive()
         main.step( "Start new nodes" )  # OR stop old nodes?
@@ -265,7 +307,7 @@ class HAscaling:
             leaderResult = main.FALSE
             main.log.error(
                 "Inconsistent view of leader for the election test app" )
-            # TODO: print the list
+            main.log.debug( leaderList )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=leaderResult,
@@ -280,15 +322,19 @@ class HAscaling:
 
     def CASE9( self, main ):
         """
-        Link s3-s28 down
+        Link down
         """
-        main.HA.linkDown( main )
+        src = main.params['kill']['linkSrc']
+        dst = main.params['kill']['linkDst']
+        main.HA.linkDown( main, src, dst )
 
     def CASE10( self, main ):
         """
-        Link s3-s28 up
+        Link up
         """
-        main.HA.linkUp( main )
+        src = main.params['kill']['linkSrc']
+        dst = main.params['kill']['linkDst']
+        main.HA.linkUp( main, src, dst )
 
     def CASE11( self, main ):
         """
@@ -319,7 +365,7 @@ class HAscaling:
 
     def CASE14( self, main ):
         """
-        start election app on all onos nodes
+        Start election app on all onos nodes
         """
         main.HA.startElectionApp( main )
 

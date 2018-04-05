@@ -128,7 +128,7 @@ class Testcaselib:
     @staticmethod
     def loadCount( main ):
         with open("%s/count/%s.count" % (main.configPath, main.cfgName)) as count:
-                main.count = json.load(count)
+            main.count = json.load(count)
 
     @staticmethod
     def loadJson( main ):
@@ -176,7 +176,19 @@ class Testcaselib:
                                                                 main.Mininet1.home,
                                                                 direction="to" )
         if main.topologyConf:
+            import re
+            controllerIPs = [ ctrl.ipAddress for ctrl in main.Cluster.runningNodes ]
+            index = 0
             for conf in main.topologyConf.split(","):
+                # Update zebra configurations with correct ONOS instance IP
+                if conf in [ "zebradbgp1.conf", "zebradbgp2.conf" ]:
+                    ip = controllerIPs[ index ]
+                    index = ( index + 1 ) % len( controllerIPs )
+                    with open( main.configPath + main.forConfig + conf ) as f:
+                        s = f.read()
+                    s = re.sub( r"(fpm connection ip).*(port 2620)", r"\1 " + ip + r" \2", s )
+                    with open( main.configPath + main.forConfig + conf, "w" ) as f:
+                        f.write( s )
                 copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
                                                                 main.configPath + main.forConfig + conf,
                                                                 "~/",

@@ -68,10 +68,8 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 // jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
     return{
         if( jobOn == "SR" ){
-            trigger( "1.11", tests, nodeName, jobOn, manuallyRun, onosTag )
             trigger( "1.12", tests, nodeName, jobOn, manuallyRun, onosTag )
             trigger( "master", tests, nodeName, jobOn, manuallyRun, onosTag )
-            // returnCell( nodeName )
             }else{
             trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag )
         }

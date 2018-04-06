@@ -106,7 +106,8 @@ parallel finalList
 //finalList[ "BM" ].call()
 
 if ( !manually_run ){
-    funcs.generateStatGraph( funcs.branchWithPrefix( onos_b ),
+    funcs.generateStatGraph( "TestStation-VMs",
+                             funcs.branchWithPrefix( onos_b ),
                              AllTheTests,
                              stat_graph_generator_file,
                              pie_graph_generator_file,

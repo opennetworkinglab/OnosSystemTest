@@ -35,7 +35,13 @@ def init( type ){
   testMachine = "TestStation-" + machineType[ type ] + "s";
   generalFuncs.initBasicVars();
 }
-
+def additionalInitForSR( branch ){
+  testMachine = testMachine.insert( testMachine.length-1, fabricOn( branch ) )
+  print testMachine
+}
+def fabricOn( branch ){
+  return branch == "master" ? '2' : '3'
+}
 def printType(){
   echo testType;
   echo testMachine;
@@ -272,10 +278,10 @@ def databaseAndGraph( prop, testName, graphOnly, graph_generator_file, graph_sav
       }
   }
 }
-def generateCategoryStatsGraph( manualRun, postresult, stat_file, pie_file, type, branch, testListPart, save_path, pieTestListPart ){
+def generateCategoryStatsGraph( testMachineOn, manualRun, postresult, stat_file, pie_file, type, branch, testListPart, save_path, pieTestListPart ){
 
   if( isPostingResult( manualRun, postresult ) ){
-    node( testMachine ){
+    node( testMachineOn ){
 
       withCredentials( [
           string( credentialsId: 'db_pass', variable: 'pass' ),
@@ -332,14 +338,14 @@ def databasePart( wikiPrefix, testName, database_command ){
     echo ''' + database_command + '''
     done '''
 }
-def generateStatGraph( onos_branch, AllTheTests, stat_graph_generator_file, pie_graph_generator_file, graph_saved_directory ){
+def generateStatGraph( testMachineOn, onos_branch, AllTheTests, stat_graph_generator_file, pie_graph_generator_file, graph_saved_directory ){
     testListPart = createStatsList( "FUNC", AllTheTests[ "FUNC" ], true ) +
                    createStatsList( "HA", AllTheTests[ "HA" ], true ) +
                    createStatsList( "USECASE", AllTheTests[ "USECASE" ], false )
     pieTestList = makeTestList( AllTheTests[ "FUNC" ], true ) +
                   makeTestList( AllTheTests[ "HA" ], true ) +
                   makeTestList( AllTheTests[ "USECASE" ], false )
-    generateCategoryStatsGraph( "false", "true", stat_graph_generator_file, pie_graph_generator_file, "ALL", onos_branch, testListPart, graph_saved_directory, pieTestList )
+    generateCategoryStatsGraph( testMachineOn, "false", "true", stat_graph_generator_file, pie_graph_generator_file, "ALL", onos_branch, testListPart, graph_saved_directory, pieTestList )
 }
 def branchWithPrefix( branch ){
     return ( ( branch != "master" ) ? "onos-" : "" ) + branch

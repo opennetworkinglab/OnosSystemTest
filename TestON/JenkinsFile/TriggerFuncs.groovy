@@ -67,12 +67,7 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 // nodeName : "BM" or "VM"
 // jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
     return{
-        if( jobOn == "SR" ){
-            trigger( "1.12", tests, nodeName, jobOn, manuallyRun, onosTag )
-            trigger( "master", tests, nodeName, jobOn, manuallyRun, onosTag )
-            }else{
-            trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag )
-        }
+        trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag )
     }
 }
 // export Environment properties.

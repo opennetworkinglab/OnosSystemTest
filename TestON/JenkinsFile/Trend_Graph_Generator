@@ -3,13 +3,13 @@ funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 nodeCluster = params.NodeCluster
 
 funcs.initializeTrend( nodeCluster );
+funcs.additionalInitForSR( params.ONOSbranch )
 def prop = null
 prop = funcs.getProperties()
 
 def Tests = params.Test
 prop[ "ONOSBranch" ] = params.ONOSbranch
 
-funcs.additionalInitForSR( prop[ "ONOSBranch" ] )
 
 graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
 graph_saved_directory = "/var/jenkins/workspace/postjob-" + nodeCluster + funcs.fabricOn( prop[ "ONOSBranch" ] ) + "/"

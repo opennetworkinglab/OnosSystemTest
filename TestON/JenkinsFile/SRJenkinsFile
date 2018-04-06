@@ -6,10 +6,11 @@ funcs.initialize( "SR" );
 // This is a Jenkinsfile for a scripted pipeline for the SR tests
 def prop = null
 prop = funcs.getProperties()
+funcs.additionalInitForSR( prop[ "ONOSBranch" ] )
 SR = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SR" ]
 
 graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
-graph_saved_directory = "/var/jenkins/workspace/postjob-Fabric/"
+graph_saved_directory = "/var/jenkins/workspace/postjob-Fabric" + funcs.fabricOn( prop[ "ONOSBranch" ] ) + "/"
 
 echo( "Testcases:" )
 def testsToRun = null

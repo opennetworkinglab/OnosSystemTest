@@ -11,4 +11,9 @@ funcs.initializeTrend( "VM" )
 onos_branch = params.ONOSbranch
 AllTheTests = test_lists.getAllTheTests("")
 
-funcs.generateStatGraph( onos_branch, AllTheTests, stat_graph_generator_file, pie_graph_generator_file, graph_saved_directory )
+funcs.generateStatGraph( "TestStation-VMs",
+                         onos_branch,
+                         AllTheTests,
+                         stat_graph_generator_file,
+                         pie_graph_generator_file,
+                         graph_saved_directory )

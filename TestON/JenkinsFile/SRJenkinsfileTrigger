@@ -15,7 +15,7 @@ testcases = [
     "FUNC" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
     "HA" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
     "SCPF" : [ tests : "" , nodeName : "BM", wikiContent : "" ],
-    "SR" : [ tests : "", nodeName : "Fabric", wikiContent : "" ],
+    "SR" : [ tests : "", nodeName : [ "Fabric2", "Fabric3" ], wikiContent : "" ],
     "USECASE" : [ tests : "" , nodeName : "BM", wikiContent : "" ]
 ]
 Prefix_organizer = [
@@ -85,20 +85,30 @@ triggerFuncs.print_tests( testcases )
 def runTest = [
     "VM" : [:],
     "BM" : [:],
-    "Fabric" : [:]
+    "Fabric2" : [:],
+    "Fabric3" : [:]
 ]
 for( String test in testcases.keySet() ){
     println test
     if ( testcases[ test ][ "tests" ] != "" ){
-        runTest[ testcases[ test ][ "nodeName" ] ][ test ] = triggerFuncs.trigger_pipeline( onos_b, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ], test, manually_run, onos_tag )
+        runTest[ testcases[ test ][ "nodeName" ][ 0 ] ][ test ] = triggerFuncs.trigger_pipeline( onos_b, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 0 ], test, manually_run, onos_tag )
+        runTest[ testcases[ test ][ "nodeName" ][ 1 ] ][ test ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 1 ], test, manually_run, onos_tag )
     }
 }
 def finalList = [:]
-finalList[ "Fabric" ] = triggerFuncs.runTestSeq( runTest[ "Fabric" ] )
+finalList[ "Fabric2" ] = triggerFuncs.runTestSeq( runTest[ "Fabric2" ] )
+finalList[ "Fabric3" ] = triggerFuncs.runTestSeq( runTest[ "Fabric3" ] )
 parallel finalList
 /*
 if ( !manually_run ){
-    funcs.generateStatGraph( funcs.branchWithPrefix( onos_b ),
+    funcs.generateStatGraph( "TestStation-Fabric2s",
+                             funcs.branchWithPrefix( "master" ),
+                             AllTheTests,
+                             stat_graph_generator_file,
+                             pie_graph_generator_file,
+                             graph_saved_directory )
+    funcs.generateStatGraph( "TestStation-Fabric3s",
+                             funcs.branchWithPrefix( "1.12" ),
                              AllTheTests,
                              stat_graph_generator_file,
                              pie_graph_generator_file,

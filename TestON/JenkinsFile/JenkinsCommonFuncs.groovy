@@ -36,7 +36,7 @@ def init( type ){
   generalFuncs.initBasicVars();
 }
 def additionalInitForSR( branch ){
-  testMachine = ( ( new StringBuilder( testmachine ) ).insert( testMachine.length-1, fabricOn( branch ) ) ).toString()
+  testMachine = ( ( new StringBuilder( testMachine ) ).insert( testMachine.length-1, fabricOn( branch ) ) ).toString()
   print testMachine
 }
 def fabricOn( branch ){

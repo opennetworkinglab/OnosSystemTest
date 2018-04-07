@@ -72,8 +72,4 @@ class SRDhcprelayTest ():
         run.verifyOnosHostIp( main )
         run.verifyNetworkHostIp( main )
 
-        if hasattr( main, 'Mininet1' ):
-            run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass
+        run.cleanup( main )

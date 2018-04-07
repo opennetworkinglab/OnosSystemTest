@@ -342,11 +342,7 @@ class SRDynamicConfTest:
         run.checkFlows( main, minFlowCount=minFlowCountPerLeaf * topo[ topology ][ 1 ], sleep=5, dumpflows=False )
         run.pingAll( main, '%s_After' % TAG, retryAttempts=2 )
 
-        if hasattr( main, 'Mininet1' ):
-            run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass
+        run.cleanup( main )
 
     @staticmethod
     def updateIntfCfg( main, portNum, dualHomed, ips=[], untagged=0, tagged=[], native=0 ):

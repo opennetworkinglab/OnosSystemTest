@@ -73,8 +73,4 @@ class SRBridgingTest ():
             run.checkFlowsByDpid( main, dpid, self.topo[ topology ][ 4 ], sleep=5 )
         run.pingAll( main )
 
-        if hasattr( main, 'Mininet1' ):
-            run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass
+        run.cleanup( main )

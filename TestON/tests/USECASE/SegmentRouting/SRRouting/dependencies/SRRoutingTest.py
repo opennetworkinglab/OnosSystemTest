@@ -82,7 +82,7 @@ class SRRoutingTest ():
             run.loadLinkFailureChart( main )
 
         # wait some time
-        time.sleep( 5 )
+        time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
 
         if hasattr( main, 'Mininet1' ):
             # Run the test with Mininet
@@ -94,9 +94,9 @@ class SRRoutingTest ():
             pass
 
         # wait some time for onos to install the rules!
-        time.sleep( 25 )
+        time.sleep( float( main.params[ 'timers' ][ 'startMininetSleep' ] ) )
         if ( dhcp ):
-            time.sleep( 60 )
+            time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )
 
         SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
@@ -131,24 +131,18 @@ class SRRoutingTest ():
             for ctrl in xrange( numCtrls ):
                 # Kill node
                 run.killOnos( main, [ ctrl ], switches, links, ( numCtrls - 1 ) )
-                time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
                 main.Cluster.active(0).CLI.balanceMasters()
-                time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
+                time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
                 # Recover node
                 run.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
-                time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
                 main.Cluster.active(0).CLI.balanceMasters()
-                time.sleep( float( main.params[ 'timers' ][ 'SwitchDiscovery' ] ) )
+                time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
         # Cleanup
-        if hasattr( main, 'Mininet1' ):
-            run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass
+        run.cleanup( main, copyKarafLog=False )
 
     @staticmethod
     def runChecks( main, test_idx, countFlowsGroups ):
@@ -159,4 +153,4 @@ class SRRoutingTest ():
         if countFlowsGroups:
             run.checkFlowsGroupsFromFile( main )
         # ping hosts
-        run.pingAll( main, 'CASE%03d' % test_idx, acceptableFailed=5, basedOnIp=True )
+        run.pingAll( main, 'CASE%03d' % test_idx, False, acceptableFailed=5, basedOnIp=True, skipOnFail=True )

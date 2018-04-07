@@ -128,7 +128,7 @@ class Testcaselib:
     @staticmethod
     def loadCount( main ):
         with open("%s/count/%s.count" % (main.configPath, main.cfgName)) as count:
-            main.count = json.load(count)
+                main.count = json.load(count)
 
     @staticmethod
     def loadJson( main ):
@@ -235,6 +235,17 @@ class Testcaselib:
                                  actual=stepResult,
                                  onpass="Successfully assign switches to controllers",
                                  onfail="Failed to assign switches to controllers" )
+
+    @staticmethod
+    def saveOnosDiagnostics( main ):
+        """
+        Get onos-diags.tar.gz and save it to the log directory.
+        suffix: suffix string of the file name. E.g. onos-diags-case1.tar.gz
+        """
+        main.log.info( "Collecting onos-diags..." )
+        main.ONOSbench.onosDiagnostics( [ctrl.ipAddress for ctrl in main.Cluster.runningNodes],
+                                        main.logdir,
+                                        "-CASE%d" % main.CurrentTestCaseNumber )
 
     @staticmethod
     def config( main, cfgName ):
@@ -408,7 +419,7 @@ class Testcaselib:
         return
 
     @staticmethod
-    def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False, sleep=10, retryAttempts=1 ):
+    def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False, sleep=10, retryAttempts=1, skipOnFail=False ):
         '''
         Verify connectivity between hosts according to the ping chart
         acceptableFailed: max number of acceptable failed pings.
@@ -472,6 +483,10 @@ class Testcaselib:
                     utilities.assert_equals( expect=expect, actual=pa,
                                              onpass="IP connectivity successfully tested",
                                              onfail="IP connectivity failed" )
+            if skipOnFail and pa != expect:
+                Testcaselib.saveOnosDiagnostics( main )
+                Testcaselib.cleanup( main )
+                main.skipCase()
 
         if dumpflows:
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
@@ -650,7 +665,7 @@ class Testcaselib:
                                  onfail="Failed to recover switch?" )
 
     @staticmethod
-    def cleanup( main, physical=False):
+    def cleanup( main, copyKarafLog=True ):
         """
         Stop Onos-cluster.
         Stops Mininet
@@ -666,10 +681,11 @@ class Testcaselib:
         except ( NameError, AttributeError ):
             main.utils = Utils()
 
-        if not physical:
+        if hasattr( main, 'Mininet1' ):
             main.utils.mininetCleanup( main.Mininet1 )
 
-        main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
+        if copyKarafLog:
+            main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
 
         for ctrl in main.Cluster.active():
             main.ONOSbench.onosStop( ctrl.ipAddress )
@@ -682,6 +698,7 @@ class Testcaselib:
         Completely Kill an ONOS instance and verify the ONOS cluster can see the proper change
         """
         main.step( "Killing ONOS instances with index(es): {}".format( nodes ) )
+        main.onosSleep = float( main.params[ 'timers' ][ 'OnosDiscovery' ] )
 
         for i in nodes:
             killResult = main.ONOSbench.onosDie( main.Cluster.runningNodes[ i ].ipAddress )
@@ -689,7 +706,7 @@ class Testcaselib:
                                      onpass="ONOS instance Killed",
                                      onfail="Error killing ONOS instance" )
             main.Cluster.runningNodes[ i ].active = False
-        time.sleep( 12 )
+        time.sleep( main.onosSleep )
 
         if len( nodes ) < main.Cluster.numCtrls:
 
@@ -730,6 +747,7 @@ class Testcaselib:
         """
         main.step( "Recovering ONOS instances with index(es): {}".format( nodes ) )
         [ main.ONOSbench.onosStart( main.Cluster.runningNodes[ i ].ipAddress ) for i in nodes ]
+        time.sleep( main.onosSleep )
         for i in nodes:
             isUp = main.ONOSbench.isup( main.Cluster.runningNodes[ i ].ipAddress )
             utilities.assert_equals( expect=main.TRUE, actual=isUp,

@@ -2549,3 +2549,50 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def onosDiagnostics( self, onosIPs, dstDir, suffix ):
+        """
+            Run onos-diagnostics with given ONOS instance IPs and save output to dstDir
+            with suffix specified E.g. onos-diags-suffix.tar.gz
+            required argDuments:
+                onosIPs - list of ONOS IPs for collecting diags
+                dstDir - diags file will be saved under the directory specified
+                suffix - diags file will be named with the suffix specified
+            returns:
+                main.FALSE if there's an error executing the command, and main.TRUE otherwise
+        """
+        try:
+            cmd = "onos-diagnostics"
+            assert isinstance( onosIPs, list )
+            for ip in onosIPs:
+                cmd += " " + str( ip )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( handle )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Exception:" not in handle, handle
+            # Rename and move diags file to dstDir from /tmp
+            if dstDir[ -1: ] != "/":
+                dstDir += "/"
+            self.handle.sendline( "mv /tmp/onos-diags.tar.gz " + str( dstDir ) + "onos-diags" + str( suffix ) + ".tar.gz" )
+            self.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( handle )
+            assert handle is not None, "Error in sendline"
+            assert "No such file or directory" not in handle, handle
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "{} Error in onos-diagnostics output:".format( self.name ) )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

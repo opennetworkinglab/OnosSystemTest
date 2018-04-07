@@ -34,8 +34,13 @@
     </CTRL>
 
     <timers>
-        <LinkDiscovery>12</LinkDiscovery>
-        <SwitchDiscovery>12</SwitchDiscovery>
+        <LinkDiscovery>30</LinkDiscovery>
+        <SwitchDiscovery>30</SwitchDiscovery>
+        <OnosDiscovery>30</OnosDiscovery>
+        <loadNetcfgSleep>5</loadNetcfgSleep>
+        <startMininetSleep>25</startMininetSleep>
+        <dhcpSleep>60</dhcpSleep>
+        <balanceMasterSleep>10</balanceMasterSleep>
     </timers>
 
     <SLEEP>

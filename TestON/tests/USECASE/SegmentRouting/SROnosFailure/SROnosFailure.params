@@ -35,6 +35,7 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
+        <OnosDiscovery>12</OnosDiscovery>
     </timers>
 
     <kill>

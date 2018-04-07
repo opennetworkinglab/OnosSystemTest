@@ -67,6 +67,7 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 // nodeName : "BM" or "VM"
 // jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
     return{
+        print "HERE:" + branch
         trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag )
     }
 }

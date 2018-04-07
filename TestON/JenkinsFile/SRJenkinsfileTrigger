@@ -4,6 +4,7 @@ funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/TriggerFuncs.groovy' )
 
+current_version = "master"
 previous_version = "1.12"
 before_previous_version = "1.11"
 funcs.initializeTrend( "Fabric" );
@@ -57,7 +58,7 @@ graph_saved_directory = "/var/jenkins/workspace/postjob-Fabric/"
 
 post_result = params.PostResult
 if( !manually_run ){
-    slackSend( channel:'sr-failures', color:'#03CD9F',
+    slackSend( channel:'testing', color:'#03CD9F',
                message:":sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:\n"
                         + "Starting tests on : " + now.toString()
                         + "\n:sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:" )
@@ -91,7 +92,7 @@ def runTest = [
 for( String test in testcases.keySet() ){
     println test
     if ( testcases[ test ][ "tests" ] != "" ){
-        runTest[ testcases[ test ][ "nodeName" ][ 0 ] ][ test ] = triggerFuncs.trigger_pipeline( onos_b, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 0 ], test, manually_run, onos_tag )
+        runTest[ testcases[ test ][ "nodeName" ][ 0 ] ][ test ] = triggerFuncs.trigger_pipeline( current_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 0 ], test, manually_run, onos_tag )
         runTest[ testcases[ test ][ "nodeName" ][ 1 ] ][ test ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 1 ], test, manually_run, onos_tag )
     }
 }

@@ -54,6 +54,7 @@ def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     wiki = branch
     branch = funcs.branchWithPrefix( branch )
     test_branch = "master"
+    print "HERE2:" + branch
     node( "TestStation-" + nodeName + "s" ){
         envSetup( branch, test_branch, onosTag, jobOn, manuallyRun )
 
@@ -89,6 +90,7 @@ def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manual
 }
 // Initialize the environment Setup for the onos and OnosSystemTest
 def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
+    print "HERE3:" + onos_branch
     stage( "envSetup" ) {
         // after env: ''' + borrow_mn( jobOn ) + '''
         sh '''#!/bin/bash -l

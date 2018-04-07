@@ -52,18 +52,14 @@ def borrow_mn( jobOn ){
 def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     println jobOn + "-pipeline-" + manuallyRun ? "manually" : branch
     def wiki = branch
-    print "HERE2.5:" + branch
-    print "HERE4:" + wiki
     branch = funcs.branchWithPrefix( branch )
     test_branch = "master"
-    print "HERE2:" + branch
     node( "TestStation-" + nodeName + "s" ){
         envSetup( branch, test_branch, onosTag, jobOn, manuallyRun )
 
         exportEnvProperty( branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
     }
 
-    print "HERE5:" + wiki
     jobToRun = jobOn + "-pipeline-" + ( manuallyRun ? "manually" : wiki )
     build job: jobToRun, propagate: false
 }
@@ -71,13 +67,11 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 // nodeName : "BM" or "VM"
 // jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
     return{
-        print "HERE:" + branch
         trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag )
     }
 }
 // export Environment properties.
 def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manually_run, onosTag, isOldFlow ){
-    print "HERE6:" + wiki
     stage( "export Property" ){
         sh '''
             echo "ONOSBranch=''' + onos_branch +'''" > /var/jenkins/TestONOS.property
@@ -94,7 +88,6 @@ def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manual
 }
 // Initialize the environment Setup for the onos and OnosSystemTest
 def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
-    print "HERE3:" + onos_branch
     stage( "envSetup" ) {
         // after env: ''' + borrow_mn( jobOn ) + '''
         sh '''#!/bin/bash -l

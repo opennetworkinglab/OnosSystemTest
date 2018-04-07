@@ -51,7 +51,7 @@ def borrow_mn( jobOn ){
 }
 def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     println jobOn + "-pipeline-" + manuallyRun ? "manually" : branch
-    wiki = branch
+    def wiki = branch
     print "HERE2.5:" + branch
     print "HERE4:" + wiki
     branch = funcs.branchWithPrefix( branch )

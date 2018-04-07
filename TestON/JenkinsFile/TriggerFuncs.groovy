@@ -52,6 +52,8 @@ def borrow_mn( jobOn ){
 def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     println jobOn + "-pipeline-" + manuallyRun ? "manually" : branch
     wiki = branch
+    print "HERE2.5:" + branch
+    print "HERE4:" + wiki
     branch = funcs.branchWithPrefix( branch )
     test_branch = "master"
     print "HERE2:" + branch
@@ -61,6 +63,7 @@ def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
         exportEnvProperty( branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
     }
 
+    print "HERE5:" + wiki
     jobToRun = jobOn + "-pipeline-" + ( manuallyRun ? "manually" : wiki )
     build job: jobToRun, propagate: false
 }
@@ -74,6 +77,7 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 }
 // export Environment properties.
 def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manually_run, onosTag, isOldFlow ){
+    print "HERE6:" + wiki
     stage( "export Property" ){
         sh '''
             echo "ONOSBranch=''' + onos_branch +'''" > /var/jenkins/TestONOS.property

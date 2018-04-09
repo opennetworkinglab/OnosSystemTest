@@ -524,7 +524,7 @@ class Testcaselib:
                                  onfail="Failed to turn off link?" )
 
     @staticmethod
-    def killLinkBatch( main, links, linksAfter, switches=7):
+    def killLinkBatch( main, links, linksAfter, switches ):
         """
         links = list of links (src, dst) to bring down.
         """
@@ -552,7 +552,7 @@ class Testcaselib:
                                  onfail="Link batch down failed" )
 
     @staticmethod
-    def restoreLinkBatch( main, links, linksAfter, switches=7):
+    def restoreLinkBatch( main, links, linksAfter, switches ):
         """
         links = list of link (src, dst) to bring up again.
         """

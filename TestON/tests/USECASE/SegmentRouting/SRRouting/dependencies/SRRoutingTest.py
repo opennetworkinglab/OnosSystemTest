@@ -87,7 +87,7 @@ class SRRoutingTest ():
         if hasattr( main, 'Mininet1' ):
             # Run the test with Mininet
             mininet_args = ' --dhcp=%s --routers=%s --ipv6=%s --ipv4=%s' % ( dhcp, routers, ipv6, ipv4 )
-            run.startMininet( main, 'hagg_fabric.py', args=mininet_args )
+            run.startMininet( main, main.params['DEPENDENCY']['topology'], args=mininet_args )
         else:
             # Run the test with physical devices
             # TODO: connect TestON to the physical network
@@ -117,10 +117,10 @@ class SRRoutingTest ():
                 linksBefore = info['links_before']
                 linksAfter = info['links_after']
 
-                run.killLinkBatch( main, linksToRemove, linksAfter )
+                run.killLinkBatch( main, linksToRemove, linksAfter, 10 )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
-                run.restoreLinkBatch( main, linksToRemove, linksBefore )
+                run.restoreLinkBatch( main, linksToRemove, linksBefore, 10 )
                 SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
 
         # Test node failures

@@ -103,7 +103,7 @@ def initAndRunTest( testName, testCategory ){
         cd ~/OnosSystemTest/TestON/bin
         git log |head
         ./cleanup.sh -f
-        ''' + "./cli.py run " + ( !isSCPF ? testName : testCategory[ testName ][ 'test' ] )  + '''
+        ''' + "./cli.py run " + ( !isSCPF ? testName : testCategory[ testName ][ 'test' ] )  + " --params GRAPH/nodeCluster=" + machineType[ testType ]  + '''
         ./cleanup.sh -f
         # cleanup config changes
         cd ~/onos/tools/package/config
@@ -117,6 +117,7 @@ def copyLogs( testName ){
       sudo cp *karaf.log.* /var/jenkins/workspace/SR-log-${WikiPrefix}/
       sudo cp *Flows* /var/jenkins/workspace/SR-log-${WikiPrefix}/
       sudo cp *Groups* /var/jenkins/workspace/SR-log-${WikiPrefix}/
+      sudo cp *.tar.gz /var/jenkins/workspace/SR-log-${WikiPrefix}/
       '''
   }
   return result

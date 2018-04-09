@@ -8,6 +8,7 @@ def initializeTrend( machine ){
   testMachine = "TestStation-" + machine + "s";
   this.machine = machine
   isSCPF = false
+  isTrend = true
   generalFuncs.initBasicVars();
 }
 def initialize( type, SCPFfuncs ){
@@ -33,10 +34,12 @@ def init( type ){
                   "USECASE" : "BM" ]
   testType = type;
   testMachine = "TestStation-" + machineType[ type ] + "s";
+  isTrend = false
   generalFuncs.initBasicVars();
 }
 def additionalInitForSR( branch ){
   testMachine = ( ( new StringBuilder( testMachine ) ).insert( testMachine.size()-1, fabricOn( branch ) ) ).toString()
+  ( isTrend ? machine : machineType[ testType ] ) += fabricOn(branch )
   print testMachine
 }
 def fabricOn( branch ){

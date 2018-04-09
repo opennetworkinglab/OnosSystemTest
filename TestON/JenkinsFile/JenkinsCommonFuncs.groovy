@@ -39,7 +39,10 @@ def init( type ){
 }
 def additionalInitForSR( branch ){
   testMachine = ( ( new StringBuilder( testMachine ) ).insert( testMachine.size()-1, fabricOn( branch ) ) ).toString()
-  ( isTrend ? machine : machineType[ testType ] ) += fabricOn(branch )
+  if( isTrend )
+    machine += fabricOn( branch )
+  else
+    machineType[ testType ] += fabricOn( branch )
   print testMachine
 }
 def fabricOn( branch ){

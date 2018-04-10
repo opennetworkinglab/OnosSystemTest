@@ -485,7 +485,7 @@ class Testcaselib:
                                              onfail="IP connectivity failed" )
             if skipOnFail and pa != expect:
                 Testcaselib.saveOnosDiagnostics( main )
-                Testcaselib.cleanup( main )
+                Testcaselib.cleanup( main, copyKarafLog=False )
                 main.skipCase()
 
         if dumpflows:

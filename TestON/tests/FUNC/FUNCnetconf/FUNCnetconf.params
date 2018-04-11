@@ -25,6 +25,7 @@
         <wrapper2>netconf</wrapper2>
         <wrapper3>topo</wrapper3>
         <topology></topology>
+        <iface></iface>
     </DEPENDENCY>
 
     <ENV>

@@ -12,7 +12,7 @@ def testsToRun = null
 testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
 funcs.printTestToRun( testsToRun )
 
-isOldFlow = prop[ "isOldFlow" ]
+isOldFlow = prop[ "isOldFlow" ] == "true"
 SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
 def tests = [:]
 for( String test : SCPFfuncs.SCPF.keySet() ){

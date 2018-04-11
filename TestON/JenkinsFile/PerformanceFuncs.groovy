@@ -52,11 +52,11 @@ def checkIfList( testName, forWhich, pos ){
     return SCPF[ testName ][ forWhich ].getClass().getName() != "java.lang.String" ? SCPF[ testName ][ forWhich ][ pos ] :  SCPF[ testName ][ forWhich ]
 }
 def sqlOldFlow( isOldFlow, testName ){
-    return SCPF[ testName ][ 'flows' ] ? " AND " + ( isOldFlow == "true" ? "" : "NOT " ) + "is_old_flow " : ""
+    return SCPF[ testName ][ 'flows' ] ? " AND " + ( isOldFlow ? "" : "NOT " ) + "is_old_flow " : ""
 }
 def oldFlowRuleCheck( isOldFlow, branch ){
     this.isOldFlow = isOldFlow
-    if( isOldFlow == "false" ){
+    if( !isOldFlow ){
         SCPF[ 'SCPFflowTp1g' ][ 'test' ] += " --params TEST/flows=" + ( branch == "onos-1.11" ? "4000" : "3500" )
     }
 }
@@ -64,10 +64,10 @@ def affectedByOldFlow( isOldFlow, testName ){
     return SCPF[ testName ][ 'flows' ] ? "" + isOldFlow + ", " : ""
 }
 def usingOldFlow( isOldFlow, testName ){
-    return SCPF[ testName ][ 'flows' ] ? ( isOldFlow == "true" ? "y" : "n" ) + " " : ""
+    return SCPF[ testName ][ 'flows' ] ? ( isOldFlow ? "y" : "n" ) + " " : ""
 }
 def hasOldFlow( isOldFlow, testName ){
-    return ( SCPF[ testName ][ 'flows' ] && isOldFlow == "true" ? "y" : "n" ) + " "
+    return ( SCPF[ testName ][ 'flows' ] && isOldFlow ? "y" : "n" ) + " "
 }
 def sqlCommand( testName ){
     if ( testName == "SCPFscaleTopo" || testName == "SCPFswitchLat" || testName == "SCPFportLat" )

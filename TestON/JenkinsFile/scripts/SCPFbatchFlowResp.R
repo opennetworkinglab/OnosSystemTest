@@ -250,7 +250,7 @@ print( "Initializing variables used in both graphs." )
 
 theme_set( theme_grey( base_size = 22 ) )   # set the default text size of the graph.
 xLabel <- xlab( "Build Date" )
-yLabel <- ylab( "Latency (ms)" )
+yLabel <- ylab( "Latency (s)" )
 fillLabel <- labs( fill="Type" )
 colors <- scale_fill_manual( values=c( "#F77670", "#619DFA" ) )
 wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )

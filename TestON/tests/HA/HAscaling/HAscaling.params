@@ -30,7 +30,7 @@
     <scaling>1,3b,3,3b,5b,5,5b,7b,7,7b,5b,5,5b,3b,3,3b,1</scaling>
     <server>
         <port>8000</port>
-        <interface>eth0</interface>
+        <interface></interface>
     </server>
     <apps></apps>
     <ONOS_Configuration>

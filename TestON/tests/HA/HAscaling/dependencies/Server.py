@@ -59,7 +59,7 @@ class Server():
                 handle = component.handle
                 # cd to rootDir
                 handle.sendline( "cd " + str( rootDir ) )
-                handle.expect( "\$" )
+                handle.expect( component.prompt )
                 # Start server
                 cmd = "python -m SimpleHTTPServer {}".format( port )
                 if logDir:
@@ -68,14 +68,18 @@ class Server():
                     cmd += "&> {dev/null}"  # Throw away all output
                 cmd += " &"
                 handle.sendline( cmd )
-                handle.expect( "\$" )
+                handle.expect( component.prompt )
                 response = handle.before
                 # Return to home dir
                 handle.sendline( "cd " + component.home )
-                handle.expect( "\$" )
+                handle.expect( component.prompt )
                 response += handle.before
                 if "Exit" in response:
                     main.log.error( "Error starting server. Check server log for details" )
+                    main.log.debug( handle.before )
+                    # Show the log
+                    handle.sendline( "cat {}".format( logDir ))
+                    handle.expect( component.prompt )
                     main.log.debug( handle.before )
                     retValue = main.FALSE
                 # capture PID for later use
@@ -108,7 +112,7 @@ class Server():
                 handle = self.component.handle
                 cmd = "sudo kill {}".format( self.PID )
                 handle.sendline( cmd )
-                handle.expect( "\$" )
+                handle.expect( component.prompt )
                 # TODO: What is bad output? cannot sudo?
             else:
                 main.log.error( "Component handle is not set" )
@@ -147,16 +151,16 @@ class Server():
                 handle = self.component.handle
                 # cd to rootDir
                 handle.sendline( "cd " + str( self.rootDir ) )
-                handle.expect( "\$" )
+                handle.expect( component.prompt )
                 cmd = "./onos-gen-partitions {} {} ".format( filename, nodes )
                 if equal:
                     cmd += "-e"
                 handle.sendline( cmd )
-                handle.expect( "\$" )
+                handle.expect( component.prompt )
                 response = handle.before
                 # Return to home dir
                 handle.sendline( "cd " + self.component.home )
-                handle.expect( "\$" )
+                handle.expect( component.prompt )
                 response += handle.before
                 if "Traceback" in response:
                     main.log.error( handle.before )

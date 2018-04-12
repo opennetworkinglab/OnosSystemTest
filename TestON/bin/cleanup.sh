@@ -34,6 +34,7 @@ sudo pkill bgpd
 sudo pkill zebra
 sudo pkill vrrpd
 sudo kill -9 `ps -ef | grep "bird" | grep -v grep | awk '{print $2}'`
+sudo kill -9 `ps ax | grep '[p]ython -m SimpleHTTPServer 8000' | awk '{print $1}'`
 
 
 # Restore persistent firewall rules

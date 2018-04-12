@@ -29,7 +29,7 @@
 
     <server>
         <port>8000</port>
-        <interface>eth0</interface>
+        <interface></interface>
     </server>
     <apps></apps>
     <ONOS_Configuration>

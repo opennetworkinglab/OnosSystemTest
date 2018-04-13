@@ -410,6 +410,17 @@ def testHostIntent( main,
         main.assertReturnString += 'Remove Intents Failed'
         testResult = main.FALSE
 
+    # Check flows count in each node
+    if utilities.retry( f=checkFlowsState,
+                          retValue=main.FALSE,
+                          args=[ main ],
+                          sleep=main.checkFlowCountSleep,
+                          attempts=3 ):
+        main.assertReturnString += 'After removing intents Flow State Passed\n'
+    else:
+        main.assertReturnString += 'After removing intents Flow State Failed\n'
+        testResult = main.FALSE
+
     return testResult
 
 
@@ -1477,6 +1488,17 @@ def testPointIntent( main,
         main.assertReturnString += 'Remove Intents Failed'
         testResult = main.FALSE
 
+    # Check flows count in each node
+    if utilities.retry( f=checkFlowsState,
+                          retValue=main.FALSE,
+                          args=[ main ],
+                          sleep=main.checkFlowCountSleep,
+                          attempts=3 ):
+        main.assertReturnString += 'After removing intents Flow State Passed\n'
+    else:
+        main.assertReturnString += 'After removing intents Flow State Failed\n'
+        testResult = main.FALSE
+
     return testResult
 
 
@@ -1896,6 +1918,17 @@ def testEndPointFail( main,
         main.assertReturnString += 'Remove Intents Failed'
         testResult = main.FALSE
 
+    # Check flows count in each node
+    if utilities.retry( f=checkFlowsState,
+                          retValue=main.FALSE,
+                          args=[ main ],
+                          sleep=main.checkFlowCountSleep,
+                          attempts=3 ):
+        main.assertReturnString += 'After removing intents Flow State Passed\n'
+    else:
+        main.assertReturnString += 'After removing intents Flow State Failed\n'
+        testResult = main.FALSE
+
     return testResult
 
 
@@ -2217,6 +2250,26 @@ def scapyCheckConnection( main,
 
         return connectionsFunctional
 
+def removeAllExistIntents( main ):
+    main.Cluster.active( 0 ).CLI.removeAllIntents()
+    main.log.debug( str( main.Cluster.active( 0 ).CLI.intents() ) )
+    main.log.info( "Sleeping {} seconds".format( main.removeIntentSleep ) )
+    time.sleep( main.removeIntentSleep )
+
+    main.Cluster.active( 0 ).CIL.purgeWithdrawnIntents()
+    main.log.debug( str( main.Cluster.active( 0 ).CLI.intents() ) )
+    main.log.info( "Sleeping {} seconds".format( main.removeIntentSleep ) )
+    time.sleep( main.removeIntentSleep )
+
+    # Check flows count in each node
+    if utilities.retry( f=checkFlowsState,
+                          retValue=main.FALSE,
+                          args=[ main ],
+                          sleep=main.checkFlowCountSleep,
+                          attempts=3 ):
+        main.assertReturnString += 'After removing intents Flow State Passed\n'
+    else:
+        main.assertReturnString += 'After removing intents Flow State Failed\n'
 
 def removeAllIntents( main, intentsId ):
     """
@@ -2226,10 +2279,20 @@ def removeAllIntents( main, intentsId ):
     removeIntentResult = main.TRUE
     # Remove intents
     for intent in intentsId:
-        main.Cluster.active( 0 ).CLI.removeIntent( intentId=intent, purge=True )
-
-    main.log.info( "Sleeping {} seconds".format( main.removeIntentSleep ) )
-    time.sleep( main.removeIntentSleep )
+        main.Cluster.active( 0 ).CLI.removeIntent( intentId=intent )
+        main.log.debug( str( main.Cluster.active( 0 ).CLI.intents() ) )
+        main.log.info( "Sleeping {} seconds".format( 15 ) )
+        time.sleep( 15 )
+        try:
+            intents = json.loads( main.Cluster.active( 0 ).CLI.intents() )
+            for eachIntent in intents:
+                if eachIntent.get( 'id' ) == intent and eachIntent.get( 'state' ) == 'WITHDRAWN':
+                    main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
+                    main.log.debug( str( main.Cluster.active( 0 ).CLI.intents() ) )
+                    main.log.info( "Sleeping {} seconds".format( 15 ) )
+                    time.sleep( 15 )
+        except:
+            main.log.warn( 'Intent does not exist' )
 
     # If there is remianing intents then remove intents should fail
     for ctrl in main.Cluster.active():
@@ -2425,9 +2488,9 @@ def EncapsulatedIntentCheck( main, tag="" ):
     PushTag = tag + "_PUSH"
     main.log.info( "Host Json info :" )
     for EachHostJson in HostJson:
-        for i in range( totalflows ):
-            main.log.info( str( EachHostJson[ i ] ) )
-            checkJson = EachHostJson[ i ][ "treatment" ][ "instructions" ][ 0 ]
+        for singleHostJson in EachHostJson:
+            main.log.info( str( singleHostJson ) )
+            checkJson = singleHostJson[ "treatment" ][ "instructions" ][ 0 ]
             main.Cluster.active( 0 ).REST.pprint( checkJson )
             if 'subtype' in checkJson:
                 if checkJson[ "subtype" ] == PopTag:

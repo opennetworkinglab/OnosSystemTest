@@ -43,7 +43,4 @@
         <balanceMasterSleep>10</balanceMasterSleep>
     </timers>
 
-    <SLEEP>
-        <startup>10</startup>
-    </SLEEP>
 </PARAMS>

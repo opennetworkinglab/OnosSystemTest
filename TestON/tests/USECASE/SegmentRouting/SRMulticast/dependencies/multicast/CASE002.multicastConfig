@@ -1,0 +1,48 @@
+[
+    {
+        "ipVersion": 4,
+        "sIP": "10.2.0.1",
+        "group": "224.2.0.1",
+        "sPorts": ["of:0000000000000002/9"],
+        "dPorts": ["of:0000000000000004/9"],
+        "dHosts": ["00:AA:00:00:00:06/None"],
+        "scapy": {
+            "src": {
+                "host": "h3v4",
+                "interface": "h3v4-eth0",
+                "Ether": "01:00:5e:02:00:01",
+                "UDP": 40051,
+                "filter": "ip host 224.2.0.1",
+                "packet": "dst=01:00:5e:02:00:01 src=00:aa:00:00:00:02"
+            },
+            "dst": [
+                {
+                    "host": "h8v4"
+                }
+            ]
+        }
+    },
+    {
+        "ipVersion": 6,
+        "sIP": "1002::3fe",
+        "group": "ff08::3fe",
+        "sPorts": ["of:0000000000000002/6"],
+        "dPorts": ["of:0000000000000004/6"],
+        "dHosts": ["00:BB:00:00:00:06/None"],
+        "scapy": {
+            "src": {
+                "host": "h3v6",
+                "interface": "h3v6-eth0",
+                "Ether": "33:33:00:00:03:fe",
+                "UDP": 40051,
+                "filter": "ip6 host ff08::3fe",
+                "packet": "dst=33:33:00:00:03:fe src=00:bb:00:00:00:02"
+            },
+            "dst": [
+                {
+                    "host": "h8v6"
+                }
+            ]
+        }
+    }
+]

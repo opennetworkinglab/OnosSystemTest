@@ -1,0 +1,166 @@
+<TOPOLOGY>
+    <COMPONENT>
+        <ONOScell>
+            <host>localhost</host>  # ONOS "bench" machine
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosClusterDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost></diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
+                <karaf_username></karaf_username>
+                <karaf_password></karaf_password>
+                <web_user></web_user>
+                <web_pass></web_pass>
+                <rest_port></rest_port>
+                <prompt></prompt>  # TODO: we technically need a few of these, one per component
+                <onos_home></onos_home>  # defines where onos home is
+                <nodes>1</nodes>  # number of nodes in the cluster
+            </COMPONENTS>
+        </ONOScell>
+
+        <OFDPASwitchLeaf205>
+            <host>10.128.0.205</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>OFDPASwitchDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <shortName>leaf205</shortName>
+                <dpid>0x205</dpid>
+                <port1>49</port1>
+                <link1>OFDPASwitchSpine227</link1>
+                <port2>51</port2>
+                <link2>OFDPASwitchSpine228</link2>
+                <port3>33</port3>
+                <link3>Host1</link3>
+                <port4>44</port4>
+                <link4>Host2</link4>
+            </COMPONENTS>
+        </OFDPASwitchLeaf205>
+
+        <OFDPASwitchLeaf206>
+            <host>10.128.0.206</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>OFDPASwitchDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+                <shortName>leaf206</shortName>
+                <dpid>0x206</dpid>
+                <port1>49</port1>
+                <link1>OFDPASwitchSpine227</link1>
+                <port2>51</port2>
+                <link2>OFDPASwitchSpine228</link2>
+                <port3>33</port3>
+                <link3>Host3</link3>
+                <port4>44</port4>
+                <link4>Host4</link4>
+            </COMPONENTS>
+        </OFDPASwitchLeaf206>
+
+        <OFDPASwitchSpine227>
+            <host>10.128.0.227</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>OFDPASwitchDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+                <shortName>spine227</shortName>
+                <dpid>0x227</dpid>
+                <port1>25</port1>
+                <link1>OFDPASwitchLeaf205</link1>
+                <port2>27</port2>
+                <link2>OFDPASwitchLeaf206</link2>
+            </COMPONENTS>
+        </OFDPASwitchSpine227>
+
+        <OFDPASwitchSpine228>
+            <host>10.128.0.228</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>OFDPASwitchDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+                <shortName>spine228</shortName>
+                <dpid>0x228</dpid>
+                <port1>25</port1>
+                <link1>OFDPASwitchLeaf205</link1>
+                <port2>27</port2>
+                <link2>OFDPASwitchLeaf206</link2>
+            </COMPONENTS>
+        </OFDPASwitchSpine228>
+
+        <Host1>
+            <host>10.128.100.58</host>
+            <user>mininet</user>
+            <password>mininet</password>
+            <type>HostDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS>
+                <ip>10.0.10.10</ip>
+                <ip6></ip6>
+                <shortName>h1</shortName>
+                <port1>0</port1>
+                <link1>OFDPASwitchLeaf205</link1>
+            </COMPONENTS>
+        </Host1>
+
+        <Host2>
+            <host>10.128.100.59</host>
+            <user>mininet</user>
+            <password>mininet</password>
+            <type>HostDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS>
+                <ip>10.0.10.20</ip>
+                <ip6></ip6>
+                <shortName>h2</shortName>
+                <port1>0</port1>
+                <link1>OFDPASwitchLeaf205</link1>
+            </COMPONENTS>
+        </Host2>
+
+        <Host3>
+            <host>10.128.100.60</host>
+            <user>mininet</user>
+            <password>mininet</password>
+            <type>HostDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS>
+                <ip>10.0.20.10</ip>
+                <ip6></ip6>
+                <shortName>h3</shortName>
+                <port1>0</port1>
+                <link1>OFDPASwitchLeaf206</link1>
+            </COMPONENTS>
+        </Host3>
+
+        <Host4>
+            <host>10.128.100.61</host>
+            <user>mininet</user>
+            <password>mininet</password>
+            <type>HostDriver</type>
+            <connect_order>9</connect_order>
+            <COMPONENTS>
+                <ip>10.0.20.20</ip>
+                <ip6></ip6>
+                <shortName>h4</shortName>
+                <port1>0</port1>
+                <link1>OFDPASwitchLeaf206</link1>
+            </COMPONENTS>
+        </Host4>
+
+        <NetworkBench>
+            <host>localhost</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>NetworkDriver</type>
+            <connect_order>10</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </NetworkBench>
+
+    </COMPONENT>
+</TOPOLOGY>

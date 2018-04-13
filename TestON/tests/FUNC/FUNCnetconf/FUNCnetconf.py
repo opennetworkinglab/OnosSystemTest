@@ -54,6 +54,7 @@ class FUNCnetconf:
             main.dependencyPath = main.testOnDirectory + \
                                   main.params[ 'DEPENDENCY' ][ 'path' ]
             # main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+            main.iface = main.params[ 'DEPENDENCY' ][ 'iface' ]
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
             wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
@@ -106,6 +107,12 @@ class FUNCnetconf:
         - Connect to cli
         """
         main.testSetUp.ONOSSetUp( main.Cluster, True )
+        time.sleep( main.startUpSleep )
+        utilities.assert_equals(expect=True,
+                                actual=main.Cluster.nodesCheck(),
+                                onpass="Nodes check successful.",
+                                onfail="Nodes check failed.")
+
 
     def CASE19( self, main ):
         """

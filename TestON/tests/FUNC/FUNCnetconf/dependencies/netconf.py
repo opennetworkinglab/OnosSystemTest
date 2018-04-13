@@ -48,14 +48,7 @@ def startOFC( main ):
     """
     startResult = main.FALSE
     try:
-        main.ONOSbench.handle.sendline( "" )
-        main.ONOSbench.handle.expect( "\$" )
-        main.ONOSbench.handle.sendline( "ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1 }'" )
-        main.ONOSbench.handle.expect( "\$1 }'" )
-        main.ONOSbench.handle.expect( "\$" )
-        main.configDeviceIp = main.ONOSbench.handle.before
-        main.configDeviceIp = main.configDeviceIp.split()
-        main.configDeviceIp = main.configDeviceIp[ 0 ]
+        main.configDeviceIp = main.ONOSbench.getIpAddr( iface=main.iface )
         main.log.info( "Device to be configured: " + str( main.configDeviceIp ) )
         main.ONOSbench.handle.sendline( "sudo ofc-server" )
         main.ONOSbench.handle.expect( "\$" )
@@ -76,13 +69,21 @@ def createConfig( main ):
     """
     createCfgResult = main.FALSE
     # TODO, add ability to set Manufacturer, Hardware and Software versions
-    main.cfgJson = '{ "devices":{ "netconf:' + main.configDeviceIp + ":" +\
-                    main.configDevicePort + '":' + '{ "basic":{ "driver":"' +\
-                    main.configDriver + '" } } }, "apps": { "' +\
-                    main.configApps + '":{ "netconf_devices":[ { "username":' +\
-                    main.configName + ', "password":' + main.configPass +\
-                    ', "ip":"' + main.configDeviceIp + '", "port":' +\
-                    main.configPort + '} ] } } }'
+    main.cfgJson = '{' \
+                        '"devices": {' \
+                            '"netconf:' + main.configDeviceIp + ':' + main.configDevicePort + '": {' \
+                                '"netconf": {' \
+                                    '"ip": "' + main.configDeviceIp + '",' \
+                                    '"port": ' + main.configPort + ',' \
+                                    '"username": ' + main.configName + ',' \
+                                    '"password": ' + main.configPass + \
+                                '},' \
+                                '"basic": {' \
+                                    '"driver": "' + main.configDriver + '"' \
+                                '}' \
+                            '}' \
+                        '}' \
+                    '}'
     try:
         file = open( os.path.dirname( main.testFile ) + "/dependencies/netconfConfig.json", 'w' )
         # These lines can cause errors during the configuration process because

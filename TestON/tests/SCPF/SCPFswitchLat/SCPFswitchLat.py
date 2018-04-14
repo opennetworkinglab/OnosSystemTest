@@ -148,9 +148,7 @@ class SCPFswitchLat:
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ] = {}
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ] = {}
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'T_F' ] = []  # TCP to Feature
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_R' ] = []  # Feature to Role
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'RQ_RR' ] = []  # role request to role reply
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'RR_D' ] = []  # role reply to Device
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_D' ] = []  # Feature to Device
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'D_G' ] = []  # Device to Graph
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'E_E' ] = []  # TCP to Graph
 
@@ -206,16 +204,12 @@ class SCPFswitchLat:
                 maxDict[ 'up' ][ 'max' ] = EtoEtemp
                 maxDict[ 'up' ][ 'node' ] = i
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'T_F' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'T_F' ] )
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'F_R' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_R' ] )
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'RQ_RR' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'RQ_RR' ] )
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'RR_D' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'RR_D' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'F_D' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_D' ] )
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] = numpy.average( resultDict[ 'up' ][ 'node' + str( i ) ][ 'D_G' ] )
 
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'E_E' ] )
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'T_F' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'T_F' ] )
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'F_R' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_R' ] )
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'RQ_RR' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'RQ_RR' ] )
-            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'RR_D' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'RR_D' ] )
+            resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'F_D' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'F_D' ] )
             resultDict[ 'up' ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] = numpy.std( resultDict[ 'up' ][ 'node' + str( i ) ][ 'D_G' ] )
 
             # calculate average and std for result, and grep the max End to End data
@@ -248,19 +242,9 @@ class SCPFswitchLat:
                             "TCP to Feature Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'T_F' ] ) ) )
 
             main.log.report(
-                            "Feature to Role average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'F_R' ] ) ) )
+                            "Feature to Device average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'F_D' ] ) ) )
             main.log.report(
-                            "Feature to Role Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'F_R' ] ) ) )
-
-            main.log.report(
-                            "Role request to Role reply average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'RQ_RR' ] ) ) )
-            main.log.report(
-                            "Role request to Role reply Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'RQ_RR' ] ) ) )
-
-            main.log.report(
-                            "Role reply to Device average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'RR_D' ] ) ) )
-            main.log.report(
-                            "Role reply to Device Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'RR_D' ] ) ) )
+                            "Feature to Device Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'F_D' ] ) ) )
 
             main.log.report(
                             "Device to Graph average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] ) ) )
@@ -297,9 +281,7 @@ class SCPFswitchLat:
             # put result
             temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'E_E' ] )
             temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'T_F' ] )
-            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'F_R' ] )
-            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'RQ_RR' ] )
-            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'RR_D' ] )
+            temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'F_D' ] )
             temp += "," + str( "%.2f" % resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'D_G' ] )
 
             temp += "," + str( "%.2f" % resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'E_E' ] )

@@ -132,9 +132,7 @@ print( "**********************************************************" )
 print( "Sorting data for Switch Up Averages." )
 
 requiredColumns <- c( "up_device_to_graph_avg",
-                      "role_reply_to_device_avg",
-                      "role_request_to_role_reply_avg",
-                      "feature_reply_to_role_request_avg",
+                      "feature_reply_to_device_avg",
                       "tcp_to_feature_reply_avg" )
 
 tryCatch( upAvgs <- c( fileData[ requiredColumns] ),
@@ -170,9 +168,7 @@ upAvgsData$type <- as.character( upAvgsData$type )
 upAvgsData$type <- factor( upAvgsData$type, levels=unique( upAvgsData$type ) )
 
 sumOfUpAvgs <- fileData[ 'up_device_to_graph_avg' ] +
-               fileData[ 'role_reply_to_device_avg' ] +
-               fileData[ 'role_request_to_role_reply_avg' ] +
-               fileData[ 'feature_reply_to_role_request_avg' ] +
+               fileData[ 'feature_reply_to_device_avg' ] +
                fileData[ 'tcp_to_feature_reply_avg' ]
 
 print( "Up Averages Results:" )

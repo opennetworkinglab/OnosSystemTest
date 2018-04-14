@@ -260,12 +260,8 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
         # up Latency
         for d in resultDict[ switchStatus ]:
             T_Ftemp = 0
-            F_Rtemp = 0
-            RQ_RRtemp = 0
             try:
                 T_Ftemp = tempResultDict[ 'Feature' ] - tempResultDict[ 'TCP' ]
-                F_Rtemp = tempResultDict[ 'RQ' ] - tempResultDict[ 'Feature' ]
-                RQ_RRtemp = tempResultDict[ 'RR' ] - tempResultDict[ 'RQ' ]
             except KeyError:
                 main.log.warn( "Tshark Result was incorrect!" )
                 main.log.warn( tempResultDict )
@@ -275,15 +271,11 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                 return
             if not warmup:
                 resultDict[ switchStatus ][ d ][ 'T_F' ].append( T_Ftemp )
-                resultDict[ switchStatus ][ d ][ 'F_R' ].append( F_Rtemp )
-                resultDict[ switchStatus ][ d ][ 'RQ_RR' ].append( RQ_RRtemp )
 
             main.log.info( "{} TCP to Feature: {}".format( d, str( T_Ftemp ) ) )
-            main.log.info( "{} Feature to Role Request: {}".format( d, str( F_Rtemp ) ) )
-            main.log.info( "{} Role Request to Role Reply: {}".format( d, str( RQ_RRtemp ) ) )
 
         for i in range( 1, main.Cluster.numCtrls + 1 ):
-            RR_Dtemp = 0
+            F_Dtemp = 0
             D_Gtemp = 0
             E_Etemp = 0
             main.log.info( "================================================" )
@@ -315,12 +307,12 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                 break
             if DeviceTime != 0:
                 try:
-                    RR_Dtemp = DeviceTime - tempResultDict[ 'RR' ]
+                    F_Dtemp = DeviceTime - tempResultDict[ 'Feature' ]
                     D_Gtemp = GraphTime - DeviceTime
                     E_Etemp = GraphTime - tempResultDict[ 'TCP' ]
-                    check = checkResult( RR_Dtemp, D_Gtemp, E_Etemp )
+                    check = checkResult( F_Dtemp, D_Gtemp, E_Etemp )
                     if check == 1:
-                        main.log.info( "Role reply to Device:{}".format( RR_Dtemp ) )
+                        main.log.info( "Feature to Device:{}".format( F_Dtemp ) )
                         main.log.info( "Device to Graph:{}".format( D_Gtemp ) )
                         main.log.info( "End to End:{}".format( E_Etemp ) )
                         main.log.info( "================================================" )
@@ -344,7 +336,7 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
                     checkTotalWrongNum()
                     break
                 if not warmup and check == 1:
-                    resultDict[ switchStatus ][ 'node' + str( i ) ][ 'RR_D' ].append( RR_Dtemp )
+                    resultDict[ switchStatus ][ 'node' + str( i ) ][ 'F_D' ].append( F_Dtemp )
                     resultDict[ switchStatus ][ 'node' + str( i ) ][ 'D_G' ].append( D_Gtemp )
                     resultDict[ switchStatus ][ 'node' + str( i ) ][ 'E_E' ].append( E_Etemp )
             else:

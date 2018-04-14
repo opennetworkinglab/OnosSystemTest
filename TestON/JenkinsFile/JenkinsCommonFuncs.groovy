@@ -46,8 +46,8 @@ def additionalInitForSR( branch ){
   print testMachine
 }
 def fabricOn( branch ){
-  return branch == "s-1.13" ? '2' : '3'
-// Temp Fix  return branch == "master" ? '2' : '3'
+  return branch.reverse().take(4).reverse() == "1.13" ? '2' : '3'
+// Temp Fix  return branch.reverse().take(6).reverse() == "master" ? '2' : '3'
 }
 def printType(){
   echo testType;

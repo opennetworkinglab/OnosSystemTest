@@ -4,8 +4,8 @@ funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/TriggerFuncs.groovy' )
 
-previous_version = "1.12"
-before_previous_version = "1.11"
+previous_version = "1.13"
+before_previous_version = "1.13"
 funcs.initializeTrend( "VM" );
 triggerFuncs.init( funcs )
 wikiContents = ""
@@ -28,7 +28,7 @@ Prefix_organizer = [
 ]
 
 manually_run = params.manual_run
-onos_b = "master"
+onos_b = "1.13"
 test_branch = ""
 onos_tag = params.ONOSTag
 isOldFlow = true
@@ -388,7 +388,7 @@ def closeHtmlForWiki(){
     wikiContents += '''
         </tbody>
     </table>
-    <p><strong>Everyday</strong>, all SegmentRouting tests are built and run on every branch.</p>
+    <p><strong>Everyday</strong>, all SegmentRouting tests are built and run on every supported branch.</p>
     <p>On <strong>Weekdays</strong>, all the other tests are built and run on the master branch.</p>
     <p>On <strong>Saturdays</strong>, all the other tests are built and run on the '''+ funcs.branchWithPrefix( previous_version ) +''' branch.</p>
     <p>On <strong>Sundays</strong>, all the other tests are built and run on the '''+ funcs.branchWithPrefix( before_previous_version ) +''' branch.</p>'''

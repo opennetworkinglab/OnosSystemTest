@@ -4,7 +4,6 @@
         "sIP": "10.2.0.1",
         "group": "224.2.0.1",
         "sPorts": ["of:0000000000000002/9"],
-        "dPorts": ["of:0000000000000004/9", "of:0000000000000001/5"],
         "dHosts": ["00:AA:00:00:00:06/None", "00:AA:00:00:00:01/None"],
         "scapy": {
             "src": {
@@ -12,7 +11,7 @@
                 "interface": "h3v4-eth0",
                 "Ether": "01:00:5e:02:00:01",
                 "UDP": 40051,
-                "filter": "ip host 224.2.0.1",
+                "filter": "ip multicast and dst host 224.2.0.1 and udp dst port 40051",
                 "packet": "dst=01:00:5e:02:00:01 src=00:aa:00:00:00:02"
             },
             "dst": [
@@ -30,7 +29,6 @@
         "sIP": "1002::3fe",
         "group": "ff08::3fe",
         "sPorts": ["of:0000000000000002/6"],
-        "dPorts": ["of:0000000000000004/6", "of:0000000000000001/3"],
         "dHosts": ["00:BB:00:00:00:06/None", "00:BB:00:00:00:01/None"],
         "scapy": {
             "src": {
@@ -38,7 +36,7 @@
                 "interface": "h3v6-eth0",
                 "Ether": "33:33:00:00:03:fe",
                 "UDP": 40051,
-                "filter": "ip6 host ff08::3fe",
+                "filter": "ip6 multicast and dst host ff08::3fe and udp dst port 40051",
                 "packet": "dst=33:33:00:00:03:fe src=00:bb:00:00:00:02"
             },
             "dst": [

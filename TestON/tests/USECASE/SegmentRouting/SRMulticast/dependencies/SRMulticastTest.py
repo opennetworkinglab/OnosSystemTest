@@ -38,6 +38,8 @@ class SRMulticastTest ():
         if not init and onosNodes == main.Cluster.numCtrls:
             skipPackage = True
 
+        main.case( '%s, ONOS cluster size: %s' % ( description, onosNodes ) )
+
         main.resultFileName = 'CASE%03d' % test_idx
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )

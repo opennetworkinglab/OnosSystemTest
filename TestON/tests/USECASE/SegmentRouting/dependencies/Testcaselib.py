@@ -984,7 +984,10 @@ class Testcaselib:
         for dstEntry in entry["scapy"]["dst"]:
             # Set up scapy receiver
             receiver = getattr( main, dstEntry["host"] )
-            receiver.startFilter( pktFilter=srcEntry["filter"] )
+            if "interface" in dstEntry.keys():
+                receiver.startFilter( ifaceName=dstEntry["interface"], pktFilter=srcEntry["filter"] )
+            else:
+                receiver.startFilter( pktFilter=srcEntry["filter"] )
             # Set up scapy sender
             main.Network.addRoute( str( srcEntry["host"] ),
                                    str( entry["group"] ),
@@ -1011,11 +1014,12 @@ class Testcaselib:
                 sender.handle.sendline( "" )
                 sender.handle.expect( sender.scapyPrompt )
                 main.log.debug( sender.handle.before )
-            if skipOnFail and finished != expect:
+            packetCaptured = True if srcEntry["packet"] in packet else False
+            if skipOnFail and packetCaptured != expect:
                 Testcaselib.saveOnosDiagnostics( main )
                 Testcaselib.cleanup( main, copyKarafLog=False )
                 main.skipCase()
             utilities.assert_equals( expect=expect,
-                                     actual=srcEntry["packet"] in packet,
+                                     actual=packetCaptured,
                                      onpass="Pass",
                                      onfail="Fail" )

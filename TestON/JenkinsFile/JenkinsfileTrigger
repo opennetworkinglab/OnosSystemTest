@@ -4,8 +4,8 @@ funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/TriggerFuncs.groovy' )
 
-previous_version = "1.13"
-before_previous_version = "1.13"
+previous_version = "master"
+before_previous_version = "1.12"
 funcs.initializeTrend( "VM" );
 triggerFuncs.init( funcs )
 wikiContents = ""
@@ -153,20 +153,17 @@ def testDivider( today ){
         case Calendar.SUNDAY:
             sunday( false , true )
             day = "Sunday"
-            isOldFlow = false
             break
     }
 }
 def monday( getResult ){
     addingHeader( "FUNC" )
     FUNC_choices += adder( "FUNC", "basic", true, "M", getResult )
-    FUNC_choices += adder( "FUNC", "new_Test", true, "M", getResult )
     FUNC_choices += adder( "FUNC", "extra_A", true, "M", getResult )
     closingHeader( "FUNC" )
     addingHeader( "HA" )
     HA_choices += adder( "HA", "basic", true, "M", getResult )
     HA_choices += adder( "HA", "extra_A", true, "M", getResult )
-    //HA_choices += adder( "HA", "new_Test", true, "M", getResult )
     closingHeader( "HA" )
     addingHeader( "SCPF" )
     SCPF_choices += adder( "SCPF", "basic", true, "M", getResult )
@@ -181,13 +178,11 @@ def monday( getResult ){
 def tuesday( getDay, getResult ){
     addingHeader( "FUNC" )
     FUNC_choices += adder( "FUNC", "basic", getDay, "T", getResult )
-    FUNC_choices += adder( "FUNC", "new_Test", getDay, "T", getResult )
     FUNC_choices += adder( "FUNC", "extra_B", getDay, "T", getResult )
     closingHeader( "FUNC" )
     addingHeader( "HA" )
     HA_choices += adder( "HA", "basic", getDay, "T", getResult )
     HA_choices += adder( "HA", "extra_B", getDay, "T", getResult )
-    HA_choices += adder( "HA", "new_Test", getDay, "T", getResult )
     closingHeader( "HA" )
     addingHeader( "SCPF" )
     SCPF_choices += adder( "SCPF", "basic", getDay, "T", getResult )
@@ -204,18 +199,15 @@ def tuesday( getDay, getResult ){
 def wednesday( getDay, getResult ){
     addingHeader( "FUNC" )
     FUNC_choices += adder( "FUNC", "basic", getDay, "W", getResult )
-    FUNC_choices += adder( "FUNC", "new_Test", getDay, "W", getResult )
     FUNC_choices += adder( "FUNC", "extra_A", getDay, "W", getResult )
     closingHeader( "FUNC" )
     addingHeader( "HA" )
     HA_choices += adder( "HA", "basic", getDay, "W", getResult )
     HA_choices += adder( "HA", "extra_A", getDay, "W", getResult )
-    //HA_choices += adder( "HA", "new_Test", getDay, "W", getResult )
     closingHeader( "HA" )
     addingHeader( "SCPF" )
     SCPF_choices += adder( "SCPF", "basic", getDay, "W", getResult )
     SCPF_choices += adder( "SCPF", "extra_A", getDay, "W", getResult )
-    SCPF_choices += adder( "SCPF", "new_Test", getDay, "W", getResult )
     closingHeader( "SCPF" )
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", getDay, "W", false )
@@ -226,13 +218,11 @@ def wednesday( getDay, getResult ){
 def thursday( getDay, getResult ){
     addingHeader( "FUNC" )
     FUNC_choices += adder( "FUNC", "basic", getDay, "Th", getResult )
-    FUNC_choices += adder( "FUNC", "new_Test", getDay, "Th", getResult )
     FUNC_choices += adder( "FUNC", "extra_B", getDay, "Th", getResult )
     closingHeader( "FUNC" )
     addingHeader( "HA" )
     HA_choices += adder( "HA", "basic", getDay, "Th", getResult )
     HA_choices += adder( "HA", "extra_B", getDay, "Th", getResult )
-    HA_choices += adder( "HA", "new_Test", getDay, "Th", getResult )
     closingHeader( "HA" )
     addingHeader( "SCPF" )
     SCPF_choices += adder( "SCPF", "basic", getDay, "Th", getResult )
@@ -247,13 +237,11 @@ def thursday( getDay, getResult ){
 def friday( getDay, getResult ){
     addingHeader( "FUNC" )
     FUNC_choices += adder( "FUNC", "basic", getDay, "F", getResult )
-    FUNC_choices += adder( "FUNC", "new_Test", getDay, "F", getResult )
     FUNC_choices += adder( "FUNC", "extra_A", getDay, "F", getResult )
     closingHeader( "FUNC" )
     addingHeader( "HA" )
     HA_choices += adder( "HA", "basic", getDay, "F", getResult )
     HA_choices += adder( "HA", "extra_A", getDay, "F", getResult )
-    //HA_choices += adder( "HA", "new_Test", getDay, "F", getResult )
     closingHeader( "HA" )
     addingHeader( "SCPF" )
     SCPF_choices += adder( "SCPF", "basic", getDay, "F", getResult )
@@ -272,13 +260,11 @@ def saturday( getDay, getResult ){
     FUNC_choices += adder( "FUNC", "basic", getDay, "Sa", getResult )
     FUNC_choices += adder( "FUNC", "extra_A", getDay, "Sa", getResult )
     FUNC_choices += adder( "FUNC", "extra_B", getDay, "Sa", getResult )
-    FUNC_choices += adder( "FUNC", "new_Test", getDay, "Sa", getResult )
     closingHeader( "FUNC" )
     addingHeader( "HA" )
     HA_choices += adder( "HA", "basic", getDay, "Sa", getResult )
     HA_choices += adder( "HA", "extra_A", getDay, "Sa", getResult )
     HA_choices += adder( "HA", "extra_B", getDay, "Sa", getResult )
-    HA_choices += adder( "HA", "new_Test", getDay, "Sa", getResult )
     closingHeader( "HA" )
     addingHeader( "SCPF" )
     SCPF_choices += adder( "SCPF", "basic", getDay, "Sa", getResult )
@@ -286,7 +272,6 @@ def saturday( getDay, getResult ){
     SCPF_choices += adder( "SCPF", "extra_B", getDay, "Sa", getResult )
     SCPF_choices += adder( "SCPF", "extra_C", getDay, "Sa", getResult )
     SCPF_choices += adder( "SCPF", "extra_D", getDay, "Sa", getResult )
-    SCPF_choices += adder( "SCPF", "new_Test", getDay, "Sa", getResult )
     closingHeader( "SCPF" )
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", getDay, "Sa", false )

@@ -12,7 +12,7 @@ def getAllTheTests( wikiPrefix ){
                 "FUNCgroup" :      [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCgroup", wiki_file:"FUNCgroupWiki.txt" ],
                 "FUNCintent" :     [ "basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCintent", wiki_file:"FUNCintentWiki.txt" ],
                 "FUNCintentRest" : [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCintentRest", wiki_file:"FUNCintentRestWiki.txt" ],
-                "FUNCformCluster" :[ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"", wiki_link:wikiPrefix + "-" + "FUNCformCluster", wiki_file:"FUNCformClusterWiki.txt" ]
+                "FUNCformCluster" :[ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCformCluster", wiki_file:"FUNCformClusterWiki.txt" ]
         ],
         "HA":[
                 "HAsanity" :                [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Sanity", wiki_file:"HAsanityWiki.txt"  ],
@@ -23,9 +23,9 @@ def getAllTheTests( wikiPrefix ){
                 "HAswapNodes" :             [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Swap Nodes", wiki_file:"HAswapNodesWiki.txt"  ],
                 "HAscaling" :               [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Scaling", wiki_file:"HAscalingWiki.txt"  ],
                 "HAkillNodes" :             [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Kill Nodes", wiki_file:"HAkillNodes.txt" ],
-                "HAbackupRecover" :         [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"", wiki_link:wikiPrefix + "-" + "HA Backup Recover", wiki_file:"HAbackupRecoverWiki.txt"  ],
-                "HAupgrade" :               [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"", wiki_link:wikiPrefix + "-" + "HA Upgrade", wiki_file:"HAupgradeWiki.txt"  ],
-                "HAupgradeRollback" :       [ "basic":false, "extra_A":false, "extra_B":false, "new_Test":true, "day":"", wiki_link:wikiPrefix + "-" + "HA Upgrade Rollback", wiki_file:"HAupgradeRollbackWiki.txt" ]
+                "HAbackupRecover" :         [ "basic":false, "extra_A":false, "extra_B":true, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Backup Recover", wiki_file:"HAbackupRecoverWiki.txt"  ],
+                "HAupgrade" :               [ "basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Upgrade", wiki_file:"HAupgradeWiki.txt"  ],
+                "HAupgradeRollback" :       [ "basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "HA Upgrade Rollback", wiki_file:"HAupgradeRollbackWiki.txt" ]
         ],
         "SCPF":[
                 "SCPFswitchLat":                           [ "basic":true, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
@@ -44,7 +44,7 @@ def getAllTheTests( wikiPrefix ){
                 "SCPFintentInstallWithdrawLatWithFlowObj": [ "basic":false, "extra_A":false, "extra_B":true, "extra_C":false, "extra_D":false, "new_Test":false, day:"" ],
                 "SCPFscaleTopo":                           [ "basic":false, "extra_A":false, "extra_B":false, "extra_C":true, "extra_D":false, "new_Test":false, day:"" ],
                 "SCPFscalingMaxIntents":                   [ "basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":true, "new_Test":false, day:"" ],
-                "SCPFmastershipFailoverLat":               [ "basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":false, "new_Test":true, day:"" ]
+                "SCPFmastershipFailoverLat":               [ "basic":false, "extra_A":false, "extra_B":false, "extra_C":false, "extra_D":true, "new_Test":false, day:"" ]
         ],
         "USECASE":[
                 "FUNCvirNetNB" :                [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCvirNetNB", wiki_file:"FUNCvirNetNBWiki.txt"  ],

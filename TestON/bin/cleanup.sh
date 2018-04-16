@@ -28,16 +28,17 @@
 sudo kill -9 `ps -ef | grep "./cli.py" | grep -v grep | awk '{print $2}'`
 sudo kill -9 `ps -ef | grep "bin/teston" | grep -v grep | awk '{print $2}'`
 sudo kill -9 `ps -ef | grep "ssh -X" | grep -v grep | awk '{print $2}'`
-sudo mn -c
-sudo pkill -f mn.pid
-sudo pkill bgpd
-sudo pkill zebra
-sudo pkill vrrpd
-sudo pkill dhclient
-sudo pkill dhcpd
-sudo kill -9 `ps -ef | grep "bird" | grep -v grep | awk '{print $2}'`
 sudo kill -9 `ps ax | grep '[p]ython -m SimpleHTTPServer 8000' | awk '{print $1}'`
 
+if [[ -z "${OCN}" ]]; then
+    echo "Mininet cleanup skipped because OCN is not defined"
+else
+    ssh $ONOS_USER@$OCN """
+    sudo killall -9 dhclient dhcpd zebra bgpd vrrpd bird
+    sudo mn -c
+    sudo pkill -f mn.pid
+    """
+fi
 
 # Restore persistent firewall rules
 if [ "$1" = "-f" ]; then

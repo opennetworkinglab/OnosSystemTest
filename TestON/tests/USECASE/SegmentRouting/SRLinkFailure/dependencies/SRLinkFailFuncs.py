@@ -57,8 +57,8 @@ class SRLinkFailFuncs():
         # link failure
         run.killLink( main, self.switchOne, self.switchTwo, switches='{}'.format( switch ), links='{}'.format( link - 2 ) )
         run.pingAll( main, "CASE{}_Failure".format( caseNum ) )
-        run.restoreLink( main, self.switchOne, self.switchTwo, self.dpidOne,
-                         self.dpidTwo, self.portOne, self.portTwo, '{}'.format( switch ), '{}'.format( link ) )
+        run.restoreLink( main, self.switchOne, self.switchTwo, '{}'.format( switch ), '{}'.format( link ),
+                         True, self.dpidOne, self.dpidTwo, self.portOne, self.portTwo )
         run.pingAll( main, "CASE{}_Recovery".format( caseNum ) )
         # TODO Dynamic config of hosts in subnet
         # TODO Dynamic config of host not in subnet

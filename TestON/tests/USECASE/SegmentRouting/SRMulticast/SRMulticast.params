@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,4,5,6,7,8,101,102,103,201</testcases>
+    <testcases>1,2,3,4,5,6,7,8,101,102,103,104,105,106,201,202,203,204,205,301,401,402,403,404</testcases>
 
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
@@ -34,9 +34,9 @@
     </CTRL>
 
     <timers>
-        <LinkDiscovery>30</LinkDiscovery>
-        <SwitchDiscovery>30</SwitchDiscovery>
-        <OnosDiscovery>30</OnosDiscovery>
+        <LinkDiscovery>45</LinkDiscovery>
+        <SwitchDiscovery>45</SwitchDiscovery>
+        <OnosDiscovery>45</OnosDiscovery>
         <loadNetcfgSleep>5</loadNetcfgSleep>
         <startMininetSleep>60</startMininetSleep>
         <balanceMasterSleep>10</balanceMasterSleep>
@@ -44,7 +44,12 @@
     </timers>
 
     <SCAPY>
-        <HOSTNAMES>h1v4,h3v4,h4v4,h8v4,h1v6,h3v6,h4v6,h8v6</HOSTNAMES>
+        <HOSTNAMES>h3v4,h4v4,h8v4,h10v4,h1v6,h3v6</HOSTNAMES>
     </SCAPY>
+
+    <TOPO>
+        <switchNum>10</switchNum>
+        <linkNum>48</linkNum>
+    </TOPO>
 
 </PARAMS>

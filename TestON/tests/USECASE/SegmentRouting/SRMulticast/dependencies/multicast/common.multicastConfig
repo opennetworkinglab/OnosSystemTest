@@ -1,0 +1,58 @@
+{
+    "ipv4": {
+        "ipVersion": 4,
+        "group": "224.2.0.1",
+        "src": [
+            {
+                "host": "h3v4",
+                "ip": "10.2.0.1",
+                "port": "of:0000000000000002/9",
+                "interface": "h3v4-eth0",
+                "Ether": "01:00:5e:02:00:01",
+                "UDP": 40051,
+                "filter": "ip host 224.2.0.1",
+                "packet": "dst=01:00:5e:02:00:01 src=00:aa:00:00:00:02"
+            }
+        ],
+        "dst": [
+            {
+                "host": "h4v4",
+                "id": "00:AA:00:00:00:03/None",
+                "interface": "h4v4-bond0",
+                "dualHomed": "True"
+            },
+            {
+                "host": "h8v4",
+                "id": "00:AA:00:00:00:06/None",
+                "dualHomed": "False"
+            },
+            {
+                "host": "h10v4",
+                "id": "00:AA:00:00:00:08/40",
+                "dualHomed": "True"
+            }
+        ]
+    },
+    "ipv6": {
+        "ipVersion": 6,
+        "group": "ff08::3fe",
+        "src": [
+            {
+                "host": "h3v6",
+                "ip": "1002::3fe",
+                "port": "of:0000000000000002/6",
+                "interface": "h3v6-eth0",
+                "Ether": "33:33:00:00:03:fe",
+                "UDP": 40051,
+                "filter": "ip6 host ff08::3fe",
+                "packet": "dst=33:33:00:00:03:fe src=00:bb:00:00:00:02"
+            }
+        ],
+        "dst": [
+            {
+                "host": "h1v6",
+                "id": "00:BB:00:00:00:01/None"
+            }
+        ]
+    }
+}

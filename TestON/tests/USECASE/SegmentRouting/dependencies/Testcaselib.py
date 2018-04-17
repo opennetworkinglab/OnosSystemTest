@@ -586,11 +586,12 @@ class Testcaselib:
                                  onfail="Link batch up failed" )
 
     @staticmethod
-    def restoreLink( main, end1, end2, dpid1, dpid2, port1, port2, switches,
-                     links ):
+    def restoreLink( main, end1, end2, switches, links,
+                     portUp=False, dpid1='', dpid2='', port1='', port2='' ):
         """
         Params:
             end1,end2: identify the end switches, ex.: 'leaf1', 'spine1'
+            portUp: enable portstate after restoring link
             dpid1, dpid2: dpid of the end switches respectively, ex.: 'of:0000000000000002'
             port1, port2: respective port of the end switches that connects to the link, ex.:'1'
             switches, links: number of expected switches and links after linkDown, ex.: '4', '6'
@@ -607,13 +608,10 @@ class Testcaselib:
                     "Waiting %s seconds for link up to be discovered" % main.linkSleep )
             time.sleep( main.linkSleep )
 
-            for i in range( 0, main.Cluster.numCtrls ):
-                ctrl = main.Cluster.runningNodes[ i ]
-                onosIsUp = main.ONOSbench.isup( ctrl.ipAddress )
-                if onosIsUp == main.TRUE:
-                    ctrl.CLI.portstate( dpid=dpid1, port=port1, state='Enable' )
-                    ctrl.CLI.portstate( dpid=dpid2, port=port2, state='Enable' )
-            time.sleep( main.linkSleep )
+            if portUp:
+                ctrl.CLI.portstate( dpid=dpid1, port=port1, state='Enable' )
+                ctrl.CLI.portstate( dpid=dpid2, port=port2, state='Enable' )
+                time.sleep( main.linkSleep )
 
             result = main.Cluster.active( 0 ).CLI.checkStatus( numoswitch=switches,
                                                                numolink=links )
@@ -630,9 +628,11 @@ class Testcaselib:
         Completely kill a switch and verify ONOS can see the proper change
         """
         main.switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
-        main.step( "Kill " + switch )
-        main.log.info( "Stopping" + switch )
-        main.Network.switch( SW=switch, OPTION="stop" )
+        switch = switch if isinstance( switch, list ) else [ switch ]
+        main.step( "Kill " + str( switch ) )
+        for s in switch:
+            main.log.info( "Stopping " + s )
+            main.Network.switch( SW=s, OPTION="stop" )
         # todo make this repeatable
         main.log.info( "Waiting %s seconds for switch down to be discovered" % (
             main.switchSleep ) )
@@ -654,9 +654,11 @@ class Testcaselib:
         Recover a switch and verify ONOS can see the proper change
         """
         # todo make this repeatable
-        main.step( "Recovering " + switch )
-        main.log.info( "Starting" + switch )
-        main.Network.switch( SW=switch, OPTION="start" )
+        switch = switch if isinstance( switch, list ) else [ switch ]
+        main.step( "Recovering " + str( switch ) )
+        for s in switch:
+            main.log.info( "Starting " + s )
+            main.Network.switch( SW=s, OPTION="start" )
         main.log.info( "Waiting %s seconds for switch up to be discovered" % (
             main.switchSleep ) )
         time.sleep( main.switchSleep )
@@ -669,6 +671,25 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Switch recovery successful",
                                  onfail="Failed to recover switch?" )
+
+    def portstate( main, dpid, port, state, switches, links ):
+        """
+        Disable/enable a switch port using 'portstate' and verify ONOS can see the proper link change
+        Params:
+            dpid: dpid of the switch, ex.: 'of:0000000000000002'
+            port: port of the switch to disable/enable, ex.:'1'
+            state: disable or enable
+            switches, links: number of expected switches and links after link change, ex.: '4', '6'
+        """
+        main.step( "Port %s on %s:%s" % ( state, dpid, port ) )
+        main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state=state )
+        main.log.info( "Waiting %s seconds for port %s to be discovered" % ( main.linkSleep, state ) )
+        time.sleep( main.linkSleep )
+        result = main.Cluster.active( 0 ).CLI.checkStatus( numoswitch=switches,
+                                                           numolink=links )
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="Port %s successful" % state,
+                                 onfail="Port %s failed" % state )
 
     @staticmethod
     def cleanup( main, copyKarafLog=True ):
@@ -976,50 +997,71 @@ class Testcaselib:
             main.log.debug( host.hostMac )
 
     @staticmethod
-    def verifyMulticastTraffic( main, entry, expect, skipOnFail=False ):
+    def verifyMulticastTraffic( main, routeName, expect, skipOnFail=True, maxRetry=3 ):
         """
         Verify multicast traffic using scapy
         """
-        srcEntry = entry["scapy"]["src"]
-        for dstEntry in entry["scapy"]["dst"]:
-            # Set up scapy receiver
-            receiver = getattr( main, dstEntry["host"] )
-            if "interface" in dstEntry.keys():
-                receiver.startFilter( ifaceName=dstEntry["interface"], pktFilter=srcEntry["filter"] )
-            else:
-                receiver.startFilter( pktFilter=srcEntry["filter"] )
-            # Set up scapy sender
-            main.Network.addRoute( str( srcEntry["host"] ),
-                                   str( entry["group"] ),
-                                   str( srcEntry["interface"] ),
-                                   True if entry["ipVersion"] == 6 else False )
-            sender = getattr( main, srcEntry["host"] )
-            sender.buildEther( dst=str( srcEntry["Ether"] ) )
-            if entry["ipVersion"] == 4:
-                sender.buildIP( dst=str( entry["group"] ) )
-            elif entry["ipVersion"] == 6:
-                sender.buildIPv6( dst=str( entry["group"] ) )
-            sender.buildUDP( ipVersion=entry["ipVersion"], dport=srcEntry["UDP"] )
-            # Send packet and check received packet
-            sender.sendPacket( iface=srcEntry["interface"] )
-            finished = receiver.checkFilter()
-            packet = ""
-            if finished:
-                packets = receiver.readPackets()
-                for packet in packets.splitlines():
-                    main.log.debug( packet )
-            else:
-                kill = receiver.killFilter()
-                main.log.debug( kill )
-                sender.handle.sendline( "" )
-                sender.handle.expect( sender.scapyPrompt )
-                main.log.debug( sender.handle.before )
-            packetCaptured = True if srcEntry["packet"] in packet else False
-            utilities.assert_equals( expect=expect,
-                                     actual=packetCaptured,
-                                     onpass="Pass",
-                                     onfail="Fail" )
-            if skipOnFail and packetCaptured != expect:
-                Testcaselib.saveOnosDiagnostics( main )
-                Testcaselib.cleanup( main, copyKarafLog=False )
-                main.skipCase()
+        routeData = main.multicastConfig[ routeName ]
+        srcs = main.mcastRoutes[ routeName ][ "src" ]
+        dsts = main.mcastRoutes[ routeName ][ "dst" ]
+        main.log.info( "Sending multicast traffic from {} to {}".format( [ routeData[ "src" ][ i ][ "host" ] for i in srcs ],
+                                                                         [ routeData[ "dst" ][ i ][ "host" ] for i in dsts ] ) )
+        for src in srcs:
+            srcEntry = routeData[ "src" ][ src ]
+            for dst in dsts:
+                dstEntry = routeData[ "dst" ][ dst ]
+                sender = getattr( main, srcEntry[ "host" ] )
+                receiver = getattr( main, dstEntry[ "host" ] )
+                main.Network.addRoute( str( srcEntry[ "host" ] ),
+                                       str( routeData[ "group" ] ),
+                                       str( srcEntry[ "interface" ] ),
+                                       True if routeData[ "ipVersion" ] == 6 else False )
+                # Build the packet
+                sender.buildEther( dst=str( srcEntry[ "Ether" ] ) )
+                if routeData[ "ipVersion" ] == 4:
+                    sender.buildIP( dst=str( routeData[ "group" ] ) )
+                elif routeData[ "ipVersion" ] == 6:
+                    sender.buildIPv6( dst=str( routeData[ "group" ] ) )
+                sender.buildUDP( ipVersion=routeData[ "ipVersion" ], dport=srcEntry[ "UDP" ] )
+                sIface = srcEntry[ "interface" ]
+                dIface = dstEntry[ "interface" ] if "interface" in dstEntry.keys() else None
+                pktFilter = srcEntry[ "filter" ]
+                pkt = srcEntry[ "packet" ]
+                # Send packet and check received packet
+                expectedResult = expect.pop( 0 ) if isinstance( expect, list ) else expect
+                trafficResult = utilities.retry( Testcaselib.sendMulticastTraffic,
+                                                 main.FALSE,
+                                                 args=( main, sender, receiver, pktFilter, pkt,
+                                                        sIface, dIface, expectedResult ),
+                                                 attempts=maxRetry,
+                                                 sleep=1 )
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=trafficResult,
+                                         onpass="{} to {}: Pass".format( srcEntry[ "host" ], dstEntry[ "host" ] ),
+                                         onfail="{} to {}: Fail".format( srcEntry[ "host" ], dstEntry[ "host" ] ) )
+                if skipOnFail and trafficResult != main.TRUE:
+                    Testcaselib.saveOnosDiagnostics( main )
+                    Testcaselib.cleanup( main, copyKarafLog=False )
+                    main.skipCase()
+
+    @staticmethod
+    def sendMulticastTraffic( main, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True ):
+        """
+        Send multicast traffic using scapy
+        """
+        receiver.startFilter( ifaceName=dIface, pktFilter=pktFilter )
+        sender.sendPacket( iface=sIface )
+        finished = receiver.checkFilter()
+        packet = ""
+        if finished:
+            packets = receiver.readPackets()
+            for packet in packets.splitlines():
+                main.log.debug( packet )
+        else:
+            kill = receiver.killFilter()
+            main.log.debug( kill )
+            sender.handle.sendline( "" )
+            sender.handle.expect( sender.scapyPrompt )
+            main.log.debug( sender.handle.before )
+        packetCaptured = True if pkt in packet else False
+        return main.TRUE if packetCaptured == expect else main.FALSE

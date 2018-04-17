@@ -1015,11 +1015,11 @@ class Testcaselib:
                 sender.handle.expect( sender.scapyPrompt )
                 main.log.debug( sender.handle.before )
             packetCaptured = True if srcEntry["packet"] in packet else False
-            if skipOnFail and packetCaptured != expect:
-                Testcaselib.saveOnosDiagnostics( main )
-                Testcaselib.cleanup( main, copyKarafLog=False )
-                main.skipCase()
             utilities.assert_equals( expect=expect,
                                      actual=packetCaptured,
                                      onpass="Pass",
                                      onfail="Fail" )
+            if skipOnFail and packetCaptured != expect:
+                Testcaselib.saveOnosDiagnostics( main )
+                Testcaselib.cleanup( main, copyKarafLog=False )
+                main.skipCase()

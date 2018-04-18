@@ -7,7 +7,7 @@ def getAllTheTests( wikiPrefix ){
                 "FUNCoptical" :    [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCoptical", wiki_file:"FUNCopticalWiki.txt" ],
                 "FUNCflow" :       [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCflow", wiki_file:"FUNCflowWiki.txt" ],
                 "FUNCnetCfg":      [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCnetCfg", wiki_file:"FUNCnetCfgWiki.txt" ],
-                "FUNCovsdbtest" :  [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCovsdbtestWiki", wiki_file:"FUNCovsdbtestWiki.txt" ],
+                "FUNCovsdbtest" :  [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCovsdbtest", wiki_file:"FUNCovsdbtestWiki.txt" ],
                 "FUNCnetconf" :    [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCnetconf", wiki_file:"FUNCnetconfWiki.txt" ],
                 "FUNCgroup" :      [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCgroup", wiki_file:"FUNCgroupWiki.txt" ],
                 "FUNCintent" :     [ "basic":false, "extra_A":true, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCintent", wiki_file:"FUNCintentWiki.txt" ],

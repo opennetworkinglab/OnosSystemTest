@@ -3154,12 +3154,12 @@ class OnosCliDriver( CLI ):
 
     def clusters( self, jsonFormat=True ):
         """
-        Lists all clusters
+        Lists all topology clusters
         Optional argument:
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
-            cmdStr = "clusters"
+            cmdStr = "topo-clusters"
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )

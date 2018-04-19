@@ -564,7 +564,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -620,7 +620,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -649,7 +649,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -677,7 +677,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -706,7 +706,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -735,7 +735,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -856,7 +856,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -890,7 +890,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -925,7 +925,7 @@ class FUNCintent:
                 protected=True,
                 expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -959,7 +959,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1003,7 +1003,7 @@ class FUNCintent:
                                          expectedLink=18,
                                          useTCP=True )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1068,7 +1068,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1165,7 +1165,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1199,7 +1199,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1233,7 +1233,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1353,7 +1353,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1394,7 +1394,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1434,8 +1434,7 @@ class FUNCintent:
                                          sw1="s5",
                                          sw2="s2",
                                          expectedLink=18 )
-        else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1475,7 +1474,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1516,7 +1515,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1643,7 +1642,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1684,7 +1683,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1725,7 +1724,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1765,7 +1764,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1807,7 +1806,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1848,7 +1847,7 @@ class FUNCintent:
                                          sw2="s2",
                                          expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -1965,7 +1964,7 @@ class FUNCintent:
                                                       sw2="s2",
                                                       expectedLink=18 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -2033,7 +2032,7 @@ class FUNCintent:
                                          expectedLink1=16,
                                          expectedLink2=14 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -2083,7 +2082,7 @@ class FUNCintent:
                                          expectedLink2=14,
                                          partial=True )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -2130,7 +2129,7 @@ class FUNCintent:
                                          expectedLink1=16,
                                          expectedLink2=14 )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,
@@ -2180,7 +2179,7 @@ class FUNCintent:
                                          expectedLink2=14,
                                          partial=True )
         else:
-            main.Cluster.active( 0 ).CLI.removeAllIntents( purge=True )
+            main.intents.removeAllExistIntents( main )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=testResult,

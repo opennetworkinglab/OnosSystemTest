@@ -2256,7 +2256,7 @@ def removeAllExistIntents( main ):
     main.log.info( "Sleeping {} seconds".format( main.removeIntentSleep ) )
     time.sleep( main.removeIntentSleep )
 
-    main.Cluster.active( 0 ).CIL.purgeWithdrawnIntents()
+    main.Cluster.active( 0 ).CLI.purgeWithdrawnIntents()
     main.log.debug( str( main.Cluster.active( 0 ).CLI.intents() ) )
     main.log.info( "Sleeping {} seconds".format( main.removeIntentSleep ) )
     time.sleep( main.removeIntentSleep )

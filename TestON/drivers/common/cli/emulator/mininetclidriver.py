@@ -202,7 +202,7 @@ class MininetCliDriver( Emulator ):
                 startTime = time.time()
                 while True:
                     i = self.handle.expect( [ 'mininet>',
-                                              'Exception',
+                                              'Exception|Error',
                                               '\*\*\*',
                                               pexpect.EOF,
                                               pexpect.TIMEOUT,
@@ -234,6 +234,7 @@ class MininetCliDriver( Emulator ):
                         main.log.error(
                             self.name +
                             ": Something took too long... " )
+                        main.log.debug( self.handle.before + self.handle.after )
                         return main.FALSE
                     elif i == 5:
                         main.log.error( self.name + ": " + self.handle.before + self.handle.after )

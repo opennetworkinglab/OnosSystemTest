@@ -247,6 +247,7 @@ class HAbackupRecover:
                                  onfail="Failed to rerun for election" )
 
         main.HA.commonChecks()
+        time.sleep(60)
 
     def CASE7( self, main ):
         """

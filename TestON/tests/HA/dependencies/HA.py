@@ -3894,14 +3894,15 @@ class HA():
                                         "ONOS:\nPushed: {}\nONOS: {}".format( ctrl.pprint( pushedInterface ),
                                                                               ctrl.pprint( onosInterface ) ) )
 
-        # Compare pushed host config
-        for hid, pushedHost in pushedNetCfg[ 'hosts' ].items():
-            onosHost = onosNetCfg[ 'hosts' ].get( hid.lower() )
-            if pushedHost != onosHost:
-                cfgResult = False
-                main.log.error( "Pushed Network configuration does not match what is in " +
-                                "ONOS:\nPushed: {}\nONOS: {}".format( ctrl.pprint( pushedHost),
-                                                                      ctrl.pprint( onosHost ) ) )
+        if pushedNetCfg.get( 'hosts' ) is not None:
+            # Compare pushed host config
+            for hid, pushedHost in pushedNetCfg[ 'hosts' ].items():
+                onosHost = onosNetCfg[ 'hosts' ].get( hid.lower() )
+                if pushedHost != onosHost:
+                    cfgResult = False
+                    main.log.error( "Pushed Network configuration does not match what is in " +
+                                    "ONOS:\nPushed: {}\nONOS: {}".format( ctrl.pprint( pushedHost),
+                                                                          ctrl.pprint( onosHost ) ) )
         utilities.assert_equals( expect=True,
                                  actual=cfgResult,
                                  onpass="Net Cfg set",

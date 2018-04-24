@@ -54,14 +54,14 @@
 
     <topology>
         <files>
-            <topo>~/TestON/tests/USECASE/SegmentRouting/dependencies/comcast_fabric.py</topo>
+            <topo>~/TestON/tests/USECASE/SegmentRouting/dependencies/fabric.py</topo>
             <dep1>~/TestON/tests/USECASE/SegmentRouting/dependencies/trellislib.py</dep1>
             <dep2>~/TestON/tests/USECASE/SegmentRouting/dependencies/routinglib.py</dep2>
         </files>
-        <topoFile>comcast_fabric.py</topoFile>
+        <topoFile>fabric.py</topoFile>
         <args> --dhcp=0 --routers=0 --ipv6=0 --ipv4=1 </args>
-        <configPath>/USECASE/SegmentRouting/SRRouting/dependencies/json/</configPath>
-        <configName>COMCAST_CONFIG_ipv4=1_ipv6=0_dhcp=0_routers=0.json</configName>
+        <configPath>/HA/dependencies/json/</configPath>
+        <configName>TRELLIS_CONFIG_ipv4=1_ipv6=0_dhcp=0_routers=0.json</configName>
     </topology>
     <CTRL>
         <port1>6653</port1>

@@ -2886,6 +2886,7 @@ class OnosCliDriver( CLI ):
         """
         count = self.groupAddedCount( deviceId, core )
         count = int( count ) if count else 0
+        main.log.debug( "found {} groups".format( count ) )
         return count if ((count > expectedGroupCount) if (comparison == 0) else (count == expectedGroupCount)) else main.FALSE
 
     def checkFlowAddedCount( self, deviceId, expectedFlowCount=0, core=False, comparison=0):
@@ -2906,6 +2907,7 @@ class OnosCliDriver( CLI ):
         """
         count = self.flowAddedCount( deviceId, core )
         count = int( count ) if count else 0
+        main.log.debug( "found {} flows".format( count ) )
         return count if ((count > expectedFlowCount) if (comparison == 0) else (count == expectedFlowCount)) else main.FALSE
 
     def getAllDevicesId( self ):

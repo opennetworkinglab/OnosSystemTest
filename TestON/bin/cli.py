@@ -281,8 +281,7 @@ class CLI( threading.Thread, Cmd, object ):
                     index += 1
         except IndexError as e:
             print ( e )
-            main.cleanup()
-            main.exit()
+            sys.exit()
 
         return options
 

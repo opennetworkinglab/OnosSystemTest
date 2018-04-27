@@ -100,6 +100,9 @@ def arrangeTsharkFile( switchStatus, keyTerm ):
     for line in resultText:
         for term in keyTerm:
             if term in line:
+                # Exclude non-openflow FIN packets
+                if term == "[FIN, ACK]" and "openflow" not in line:
+                    continue
                 path = '/tmp/Tshark_' + str( keyTerm[ term ] )
                 with open( path, 'a' ) as outputfile:
                     outputfile.write( line )

@@ -738,3 +738,34 @@ class SRRouting:
                                staticRouteConfigure=True,
                                nodeFailure=True )
 
+    def CASE606( self, main ):
+        """
+        Drop SPINE-1 and test connectivity
+        Drop paired leaf and test connectivity (expect some failures)
+        Bring up SPINE-1 and test connectivity (still expect some failures)
+        Bring up the paired leaf and test connectivity
+        Repeat above with SPINE-2 and a different paired leaf
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop spine and paired leaf" )
+        setupTest( main, test_idx=606, onosNodes=3 )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verifyPing( main )
+        lib.killSwitch( main, "spine101", int( main.params[ "TOPO" ][ "switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 18 )
+        verifyPing( main )
+        lib.killSwitch( main, "leaf2", int( main.params[ "TOPO" ][ "switchNum" ] ) - 2, int( main.params[ "TOPO" ][ "linkNum" ] ) - 24 )
+        lib.killSwitch( main, "leaf3", int( main.params[ "TOPO" ][ "switchNum" ] ) - 3, int( main.params[ "TOPO" ][ "linkNum" ] ) - 28 )
+        main.disconnectedIpv4Hosts = [ "h3v4", "h4v4", "h5v4", "h6v4", "h7v4" ]
+        main.disconnectedIpv6Hosts = [ "h3v6", "h4v6", "h5v6", "h6v6", "h7v6" ]
+        verifyPing( main )
+        lib.recoverSwitch( main, "spine101", int( main.params[ "TOPO" ][ "switchNum" ] ) - 2, int( main.params[ "TOPO" ][ "linkNum" ] ) - 18 )
+        verifyPing( main )
+        lib.recoverSwitch( main, "leaf3", int( main.params[ "TOPO" ][ "switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 10 )
+        lib.recoverSwitch( main, "leaf2", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ) )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verifyPing( main )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )

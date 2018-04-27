@@ -21,7 +21,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement</cellApps>
+        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3</cellApps>
     </ENV>
 
     <GIT>
@@ -39,8 +39,17 @@
         <OnosDiscovery>30</OnosDiscovery>
         <loadNetcfgSleep>5</loadNetcfgSleep>
         <startMininetSleep>25</startMininetSleep>
-        <dhcpSleep>60</dhcpSleep>
+        <dhcpSleep>30</dhcpSleep>
         <balanceMasterSleep>10</balanceMasterSleep>
     </timers>
+
+    <TOPO>
+        <internalIpv4Hosts>h1v4,h2v4,h3v4,h4v4,h5v4,h6v4,h7v4,h8v4,h9v4,h10v4,h11v4,h12v4,h13v4</internalIpv4Hosts>
+        <internalIpv6Hosts>h1v6,h2v6,h3v6,h4v6,h5v6,h6v6,h7v6,h8v6,h9v6,h10v6,h11v6,h12v6,h13v6</internalIpv6Hosts>
+        <externalIpv4Hosts>rh1v4,rh2v4</externalIpv4Hosts>
+        <externalIpv6Hosts>rh1v6,rh11v6,rh2v6,rh22v6</externalIpv6Hosts>
+        <switchNum>10</switchNum>
+        <linkNum>48</linkNum>
+    </TOPO>
 
 </PARAMS>

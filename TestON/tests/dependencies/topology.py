@@ -22,6 +22,7 @@ import time
 import re
 import imp
 import json
+from core import utilities
 
 
 class Topology:
@@ -226,3 +227,78 @@ class Topology:
                                  onpass="ONOS correctly discovered the topology",
                                  onfail="ONOS incorrectly discovered the topology" )
         return topoResults
+
+    def ping( self, srcList, dstList, ipv6=False, expect=True, wait=1, acceptableFailed=0, collectT3=True ):
+        """
+        Description:
+            Ping from every host in srcList to every host in dstList and
+            verify if ping results are as expected.
+            Pings are executed in parallel from host components
+        Options:
+            src: a list of source host names, e.g. [ "h1", "h2" ]
+            dst: a list of destination host names, e.g. [ "h3", "h4" ]
+            expect: expect ping result to pass if True, otherwise fail
+            acceptableFailed: maximum number of failed pings acceptable for
+                              each src-dst host pair
+            collectT3: save t3-troubleshoot output for src and dst host that failed to ping
+        Returns:
+            main.TRUE if all ping results are expected, otherwise main.FALSE
+        """
+        main.log.info( "Pinging from {} to {}, expected result is {}".format( srcList, dstList,
+                                                                              "pass" if expect else "fail" ) )
+        # Verify host component has been created
+        srcIpList = {}
+        for src in srcList:
+            if not hasattr( main, src ):
+                main.log.info( "Creating component for host {}".format( src ) )
+                main.Network.createHostComponent( src )
+                hostHandle = getattr( main, src )
+                main.log.info( "Starting CLI on host {}".format( src ) )
+                hostHandle.startHostCli()
+            srcIpList[ src ] = main.Network.getIPAddress( src, proto='IPV6' if ipv6 else 'IPV4' )
+
+        unexpectedPings = []
+        for dst in dstList:
+            dstIp = main.Network.getIPAddress( dst, proto='IPV6' if ipv6 else 'IPV4' )
+            # Start pings from src hosts in parallel
+            pool = []
+            for src in srcList:
+                srcIp = srcIpList[ src ]
+                if srcIp == dstIp:
+                    continue
+                if expect and ( not srcIp or not dstIp ):
+                    unexpectedPings.append( [ src, dst, "no IP" ] )
+                    continue
+                hostHandle = getattr( main, src )
+                thread = main.Thread( target=utilities.retry,
+                                      name="{}-{}".format( srcIp, dstIp ),
+                                      args=[ hostHandle.pingHostSetAlternative, [ main.FALSE ] ],
+                                      kwargs={ "args":( [ dstIp ], wait, ipv6 ),
+                                               "attempts": acceptableFailed + 1,
+                                               "sleep": 1 } )
+                pool.append( thread )
+                thread.start()
+            # Wait for threads to finish and check ping result
+            for thread in pool:
+                thread.join( 10 )
+                srcIp, dstIp = thread.name.split( "-" )
+                if expect and not thread.result or not expect and thread.result:
+                    unexpectedPings.append( [ srcIp, dstIp, "fail" if expect else "pass" ] )
+
+        utilities.assert_equals( expect=[],
+                                 actual=unexpectedPings,
+                                 onpass="Pings from {} to {} all as expected".format( srcList, dstList ),
+                                 onfail="Unexpected pings: {}".format( unexpectedPings ) )
+        if collectT3:
+            for unexpectedPing in unexpectedPings:
+                if unexpectedPing[ 2 ] == "no IP":
+                    continue
+                srcIp = unexpectedPing[ 0 ]
+                dstIp = unexpectedPing[ 1 ]
+                main.log.debug( "Collecting t3 with source {} and destination {}".format( srcIp, dstIp ) )
+                cmd = main.Cluster.active( 0 ).CLI.composeT3Command( srcIp, dstIp, ipv6 )
+                main.log.debug( "t3 command: {}".format( cmd ) )
+                if cmd:
+                    main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, cmd, main.logdir,
+                                                "t3-CASE{}-{}-{}-".format( main.CurrentTestCaseNumber, srcIp, dstIp ) )
+        return main.FALSE if unexpectedPings else main.TRUE

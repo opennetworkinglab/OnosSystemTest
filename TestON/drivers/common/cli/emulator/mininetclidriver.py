@@ -593,10 +593,9 @@ class MininetCliDriver( Emulator ):
                 pingResponse += str( str( host ) + " -> " )
                 for temp in dstList:
                     failedPings = 0
-                    if ipv6:
-                        pingCmd = str( host ) + cmd + str( self.getIPAddress( temp, proto='IPv6' ) )
-                    else:
-                        pingCmd = str( host ) + cmd + str( temp )
+                    dstIP = self.getIPAddress( temp, proto='IPV6' if ipv6 else 'IPV4' )
+                    assert dstIP, "Not able to get IP address of host {}".format( temp )
+                    pingCmd = str( host ) + cmd + str( dstIP )
                     while failedPings <= acceptableFailed:
                         main.log.debug( "Pinging from " + str( host ) + " to " + str( temp ) )
                         self.handle.sendline( pingCmd )
@@ -616,7 +615,9 @@ class MininetCliDriver( Emulator ):
                 pingResponse += "\n"
             main.log.info( pingResponse + "Failed pings: " + str( failedPingsTotal ) )
             return isReachable
-
+        except AssertionError:
+            main.log.exception( "" )
+            return main.FALSE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
             response = self.handle.before
@@ -750,6 +751,10 @@ class MininetCliDriver( Emulator ):
                                           '\*\*\* Unknown command: ' + pingCmd,
                                           pexpect.TIMEOUT ],
                                         timeout=wait + 1 )
+                # For some reason we need to send something
+                # Otherwise ping results won't be read by handle
+                self.handle.sendline( "" )
+                self.handle.expect( self.hostPrompt )
                 if i == 0:
                     response = self.handle.before
                     if not re.search( ',\s0\%\spacket\sloss', response ):
@@ -1268,7 +1273,7 @@ class MininetCliDriver( Emulator ):
         else:
             main.log.error( "Connection failed to the host" )
 
-    def getIPAddress( self, host , proto='IPV4' ):
+    def getIPAddress( self, host, proto='IPV4' ):
         """
            Verifies the host's ip configured or not."""
         if self.handle:
@@ -1288,7 +1293,7 @@ class MininetCliDriver( Emulator ):
 
             pattern = ''
             if proto == 'IPV4':
-                pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)"
+                pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)\s\sBcast"
             else:
                 pattern = "inet6\saddr:\s([\w,:]*)/\d+\sScope:Global"
             ipAddressSearch = re.search( pattern, response )

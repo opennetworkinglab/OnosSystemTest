@@ -154,3 +154,97 @@ class SRRoutingTest ():
             run.checkFlowsGroupsFromFile( main )
         # ping hosts
         run.pingAll( main, 'CASE%03d' % test_idx, False, acceptableFailed=5, basedOnIp=True, skipOnFail=True )
+
+
+def setupTest( main, test_idx, onosNodes ):
+    """
+    SRRouting test setup
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    skipPackage = False
+    init = False
+    if not hasattr( main, 'apps' ):
+        init = True
+        run.initTest( main )
+    # Skip onos packaging if the cluster size stays the same
+    if not init and onosNodes == main.Cluster.numCtrls:
+        skipPackage = True
+
+    main.internalIpv4Hosts = main.params[ 'TOPO' ][ 'internalIpv4Hosts' ].split( ',' )
+    main.internalIpv6Hosts = main.params[ 'TOPO' ][ 'internalIpv6Hosts' ].split( ',' )
+    main.externalIpv4Hosts = main.params[ 'TOPO' ][ 'externalIpv4Hosts' ].split( ',' )
+    main.externalIpv6Hosts = main.params[ 'TOPO' ][ 'externalIpv6Hosts' ].split( ',' )
+    main.resultFileName = "CASE%03d" % test_idx
+    main.Cluster.setRunningNode( onosNodes )
+    lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
+    # Load configuration files
+    main.step( "Load configurations" )
+    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1_dhcp=1_routers=1_external=1"
+    lib.loadJson( main )
+    time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
+
+    if hasattr( main, "Mininet1" ):
+        # Run the test with Mininet
+        mininet_args = " --dhcp=1 --routers=1 --ipv6=1 --ipv4=1"
+        lib.startMininet( main, main.params[ "DEPENDENCY" ][ "topology" ], args=mininet_args )
+        time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
+    else:
+        # Run the test with physical devices
+        lib.connectToPhysicalNetwork( main, self.switchNames )
+        # Check if the devices are up
+        lib.checkDevices( main, switches=len( self.switchNames ) )
+
+    # wait some time for onos to install the rules!
+    time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
+    time.sleep( float( main.params[ "timers" ][ "dhcpSleep" ] ) )
+
+def verifyPingInternal( main, verifyDisconnected=True ):
+    """
+    Verify all connected internal hosts are able to reach each other,
+    and disconnected internal hosts cannot reach any other internal host
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    # Verify connected hosts
+    main.step("Verify reachability of connected internal hosts")
+    lib.verifyPing( main,
+                    [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
+                    [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ] )
+    lib.verifyPing( main,
+                    [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
+                    [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
+                    ipv6=True, acceptableFailed=7 )
+    # Verify disconnected hosts
+    if verifyDisconnected and ( main.disconnectedIpv4Hosts or main.disconnectedIpv6Hosts ):
+        main.step("Verify unreachability of disconnected internal hosts")
+        lib.verifyPing( main, main.internalIpv4Hosts, main.disconnectedIpv4Hosts, expect=False )
+        lib.verifyPing( main, main.internalIpv6Hosts, main.disconnectedIpv6Hosts, ipv6=True, expect=False )
+
+def verifyPingExternal( main, verifyDisconnected=True ):
+    """
+    Verify all connected internal hosts are able to reach external hosts,
+    and disconnected internal hosts cannot reach any external host
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    # Verify connected hosts
+    main.step("Verify reachability of from connected internal hosts to external hosts")
+    lib.verifyPing( main,
+                    [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
+                    main.externalIpv4Hosts )
+    lib.verifyPing( main,
+                    [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
+                    main.externalIpv6Hosts,
+                    ipv6=True, acceptableFailed=7 )
+    # Verify disconnected hosts
+    '''
+    if verifyDisconnected and ( main.disconnectedIpv4Hosts or main.disconnectedIpv6Hosts ):
+        main.step("Verify unreachability of disconnected internal hosts to external hosts")
+        lib.verifyPing( main, main.disconnectedIpv4Hosts, main.externalIpv4Hosts, expect=False )
+        lib.verifyPing( main, main.disconnectedIpv6Hosts, main.externalIpv6Hosts, ipv6=True, expect=False )
+    '''
+
+def verifyPing( main ):
+    """
+    Verify reachability and unreachability of connected/disconnected hosts
+    """
+    verifyPingInternal( main )
+    verifyPingExternal( main )

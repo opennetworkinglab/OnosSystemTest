@@ -28,7 +28,7 @@
             <type>MininetCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
-                <home>~/mininet/custom/</home>
+                <home>~/mininet/</home>
                 <prompt></prompt>
             </COMPONENTS>
         </Mininet1>

@@ -173,13 +173,13 @@ class Testcaselib:
     def startMininet( main, topology, args="" ):
         copyResult = main.ONOSbench.scp( main.Mininet1,
                                          main.topoPath + main.topology,
-                                         main.Mininet1.home,
+                                         main.Mininet1.home + "custom",
                                          direction="to" )
         if main.topologyLib:
             for lib in main.topologyLib.split(","):
                 copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
                                                                 main.topoPath + lib,
-                                                                main.Mininet1.home,
+                                                                main.Mininet1.home + "custom",
                                                                 direction="to" )
         if main.topologyConf:
             import re
@@ -208,7 +208,7 @@ class Testcaselib:
         arg = "--onos-ip=%s %s" % (",".join([ctrl.ipAddress for ctrl in main.Cluster.runningNodes]), args)
         main.topology = topology
         topoResult = main.Mininet1.startNet(
-                topoFile=main.Mininet1.home + main.topology, args=arg )
+                topoFile=main.Mininet1.home + "custom/" + main.topology, args=arg )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -692,7 +692,7 @@ class Testcaselib:
                                  onfail="Port %s failed" % state )
 
     @staticmethod
-    def cleanup( main, copyKarafLog=True ):
+    def cleanup( main, copyKarafLog=True, removeHostComponent=False ):
         """
         Stop Onos-cluster.
         Stops Mininet
@@ -717,6 +717,11 @@ class Testcaselib:
                 scapyResult = main.Scapy.removeHostComponent( host.name ) and scapyResult
                 main.log.info( "Removed Scapy Host Component: {0}".format( host.name ) )
             main.scapyHosts = []
+
+        if removeHostComponent:
+            for host in main.internalIpv4Hosts + main.internalIpv6Hosts + main.externalIpv4Hosts + main.externalIpv6Hosts:
+                if hasattr( main, host ):
+                    main.Network.removeHostComponent( host )
 
         if hasattr( main, 'Mininet1' ):
             main.utils.mininetCleanup( main.Mininet1 )
@@ -1065,3 +1070,19 @@ class Testcaselib:
             main.log.debug( sender.handle.before )
         packetCaptured = True if pkt in packet else False
         return main.TRUE if packetCaptured == expect else main.FALSE
+
+    @staticmethod
+    def verifyPing( main, srcList, dstList, ipv6=False, expect=True, wait=1, acceptableFailed=0, skipOnFail=True ):
+        """
+        Verify reachability from each host in srcList to each host in dstList
+        """
+        from tests.dependencies.topology import Topology
+        try:
+            main.topo
+        except ( NameError, AttributeError ):
+            main.topo = Topology()
+        pingResult = main.topo.ping( srcList, dstList, ipv6, expect, wait, acceptableFailed, skipOnFail )
+        if not pingResult and skipOnFail:
+            Testcaselib.saveOnosDiagnostics( main )
+            Testcaselib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+            main.skipCase()

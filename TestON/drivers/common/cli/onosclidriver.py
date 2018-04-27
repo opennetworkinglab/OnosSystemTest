@@ -6317,3 +6317,107 @@ class OnosCliDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def netcfg( self, jsonFormat=True, args="" ):
+        """
+        Run netcfg cli command with given args
+        """
+        try:
+            cmdStr = "netcfg"
+            if jsonFormat:
+                cmdStr = cmdStr + " -j"
+            if args:
+                cmdStr = cmdStr + " " + str( args )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def composeT3Command( self, sAddr, dAddr, ipv6=False, verbose=True ):
+        """
+        Compose and return t3-troubleshoot cli command for given source and destination addresses
+        Options:
+            sAddr: IP address of the source host
+            dAddr: IP address of the destination host
+        """
+        try:
+            # Collect information of both hosts from onos
+            hosts = self.hosts()
+            hosts = json.loads( hosts )
+            sHost = None
+            dHost = None
+            for host in hosts:
+                if sAddr in host[ "ipAddresses" ]:
+                    sHost = host
+                elif dAddr in host[ "ipAddresses" ]:
+                    dHost = host
+                if sHost and dHost:
+                    break
+            assert sHost, "Not able to find host with IP {}".format( sAddr )
+            assert dHost, "Not able to find host with IP {}".format( dAddr )
+            cmdStr = "t3-troubleshoot"
+            if verbose:
+                cmdStr += " -vv"
+            cmdStr += " -s " + str( sAddr )
+            # TODO: collect t3 for all locations of source host?
+            cmdStr += " -sp " + str( sHost[ "locations" ][ 0 ][ "elementId" ] ) + "/" + str( sHost[ "locations" ][ 0 ][ "port" ] )
+            cmdStr += " -sm " + str( sHost[ "mac" ] )
+            cmdStr += " -d " + str( dAddr )
+            netcfg = self.netcfg( args="devices {}".format( sHost[ "locations" ][ 0 ][ "elementId" ] ) )
+            netcfg = json.loads( netcfg )
+            assert netcfg, "Failed to get netcfg"
+            cmdStr += " -dm " + str( netcfg[ "segmentrouting" ][ "routerMac" ] )
+            if ipv6:
+                cmdStr += " -et ipv6"
+            return cmdStr
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except ( KeyError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def t3( self, sAddr, dAddr, ipv6=False ):
+        """
+        Run t3-troubleshoot cli command for given source and destination addresses
+        Options:
+            sAddr: IP address of the source host
+            dAddr: IP address of the destination host
+        """
+        try:
+            cmdStr = self.composeT3Command( sAddr, dAddr, ipv6 )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            assert "Tracing packet" in handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

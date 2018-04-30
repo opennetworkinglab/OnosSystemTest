@@ -6241,7 +6241,7 @@ class OnosCliDriver( CLI ):
         Delete multicast sink(s) by calling 'mcast-host-delete' command
         sAddr: we can provide * for ASM or a specific address for SSM
         gAddr: specifies multicast group address
-        hosts: HostId of the sink e.g. "00:AA:00:00:01:05/40",
+        host: HostId of the sink e.g. "00:AA:00:00:01:05/40",
                will delete the route if not specified
         Returns main.TRUE if the mcast sink is deleted; Otherwise main.FALSE
         """

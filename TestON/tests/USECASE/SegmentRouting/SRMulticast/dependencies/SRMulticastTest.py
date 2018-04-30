@@ -20,96 +20,163 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 
 import time
-from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
 
-class SRMulticastTest ():
+def setupTest( main, test_idx, onosNodes ):
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    skipPackage = False
+    init = False
+    if not hasattr( main, "apps" ):
+        init = True
+        lib.initTest( main )
+    # Skip onos packaging if the cluster size stays the same
+    if not init and onosNodes == main.Cluster.numCtrls:
+        skipPackage = True
 
-    def __init__( self ):
-        self.default = ''
-        self.switchNames = [ "leaf205", "leaf206", "spine227", "spine228" ]
+    main.resultFileName = "CASE%03d" % test_idx
+    main.Cluster.setRunningNode( onosNodes )
+    lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
+    # Load configuration files
+    main.step( "Load configurations" )
+    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1_dhcp=1_routers=1"
+    lib.loadJson( main )
+    time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
+    main.cfgName = "common"
+    lib.loadMulticastConfig( main )
 
-    def runTest( self, main, test_idx, onosNodes, description, removeRoute=False, linkFailure=False, switchFailure=False ):
-        skipPackage = False
-        init = False
-        if not hasattr( main, 'apps' ):
-            init = True
-            run.initTest( main )
-        # Skip onos packaging if the cluster size stays the same
-        if not init and onosNodes == main.Cluster.numCtrls:
-            skipPackage = True
+    if hasattr( main, "Mininet1" ):
+        # Run the test with Mininet
+        mininet_args = " --dhcp=1 --routers=1 --ipv6=1 --ipv4=1"
+        lib.startMininet( main, main.params[ "DEPENDENCY" ][ "topology" ], args=mininet_args )
+        time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
+    else:
+        # Run the test with physical devices
+        lib.connectToPhysicalNetwork( main, self.switchNames )
+        # Check if the devices are up
+        lib.checkDevices( main, switches=len( self.switchNames ) )
 
-        main.case( '%s, ONOS cluster size: %s' % ( description, onosNodes ) )
+    # Create scapy components
+    lib.startScapyHosts( main )
 
-        main.resultFileName = 'CASE%03d' % test_idx
-        main.Cluster.setRunningNode( onosNodes )
-        run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
-        # Load configuration files
-        main.step("Load configurations")
-        main.cfgName = 'TEST_CONFIG_ipv4=1_ipv6=1_dhcp=1_routers=1'
-        run.loadJson( main )
-        main.cfgName = 'CASE%03d' % test_idx
-        run.loadMulticastConfig( main )
-        if linkFailure:
-            run.loadLinkFailureChart( main )
-        if switchFailure:
-            run.loadSwitchFailureChart( main )
-        time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
+def verifyMcastRoutes( main ):
+    """
+    Install multicast routes and check traffic
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    for routeName in main.mcastRoutes.keys():
+        main.step( "Verify {} multicast route".format( routeName ) )
+        installMcastRoute( main, routeName )
+        lib.verifyMulticastTraffic( main, routeName, True )
 
-        if hasattr( main, 'Mininet1' ):
-            # Run the test with Mininet
-            mininet_args = ' --dhcp=1 --routers=1 --ipv6=1 --ipv4=1'
-            run.startMininet( main, main.params['DEPENDENCY']['topology'], args=mininet_args )
-            time.sleep( float( main.params[ 'timers' ][ 'startMininetSleep' ] ) )
-        else:
-            # Run the test with physical devices
-            run.connectToPhysicalNetwork( main, self.switchNames )
-            # Check if the devices are up
-            run.checkDevices( main, switches=len( self.switchNames ) )
+def installMcastRoute( main, routeName ):
+    """
+    Install a multicast route
+    """
+    routeData = main.multicastConfig[ routeName ]
+    src = main.mcastRoutes[ routeName ][ "src" ]
+    dst = main.mcastRoutes[ routeName ][ "dst" ]
+    main.Cluster.active( 0 ).CLI.mcastHostJoin( routeData[ "src" ][ src[ 0 ] ][ "ip" ], routeData[ "group" ],
+                                                [ routeData[ "src" ][ i ][ "port" ] for i in src ],
+                                                [ routeData[ "dst" ][ i ][ "id" ] for i in dst ] )
+    time.sleep( float( main.params[ "timers" ][ "mcastSleep" ] ) )
 
-        # Create scapy components
-        run.startScapyHosts( main )
+def verifyMcastRouteRemoval( main, routeName ):
+    """
+    Verify removal of a multicast route
+    """
+    routeData = main.multicastConfig[ routeName ]
+    main.step( "Verify removal of {} route".format( routeName ) )
+    main.Cluster.active( 0 ).CLI.mcastHostDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ] )
+    # TODO: verify the deletion
 
-        for entry in main.multicastConfig:
-            main.step("Verify adding multicast route with group IP {}".format(entry["group"]))
-            # Create a multicast route
-            main.Cluster.active( 0 ).CLI.mcastHostJoin( entry["sIP"], entry["group"], entry["sPorts"], entry["dHosts"] )
-            time.sleep( float( main.params[ 'timers' ][ 'mcastSleep' ] ) )
-            # Check the flows against the devices
-            # run.checkFlows( main, minFlowCount=2, sleep=5 )
-            # Verify multicast traffic
-            run.verifyMulticastTraffic( main, entry, True, skipOnFail=True )
+def verifyMcastSinkRemoval( main, routeName, sinkIndex, expect ):
+    """
+    Verify removal of a multicast sink
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    routeData = main.multicastConfig[ routeName ]
+    sinkId = routeData[ "dst" ][ sinkIndex ][ "id" ]
+    main.step( "Verify removal of {} sink {}".format( routeName, sinkId ) )
+    main.Cluster.active( 0 ).CLI.mcastHostDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ], sinkId )
+    time.sleep( float( main.params[ "timers" ][ "mcastSleep" ] ) )
+    lib.verifyMulticastTraffic( main, routeName, expect )
 
-            # Test switch failures
-            if switchFailure:
-                for switch, expected in main.switchFailureChart.items():
-                    run.killSwitch( main, switch, expected['switches_after_failure'], expected['links_after_failure'] )
-                    run.verifyMulticastTraffic( main, entry, True, skipOnFail=True )
+def verifyMcastSourceRemoval( main, routeName, sourceIndex, expect ):
+    """
+    Verify removal of a multicast source
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    routeData = main.multicastConfig[ routeName ]
+    sourcePort = [ routeData[ "src" ][ sourceIndex ][ "port" ] ]
+    main.step( "Verify removal of {} source {}".format( routeName, sourcePort ) )
+    main.Cluster.active( 0 ).CLI.mcastSourceDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ], sourcePort )
+    time.sleep( float( main.params[ "timers" ][ "mcastSleep" ] ) )
+    lib.verifyMulticastTraffic( main, routeName, expect )
 
-                    run.recoverSwitch( main, switch, expected['switches_before_failure'], expected['links_before_failure'] )
-                    run.verifyMulticastTraffic( main, entry, True, skipOnFail=True )
+def verifyMcastRemoval( main, removeDHT1=True ):
+    """
+    Verify removal of IPv6 route, IPv4 sinks and IPv4 source
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    verifyMcastRouteRemoval( main, "ipv6" )
+    if removeDHT1:
+        verifyMcastSinkRemoval( main, "ipv4", 0, [ False, True, True ] )
+        verifyMcastSinkRemoval( main, "ipv4", 1, [ False, False, True ] )
+    else:
+        verifyMcastSinkRemoval( main, "ipv4", 2, [ True, True, False ] )
+        verifyMcastSinkRemoval( main, "ipv4", 1, [ True, False, False ] )
+    verifyMcastSourceRemoval( main, "ipv4", 0, False )
 
-            # Test link failures
-            if linkFailure:
-                for link_batch_name, info in main.linkFailureChart.items():
-                    linksToRemove = info['links'].values()
-                    linksBefore = info['links_before']
-                    linksAfter = info['links_after']
+def verifyLinkDown( main, link, affectedLinkNum, expectList={ "ipv4": True, "ipv6": True } ):
+    """
+    Kill a batch of links and verify traffic
+    Restore the links and verify traffic
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    link = link if ( isinstance( link, list ) and isinstance( link[ 0 ], list ) ) else [ link ]
+    # Kill the link(s)
+    lib.killLinkBatch( main, link, int( main.params[ "TOPO" ][ "linkNum" ] ) - affectedLinkNum, int( main.params[ "TOPO" ][ "switchNum" ] ) )
+    for routeName in expectList.keys():
+        lib.verifyMulticastTraffic( main, routeName, expectList[ routeName ] )
+    # Restore the link(s)
+    lib.restoreLinkBatch( main, link, int( main.params[ "TOPO" ][ "linkNum" ] ), int( main.params[ "TOPO" ][ "switchNum" ] ) )
+    for routeName in expectList.keys():
+        lib.verifyMulticastTraffic( main, routeName, True )
 
-                    run.killLinkBatch( main, linksToRemove, linksAfter, switches=10 )
-                    run.verifyMulticastTraffic( main, entry, True, skipOnFail=True )
+def verifySwitchDown( main, switchName, affectedLinkNum, expectList={ "ipv4": True, "ipv6": True } ):
+    """
+    Kill a batch of switches and verify traffic
+    Recover the swithces and verify traffic
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    switchName = switchName if isinstance( switchName, list ) else [ switchName ]
+    # Kill the switch(es)
+    lib.killSwitch( main, switchName, int( main.params[ "TOPO" ][ "switchNum" ] ) - len( switchName ), int( main.params[ "TOPO" ][ "linkNum" ] ) - affectedLinkNum )
+    for routeName in expectList.keys():
+        lib.verifyMulticastTraffic( main, routeName, expectList[ routeName ] )
+    # Recover the switch(es)
+    lib.recoverSwitch( main, switchName, int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ) )
+    for routeName in expectList.keys():
+        lib.verifyMulticastTraffic( main, routeName, True )
 
-                    run.restoreLinkBatch( main, linksToRemove, linksBefore, switches=10 )
-                    run.verifyMulticastTraffic( main, entry, True, skipOnFail=True )
-
-            if removeRoute:
-                main.step("Verify deleting multicast route with group IP {}".format(entry["group"]))
-                # delete a multicast route
-                main.Cluster.active( 0 ).CLI.mcastHostDelete( entry["sIP"], entry["group"] )
-                time.sleep( float( main.params[ 'timers' ][ 'mcastSleep' ] ) )
-                # Check the flows against the devices
-                # run.checkFlows( main, minFlowCount=2, sleep=5 )
-                # Verify multicast traffic (traffic check is expected to fail)
-                run.verifyMulticastTraffic( main, entry, False, skipOnFail=True )
-
-        # Clean up the environment
-        run.cleanup( main, copyKarafLog=False )
+def verifyOnosDown( main, expectList={ "ipv4": True, "ipv6": True } ):
+    """
+    Kill and recover ONOS instances Sequencially and check traffic
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    import json
+    numCtrls = len( main.Cluster.runningNodes )
+    links = len( json.loads( main.Cluster.next().links() ) )
+    switches = len( json.loads( main.Cluster.next().devices() ) )
+    for ctrl in xrange( numCtrls ):
+        # Kill node
+        lib.killOnos( main, [ ctrl ], switches, links, ( numCtrls - 1 ) )
+        main.Cluster.active(0).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        for routeName in expectList.keys():
+            lib.verifyMulticastTraffic( main, routeName, True )
+        # Recover node
+        lib.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
+        main.Cluster.active(0).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        for routeName in expectList.keys():
+            lib.verifyMulticastTraffic( main, routeName, True )

@@ -969,6 +969,9 @@ class OnosDriver( CLI ):
             # configured further.
             returnString = handleBefore
             return returnString
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout when sending " + cmdstr )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

@@ -925,11 +925,13 @@ class Testcaselib:
         """
         main.step( "Verify IP address assignment from hosts" )
         ipResult = main.TRUE
+        main.Network.update()
         for hostName, ip in main.expectedHosts[ "network" ].items():
             ipResult = ipResult and utilities.retry( main.Network.verifyHostIp,
                                                      main.FALSE,
                                                      kwargs={ 'hostList': [ hostName ],
-                                                              'prefix': ip },
+                                                              'prefix': ip,
+                                                              'update': False },
                                                      attempts=attempts,
                                                      sleep=sleep )
         utilities.assert_equals( expect=main.TRUE, actual=ipResult,

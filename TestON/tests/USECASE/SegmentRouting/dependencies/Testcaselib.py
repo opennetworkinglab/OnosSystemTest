@@ -650,7 +650,7 @@ class Testcaselib:
                                  onfail="Failed to kill switch?" )
 
     @staticmethod
-    def recoverSwitch( main, switch, switches, links ):
+    def recoverSwitch( main, switch, switches, links, rediscoverHosts=False ):
         """
         Params: switches, links: number of expected switches and links after SwitchUp, ex.: '4', '6'
         Recover a switch and verify ONOS can see the proper change
@@ -664,6 +664,13 @@ class Testcaselib:
         main.log.info( "Waiting %s seconds for switch up to be discovered" % (
             main.switchSleep ) )
         time.sleep( main.switchSleep )
+        if rediscoverHosts:
+            main.Network.discoverIpv4Hosts( main.internalIpv4Hosts )
+            main.Network.discoverIpv6Hosts( main.internalIpv6Hosts )
+            main.log.info( "Waiting %s seconds for hosts to get re-discovered" % (
+                           main.switchSleep ) )
+            time.sleep( main.switchSleep )
+
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,

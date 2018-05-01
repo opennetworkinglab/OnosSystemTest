@@ -571,6 +571,75 @@ class MininetCliDriver( Emulator ):
             main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
+
+            main.cleanAndExit()
+
+    def discoverIpv4Hosts( self, hostList, wait=1 , dstIp="6.6.6.6"):
+        '''
+        Can only be used if hosts already have ipv4 addresses.
+
+        Hosts in hostList will do a single ping to a non-existent (dstIp) address for ONOS
+        to discover them again.
+        '''
+        try:
+            main.log.info( "Issuing dumb pings for ipv6 hosts to be discovered" )
+            cmd = " ping -c 1 -i 1 -W " + str( wait ) + " "
+            for host in hostList:
+                pingCmd = str( host ) + cmd + dstIp
+                self.handle.sendline( pingCmd )
+                self.handle.expect( "mininet>", timeout=wait + 1 )
+
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception" )
+            response = self.handle.before
+            # NOTE: Send ctrl-c to make sure command is stopped
+            self.handle.send( "\x03" )
+            self.handle.expect( "Interrupt" )
+            response += self.handle.before + self.handle.after
+            self.handle.expect( "mininet>" )
+            response += self.handle.before + self.handle.after
+            main.log.debug( response )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def discoverIpv6Hosts( self, hostList, wait=1, dstIp="1020::3fe" ):
+        '''
+        Can only be used if hosts already have ipv6 addresses.
+
+        Hosts in hostList will do a single ping to a non-existent address (dstIp) for ONOS
+        to discover them again.
+        '''
+        try:
+            main.log.info( "Issuing dump pings for ipv6 hosts to be discovered" )
+            cmd = " ping6 -c 1 -i 1 -W " + str( wait ) + " "
+            for host in hostList:
+                pingCmd = str( host ) + cmd + dstIp
+                self.handle.sendline( pingCmd )
+                self.handle.expect( "mininet>", timeout=wait + 1 )
+
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception" )
+            response = self.handle.before
+            # NOTE: Send ctrl-c to make sure command is stopped
+            self.handle.send( "\x03" )
+            self.handle.expect( "Interrupt" )
+            response += self.handle.before + self.handle.after
+            self.handle.expect( "mininet>" )
+            response += self.handle.before + self.handle.after
+            main.log.debug( response )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
     def pingallHostsUnidirectional( self, srcList, dstList, ipv6=False, wait=1, acceptableFailed=0 ):

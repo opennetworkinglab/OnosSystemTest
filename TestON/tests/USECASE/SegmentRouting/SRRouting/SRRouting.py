@@ -468,6 +468,76 @@ class SRRouting:
         verifyOnosFailure( main, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
+    def CASE603( self, main ):
+        """"
+        Drop HAGG-1 device and test connectivity.
+        Drop DAAS-1 device and test connectivity (some hosts lost it)
+        Bring up DAAS-1 and test connectivity (all hosts gained it again)
+
+        Repeat the same with HAGG-2 and DAAS-2.
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop hagg spine switch along with dass leaf switch." )
+        setupTest( main, test_idx=603, onosNodes=3 )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+
+        verify( main )
+        lib.killSwitch( main, "spine103", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        verify( main )
+        lib.killSwitch( main, "leaf6", int( main.params[ "TOPO" ]["switchNum" ] ) - 2, int( main.params[ "TOPO" ][ "linkNum" ] ) - 8 )
+        main.disconnectedIpv4Hosts = [ 'h12v4', 'h13v4']
+        main.disconnectedIpv6Hosts = [ 'h12v6', 'h13v6']
+        verify( main )
+        lib.recoverSwitch( main, "leaf6", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6, rediscoverHosts=True)
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verify( main )
+        lib.recoverSwitch( main, "spine103", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ))
+        verify( main )
+
+        lib.killSwitch( main, "spine104", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        verify( main )
+        lib.killSwitch( main, "leaf1", int( main.params[ "TOPO" ]["switchNum" ] ) - 2, int( main.params[ "TOPO" ][ "linkNum" ] ) - 8 )
+        main.disconnectedIpv4Hosts = [ 'h1v4', 'h2v4']
+        main.disconnectedIpv6Hosts = [ 'h1v6', 'h2v6']
+        verify( main )
+        lib.recoverSwitch( main, "leaf1", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6, rediscoverHosts=True)
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verify( main )
+        lib.recoverSwitch( main, "spine104", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ))
+        verify( main )
+
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE604( self, main ):
+        """"
+        Drop HAGG-1 device and test connectivity.
+        Bring up HAGG-1 and test connectivity.
+        Drop HAGG-2 device and test connectivity.
+        Bring up HAGG-2 device and test connectivity
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop hagg spine switches." )
+        setupTest( main, test_idx=604, onosNodes=3 )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verify( main )
+        lib.killSwitch( main, "spine103", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        verify( main )
+        lib.recoverSwitch( main, "spine103", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ))
+        verify( main )
+        lib.killSwitch( main, "spine104", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        verify( main )
+        lib.recoverSwitch( main, "spine104", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ))
+        verify( main )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
     def CASE606( self, main ):
         """
         Drop SPINE-1 and test connectivity

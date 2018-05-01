@@ -538,6 +538,60 @@ class SRRouting:
         verify( main )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
+    def CASE605( self, main ):
+        """
+        Drop HAGG-1 and test connectivity (expect no failure)
+        Drop all leafs in big fabric and test connectivity (expect some failures)
+        Bring up HAGG-1 and test connectivity (still expect some failures)
+        Bring up all leafs in big fabric and test connectivity (expect no failure)
+        Repeat above with HAGG-2
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop one hagg and all leafs in big fabric" )
+        setupTest( main, test_idx=605, onosNodes=3 )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verify( main )
+        lib.killSwitch( main, "spine103", int( main.params[ "TOPO" ][ "switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        verify( main )
+        lib.killSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ], int( main.params[ "TOPO" ][ "switchNum" ] ) - 5,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 42 )
+        main.disconnectedIpv4Hosts = [ "h3v4", "h4v4", "h5v4", "h6v4", "h7v4", "h8v4", "h9v4", "h10v4", "h11v4" ]
+        main.disconnectedIpv6Hosts = [ "h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6" ]
+        main.disconnectedExternalIpv4Hosts = [ "rh1v4", "rh2v4", "rh5v4" ]
+        main.disconnectedExternalIpv6Hosts = [ "rh1v6", "rh11v6", "rh5v6", "rh2v6", "rh22v6" ]
+        verify( main, disconnected=True )
+        lib.recoverSwitch( main, "spine103", int( main.params[ "TOPO" ][ "switchNum" ] ) - 4, int( main.params[ "TOPO" ][ "linkNum" ] ) - 36 )
+        verify( main, disconnected=True )
+        lib.recoverSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ], int( main.params[ "TOPO" ][ "switchNum" ] ),
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        main.disconnectedExternalIpv4Hosts = [ ]
+        main.disconnectedExternalIpv6Hosts = [ ]
+        verify( main )
+
+        lib.killSwitch( main, "spine104", int( main.params[ "TOPO" ][ "switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        verify( main )
+        lib.killSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ], int( main.params[ "TOPO" ][ "switchNum" ] ) - 5,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 42 )
+        main.disconnectedIpv4Hosts = [ "h3v4", "h4v4", "h5v4", "h6v4", "h7v4", "h8v4", "h9v4", "h10v4", "h11v4" ]
+        main.disconnectedIpv6Hosts = [ "h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6" ]
+        main.disconnectedExternalIpv4Hosts = [ "rh1v4", "rh2v4", "rh5v4" ]
+        main.disconnectedExternalIpv6Hosts = [ "rh1v6", "rh11v6", "rh5v6", "rh2v6", "rh22v6" ]
+        verify( main, disconnected=True )
+        lib.recoverSwitch( main, "spine104", int( main.params[ "TOPO" ][ "switchNum" ] ) - 4, int( main.params[ "TOPO" ][ "linkNum" ] ) - 36 )
+        verify( main, disconnected=True )
+        lib.recoverSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ], int( main.params[ "TOPO" ][ "switchNum" ] ),
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        main.disconnectedExternalIpv4Hosts = [ ]
+        main.disconnectedExternalIpv6Hosts = [ ]
+        verify( main )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
     def CASE606( self, main ):
         """
         Drop SPINE-1 and test connectivity
@@ -562,7 +616,7 @@ class SRRouting:
         lib.recoverSwitch( main, "spine101", 8, 30 )
         verify( main )
         lib.recoverSwitch( main, "leaf3", 9, 38 )
-        lib.recoverSwitch( main, "leaf2", 10, 48 )
+        lib.recoverSwitch( main, "leaf2", 10, 48, rediscoverHosts=True )
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
         verify( main )

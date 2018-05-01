@@ -2379,12 +2379,12 @@ class MininetCliDriver( Emulator ):
         """
         try:
             self.handle.sendline( '' )
-            i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
+            i = self.handle.expect( [ 'mininet>', self.hostPrompt, pexpect.EOF, pexpect.TIMEOUT ],
                                     timeout=2 )
             response = main.TRUE
             if i == 0:
                 response = self.stopNet()
-            elif i == 1:
+            elif i == 2:
                 return main.TRUE
             # print "Disconnecting Mininet"
             if self.handle:
@@ -3020,7 +3020,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getHosts( self, verbose=False, updateTimeout=1000,
+    def getHosts( self, verbose=False, update=True, updateTimeout=1000,
                   hostClass=[ "Host", "DhcpClient", "Dhcp6Client", "DhcpServer", "Dhcp6Server", "DhcpRelay" ],
                   getInterfaces=True ):
         """
@@ -3047,8 +3047,9 @@ class MininetCliDriver( Emulator ):
             ifaceRE = r"(?P<ifname>[^:]+)\:(?P<ip>[^\s,]+),?"
             ifacesRE = r"(?P<ifaces>[^:]+\:[^\s]+)"
             hostRE = r"" + classRE + "\s(?P<name>[^:]+)\:(" + ifacesRE + "*\spid=(?P<pid>[^>]+))"
-            # update mn port info
-            self.update( updateTimeout )
+            if update:
+                # update mn port info
+                self.update( updateTimeout )
             # Get mininet dump
             dump = self.dump().split( "\n" )
             hosts = {}
@@ -3456,7 +3457,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def verifyHostIp( self, hostList=[], prefix="" ):
+    def verifyHostIp( self, hostList=[], prefix="", update=True ):
         """
         Description:
             Verify that all hosts have IP address assigned to them
@@ -3465,12 +3466,13 @@ class MininetCliDriver( Emulator ):
             in hostList
             prefix: at least one of the ip address assigned to the host
             needs to have the specified prefix
+            update: Update Mininet information if True
         Returns:
             main.TRUE if all hosts have specific IP address assigned;
             main.FALSE otherwise
         """
         try:
-            hosts = self.getHosts( getInterfaces=False )
+            hosts = self.getHosts( update=update, getInterfaces=False )
             if not hostList:
                 hostList = hosts.keys()
             for hostName in hosts.keys():

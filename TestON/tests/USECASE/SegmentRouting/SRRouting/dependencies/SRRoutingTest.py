@@ -19,153 +19,18 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
-import time
-import json
-
-class SRRoutingTest ():
-
-    topo = {}
-
-    def __init__( self ):
-        self.default = ''
-
-    @staticmethod
-    def runTest( main, test_idx, onosNodes, dhcp, routers, ipv4, ipv6,
-                 description, countFlowsGroups=False, checkExternalHost=False,
-                 staticRouteConfigure=False, switchFailure=False, linkFailure=False,
-                 nodeFailure=False ):
-
-        skipPackage = False
-        init = False
-        if not hasattr( main, 'apps' ):
-            init = True
-            run.initTest( main )
-
-        # Skip onos packaging if the cluster size stays the same
-        if not init and onosNodes == main.Cluster.numCtrls:
-            skipPackage = True
-
-        main.case( '%s, ONOS cluster size: %s' % ( description, onosNodes ) )
-
-        main.cfgName = 'TEST_CONFIG_ipv4=%d_ipv6=%d_dhcp=%d_routers=%d' % \
-            ( ipv4, ipv6, dhcp, routers )
-        if checkExternalHost:
-            main.cfgName += '_external=1'
-        if staticRouteConfigure:
-            main.cfgName += '_static=1'
-
-        main.resultFileName = 'CASE%03d' % test_idx
-        main.Cluster.setRunningNode( onosNodes )
-
-        run.installOnos( main, skipPackage=skipPackage, cliSleep=5,
-                         parallel=False )
-
-        # Load configuration files
-        run.loadJson( main )
-        run.loadChart( main )
-        run.loadHost( main )
-
-        # if static route flag add routes
-        # these routes are topology specific
-        if (staticRouteConfigure):
-            if (ipv4):
-                run.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.1.1")
-            if (ipv6):
-                run.addStaticOnosRoute( main, "2000::8700/120", "2000::101")
-
-        if countFlowsGroups:
-            run.loadCount( main )
-        if switchFailure:
-            run.loadSwitchFailureChart( main )
-        if linkFailure:
-            run.loadLinkFailureChart( main )
-
-        # wait some time
-        time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
-
-        if hasattr( main, 'Mininet1' ):
-            # Run the test with Mininet
-            mininet_args = ' --dhcp=%s --routers=%s --ipv6=%s --ipv4=%s' % ( dhcp, routers, ipv6, ipv4 )
-            run.startMininet( main, main.params['DEPENDENCY']['topology'], args=mininet_args )
-        else:
-            # Run the test with physical devices
-            # TODO: connect TestON to the physical network
-            pass
-
-        # wait some time for onos to install the rules!
-        time.sleep( float( main.params[ 'timers' ][ 'startMininetSleep' ] ) )
-        if ( dhcp ):
-            time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )
-
-        SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
-
-        # Test switch failures
-        if switchFailure:
-            for switch, expected in main.switchFailureChart.items():
-                run.killSwitch( main, switch, expected['switches_after_failure'], expected['links_after_failure'] )
-                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
-
-                run.recoverSwitch( main, switch, expected['switches_before_failure'], expected['links_before_failure'] )
-                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
-
-        # Test link failures
-        if linkFailure:
-            for link_batch_name, info in main.linkFailureChart.items():
-
-                linksToRemove = info['links'].values()
-                linksBefore = info['links_before']
-                linksAfter = info['links_after']
-
-                run.killLinkBatch( main, linksToRemove, linksAfter, 10 )
-                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
-
-                run.restoreLinkBatch( main, linksToRemove, linksBefore, 10 )
-                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
-
-        # Test node failures
-        if nodeFailure:
-            numCtrls = len( main.Cluster.runningNodes )
-            links = len( json.loads( main.Cluster.next().links() ) )
-            switches = len( json.loads( main.Cluster.next().devices() ) )
-            for ctrl in xrange( numCtrls ):
-                # Kill node
-                run.killOnos( main, [ ctrl ], switches, links, ( numCtrls - 1 ) )
-                main.Cluster.active(0).CLI.balanceMasters()
-                time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
-                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
-
-                # Recover node
-                run.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
-                main.Cluster.active(0).CLI.balanceMasters()
-                time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
-                SRRoutingTest.runChecks( main, test_idx, countFlowsGroups )
-
-        # Cleanup
-        run.cleanup( main, copyKarafLog=False )
-
-    @staticmethod
-    def runChecks( main, test_idx, countFlowsGroups ):
-        # Verify host IP assignment
-        run.verifyOnosHostIp( main )
-        run.verifyNetworkHostIp( main )
-        # check flows / groups numbers
-        if countFlowsGroups:
-            run.checkFlowsGroupsFromFile( main )
-        # ping hosts
-        run.pingAll( main, 'CASE%03d' % test_idx, False, acceptableFailed=5, basedOnIp=True, skipOnFail=True )
-
-
-def setupTest( main, test_idx, onosNodes ):
+def setupTest( main, test_idx, onosNodes, ipv4=True, ipv6=True, external=True, static=False, countFlowsGroups=False ):
     """
     SRRouting test setup
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    import time
+
     skipPackage = False
     init = False
     if not hasattr( main, 'apps' ):
         init = True
-        run.initTest( main )
+        lib.initTest( main )
     # Skip onos packaging if the cluster size stays the same
     if not init and onosNodes == main.Cluster.numCtrls:
         skipPackage = True
@@ -174,31 +39,47 @@ def setupTest( main, test_idx, onosNodes ):
     main.internalIpv6Hosts = main.params[ 'TOPO' ][ 'internalIpv6Hosts' ].split( ',' )
     main.externalIpv4Hosts = main.params[ 'TOPO' ][ 'externalIpv4Hosts' ].split( ',' )
     main.externalIpv6Hosts = main.params[ 'TOPO' ][ 'externalIpv6Hosts' ].split( ',' )
-    main.resultFileName = "CASE%03d" % test_idx
+    main.disconnectedIpv4Hosts = []
+    main.disconnectedIpv6Hosts = []
+    main.resultFileName = 'CASE%03d' % test_idx
     main.Cluster.setRunningNode( onosNodes )
-    lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
-    # Load configuration files
-    main.step( "Load configurations" )
-    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1_dhcp=1_routers=1_external=1"
-    lib.loadJson( main )
-    time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
 
-    if hasattr( main, "Mininet1" ):
+    lib.installOnos( main, skipPackage=skipPackage, cliSleep=5, parallel=False )
+
+    # Load configuration files
+    main.cfgName = 'TEST_CONFIG_ipv4={}_ipv6={}_dhcp=1_routers=1{}{}'.format( 1 if ipv4 else 0,
+                                                                              1 if ipv6 else 0,
+                                                                              "_external=1" if external else "",
+                                                                              "_static=1" if static else "" )
+    lib.loadJson( main )
+    time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
+    lib.loadHost( main )
+
+    # if static route flag add routes
+    # these routes are topology specific
+    if static:
+        if ipv4:
+            lib.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.1.1")
+        if ipv6:
+            lib.addStaticOnosRoute( main, "2000::8700/120", "2000::101")
+    if countFlowsGroups:
+        lib.loadCount( main )
+
+    if hasattr( main, 'Mininet1' ):
         # Run the test with Mininet
-        mininet_args = " --dhcp=1 --routers=1 --ipv6=1 --ipv4=1"
-        lib.startMininet( main, main.params[ "DEPENDENCY" ][ "topology" ], args=mininet_args )
+        mininet_args = ' --dhcp=1 --routers=1 --ipv6={} --ipv4={}'.format( 1 if ipv6 else 0,
+                                                                           1 if ipv4 else 0 )
+        lib.startMininet( main, main.params[ 'DEPENDENCY' ][ 'topology' ], args=mininet_args )
         time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
     else:
         # Run the test with physical devices
         lib.connectToPhysicalNetwork( main, self.switchNames )
         # Check if the devices are up
         lib.checkDevices( main, switches=len( self.switchNames ) )
-
     # wait some time for onos to install the rules!
-    time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
-    time.sleep( float( main.params[ "timers" ][ "dhcpSleep" ] ) )
+    time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )
 
-def verifyPingInternal( main, verifyDisconnected=True ):
+def verifyPingInternal( main, ipv4=True, ipv6=True, disconnected=True ):
     """
     Verify all connected internal hosts are able to reach each other,
     and disconnected internal hosts cannot reach any other internal host
@@ -206,20 +87,24 @@ def verifyPingInternal( main, verifyDisconnected=True ):
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     # Verify connected hosts
     main.step("Verify reachability of connected internal hosts")
-    lib.verifyPing( main,
-                    [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
-                    [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ] )
-    lib.verifyPing( main,
-                    [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
-                    [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
-                    ipv6=True, acceptableFailed=7 )
+    if ipv4:
+        lib.verifyPing( main,
+                        [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
+                        [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ] )
+    if ipv6:
+        lib.verifyPing( main,
+                        [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
+                        [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
+                        ipv6=True, acceptableFailed=7 )
     # Verify disconnected hosts
-    if verifyDisconnected and ( main.disconnectedIpv4Hosts or main.disconnectedIpv6Hosts ):
+    if disconnected:
         main.step("Verify unreachability of disconnected internal hosts")
-        lib.verifyPing( main, main.internalIpv4Hosts, main.disconnectedIpv4Hosts, expect=False )
-        lib.verifyPing( main, main.internalIpv6Hosts, main.disconnectedIpv6Hosts, ipv6=True, expect=False )
+        if main.disconnectedIpv4Hosts:
+            lib.verifyPing( main, main.internalIpv4Hosts, main.disconnectedIpv4Hosts, expect=False )
+        if main.disconnectedIpv6Hosts:
+            lib.verifyPing( main, main.internalIpv6Hosts, main.disconnectedIpv6Hosts, ipv6=True, expect=False )
 
-def verifyPingExternal( main, verifyDisconnected=True ):
+def verifyPingExternal( main, ipv4=True, ipv6=True, disconnected=True ):
     """
     Verify all connected internal hosts are able to reach external hosts,
     and disconnected internal hosts cannot reach any external host
@@ -227,24 +112,100 @@ def verifyPingExternal( main, verifyDisconnected=True ):
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     # Verify connected hosts
     main.step("Verify reachability of from connected internal hosts to external hosts")
-    lib.verifyPing( main,
-                    [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
-                    main.externalIpv4Hosts )
-    lib.verifyPing( main,
-                    [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
-                    main.externalIpv6Hosts,
-                    ipv6=True, acceptableFailed=7 )
+    if ipv4:
+        lib.verifyPing( main,
+                        [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
+                        main.externalIpv4Hosts )
+    if ipv6:
+        lib.verifyPing( main,
+                        [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
+                        main.externalIpv6Hosts,
+                        ipv6=True, acceptableFailed=7 )
     # Verify disconnected hosts
-    '''
-    if verifyDisconnected and ( main.disconnectedIpv4Hosts or main.disconnectedIpv6Hosts ):
+    if disconnected:
         main.step("Verify unreachability of disconnected internal hosts to external hosts")
-        lib.verifyPing( main, main.disconnectedIpv4Hosts, main.externalIpv4Hosts, expect=False )
-        lib.verifyPing( main, main.disconnectedIpv6Hosts, main.externalIpv6Hosts, ipv6=True, expect=False )
-    '''
+        if main.disconnectedIpv4Hosts:
+            lib.verifyPing( main, main.disconnectedIpv4Hosts, main.externalIpv4Hosts, expect=False )
+        if main.disconnectedIpv6Hosts:
+            lib.verifyPing( main, main.disconnectedIpv6Hosts, main.externalIpv6Hosts, ipv6=True, expect=False )
 
-def verifyPing( main ):
+def verifyPing( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True ):
     """
     Verify reachability and unreachability of connected/disconnected hosts
     """
-    verifyPingInternal( main )
-    verifyPingExternal( main )
+    if internal:
+        verifyPingInternal( main, ipv4, ipv6, disconnected )
+    if external:
+        verifyPingExternal( main, ipv4, ipv6, disconnected )
+
+def verifyLinkFailure( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True, countFlowsGroups=False ):
+    """
+    Kill and recover all links to spine101 and 102 sequencially and run verifications
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    linksToRemove = [ ["spine103", "spine101"],
+                      ["leaf2", "spine101"],
+                      ["leaf3", "spine101"],
+                      ["leaf4", "spine101"],
+                      ["leaf5", "spine101"] ]
+    lib.killLinkBatch( main, linksToRemove, 30, 10 )
+    verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+    lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
+    verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+    linksToRemove = [ ["spine104", "spine102"],
+                      ["leaf2", "spine102"],
+                      ["leaf3", "spine102"],
+                      ["leaf4", "spine102"],
+                      ["leaf5", "spine102"] ]
+    lib.killLinkBatch( main, linksToRemove, 30, 10 )
+    verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+    lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
+    verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+
+def verifySwitchFailure( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True, countFlowsGroups=False ):
+    """
+    Kill and recover spine101 and 102 sequencially and run verifications
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    for switchToKill in [ "spine101", "spine102" ]:
+        lib.killSwitch( main, switchToKill, 9, 30 )
+        verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+        lib.recoverSwitch( main, switchToKill, 10, 48 )
+        verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+
+def verifyOnosFailure( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True, countFlowsGroups=False ):
+    """
+    Kill and recover onos nodes sequencially and run verifications
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    import json
+    import time
+
+    numCtrls = len( main.Cluster.runningNodes )
+    links = len( json.loads( main.Cluster.next().links() ) )
+    switches = len( json.loads( main.Cluster.next().devices() ) )
+    for ctrl in xrange( numCtrls ):
+        # Kill node
+        lib.killOnos( main, [ ctrl ], switches, links, ( numCtrls - 1 ) )
+        main.Cluster.active(0).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+        # Recover node
+        lib.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
+        main.Cluster.active(0).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+
+def verify( main, ipv4=True, ipv6=True, disconnected=True, internal=True, external=True, countFlowsGroups=False ):
+    """
+    Verify host IP assignment, flow/group number and pings
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    # Verify host IP assignment
+    lib.verifyOnosHostIp( main )
+    lib.verifyNetworkHostIp( main )
+    # check flows / groups numbers
+    if countFlowsGroups:
+        run.checkFlowsGroupsFromFile( main )
+    # ping hosts
+    verifyPing( main, ipv4, ipv6, disconnected, internal, external )

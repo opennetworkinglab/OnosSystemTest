@@ -124,6 +124,8 @@ class Testcaselib:
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.routeservice.impl" )
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.routeservice.store" )
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.routing.fpm" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.events" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.mcast" )
 
     @staticmethod
     def loadCount( main ):
@@ -377,20 +379,20 @@ class Testcaselib:
             onfail="Flow count looks wrong. " )
 
     @staticmethod
-    def checkFlowEqualityByDpid( main, dpid, flowCount, sleep=10):
+    def checkFlowEqualityByDpid( main, dpid, flowCount, sleep=10 ):
         main.step(
                 " Check whether the flow count of device %s is equal to %s" % ( dpid, flowCount ) )
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowAddedCount,
                                  main.FALSE,
-                                 args=( dpid, flowCount, False, 1),
+                                 args=( dpid, flowCount, False, 1 ),
                                  attempts=5,
                                  sleep=sleep )
 
         utilities.assertEquals(
                 expect=True,
                 actual=( int( count ) == flowCount ),
-                onpass="Flow count looks correct: " + str(count) ,
-                onfail="Flow count looks wrong, should be " + str(flowCount))
+                onpass="Flow count looks correct: " + str( count ) ,
+                onfail="Flow count looks wrong. found {},  should be {}.".format( count, flowCount ) )
 
     @staticmethod
     def checkGroupEqualityByDpid( main, dpid, groupCount, sleep=10):
@@ -405,22 +407,22 @@ class Testcaselib:
         utilities.assertEquals(
                 expect=True,
                 actual=( count == groupCount ),
-                onpass="Group count looks correct: " + str(count) ,
-                onfail="Group count looks wrong: should be " + str(groupCount))
+                onpass="Group count looks correct: " + str( count ) ,
+                onfail="Group count looks wrong. found {},  should be {}.".format( count, groupCount ) )
 
     @staticmethod
-    def checkFlowsGroupsFromFile(main):
+    def checkFlowsGroupsFromFile( main ):
 
         for dpid, values in main.count.items():
             flowCount = values["flows"]
             groupCount = values["groups"]
-            main.log.report( "Check flow count for dpid " + str(dpid) +
-                             ", should be " + str(flowCount))
-            Testcaselib.checkFlowEqualityByDpid(main, dpid, flowCount)
+            main.log.report( "Check flow count for dpid " + str( dpid ) +
+                             ", should be " + str( flowCount ) )
+            Testcaselib.checkFlowEqualityByDpid( main, dpid, flowCount )
 
-            main.log.report( "Check group count for dpid " + str(dpid) +
-                             ", should be " + str(groupCount))
-            Testcaselib.checkGroupEqualityByDpid(main, dpid, groupCount)
+            main.log.report( "Check group count for dpid " + str( dpid ) +
+                             ", should be " + str( groupCount ) )
+            Testcaselib.checkGroupEqualityByDpid( main, dpid, groupCount )
 
         return
 
@@ -754,7 +756,7 @@ class Testcaselib:
 
             nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                            False,
-                                           attempts=5,
+                                           attempts=10,
                                            sleep=10 )
             utilities.assert_equals( expect=True, actual=nodeResults,
                                      onpass="Nodes check successful",

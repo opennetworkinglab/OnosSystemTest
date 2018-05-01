@@ -1006,10 +1006,15 @@ class Testcaselib:
             main.log.debug( host.hostMac )
 
     @staticmethod
-    def verifyMulticastTraffic( main, routeName, expect, skipOnFail=True, maxRetry=3 ):
+    def verifyMulticastTraffic( main, routeName, expect, skipOnFail=True, maxRetry=0 ):
         """
         Verify multicast traffic using scapy
         """
+        from tests.dependencies.topology import Topology
+        try:
+            main.topo
+        except ( NameError, AttributeError ):
+            main.topo = Topology()
         routeData = main.multicastConfig[ routeName ]
         srcs = main.mcastRoutes[ routeName ][ "src" ]
         dsts = main.mcastRoutes[ routeName ][ "dst" ]
@@ -1038,42 +1043,19 @@ class Testcaselib:
                 pkt = srcEntry[ "packet" ]
                 # Send packet and check received packet
                 expectedResult = expect.pop( 0 ) if isinstance( expect, list ) else expect
-                trafficResult = utilities.retry( Testcaselib.sendMulticastTraffic,
-                                                 main.FALSE,
-                                                 args=( main, sender, receiver, pktFilter, pkt,
-                                                        sIface, dIface, expectedResult ),
-                                                 attempts=maxRetry,
-                                                 sleep=1 )
+                t3Cmd = "t3-troubleshoot -vv -sp {} -et ipv{} -d {} -dm {}".format( srcEntry[ "port" ], routeData[ "ipVersion" ],
+                                                                                routeData[ "group" ], srcEntry[ "Ether" ] )
+                trafficResult = main.topo.sendScapyPackets( sender, receiver, pktFilter, pkt, sIface, dIface,
+                                                            expectedResult, maxRetry, True, t3Cmd )
                 utilities.assert_equals( expect=main.TRUE,
                                          actual=trafficResult,
                                          onpass="{} to {}: Pass".format( srcEntry[ "host" ], dstEntry[ "host" ] ),
                                          onfail="{} to {}: Fail".format( srcEntry[ "host" ], dstEntry[ "host" ] ) )
                 if skipOnFail and trafficResult != main.TRUE:
+                    main.stop()
                     Testcaselib.saveOnosDiagnostics( main )
                     Testcaselib.cleanup( main, copyKarafLog=False )
                     main.skipCase()
-
-    @staticmethod
-    def sendMulticastTraffic( main, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True ):
-        """
-        Send multicast traffic using scapy
-        """
-        receiver.startFilter( ifaceName=dIface, pktFilter=pktFilter )
-        sender.sendPacket( iface=sIface )
-        finished = receiver.checkFilter()
-        packet = ""
-        if finished:
-            packets = receiver.readPackets()
-            for packet in packets.splitlines():
-                main.log.debug( packet )
-        else:
-            kill = receiver.killFilter()
-            main.log.debug( kill )
-            sender.handle.sendline( "" )
-            sender.handle.expect( sender.scapyPrompt )
-            main.log.debug( sender.handle.before )
-        packetCaptured = True if pkt in packet else False
-        return main.TRUE if packetCaptured == expect else main.FALSE
 
     @staticmethod
     def verifyPing( main, srcList, dstList, ipv6=False, expect=True, wait=1, acceptableFailed=0, skipOnFail=True ):

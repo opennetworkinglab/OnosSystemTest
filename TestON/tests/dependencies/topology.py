@@ -273,7 +273,7 @@ class Topology:
                 thread = main.Thread( target=utilities.retry,
                                       name="{}-{}".format( srcIp, dstIp ),
                                       args=[ hostHandle.pingHostSetAlternative, [ main.FALSE ] ],
-                                      kwargs={ "args":( [ dstIp ], wait, ipv6 ),
+                                      kwargs={ "args": ( [ dstIp ], wait, ipv6 ),
                                                "attempts": acceptableFailed + 1,
                                                "sleep": 1 } )
                 pool.append( thread )
@@ -302,3 +302,65 @@ class Topology:
                     main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, cmd, main.logdir,
                                                 "t3-CASE{}-{}-{}-".format( main.CurrentTestCaseNumber, srcIp, dstIp ) )
         return main.FALSE if unexpectedPings else main.TRUE
+
+    def sendScapyPackets( self, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True, acceptableFailed=0, collectT3=True, t3Command="" ):
+        """
+        Description:
+            Call sendScapyPacket and retry if neccessary
+            If collectT3 is True and t3Command is specified, collect t3-troubleshoot output on unexpected scapy results
+            Buiid packets on the sender side by calling functions in Scapy CLI driver
+        Options:
+            sender: the component of the host that is sending packets
+            receiver: the component of the host that is receiving packets
+            pktFilter: packet filter used by receiver
+            pkt: keyword that is expected to be conrained in the received packets
+            expect: expect receiver to receive the packet if True, otherwise not receiving the packet
+            acceptableFailed: maximum number of unexpected scapy results acceptable
+            collectT3: save t3-troubleshoot output for unexpected scapy results
+        Returns:
+            main.TRUE if scapy result is expected, otherwise main.FALSE
+        """
+        main.log.info( "Sending scapy packets from  {} to {}, expected result is {}".format( sender.name, receiver.name,
+                                                                                             "pass" if expect else "fail" ) )
+        scapyResult = utilities.retry( self.sendScapyPacket,
+                                       main.FALSE,
+                                       args=( sender, receiver, pktFilter, pkt,
+                                              sIface, dIface, expect ),
+                                       attempts=acceptableFailed + 1,
+                                       sleep=1 )
+        if not scapyResult and collectT3 and t3Command:
+            main.log.debug( "Collecting t3 with source {} and destination {}".format( sender.name, receiver.name ) )
+            main.log.debug( "t3 command: {}".format( t3Command ) )
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, t3Command, main.logdir,
+                                        "t3-CASE{}-{}-{}-".format( main.CurrentTestCaseNumber, sender.name, receiver.name ) )
+        return scapyResult
+
+    def sendScapyPacket( self, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True ):
+        """
+        Description:
+            Send Scapy packets from sender to receiver and verify if result is as expected
+        Options:
+            sender: the component of the host that is sending packets
+            receiver: the component of the host that is receiving packets
+            pktFilter: packet filter used by receiver
+            pkt: keyword that is expected to be conrained in the received packets
+            expect: expect receiver to receive the packet if True, otherwise not receiving the packet
+        Returns:
+            main.TRUE if scapy result is expected, otherwise main.FALSE
+        """
+        receiver.startFilter( ifaceName=dIface, pktFilter=pktFilter )
+        sender.sendPacket( iface=sIface )
+        finished = receiver.checkFilter()
+        packet = ""
+        if finished:
+            packets = receiver.readPackets()
+            for packet in packets.splitlines():
+                main.log.debug( packet )
+        else:
+            kill = receiver.killFilter()
+            main.log.debug( kill )
+            sender.handle.sendline( "" )
+            sender.handle.expect( sender.scapyPrompt )
+            main.log.debug( sender.handle.before )
+        packetCaptured = True if pkt in packet else False
+        return main.TRUE if packetCaptured == expect else main.FALSE

@@ -119,6 +119,7 @@ def copyLogs( testName ){
       sudo cp *Flows* /var/jenkins/workspace/SR-log-${WikiPrefix}/
       sudo cp *Groups* /var/jenkins/workspace/SR-log-${WikiPrefix}/
       sudo cp *.tar.gz /var/jenkins/workspace/SR-log-${WikiPrefix}/
+      sudo cp t3-* /var/jenkins/workspace/SR-log-${WikiPrefix}/
       '''
   }
   return result

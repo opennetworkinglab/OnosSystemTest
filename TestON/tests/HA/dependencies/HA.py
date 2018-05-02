@@ -49,7 +49,7 @@ class HA():
             main.ONOSbench.handle.expect( main.ONOSbench.home + "\$" )
             main.ONOSbench.handle.sendline( "git checkout -- tools/test/bin/onos-gen-partitions" )
             main.ONOSbench.handle.expect( main.ONOSbench.home + "\$" )
-            main.log.info( " Cleaning custom gen partitions file, response was: \n" +
+            main.log.info( "Cleaning custom gen partitions file, response was: \n" +
                            str( main.ONOSbench.handle.before ) )
         except ( pexpect.TIMEOUT, pexpect.EOF ):
             main.log.exception( "ONOSbench: pexpect exception found:" +
@@ -134,12 +134,10 @@ class HA():
         ip = main.ONOSbench.getIpAddr( iface=iface )
         metaFile = "cluster.json"
         javaArgs = r"-Donos.cluster.metadata.uri=http:\/\/{}:{}\/{}".format( ip, main.serverPort, metaFile )
-        main.log.warn( javaArgs )
         main.log.warn( repr( javaArgs ) )
         handle = main.ONOSbench.handle
         sed = r"sed -i 's/bash/bash\nexport JAVA_OPTS=${{JAVA_OPTS:-{}}}\n/' {}".format( javaArgs,
                                                                                          main.onosServicepath )
-        main.log.warn( sed )
         main.log.warn( repr( sed ) )
         handle.sendline( sed )
         handle.expect( metaFile )
@@ -188,7 +186,7 @@ class HA():
                     main.log.error( "Could not parse counters response from " +
                                     str( main.Cluster.active( i ) ) )
                     main.log.warn( repr( onosCountersRaw[ i ] ) )
-                    onosCounters.append( [] )
+                    onosCounters.append( {} )
 
             testCounters = {}
             # make a list of all the "TestON-*" counters in ONOS
@@ -201,7 +199,7 @@ class HA():
             for controller in enumerate( onosCounters ):
                 for key, value in controller[ 1 ].iteritems():
                     if 'TestON' in key:
-                        node = str( main.Cluster.active( controller[ 0 ] ) )
+                        node = main.Cluster.active( controller[ 0 ] )
                         try:
                             testCounters[ node ].append( { key: value } )
                         except KeyError:
@@ -213,7 +211,7 @@ class HA():
                 consistent = main.TRUE
             else:
                 consistent = main.FALSE
-                main.log.error( "ONOS nodes have different values for counters:\n" +
+                main.log.error( "ONOS nodes have different values for counters: %s",
                                 testCounters )
             return ( onosCounters, consistent )
         except Exception:
@@ -231,19 +229,19 @@ class HA():
             onosCounters, consistent = self.consistentCheck()
             # Check for correct values
             for i in range( len( main.Cluster.active() ) ):
+                node = str( main.Cluster.active( i ) )
                 current = onosCounters[ i ]
                 onosValue = None
                 try:
                     onosValue = current.get( counterName )
                 except AttributeError:
-                    node = str( main.Cluster.active( i ) )
                     main.log.exception( node + " counters result " +
                                         "is not as expected" )
                     correctResults = main.FALSE
                 if onosValue == counterValue:
-                    main.log.info( counterName + " counter value is correct" )
+                    main.log.info( "{}: {} counter value is correct".format( node, counterName ) )
                 else:
-                    main.log.error( counterName +
+                    main.log.error( node + ": " + counterName +
                                     " counter value is incorrect," +
                                     " expected value: " + str( counterValue ) +
                                     " current value: " + str( onosValue ) )
@@ -265,18 +263,11 @@ class HA():
             # Compare leaderboards
             result = all( i == leaderList[ 0 ] for i in leaderList ) and\
                      leaderList is not None
-            main.log.debug( leaderList )
-            main.log.warn( result )
             if result:
                 return ( result, leaderList )
             time.sleep( 5 )  # TODO: paramerterize
         main.log.error( "Inconsistent leaderboards:" + str( leaderList ) )
         return ( result, leaderList )
-
-    def generateGraph( self, testName, plotName="Plot-HA", index=2 ):
-        # DEPRECATED: ONOSSetup.py now creates these graphs.
-
-        main.log.debug( "HA.generateGraph() is deprecated; ONOSSetup now creates these graphs." )
 
     def initialSetUp( self, serviceClean=False ):
         """
@@ -384,13 +375,11 @@ class HA():
                                      sort_keys=True,
                                      indent=4,
                                      separators=( ',', ': ' ) )
-                main.log.debug( "Leaders: " + output )
                 # check for all intent partitions
                 topics = []
                 for i in range( 14 ):
                     topics.append( "work-partition-" + str( i ) )
                 topics += extraTopics
-                main.log.debug( topics )
                 ONOStopics = [ j[ 'topic' ] for j in parsedLeaders ]
                 for topic in topics:
                     if topic not in ONOStopics:
@@ -600,8 +589,7 @@ class HA():
 
         # install onos-app-fwd
         main.step( "Install reactive forwarding app" )
-        onosCli = main.Cluster.next()
-        installResults = onosCli.CLI.activateApp( "org.onosproject.fwd" )
+        installResults = main.Cluster.next().CLI.activateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install fwd successful",
                                  onfail="Install fwd failed" )
@@ -638,7 +626,7 @@ class HA():
         time.sleep( 11 )
         # uninstall onos-app-fwd
         main.step( "Uninstall reactive forwarding app" )
-        uninstallResult = onosCli.CLI.deactivateApp( "org.onosproject.fwd" )
+        uninstallResult = main.Cluster.next().CLI.deactivateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=uninstallResult,
                                  onpass="Uninstall fwd successful",
                                  onfail="Uninstall fwd failed" )
@@ -663,8 +651,8 @@ class HA():
             host2 = "00:00:00:00:00:" + \
                 str( hex( i + 10 )[ 2: ] ).zfill( 2 ).upper()
             # NOTE: getHost can return None
-            host1Dict = onosCli.CLI.getHost( host1 )
-            host2Dict = onosCli.CLI.getHost( host2 )
+            host1Dict = main.Cluster.next().CLI.getHost( host1 )
+            host2Dict = main.Cluster.next().CLI.getHost( host2 )
             host1Id = None
             host2Id = None
             if host1Dict and host2Dict:
@@ -698,7 +686,7 @@ class HA():
                                  onfail="Error looking up host ids" )
 
         intentStart = time.time()
-        onosIds = onosCli.getAllIntentsId()
+        onosIds = main.Cluster.next().getAllIntentsId()
         main.log.info( "Submitted intents: " + str( intentIds ) )
         main.log.info( "Intents in ONOS: " + str( onosIds ) )
         for intent in intentIds:
@@ -711,7 +699,7 @@ class HA():
         else:
             intentStop = None
         # Print the intent states
-        intents = onosCli.CLI.intents()
+        intents = main.Cluster.next().CLI.intents()
         intentStates = []
         installedCheck = True
         main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
@@ -804,11 +792,11 @@ class HA():
             installedCheck = True
             main.log.info( "Sleeping 60 seconds to see if intents are found" )
             time.sleep( 60 )
-            onosIds = onosCli.getAllIntentsId()
+            onosIds = main.Cluster.next().getAllIntentsId()
             main.log.info( "Submitted intents: " + str( intentIds ) )
             main.log.info( "Intents in ONOS: " + str( onosIds ) )
             # Print the intent states
-            intents = onosCli.CLI.intents()
+            intents = main.Cluster.next().CLI.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
@@ -950,8 +938,6 @@ class HA():
                                ( str( count ), str( i ), str( s ) ) )
         self.commonChecks()
 
-        # Print flowrules
-        main.log.debug( onosCli.CLI.flows() )
         main.step( "Wait a minute then ping again" )
         # the wait is above
         PingResult = main.TRUE
@@ -1609,7 +1595,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1641,7 +1627,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node +
@@ -1683,7 +1669,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1707,7 +1693,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " +
@@ -1749,7 +1735,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1773,7 +1759,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -1847,7 +1833,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1871,7 +1857,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -1913,7 +1899,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -1937,7 +1923,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -1979,7 +1965,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -2003,7 +1989,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -2046,7 +2032,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -2070,7 +2056,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -2112,7 +2098,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -2136,7 +2122,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " + str( size ) +
@@ -2179,7 +2165,7 @@ class HA():
                                                  args=[ main.onosSetName ] )
             getResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if isinstance( getResponses[ i ], list ):
                     current = set( getResponses[ i ] )
                     if len( current ) == len( getResponses[ i ] ):
@@ -2203,7 +2189,7 @@ class HA():
                                                   args=[ main.onosSetName ] )
             sizeResults = main.TRUE
             for i in range( len( main.Cluster.active() ) ):
-                node = main.Cluster.active( i )
+                node = str( main.Cluster.active( i ) )
                 if size != sizeResponses[ i ]:
                     sizeResults = main.FALSE
                     main.log.error( node + " expected a size of " +
@@ -2248,7 +2234,7 @@ class HA():
                     if node != tMapValue:
                         valueCheck = False
                 if not valueCheck:
-                    main.log.warn( "Values for key 'Key" + str(n) + "' do not match:" )
+                    main.log.warn( "Values for key 'Key" + str( n ) + "' do not match:" )
                     main.log.warn( getResponses )
                 getCheck = getCheck and valueCheck
             utilities.assert_equals( expect=True,
@@ -2611,7 +2597,6 @@ class HA():
 
         ipList = []
         deviceList = []
-        onosCli = main.Cluster.next()
         try:
             # Assign mastership to specific controllers. This assignment was
             # determined for a 7 node cluser, but will work with any sized
@@ -2621,45 +2606,45 @@ class HA():
                 if i == 1:
                     c = 0
                     ip = main.Cluster.active( c ).ip_address  # ONOS1
-                    deviceId = onosCli.getDevice( "1000" ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( "1000" ).get( 'id' )
                 elif i == 2:
                     c = 1 % main.Cluster.numCtrls
                     ip = main.Cluster.active( c ).ip_address  # ONOS2
-                    deviceId = onosCli.getDevice( "2000" ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( "2000" ).get( 'id' )
                 elif i == 3:
                     c = 1 % main.Cluster.numCtrls
                     ip = main.Cluster.active( c ).ip_address  # ONOS2
-                    deviceId = onosCli.getDevice( "3000" ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( "3000" ).get( 'id' )
                 elif i == 4:
                     c = 3 % main.Cluster.numCtrls
                     ip = main.Cluster.active( c ).ip_address  # ONOS4
-                    deviceId = onosCli.getDevice( "3004" ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( "3004" ).get( 'id' )
                 elif i == 5:
                     c = 2 % main.Cluster.numCtrls
                     ip = main.Cluster.active( c ).ip_address  # ONOS3
-                    deviceId = onosCli.getDevice( "5000" ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( "5000" ).get( 'id' )
                 elif i == 6:
                     c = 2 % main.Cluster.numCtrls
                     ip = main.Cluster.active( c ).ip_address  # ONOS3
-                    deviceId = onosCli.getDevice( "6000" ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( "6000" ).get( 'id' )
                 elif i == 7:
                     c = 5 % main.Cluster.numCtrls
                     ip = main.Cluster.active( c ).ip_address  # ONOS6
-                    deviceId = onosCli.getDevice( "6007" ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( "6007" ).get( 'id' )
                 elif i >= 8 and i <= 17:
                     c = 4 % main.Cluster.numCtrls
                     ip = main.Cluster.active( c ).ip_address  # ONOS5
                     dpid = '3' + str( i ).zfill( 3 )
-                    deviceId = onosCli.getDevice( dpid ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( dpid ).get( 'id' )
                 elif i >= 18 and i <= 27:
                     c = 6 % main.Cluster.numCtrls
                     ip = main.Cluster.active( c ).ip_address  # ONOS7
                     dpid = '6' + str( i ).zfill( 3 )
-                    deviceId = onosCli.getDevice( dpid ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( dpid ).get( 'id' )
                 elif i == 28:
                     c = 0
                     ip = main.Cluster.active( c ).ip_address  # ONOS1
-                    deviceId = onosCli.getDevice( "2800" ).get( 'id' )
+                    deviceId = main.Cluster.next().getDevice( "2800" ).get( 'id' )
                 else:
                     main.log.error( "You didn't write an else statement for " +
                                     "switch s" + str( i ) )
@@ -2667,12 +2652,12 @@ class HA():
                 # Assign switch
                 assert deviceId, "No device id for s" + str( i ) + " in ONOS"
                 # TODO: make this controller dynamic
-                roleCall = roleCall and onosCli.deviceRole( deviceId, ip )
+                roleCall = roleCall and main.Cluster.next().deviceRole( deviceId, ip )
                 ipList.append( ip )
                 deviceList.append( deviceId )
         except ( AttributeError, AssertionError ):
             main.log.exception( "Something is wrong with ONOS device view" )
-            main.log.info( onosCli.devices() )
+            main.log.info( main.Cluster.next().devices() )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=roleCall,
@@ -2688,7 +2673,7 @@ class HA():
             ip = ipList[ i ]
             deviceId = deviceList[ i ]
             # Check assignment
-            master = onosCli.getRole( deviceId ).get( 'master' )
+            master = main.Cluster.next().getRole( deviceId ).get( 'master' )
             if ip in master:
                 roleCheck = roleCheck and main.TRUE
             else:
@@ -3258,8 +3243,6 @@ class HA():
 
                                     port = locations[0].get( 'port' )
                                     assert port, "port field could not be found for this host location object"
-                                    main.log.debug( "Host: {}\nmac: {}\n location(s): {}\ndevice: {}\n port: {}".format(
-                                        ctrl.pprint( host ), mac, ctrl.pprint( locations ), device, port ) )
 
                                     # Now check if this matches where they should be
                                     if mac and device and port:
@@ -3508,7 +3491,6 @@ class HA():
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
         description = "Killing a switch to ensure it is discovered correctly"
-        onosCli = main.Cluster.next()
         main.case( description )
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
@@ -3520,7 +3502,7 @@ class HA():
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch down to be discovered" )
         time.sleep( switchSleep )
-        device = onosCli.getDevice( dpid=switchDPID )
+        device = main.Cluster.next().getDevice( dpid=switchDPID )
         # Peek at the deleted switch
         main.log.warn( "Bringing down switch " + str( device ) )
         result = main.FALSE
@@ -3543,7 +3525,6 @@ class HA():
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
         links = main.params[ 'kill' ][ 'links' ].split()
-        onosCli = main.Cluster.next()
         description = "Adding a switch to ensure it is discovered correctly"
         main.case( description )
 
@@ -3556,7 +3537,7 @@ class HA():
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch up to be discovered" )
         time.sleep( switchSleep )
-        device = onosCli.getDevice( dpid=switchDPID )
+        device = main.Cluster.next().getDevice( dpid=switchDPID )
         # Peek at the deleted switch
         main.log.debug( "Added device: " + str( device ) )
         result = main.FALSE
@@ -3575,8 +3556,7 @@ class HA():
 
         main.case( "Start Leadership Election app" )
         main.step( "Install leadership election app" )
-        onosCli = main.Cluster.next()
-        appResult = onosCli.CLI.activateApp( "org.onosproject.election" )
+        appResult = main.Cluster.next().CLI.activateApp( "org.onosproject.election" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=appResult,
@@ -3584,7 +3564,7 @@ class HA():
             onfail="Something went wrong with installing Leadership election" )
 
         main.step( "Run for election on each node" )
-        onosCli.electionTestRun()
+        main.Cluster.next().electionTestRun()
         main.Cluster.command( "electionTestRun" )
         time.sleep( 5 )
         sameResult, leaders = main.HA.consistentLeaderboards( main.Cluster.active() )
@@ -3901,7 +3881,7 @@ class HA():
                 if pushedHost != onosHost:
                     cfgResult = False
                     main.log.error( "Pushed Network configuration does not match what is in " +
-                                    "ONOS:\nPushed: {}\nONOS: {}".format( ctrl.pprint( pushedHost),
+                                    "ONOS:\nPushed: {}\nONOS: {}".format( ctrl.pprint( pushedHost ),
                                                                           ctrl.pprint( onosHost ) ) )
         utilities.assert_equals( expect=True,
                                  actual=cfgResult,

@@ -520,3 +520,37 @@ class CLI( Component ):
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
+
+    def setEnv( self, variable, value=None ):
+        """
+        Sets the environment variable to the given value for the current shell session.
+        If value is None, will unset the variable.
+
+        Required Arguments:
+        variable - The name of the environment variable to set.
+
+        Optional Arguments:
+        value - The value to set the variable to. ( Defaults to None, which unsets the variable )
+
+        Returns True if no errors are detected else returns False
+        """
+        try:
+            if value:
+                cmd = "export {}={}".format( variable, value )
+            else:
+                cmd = "unset {}".format( variable )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
+            main.log.debug( self.handle.before )
+            return True
+        except AssertionError:
+            main.log.error( self.name + ": Could not execute command: " + output )
+            return False
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return False
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()

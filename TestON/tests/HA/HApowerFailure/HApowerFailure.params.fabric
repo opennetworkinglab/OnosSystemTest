@@ -1,0 +1,99 @@
+<PARAMS>
+    #List of test cases:
+    #CASE1:   Compile ONOS and push it to the test machines
+    #CASE2:   Assign mastership to controllers
+    #CASE21:  Assign mastership to controllers
+    #CASE102: Start Spine-Leaf Topology in Mininet
+    #CASE3:   Assign intents
+    #CASE4:   Ping across added host intents
+    #CASE104: Ping between all hosts
+    #CASE5:   Reading state of ONOS
+    #CASE61:  Kill a container
+    #CASE62:  Restart a container
+    #CASE7:   Check state after control plane failure
+    #CASE8:   Compare topo
+    #CASE9:   Link down
+    #CASE10:  Link up
+    #CASE11:  Switch down
+    #CASE12:  Switch up
+    #CASE13:  Clean up
+    #CASE14:  Start election app on all onos nodes
+    #CASE15:  Check that Leadership Election is still functional
+    #CASE16:  Install Distributed Primitives app
+    #CASE17:  Check for basic functionality with distributed primitives
+    <testcases>1,102,8,104,5,14,15,16,17,[61,8,7,104,15,17,62],8,7,8,104,15,17,9,8,104,10,8,104,[11,8,104,12,8,104]*0,13</testcases>
+
+    <GRAPH>
+        <nodeCluster>VM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
+    <apps></apps>
+    <ONOS_Configuration>
+        <org.onosproject.store.flow.impl.ECFlowRuleStore>
+            <backupCount>3</backupCount>
+        </org.onosproject.store.flow.impl.ECFlowRuleStore>
+    </ONOS_Configuration>
+    <ONOS_Logging>
+        <org.onosproject.events>TRACE</org.onosproject.events>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.driver.pipeline>DEBUG</org.onosproject.driver.pipeline>
+        <org.onosproject.store.group.impl>DEBUG</org.onosproject.store.group.impl>
+        <org.onosproject.net.flowobjective.impl>DEBUG</org.onosproject.net.flowobjective.impl>
+    </ONOS_Logging>
+    <ENV>
+        <cellName>HA</cellName>
+        <appString>events,drivers,openflow,segmentrouting,netcfghostprovider</appString>
+    </ENV>
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+    <num_controllers> 7 </num_controllers>
+    <tcpdump> False </tcpdump>
+
+    <topology>
+        <files>
+            <topo>~/TestON/tests/USECASE/SegmentRouting/dependencies/fabric.py</topo>
+            <dep1>~/TestON/tests/USECASE/SegmentRouting/dependencies/trellislib.py</dep1>
+            <dep2>~/TestON/tests/USECASE/SegmentRouting/dependencies/routinglib.py</dep2>
+        </files>
+        <topoFile>fabric.py</topoFile>
+        <args> --dhcp=0 --routers=0 --ipv6=0 --ipv4=1 </args>
+        <configPath>/HA/dependencies/json/</configPath>
+        <configName>TRELLIS_CONFIG_ipv4=1_ipv6=0_dhcp=0_routers=0.json</configName>
+    </topology>
+    <CTRL>
+        <port1>6653</port1>
+        <port2>6653</port2>
+        <port3>6653</port3>
+        <port4>6653</port4>
+        <port5>6653</port5>
+        <port6>6653</port6>
+        <port7>6653</port7>
+    </CTRL>
+    <BACKUP>
+        <ENABLED> False </ENABLED>
+        <TESTONUSER>sdn</TESTONUSER>
+        <TESTONIP>10.128.30.9</TESTONIP>
+    </BACKUP>
+    <timers>
+        <NetCfg>5</NetCfg>
+        <SRSetup>60</SRSetup>
+        <LinkDiscovery>60</LinkDiscovery>
+        <SwitchDiscovery>60</SwitchDiscovery>
+        <gossip>5</gossip>
+    </timers>
+    <kill>
+        <linkSrc>spine102</linkSrc>
+        <linkDst>leaf1</linkDst>
+        <switch> spine101 </switch>
+        <dpid> 0000000000000101 </dpid>
+        <links> leaf1 leaf2 leaf2 leaf3 leaf3 leaf4 leaf4 leaf5 leaf5 </links>
+    </kill>
+    <MNtcpdump>
+        <intf>eth0</intf>
+        <port> </port>
+        <folder>~/packet_captures/</folder>
+    </MNtcpdump>
+</PARAMS>

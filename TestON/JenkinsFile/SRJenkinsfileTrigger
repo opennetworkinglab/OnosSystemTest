@@ -4,9 +4,9 @@ funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/TriggerFuncs.groovy' )
 
-current_version = "1.13"
-previous_version = "1.12"
-before_previous_version = "1.11"
+current_version = "master"
+previous_version = "1.13"
+before_previous_version = "1.12"
 funcs.initializeTrend( "Fabric" );
 funcs.initialize( "Fabric" )
 triggerFuncs.init( funcs )
@@ -93,7 +93,8 @@ for( String test in testcases.keySet() ){
     println test
     if ( testcases[ test ][ "tests" ] != "" ){
         runTest[ testcases[ test ][ "nodeName" ][ 0 ] ][ test ] = triggerFuncs.trigger_pipeline( current_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 0 ], test, manually_run, onos_tag )
-        runTest[ testcases[ test ][ "nodeName" ][ 1 ] ][ test ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 1 ], test, manually_run, onos_tag )
+        runTest[ testcases[ test ][ "nodeName" ][ 0 ] ][ test ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 0 ], test, manually_run, onos_tag )
+        runTest[ testcases[ test ][ "nodeName" ][ 1 ] ][ test ] = triggerFuncs.trigger_pipeline( before_previous_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 1 ], test, manually_run, onos_tag )
     }
 }
 def finalList = [:]

@@ -6378,6 +6378,8 @@ class OnosCliDriver( CLI ):
             # TODO: collect t3 for all locations of source host?
             cmdStr += " -sp " + str( sHost[ "locations" ][ 0 ][ "elementId" ] ) + "/" + str( sHost[ "locations" ][ 0 ][ "port" ] )
             cmdStr += " -sm " + str( sHost[ "mac" ] )
+            if sHost[ "vlan" ] != "None":
+                cmdStr += " -vid " + sHost[ "vlan" ]
             cmdStr += " -d " + str( dAddr )
             netcfg = self.netcfg( args="devices {}".format( sHost[ "locations" ][ 0 ][ "elementId" ] ) )
             netcfg = json.loads( netcfg )

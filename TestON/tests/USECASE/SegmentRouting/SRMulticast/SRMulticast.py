@@ -77,7 +77,7 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1 ] } }
         setupTest( main, test_idx=4, onosNodes=3 )
         verifyMcastRoutes( main )
-        verifyMcastSinkRemoval( main, "ipv4", 0, False )
+        verifyMcastSinkRemoval( main, "ipv4", 0, [ False, True ] )
         verifyMcastSinkRemoval( main, "ipv4", 1, False )
         verifyMcastSourceRemoval( main, "ipv4", 0, False )
         lib.cleanup( main, copyKarafLog=False )
@@ -141,7 +141,7 @@ class SRMulticast:
         setupTest( main, test_idx=7, onosNodes=3 )
         verifyMcastRoutes( main )
         verifyMcastRouteRemoval( main, "ipv6" )
-        verifyMcastSinkRemoval( main, "ipv4", 0, False )
+        verifyMcastSinkRemoval( main, "ipv4", 0, [ False, True ] )
         verifyMcastSinkRemoval( main, "ipv4", 1, False )
         verifyMcastSourceRemoval( main, "ipv4", 0, False )
         lib.cleanup( main, copyKarafLog=False )

@@ -1052,7 +1052,6 @@ class Testcaselib:
                                          onpass="{} to {}: Pass".format( srcEntry[ "host" ], dstEntry[ "host" ] ),
                                          onfail="{} to {}: Fail".format( srcEntry[ "host" ], dstEntry[ "host" ] ) )
                 if skipOnFail and trafficResult != main.TRUE:
-                    main.stop()
                     Testcaselib.saveOnosDiagnostics( main )
                     Testcaselib.cleanup( main, copyKarafLog=False )
                     main.skipCase()

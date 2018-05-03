@@ -34,9 +34,9 @@
     </CTRL>
 
     <timers>
-        <LinkDiscovery>45</LinkDiscovery>
-        <SwitchDiscovery>45</SwitchDiscovery>
-        <OnosDiscovery>45</OnosDiscovery>
+        <LinkDiscovery>30</LinkDiscovery>
+        <SwitchDiscovery>30</SwitchDiscovery>
+        <OnosDiscovery>30</OnosDiscovery>
         <loadNetcfgSleep>5</loadNetcfgSleep>
         <startMininetSleep>60</startMininetSleep>
         <balanceMasterSleep>10</balanceMasterSleep>

@@ -1151,6 +1151,58 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def verifyHostLocation( self, hostIp, location ):
+        """
+        Description:
+            Verify the host given is discovered in all locations expected
+        Required:
+            hostIp: IP address of the host
+            location: expected location(s) of the given host. ex. "of:0000000000000005/8"
+                      Could be a string or list
+        Returns:
+            main.TRUE if host is discovered on all locations provided
+            main.FALSE otherwise
+        """
+        import json
+        locations = [ location ] if isinstance( location, str ) else location
+        assert isinstance( locations, list ), "Wrong type of location: {}".format( type( location ) )
+        try:
+            hosts = self.hosts()
+            hosts = json.loads( hosts )
+            targetHost = None
+            for host in hosts:
+                if hostIp in host[ "ipAddresses" ]:
+                    targetHost = host
+            assert host, "Not able to find host with IP {}".format( hostIp )
+            result = main.TRUE
+            locationsDiscovered = [ loc[ "elementId" ] + "/" + loc[ "port" ] for loc in targetHost[ "locations" ] ]
+            for loc in locations:
+                discovered = False
+                for locDiscovered in locationsDiscovered:
+                    if loc in locDiscovered:
+                        discovered = True
+                        main.log.debug( "Host {} discovered with location {}".format( hostIp, loc ) )
+                        break
+                if discovered:
+                    locationsDiscovered.remove( locDiscovered )
+                else:
+                    main.log.warn( "Host {} not discovered with location {}".format( hostIp, loc ) )
+                    result = main.FALSE
+            if locationsDiscovered:
+                main.log.warn( "Host {} is also discovered with location {}".format( hostIp, locationsDiscovered ) )
+                result = main.FALSE
+            return result
+        except KeyError:
+            main.log.exception( self.name + ": host data not as expected: " + hosts )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
     def verifyHostIp( self, hostList=[], prefix="" ):
         """
         Description:

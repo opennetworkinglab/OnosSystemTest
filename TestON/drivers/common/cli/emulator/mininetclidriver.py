@@ -574,7 +574,7 @@ class MininetCliDriver( Emulator ):
 
             main.cleanAndExit()
 
-    def discoverIpv4Hosts( self, hostList, wait=1 , dstIp="6.6.6.6"):
+    def discoverIpv4Hosts( self, hostList, wait=1, dstIp="6.6.6.6" ):
         '''
         Can only be used if hosts already have ipv4 addresses.
 

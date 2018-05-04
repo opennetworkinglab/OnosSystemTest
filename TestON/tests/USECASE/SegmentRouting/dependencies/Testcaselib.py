@@ -928,7 +928,19 @@ class Testcaselib:
         main.step( "Verify IP address assignment from hosts" )
         ipResult = main.TRUE
         main.Network.update()
+        # Find out names of disconnected hosts
+        disconnectedHosts = []
+        if hasattr( main, "disconnectedIpv4Hosts" ):
+            for host in main.disconnectedIpv4Hosts:
+                disconnectedHosts.append( host )
+        if hasattr( main, "disconnectedIpv6Hosts" ):
+            for host in main.disconnectedIpv6Hosts:
+                disconnectedHosts.append( host )
         for hostName, ip in main.expectedHosts[ "network" ].items():
+            # Exclude disconnected hosts
+            if hostName in disconnectedHosts:
+                main.log.debug( "Skip verifying IP for {} as it's disconnected".format( hostName ) )
+                continue
             ipResult = ipResult and utilities.retry( main.Network.verifyHostIp,
                                                      main.FALSE,
                                                      kwargs={ 'hostList': [ hostName ],
@@ -947,7 +959,19 @@ class Testcaselib:
         """
         main.step( "Verify host IP address assignment in ONOS" )
         ipResult = main.TRUE
+        # Find out IPs of disconnected hosts
+        disconnectedIps = []
+        if hasattr( main, "disconnectedIpv4Hosts" ):
+            for host in main.disconnectedIpv4Hosts:
+                disconnectedIps.append( main.expectedHosts[ "network" ][ host ] )
+        if hasattr( main, "disconnectedIpv6Hosts" ):
+            for host in main.disconnectedIpv6Hosts:
+                disconnectedIps.append( main.expectedHosts[ "network" ][ host ] )
         for hostName, ip in main.expectedHosts[ "onos" ].items():
+            # Exclude disconnected hosts
+            if ip in disconnectedIps:
+                main.log.debug( "Skip verifying IP for {} as it's disconnected".format( ip ) )
+                continue
             ipResult = ipResult and utilities.retry( main.Cluster.active( 0 ).verifyHostIp,
                                                      main.FALSE,
                                                      kwargs={ 'hostList': [ hostName ],

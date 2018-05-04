@@ -145,7 +145,7 @@ class MininetHostDriver( Emulator ):
             main.log.info( self.name + ": Sending: " + command )
             self.handle.sendline( command )
             i = self.handle.expect( [ self.hostPrompt, pexpect.TIMEOUT ],
-                                    timeout=wait + 1 )
+                                    timeout=wait + 5 )
             if i == 1:
                 main.log.error(
                     self.name +
@@ -179,7 +179,7 @@ class MininetHostDriver( Emulator ):
             main.log.info( self.name + ": Sending: " + command )
             self.handle.sendline( command )
             i = self.handle.expect( [ self.hostPrompt, pexpect.TIMEOUT ],
-                                    timeout=wait + 1 )
+                                    timeout=wait + 5 )
             if i == 1:
                 main.log.error(
                     self.name +

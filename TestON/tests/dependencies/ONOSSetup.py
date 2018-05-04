@@ -35,7 +35,7 @@ class ONOSSetup:
             main.case( "Constructing test variables and building ONOS package" )
             main.caseExplanation = "For loading from params file, and pull" + \
                                    " and build the latest ONOS package"
-        main.step("Constructing test variables")
+        main.step( "Constructing test variables" )
         try:
             from tests.dependencies.Cluster import Cluster
         except ImportError:

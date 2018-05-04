@@ -473,7 +473,7 @@ class MininetCliDriver( Emulator ):
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + str( temp )
                     self.handle.sendline( pingCmd )
-                    self.handle.expect( "mininet>", timeout=wait + 1 )
+                    self.handle.expect( "mininet>", timeout=wait + 5 )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
                         pingResponse += str( " h" + str( temp[ 1: ] ) )
@@ -536,7 +536,7 @@ class MininetCliDriver( Emulator ):
                     while failedPings <= acceptableFailed:
                         main.log.debug( "Pinging from " + str( host ) + " to " + str( temp ) )
                         self.handle.sendline( pingCmd )
-                        self.handle.expect( "mininet>", timeout=wait + 1 )
+                        self.handle.expect( "mininet>", timeout=wait + 5 )
                         response = self.handle.before
                         if re.search( ',\s0\%\spacket\sloss', response ):
                             pingResponse += " " + str( temp )
@@ -606,9 +606,9 @@ class MininetCliDriver( Emulator ):
                     discoveryResult = main.FALSE
                 if cmd:
                     self.handle.sendline( "{} ip neigh flush all".format( host ) )
-                    self.handle.expect( "mininet>", timeout=wait + 1 )
+                    self.handle.expect( "mininet>" )
                     self.handle.sendline( cmd )
-                    self.handle.expect( "mininet>", timeout=wait + 1 )
+                    self.handle.expect( "mininet>", timeout=wait + 5 )
             return discoveryResult
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
@@ -655,7 +655,7 @@ class MininetCliDriver( Emulator ):
                     while failedPings <= acceptableFailed:
                         main.log.debug( "Pinging from " + str( host ) + " to " + str( temp ) )
                         self.handle.sendline( pingCmd )
-                        self.handle.expect( "mininet>", timeout=wait + 1 )
+                        self.handle.expect( "mininet>", timeout=wait + 5 )
                         response = self.handle.before
                         if re.search( ',\s0\%\spacket\sloss', response ):
                             pingResponse += " " + str( temp )
@@ -707,7 +707,7 @@ class MininetCliDriver( Emulator ):
             main.log.info( "Sending: " + command )
             self.handle.sendline( command )
             i = self.handle.expect( [ command, pexpect.TIMEOUT ],
-                                    timeout=wait + 1 )
+                                    timeout=wait + 5 )
             if i == 1:
                 main.log.error(
                     self.name +
@@ -752,7 +752,7 @@ class MininetCliDriver( Emulator ):
             main.log.info( "Sending: " + command )
             self.handle.sendline( command )
             i = self.handle.expect( [ command, pexpect.TIMEOUT ],
-                                    timeout=wait + 1 )
+                                    timeout=wait + 5 )
             if i == 1:
                 main.log.error(
                     self.name +
@@ -806,7 +806,7 @@ class MininetCliDriver( Emulator ):
                 i = self.handle.expect( [ self.hostPrompt,
                                           '\*\*\* Unknown command: ' + pingCmd,
                                           pexpect.TIMEOUT ],
-                                        timeout=wait + 1 )
+                                        timeout=wait + 5 )
                 # For some reason we need to send something
                 # Otherwise ping results won't be read by handle
                 self.handle.sendline( "" )

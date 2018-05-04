@@ -19,7 +19,8 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-def setupTest( main, test_idx, onosNodes, ipv4=True, ipv6=True, external=True, static=False, countFlowsGroups=False ):
+def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
+               external=True, static=False, countFlowsGroups=False ):
     """
     SRRouting test setup
     """
@@ -31,6 +32,8 @@ def setupTest( main, test_idx, onosNodes, ipv4=True, ipv6=True, external=True, s
     if not hasattr( main, 'apps' ):
         init = True
         lib.initTest( main )
+    if onosNodes < 0:
+        onosNodes = main.Cluster.numCtrls
     # Skip onos packaging if the cluster size stays the same
     if not init and onosNodes == main.Cluster.numCtrls:
         skipPackage = True
@@ -162,7 +165,8 @@ def verifyPing( main, ipv4=True, ipv6=True, disconnected=False, internal=True, e
     if external:
         verifyPingExternal( main, ipv4, ipv6, disconnected )
 
-def verifyLinkFailure( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True, countFlowsGroups=False ):
+def verifyLinkFailure( main, ipv4=True, ipv6=True, disconnected=False,
+                       internal=True, external=True, countFlowsGroups=False ):
     """
     Kill and recover all links to spine101 and 102 sequencially and run verifications
     """
@@ -186,7 +190,8 @@ def verifyLinkFailure( main, ipv4=True, ipv6=True, disconnected=False, internal=
     lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
     verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
 
-def verifySwitchFailure( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True, countFlowsGroups=False ):
+def verifySwitchFailure( main, ipv4=True, ipv6=True, disconnected=False,
+                         internal=True, external=True, countFlowsGroups=False ):
     """
     Kill and recover spine101 and 102 sequencially and run verifications
     """
@@ -197,7 +202,8 @@ def verifySwitchFailure( main, ipv4=True, ipv6=True, disconnected=False, interna
         lib.recoverSwitch( main, switchToKill, 10, 48 )
         verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
 
-def verifyOnosFailure( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True, countFlowsGroups=False ):
+def verifyOnosFailure( main, ipv4=True, ipv6=True, disconnected=False,
+                       internal=True, external=True, countFlowsGroups=False ):
     """
     Kill and recover onos nodes sequencially and run verifications
     """
@@ -208,16 +214,17 @@ def verifyOnosFailure( main, ipv4=True, ipv6=True, disconnected=False, internal=
     numCtrls = len( main.Cluster.runningNodes )
     links = len( json.loads( main.Cluster.next().links() ) )
     switches = len( json.loads( main.Cluster.next().devices() ) )
+    mastershipSleep = float( main.params[ 'timers' ][ 'balanceMasterSleep' ] )
     for ctrl in xrange( numCtrls ):
         # Kill node
         lib.killOnos( main, [ ctrl ], switches, links, ( numCtrls - 1 ) )
         main.Cluster.active(0).CLI.balanceMasters()
-        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        time.sleep( mastershipSleep )
         verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
         # Recover node
         lib.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
         main.Cluster.active(0).CLI.balanceMasters()
-        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        time.sleep( mastershipSleep )
         verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
 
 def verify( main, ipv4=True, ipv6=True, disconnected=True, internal=True, external=True, countFlowsGroups=False ):
@@ -230,6 +237,6 @@ def verify( main, ipv4=True, ipv6=True, disconnected=True, internal=True, extern
     lib.verifyNetworkHostIp( main )
     # check flows / groups numbers
     if countFlowsGroups:
-        run.checkFlowsGroupsFromFile( main )
+        lib.checkFlowsGroupsFromFile( main )
     # ping hosts
     verifyPing( main, ipv4, ipv6, disconnected, internal, external )

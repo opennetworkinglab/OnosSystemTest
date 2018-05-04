@@ -19,7 +19,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import imp
 import time
 import json
 import urllib
@@ -52,7 +51,6 @@ class Testcaselib:
         main.testSetUp.envSetupDescription( False )
         stepResult = main.FALSE
         try:
-            main.step( "Constructing test variables" )
             # Test variables
             main.cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
@@ -427,7 +425,8 @@ class Testcaselib:
         return
 
     @staticmethod
-    def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False, sleep=10, retryAttempts=1, skipOnFail=False ):
+    def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False,
+                 sleep=10, retryAttempts=1, skipOnFail=False ):
         '''
         Verify connectivity between hosts according to the ping chart
         acceptableFailed: max number of acceptable failed pings.
@@ -507,81 +506,92 @@ class Testcaselib:
                                         tag + "_GroupsOn" )
 
     @staticmethod
-    def killLink( main, end1, end2, switches, links ):
+    def killLink( main, end1, end2, switches, links, sleep=None ):
         """
         end1,end2: identify the switches, ex.: 'leaf1', 'spine1'
         switches, links: number of expected switches and links after linkDown, ex.: '4', '6'
         Kill a link and verify ONOS can see the proper link change
         """
-        main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        else:
+            sleep = float( sleep )
         main.step( "Kill link between %s and %s" % ( end1, end2 ) )
-        LinkDown = main.Network.link( END1=end1, END2=end2, OPTION="down" )
-        LinkDown = main.Network.link( END2=end1, END1=end2, OPTION="down" )
+        linkDown = main.Network.link( END1=end1, END2=end2, OPTION="down" )
+        linkDown = linkDown and main.Network.link( END2=end1, END1=end2, OPTION="down" )
+        # TODO: Can remove this, since in the retry we will wait anyways if topology is incorrect
         main.log.info(
-                "Waiting %s seconds for link down to be discovered" % main.linkSleep )
-        time.sleep( main.linkSleep )
+                "Waiting %s seconds for link down to be discovered" % sleep )
+        time.sleep( sleep )
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links },
                                     attempts=10,
-                                    sleep=main.linkSleep )
-        result = topology & LinkDown
+                                    sleep=sleep )
+        result = topology and linkDown
         utilities.assert_equals( expect=main.TRUE, actual=result,
                                  onpass="Link down successful",
                                  onfail="Failed to turn off link?" )
 
     @staticmethod
-    def killLinkBatch( main, links, linksAfter, switches ):
+    def killLinkBatch( main, links, linksAfter, switches, sleep=None ):
         """
         links = list of links (src, dst) to bring down.
         """
 
         main.step("Killing a batch of links {0}".format(links))
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        else:
+            sleep = float( sleep )
 
         for end1, end2 in links:
             main.Network.link( END1=end1, END2=end2, OPTION="down")
             main.Network.link( END1=end2, END2=end1, OPTION="down")
 
-        main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        # TODO: Can remove this, since in the retry we will wait anyways if topology is incorrect
         main.log.info(
-                "Waiting %s seconds for links down to be discovered" % main.linkSleep )
-        time.sleep( main.linkSleep )
+                "Waiting %s seconds for links down to be discovered" % sleep )
+        time.sleep( sleep )
 
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': linksAfter },
                                     attempts=10,
-                                    sleep=main.linkSleep )
+                                    sleep=sleep )
 
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Link batch down successful",
                                  onfail="Link batch down failed" )
 
     @staticmethod
-    def restoreLinkBatch( main, links, linksAfter, switches ):
+    def restoreLinkBatch( main, links, linksAfter, switches, sleep=None ):
         """
         links = list of link (src, dst) to bring up again.
         """
 
         main.step("Restoring a batch of links {0}".format(links))
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        else:
+            sleep = float( sleep )
 
         for end1, end2 in links:
             main.Network.link( END1=end1, END2=end2, OPTION="up")
             main.Network.link( END1=end2, END2=end1, OPTION="up")
 
-        main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
         main.log.info(
-                "Waiting %s seconds for links up to be discovered" % main.linkSleep )
-        time.sleep( main.linkSleep )
+                "Waiting %s seconds for links up to be discovered" % sleep )
+        time.sleep( sleep )
 
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': linksAfter },
                                     attempts=10,
-                                    sleep=main.linkSleep )
+                                    sleep=sleep )
 
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Link batch up successful",
@@ -635,7 +645,7 @@ class Testcaselib:
 
     @staticmethod
     def restoreLink( main, end1, end2, switches, links,
-                     portUp=False, dpid1='', dpid2='', port1='', port2='' ):
+                     portUp=False, dpid1='', dpid2='', port1='', port2='', sleep=None ):
         """
         Params:
             end1,end2: identify the end switches, ex.: 'leaf1', 'spine1'
@@ -646,23 +656,28 @@ class Testcaselib:
         Kill a link and verify ONOS can see the proper link change
         """
         main.step( "Restore link between %s and %s" % ( end1, end2 ) )
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        else:
+            sleep = float( sleep )
         result = False
         count = 0
         while True:
             count += 1
+            ctrl = main.Cluster.next()
             main.Network.link( END1=end1, END2=end2, OPTION="up" )
             main.Network.link( END2=end1, END1=end2, OPTION="up" )
             main.log.info(
-                    "Waiting %s seconds for link up to be discovered" % main.linkSleep )
-            time.sleep( main.linkSleep )
+                    "Waiting %s seconds for link up to be discovered" % sleep )
+            time.sleep( sleep )
 
             if portUp:
                 ctrl.CLI.portstate( dpid=dpid1, port=port1, state='Enable' )
                 ctrl.CLI.portstate( dpid=dpid2, port=port2, state='Enable' )
-                time.sleep( main.linkSleep )
+                time.sleep( sleep )
 
-            result = main.Cluster.active( 0 ).CLI.checkStatus( numoswitch=switches,
-                                                               numolink=links )
+            result = ctrl.CLI.checkStatus( numoswitch=switches,
+                                           numolink=links )
             if count > 5 or result:
                 break
         utilities.assert_equals( expect=main.TRUE, actual=result,
@@ -670,58 +685,67 @@ class Testcaselib:
                                  onfail="Failed to bring link up" )
 
     @staticmethod
-    def killSwitch( main, switch, switches, links ):
+    def killSwitch( main, switch, switches, links, sleep=None ):
         """
         Params: switches, links: number of expected switches and links after SwitchDown, ex.: '4', '6'
         Completely kill a switch and verify ONOS can see the proper change
         """
-        main.switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
+        else:
+            sleep = float( sleep )
         switch = switch if isinstance( switch, list ) else [ switch ]
         main.step( "Kill " + str( switch ) )
         for s in switch:
             main.log.info( "Stopping " + s )
             main.Network.switch( SW=s, OPTION="stop" )
         # todo make this repeatable
+
+        # TODO: Can remove this, since in the retry we will wait anyways if topology is incorrect
         main.log.info( "Waiting %s seconds for switch down to be discovered" % (
-            main.switchSleep ) )
-        time.sleep( main.switchSleep )
+            sleep ) )
+        time.sleep( sleep )
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links },
                                     attempts=10,
-                                    sleep=main.switchSleep )
+                                    sleep=sleep )
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Kill switch successful",
                                  onfail="Failed to kill switch?" )
 
     @staticmethod
-    def recoverSwitch( main, switch, switches, links, rediscoverHosts=False, hostsToDiscover=[] ):
+    def recoverSwitch( main, switch, switches, links, rediscoverHosts=False, hostsToDiscover=[], sleep=None ):
         """
         Params: switches, links: number of expected switches and links after SwitchUp, ex.: '4', '6'
         Recover a switch and verify ONOS can see the proper change
         """
-        # todo make this repeatable
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
+        else:
+            sleep = float( sleep )
+        # TODO make this repeatable
         switch = switch if isinstance( switch, list ) else [ switch ]
         main.step( "Recovering " + str( switch ) )
         for s in switch:
             main.log.info( "Starting " + s )
             main.Network.switch( SW=s, OPTION="start" )
         main.log.info( "Waiting %s seconds for switch up to be discovered" % (
-            main.switchSleep ) )
-        time.sleep( main.switchSleep )
+            sleep ) )
+        time.sleep( sleep )
         if rediscoverHosts:
             main.Network.discoverHosts( hostList=hostsToDiscover )
             main.log.info( "Waiting %s seconds for hosts to get re-discovered" % (
-                           main.switchSleep ) )
-            time.sleep( main.switchSleep )
+                           sleep ) )
+            time.sleep( sleep )
 
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links },
                                     attempts=10,
-                                    sleep=main.switchSleep )
+                                    sleep=sleep )
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Switch recovery successful",
                                  onfail="Failed to recover switch?" )
@@ -768,14 +792,62 @@ class Testcaselib:
             main.ONOSbench.onosStop( ctrl.ipAddress )
 
     @staticmethod
-    def killOnos( main, nodes, switches, links, expNodes ):
+    def verifyNodes( main ):
+        """
+        Verifies Each active node in the cluster has an accurate view of other node's and their status
+
+        Params:
+        nodes, integer array with position of the ONOS nodes in the CLIs array
+        """
+        nodeResults = utilities.retry( main.Cluster.nodesCheck,
+                                       False,
+                                       attempts=10,
+                                       sleep=10 )
+        utilities.assert_equals( expect=True, actual=nodeResults,
+                                 onpass="Nodes check successful",
+                                 onfail="Nodes check NOT successful" )
+
+        if not nodeResults:
+            for ctrl in main.Cluster.runningNodes:
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to kill ONOS, stopping test" )
+            main.cleanAndExit()
+
+    @staticmethod
+    def verifyTopology( main, switches, links, expNodes ):
+        """
+        Verifies that the ONOS cluster has an acuurate view of the topology
+
+        Params:
+        switches, links, expNodes: number of expected switches, links, and nodes at this point in the test ex.: '4', '6', '2'
+        """
+        main.step( "Check number of topology elements" )
+        topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
+                                    main.FALSE,
+                                    kwargs={ 'numoswitch': switches,
+                                             'numolink': links,
+                                             'numoctrl': expNodes },
+                                    attempts=10,
+                                    sleep=12 )
+        utilities.assert_equals( expect=main.TRUE, actual=topology,
+                                 onpass="Number of topology elements are correct",
+                                 onfail="Unexpected number of links, switches, and/or controllers" )
+
+    @staticmethod
+    def killOnos( main, nodes, switches, links, expNodes, sleep=None ):
         """
         Params: nodes, integer array with position of the ONOS nodes in the CLIs array
         switches, links, nodes: number of expected switches, links and nodes after KillOnos, ex.: '4', '6'
         Completely Kill an ONOS instance and verify the ONOS cluster can see the proper change
         """
+        # TODO: We have enough information in the Cluster instance to remove expNodes from here and verifyTopology
         main.step( "Killing ONOS instances with index(es): {}".format( nodes ) )
-        main.onosSleep = float( main.params[ 'timers' ][ 'OnosDiscovery' ] )
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'OnosDiscovery' ] )
+        else:
+            sleep = float( sleep )
 
         for i in nodes:
             killResult = main.ONOSbench.onosDie( main.Cluster.runningNodes[ i ].ipAddress )
@@ -783,48 +855,27 @@ class Testcaselib:
                                      onpass="ONOS instance Killed",
                                      onfail="Error killing ONOS instance" )
             main.Cluster.runningNodes[ i ].active = False
-        time.sleep( main.onosSleep )
+        main.Cluster.reset()
+        time.sleep( sleep )
 
         if len( nodes ) < main.Cluster.numCtrls:
-
-            nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                           False,
-                                           attempts=10,
-                                           sleep=10 )
-            utilities.assert_equals( expect=True, actual=nodeResults,
-                                     onpass="Nodes check successful",
-                                     onfail="Nodes check NOT successful" )
-
-            if not nodeResults:
-                for i in nodes:
-                    ctrl = main.Cluster.runningNodes[ i ]
-                    main.log.debug( "{} components not ACTIVE: \n{}".format(
-                        ctrl.name,
-                        ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
-                main.log.error( "Failed to kill ONOS, stopping test" )
-                main.cleanAndExit()
-
-            topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
-                                        main.FALSE,
-                                        kwargs={ 'numoswitch': switches,
-                                                 'numolink': links,
-                                                 'numoctrl': expNodes },
-                                        attempts=10,
-                                        sleep=12 )
-            utilities.assert_equals( expect=main.TRUE, actual=topology,
-                                     onpass="ONOS Instance down successful",
-                                     onfail="Failed to turn off ONOS Instance" )
+            Testcaselib.verifyNodes( main )
+            Testcaselib.verifyTopology( main, switches, links, expNodes )
 
     @staticmethod
-    def recoverOnos( main, nodes, switches, links, expNodes ):
+    def recoverOnos( main, nodes, switches, links, expNodes, sleep=None ):
         """
         Params: nodes, integer array with position of the ONOS nodes in the CLIs array
         switches, links, nodes: number of expected switches, links and nodes after recoverOnos, ex.: '4', '6'
         Recover an ONOS instance and verify the ONOS cluster can see the proper change
         """
         main.step( "Recovering ONOS instances with index(es): {}".format( nodes ) )
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'OnosDiscovery' ] )
+        else:
+            sleep = float( sleep )
         [ main.ONOSbench.onosStart( main.Cluster.runningNodes[ i ].ipAddress ) for i in nodes ]
-        time.sleep( main.onosSleep )
+        time.sleep( sleep )
         for i in nodes:
             isUp = main.ONOSbench.isup( main.Cluster.runningNodes[ i ].ipAddress )
             utilities.assert_equals( expect=main.TRUE, actual=isUp,
@@ -843,34 +894,11 @@ class Testcaselib:
                                      onpass="ONOS CLI is ready",
                                      onfail="ONOS CLI is not ready" )
 
+        main.Cluster.reset()
         main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                       False,
-                                       attempts=5,
-                                       sleep=10 )
-        utilities.assert_equals( expect=True, actual=nodeResults,
-                                 onpass="Nodes check successful",
-                                 onfail="Nodes check NOT successful" )
+        Testcaselib.verifyNodes( main )
+        Testcaselib.verifyTopology( main, switches, links, expNodes )
 
-        if not nodeResults:
-            for i in nodes:
-                ctrl = main.Cluster.runningNodes[ i ]
-                main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    ctrl.name,
-                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
-            main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanAndExit()
-
-        topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
-                                    main.FALSE,
-                                    kwargs={ 'numoswitch': switches,
-                                             'numolink': links,
-                                             'numoctrl': expNodes },
-                                    attempts=10,
-                                    sleep=12 )
-        utilities.assert_equals( expect=main.TRUE, actual=topology,
-                                 onpass="ONOS Instance down successful",
-                                 onfail="Failed to turn off ONOS Instance" )
         ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
                                  main.FALSE,
                                  attempts=10,
@@ -1103,7 +1131,7 @@ class Testcaselib:
                 # Send packet and check received packet
                 expectedResult = expect.pop( 0 ) if isinstance( expect, list ) else expect
                 t3Cmd = "t3-troubleshoot -vv -sp {} -et ipv{} -d {} -dm {}".format( srcEntry[ "port" ], routeData[ "ipVersion" ],
-                                                                                routeData[ "group" ], srcEntry[ "Ether" ] )
+                                                                                    routeData[ "group" ], srcEntry[ "Ether" ] )
                 trafficResult = main.topo.sendScapyPackets( sender, receiver, pktFilter, pkt, sIface, dIface,
                                                             expectedResult, maxRetry, True, t3Cmd )
                 if not trafficResult:

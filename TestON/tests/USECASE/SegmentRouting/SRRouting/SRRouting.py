@@ -1,5 +1,6 @@
 
 class SRRouting:
+
     def __init__( self ):
         self.default = ''
 
@@ -468,6 +469,64 @@ class SRRouting:
         verifyOnosFailure( main, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
+    def CASE601( self, main ):
+        """
+        Bring down all switches
+        Verify Topology
+        Bring up all switches
+        Verify
+
+        repeat x3
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Bring down all switches then recover" )
+        setupTest( main, test_idx=601, external=False )
+        main.Cluster.next().CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
+        totalSwitches = int( main.params[ 'TOPO' ][ 'switchNum' ] )
+        totalLinks = int( main.params[ 'TOPO' ][ 'linkNum' ] )
+        switchList = [ 'spine101', 'spine102', 'spine103', 'spine104',
+                       'leaf1', 'leaf2', 'leaf3', 'leaf4', 'leaf5', 'leaf6' ]
+        verify( main, disconnected=False, external=False )
+        for i in range( 1, 4 ):
+            main.log.info( "Beginning iteration {} of stopping then starting all switches".format( i ) )
+            main.log.debug( main.Cluster.next().summary() )
+            # Bring down all switches
+            main.step( "Stopping switches - iteration " + str( i ) )
+            switchStop = main.TRUE
+            for switch in switchList:
+                switchStop = switchStop and main.Network.switch( SW=switch, OPTION="stop" )
+            utilities.assert_equals( expect=main.TRUE, actual=switchStop,
+                                     onpass="All switches stopped",
+                                     onfail="Failed to stop all switches" )
+
+            time.sleep( 60 )
+            lib.verifyTopology( main, 0, 0, main.Cluster.numCtrls )
+            # Bring up all switches
+            main.log.debug( main.Cluster.next().summary() )
+            main.step( "Starting switches - iteration " + str( i ) )
+            switchStart = main.TRUE
+            for switch in switchList:
+                switchStart = switchStart and main.Network.switch( SW=switch, OPTION="start" )
+            utilities.assert_equals( expect=main.TRUE, actual=switchStart,
+                                     onpass="All switches started",
+                                     onfail="Failed to start all switches" )
+
+            main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
+            lib.verifyTopology( main, totalSwitches, totalLinks, main.Cluster.numCtrls )
+            main.log.debug( main.Cluster.next().summary() )
+            time.sleep( 60 )
+            main.log.debug( main.Cluster.next().summary() )
+            time.sleep( 60 )
+            main.log.debug( main.Cluster.next().summary() )
+            verifyPing( main )
+            verify( main, disconnected=False, external=False )
+        verify( main, disconnected=False, external=False )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
     def CASE603( self, main ):
         """"
         Drop HAGG-1 device and test connectivity.
@@ -476,7 +535,6 @@ class SRRouting:
 
         Repeat the same with HAGG-2 and DAAS-2.
         """
-        import time
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Drop hagg spine switch along with dass leaf switch." )
@@ -485,30 +543,48 @@ class SRRouting:
         main.disconnectedIpv6Hosts = []
 
         verify( main )
-        lib.killSwitch( main, "spine103", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        lib.killSwitch( main, "spine103",
+                        int( main.params[ "TOPO" ]["switchNum" ] ) - 1,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
         verify( main )
-        lib.killSwitch( main, "leaf6", int( main.params[ "TOPO" ]["switchNum" ] ) - 2, int( main.params[ "TOPO" ][ "linkNum" ] ) - 8 )
+        lib.killSwitch( main, "leaf6",
+                        int( main.params[ "TOPO" ]["switchNum" ] ) - 2,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 8 )
         main.disconnectedIpv4Hosts = [ 'h12v4', 'h13v4']
         main.disconnectedIpv6Hosts = [ 'h12v6', 'h13v6']
         verify( main )
-        lib.recoverSwitch( main, "leaf6", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6, rediscoverHosts=True)
+        lib.recoverSwitch( main, "leaf6",
+                           int( main.params[ "TOPO" ]["switchNum" ] ) - 1,
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) - 6,
+                           rediscoverHosts=True)
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
         verify( main )
-        lib.recoverSwitch( main, "spine103", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ))
+        lib.recoverSwitch( main, "spine103",
+                           int( main.params[ "TOPO" ][ "switchNum" ] ),
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) )
         verify( main )
 
-        lib.killSwitch( main, "spine104", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        lib.killSwitch( main, "spine104",
+                        int( main.params[ "TOPO" ]["switchNum" ] ) - 1,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
         verify( main )
-        lib.killSwitch( main, "leaf1", int( main.params[ "TOPO" ]["switchNum" ] ) - 2, int( main.params[ "TOPO" ][ "linkNum" ] ) - 8 )
+        lib.killSwitch( main, "leaf1",
+                        int( main.params[ "TOPO" ]["switchNum" ] ) - 2,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 8 )
         main.disconnectedIpv4Hosts = [ 'h1v4', 'h2v4']
         main.disconnectedIpv6Hosts = [ 'h1v6', 'h2v6']
         verify( main )
-        lib.recoverSwitch( main, "leaf1", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6, rediscoverHosts=True)
+        lib.recoverSwitch( main, "leaf1",
+                           int( main.params[ "TOPO" ]["switchNum" ] ) - 1,
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) - 6,
+                           rediscoverHosts=True )
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
         verify( main )
-        lib.recoverSwitch( main, "spine104", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ))
+        lib.recoverSwitch( main, "spine104",
+                           int( main.params[ "TOPO" ][ "switchNum" ] ),
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) )
         verify( main )
 
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -520,7 +596,6 @@ class SRRouting:
         Drop HAGG-2 device and test connectivity.
         Bring up HAGG-2 device and test connectivity
         """
-        import time
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Drop hagg spine switches." )
@@ -528,13 +603,21 @@ class SRRouting:
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
         verify( main )
-        lib.killSwitch( main, "spine103", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        lib.killSwitch( main, "spine103",
+                        int( main.params[ "TOPO" ]["switchNum" ] ) - 1,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
         verify( main )
-        lib.recoverSwitch( main, "spine103", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ))
+        lib.recoverSwitch( main, "spine103",
+                           int( main.params[ "TOPO" ][ "switchNum" ] ),
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) )
         verify( main )
-        lib.killSwitch( main, "spine104", int( main.params[ "TOPO" ]["switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        lib.killSwitch( main, "spine104",
+                        int( main.params[ "TOPO" ]["switchNum" ] ) - 1,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
         verify( main )
-        lib.recoverSwitch( main, "spine104", int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ))
+        lib.recoverSwitch( main, "spine104",
+                           int( main.params[ "TOPO" ][ "switchNum" ] ),
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) )
         verify( main )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
@@ -553,18 +636,24 @@ class SRRouting:
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
         verify( main )
-        lib.killSwitch( main, "spine103", int( main.params[ "TOPO" ][ "switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        lib.killSwitch( main, "spine103",
+                        int( main.params[ "TOPO" ][ "switchNum" ] ) - 1,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
         verify( main )
-        lib.killSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ], int( main.params[ "TOPO" ][ "switchNum" ] ) - 5,
+        lib.killSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ],
+                        int( main.params[ "TOPO" ][ "switchNum" ] ) - 5,
                         int( main.params[ "TOPO" ][ "linkNum" ] ) - 42 )
         main.disconnectedIpv4Hosts = [ "h3v4", "h4v4", "h5v4", "h6v4", "h7v4", "h8v4", "h9v4", "h10v4", "h11v4" ]
         main.disconnectedIpv6Hosts = [ "h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6" ]
         main.disconnectedExternalIpv4Hosts = [ "rh1v4", "rh2v4", "rh5v4" ]
         main.disconnectedExternalIpv6Hosts = [ "rh1v6", "rh11v6", "rh5v6", "rh2v6", "rh22v6" ]
         verify( main, disconnected=True )
-        lib.recoverSwitch( main, "spine103", int( main.params[ "TOPO" ][ "switchNum" ] ) - 4, int( main.params[ "TOPO" ][ "linkNum" ] ) - 36 )
+        lib.recoverSwitch( main, "spine103",
+                           int( main.params[ "TOPO" ][ "switchNum" ] ) - 4,
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) - 36 )
         verify( main, disconnected=True )
-        lib.recoverSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ], int( main.params[ "TOPO" ][ "switchNum" ] ),
+        lib.recoverSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ],
+                           int( main.params[ "TOPO" ][ "switchNum" ] ),
                            int( main.params[ "TOPO" ][ "linkNum" ] ) )
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
@@ -572,18 +661,24 @@ class SRRouting:
         main.disconnectedExternalIpv6Hosts = [ ]
         verify( main )
 
-        lib.killSwitch( main, "spine104", int( main.params[ "TOPO" ][ "switchNum" ] ) - 1, int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
+        lib.killSwitch( main, "spine104",
+                        int( main.params[ "TOPO" ][ "switchNum" ] ) - 1,
+                        int( main.params[ "TOPO" ][ "linkNum" ] ) - 6 )
         verify( main )
-        lib.killSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ], int( main.params[ "TOPO" ][ "switchNum" ] ) - 5,
+        lib.killSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ],
+                        int( main.params[ "TOPO" ][ "switchNum" ] ) - 5,
                         int( main.params[ "TOPO" ][ "linkNum" ] ) - 42 )
         main.disconnectedIpv4Hosts = [ "h3v4", "h4v4", "h5v4", "h6v4", "h7v4", "h8v4", "h9v4", "h10v4", "h11v4" ]
         main.disconnectedIpv6Hosts = [ "h3v6", "h4v6", "h5v6", "h6v6", "h7v6", "h8v6", "h9v6", "h10v6", "h11v6" ]
         main.disconnectedExternalIpv4Hosts = [ "rh1v4", "rh2v4", "rh5v4" ]
         main.disconnectedExternalIpv6Hosts = [ "rh1v6", "rh11v6", "rh5v6", "rh2v6", "rh22v6" ]
         verify( main, disconnected=True )
-        lib.recoverSwitch( main, "spine104", int( main.params[ "TOPO" ][ "switchNum" ] ) - 4, int( main.params[ "TOPO" ][ "linkNum" ] ) - 36 )
+        lib.recoverSwitch( main, "spine104",
+                           int( main.params[ "TOPO" ][ "switchNum" ] ) - 4,
+                           int( main.params[ "TOPO" ][ "linkNum" ] ) - 36 )
         verify( main, disconnected=True )
-        lib.recoverSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ], int( main.params[ "TOPO" ][ "switchNum" ] ),
+        lib.recoverSwitch( main, [ "leaf2", "leaf3", "leaf4", "leaf5" ],
+                           int( main.params[ "TOPO" ][ "switchNum" ] ),
                            int( main.params[ "TOPO" ][ "linkNum" ] ) )
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
@@ -600,7 +695,6 @@ class SRRouting:
         Bring up the paired leaf and test connectivity
         Repeat above with SPINE-2 and a different paired leaf
         """
-        import time
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Drop spine and paired leaf" )
@@ -646,7 +740,6 @@ class SRRouting:
         check that buckets in select groups change accordingly
         Bring up links again and check that buckets in select groups change accordingly
         """
-        import time
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Take down one of double links towards the spine" )
@@ -719,7 +812,6 @@ class SRRouting:
         """
         Take down all uplinks from a paired leaf switch
         """
-        import time
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         from core import utilities
@@ -756,7 +848,6 @@ class SRRouting:
         Drop a device
         Bring that same instance up again and observe that this specific instance sees that the device is down.
         """
-        import time
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         from core import utilities
@@ -772,6 +863,186 @@ class SRRouting:
                                  onpass="ONOS instance {} sees correct device numbers".format( onosToKill ),
                                  onfail="ONOS instance {} doesn't see correct device numbers".format( onosToKill ) )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE640( self, main ):
+        """
+        Controller instance going down and switch coming down at the same time and then we bring them up together
+
+        A. Instance goes down and SPINE-1 goes down
+            - All connectivity should be there
+            - Bring them up together
+            - All connectivity should be there
+        B. Instance goes down and HAGG-1 goes down
+            - All connectivity should be there
+            - Bring them up together
+            - All connectivity should be there
+        C. Instance goes down and a paired leaf switch goes down
+            - Single homed hosts in this leaf should lose connectivity all others should be ok
+            - Bring them up together
+            - Test connectivity
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop an ONOS instance and switch(es) at the same time" )
+        caseDict = { 'A': { 'switches': "spine101",
+                            'disconnectedV4': [],
+                            'disconnectedV6': [],
+                            'expectedSwitches': 9,
+                            'expectedLinks': 30 },
+                     'B': { 'switches': "spine103",
+                            'disconnectedV4': [],
+                            'disconnectedV6': [],
+                            'expectedSwitches': 9,
+                            'expectedLinks': 42 },
+                     'C': { 'switches': "leaf2",
+                            'disconnectedV4': [ "h3v4" ],
+                            'disconnectedV6': [ "h3v6" ],
+                            'expectedSwitches': 9,
+                            'expectedLinks': 38 } }
+        totalSwitches = int( main.params[ 'TOPO' ][ 'switchNum' ] )
+        totalLinks = int( main.params[ 'TOPO' ][ 'linkNum' ] )
+        nodeIndex = 0
+        cases = sorted( caseDict.keys() )
+        for case in cases:
+            switches = caseDict[ case ][ 'switches' ]
+            expectedSwitches = caseDict[ case ][ 'expectedSwitches' ]
+            expectedLinks = caseDict[ case ][ 'expectedLinks' ]
+            main.step( "\n640{}: Drop ONOS{} and switch(es) {} at the same time".format( case,
+                                                                                         nodeIndex + 1,
+                                                                                         switches ) )
+            setupTest( main, test_idx=640 )
+            main.Cluster.next().CLI.balanceMasters()
+            time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+            main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
+            instance = main.Cluster.controllers[ nodeIndex ]
+            verify( main, disconnected=False, external=False )
+
+            # Simultaneous failures
+            main.step( "Kill ONOS{}: {}".format( nodeIndex + 1, instance.ipAddress ) )
+            killResult = main.ONOSbench.onosDie( instance.ipAddress )
+            utilities.assert_equals( expect=main.TRUE, actual=killResult,
+                                     onpass="ONOS node killed",
+                                     onfail="Failed to kill ONOS node" )
+            instance.active = False
+            main.Cluster.reset()
+            # TODO: Remove sleeps from the concurrent events
+            lib.killSwitch( main, switches, expectedSwitches, expectedLinks )
+            main.disconnectedIpv4Hosts = caseDict[ case ][ 'disconnectedV4' ]
+            main.disconnectedIpv6Hosts = caseDict[ case ][ 'disconnectedV6' ]
+
+            # verify functionality
+            main.log.debug( main.Cluster.next().summary() )
+            main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
+            main.log.debug( main.Cluster.next().summary() )
+            lib.verifyTopology( main, expectedSwitches, expectedLinks, main.Cluster.numCtrls - 1  )
+            lib.verifyNodes( main )
+            verify( main, external=False )
+
+            # Bring everything back up
+            lib.recoverSwitch( main, switches, totalSwitches, totalLinks, rediscoverHosts=True )
+            main.disconnectedIpv4Hosts = []
+            main.disconnectedIpv6Hosts = []
+            lib.recoverOnos( main, [ nodeIndex ], expectedSwitches, expectedLinks, main.Cluster.numCtrls )
+
+            # Verify functionality
+            lib.verifyNodes( main )
+            verify( main, disconnected=False, external=False )
+            lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+            nodeIndex = ( nodeIndex + 1 ) % main.Cluster.numCtrls
+
+    def CASE641( self, main ):
+        """
+        Controller instance going down while switch comes up at the same time
+
+        A. Take down SPINE-1
+            - Test connectivity
+            - Bring up SPINE-1 and drop an instance at the same time
+            - Test connectivity
+            - Bring up instance one
+            - Test connectivity
+        B. Take down HAGG-1
+            - Test connectivity
+            - Bring up HAGG-1 and drop an instance at the same time
+            - Test connectivity
+            - Bring up instance one
+            - Test connectivity
+        C. Take down a paired leaf switch
+            - Test connectivity ( single homed hosts on this leaf will lose it )
+            - Bring up paired leaf switch and drop a controller instance at the same time
+            - Test connectivity
+            - Bring up the instance
+            - Test connectivity
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop an ONOS instance and recover switch(es) at the same time" )
+        caseDict = { 'A': { 'switches': "spine101",
+                            'disconnectedV4': [],
+                            'disconnectedV6': [],
+                            'expectedSwitches': 9,
+                            'expectedLinks': 30 },
+                     'B': { 'switches': "spine103",
+                            'disconnectedV4': [],
+                            'disconnectedV6': [],
+                            'expectedSwitches': 9,
+                            'expectedLinks': 42 },
+                     'C': { 'switches': "leaf2",
+                            'disconnectedV4': [ "h3v4" ],
+                            'disconnectedV6': [ "h3v6" ],
+                            'expectedSwitches': 9,
+                            'expectedLinks': 38 } }
+        totalSwitches = int( main.params[ 'TOPO' ][ 'switchNum' ] )
+        totalLinks = int( main.params[ 'TOPO' ][ 'linkNum' ] )
+        nodeIndex = 0
+        cases = sorted( caseDict.keys() )
+        for case in cases:
+            switches = caseDict[ case ][ 'switches' ]
+            expectedSwitches = caseDict[ case ][ 'expectedSwitches' ]
+            expectedLinks = caseDict[ case ][ 'expectedLinks' ]
+            main.step( "\n641{}: Drop ONOS{} and recover switch(es) {} at the same time".format( case,
+                                                                                                 nodeIndex + 1,
+                                                                                                 switches ) )
+            setupTest( main, test_idx=641 )
+            main.Cluster.next().CLI.balanceMasters()
+            time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+            main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
+            instance = main.Cluster.controllers[ nodeIndex ]
+            verify( main, disconnected=False, external=False )
+            # Drop the switch to setup scenario
+            lib.killSwitch( main, switches, expectedSwitches, expectedLinks )
+            main.disconnectedIpv4Hosts = caseDict[ case ][ 'disconnectedV4' ]
+            main.disconnectedIpv6Hosts = caseDict[ case ][ 'disconnectedV6' ]
+            verify( main, external=False )
+
+            # Simultaneous node failure and switch recovery
+            main.step( "Kill ONOS{}: {}".format( nodeIndex + 1, instance.ipAddress ) )
+            killResult = main.ONOSbench.onosDie( instance.ipAddress )
+            utilities.assert_equals( expect=main.TRUE, actual=killResult,
+                                     onpass="ONOS node killed",
+                                     onfail="Failed to kill ONOS node" )
+            instance.active = False
+            main.Cluster.reset()
+            # TODO: Remove sleeps from the concurrent events
+            lib.recoverSwitch( main, switches, totalSwitches, totalLinks, rediscoverHosts=True )
+            main.disconnectedIpv4Hosts = []
+            main.disconnectedIpv6Hosts = []
+
+            # verify functionality
+            main.log.debug( main.Cluster.next().summary() )
+            lib.recoverSwitch( main, switches, totalSwitches, totalLinks, rediscoverHosts=True )
+            main.log.debug( main.Cluster.next().summary() )
+            lib.verifyTopology( main, totalSwitches, totalLinks, main.Cluster.numCtrls - 1 )
+            lib.verifyNodes( main )
+            verify( main, disconnected=False, external=False )
+
+            # Bring everything back up and verify functionality
+            lib.recoverOnos( main, [ nodeIndex ], totalSwitches, totalLinks, main.Cluster.numCtrls )
+            lib.verifyNodes( main )
+            verify( main, external=False )
+            lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+            nodeIndex = ( nodeIndex + 1 ) % main.Cluster.numCtrls
 
     def CASE642( self, main ):
         """

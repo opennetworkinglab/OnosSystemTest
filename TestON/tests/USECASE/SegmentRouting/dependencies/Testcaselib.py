@@ -681,6 +681,7 @@ class Testcaselib:
                                  onpass="Switch recovery successful",
                                  onfail="Failed to recover switch?" )
 
+    @staticmethod
     def portstate( main, dpid, port, state, switches, links ):
         """
         Disable/enable a switch port using 'portstate' and verify ONOS can see the proper link change
@@ -691,6 +692,7 @@ class Testcaselib:
             switches, links: number of expected switches and links after link change, ex.: '4', '6'
         """
         main.step( "Port %s on %s:%s" % ( state, dpid, port ) )
+        main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
         main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state=state )
         main.log.info( "Waiting %s seconds for port %s to be discovered" % ( main.linkSleep, state ) )
         time.sleep( main.linkSleep )

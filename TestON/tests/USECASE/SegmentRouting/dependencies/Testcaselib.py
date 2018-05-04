@@ -1071,3 +1071,21 @@ class Testcaselib:
             Testcaselib.saveOnosDiagnostics( main )
             Testcaselib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
             main.skipCase()
+
+    @staticmethod
+    def verifyHostLocation( main, hostName, locations, ipv6=False ):
+        """
+        Verify if the specified host is discovered by ONOS on the given locations
+        Required:
+            hostName: name of the host. ex. "h1"
+            locations: expected locations of the host. ex. "of:0000000000000005/8"
+                       Could be a string or list
+        Optional:
+            ipv6: Use True for IPv6 only hosts
+        Returns:
+            main.TRUE if host is discovered on all locations provided, otherwise main.FALSE
+        """
+        main.step( "Verify host {} is discovered at {}".format( hostName, locations ) )
+        hostIp = main.Network.getIPAddress( hostName, proto='IPV6' if ipv6 else 'IPV4' )
+        result = main.Cluster.active( 0 ).CLI.verifyHostLocation( hostIp, locations )
+        return result

@@ -650,7 +650,7 @@ class Testcaselib:
                                  onfail="Failed to kill switch?" )
 
     @staticmethod
-    def recoverSwitch( main, switch, switches, links, rediscoverHosts=True ):
+    def recoverSwitch( main, switch, switches, links, rediscoverHosts=False ):
         """
         Params: switches, links: number of expected switches and links after SwitchUp, ex.: '4', '6'
         Recover a switch and verify ONOS can see the proper change

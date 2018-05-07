@@ -650,7 +650,7 @@ class Testcaselib:
                                  onfail="Failed to kill switch?" )
 
     @staticmethod
-    def recoverSwitch( main, switch, switches, links, rediscoverHosts=False ):
+    def recoverSwitch( main, switch, switches, links, rediscoverHosts=False, hostsToDiscover=[] ):
         """
         Params: switches, links: number of expected switches and links after SwitchUp, ex.: '4', '6'
         Recover a switch and verify ONOS can see the proper change
@@ -665,8 +665,7 @@ class Testcaselib:
             main.switchSleep ) )
         time.sleep( main.switchSleep )
         if rediscoverHosts:
-            main.Network.discoverIpv4Hosts( main.internalIpv4Hosts )
-            main.Network.discoverIpv6Hosts( main.internalIpv6Hosts )
+            main.Network.discoverHosts( hostList=hostsToDiscover )
             main.log.info( "Waiting %s seconds for hosts to get re-discovered" % (
                            main.switchSleep ) )
             time.sleep( main.switchSleep )

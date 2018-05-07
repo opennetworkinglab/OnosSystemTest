@@ -574,55 +574,40 @@ class MininetCliDriver( Emulator ):
 
             main.cleanAndExit()
 
-    def discoverIpv4Hosts( self, hostList, wait=1 , dstIp="6.6.6.6"):
+    def discoverHosts( self, hostList=[], wait=1, dstIp="6.6.6.6", dstIp6="1020::3fe" ):
         '''
-        Can only be used if hosts already have ipv4 addresses.
-
-        Hosts in hostList will do a single ping to a non-existent (dstIp) address for ONOS
-        to discover them again.
-        '''
-        try:
-            main.log.info( "Issuing dumb pings for ipv6 hosts to be discovered" )
-            cmd = " ping -c 1 -i 1 -W " + str( wait ) + " "
-            for host in hostList:
-                pingCmd = str( host ) + cmd + dstIp
-                self.handle.sendline( pingCmd )
-                self.handle.expect( "mininet>", timeout=wait + 1 )
-
-        except pexpect.TIMEOUT:
-            main.log.exception( self.name + ": TIMEOUT exception" )
-            response = self.handle.before
-            # NOTE: Send ctrl-c to make sure command is stopped
-            self.handle.send( "\x03" )
-            self.handle.expect( "Interrupt" )
-            response += self.handle.before + self.handle.after
-            self.handle.expect( "mininet>" )
-            response += self.handle.before + self.handle.after
-            main.log.debug( response )
-            return main.FALSE
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanAndExit()
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanAndExit()
-
-    def discoverIpv6Hosts( self, hostList, wait=1, dstIp="1020::3fe" ):
-        '''
-        Can only be used if hosts already have ipv6 addresses.
-
-        Hosts in hostList will do a single ping to a non-existent address (dstIp) for ONOS
-        to discover them again.
+        Hosts in hostList will do a single ping to a non-existent address for ONOS to
+        discover them. A host will use ping/ping6 to send echo requests depending on if
+        it has IPv4/IPv6 addresses configured.
+        Optional:
+            hostList: a list of names of the hosts that need to be discovered. If not
+                      specified mininet will send ping from all the hosts
+            wait: timeout for IPv4/IPv6 echo requests
+            dstIp: destination address used by IPv4 hosts
+            dstIp6: destination address used by IPv6 hosts
+        Returns:
+            main.TRUE if all ping packets were successfully sent. Otherwise main.FALSE
         '''
         try:
-            main.log.info( "Issuing dump pings for ipv6 hosts to be discovered" )
-            cmd = " ping6 -c 1 -i 1 -W " + str( wait ) + " "
+            if not hostList:
+                hosts = self.getHosts( getInterfaces=False )
+                hostList = hosts.keys()
+            discoveryResult = main.TRUE
             for host in hostList:
-                pingCmd = str( host ) + cmd + dstIp
-                self.handle.sendline( pingCmd )
-                self.handle.expect( "mininet>", timeout=wait + 1 )
-
+                cmd = ""
+                if self.getIPAddress( host ):
+                    cmd = "{} ping -c 1 -i 1 -W {} {}".format( host, wait, dstIp )
+                    main.log.debug( "Sending IPv4 probe ping from host {}".format( host ) )
+                elif self.getIPAddress( host, proto='IPV6' ):
+                    cmd = "{} ping6 -c 1 -i 1 -W {} {}".format( host, wait, dstIp6 )
+                    main.log.debug( "Sending IPv6 probe ping from host {}".format( host ) )
+                else:
+                    main.log.warn( "No IP addresses configured on host {}, skipping discovery".format( host ) )
+                    discoveryResult = main.FALSE
+                if cmd:
+                    self.handle.sendline( cmd )
+                    self.handle.expect( "mininet>", timeout=wait + 1 )
+            return discoveryResult
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
             response = self.handle.before

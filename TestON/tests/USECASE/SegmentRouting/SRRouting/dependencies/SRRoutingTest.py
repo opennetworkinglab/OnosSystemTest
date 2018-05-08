@@ -113,7 +113,7 @@ def verifyPingExternal( main, ipv4=True, ipv6=True, disconnected=True ):
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     # Verify connected hosts
-    main.step("Verify reachability of from connected internal hosts to external hosts")
+    main.step("Verify reachability from connected internal hosts to external hosts")
     if ipv4:
         lib.verifyPing( main,
                         [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],

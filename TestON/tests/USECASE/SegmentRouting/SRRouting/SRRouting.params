@@ -36,10 +36,10 @@
     <timers>
         <LinkDiscovery>30</LinkDiscovery>
         <SwitchDiscovery>30</SwitchDiscovery>
-        <OnosDiscovery>30</OnosDiscovery>
+        <OnosDiscovery>45</OnosDiscovery>
         <loadNetcfgSleep>5</loadNetcfgSleep>
         <startMininetSleep>25</startMininetSleep>
-        <dhcpSleep>30</dhcpSleep>
+        <dhcpSleep>60</dhcpSleep>
         <balanceMasterSleep>10</balanceMasterSleep>
     </timers>
 

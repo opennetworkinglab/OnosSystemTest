@@ -573,7 +573,7 @@ class Testcaselib:
 
         main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
         main.log.info(
-                "Waiting %s seconds for links down to be discovered" % main.linkSleep )
+                "Waiting %s seconds for links up to be discovered" % main.linkSleep )
         time.sleep( main.linkSleep )
 
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
@@ -1036,7 +1036,7 @@ class Testcaselib:
             main.log.debug( host.hostMac )
 
     @staticmethod
-    def verifyMulticastTraffic( main, routeName, expect, skipOnFail=True, maxRetry=0 ):
+    def verifyMulticastTraffic( main, routeName, expect, skipOnFail=True, maxRetry=1 ):
         """
         Verify multicast traffic using scapy
         """
@@ -1103,7 +1103,7 @@ class Testcaselib:
             main.skipCase()
 
     @staticmethod
-    def verifyHostLocation( main, hostName, locations, ipv6=False ):
+    def verifyHostLocation( main, hostName, locations, ipv6=False, retry=0 ):
         """
         Verify if the specified host is discovered by ONOS on the given locations
         Required:
@@ -1115,7 +1115,13 @@ class Testcaselib:
         Returns:
             main.TRUE if host is discovered on all locations provided, otherwise main.FALSE
         """
-        main.step( "Verify host {} is discovered at {}".format( hostName, locations ) )
+        main.log.info( "Verify host {} is discovered at {}".format( hostName, locations ) )
         hostIp = main.Network.getIPAddress( hostName, proto='IPV6' if ipv6 else 'IPV4' )
-        result = main.Cluster.active( 0 ).CLI.verifyHostLocation( hostIp, locations )
-        return result
+        result = utilities.retry( main.Cluster.active( 0 ).CLI.verifyHostLocation,
+                                  main.FALSE,
+                                  args=( hostIp, locations ),
+                                  attempts=retry + 1,
+                                  sleep=10 )
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="Location verification for Host {} passed".format( hostName ),
+                                 onfail="Location verification for Host {} failed".format( hostName ) )

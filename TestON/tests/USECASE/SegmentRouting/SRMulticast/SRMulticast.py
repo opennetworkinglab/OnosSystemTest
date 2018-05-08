@@ -307,7 +307,7 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1, 2 ] }, "ipv6": { "src": [ 0 ], "dst": [ 0 ] } }
         setupTest( main, test_idx=202, onosNodes=3 )
         verifyMcastRoutes( main )
-        verifySwitchDown( main, "leaf2", 10, { "ipv4": False, "ipv6": False } )
+        verifySwitchDown( main, "leaf2", 10, { "ipv4": False, "ipv6": False }, [ "h4v4" ] )
         verifyMcastRemoval( main, removeDHT1=False )
         lib.cleanup( main, copyKarafLog=False )
 
@@ -327,7 +327,7 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1, 2 ] }, "ipv6": { "src": [ 0 ], "dst": [ 0 ] } }
         setupTest( main, test_idx=203, onosNodes=3 )
         verifyMcastRoutes( main )
-        verifySwitchDown( main, "leaf5", 10 )
+        verifySwitchDown( main, "leaf5", 10, hostsToDiscover=[ "h10v4" ] )
         verifyMcastRemoval( main, removeDHT1=False )
         lib.cleanup( main, copyKarafLog=False )
 
@@ -347,7 +347,7 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1, 2 ] }, "ipv6": { "src": [ 0 ], "dst": [ 0 ] } }
         setupTest( main, test_idx=204, onosNodes=3 )
         verifyMcastRoutes( main )
-        verifySwitchDown( main, "leaf4", 10, { "ipv4": [ True, False, True ], "ipv6": True } )
+        verifySwitchDown( main, "leaf4", 10, { "ipv4": [ True, False, True ], "ipv6": True }, [ "h8v4", "h10v4" ] )
         verifyMcastRemoval( main, removeDHT1=False )
         lib.cleanup( main, copyKarafLog=False )
 
@@ -367,7 +367,7 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1, 2 ] }, "ipv6": { "src": [ 0 ], "dst": [ 0 ] } }
         setupTest( main, test_idx=205, onosNodes=3 )
         verifyMcastRoutes( main )
-        verifySwitchDown( main, [ "leaf1", "leaf3", "leaf4", "leaf5" ], 32, { "ipv4": [ True, False, False ], "ipv6": False } )
+        verifySwitchDown( main, [ "leaf1", "leaf3", "leaf4", "leaf5" ], 32, { "ipv4": [ True, False, False ], "ipv6": False }, [ "h4v4", "h8v4", "h10v4", "h1v6"] )
         verifyMcastRemoval( main, removeDHT1=False )
         lib.cleanup( main, copyKarafLog=False )
 
@@ -411,14 +411,13 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1, 2 ] }, "ipv6": { "src": [ 0 ], "dst": [ 0 ] } }
         setupTest( main, test_idx=401, onosNodes=3 )
         verifyMcastRoutes( main )
-        #TODO: Verify host has both locations
         # Verify killing one link of dual-homed host h4
-        verifyLinkDown( main, [ "leaf2", "h4v4" ], 0 )
-        verifyLinkDown( main, [ "leaf3", "h4v4" ], 0 )
+        verifyPortDown( main, "of:0000000000000002", 10, hostsToDiscover=[ "h4v4" ], hostLocations={ "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
+        verifyPortDown( main, "of:0000000000000003", 10, hostsToDiscover=[ "h4v4" ], hostLocations={ "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
         # Verify killing one link of dual-homed host h10
-        verifyLinkDown( main, [ "leaf4", "h10v4" ], 0 )
-        verifyLinkDown( main, [ "leaf5", "h10v4" ], 0 )
-        verifySwitchDown( main, "leaf3", 10 )
+        verifyPortDown( main, "of:0000000000000004", 11, hostsToDiscover=[ "h10v4" ], hostLocations={ "h10v4": ["of:0000000000000004/11", "of:0000000000000005/10"] } )
+        verifyPortDown( main, "of:0000000000000005", 10, hostsToDiscover=[ "h10v4" ], hostLocations={ "h10v4": ["of:0000000000000004/11", "of:0000000000000005/10"] } )
+        verifySwitchDown( main, "leaf3", 10, hostsToDiscover=[ "h4v4" ] )
         verifyMcastRemoval( main, removeDHT1=False )
         lib.cleanup( main, copyKarafLog=False )
 
@@ -464,11 +463,11 @@ class SRMulticast:
         setupTest( main, test_idx=403, onosNodes=3 )
         verifyMcastRoutes( main )
         # Verify killing one link of dual-homed host h4
-        verifyLinkDown( main, [ "leaf2", "h4v4" ], 0 )
-        verifyLinkDown( main, [ "leaf3", "h4v4" ], 0 )
+        verifyPortDown( main, "of:0000000000000002", 10, hostsToDiscover=[ "h4v4" ], hostLocations={ "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
+        verifyPortDown( main, "of:0000000000000003", 10, hostsToDiscover=[ "h4v4" ], hostLocations={ "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
         # Verify killing one link of dual-homed host h10
-        verifyLinkDown( main, [ "leaf4", "h10v4" ], 0 )
-        verifyLinkDown( main, [ "leaf5", "h10v4" ], 0 )
+        verifyPortDown( main, "of:0000000000000004", 11, hostsToDiscover=[ "h10v4" ], hostLocations={ "h10v4": ["of:0000000000000004/11", "of:0000000000000005/10"] } )
+        verifyPortDown( main, "of:0000000000000005", 10, hostsToDiscover=[ "h10v4" ], hostLocations={ "h10v4": ["of:0000000000000004/11", "of:0000000000000005/10"] } )
         verifyLinkDown( main, [ [ "leaf3", "spine101" ], [ "leaf3", "spine102" ] ], 8 )
         verifyMcastRemoval( main, removeDHT1=False )
         lib.cleanup( main, copyKarafLog=False )
@@ -494,11 +493,11 @@ class SRMulticast:
         setupTest( main, test_idx=404, onosNodes=3 )
         verifyMcastRoutes( main )
         # Verify killing one link of dual-homed host h4
-        verifyLinkDown( main, [ "leaf2", "h4v4" ], 0 )
-        verifyLinkDown( main, [ "leaf3", "h4v4" ], 0 )
+        verifyPortDown( main, "of:0000000000000002", 10, hostsToDiscover=[ "h4v4" ], hostLocations={ "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
+        verifyPortDown( main, "of:0000000000000003", 10, hostsToDiscover=[ "h4v4" ], hostLocations={ "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
         # Verify killing one link of dual-homed host h10
-        verifyLinkDown( main, [ "leaf4", "h10v4" ], 0 )
-        verifyLinkDown( main, [ "leaf5", "h10v4" ], 0 )
+        verifyPortDown( main, "of:0000000000000004", 11, hostsToDiscover=[ "h10v4" ], hostLocations={ "h10v4": ["of:0000000000000004/11", "of:0000000000000005/10"] } )
+        verifyPortDown( main, "of:0000000000000005", 10, hostsToDiscover=[ "h10v4" ], hostLocations={ "h10v4": ["of:0000000000000004/11", "of:0000000000000005/10"] } )
         verifyLinkDown( main, [ [ "leaf3", "spine101" ], [ "leaf2", "spine102" ] ], 8 )
         verifyMcastRemoval( main, removeDHT1=False )
         lib.cleanup( main, copyKarafLog=False )

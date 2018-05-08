@@ -75,7 +75,7 @@ def installMcastRoute( main, routeName ):
     src = main.mcastRoutes[ routeName ][ "src" ]
     dst = main.mcastRoutes[ routeName ][ "dst" ]
     main.Cluster.active( 0 ).CLI.mcastHostJoin( routeData[ "src" ][ src[ 0 ] ][ "ip" ], routeData[ "group" ],
-                                                [ routeData[ "src" ][ i ][ "port" ] for i in src ],
+                                                [ routeData[ "src" ][ i ][ "id" ] for i in src ],
                                                 [ routeData[ "dst" ][ i ][ "id" ] for i in dst ] )
     time.sleep( float( main.params[ "timers" ][ "mcastSleep" ] ) )
 
@@ -85,7 +85,7 @@ def verifyMcastRouteRemoval( main, routeName ):
     """
     routeData = main.multicastConfig[ routeName ]
     main.step( "Verify removal of {} route".format( routeName ) )
-    main.Cluster.active( 0 ).CLI.mcastHostDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ] )
+    main.Cluster.active( 0 ).CLI.mcastSinkDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ] )
     # TODO: verify the deletion
 
 def verifyMcastSinkRemoval( main, routeName, sinkIndex, expect ):
@@ -96,7 +96,7 @@ def verifyMcastSinkRemoval( main, routeName, sinkIndex, expect ):
     routeData = main.multicastConfig[ routeName ]
     sinkId = routeData[ "dst" ][ sinkIndex ][ "id" ]
     main.step( "Verify removal of {} sink {}".format( routeName, sinkId ) )
-    main.Cluster.active( 0 ).CLI.mcastHostDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ], sinkId )
+    main.Cluster.active( 0 ).CLI.mcastSinkDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ], sinkId )
     time.sleep( float( main.params[ "timers" ][ "mcastSleep" ] ) )
     lib.verifyMulticastTraffic( main, routeName, expect )
 
@@ -106,9 +106,9 @@ def verifyMcastSourceRemoval( main, routeName, sourceIndex, expect ):
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     routeData = main.multicastConfig[ routeName ]
-    sourcePort = [ routeData[ "src" ][ sourceIndex ][ "port" ] ]
-    main.step( "Verify removal of {} source {}".format( routeName, sourcePort ) )
-    main.Cluster.active( 0 ).CLI.mcastSourceDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ], sourcePort )
+    sourceId = [ routeData[ "src" ][ sourceIndex ][ "id" ] ]
+    main.step( "Verify removal of {} source {}".format( routeName, sourceId ) )
+    main.Cluster.active( 0 ).CLI.mcastSourceDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ], sourceId )
     time.sleep( float( main.params[ "timers" ][ "mcastSleep" ] ) )
     lib.verifyMulticastTraffic( main, routeName, expect )
 
@@ -126,7 +126,7 @@ def verifyMcastRemoval( main, removeDHT1=True ):
         verifyMcastSinkRemoval( main, "ipv4", 1, [ True, False, False ] )
     verifyMcastSourceRemoval( main, "ipv4", 0, False )
 
-def verifyLinkDown( main, link, affectedLinkNum, expectList={ "ipv4": True, "ipv6": True } ):
+def verifyLinkDown( main, link, affectedLinkNum, expectList={ "ipv4": True, "ipv6": True }, hostsToDiscover=[], hostLocations={} ):
     """
     Kill a batch of links and verify traffic
     Restore the links and verify traffic
@@ -139,10 +139,34 @@ def verifyLinkDown( main, link, affectedLinkNum, expectList={ "ipv4": True, "ipv
         lib.verifyMulticastTraffic( main, routeName, expectList[ routeName ] )
     # Restore the link(s)
     lib.restoreLinkBatch( main, link, int( main.params[ "TOPO" ][ "linkNum" ] ), int( main.params[ "TOPO" ][ "switchNum" ] ) )
+    if hostsToDiscover:
+        main.Network.discoverHosts( hostList=hostsToDiscover )
+    for host, loc in hostLocations.items():
+        lib.verifyHostLocation( main, host, loc, retry=5 )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 
-def verifySwitchDown( main, switchName, affectedLinkNum, expectList={ "ipv4": True, "ipv6": True } ):
+def verifyPortDown( main, dpid, port, expectList={ "ipv4": True, "ipv6": True }, hostsToDiscover=[], hostLocations={} ):
+    """
+    Disable a port and verify traffic
+    Reenable the port and verify traffic
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    main.step( "Disable port {}/{}".format( dpid, port ) )
+    main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
+    time.sleep( 10 )
+    for routeName in expectList.keys():
+        lib.verifyMulticastTraffic( main, routeName, expectList[ routeName ] )
+    # Restore the link(s)
+    main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
+    if hostsToDiscover:
+        main.Network.discoverHosts( hostList=hostsToDiscover )
+    for host, loc in hostLocations.items():
+        lib.verifyHostLocation( main, host, loc, retry=5 )
+    for routeName in expectList.keys():
+        lib.verifyMulticastTraffic( main, routeName, True )
+
+def verifySwitchDown( main, switchName, affectedLinkNum, expectList={ "ipv4": True, "ipv6": True }, hostsToDiscover=[], hostLocations={} ):
     """
     Kill a batch of switches and verify traffic
     Recover the swithces and verify traffic
@@ -154,7 +178,9 @@ def verifySwitchDown( main, switchName, affectedLinkNum, expectList={ "ipv4": Tr
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, expectList[ routeName ] )
     # Recover the switch(es)
-    lib.recoverSwitch( main, switchName, int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ) )
+    lib.recoverSwitch( main, switchName, int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ), True if hostsToDiscover else False, hostsToDiscover )
+    for host, loc in hostLocations.items():
+        lib.verifyHostLocation( host, loc, retry=5 )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 

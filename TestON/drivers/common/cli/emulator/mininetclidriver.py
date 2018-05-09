@@ -605,6 +605,8 @@ class MininetCliDriver( Emulator ):
                     main.log.warn( "No IP addresses configured on host {}, skipping discovery".format( host ) )
                     discoveryResult = main.FALSE
                 if cmd:
+                    self.handle.sendline( "{} ip neigh flush all".format( host ) )
+                    self.handle.expect( "mininet>", timeout=wait + 1 )
                     self.handle.sendline( cmd )
                     self.handle.expect( "mininet>", timeout=wait + 1 )
             return discoveryResult

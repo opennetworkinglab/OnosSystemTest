@@ -97,7 +97,7 @@ def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
         ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun ) + '''
         ''' + oldFlowCheck( jobOn, onos_branch ) + '''
         ''' + postSetup( onos_branch, test_branch, onos_tag, manuallyRun )
-        stcSetup()
+        generateKey()
     }
 }
 def tagCheck( onos_tag, onos_branch ){
@@ -175,14 +175,15 @@ def postSetup( onos_branch, test_branch, onos_tag, isManual ){
     }
     return result
 }
-def stcSetup(){
+def generateKey(){
     try{
         sh '''
         #!/bin/bash -l
         set +e
         . ~/.bashrc
         env
-        stc setup
+        onos-push-bits-through-proxy
+        onos-gen-cluster-key -f
         '''
     }catch( all ){}
 }

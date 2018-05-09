@@ -97,6 +97,7 @@ def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
         ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun ) + '''
         ''' + oldFlowCheck( jobOn, onos_branch ) + '''
         ''' + postSetup( onos_branch, test_branch, onos_tag, manuallyRun )
+        setSetup()
     }
 }
 def tagCheck( onos_tag, onos_branch ){
@@ -170,10 +171,20 @@ def postSetup( onos_branch, test_branch, onos_tag, isManual ){
         kill $(ps -efw | grep karaf | grep -v grep | awk '{print $2}')
         sleep 30
         git branch
-        stc setup
         '''
     }
     return result
+}
+def stcSetup(){
+    try{
+        sh '''
+        #!/bin/bash -l
+        set +e
+        . ~/.bashrc
+        env
+        stc setup
+        '''
+    }catch( all ){}
 }
 def returnCell( nodeName ){
     node( "TestStation-" + nodeName + "s" ){

@@ -97,7 +97,7 @@ def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
         ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun ) + '''
         ''' + oldFlowCheck( jobOn, onos_branch ) + '''
         ''' + postSetup( onos_branch, test_branch, onos_tag, manuallyRun )
-        setSetup()
+        stcSetup()
     }
 }
 def tagCheck( onos_tag, onos_branch ){

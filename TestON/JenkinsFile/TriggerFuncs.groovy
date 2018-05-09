@@ -169,7 +169,9 @@ def postSetup( onos_branch, test_branch, onos_tag, isManual ){
         echo -e "\n##### Stop all running instances of Karaf #####"
         kill $(ps -efw | grep karaf | grep -v grep | awk '{print $2}')
         sleep 30
-        git branch'''
+        git branch
+        stc setup
+        '''
     }
     return result
 }

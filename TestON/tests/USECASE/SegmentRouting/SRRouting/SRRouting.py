@@ -621,3 +621,99 @@ class SRRouting:
         main.disconnectedIpv6Hosts = []
         verify( main )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE642( self, main ):
+        """
+        Drop one link from each double link
+        Drop a link between DAAS-1 and HAAG-1
+        Drop a link between HAGG-2 and SPINE-2
+        Drop one ONOS instance
+        Test connectivity (expect no failure)
+        Bring up all links and ONOS instance
+        Test connectivity (expect no failure)
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop ONOS instance and links at the same time" )
+        setupTest( main, test_idx=642, onosNodes=3 )
+        main.Cluster.active( 0 ).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        verify( main )
+
+        portsToDisable = [ [ "of:0000000000000001", 1 ], [ "of:0000000000000103", 1 ],
+                           [ "of:0000000000000006", 1 ], [ "of:0000000000000103", 2 ],
+                           [ "of:0000000000000101", 9 ], [ "of:0000000000000103", 3 ],
+                           [ "of:0000000000000002", 1 ], [ "of:0000000000000101", 1 ],
+                           [ "of:0000000000000003", 1 ], [ "of:0000000000000101", 3 ],
+                           [ "of:0000000000000004", 1 ], [ "of:0000000000000101", 5 ],
+                           [ "of:0000000000000005", 1 ], [ "of:0000000000000101", 7 ],
+                           [ "of:0000000000000002", 3 ], [ "of:0000000000000102", 1 ],
+                           [ "of:0000000000000003", 3 ], [ "of:0000000000000102", 3 ],
+                           [ "of:0000000000000004", 3 ], [ "of:0000000000000102", 5 ],
+                           [ "of:0000000000000005", 3 ], [ "of:0000000000000102", 7 ] ]
+        for dpid, port in portsToDisable:
+            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
+        lib.killOnos( main, [ 2, ], int( main.params[ "TOPO" ][ "switchNum" ] ),
+                      int( main.params[ "TOPO" ][ "linkNum" ] ) - len( portsToDisable ), 2 )
+        verify( main )
+        for dpid, port in portsToDisable:
+            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
+        lib.recoverOnos( main, [ 2, ], int( main.params[ "TOPO" ][ "switchNum" ] ),
+                         int( main.params[ "TOPO" ][ "linkNum" ] ), 3 )
+        verify( main )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE643( self, main ):
+        """
+        Drop one link from each double link
+        Drop a link between DAAS-1 and HAAG-1
+        Drop a link between HAGG-2 and SPINE-2
+        Test connectivity (expect no failure)
+        Bring up all links
+        Drop one ONOS instance
+        Test connectivity (expect no failure)
+        Bring up ONOS instance
+        Test connectivity (expect no failure)
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop ONOS instances and bring up links at the same time" )
+        setupTest( main, test_idx=643, onosNodes=3 )
+        main.Cluster.active( 0 ).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        verify( main )
+
+        portsToDisable = [ [ "of:0000000000000001", 1 ], [ "of:0000000000000103", 1 ],
+                           [ "of:0000000000000006", 1 ], [ "of:0000000000000103", 2 ],
+                           [ "of:0000000000000101", 9 ], [ "of:0000000000000103", 3 ],
+                           [ "of:0000000000000002", 1 ], [ "of:0000000000000101", 1 ],
+                           [ "of:0000000000000003", 1 ], [ "of:0000000000000101", 3 ],
+                           [ "of:0000000000000004", 1 ], [ "of:0000000000000101", 5 ],
+                           [ "of:0000000000000005", 1 ], [ "of:0000000000000101", 7 ],
+                           [ "of:0000000000000002", 3 ], [ "of:0000000000000102", 1 ],
+                           [ "of:0000000000000003", 3 ], [ "of:0000000000000102", 3 ],
+                           [ "of:0000000000000004", 3 ], [ "of:0000000000000102", 5 ],
+                           [ "of:0000000000000005", 3 ], [ "of:0000000000000102", 7 ] ]
+        for dpid, port in portsToDisable[ : -1 ]:
+            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
+        # To trigger sleep for link down discovery and topology check
+        lib.portstate( main, portsToDisable[ -1 ][ 0 ], portsToDisable[ -1 ][ 1 ], "disable",
+                       int( main.params[ "TOPO" ][ "switchNum" ] ),
+                       int( main.params[ "TOPO" ][ "linkNum" ] ) - len( portsToDisable ) )
+
+        verify( main )
+        for dpid, port in portsToDisable[ : -1 ]:
+            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
+        # To trigger sleep for link up discovery and topology check
+        lib.portstate( main, portsToDisable[ -1 ][ 0 ], portsToDisable[ -1 ][ 1 ], "enable",
+                       int( main.params[ "TOPO" ][ "switchNum" ] ),
+                       int( main.params[ "TOPO" ][ "linkNum" ] ) )
+        lib.killOnos( main, [ 2, ], int( main.params[ "TOPO" ][ "switchNum" ] ),
+                      int( main.params[ "TOPO" ][ "linkNum" ] ), 2 )
+        verify( main )
+        lib.recoverOnos( main, [ 2, ], int( main.params[ "TOPO" ][ "switchNum" ] ),
+                         int( main.params[ "TOPO" ][ "linkNum" ] ), 3 )
+        verify( main )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )

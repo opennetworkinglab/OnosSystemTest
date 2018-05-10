@@ -17,6 +17,7 @@ testcases = [
     "HA" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
     "SCPF" : [ tests : "" , nodeName : "BM", wikiContent : "" ],
     "SR" : [ tests : "", nodeName : [ "Fabric2", "Fabric3" ], wikiContent : "" ],
+    "SR1" : [ tests : "", nodeName : [ "Fabric2", "Fabric3" ], wikiContent : "" ],
     "USECASE" : [ tests : "" , nodeName : "BM", wikiContent : "" ]
 ]
 Prefix_organizer = [
@@ -78,25 +79,29 @@ if ( manually_run ){
     println "Tests to be run manually : "
 }else{
     testcases[ "SR" ][ "tests" ] = SR_choices
+    testcases[ "SR1" ][ "tests" ] = SR_choices
     println "Defaulting to " + day + " tests:"
 }
 
 triggerFuncs.print_tests( testcases )
 
 def runTest = [
-    "VM" : [:],
-    "BM" : [:],
     "Fabric2" : [:],
     "Fabric3" : [:]
 ]
-for( String test in testcases.keySet() ){
-    println test
-    if ( testcases[ test ][ "tests" ] != "" ){
-        runTest[ testcases[ test ][ "nodeName" ][ 0 ] ][ test ] = triggerFuncs.trigger_pipeline( current_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 0 ], test, manually_run, onos_tag )
-        runTest[ testcases[ test ][ "nodeName" ][ 0 ] ][ test ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 0 ], test, manually_run, onos_tag )
-        runTest[ testcases[ test ][ "nodeName" ][ 1 ] ][ test ] = triggerFuncs.trigger_pipeline( before_previous_version, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ 1 ], test, manually_run, onos_tag )
+if ( manually_run ){
+    for( String test in testcases.keySet() ){
+        println test
+        if ( testcases[ test ][ "tests" ] != "" ){
+            runTest[ testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ] ][ test ] = triggerFuncs.trigger_pipeline( onos_b, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ], test, manually_run, onos_tag )
+        }
     }
+}else{
+    runTest[ "Fabric2" ][ "SR1" ] = triggerFuncs.trigger_pipeline( current_version, testcases[ "SR1" ][ "tests" ], testcases[ "SR1" ][ "nodeName" ][ 0 ], "SR1", manually_run, onos_tag )
+    runTest[ "Fabric2" ][ "SR" ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 0 ], "SR", manually_run, onos_tag )
+    runTest[ "Fabric3" ][ "SR" ] = triggerFuncs.trigger_pipeline( before_previous_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 1 ], "SR", manually_run, onos_tag )
 }
+
 def finalList = [:]
 finalList[ "Fabric2" ] = triggerFuncs.runTestSeq( runTest[ "Fabric2" ] )
 finalList[ "Fabric3" ] = triggerFuncs.runTestSeq( runTest[ "Fabric3" ] )
@@ -125,4 +130,7 @@ def adder( testCat, set, getResult ){
         }
     }
     return result
+}
+def nodeOn( branch ){
+    return branch == "1.12" ? 1 : 0;
 }

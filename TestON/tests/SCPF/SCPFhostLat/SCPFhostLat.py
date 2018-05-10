@@ -131,7 +131,10 @@ class SCPFhostLat:
 
         time.sleep( main.startUpSleep )
         main.step( 'Starting mininet topology' )
-        mnStatus = main.Mininet1.startNet( args='--topo=linear,1' )
+        mnCmd = '--topo=linear,1 '
+        for ctrl in main.Cluster.active():
+            mnCmd += " --controller remote,ip=" + ctrl.ipAddress
+        mnStatus = main.Mininet1.startNet( args=mnCmd )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=mnStatus,
                                  onpass="Successfully started Mininet",

@@ -17,6 +17,7 @@ machineList = machines.tokenize( "\n;, " )
 machineOn = [:]
 
 for (machine in machineList){
+    print( machine )
     machineOn[ machine ] = triggerJob( machine )
 }
 
@@ -24,6 +25,8 @@ parallel machineOn
 
 
 def triggerJob( on ){
-    jobToRun = on + "-pipeline-trigger"
-    build job: jobToRun, propagate: false
+    return{
+        jobToRun = on + "-pipeline-trigger"
+        build job: jobToRun, propagate: false
+    }
 }

@@ -97,10 +97,14 @@ for( String test in testcases.keySet() ){
     }
 }
 def finalList = [:]
+jobName = env.JOB_NAME
 finalList[ "VM" ] = triggerFuncs.runTestSeq( runTest[ "VM" ] )
 finalList[ "BM" ] = triggerFuncs.runTestSeq( runTest[ "BM" ] )
-parallel finalList
-//finalList[ "BM" ].call()
+//parallel finalList
+if( jobName.take( 2 ) == "vm" )
+    finalList[ "VM" ].call()
+else
+    finalList[ "BM" ].call()
 
 if ( !manually_run ){
     funcs.generateStatGraph( "TestStation-VMs",

@@ -1,16 +1,29 @@
 #!groovy
+funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
+
+def now = funcs.getCurrentTime()
+print now.toString()
+today = now[ Calendar.DAY_OF_WEEK ]
+machines = params.machines
+manually_run = params.manual_run
+if( !manually_run ){
+    slackSend( color:'#03CD9F',
+               message:":sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:\n"
+                        + "Starting tests on : " + now.toString()
+                        + "\n:sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:" )
+}
+
+machineList = machines.tokenize( "\n;, " )
+machineOn = [:]
+
+for (machine in machineList){
+    machineOn[ machine ] = triggerJob( machine )
+}
+
+parallel machineOn
+
 
 def triggerJob( on ){
     jobToRun = on + "-pipeline-trigger"
     build job: jobToRun, propagate: false
 }
-
-machines = params.machines
-machineList = machines.tokenize( "\n;, " )
-machineOn = [:]
-
-for machine in machineList{
-    machineOn[ machine ] = triggerJob( machine )
-}
-
-parallel machineOn

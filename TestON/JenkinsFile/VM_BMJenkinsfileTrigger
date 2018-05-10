@@ -62,10 +62,6 @@ graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
 
 post_result = params.PostResult
 if( !manually_run ){
-    slackSend( color:'#03CD9F',
-               message:":sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:\n"
-                        + "Starting tests on : " + now.toString()
-                        + "\n:sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:" )
     testDivider( today )
     FUNC_choices =  triggerFuncs.lastCommaRemover( FUNC_choices )
     HA_choices =  triggerFuncs.lastCommaRemover( HA_choices )

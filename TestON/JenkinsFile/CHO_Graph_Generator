@@ -23,6 +23,7 @@ def generateGraphScript( branchList ){
         branchDir = scriptDir + branch + "/"
         graphScript += '''export BRANCH=''' + branchDir + '''
                           mkdir ''' + branchDir + ''';
+                          cp *.csv ''' + branchDir + ''';
                           bash log-summary;''' + '''
                           ''' +  script_file + ' ' + branchDir + 'event.csv ' +
                                 branchDir + 'failure.csv ' + branchDir + 'error.csv ' +

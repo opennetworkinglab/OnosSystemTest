@@ -606,6 +606,7 @@ class SRRouting:
         main.case( "Drop spine and paired leaf" )
         setupTest( main, test_idx=606, onosNodes=3 )
         verify( main, disconnected=False )
+        # Drop spine101 and leaf-2/3
         lib.killSwitch( main, "spine101", 9, 30 )
         verify( main, disconnected=False )
         lib.killSwitch( main, "leaf2", 8, 24 )
@@ -616,10 +617,182 @@ class SRRouting:
         lib.recoverSwitch( main, "spine101", 8, 30 )
         verify( main )
         lib.recoverSwitch( main, "leaf3", 9, 38 )
-        lib.recoverSwitch( main, "leaf2", 10, 48, rediscoverHosts=True )
+        lib.recoverSwitch( main, "leaf2", 10, 48, rediscoverHosts=True,
+                           hostsToDiscover=main.disconnectedIpv4Hosts + main.disconnectedIpv6Hosts )
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
+        verify( main, disconnected=False )
+        # Drop spine102 and leaf-4/5
+        lib.killSwitch( main, "spine102", 9, 30 )
+        verify( main, disconnected=False )
+        lib.killSwitch( main, "leaf4", 8, 24 )
+        lib.killSwitch( main, "leaf5", 7, 20 )
+        main.disconnectedIpv4Hosts = [ "h8v4", "h9v4", "h10v4", "h11v4" ]
+        main.disconnectedIpv6Hosts = [ "h8v6", "h9v6", "h10v6", "h11v6" ]
+        verify( main, external=False )
+        lib.recoverSwitch( main, "spine102", 8, 30 )
+        verify( main, external=False )
+        lib.recoverSwitch( main, "leaf5", 9, 38 )
+        lib.recoverSwitch( main, "leaf4", 10, 48, rediscoverHosts=True,
+                           hostsToDiscover=main.disconnectedIpv4Hosts + main.disconnectedIpv6Hosts )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verify( main, disconnected=False )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE620( self, main ):
+        """
+        Take down one of double links towards the spine from all leaf switches and
+        check that buckets in select groups change accordingly
+        Bring up links again and check that buckets in select groups change accordingly
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Take down one of double links towards the spine" )
+        setupTest( main, test_idx=620, onosNodes=3 )
+        verify( main, disconnected=False )
+        portsToDisable = [ [ "of:0000000000000002", 1 ], [ "of:0000000000000002", 3 ],
+                           [ "of:0000000000000003", 1 ], [ "of:0000000000000003", 3 ],
+                           [ "of:0000000000000004", 1 ], [ "of:0000000000000004", 3 ],
+                           [ "of:0000000000000005", 1 ], [ "of:0000000000000005", 3 ] ]
+        for dpid, port in portsToDisable:
+            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
+        # TODO: check buckets in groups
+        verify( main, disconnected=False )
+        for dpid, port in portsToDisable:
+            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
+        # TODO: check buckets in groups
+        verify( main, disconnected=False )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE621( self, main ):
+        """
+        Remove all the links in the network and restore all Links (repeat x3)
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Remove all the links in the network and restore all Links" )
+        setupTest( main, test_idx=621, onosNodes=3 )
+        verify( main, disconnected=False )
+        linksToRemove = [ ["spine101", "spine103"], ["spine102", "spine104"],
+                          ["spine103", "leaf6"], ["spine103", "leaf1"],
+                          ["spine104", "leaf6"], ["spine104", "leaf1"],
+                          ["spine101", "leaf2"], ["spine101", "leaf3"], ["spine101", "leaf4"], ["spine101", "leaf5"],
+                          ["spine102", "leaf2"], ["spine102", "leaf3"], ["spine102", "leaf4"], ["spine102", "leaf5"],
+                          ["leaf2", "leaf3"], ["leaf4", "leaf5"] ]
+        portsToDisable = [ [ "of:0000000000000001", 3 ], [ "of:0000000000000001", 4 ],
+                           [ "of:0000000000000001", 5 ], [ "of:0000000000000001", 6 ],
+                           [ "of:0000000000000002", 6 ], [ "of:0000000000000002", 7 ],
+                           [ "of:0000000000000002", 8 ], [ "of:0000000000000002", 9 ],
+                           [ "of:0000000000000002", 10 ], [ "of:0000000000000002", 11 ],
+                           [ "of:0000000000000003", 6 ], [ "of:0000000000000003", 7 ],
+                           [ "of:0000000000000003", 8 ], [ "of:0000000000000003", 9 ],
+                           [ "of:0000000000000003", 10 ], [ "of:0000000000000003", 11 ],
+                           [ "of:0000000000000003", 12 ], [ "of:0000000000000003", 13 ],
+                           [ "of:0000000000000004", 6 ], [ "of:0000000000000004", 7 ],
+                           [ "of:0000000000000004", 8 ], [ "of:0000000000000004", 9 ],
+                           [ "of:0000000000000004", 10 ], [ "of:0000000000000004", 11 ],
+                           [ "of:0000000000000004", 12 ], [ "of:0000000000000004", 13 ], [ "of:0000000000000004", 14 ],
+                           [ "of:0000000000000005", 6 ], [ "of:0000000000000005", 7 ],
+                           [ "of:0000000000000005", 8 ], [ "of:0000000000000005", 9 ],
+                           [ "of:0000000000000005", 10 ], [ "of:0000000000000005", 11 ],
+                           [ "of:0000000000000005", 12 ], [ "of:0000000000000005", 13 ],
+                           [ "of:0000000000000005", 14 ], [ "of:0000000000000005", 15 ],
+                           [ "of:0000000000000006", 3 ], [ "of:0000000000000006", 4 ],
+                           [ "of:0000000000000006", 5 ], [ "of:0000000000000006", 6 ] ]
+        for i in range( 0, 3 ):
+            lib.killLinkBatch( main, linksToRemove, 0, 10 )
+            for dpid, port in portsToDisable:
+                main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
+            time.sleep( 10 )
+            main.disconnectedIpv4Hosts = main.internalIpv4Hosts
+            main.disconnectedIpv6Hosts = main.internalIpv6Hosts
+            verify( main )
+            lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
+            for dpid, port in portsToDisable:
+                main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
+            time.sleep( 30 )
+            main.Network.discoverHosts( hostList=main.disconnectedIpv4Hosts + main.disconnectedIpv6Hosts )
+            time.sleep( 10 )
+            main.disconnectedIpv4Hosts = []
+            main.disconnectedIpv6Hosts = []
+            verify( main )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE622( self, main ):
+        """
+        Take down all uplinks from a paired leaf switch
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        from core import utilities
+        main.case( "Take down all uplinks from a paired leaf switch" )
+        setupTest( main, test_idx=622, onosNodes=3 )
+        verify( main, disconnected=False )
+        ctrl = main.Cluster.active( 0 )
+        result1 = ctrl.CLI.verifyHostLocation( "1003::3fe",
+                                               [ "of:0000000000000002/7", "of:0000000000000003/6" ] )
+        result2 = ctrl.CLI.verifyHostLocation( "1004::3fe",
+                                               [ "of:0000000000000002/8", "of:0000000000000003/7" ] )
+        result3 = ctrl.CLI.verifyHostLocation( "10.2.30.1",
+                                               [ "of:0000000000000002/10", "of:0000000000000003/10" ] )
+        result4 = ctrl.CLI.verifyHostLocation( "10.2.20.1",
+                                               [ "of:0000000000000002/11", "of:0000000000000003/11" ] )
+        utilities.assert_equals( expect=main.TRUE, actual=result1 and result2 and result3 and result4,
+                                 onpass="Host locations are correct",
+                                 onfail="Not all host locations are correct" )
+        linksToRemove = [ ["spine101", "leaf2"], ["spine102", "leaf2"] ]
+        lib.killLinkBatch( main, linksToRemove, 40, 10 )
+        # TODO: more verifications are required
         verify( main )
+        main.step( "Verify some dual-homed hosts become single-homed" )
+        result1 = ctrl.CLI.verifyHostLocation( "1003::3fe", "of:0000000000000003/6" )
+        result2 = ctrl.CLI.verifyHostLocation( "1004::3fe", "of:0000000000000003/7" )
+        result3 = ctrl.CLI.verifyHostLocation( "10.2.30.1", "of:0000000000000003/10" )
+        result4 = ctrl.CLI.verifyHostLocation( "10.2.20.1", "of:0000000000000003/11" )
+        utilities.assert_equals( expect=main.TRUE, actual=result1 and result2 and result3 and result4,
+                                 onpass="Host locations are correct",
+                                 onfail="Not all host locations are correct" )
+        lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
+        verify( main )
+        main.step( "Verify the hosts changed back to be dual-homed" )
+        result1 = ctrl.CLI.verifyHostLocation( "1003::3fe",
+                                               [ "of:0000000000000002/7", "of:0000000000000003/6" ] )
+        result2 = ctrl.CLI.verifyHostLocation( "1004::3fe",
+                                               [ "of:0000000000000002/8", "of:0000000000000003/7" ] )
+        result3 = ctrl.CLI.verifyHostLocation( "10.2.30.1",
+                                               [ "of:0000000000000002/10", "of:0000000000000003/10" ] )
+        result4 = ctrl.CLI.verifyHostLocation( "10.2.20.1",
+                                               [ "of:0000000000000002/11", "of:0000000000000003/11" ] )
+        utilities.assert_equals( expect=main.TRUE, actual=result1 and result2 and result3 and result4,
+                                 onpass="Host locations are correct",
+                                 onfail="Not all host locations are correct" )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE630( self, main ):
+        """
+        Bring an instance down
+        Drop a device
+        Bring that same instance up again and observe that this specific instance sees that the device is down.
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        from core import utilities
+        main.case( "Bring an instance down and drop a device" )
+        setupTest( main, test_idx=630, onosNodes=3 )
+        onosToKill = 0
+        deviceToDrop = "spine101"
+        lib.killOnos( main, [ onosToKill ], 10, 48, 2 )
+        lib.killSwitch( main, deviceToDrop, 9, 30 )
+        lib.recoverOnos( main, [ onosToKill ], 9, 30, 3 )
+        result = main.Cluster.runningNodes[ onosToKill ].CLI.checkStatus( 9, 30, 3 )
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="ONOS instance {} sees correct device numbers".format( onosToKill ),
+                                 onfail="ONOS instance {} doesn't see correct device numbers".format( onosToKill ) )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE642( self, main ):

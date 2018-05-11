@@ -28,7 +28,7 @@ def generateGraphScript( branchList ){
                              echo "1" > existing.txt;
                           fi;
                           bash log-summary;''' + '''
-                          ''' +  script_file + ' ' + branchDir + 'event.csv ' +
+                          Rscript ''' +  script_file + ' ' + branchDir + 'event.csv ' +
                                 branchDir + 'failure.csv ' + branchDir + 'error.csv ' +
                                 branch + ' 60 ' +  saving_directory + ''';
         '''

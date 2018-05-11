@@ -41,10 +41,10 @@ print( "Importing libraries." )
 library( ggplot2 )
 library( reshape2 )
 library( RPostgreSQL )
-source( "dependencies/saveGraph.R" )
-source( "dependencies/fundamentalGraphData.R" )
-source( "dependencies/initSQL.R" )
-source( "dependencies/cliArgs.R" )
+source( "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/dependencies/saveGraph.R" )
+source( "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/dependencies/fundamentalGraphData.R" )
+source( "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/dependencies/initSQL.R" )
+source( "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/dependencies/cliArgs.R" )
 
 # -------------------
 # Check CLI Arguments

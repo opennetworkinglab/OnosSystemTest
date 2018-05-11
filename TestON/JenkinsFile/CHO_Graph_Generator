@@ -1,0 +1,45 @@
+#!groovy
+
+branches = params.ONOSbranch
+branchList = branches.tokenize( "\n;, " )
+script_file = "TestON/JenkinsFile/wikiGraphRScripts/trendCHO.R"
+saving_directory = "/var/jenkins/workspace/postjob-Fabric5/"
+scriptDir = "~/CHO_Jenkins_Scripts/"
+
+graphScript = generateGraphScript( branchList )
+
+stage( 'Generating-Graph' ){
+    node( "TestStation-Fabric5s" ){
+        runScript( graphScript )
+    }
+}
+stage( 'posting-result' ){
+    postJob()
+}
+
+def generateGraphScript( branchList ){
+    graphScript = ''''''
+    for( branch in branchList ){
+        branchDir = scriptDir + branch + "/"
+        graphScript += '''EXPORT BRANCH=''' + branchDir + '''
+                          mkdir branchDir;
+                          bash log-summary;''' + '''
+                          ''' +  script_file + ' ' + branchDir + 'event.csv ' +
+                                branchDir + 'failure.csv ' + branchDir + 'error.csv ' +
+                                branch + ' 60 ' +  saving_directory + ''';
+        '''
+        print( graphScript )
+    }
+    return graphScript
+}
+def runScript( graphScript ){
+    sh '''#!/bin/bash -l
+          set -i
+          set +e
+          export PYTHONPATH=/home/sdn/TestON:/home/sdn/sts
+       ''' + graphScript
+}
+def postJob(){
+        jobToRun = "postjob-Fabric5"
+        build job: jobToRun, propagate: false
+}

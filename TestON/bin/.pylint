@@ -13,7 +13,7 @@
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-#init-hook=
+init-hook='import sys;sys.path.append("/home/sdn/TestON")'
 
 # Profiled execution.
 profile=no
@@ -136,7 +136,7 @@ good-names=i,j,k,ex,Run,_
 bad-names=foo,bar,baz,toto,tutu,tata
 
 # List of builtins function names that should not be used, separated by a comma
-bad-functions=map,filter,apply,inpu
+bad-functions=map,filter,apply,inpu,in,list,str
 
 
 # try to find bugs in the code using type inference
@@ -244,7 +244,7 @@ deprecated-modules=regsub,string,TERMIOS,Bastion,rexec
 
 # Create a graph of every (i.e. internal and external) dependencies in the
 # given file (report R0402 must not be disabled)
-import-graph=
+import-graph=y
 
 # Create a graph of external dependencies in the given file (report R0402 mus
 # not be disabled)
@@ -281,7 +281,7 @@ indent-string='    '
 [MISCELLANEOUS]
 
 # List of note tags to take in consideration, separated by a comma.
-notes=FIXME,XXX,TODO
+notes=FIXME,XXX,TODO,NOTE
 
 
 # checks for similarities and duplicated code. This computation may be

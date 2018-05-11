@@ -37,14 +37,18 @@ webColor <- function( color ){
             blue = "#0033FF",
             light_blue = "#3399FF",
             black = "#111111",
-            yellow = "#EEB600",
+            yellow = "#CCCC00",
             purple = "#9900FF",
             gray = "#CCCCCC",
-            darkerGray = "#666666" )
+            darkerGray = "#666666",
+            orange = "#FF9900",
+            magenta = "#FF00FF",
+            brown = "#993300"
+    )
 }
 
-wrapLegend <- function(){
-    guides( color = guide_legend( nrow = 2, byrow = TRUE ) )
+wrapLegend <- function( byrow=TRUE ){
+    guides( color = guide_legend( nrow = 2, byrow = byrow ) )
 }
 
 lastUpdatedLabel <- function(){

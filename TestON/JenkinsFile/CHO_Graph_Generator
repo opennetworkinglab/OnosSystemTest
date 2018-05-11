@@ -2,7 +2,7 @@
 
 branches = params.ONOSbranch
 branchList = branches.tokenize( "\n;, " )
-script_file = "TestON/JenkinsFile/wikiGraphRScripts/trendCHO.R"
+script_file = "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/trendCHO.R"
 saving_directory = "/var/jenkins/workspace/postjob-Fabric5/"
 scriptDir = "~/CHO_Jenkins_Scripts/"
 

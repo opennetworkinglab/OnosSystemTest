@@ -21,8 +21,8 @@ def generateGraphScript( branchList ){
     graphScript = ''''''
     for( branch in branchList ){
         branchDir = scriptDir + branch + "/"
-        graphScript += '''EXPORT BRANCH=''' + branchDir + '''
-                          mkdir branchDir;
+        graphScript += '''export BRANCH=''' + branchDir + '''
+                          mkdir ''' + branchDir + ''';
                           bash log-summary;''' + '''
                           ''' +  script_file + ' ' + branchDir + 'event.csv ' +
                                 branchDir + 'failure.csv ' + branchDir + 'error.csv ' +
@@ -37,7 +37,8 @@ def runScript( graphScript ){
           set -i
           set +e
           export PYTHONPATH=/home/sdn/TestON:/home/sdn/sts
-       ''' + graphScript
+          cd ''' + scriptDir + ''';
+          ''' + graphScript
 }
 def postJob(){
         jobToRun = "postjob-Fabric5"

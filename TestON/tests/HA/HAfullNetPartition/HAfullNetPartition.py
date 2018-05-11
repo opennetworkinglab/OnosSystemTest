@@ -249,6 +249,7 @@ class HAfullNetPartition:
         utilities.assert_equals( expect=main.TRUE, actual=partitionResults,
                                  onpass="Firewall rules set successfully",
                                  onfail="Error setting firewall rules" )
+        main.Cluster.reset()
 
         main.step( "Sleeping 60 seconds" )
         time.sleep( 60 )
@@ -277,6 +278,7 @@ class HAfullNetPartition:
 
         for node in main.partition:
             main.Cluster.runningNodes[ node ].active = True
+        main.Cluster.reset()
 
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.Cluster.nodesCheck,

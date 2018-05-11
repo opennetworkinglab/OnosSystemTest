@@ -226,7 +226,7 @@ class HAscaling:
 
         activeNodes = range( 0, main.Cluster.numCtrls )
         newNodes = [ x for x in activeNodes if x not in prevNodes ]
-        main.Cluster.resetActive()
+        main.Cluster.clearActive()
         main.step( "Start new nodes" )  # OR stop old nodes?
         started = main.TRUE
         for i in newNodes:

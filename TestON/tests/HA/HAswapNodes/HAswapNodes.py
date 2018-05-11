@@ -222,7 +222,7 @@ class HAswapNodes:
                                  onpass="New cluster metadata file generated",
                                  onfail="Failled to generate new metadata file" )
         time.sleep( 5 )  # Give time for nodes to read new file
-        main.Cluster.resetActive()
+        main.Cluster.clearActive()
         # Note : done up to this point.
         main.step( "Start new nodes" )  # OR stop old nodes?
         started = main.TRUE

@@ -72,12 +72,10 @@ class Cluster():
 
         return ips
 
-    def resetActive( self ):
+    def clearActive( self ):
         """
         Description:
-            reset the activeness of the cluster to be false
-        Required:
-        Returns:
+            Sets the activeness of each cluster node to be False
         """
         for ctrl in self.controllers:
             ctrl.active = False
@@ -126,14 +124,16 @@ class Cluster():
 
     def next( self ):
         """
-        An iterator for the cluster's controllers that
+        An iterator for the cluster's active controllers that
         resets when there are no more elements.
 
         Returns the next controller in the cluster
         """
         try:
-            return self.iterator.next()
-        except StopIteration:
+            node = self.iterator.next()
+            assert node.active
+            return node
+        except ( StopIteration, AssertionError ):
             self.reset()
             try:
                 return self.iterator.next()

@@ -196,6 +196,7 @@ class HAstopNodes:
             killResults = killResults and\
                           ctrl.onosStop( ctrl.ipAddress )
             ctrl.active = False
+        main.Cluster.reset()
         utilities.assert_equals( expect=main.TRUE, actual=killResults,
                                  onpass="ONOS nodes stopped successfully",
                                  onfail="ONOS nodes NOT successfully stopped" )

@@ -474,6 +474,26 @@ class TestON:
         for driver in self.driversList:
             vars( self )[ driver ].write( stepHeader + "\n" + caseFooter )
 
+    def setCheckingPoint( self ):
+        '''
+        Using when running findPatchScript.sh. This function needs to be placed
+        on the point that has the problem.
+
+        For example, if you see unusual behavior or from the portion of the code,
+        this is where you need to put with the conditional statement.
+        If some of the latency result is much greater than usual, have if statement
+        that checks if the result is greater than some point and include this function.
+
+        This will mark the 0 to findPatchResult.txt in /tmp/ and exit the test.
+        Then from findPatchScript, it will move onto the next commit and re-run the
+        test.
+        '''
+        self.log.error( "Reached to the checking point. Will mark the result and exit the test" )
+        resultFile = open( "/tmp/findPatchResult.txt", "w" )
+        resultFile.write( "0" )
+        resultFile.close()
+        self.cleanAndExit()
+
     def cleanup( self ):
         '''
         Print a summary of the current test's results then attempt to release

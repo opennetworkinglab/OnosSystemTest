@@ -1173,7 +1173,7 @@ class OnosCliDriver( CLI ):
             for host in hosts:
                 if hostIp in host[ "ipAddresses" ]:
                     targetHost = host
-            assert host, "Not able to find host with IP {}".format( hostIp )
+            assert targetHost, "Not able to find host with IP {}".format( hostIp )
             result = main.TRUE
             locationsDiscovered = [ loc[ "elementId" ] + "/" + loc[ "port" ] for loc in targetHost[ "locations" ] ]
             for loc in locations:

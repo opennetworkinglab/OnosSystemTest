@@ -656,12 +656,10 @@ class SRRouting:
                            [ "of:0000000000000003", 1 ], [ "of:0000000000000003", 3 ],
                            [ "of:0000000000000004", 1 ], [ "of:0000000000000004", 3 ],
                            [ "of:0000000000000005", 1 ], [ "of:0000000000000005", 3 ] ]
-        for dpid, port in portsToDisable:
-            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
+        lib.disablePortBatch( main, portsToDisable, 10, 32 )
         # TODO: check buckets in groups
         verify( main, disconnected=False )
-        for dpid, port in portsToDisable:
-            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
+        lib.enablePortBatch( main, portsToDisable, 10, 48 )
         # TODO: check buckets in groups
         verify( main, disconnected=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -704,16 +702,12 @@ class SRRouting:
                            [ "of:0000000000000006", 5 ], [ "of:0000000000000006", 6 ] ]
         for i in range( 0, 3 ):
             lib.killLinkBatch( main, linksToRemove, 0, 10 )
-            for dpid, port in portsToDisable:
-                main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
-            time.sleep( 10 )
+            lib.disablePortBatch( main, portsToDisable, 10, 0 )
             main.disconnectedIpv4Hosts = main.internalIpv4Hosts
             main.disconnectedIpv6Hosts = main.internalIpv6Hosts
             verify( main )
             lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
-            for dpid, port in portsToDisable:
-                main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
-            time.sleep( 30 )
+            lib.enablePortBatch( main, portsToDisable, 10, 48 )
             main.Network.discoverHosts( hostList=main.disconnectedIpv4Hosts + main.disconnectedIpv6Hosts )
             time.sleep( 10 )
             main.disconnectedIpv4Hosts = []
@@ -733,43 +727,27 @@ class SRRouting:
         setupTest( main, test_idx=622, onosNodes=3 )
         verify( main, disconnected=False )
         ctrl = main.Cluster.active( 0 )
-        result1 = ctrl.CLI.verifyHostLocation( "1003::3fe",
-                                               [ "of:0000000000000002/7", "of:0000000000000003/6" ] )
-        result2 = ctrl.CLI.verifyHostLocation( "1004::3fe",
-                                               [ "of:0000000000000002/8", "of:0000000000000003/7" ] )
-        result3 = ctrl.CLI.verifyHostLocation( "10.2.30.1",
-                                               [ "of:0000000000000002/10", "of:0000000000000003/10" ] )
-        result4 = ctrl.CLI.verifyHostLocation( "10.2.20.1",
-                                               [ "of:0000000000000002/11", "of:0000000000000003/11" ] )
-        utilities.assert_equals( expect=main.TRUE, actual=result1 and result2 and result3 and result4,
-                                 onpass="Host locations are correct",
-                                 onfail="Not all host locations are correct" )
+        hostLocations = { "h4v6": [ "of:0000000000000002/7", "of:0000000000000003/6" ],
+                          "h5v6": [ "of:0000000000000002/8", "of:0000000000000003/7" ],
+                          "h4v4": [ "of:0000000000000002/10", "of:0000000000000003/10" ],
+                          "h5v4": [ "of:0000000000000002/11", "of:0000000000000003/11" ] }
+        lib.verifyHostLocations( main, hostLocations )
         linksToRemove = [ ["spine101", "leaf2"], ["spine102", "leaf2"] ]
         lib.killLinkBatch( main, linksToRemove, 40, 10 )
         # TODO: more verifications are required
         verify( main )
-        main.step( "Verify some dual-homed hosts become single-homed" )
-        result1 = ctrl.CLI.verifyHostLocation( "1003::3fe", "of:0000000000000003/6" )
-        result2 = ctrl.CLI.verifyHostLocation( "1004::3fe", "of:0000000000000003/7" )
-        result3 = ctrl.CLI.verifyHostLocation( "10.2.30.1", "of:0000000000000003/10" )
-        result4 = ctrl.CLI.verifyHostLocation( "10.2.20.1", "of:0000000000000003/11" )
-        utilities.assert_equals( expect=main.TRUE, actual=result1 and result2 and result3 and result4,
-                                 onpass="Host locations are correct",
-                                 onfail="Not all host locations are correct" )
+        hostLocations = { "h4v6": "of:0000000000000003/6",
+                          "h5v6": "of:0000000000000003/7",
+                          "h4v4": "of:0000000000000003/10",
+                          "h5v4": "of:0000000000000003/11" }
+        lib.verifyHostLocations( main, hostLocations )
         lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
         verify( main )
-        main.step( "Verify the hosts changed back to be dual-homed" )
-        result1 = ctrl.CLI.verifyHostLocation( "1003::3fe",
-                                               [ "of:0000000000000002/7", "of:0000000000000003/6" ] )
-        result2 = ctrl.CLI.verifyHostLocation( "1004::3fe",
-                                               [ "of:0000000000000002/8", "of:0000000000000003/7" ] )
-        result3 = ctrl.CLI.verifyHostLocation( "10.2.30.1",
-                                               [ "of:0000000000000002/10", "of:0000000000000003/10" ] )
-        result4 = ctrl.CLI.verifyHostLocation( "10.2.20.1",
-                                               [ "of:0000000000000002/11", "of:0000000000000003/11" ] )
-        utilities.assert_equals( expect=main.TRUE, actual=result1 and result2 and result3 and result4,
-                                 onpass="Host locations are correct",
-                                 onfail="Not all host locations are correct" )
+        hostLocations = { "h4v6": [ "of:0000000000000002/7", "of:0000000000000003/6" ],
+                          "h5v6": [ "of:0000000000000002/8", "of:0000000000000003/7" ],
+                          "h4v4": [ "of:0000000000000002/10", "of:0000000000000003/10" ],
+                          "h5v4": [ "of:0000000000000002/11", "of:0000000000000003/11" ] }
+        lib.verifyHostLocations( main, hostLocations )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE630( self, main ):
@@ -813,7 +791,6 @@ class SRRouting:
         main.Cluster.active( 0 ).CLI.balanceMasters()
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
-
         portsToDisable = [ [ "of:0000000000000001", 1 ], [ "of:0000000000000103", 1 ],
                            [ "of:0000000000000006", 1 ], [ "of:0000000000000103", 2 ],
                            [ "of:0000000000000101", 9 ], [ "of:0000000000000103", 3 ],
@@ -825,13 +802,17 @@ class SRRouting:
                            [ "of:0000000000000003", 3 ], [ "of:0000000000000102", 3 ],
                            [ "of:0000000000000004", 3 ], [ "of:0000000000000102", 5 ],
                            [ "of:0000000000000005", 3 ], [ "of:0000000000000102", 7 ] ]
-        for dpid, port in portsToDisable:
-            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
+        lib.disablePortBatch( main, portsToDisable,
+                              int( main.params[ "TOPO" ][ "switchNum" ] ),
+                              int( main.params[ "TOPO" ][ "linkNum" ] ) - len( portsToDisable ),
+                              sleep=0 )
         lib.killOnos( main, [ 2, ], int( main.params[ "TOPO" ][ "switchNum" ] ),
                       int( main.params[ "TOPO" ][ "linkNum" ] ) - len( portsToDisable ), 2 )
         verify( main )
-        for dpid, port in portsToDisable:
-            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
+        lib.enablePortBatch( main, portsToDisable,
+                             int( main.params[ "TOPO" ][ "switchNum" ] ),
+                             int( main.params[ "TOPO" ][ "linkNum" ] ),
+                             sleep=0 )
         lib.recoverOnos( main, [ 2, ], int( main.params[ "TOPO" ][ "switchNum" ] ),
                          int( main.params[ "TOPO" ][ "linkNum" ] ), 3 )
         verify( main )
@@ -857,7 +838,6 @@ class SRRouting:
         main.Cluster.active( 0 ).CLI.balanceMasters()
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
-
         portsToDisable = [ [ "of:0000000000000001", 1 ], [ "of:0000000000000103", 1 ],
                            [ "of:0000000000000006", 1 ], [ "of:0000000000000103", 2 ],
                            [ "of:0000000000000101", 9 ], [ "of:0000000000000103", 3 ],
@@ -869,20 +849,13 @@ class SRRouting:
                            [ "of:0000000000000003", 3 ], [ "of:0000000000000102", 3 ],
                            [ "of:0000000000000004", 3 ], [ "of:0000000000000102", 5 ],
                            [ "of:0000000000000005", 3 ], [ "of:0000000000000102", 7 ] ]
-        for dpid, port in portsToDisable[ : -1 ]:
-            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
-        # To trigger sleep for link down discovery and topology check
-        lib.portstate( main, portsToDisable[ -1 ][ 0 ], portsToDisable[ -1 ][ 1 ], "disable",
-                       int( main.params[ "TOPO" ][ "switchNum" ] ),
-                       int( main.params[ "TOPO" ][ "linkNum" ] ) - len( portsToDisable ) )
-
+        lib.disablePortBatch( main, portsToDisable,
+                              int( main.params[ "TOPO" ][ "switchNum" ] ),
+                              int( main.params[ "TOPO" ][ "linkNum" ] ) - len( portsToDisable ) )
         verify( main )
-        for dpid, port in portsToDisable[ : -1 ]:
-            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
-        # To trigger sleep for link up discovery and topology check
-        lib.portstate( main, portsToDisable[ -1 ][ 0 ], portsToDisable[ -1 ][ 1 ], "enable",
-                       int( main.params[ "TOPO" ][ "switchNum" ] ),
-                       int( main.params[ "TOPO" ][ "linkNum" ] ) )
+        lib.enablePortBatch( main, portsToDisable,
+                             int( main.params[ "TOPO" ][ "switchNum" ] ),
+                             int( main.params[ "TOPO" ][ "linkNum" ] ) )
         lib.killOnos( main, [ 2, ], int( main.params[ "TOPO" ][ "switchNum" ] ),
                       int( main.params[ "TOPO" ][ "linkNum" ] ), 2 )
         verify( main )

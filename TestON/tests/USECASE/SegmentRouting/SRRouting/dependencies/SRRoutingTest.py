@@ -88,23 +88,25 @@ def verifyPingInternal( main, ipv4=True, ipv6=True, disconnected=True ):
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     # Verify connected hosts
-    main.step("Verify reachability of connected internal hosts")
     if ipv4:
         lib.verifyPing( main,
                         [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
-                        [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ] )
+                        [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
+                        stepMsg="Verify reachability of connected internal IPv4 hosts" )
     if ipv6:
         lib.verifyPing( main,
                         [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
                         [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
-                        ipv6=True, acceptableFailed=7 )
+                        ipv6=True, acceptableFailed=7,
+                        stepMsg="Verify reachability of connected internal IPv6 hosts" )
     # Verify disconnected hosts
     if disconnected:
-        main.step("Verify unreachability of disconnected internal hosts")
         if main.disconnectedIpv4Hosts:
-            lib.verifyPing( main, main.internalIpv4Hosts, main.disconnectedIpv4Hosts, expect=False )
+            lib.verifyPing( main, main.internalIpv4Hosts, main.disconnectedIpv4Hosts, expect=False,
+                            stepMsg="Verify unreachability of disconnected internal IPv4 hosts" )
         if main.disconnectedIpv6Hosts:
-            lib.verifyPing( main, main.internalIpv6Hosts, main.disconnectedIpv6Hosts, ipv6=True, expect=False )
+            lib.verifyPing( main, main.internalIpv6Hosts, main.disconnectedIpv6Hosts, ipv6=True, expect=False,
+                            stepMsg="Verify unreachability of disconnected internal IPv6 hosts" )
 
 def verifyPingExternal( main, ipv4=True, ipv6=True, disconnected=True ):
     """
@@ -113,39 +115,43 @@ def verifyPingExternal( main, ipv4=True, ipv6=True, disconnected=True ):
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     # Verify connected hosts
-    main.step("Verify reachability from connected internal hosts to external hosts")
     if ipv4:
         lib.verifyPing( main,
                         [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
-                        [ h for h in main.externalIpv4Hosts if h not in main.disconnectedExternalIpv4Hosts ] )
+                        [ h for h in main.externalIpv4Hosts if h not in main.disconnectedExternalIpv4Hosts ],
+                        stepMsg="Verify reachability from connected internal IPv4 hosts to external IPv4 hosts" )
     if ipv6:
         lib.verifyPing( main,
                         [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
                         [ h for h in main.externalIpv6Hosts if h not in main.disconnectedExternalIpv6Hosts ],
-                        ipv6=True, acceptableFailed=7 )
+                        ipv6=True, acceptableFailed=7,
+                        stepMsg="Verify reachability from connected internal IPv6 hosts to external IPv6 hosts" )
     # Verify disconnected hosts
     if disconnected:
-        main.step("Verify unreachability of disconnected internal hosts to external hosts")
         # Disconnected internal to connected external
         if main.disconnectedIpv4Hosts:
             lib.verifyPing( main, main.disconnectedIpv4Hosts,
                             [ h for h in main.externalIpv4Hosts if h not in main.disconnectedExternalIpv4Hosts ],
-                            expect=False )
+                            expect=False,
+                            stepMsg="Verify unreachability of disconnected internal IPv4 hosts to connected external IPv4 hosts" )
         if main.disconnectedIpv6Hosts:
             lib.verifyPing( main, main.disconnectedIpv6Hosts,
                             [ h for h in main.externalIpv6Hosts if h not in main.disconnectedExternalIpv6Hosts ],
-                            ipv6=True, expect=False )
+                            ipv6=True, expect=False,
+                            stepMsg="Verify unreachability of disconnected internal IPv6 hosts to connected external IPv6 hosts" )
         # Connected internal to disconnected external
         if main.disconnectedExternalIpv4Hosts:
             lib.verifyPing( main,
                             [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
                             main.disconnectedExternalIpv4Hosts,
-                            expect=False )
+                            expect=False,
+                            stepMsg="Verify unreachability of connected internal IPv4 hosts to disconnected external IPv4 hosts" )
         if main.disconnectedExternalIpv6Hosts:
             lib.verifyPing( main,
                             [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
                             main.disconnectedExternalIpv6Hosts,
-                            ipv6=True, expect=False )
+                            ipv6=True, expect=False,
+                            stepMsg="Verify unreachability of connected internal IPv6 hosts to disconnected external IPv6 hosts" )
 
 def verifyPing( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True ):
     """

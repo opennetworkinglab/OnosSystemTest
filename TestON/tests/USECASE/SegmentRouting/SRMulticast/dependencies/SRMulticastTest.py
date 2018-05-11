@@ -67,7 +67,6 @@ def verifyMcastRoutes( main ):
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     for routeName in main.mcastRoutes.keys():
-        main.step( "Verify {} multicast route".format( routeName ) )
         installMcastRoute( main, routeName )
         lib.verifyMulticastTraffic( main, routeName, True )
 
@@ -75,6 +74,7 @@ def installMcastRoute( main, routeName ):
     """
     Install a multicast route
     """
+    main.step( "Install {} multicast route".format( routeName ) )
     routeData = main.multicastConfig[ routeName ]
     src = main.mcastRoutes[ routeName ][ "src" ]
     dst = main.mcastRoutes[ routeName ][ "dst" ]
@@ -88,7 +88,7 @@ def verifyMcastRouteRemoval( main, routeName ):
     Verify removal of a multicast route
     """
     routeData = main.multicastConfig[ routeName ]
-    main.step( "Verify removal of {} route".format( routeName ) )
+    main.step( "Remove {} route".format( routeName ) )
     main.Cluster.active( 0 ).CLI.mcastSinkDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ] )
     # TODO: verify the deletion
 
@@ -99,7 +99,7 @@ def verifyMcastSinkRemoval( main, routeName, sinkIndex, expect ):
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     routeData = main.multicastConfig[ routeName ]
     sinkId = routeData[ "dst" ][ sinkIndex ][ "id" ]
-    main.step( "Verify removal of {} sink {}".format( routeName, sinkId ) )
+    main.step( "Remove sink {} of route {}".format( sinkId, routeName ) )
     main.Cluster.active( 0 ).CLI.mcastSinkDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ], sinkId )
     time.sleep( float( main.params[ "timers" ][ "mcastSleep" ] ) )
     lib.verifyMulticastTraffic( main, routeName, expect )
@@ -111,7 +111,7 @@ def verifyMcastSourceRemoval( main, routeName, sourceIndex, expect ):
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     routeData = main.multicastConfig[ routeName ]
     sourceId = [ routeData[ "src" ][ sourceIndex ][ "id" ] ]
-    main.step( "Verify removal of {} source {}".format( routeName, sourceId ) )
+    main.step( "Remove source {} of route {}".format( sourceId, routeName ) )
     main.Cluster.active( 0 ).CLI.mcastSourceDelete( routeData[ "src" ][ 0 ][ "ip" ], routeData[ "group" ], sourceId )
     time.sleep( float( main.params[ "timers" ][ "mcastSleep" ] ) )
     lib.verifyMulticastTraffic( main, routeName, expect )
@@ -145,8 +145,8 @@ def verifyLinkDown( main, link, affectedLinkNum, expectList={ "ipv4": True, "ipv
     lib.restoreLinkBatch( main, link, int( main.params[ "TOPO" ][ "linkNum" ] ), int( main.params[ "TOPO" ][ "switchNum" ] ) )
     if hostsToDiscover:
         main.Network.discoverHosts( hostList=hostsToDiscover )
-    for host, loc in hostLocations.items():
-        lib.verifyHostLocation( main, host, loc, retry=5 )
+    if hostLocations:
+        lib.verifyHostLocations( main, hostLocations, retry=5 )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 
@@ -165,8 +165,8 @@ def verifyPortDown( main, dpid, port, expectList={ "ipv4": True, "ipv6": True },
     main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
     if hostsToDiscover:
         main.Network.discoverHosts( hostList=hostsToDiscover )
-    for host, loc in hostLocations.items():
-        lib.verifyHostLocation( main, host, loc, retry=5 )
+    if hostLocations:
+        lib.verifyHostLocations( main, hostLocations, retry=5 )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 
@@ -183,8 +183,8 @@ def verifySwitchDown( main, switchName, affectedLinkNum, expectList={ "ipv4": Tr
         lib.verifyMulticastTraffic( main, routeName, expectList[ routeName ] )
     # Recover the switch(es)
     lib.recoverSwitch( main, switchName, int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ), True if hostsToDiscover else False, hostsToDiscover )
-    for host, loc in hostLocations.items():
-        lib.verifyHostLocation( main, host, loc, retry=5 )
+    if hostLocations:
+        lib.verifyHostLocations( main, hostLocations, retry=5 )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 

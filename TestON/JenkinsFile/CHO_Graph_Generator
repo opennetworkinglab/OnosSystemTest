@@ -25,7 +25,7 @@ def generateGraphScript( branchList ){
                           mkdir ''' + branchDir + ''';
                           if [ ! -f ''' + branchDir + '''existing.txt ]; then
                              cp *.csv ''' + branchDir + ''';
-                             echo "1" > existing.txt;
+                             echo "1" > ''' + branchDir + '''existing.txt;
                           fi;
                           bash log-summary;''' + '''
                           Rscript ''' +  script_file + ' ' + branchDir + 'event.csv ' +

@@ -42,6 +42,7 @@ def setupTest( main, test_idx, onosNodes ):
     time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
     main.cfgName = "common"
     lib.loadMulticastConfig( main )
+    lib.loadHost( main )
 
     if hasattr( main, "Mininet1" ):
         # Run the test with Mininet
@@ -56,6 +57,9 @@ def setupTest( main, test_idx, onosNodes ):
 
     # Create scapy components
     lib.startScapyHosts( main )
+    # Verify host IP assignment
+    lib.verifyOnosHostIp( main )
+    lib.verifyNetworkHostIp( main )
 
 def verifyMcastRoutes( main ):
     """
@@ -180,7 +184,7 @@ def verifySwitchDown( main, switchName, affectedLinkNum, expectList={ "ipv4": Tr
     # Recover the switch(es)
     lib.recoverSwitch( main, switchName, int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ), True if hostsToDiscover else False, hostsToDiscover )
     for host, loc in hostLocations.items():
-        lib.verifyHostLocation( host, loc, retry=5 )
+        lib.verifyHostLocation( main, host, loc, retry=5 )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 

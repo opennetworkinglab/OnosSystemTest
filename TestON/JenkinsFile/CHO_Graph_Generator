@@ -1,10 +1,12 @@
 #!groovy
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
 
+fileRelated.init()
 branches = params.ONOSbranch
 branchList = branches.tokenize( "\n;, " )
-script_file = "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/trendCHO.R"
-saving_directory = "/var/jenkins/workspace/postjob-Fabric5/"
-scriptDir = "~/CHO_Jenkins_Scripts/"
+script_file = fileRelated.trendCHO
+saving_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric5/"
+scriptDir = fileRelated.CHOScriptDir
 
 graphScript = generateGraphScript( branchList )
 

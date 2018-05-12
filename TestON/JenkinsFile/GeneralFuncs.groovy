@@ -6,9 +6,6 @@ def database_command_create( pass, host, port, user ){
 def basicGraphPart( rFileName, host, port, user, pass, subject, branchName ){
   return " Rscript " + rFileName + " " + host + " " + port + " " + user + " " + pass + " " + subject + " " + branchName
 }
-def initBasicVars(){
-  rScriptLocation = "~/OnosSystemTest/TestON/JenkinsFile/scripts/"
-}
 def getTestList( tests ){
     list = ""
     for( String test : tests.keySet() )

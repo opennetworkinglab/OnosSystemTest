@@ -1,5 +1,8 @@
 #!groovy
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
+
+fileRelated.init()
 nodeCluster = params.NodeCluster
 
 funcs.initializeTrend( nodeCluster );
@@ -12,8 +15,8 @@ def Tests = params.Test
 prop[ "ONOSBranch" ] = params.ONOSbranch
 
 
-graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
-graph_saved_directory = "/var/jenkins/workspace/postjob-" + nodeCluster + ( nodeCluster == "Fabric" ? funcs.fabricOn( prop[ "ONOSBranch" ] ) : "" ) + "/"
+graph_generator_file = fileRelated.trendIndividual
+graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-" + nodeCluster + ( nodeCluster == "Fabric" ? funcs.fabricOn( prop[ "ONOSBranch" ] ) : "" ) + "/"
 
 def testsToRun = null
 testsToRun = funcs.getTestsToRun( Tests )

@@ -1,10 +1,12 @@
 #!groovy
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
 
-stat_graph_generator_file = "testCategoryBuildStats.R"
-pie_graph_generator_file = "testCategoryPiePassFail.R"
-graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
+fileRelated.init()
+stat_graph_generator_file = fileRelated.histogramMultiple
+pie_graph_generator_file = fileRelated.pieMultiple
+graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
 
 funcs.initializeTrend( "VM" )
 

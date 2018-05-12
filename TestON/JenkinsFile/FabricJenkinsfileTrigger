@@ -3,7 +3,9 @@
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/TriggerFuncs.groovy' )
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
 
+fileRelated.init()
 current_version = "master"
 previous_version = "1.13"
 before_previous_version = "1.12"
@@ -53,9 +55,9 @@ USECASE_choices = ""
 FUNC_choices = ""
 HA_choices = ""
 SR_choices = ""
-stat_graph_generator_file = "testCategoryBuildStats.R"
-pie_graph_generator_file = "testCategoryPiePassFail.R"
-graph_saved_directory = "/var/jenkins/workspace/postjob-Fabric/"
+stat_graph_generator_file = fileRelated.histogramMultiple
+pie_graph_generator_file = fileRelated.pieMultiple
+graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric/"
 
 post_result = params.PostResult
 if( !manually_run ){

@@ -1,15 +1,17 @@
 #!groovy
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
 
+fileRelated.init()
 funcs.initialize( "HA" );
 // This is a Jenkinsfile for a scripted pipeline for the HA tests
 def prop = null
 prop = funcs.getProperties()
 HA = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "HA" ]
 
-graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
-graph_saved_directory = "/var/jenkins/workspace/postjob-VM/"
+graph_generator_file = fileRelated.trendIndividual
+graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
 
 echo( "Testcases:" )
 def testsToRun = null

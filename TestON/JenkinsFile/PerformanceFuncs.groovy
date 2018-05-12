@@ -1,5 +1,7 @@
 #!groovy
-//generalFuncs = evaluate readTrusted( 'TestON/JenkinsFile/GeneralFuncs.groovy' )
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
+
+fileRelated.init()
 def init(){
     none = [ "" ]
     batches = [ 1, 100, 1000 ]
@@ -24,7 +26,7 @@ def init(){
         SCPFintentInstallWithdrawLatWithFlowObj: [ flows:true, test:'SCPFintentInstallWithdrawLat --params TEST/flowObj=True', table:'intent_latency_fobj_tests', results:'intent_latency_fobj_results', file:'IntentInstallWithdrawLatDBWFO', rFile:'SCPFIntentInstallWithdrawRerouteLat.R y', extra:batches, finalResult:0 ],
         SCPFmastershipFailoverLat:               [ flows:false, test:'SCPFmastershipFailoverLat', table:'mastership_failover_tests', results:'mastership_failover_results', file:'mastershipFailoverLatDB', rFile:'SCPFmastershipFailoverLat.R', extra:none, finalResult:1, graphTitle:[ 'Mastership Failover Test' ], dbCols:[ 'kill_deact_avg,deact_role_avg' ], dbWhere:'AND scale=5', y_axis:'Latency (ms)' ]
     ]
-    graph_saved_directory = "/var/jenkins/workspace/postjob-BM/"
+    graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-BM/"
 }
 def getGraphCommand( rFileName, extras, host, port, user, pass, testName, branchName, isOldFlow ){
     result = ""
@@ -35,14 +37,14 @@ def getGraphCommand( rFileName, extras, host, port, user, pass, testName, branch
 }
 def generateGraph( rFileName, batch, host, port, user, pass, testName, branchName, isOldFlow ){
 
-    return generalFuncs.basicGraphPart( generalFuncs.rScriptLocation + rFileName, host, port, user, pass, testName, branchName ) +
+    return generalFuncs.basicGraphPart( fileRelated.SCPFSpecificLocation + rFileName, host, port, user, pass, testName, branchName ) +
            " " + batch + " " + usingOldFlow( isOldFlow, testName ) + graph_saved_directory
 }
 def generateCombinedResultGraph( host, port, user, pass, testName, branchName, isOldFlow ){
     result = ""
 
     for ( int i=0; i< SCPF[ testName ][ 'graphTitle' ].size(); i++ ){
-        result += generalFuncs.basicGraphPart( generalFuncs.rScriptLocation + "SCPFLineGraph.R", host, port, user, pass, "\"" + SCPF[ testName ][ 'graphTitle' ][ i ] + "\"", branchName ) +
+        result += generalFuncs.basicGraphPart(  fileRelated.trendSCPF, host, port, user, pass, "\"" + SCPF[ testName ][ 'graphTitle' ][ i ] + "\"", branchName ) +
         " " + 50 + " \"SELECT " + checkIfList( testName, 'dbCols', i ) + ", build FROM " + SCPF[ testName ][ 'table' ] + " WHERE  branch=\'" + branchName + "\' " + sqlOldFlow( isOldFlow, testName ) +
         checkIfList( testName, 'dbWhere', i ) + " ORDER BY date DESC LIMIT 50\" \"" + SCPF[ testName ][ 'y_axis' ] + "\" " + hasOldFlow( isOldFlow, testName ) + graph_saved_directory + ";"
     }

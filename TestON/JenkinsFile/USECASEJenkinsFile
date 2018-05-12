@@ -1,15 +1,17 @@
 #!groovy
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
 
+fileRelated.init()
 funcs.initialize( "USECASE" );
 // This is a Jenkinsfile for a scripted pipeline for the USECASE tests
 def prop = null
 prop = funcs.getProperties()
 USECASE = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "USECASE" ]
 
-graph_generator_file = "~/OnosSystemTest/TestON/JenkinsFile/scripts/testCaseGraphGenerator.R"
-graph_saved_directory = "/var/jenkins/workspace/postjob-BM/"
+graph_generator_file = fileRelated.trendIndividual
+graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-BM/"
 
 echo( "Testcases:" )
 def testsToRun = null

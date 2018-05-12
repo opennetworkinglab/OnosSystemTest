@@ -1,6 +1,9 @@
 #!groovy
 import groovy.time.*
 generalFuncs = evaluate readTrusted( 'TestON/JenkinsFile/GeneralFuncs.groovy' )
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
+
+fileRelated.init()
 
 def initializeTrend( machine ){
   table_name = "executed_test_tests"
@@ -9,7 +12,6 @@ def initializeTrend( machine ){
   this.machine = machine
   isSCPF = false
   isTrend = true
-  generalFuncs.initBasicVars();
 }
 def initialize( type, SCPFfuncs ){
   init( type )
@@ -22,8 +24,8 @@ def initialize( type ){
   SCPFfunc = null
   table_name = "executed_test_tests"
   result_name = "executed_test_results"
-  trend_generator_file = generalFuncs.rScriptLocation + "testCategoryTrend.R"
-  build_stats_generator_file = generalFuncs.rScriptLocation + "testCategoryBuildStats.R"
+  trend_generator_file = fileRelated.trendMultiple
+  build_stats_generator_file = fileRelated.histogramMultiple
   isSCPF = false
 }
 def init( type ){
@@ -35,7 +37,6 @@ def init( type ){
   testType = type;
   testMachine = "TestStation-" + machineType[ type ] + "s";
   isTrend = false
-  generalFuncs.initBasicVars();
 }
 def additionalInitForSR( branch ){
   testMachine = ( ( new StringBuilder( testMachine ) ).insert( testMachine.size()-1, fabricOn( branch ) ) ).toString()
@@ -297,9 +298,9 @@ def generateCategoryStatsGraph( testMachineOn, manualRun, postresult, stat_file,
           string( credentialsId: 'db_host', variable: 'host' ),
           string( credentialsId: 'db_port', variable: 'port' ) ] ) {
               sh '''#!/bin/bash
-              ''' + generalFuncs.basicGraphPart( generalFuncs.rScriptLocation + stat_file, host, port, user, pass, type, branch ) + " \"" + testListPart + "\" latest " + save_path + '''
-              ''' + getOverallPieGraph( generalFuncs.rScriptLocation + pie_file, host, port, user, pass, branch, type, pieTestListPart, 'y', save_path ) + '''
-              ''' + getOverallPieGraph( generalFuncs.rScriptLocation + pie_file, host, port, user, pass, branch, type, pieTestListPart, 'n', save_path )
+              ''' + generalFuncs.basicGraphPart( stat_file, host, port, user, pass, type, branch ) + " \"" + testListPart + "\" latest " + save_path + '''
+              ''' + getOverallPieGraph( pie_file, host, port, user, pass, branch, type, pieTestListPart, 'y', save_path ) + '''
+              ''' + getOverallPieGraph( pie_file, host, port, user, pass, branch, type, pieTestListPart, 'n', save_path )
           }
         }
       postResult( [], true )

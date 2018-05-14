@@ -1,5 +1,5 @@
 #!groovy
-funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
+funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
 
 def now = funcs.getCurrentTime()
 print now.toString()

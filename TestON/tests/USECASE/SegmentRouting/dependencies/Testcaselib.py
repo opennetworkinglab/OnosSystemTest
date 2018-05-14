@@ -1103,7 +1103,7 @@ class Testcaselib:
                 # Send packet and check received packet
                 expectedResult = expect.pop( 0 ) if isinstance( expect, list ) else expect
                 t3Cmd = "t3-troubleshoot -vv -sp {} -et ipv{} -d {} -dm {}".format( srcEntry[ "port" ], routeData[ "ipVersion" ],
-                                                                                routeData[ "group" ], srcEntry[ "Ether" ] )
+                                                                                    routeData[ "group" ], srcEntry[ "Ether" ] )
                 trafficResult = main.topo.sendScapyPackets( sender, receiver, pktFilter, pkt, sIface, dIface,
                                                             expectedResult, maxRetry, True, t3Cmd )
                 if not trafficResult:
@@ -1174,3 +1174,48 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=result,
                                  onpass="Location verification passed",
                                  onfail="Location verification failed" )
+
+    @staticmethod
+    def moveHost( main, hostName, srcSw, dstSw, gw, macAddr=None, prefixLen=None, cfg='', ipv6=False ):
+        """
+        Move specified host from srcSw to dstSw.
+        If srcSw and dstSw are same, the host will be moved from current port to
+        next available port.
+        Required:
+            hostName: name of the host. e.g., "h1"
+            srcSw: name of the switch that the host is attached to. e.g., "leaf1"
+            dstSw: name of the switch that the host will be moved to. e.g., "leaf2"
+            gw: ip address of the gateway of the new location
+        Optional:
+            macAddr: if specified, change MAC address of the host to the specified MAC address.
+            prefixLen: prefix length
+            cfg: port configuration as JSON string
+            ipv6: Use True to move IPv6 host
+        """
+
+        if not hasattr( main, 'Mininet1' ):
+            main.log.warn( "moveHost is supposed to be used only in Mininet." )
+            return
+
+        if ipv6:
+            main.Mininet1.moveHostv6( hostName, srcSw, dstSw, macAddr )
+        else:
+            main.Mininet1.moveHost( hostName, srcSw, dstSw, macAddr, prefixLen )
+
+        main.Mininet1.changeDefaultGateway( hostName, gw )
+        if cfg:
+            main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
+                                                     subjectClass="ports" )
+
+        main.Mininet1.discoverHosts( [ hostName, ] )
+
+        # Update expectedHost when MAC address is changed.
+        if macAddr is not None:
+            ipAddr = main.expectedHosts[ "network" ][ hostName ]
+            if ipAddr is not None:
+                for hostName, ip in main.expectedHosts[ "onos" ].items():
+                    if ip == ipAddr:
+                        vlan = hostName.split( "/" )[ -1 ]
+                        del main.expectedHosts[ "onos" ][ hostName ]
+                        main.expectedHosts[ "onos" ][ "{}/{}".format( macAddr, vlan ) ] = ip
+                        break

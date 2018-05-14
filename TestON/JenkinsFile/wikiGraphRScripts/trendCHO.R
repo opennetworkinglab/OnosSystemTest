@@ -20,7 +20,6 @@
 # Example script:
 # Rscript trendCHO event.csv failure.csv error.csv master 60 /path/to/save/directory/
 
-
 # **********************************************************
 # STEP 1: Data management.
 # **********************************************************
@@ -33,12 +32,16 @@ print( "**********************************************************" )
 print( "Reading commmand-line args." )
 args <- commandArgs( trailingOnly=TRUE )
 
+
+limitToDisplayIndividually <- 37    # must be less than this number to display individually
+
 event_input_file <- 1
 failure_input_file <- 2
 error_input_file <- 3
 branch_name <- 4
 time_quantum <- 5
-save_directory <- 6
+maxDataToDisplayParam <- 6             # the maximum amount of data to display on the graph. Last data point is most recent
+save_directory <- 7
 
 # ----------------
 # Import Libraries
@@ -58,7 +61,7 @@ source( "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/dependencies/fund
 print( "Verifying CLI args." )
 
 if ( length( args ) != save_directory ){
-    print( "Usage: Rscript trendCHO.R <events-input-file> <failures-input-file> <errors-input-file> <time_quantum> <branch-name> <directory-to-save-graph>" )
+    print( "Usage: Rscript trendCHO.R <events-input-file> <failures-input-file> <errors-input-file> <branch-name> <time_quantum> <max-data-to-display> <directory-to-save-graph>" )
     quit( status = 1 )
 }
 
@@ -109,23 +112,29 @@ print( "Creating titles of graphs." )
 
 failedChecksTitle <- paste( "Failed Checks - ",
                             args[ branch_name ],
-                            "\n(frequency per ",
+                            "\nFrequency per ",
                             args[ time_quantum ],
-                            " mins)",
+                            " Minutes - Last ",
+                            args[ maxDataToDisplayParam ],
+                            " Hours",
                             sep="" )
 
 eventsTitle <- paste( "Network, Application, and ONOS Events - ",
                       args[ branch_name ],
-                      "\n(frequency per ",
+                      "\nFrequency per ",
                       args[ time_quantum ],
-                      " mins)",
+                      " Minutes - Last ",
+                      args[ maxDataToDisplayParam ],
+                      " Hours",
                       sep="" )
 
 errorsTitle <- paste( "Warnings, Errors, and Exceptions from Logs - ",
                       args[ branch_name ],
-                      "\n(frequency per ",
+                      "\nFrequency per ",
                       args[ time_quantum ],
-                      " mins)",
+                      " Minutes - Last ",
+                      args[ maxDataToDisplayParam ],
+                      " Hours",
                       sep="" )
 
 print( "Creating graph filenames." )
@@ -133,19 +142,25 @@ print( "Creating graph filenames." )
 failedChecksFilename <- paste( args[ save_directory ],
                             "CHO_Failure-Check_",
                             args[ branch_name ],
-                            "_graph.jpg",
+                            "_",
+                            args[ maxDataToDisplayParam ],
+                            "-maxData_graph.jpg",
                             sep="" )
 
 eventsFilename <- paste( args[ save_directory ],
                          "CHO_Events_",
                          args[ branch_name ],
-                         "_graph.jpg",
+                         "_",
+                         args[ maxDataToDisplayParam ],
+                         "-maxData_graph.jpg",
                          sep="" )
 
 errorsFilename <- paste( args[ save_directory ],
                          "CHO_Errors_",
                          args[ branch_name ],
-                         "_graph.jpg",
+                         "_",
+                         args[ maxDataToDisplayParam ],
+                         "-maxData_graph.jpg",
                          sep="" )
 
 # **********************************************************
@@ -243,6 +258,8 @@ tryCatch( errorCombined <- c( error_fileData[ requiredColumns] ),
 # Create Events Data Frame
 # -------------------------------
 
+maxDataToDisplay <- strtoi( args[ maxDataToDisplayParam ] )
+
 # -------------------
 # 'Events' Data Frame
 # -------------------
@@ -266,6 +283,18 @@ events_dataFrame$iterative <- rev( seq( 1, nrow( event_fileData ), by = 1 ) )
 
 # Omit any data that doesn't exist
 events_dataFrame <- na.omit( events_dataFrame )
+
+
+dataLength <- nrow( event_fileData )
+moduloFactor <- floor( dataLength / limitToDisplayIndividually ) + 1
+
+if ( dataLength > maxDataToDisplay ){
+    events_dataFrame <- events_dataFrame[ events_dataFrame$iterative >= dataLength - maxDataToDisplay, ]
+}
+
+if ( moduloFactor > 1 ){
+    events_dataFrame[ events_dataFrame$iterative %% moduloFactor != dataLength %% moduloFactor, ]$timeStamps <- ""
+}
 
 print( "'Events' Data Frame Results:" )
 print( events_dataFrame )
@@ -294,6 +323,14 @@ failures_dataFrame$iterative <- rev( seq( 1, nrow( failure_fileData ), by = 1 ) 
 # Omit any data that doesn't exist
 failures_dataFrame <- na.omit( failures_dataFrame )
 
+if ( dataLength > maxDataToDisplay ){
+    failures_dataFrame <- failures_dataFrame[ failures_dataFrame$iterative >= dataLength - maxDataToDisplay, ]
+}
+
+if ( moduloFactor > 1 ){
+    failures_dataFrame[ failures_dataFrame$iterative %% moduloFactor != dataLength %% moduloFactor, ]$timeStamps <- ""
+}
+
 print( "'Failures' Data Frame Results:" )
 print( failures_dataFrame )
 
@@ -320,6 +357,14 @@ errors_dataFrame$iterative <- seq( 1, nrow( error_fileData ), by = 1 )
 
 # Omit any data that doesn't exist
 errors_dataFrame <- na.omit( errors_dataFrame )
+
+if ( dataLength > maxDataToDisplay ){
+    errors_dataFrame <- errors_dataFrame[ errors_dataFrame$iterative >= dataLength - maxDataToDisplay, ]
+}
+
+if ( moduloFactor > 1 ){
+    errors_dataFrame[ errors_dataFrame$iterative %% moduloFactor != dataLength %% moduloFactor, ]$timeStamps <- ""
+}
 
 print( "'Errors' Data Frame Results:" )
 print( errors_dataFrame )
@@ -368,10 +413,10 @@ xLabel <- xlab( "Time" )
 
 print( "Generating line graph." )
 
-lineGraphFormat <- geom_line( size = 1.1 )
-pointFormat <- geom_point( size = 3 )
+lineGraphFormat <- geom_line( size = 0.5 )
+pointFormat <- geom_point( size = 0 )
 
-graphTheme <- graphTheme() + theme( axis.text.x = element_text( angle = 90, hjust = 1, size = 14 ),
+graphTheme <- graphTheme() + theme( axis.text.x = element_text( angle = 90, hjust = 1.0, vjust = 0.5, size = 11 ),
                                     axis.text.y = element_text( size = 17 ) )
 
 # -------------------

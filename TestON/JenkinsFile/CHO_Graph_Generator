@@ -3,6 +3,7 @@ fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groo
 
 fileRelated.init()
 branches = params.ONOSbranch
+hours = params.hours
 branchList = branches.tokenize( "\n;, " )
 script_file = fileRelated.trendCHO
 saving_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric5/"
@@ -32,7 +33,7 @@ def generateGraphScript( branchList ){
                           bash log-summary;''' + '''
                           Rscript ''' +  script_file + ' ' + branchDir + 'event.csv ' +
                                 branchDir + 'failure.csv ' + branchDir + 'error.csv ' +
-                                branch + ' 60 ' +  saving_directory + ''';
+                                branch + ' 60 ' + hours + ' ' +  saving_directory + ''';
         '''
         print( graphScript )
     }

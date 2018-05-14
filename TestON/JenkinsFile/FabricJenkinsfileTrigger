@@ -1,9 +1,9 @@
 #!groovy
 
-funcs = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsCommonFuncs.groovy' )
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsTestONTests.groovy' )
-triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/TriggerFuncs.groovy' )
-fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/JenkinsPathAndFiles.groovy' )
+funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
+test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/TriggerFuncs.groovy' )
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
 current_version = "master"

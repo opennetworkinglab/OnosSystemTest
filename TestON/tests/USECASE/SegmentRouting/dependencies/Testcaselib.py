@@ -22,6 +22,7 @@ import os
 import time
 import json
 import urllib
+import re
 from core import utilities
 
 
@@ -307,6 +308,36 @@ class Testcaselib:
         utilities.assert_equals( expect=True, actual=( not routeResult ),
                                  onpass="route-add command succeeded",
                                  onfail="route-add command failed")
+
+    @staticmethod
+    def checkGroupsForBuckets( main, deviceId, subnetDict, routingTable=30):
+        """
+        Check number of groups for each subnet on device deviceId and matches
+        it with an expected value. subnetDict is a dictionarty containing values
+        of the type "10.0.1.0/24" : 5.
+        """
+        main.step("Checking if number of groups for subnets in device {0} is as expected.".format(deviceId))
+        groups = main.Cluster.active( 0 ).CLI.getGroups(deviceId, group_type="select")
+        flows = main.Cluster.active( 0 ).CLI.flows(jsonFormat=False, device=deviceId)
+
+        for subnet, number_in_select in subnetDict.iteritems():
+            for flow in flows.splitlines():
+                if "tableId={0}".format(routingTable) in flow and subnet in flow:
+
+                    # this will match the group id that this flow entry points to, for example :
+                    # 0x70000041 in flow entry which contains "deferred=[GROUP:0x70000041], transition=TABLE:60,"
+                    group_id = re.search(r".*GROUP:(0x.*)], transition.*", flow).groups()[0]
+
+                    count = 0
+                    for group in groups.splitlines():
+                        if 'id={0}'.format(group_id) in group:
+                            count += 1
+
+                    utilities.assert_equals( expect=True, actual=(count-1 == number_in_select),
+                                             onpass="Number of buckets in select group is correct",
+                                             onfail="Mismatch in number of buckets of select group, found {0}, expected {1} for subnet {2} on device {3}".format(count - 1, number_in_select, subnet, deviceId))
+                else:
+                    continue
 
     @staticmethod
     def checkFlows( main, minFlowCount, tag="", dumpflows=True, sleep=10 ):

@@ -2505,7 +2505,7 @@ class OnosCliDriver( CLI ):
             else:
                 main.cleanAndExit()
 
-    def flows( self, state="", jsonFormat=True, timeout=60, noExit=False, noCore=False ):
+    def flows( self, state="any", jsonFormat=True, timeout=60, noExit=False, noCore=False, device=""):
         """
         Optional:
             * jsonFormat: enable output formatting in json
@@ -2516,10 +2516,11 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "flows"
             if jsonFormat:
-                cmdStr += " -j "
+                cmdStr += " -j"
             if noCore:
-                cmdStr += " -n "
-            cmdStr += state
+                cmdStr += " -n"
+            cmdStr += " " + state
+            cmdStr += " " + device
             handle = self.sendline( cmdStr, timeout=timeout, noExit=noExit )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
@@ -2941,6 +2942,33 @@ class OnosCliDriver( CLI ):
         count = int( count ) if count else 0
         main.log.debug( "found {} groups".format( count ) )
         return count if ((count > expectedGroupCount) if (comparison == 0) else (count == expectedGroupCount)) else main.FALSE
+
+    def getGroups( self, deviceId, group_type="any"):
+        """
+        Retrieve groups from a specific device.
+        group_type = Type of group
+        """
+
+        try:
+            group_cmd = "groups -t {0} any {1}".format(group_type, deviceId)
+            self.sendline(group_cmd, showResponse=False)
+            handle = self.sendline( group_cmd )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
 
     def checkFlowAddedCount( self, deviceId, expectedFlowCount=0, core=False, comparison=0):
         """

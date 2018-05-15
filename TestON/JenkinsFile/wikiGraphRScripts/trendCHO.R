@@ -276,10 +276,10 @@ colnames( events_dataFrame ) <- c( "Events",
 events_dataFrame$Type <- as.character( events_dataFrame$Type )
 events_dataFrame$Type <- factor( events_dataFrame$Type, levels = unique( events_dataFrame$Type ) )
 
-events_dataFrame$timeStamps <- rev( gsub('^(.{11})(.*)$', '\\1\n\\2', event_fileData$Time ) )
+events_dataFrame$timeStamps <- gsub('^(.{11})(.*)$', '\\1\n\\2', event_fileData$Time )
 
 # Adding a temporary reversed iterative list to the events_dataFrame so that there are no gaps in-between build numbers.
-events_dataFrame$iterative <- rev( seq( 1, nrow( event_fileData ), by = 1 ) )
+events_dataFrame$iterative <- seq( 1, nrow( event_fileData ), by = 1 )
 
 # Omit any data that doesn't exist
 events_dataFrame <- na.omit( events_dataFrame )
@@ -315,10 +315,10 @@ colnames( failures_dataFrame ) <- c( "Failures",
 failures_dataFrame$Type <- as.character( failures_dataFrame$Type )
 failures_dataFrame$Type <- factor( failures_dataFrame$Type, levels = unique( failures_dataFrame$Type ) )
 
-failures_dataFrame$timeStamps <- rev( gsub('^(.{11})(.*)$', '\\1\n\\2', failure_fileData$Time ) )
+failures_dataFrame$timeStamps <- gsub('^(.{11})(.*)$', '\\1\n\\2', failure_fileData$Time )
 
 # Adding a temporary reversed iterative list to the failures_dataFrame so that there are no gaps in-between build numbers.
-failures_dataFrame$iterative <- rev( seq( 1, nrow( failure_fileData ), by = 1 ) )
+failures_dataFrame$iterative <- seq( 1, nrow( failure_fileData ), by = 1 )
 
 # Omit any data that doesn't exist
 failures_dataFrame <- na.omit( failures_dataFrame )

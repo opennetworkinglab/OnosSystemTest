@@ -48,7 +48,6 @@ for( String test : testsToRun ){
 }
 
 // generate the graphs sequentially.
-parallel tests
-//for ( test in tests.keySet() ){
-//    tests[ test ].call()
-//}
+for ( test in tests.keySet() ){
+    tests[ test ].call()
+}

@@ -1,0 +1,68 @@
+Jenkins script for Jenkins Pipeline jobs **
+*******************************************
+
+All the Jenkins files are under the dependencies folders are the dependencies of the Jenkins file.
+
+Some tips for the Jenkins File:
+
+
+1. If you want to change the branch to be run on weekdays and weekends (VM, BM) :
+
+  1) go to VM_BMJenkinsfileTrigger
+  2) change the portion on line 31 :
+     current_version = "master"
+     previous_version = "1.13"
+     before_previous_version = "1.12"
+
+
+2. If you want to change the branch to be run for the Segment Routing tests :
+
+  1) go to the FabricJenkinsfileTrigger
+  2) change the variable values on line 32:
+     current_version = "master"
+     previous_version = "1.13"
+     before_previous_version = "1.12"
+  3) If you want certain branch to be run on different machine then change
+     a) line 157 - 159:
+        testcases[ "SR1" ][ "nodeName" ][ <node you want> ] 0 : Fabric2, 1: Fabric3
+     b) Then, go to dependencies/JenkinsCommonFuncs.groovy
+        change def fabricOn( branch ) on line 86.
+        Currently, only 1.12 runs on Fabric3 and rest are running Fabric2.
+     c) Make sure to change the URLs on Wiki as well. If 1.12 runs on Fabric2 instead of Fabric3, then you
+        have to update the URL from
+          https://jenkins.onosproject.org/view/QA/job/postjob-Fabric3/lastSuccessfulBuild/artifact/SRBridging_onos-1.12_20-builds_graph.jpg
+
+          to
+
+          https://jenkins.onosproject.org/view/QA/job/postjob-Fabric2/lastSuccessfulBuild/artifact/SRBridging_onos-1.12_20-builds_graph.jpg
+
+
+3. If you want to upload additional logs for the Segment Routing tests:
+
+   1) go to dependencies/JenkinsCommonFuncs.groovy,
+   2) change def copyLogs( testName ) on line 174.
+   3) you may change/add/remove files from there.
+
+
+4. If you want to add a new test. ( non-SCPF tests like FUNC,HA,USECASE, and SR ):
+
+   1) go to dependencies/JenkinsTestONTests.groovy.
+   2) Add the new test on the list.
+   3) Make sure to also create a new wiki page for wiki link before running the test.
+      Since publish to confluence does not make new page, it has to be there before gets published.
+   4) If your new test's category is not scheduled :
+       a) For non-Segment Routing test :
+          i) go to VM_BMJenkinsFileTrigger
+          ii) add your new category on any days you want it to be run after line 223.
+       b) For Segment Routing test:
+          i) go to FabricJenkinsfileTrigger
+          ii) add your new category after line 113.
+   5) add your new graph to the wiki page.
+
+5. If you want to add a new test ( SCPF ):
+   1) Outside the Jenkins file requirement : need to add new table, function, view and its rule to the database first.
+   2) go to dependencies/JenkinsTestONTests.groovy and follow the 4 steps procedure for scheduling.
+   3) go to dependencies/PerformanceFuncs.groovy and add a new test in the dictionary.
+   4) It explains details about which to add in the file.
+   5) Make a Rscript for that test.
+   6) add your new graph to the wiki page.

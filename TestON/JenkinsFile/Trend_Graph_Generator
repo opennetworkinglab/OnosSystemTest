@@ -55,7 +55,6 @@ for( String test : testsToRun ){
     tests[ test ] = funcs.runTest( test, true, prop, test, true, [], graph_generator_file, graph_saved_directory )
 }
 
-parallel tests
-//for ( test in tests.keySet() ){
-//    tests[ test ].call()
-//}
+for ( test in tests.keySet() ){
+    tests[ test ].call()
+}

@@ -1,36 +1,80 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the Jenkins script for graph-generator-CHO jenkins job.
+
 #!groovy
+// Read the files that has the dependencies
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
+// The way reading the parameters from the Jenkins.
 branches = params.ONOSbranch
 hours = params.hours
+
+// divide the branch list into the list that was separated by newline, semi-colon, comma or space
 branchList = branches.tokenize( "\n;, " )
+
+// initialize the directory.
+
+// Script file is the R script path
 script_file = fileRelated.trendCHO
+// saving_directory is the directory that save the generate graphs.
 saving_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric5/"
 scriptDir = fileRelated.CHOScriptDir
 
+// create a bash script that will generate the graph
 graphScript = generateGraphScript( branchList )
 
 stage( 'Generating-Graph' ){
+    // This will run on TestStation-Fabric5s node.
     node( "TestStation-Fabric5s" ){
+        // run the bash script on this node.
         runScript( graphScript )
     }
 }
+// stage that will trigger postjob.
+// Need to be executed outside the current node to avoid deadlock.
 stage( 'posting-result' ){
     postJob()
 }
 
 def generateGraphScript( branchList ){
+    // Generate the bash script that will run the Rscript to make graph.
     graphScript = ''''''
+
+    // In case there are multiple branches running.
     for( branch in branchList ){
         branchDir = scriptDir + branch + "/"
         graphScript += '''export BRANCH=''' + branchDir + '''
+                          # make branch dir if not existing.
                           mkdir ''' + branchDir + ''';
+                          # inside the branchDir, check if there were existing graph
                           if [ ! -f ''' + branchDir + '''existing.txt ]; then
+                             # If it was first generated, it will copy .csv file.
                              cp *.csv ''' + branchDir + ''';
+                             # mark that this has created already.
                              echo "1" > ''' + branchDir + '''existing.txt;
                           fi;
+                          # run the log-summary that will export status
                           bash log-summary;''' + '''
+                          # run Rscript with it's parameters.
                           Rscript ''' +  script_file + ' ' + branchDir + 'event.csv ' +
                                 branchDir + 'failure.csv ' + branchDir + 'error.csv ' +
                                 branch + ' 60 ' + hours + ' ' +  saving_directory + ''';
@@ -40,6 +84,7 @@ def generateGraphScript( branchList ){
     return graphScript
 }
 def runScript( graphScript ){
+    // run bash script that will init the environment and run the graph generating part.
     sh '''#!/bin/bash -l
           set -i
           set +e
@@ -48,6 +93,7 @@ def runScript( graphScript ){
           ''' + graphScript
 }
 def postJob(){
-        jobToRun = "postjob-Fabric5"
-        build job: jobToRun, propagate: false
+    // Triggering jenkins job called `postjob-Fabric5`
+    jobToRun = "postjob-Fabric5"
+    build job: jobToRun, propagate: false
 }

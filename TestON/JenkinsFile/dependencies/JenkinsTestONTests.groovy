@@ -1,6 +1,37 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the dependency Jenkins script.
+// This will provide the basic information for the tests for scheduling.
+// Any new test to be added should be added here.
+
 #!groovy
 
 def getAllTheTests( wikiPrefix ){
+    // This contains the dictionary of the test and the category of them
+    // wikiPrefix : master, 1.13, 1.12 ...
+
+    // category: it will be used to distinguish which category to be run on which days ( basic,extra_A, extra_B ... )
+    // day: it will be used to display the schedule of the test to be run to the slack. It is empty in the first place but will be
+    //     filled out every monday.
+    // wiki_link : link of the wiki page that will be used to publish to confluence later on. SCPF tests don't need one.
+
     return [
         "FUNC":[
                 "FUNCipv6Intent" : [ "basic":true, "extra_A":false, "extra_B":false, "new_Test":false, "day":"", wiki_link:wikiPrefix + "-" + "FUNCipv6Intent", wiki_file:"FUNCipv6IntentWiki.txt" ],

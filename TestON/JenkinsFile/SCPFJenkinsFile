@@ -1,19 +1,49 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the Jenkins script for SCPF-pipeline-<branch>
+
 #!groovy
+
+// read the dependency files
 SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/PerformanceFuncs.groovy' )
 SCPFfuncs.init()
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
+
+// init funcs with SCPF specificaton
 funcs.initialize( "SCPF", SCPFfuncs );
-// This is a Jenkinsfile for a scripted pipeline for the SCPF tests
+
+// read the information from TestON.property on BM
 def prop = null
 prop = funcs.getProperties()
 
+// get the list of the test to run.
 echo( "Testcases:" )
 def testsToRun = null
 testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
 funcs.printTestToRun( testsToRun )
 
+// check if it is using old flow.
 isOldFlow = prop[ "isOldFlow" ] == "true"
 SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
+
+// set test to run as a list of function
 def tests = [:]
 for( String test : SCPFfuncs.SCPF.keySet() ){
     toBeRun = testsToRun.contains( test )
@@ -23,9 +53,12 @@ for( String test : SCPFfuncs.SCPF.keySet() ){
     tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false, SCPFfuncs.SCPF, "", "" )
 }
 
+// get start time
 start = funcs.getCurrentTime()
-// run the tests
+// run the tests sequentially
 for ( test in tests.keySet() ){
     tests[ test ].call()
 }
+
+// send result to slack after running test is done.
 funcs.sendResultToSlack( start,  prop["manualRun"], prop[ "WikiPrefix" ] )

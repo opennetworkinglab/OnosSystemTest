@@ -1,3 +1,5 @@
+#!groovy
+
 // Copyright 2017 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
@@ -21,7 +23,6 @@
 // This will provide the basic information for the tests for scheduling.
 // Any new test to be added should be added here.
 
-#!groovy
 
 def getAllTheTests( wikiPrefix ){
     // This contains the dictionary of the test and the category of them

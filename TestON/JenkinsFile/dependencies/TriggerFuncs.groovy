@@ -1,3 +1,5 @@
+#!groovy
+
 // Copyright 2017 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
@@ -20,8 +22,6 @@
 // This is the dependency Jenkins script.
 // This will provide the portion that will set up the environment of the machine
 //      and trigger the corresponding jobs.
-
-#!groovy
 
 def init( commonFuncs ){
     funcs = commonFuncs

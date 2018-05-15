@@ -1,3 +1,5 @@
+#!groovy
+
 // Copyright 2017 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
@@ -20,7 +22,6 @@
 // This is the dependency Jenkins script.
 // This will provide the SCPF specific functions
 
-#!groovy
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()

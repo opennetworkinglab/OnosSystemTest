@@ -1,3 +1,4 @@
+#!groovy
 // Copyright 2017 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
@@ -19,7 +20,6 @@
 
 // This is the Jenkins script for graph-generator-CHO jenkins job.
 
-#!groovy
 // Read the files that has the dependencies
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 

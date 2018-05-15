@@ -1,3 +1,5 @@
+#!groovy
+
 // Copyright 2017 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
@@ -19,8 +21,6 @@
 
 // This is the dependency Jenkins script.
 // This will initialize the paths of the jenkins file and paths.
-
-#!groovy
 
 // init the paths for the directory
 def initLocation(){

@@ -1,3 +1,4 @@
+#!groovy
 // Copyright 2017 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
@@ -18,8 +19,6 @@
 //     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 // This is the Jenkins script for FUNC-pipeline-<branch>
-
-#!groovy
 
 // read the dependency files
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )

@@ -1,3 +1,4 @@
+#!groovy
 // Copyright 2017 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
@@ -19,8 +20,6 @@
 
 // This is the dependency Jenkins script.
 // it has some general functionality of making database command, basic graph part, and get list of the test
-
-#!groovy
 
 // make the init part of the database command
 def database_command_create( pass, host, port, user ){

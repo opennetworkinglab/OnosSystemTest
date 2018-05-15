@@ -1,12 +1,54 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the dependency Jenkins script.
+// This will provide the SCPF specific functions
+
 #!groovy
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
 def init(){
+    // init step for SCPFfunctions. It has some mandatory init steps
+
+    // none, batches, neighbors, times : to be used for extra parameters for generating graphs.
     none = [ "" ]
     batches = [ 1, 100, 1000 ]
     neighbors = [ 'y', 'n' ]
     times = [ 'y', 'n' ]
+
+    //flows : whether the test is affected by oldFlow or newFlow
+    // test : command of the test to be executed when running the test
+    // table : name of the view table on database
+    // result : name of the actual table on database
+    // file : name of the file that contains the result of the test to be used to insert data to database
+    // rFile : specific Rscript file name to be used to generate each SCPF graph. For with flowObj graphs, you need to put 'n' or 'y' after the test name
+    // extra : extra condition that will be used for Rscript parameter. Some of the Rscript requires extra parameters like if it has
+    //         neighbors or batches. In this case, it will generate Rscript x times of what extra has. So that it will generate one with
+    //         neighbor = y and the other with neighbor = n
+    // finalResult : If you want to generate overall graph for the front page.
+    // graphTitle : title for the graph. It should contain n numbers depends on how many graphs you are generating.
+    // [Optional]
+    // dbCols : specific dbColumns to choose for 50 data overall graph if there is one.
+    // dbWhere : specific where statement that has some condition for 50 data overall graph if there is one.
+    // y_axis : title of the y_axis to be shown for 50 data overall graph if there is one.
+
     SCPF = [
         SCPFcbench:                              [ flows:false, test:'SCPFcbench', table:'cbench_bm_tests', results:'cbench_bm_results', file:'CbenchDB', rFile:'SCPFcbench.R', extra:none, finalResult:1, graphTitle:[ 'Cbench Test' ], dbCols:'avg', dbWhere:'', y_axis:'Throughput (Responses/sec)' ],
         SCPFhostLat:                             [ flows:false, test:'SCPFhostLat', table:'host_latency_tests', results:'host_latency_results', file:'HostAddLatency', rFile:'SCPFhostLat.R', extra:none,finalResult:1, graphTitle:[ 'Host Latency Test' ], dbCols:'avg', dbWhere:'AND scale=5', y_axis:'Latency (ms)' ],
@@ -29,6 +71,8 @@ def init(){
     graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-BM/"
 }
 def getGraphCommand( rFileName, extras, host, port, user, pass, testName, branchName, isOldFlow ){
+    // generate the list of Rscript command for individual graphs
+
     result = ""
     for( extra in extras ){
         result += generateGraph( rFileName, " " + extra, host, port, user, pass, testName, branchName, isOldFlow ) + ";"
@@ -36,11 +80,13 @@ def getGraphCommand( rFileName, extras, host, port, user, pass, testName, branch
     return result
 }
 def generateGraph( rFileName, batch, host, port, user, pass, testName, branchName, isOldFlow ){
+    //  generate the Rscript command for individual graphs
 
     return generalFuncs.basicGraphPart( fileRelated.SCPFSpecificLocation + rFileName, host, port, user, pass, testName, branchName ) +
            " " + batch + " " + usingOldFlow( isOldFlow, testName ) + graph_saved_directory
 }
 def generateCombinedResultGraph( host, port, user, pass, testName, branchName, isOldFlow ){
+    // generate Rscript for overall graph for the front page.
     result = ""
 
     for ( int i=0; i< SCPF[ testName ][ 'graphTitle' ].size(); i++ ){
@@ -51,32 +97,47 @@ def generateCombinedResultGraph( host, port, user, pass, testName, branchName, i
     return result
 }
 def checkIfList( testName, forWhich, pos ){
+    // check if some dictionary has list or string.
+
     return SCPF[ testName ][ forWhich ].getClass().getName() != "java.lang.String" ? SCPF[ testName ][ forWhich ][ pos ] :  SCPF[ testName ][ forWhich ]
 }
 def sqlOldFlow( isOldFlow, testName ){
+    // sql where command part for checking old flows.
+
     return SCPF[ testName ][ 'flows' ] ? " AND " + ( isOldFlow ? "" : "NOT " ) + "is_old_flow " : ""
 }
 def oldFlowRuleCheck( isOldFlow, branch ){
+    // checking if it is old flow
+
     this.isOldFlow = isOldFlow
     if( !isOldFlow ){
         SCPF[ 'SCPFflowTp1g' ][ 'test' ] += " --params TEST/flows=" + ( branch == "onos-1.11" ? "4000" : "3500" )
     }
 }
 def affectedByOldFlow( isOldFlow, testName ){
+    // For sql command :  if the test is affect by old flow, it will return parameters for old flow
     return SCPF[ testName ][ 'flows' ] ? "" + isOldFlow + ", " : ""
 }
 def usingOldFlow( isOldFlow, testName ){
+    // For Rscript command : if it is using old flow.
+
     return SCPF[ testName ][ 'flows' ] ? ( isOldFlow ? "y" : "n" ) + " " : ""
 }
 def hasOldFlow( isOldFlow, testName ){
+    // For Rscript command for 50 data
+
     return ( SCPF[ testName ][ 'flows' ] && isOldFlow ? "y" : "n" ) + " "
 }
 def sqlCommand( testName ){
+    // sql command for inserting data into the database
+
     if ( testName == "SCPFscaleTopo" || testName == "SCPFswitchLat" || testName == "SCPFportLat" )
         return "\"INSERT INTO " + SCPF[ testName ][ 'table' ] + " VALUES( '\$DATE','" + SCPF[ testName ][ 'results' ] + "','\$BUILD_NUMBER', \$line, '\$ONOSBranch');\""
     return "\"INSERT INTO " + SCPF[ testName ][ 'table' ] + " VALUES( '\$DATE','" + SCPF[ testName ][ 'results' ] + "','\$BUILD_NUMBER', '\$ONOSBranch', " + affectedByOldFlow( isOldFlow, testName ) + "\$line);\""
 }
 def databasePart( testName, database_command ){
+    // read the file from the machine and insert it to the database
+
     return '''
     cd /tmp
     while read line
@@ -86,6 +147,8 @@ def databasePart( testName, database_command ){
     done< ''' + SCPF[ testName ][ 'file' ]
 }
 def getGraphGeneratingCommand( host, port, user, pass, testName, prop ){
+    // returns the combined Rscript command for each test.
+
     return getGraphCommand( SCPF[ testName ][ 'rFile' ], SCPF[ testName ][ 'extra' ], host, port, user, pass, testName, prop[ "ONOSBranch" ], isOldFlow ) + '''
     ''' + ( SCPF[ testName ][ 'finalResult' ] ? generateCombinedResultGraph( host, port, user, pass, testName, prop[ "ONOSBranch" ], , isOldFlow ) : "" )
 }

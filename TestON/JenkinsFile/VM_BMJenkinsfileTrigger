@@ -1,17 +1,48 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the Jenkins script for vm-pipeline-trigger or bm-pipeline-trigger
+
 #!groovy
 
+// set the functions of the dependencies.
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/TriggerFuncs.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
+// set the versions of the onos
 fileRelated.init()
 current_version = "master"
 previous_version = "1.13"
 before_previous_version = "1.12"
+
+// init trend graphs to be on VM.
 funcs.initializeTrend( "VM" );
 triggerFuncs.init( funcs )
+
+// contents for page https://wiki.onosproject.org/display/ONOS/Automated+Test+Schedule
+// which will demonstrates the list of the scheduled tests on the days.
 wikiContents = ""
+
+// default FUNC,HA to be VM, SCPF,USECASE to be BM.
+// SR will not be used in here.
 testcases = [
     "FUNC" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
     "HA" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
@@ -19,6 +50,8 @@ testcases = [
     "SR" : [ tests : "", nodeName : "Fabric", wikiContent : "" ],
     "USECASE" : [ tests : "" , nodeName : "BM", wikiContent : "" ]
 ]
+
+// depends on the first two characters of the test name, it will be divided.
 Prefix_organizer = [
     "FU" : "FUNC",
     "HA" : "HA",
@@ -30,7 +63,10 @@ Prefix_organizer = [
     "VP" : "USECASE"
 ]
 
+// read the parameters from the Jenkins
 manually_run = params.manual_run
+
+// set default onos_b to be current_version.
 onos_b = current_version
 test_branch = ""
 onos_tag = params.ONOSTag
@@ -41,28 +77,39 @@ def now = funcs.getCurrentTime()
 print now.toString()
 today = now[ Calendar.DAY_OF_WEEK ]
 
+// get branch from parameter if it is manually running
 if ( manually_run ){
     onos_b = params.ONOSVersion
 } else {
+    // otherwise, the version would be different over the weekend.
+    // If today is weekdays, it will be default to current_version.
     if ( today == Calendar.SATURDAY ){
         onos_b = previous_version
     } else if( today == Calendar.SUNDAY ){
         onos_b = before_previous_version
     }
 }
+
+// Get all the list of the tests from the JenkinsTestONTests.groovy
 AllTheTests = test_lists.getAllTheTests( onos_b )
 
+// list of the tests to be run will be saved in each choices.
 day = ""
 SCPF_choices = ""
 USECASE_choices = ""
 FUNC_choices = ""
 HA_choices = ""
 SR_choices = ""
+
+// init some paths for the files and directories.
 stat_graph_generator_file = fileRelated.histogramMultiple
 pie_graph_generator_file = fileRelated.pieMultiple
 graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
 
+// get post result from the params for manually run.
 post_result = params.PostResult
+
+// if automatically run, it will remove the comma at the end after dividing the tests.
 if( !manually_run ){
     testDivider( today )
     FUNC_choices =  triggerFuncs.lastCommaRemover( FUNC_choices )
@@ -71,6 +118,7 @@ if( !manually_run ){
     USECASE_choices =  triggerFuncs.lastCommaRemover( USECASE_choices )
     SR_choices =  triggerFuncs.lastCommaRemover( SR_choices )
 }
+
 
 if ( manually_run ){
     testcases = triggerFuncs.organize_tests( params.Tests, testcases )
@@ -92,6 +140,8 @@ def runTest = [
     "VM" : [:],
     "BM" : [:]
 ]
+
+// set the test running function into the dictionary.
 for( String test in testcases.keySet() ){
     println test
     if ( testcases[ test ][ "tests" ] != "" ){
@@ -99,15 +149,22 @@ for( String test in testcases.keySet() ){
     }
 }
 def finalList = [:]
+
+// get the name of the job.
 jobName = env.JOB_NAME
+
+// first set the list of the functions to be run.
 finalList[ "VM" ] = triggerFuncs.runTestSeq( runTest[ "VM" ] )
 finalList[ "BM" ] = triggerFuncs.runTestSeq( runTest[ "BM" ] )
-//parallel finalList
+
+// if first two character of the job name is vm, only call VM.
+// else, only on BM
 if( jobName.take( 2 ) == "vm" )
     finalList[ "VM" ].call()
 else
     finalList[ "BM" ].call()
 
+// If it is automated running, it will generate the stats graph on VM.
 if ( !manually_run ){
     funcs.generateStatGraph( "TestStation-VMs",
                              funcs.branchWithPrefix( onos_b ),
@@ -117,9 +174,13 @@ if ( !manually_run ){
                              graph_saved_directory )
 }
 
+// function that will divide tests depends on which day it is.
 def testDivider( today ){
     switch ( today ) {
         case Calendar.MONDAY:
+            // THe reason Monday calls all the days is because we want to post the test schedules on the wiki
+            // and slack channel every monday.
+            // It will only generate the list of the test for monday.
             initHtmlForWiki()
             monday( true )
             tuesday( true, false )
@@ -159,8 +220,13 @@ def testDivider( today ){
             break
     }
 }
+
+// function for monday.
 def monday( getResult ){
+    // add header for wiki page script.
     addingHeader( "FUNC" )
+    // call category of basic and extra_A of FUNC tests.
+    // put M into the dictionary.
     FUNC_choices += adder( "FUNC", "basic", true, "M", getResult )
     FUNC_choices += adder( "FUNC", "extra_A", true, "M", getResult )
     closingHeader( "FUNC" )
@@ -178,6 +244,9 @@ def monday( getResult ){
     addingHeader( "USECASE" )
     closingHeader( "USECASE" )
 }
+
+// If get result is false, it will not add the test result to xx_choices, but will generate the
+// header and days
 def tuesday( getDay, getResult ){
     addingHeader( "FUNC" )
     FUNC_choices += adder( "FUNC", "basic", getDay, "T", getResult )
@@ -309,7 +378,15 @@ def sunday( getDay, getResult ){
     USECASE_choices += adder( "USECASE", "basic", getDay, "S", getResult )
     closingHeader( "USECASE" )
 }
+
+// adder that will return the list of the tests.
 def adder( testCat, set, dayAdding, day, getResult ){
+    // testCat : the category of the test which will be either FUNC,HA,SR...
+    // set : the set of the test to be run which will be basic,extra_A,extra_B...
+    // dayAdding : boolean whether to add the days into the list or not
+    // day : the day you are trying to add (m,t,w,th... )
+    // getResult : if want to get the list of the test to be run. False will return empty list.
+    //             And once the list is empty, it will not be run.
     result = ""
     for( String test in AllTheTests[ testCat ].keySet() ){
         if( AllTheTests[ testCat ][ test ][ set ] ){
@@ -317,11 +394,14 @@ def adder( testCat, set, dayAdding, day, getResult ){
                 result += test + ","
             if( dayAdding )
                 dayAdder( testCat, test, day )
+            // make HTML columns for wiki page on schedule.
             makeHtmlColList( testCat, test )
         }
     }
     return result
 }
+
+// Initial part of the wiki page.
 def initHtmlForWiki(){
     wikiContents = '''
     <table class="wrapped confluenceTable">
@@ -352,21 +432,29 @@ def initHtmlForWiki(){
                 <th colspan="1" class="confluenceTh">''' + test + '''</th>'''
     }
 }
+
+// adding header functionality.
 def addingHeader( testCategory ){
     testcases[ testCategory ][ 'wikiContent' ] += '''
                 <td class="confluenceTd">
                     <ul>'''
 }
+
+// making column list for html
 def makeHtmlColList( testCategory, testName ){
     testcases[ testCategory ][ 'wikiContent' ] += '''
                         <li>'''+ testName +'''</li>'''
 
 }
+
+// closing the header for html
 def closingHeader( testCategory ){
     testcases[ testCategory ][ 'wikiContent' ] += '''
                     </ul>
                 </td>'''
 }
+
+// close the html for the wiki page.
 def closeHtmlForWiki(){
     for( String test in testcases.keySet() ){
         wikiContents += testcases[ test ][ 'wikiContent' ]
@@ -381,6 +469,8 @@ def closeHtmlForWiki(){
     <p>On <strong>Saturdays</strong>, all the other tests are built and run on the '''+ funcs.branchWithPrefix( previous_version ) +''' branch.</p>
     <p>On <strong>Sundays</strong>, all the other tests are built and run on the '''+ funcs.branchWithPrefix( before_previous_version ) +''' branch.</p>'''
 }
+
+// post the result to wiki page using publish to confluence.
 def postToWiki( contents ){
     node( testMachine ){
         workspace = fileRelated.jenkinsWorkspace + "all-pipeline-trigger/"
@@ -391,6 +481,8 @@ def postToWiki( contents ){
                                    workspace + filename )
     }
 }
+
+// add the day to the "day" on the dictionary.
 def dayAdder( testCat, testName, dayOfWeek ){
     AllTheTests[ testCat ][ testName ][ "day" ] += dayOfWeek + ","
 }

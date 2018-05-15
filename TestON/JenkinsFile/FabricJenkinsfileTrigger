@@ -1,19 +1,49 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the Jenkins script for the fabric-pipeline-trigger
+
 #!groovy
 
+// init dependencies functions
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/TriggerFuncs.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
+
+// set the versions of the onos.
 current_version = "master"
 previous_version = "1.13"
 before_previous_version = "1.12"
+
+// Function that will initialize the configuration of the Fabric.
 funcs.initializeTrend( "Fabric" );
 funcs.initialize( "Fabric" )
 triggerFuncs.init( funcs )
 
+// Wiki contents is the contents for https://wiki.onosproject.org/display/ONOS/Automated+Test+Schedule
+// It will only be used by the VM_BMJenkinsTrigger not in here.
 wikiContents = ""
+
+// Having two different SR and SR1 to allow current_version and previous_version to be run on same machine.
 testcases = [
     "FUNC" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
     "HA" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
@@ -22,6 +52,8 @@ testcases = [
     "SR1" : [ tests : "", nodeName : [ "Fabric2", "Fabric3" ], wikiContent : "" ],
     "USECASE" : [ tests : "" , nodeName : "BM", wikiContent : "" ]
 ]
+
+// depends on the First two letter of the testname, it will decide which category to put test.
 Prefix_organizer = [
     "FU" : "FUNC",
     "HA" : "HA",
@@ -33,6 +65,7 @@ Prefix_organizer = [
     "VP" : "USECASE"
 ]
 
+// set some variables from the parameter
 manually_run = params.manual_run
 onos_b = current_version
 test_branch = ""
@@ -44,70 +77,104 @@ def now = funcs.getCurrentTime()
 print now.toString()
 today = now[ Calendar.DAY_OF_WEEK ]
 
+// if it is manually run, it will set the onos version to be what it was passed by.
+// Currently, SR-pipeline-manually is not supported due to the special way of it is executed.
 if ( manually_run ){
     onos_b = params.ONOSVersion
 }
+
+// get the list of the tests from the JenkinsTestONTests.groovy
 AllTheTests = test_lists.getAllTheTests( onos_b )
 
+
 day = ""
+
+// list of the test on each test category will be run.
 SCPF_choices = ""
 USECASE_choices = ""
 FUNC_choices = ""
 HA_choices = ""
 SR_choices = ""
+
+// initialize the graph generating files.
 stat_graph_generator_file = fileRelated.histogramMultiple
 pie_graph_generator_file = fileRelated.pieMultiple
 graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric/"
 
+// get the post_result. This will be affected only for the manual runs.
 post_result = params.PostResult
 if( !manually_run ){
+    // If it is automated running, it will post the beginning message to the channel.
     slackSend( channel:'sr-failures', color:'#03CD9F',
                message:":sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:\n"
                         + "Starting tests on : " + now.toString()
                         + "\n:sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:" )
 
+    // Choices will get the list of the test with Segment Rounting type tests.
     SR_choices += adder( "SR", "basic", true )
     if ( today == Calendar.FRIDAY ){
+        // if today is Friday, it will also test tests with extra_A category
         SR_choices += adder( "SR", "extra_A", true )
     } else if( today == Calendar.SATURDAY ){
+        // if today is Saturday, it will add the test with extra_B category
         SR_choices += adder( "SR", "extra_B", true )
     }
+    // removing last comma added at the end of the last test name.
     SR_choices =  triggerFuncs.lastCommaRemover( SR_choices )
 }
+
+
 if ( manually_run ){
     testcases = triggerFuncs.organize_tests( params.Tests, testcases )
 
     isOldFlow = params.isOldFlow
     println "Tests to be run manually : "
 }else{
+    // set the list of the tests to run.
     testcases[ "SR" ][ "tests" ] = SR_choices
     testcases[ "SR1" ][ "tests" ] = SR_choices
     println "Defaulting to " + day + " tests:"
 }
 
+// print out the list of the test to run on Jenkins
 triggerFuncs.print_tests( testcases )
 
+// This will hold the block of code to be run.
 def runTest = [
     "Fabric2" : [:],
     "Fabric3" : [:]
 ]
 if ( manually_run ){
+    // for manual run situation.
     for( String test in testcases.keySet() ){
         println test
+        // Unless the list of the tests on the test category is empty, it will save the block of code to run in dictionary.
         if ( testcases[ test ][ "tests" ] != "" ){
             runTest[ testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ] ][ test ] = triggerFuncs.trigger_pipeline( onos_b, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ], test, manually_run, onos_tag )
         }
     }
 }else{
+    // for automated situation, it will save current and previous version to Fabric2 and before_previous_version to Fabric3.
     runTest[ "Fabric2" ][ "SR1" ] = triggerFuncs.trigger_pipeline( current_version, testcases[ "SR1" ][ "tests" ], testcases[ "SR1" ][ "nodeName" ][ 0 ], "SR", manually_run, onos_tag )
     runTest[ "Fabric2" ][ "SR" ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 0 ], "SR", manually_run, onos_tag )
     runTest[ "Fabric3" ][ "SR" ] = triggerFuncs.trigger_pipeline( before_previous_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 1 ], "SR", manually_run, onos_tag )
 }
 
 def finalList = [:]
+
+// It will run each category of test to run sequentially on each branch.
+// In our case, it will run SR1 first then SR on Fabric2 and just SR on Fabric3
 finalList[ "Fabric2" ] = triggerFuncs.runTestSeq( runTest[ "Fabric2" ] )
 finalList[ "Fabric3" ] = triggerFuncs.runTestSeq( runTest[ "Fabric3" ] )
+
+// It will then run Fabric2 and Fabric3 to be run concurrently.
+// In our case,
+//                      ----> Fabric2 : current -> previous
+// This pipeline ----->
+//                      ----> Fabric3 : before_previous
 parallel finalList
+
+// Way we are generating pie graphs. not supported in SegmentRouting yet.
 /*
 if ( !manually_run ){
     funcs.generateStatGraph( "TestStation-Fabric2s",
@@ -123,7 +190,12 @@ if ( !manually_run ){
                              pie_graph_generator_file,
                              graph_saved_directory )
 }*/
+
+// Way to add list of the tests with specific category to the result
 def adder( testCat, set, getResult ){
+    // testCat : test Category ( Eg. FUNC, HA, SR ... )
+    // set : set of the test ( Eg. basic, extra_A ... )
+    // if getResult == true, it will add the result.
     result = ""
     for( String test in AllTheTests[ testCat ].keySet() ){
         if( AllTheTests[ testCat ][ test ][ set ] ){
@@ -133,6 +205,9 @@ def adder( testCat, set, getResult ){
     }
     return result
 }
+
+// check which node is on.
+// 1.12 runs on Fabric3 and rest on 1.13 and master
 def nodeOn( branch ){
     return branch == "1.12" ? 1 : 0;
 }

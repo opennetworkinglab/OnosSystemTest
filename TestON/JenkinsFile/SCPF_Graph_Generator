@@ -1,4 +1,27 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the Jenkins script for manual-graph-generator-SCPF
+
 #!groovy
+
+// read and set the functions from dependcies.
 SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/PerformanceFuncs.groovy' )
 SCPFfuncs.init()
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
@@ -7,6 +30,7 @@ funcs.initialize( "SCPF", SCPFfuncs );
 def prop = null
 prop = funcs.getProperties()
 
+// get the variables from the Jenkins parameters.
 def Tests = params.Test
 isOldFlow = params.isOldFlow
 prop[ "ONOSBranch" ] = params.ONOSbranch
@@ -16,6 +40,7 @@ SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
 def testsToRun = null
 testsToRun = funcs.getTestsToRun( Tests )
 
+// pureTestName is because we don't want 'WFobj' to be used for test name.
 def tests = [:]
 for( String test : testsToRun ){
     println test
@@ -23,6 +48,8 @@ for( String test : testsToRun ){
     tests[ test ] = funcs.runTest( test, true, prop, pureTestName, true, [], "", "" )
 }
 
-for ( test in tests.keySet() ){
-    tests[ test ].call()
-}
+// generate the graphs sequentially.
+parallel tests
+//for ( test in tests.keySet() ){
+//    tests[ test ].call()
+//}

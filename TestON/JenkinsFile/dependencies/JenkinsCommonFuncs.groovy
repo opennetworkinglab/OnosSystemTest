@@ -1,3 +1,25 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the dependency Jenkins script.
+// it has some common functions that runs test and generate graph.
+
 #!groovy
 import groovy.time.*
 generalFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/GeneralFuncs.groovy' )
@@ -6,6 +28,9 @@ fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPath
 fileRelated.init()
 
 def initializeTrend( machine ){
+  // For initializing any trend graph jobs
+  // machine : Either VM,BM, or Fabric#
+
   table_name = "executed_test_tests"
   result_name = "executed_test_results"
   testMachine = "TestStation-" + machine + "s";
@@ -14,12 +39,19 @@ def initializeTrend( machine ){
   isTrend = true
 }
 def initialize( type, SCPFfuncs ){
+  // Initializing for SCPF tests
+  // type : type of the test ( SR,FUNC,SCPF... )
+  // Passing the SCPFfunction which will be PerformanceFuncs.groovy
+
   init( type )
   SCPFfunc = SCPFfuncs
   isSCPF = true
   machine = machineType[ type ]
 }
 def initialize( type ){
+  // initializing for FUNC,HA,SR, and USECASE
+  // type : type of the test ( SR,FUNC,SCPF... )
+
   init( type )
   SCPFfunc = null
   table_name = "executed_test_tests"
@@ -29,6 +61,8 @@ def initialize( type ){
   isSCPF = false
 }
 def init( type ){
+  // type : type of the test ( SR,FUNC,SCPF... )
+
   machineType = [ "FUNC"    : "VM",
                   "HA"      : "VM",
                   "SR"      : "Fabric",
@@ -39,6 +73,9 @@ def init( type ){
   isTrend = false
 }
 def additionalInitForSR( branch ){
+  // additional setup for SegmentRouting tests to determine the machine depends on the branch it is running.
+  // branch : branch of the onos. ( master, 1.12, 1.13... )
+
   testMachine = ( ( new StringBuilder( testMachine ) ).insert( testMachine.size()-1, fabricOn( branch ) ) ).toString()
   if( isTrend )
     machine += fabricOn( branch )
@@ -47,33 +84,53 @@ def additionalInitForSR( branch ){
   print testMachine
 }
 def fabricOn( branch ){
+  // gets the fabric machines with the branch of onos.
+  // branch : master, 1.12, 1.13...
+
   return branch.reverse().take(4).reverse() == "1.12" ? '3' : '2'
 }
 def printType(){
+  // print the test type and test machine that was initialized.
+
   echo testType;
   echo testMachine;
 }
 def getProperties(){
+  // get the properties of the test by reading the TestONOS.property
+
   node( testMachine ){
     return readProperties( file:'/var/jenkins/TestONOS.property' );
   }
 }
 def getTestsToRun( testList ){
+  // get test to run by tokenizing the list.
+
   testList.tokenize("\n;, ")
 }
 def getCurrentTime(){
+  // get time of the PST zone.
+
   TimeZone.setDefault( TimeZone.getTimeZone('PST') )
   return new Date();
 }
 def getTotalTime( start, end ){
+  // get total time of the test using start and end time.
+
   return TimeCategory.minus( end, start );
 }
 def printTestToRun( testList ){
+  // printout the list of the test in the list.
+
   for ( String test : testList ) {
       println test;
   }
 }
 def sendResultToSlack( start, isManualRun, branch ){
+  // send the result of the test to the slack when it is not manually running.
+  // start : start time of the test
+  // isManualRun : string that is whether "false" or "true"
+  // branch : branch of the onos.
+
   try{
     if( isManualRun == "false" ){
         end = getCurrentTime();
@@ -85,7 +142,11 @@ def sendResultToSlack( start, isManualRun, branch ){
   catch( all ){}
 }
 def initAndRunTest( testName, testCategory ){
-  // after ifconfig : ''' + borrowCell( testName ) + '''
+  // Bash script that will
+  // Initialize the environment to the machine and run the test.
+  // testName : name of the test
+  // testCategory : (SR,FUNC ... )
+
   return '''#!/bin/bash -l
         set -i # interactive
         set +e
@@ -111,6 +172,9 @@ def initAndRunTest( testName, testCategory ){
         git clean -df'''
 }
 def copyLogs( testName ){
+  // bash script part for copy the logs and other neccessary element for SR tests.
+  // testName : name of the test.
+
   result = ""
     if( testType == "SR" ){
       result = '''
@@ -125,6 +189,9 @@ def copyLogs( testName ){
   return result
 }
 def cleanAndCopyFiles( testName ){
+  // clean up some files that were in the folder and copy the new files from the log
+  // testName : name of the test
+
   return '''#!/bin/bash -i
         set +e
         echo "ONOS Branch is: ${ONOSBranch}"
@@ -150,6 +217,9 @@ def cleanAndCopyFiles( testName ){
         cd '''
 }
 def fetchLogs( testName ){
+  // fetch the logs of onos from onos nodes to onos System Test logs
+  // testName: name of the test
+
   return '''#!/bin/bash
   set +e
   cd ~/OnosSystemTest/TestON/logs
@@ -169,14 +239,25 @@ def fetchLogs( testName ){
   cd'''
 }
 def isPostingResult( manual, postresult ){
+  // check if it is posting the result.
+  // posting when it is automatically running or has postResult condition from the manual run
+
   return manual == "false" || postresult == "true"
 }
 def postResult( prop, graphOnly ){
+  // post the result by triggering postjob.
+  // prop : property dictionary that was read from the machine.
+  // graphOnly : if it is graph generating job
+
   if( graphOnly || isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
     def post = build job: "postjob-" + ( graphOnly ? machine : machineType[ testType ] ), propagate: false
   }
 }
 def postLogs( testName, prefix ){
+  // posting logs of the onos jobs specifically SR tests
+  // testName : name of the test
+  // prefix : branch prefix ( master, 1.12, 1.13 ... )
+
   resultURL = ""
   if( testType == "SR" ){
     def post = build job: "SR-log-" + prefix, propagate: false
@@ -185,9 +266,21 @@ def postLogs( testName, prefix ){
   return resultURL
 }
 def getSlackChannel(){
+  // get name of the slack channel.
+  // if the test is SR, it will return sr-failures
+
   return "#" + ( testType == "SR" ? "sr-failures" : "jenkins-related" )
 }
 def analyzeResult( prop, workSpace, testName, otherTestName, resultURL, wikiLink, isSCPF ){
+  // analyzing the result of the test and send to slack if the test was failed.
+  // prop : property dictionary
+  // workSpace : workSpace where the result file is saved
+  // testName : real name of the test
+  // otherTestName : other name of the test for SCPF tests ( SCPFflowTPFobj )
+  // resultURL : url for the logs for SR tests. Will not be posted if it is empty
+  // wikiLink : link of the wiki page where the result was posted
+  // isSCPF : Check if it is SCPF. If so, it won't post the wiki link.
+
   node( testMachine ){
     resultContents = readFile workSpace + "/" + testName + "Result.txt"
     resultContents = resultContents.split("\n")
@@ -209,6 +302,12 @@ def analyzeResult( prop, workSpace, testName, otherTestName, resultURL, wikiLink
   }
 }
 def publishToConfluence( isManualRun, isPostResult, wikiLink, file ){
+  // publish HTML script to wiki confluence
+  // isManualRun : string "true" "false"
+  // isPostResult : string "true" "false"
+  // wikiLink : link of the wiki page to publish
+  // file : name of the file to be published
+
   if( isPostingResult( isManualRun, isPostResult ) ){
     publishConfluence siteName: 'wiki.onosproject.org', pageName: wikiLink, spaceName: 'ONOS',
                   attachArchivedArtifacts: true, buildIfUnstable: true,
@@ -219,6 +318,16 @@ def publishToConfluence( isManualRun, isPostResult, wikiLink, file ){
 
 }
 def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, graph_generator_file, graph_saved_directory ) {
+  // run the test on the machine that contains all the steps : init and run test, copy files, publish result ...
+  // testName : name of the test
+  // toBeRun : boolean value whether the test will be run or not. If not, it won't be run but shows up with empty result on pipeline view
+  // prop : dictionary property on the machine
+  // pureTestName : Pure name of the test. ( ex. pureTestName of SCPFflowTpFobj will be SCPFflowTp )
+  // graphOnly : check if it is generating graph job. If so, it will only generate the generating graph part
+  // testCategory : category of the test ( SCPF, SR, FUNC ... )
+  // graph_generator_file : Rscript file with the full path.
+  // graph_saved_directory : where the generated graph will be saved to.
+
   return {
       catchError{
           stage( testName ) {
@@ -259,17 +368,15 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
       }
   }
 }
-def borrowCell( testName ){
-  result = ""
-  if( testType == "SR" ){
-      result = '''
-      cd
-      source ~/borrow.cell
-      '''
-  }
-  return result
-}
 def databaseAndGraph( prop, testName, graphOnly, graph_generator_file, graph_saved_directory ){
+  // part where it insert the data into the database.
+  // It will use the predefined encrypted variables from the Jenkins.
+  // prop : property dictionary that was read from the machine
+  // testName : name of the test
+  // graphOnly : boolean whether it is graph only or not
+  // graph_generator_file : Rscript file with the full path.
+  // graph_saved_directory : where the generated graph will be saved to.
+
   if( graphOnly || isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
       // Post Results
       withCredentials( [
@@ -288,6 +395,17 @@ def databaseAndGraph( prop, testName, graphOnly, graph_generator_file, graph_sav
   }
 }
 def generateCategoryStatsGraph( testMachineOn, manualRun, postresult, stat_file, pie_file, type, branch, testListPart, save_path, pieTestListPart ){
+  // function that will generate the category stat graphs for the overall test.
+  // testMachineOn : the machine the graph will be generated. It will be TestStation-VMs for the most cases
+  // manualRun : string of "true" or "false"
+  // postresult : string of "true" or "false"
+  // stat_file : file name with full path for Rscript for the stat graph
+  // pie_file : file name with full path for Rscript for the pie graph
+  // type : type of the test ( USECASE, FUNC, HA )
+  // branch : branch of the test ( master, onos-1.12, onos-1.13 )
+  // testListPart : list of the test to be included
+  // save_path : path that will save the graphs to
+  // pieTestListPart : list of the test for pie graph
 
   if( isPostingResult( manualRun, postresult ) ){
     node( testMachineOn ){
@@ -307,12 +425,22 @@ def generateCategoryStatsGraph( testMachineOn, manualRun, postresult, stat_file,
     }
 }
 def makeTestList( list, commaNeeded ){
+  // make the list of the test in to a string.
+  // list : list of the test
+  // commaNeeded : if comma is needed for the string
+
   return generalFuncs.getTestList( list ) + ( commaNeeded ? "," : "" )
 }
 def createStatsList( testCategory, list, semiNeeded ){
+  // make the list for stats
+  // testCategory : category of the test
+  // list : list of the test
+  // semiNeeded: if semi colon is needed
+
   return testCategory + "-" + generalFuncs.getTestList( list ) + ( semiNeeded ? ";" : "" )
 }
 def generateOverallGraph( prop, testCategory, graph_saved_directory ){
+  // generate the overall graph for the test
 
   if( isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
     node( testMachine ){
@@ -331,15 +459,23 @@ def generateOverallGraph( prop, testCategory, graph_saved_directory ){
     }
 }
 def getOverallPieGraph( file, host, port, user, pass, branch, type, testList, yOrN, path ){
+   // Rcommand for the pie graph
+
    return generalFuncs.basicGraphPart( file, host, port, user, pass, type, branch ) + " \"" + testList + "\" latest " + yOrN + " " + path
 }
 def sqlCommand( testName ){
+  // get the inserting sqlCommand for non-SCPF tests.
+
   return "\"INSERT INTO " + table_name + " VALUES('\$DATE','" + result_name + "','" + testName + "',\$BUILD_NUMBER, '\$ONOSBranch', \$line);\" "
 }
 def graphGenerating( host, port, user, pass, testName, prop, graph_saved_directory, graph_generator_file ){
+  // get the graphGenerating R command for non-SCPF tests
+
   return generalFuncs.basicGraphPart( graph_generator_file, host, port, user, pass, testName, prop[ "ONOSBranch" ] ) + " 20 " + graph_saved_directory
 }
 def databasePart( wikiPrefix, testName, database_command ){
+  // to read and insert the data from .csv to the database
+
   return '''
     sed 1d ''' + workSpace + "/" + wikiPrefix + "-" + testName + '''.csv | while read line
     do
@@ -348,6 +484,8 @@ def databasePart( wikiPrefix, testName, database_command ){
     done '''
 }
 def generateStatGraph( testMachineOn, onos_branch, AllTheTests, stat_graph_generator_file, pie_graph_generator_file, graph_saved_directory ){
+    // Will generate the stats graph.
+
     testListPart = createStatsList( "FUNC", AllTheTests[ "FUNC" ], true ) +
                    createStatsList( "HA", AllTheTests[ "HA" ], true ) +
                    createStatsList( "USECASE", AllTheTests[ "USECASE" ], false )
@@ -357,6 +495,7 @@ def generateStatGraph( testMachineOn, onos_branch, AllTheTests, stat_graph_gener
     generateCategoryStatsGraph( testMachineOn, "false", "true", stat_graph_generator_file, pie_graph_generator_file, "ALL", onos_branch, testListPart, graph_saved_directory, pieTestList )
 }
 def branchWithPrefix( branch ){
+    // get the branch with the prefix ( "onos-" )
     return ( ( branch != "master" ) ? "onos-" : "" ) + branch
 }
 return this;

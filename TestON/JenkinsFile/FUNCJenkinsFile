@@ -1,24 +1,56 @@
+// Copyright 2017 Open Networking Foundation (ONF)
+//
+// Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
+// the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
+// or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
+//
+//     TestON is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 2 of the License, or
+//     (at your option) any later version.
+//
+//     TestON is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+//
+//     You should have received a copy of the GNU General Public License
+//     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
+
+// This is the Jenkins script for FUNC-pipeline-<branch>
+
 #!groovy
+
+// read the dependency files
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
 test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
+
+// initialize the funcs with category of FUNC
 funcs.initialize( "FUNC" );
 
 // This is a Jenkinsfile for a scripted pipeline for the FUNC tests
 def prop = null
+
+// Read the TestONOS.property from the VM
 prop = funcs.getProperties()
+
+// get the list of the test and init branch to it.
 FUNC = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "FUNC" ]
 
+// init some directories
 graph_generator_file = fileRelated.trendIndividual
 graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
 
+// get the list of the test to run
 echo( "Testcases:" )
 def testsToRun = null
 testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
 funcs.printTestToRun( testsToRun )
 
+// run the test sequentially and save the function into the dictionary.
 def tests = [:]
 for( String test : FUNC.keySet() ){
     toBeRun = testsToRun.contains( test )
@@ -26,10 +58,16 @@ for( String test : FUNC.keySet() ){
     tests[stepName] = funcs.runTest( test, toBeRun, prop, test, false, FUNC, graph_generator_file, graph_saved_directory )
 }
 
+// get the start time of the test.
 start = funcs.getCurrentTime()
-// run the tests
+
+// run the tests sequentially.
 for ( test in tests.keySet() ){
     tests[ test ].call()
 }
+
+// generate the overall graph of the FUNC tests.
 funcs.generateOverallGraph( prop, FUNC, graph_saved_directory )
+
+// send the notification to Slack that running FUNC tests was ended.
 funcs.sendResultToSlack( start,  prop[ "manualRun" ], prop[ "WikiPrefix" ] )

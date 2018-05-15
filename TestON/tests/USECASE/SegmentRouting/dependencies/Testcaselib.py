@@ -588,6 +588,52 @@ class Testcaselib:
                                  onfail="Link batch up failed" )
 
     @staticmethod
+    def disablePortBatch( main, ports, switches=None, links=None, sleep=None ):
+        """
+        Disable a list of switch ports using 'portstate' and verify ONOS can see the proper link change
+        ports: a list of ports to disable ex. [ [ "of:0000000000000001", 1 ] ]
+        switches, links: number of expected switches and links after link change, ex.: '4', '6'
+        """
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        else:
+            sleep = float( sleep )
+        main.step( "Disable a batch of ports" )
+        for dpid, port in ports:
+            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
+        main.log.info( "Waiting {} seconds for port down to be discovered".format( sleep ) )
+        time.sleep( sleep )
+        if switches and links:
+            result = main.Cluster.active( 0 ).CLI.checkStatus( numoswitch=switches,
+                                                               numolink=links )
+            utilities.assert_equals( expect=main.TRUE, actual=result,
+                                     onpass="Port down successful",
+                                     onfail="Port down failed" )
+
+    @staticmethod
+    def enablePortBatch( main, ports, switches, links, sleep=None ):
+        """
+        Enable a list of switch ports using 'portstate' and verify ONOS can see the proper link change
+        ports: a list of ports to enable ex. [ [ "of:0000000000000001", 1 ] ]
+        switches, links: number of expected switches and links after link change, ex.: '4', '6'
+        """
+        if sleep is None:
+            sleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        else:
+            sleep = float( sleep )
+        main.step( "Enable a batch of ports" )
+        for dpid, port in ports:
+            main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
+        main.log.info( "Waiting {} seconds for port up to be discovered".format( sleep ) )
+        time.sleep( sleep )
+        if switches and links:
+            result = main.Cluster.active( 0 ).CLI.checkStatus( numoswitch=switches,
+                                                               numolink=links )
+            utilities.assert_equals( expect=main.TRUE, actual=result,
+                                     onpass="Port up successful",
+                                     onfail="Port up failed" )
+
+    @staticmethod
     def restoreLink( main, end1, end2, switches, links,
                      portUp=False, dpid1='', dpid2='', port1='', port2='' ):
         """
@@ -679,27 +725,6 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Switch recovery successful",
                                  onfail="Failed to recover switch?" )
-
-    @staticmethod
-    def portstate( main, dpid, port, state, switches, links ):
-        """
-        Disable/enable a switch port using 'portstate' and verify ONOS can see the proper link change
-        Params:
-            dpid: dpid of the switch, ex.: 'of:0000000000000002'
-            port: port of the switch to disable/enable, ex.:'1'
-            state: disable or enable
-            switches, links: number of expected switches and links after link change, ex.: '4', '6'
-        """
-        main.step( "Port %s on %s:%s" % ( state, dpid, port ) )
-        main.linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state=state )
-        main.log.info( "Waiting %s seconds for port %s to be discovered" % ( main.linkSleep, state ) )
-        time.sleep( main.linkSleep )
-        result = main.Cluster.active( 0 ).CLI.checkStatus( numoswitch=switches,
-                                                           numolink=links )
-        utilities.assert_equals( expect=main.TRUE, actual=result,
-                                 onpass="Port %s successful" % state,
-                                 onfail="Port %s failed" % state )
 
     @staticmethod
     def cleanup( main, copyKarafLog=True, removeHostComponent=False ):
@@ -1047,11 +1072,13 @@ class Testcaselib:
             main.topo
         except ( NameError, AttributeError ):
             main.topo = Topology()
+        main.step( "Verify {} multicast traffic".format( routeName ) )
         routeData = main.multicastConfig[ routeName ]
         srcs = main.mcastRoutes[ routeName ][ "src" ]
         dsts = main.mcastRoutes[ routeName ][ "dst" ]
         main.log.info( "Sending multicast traffic from {} to {}".format( [ routeData[ "src" ][ i ][ "host" ] for i in srcs ],
                                                                          [ routeData[ "dst" ][ i ][ "host" ] for i in dsts ] ) )
+        result = main.TRUE
         for src in srcs:
             srcEntry = routeData[ "src" ][ src ]
             for dst in dsts:
@@ -1079,17 +1106,22 @@ class Testcaselib:
                                                                                 routeData[ "group" ], srcEntry[ "Ether" ] )
                 trafficResult = main.topo.sendScapyPackets( sender, receiver, pktFilter, pkt, sIface, dIface,
                                                             expectedResult, maxRetry, True, t3Cmd )
-                utilities.assert_equals( expect=main.TRUE,
-                                         actual=trafficResult,
-                                         onpass="{} to {}: Pass".format( srcEntry[ "host" ], dstEntry[ "host" ] ),
-                                         onfail="{} to {}: Fail".format( srcEntry[ "host" ], dstEntry[ "host" ] ) )
-                if skipOnFail and trafficResult != main.TRUE:
-                    Testcaselib.saveOnosDiagnostics( main )
-                    Testcaselib.cleanup( main, copyKarafLog=False )
-                    main.skipCase()
+                if not trafficResult:
+                    result = main.FALSE
+                    main.log.warn( "Scapy result from {} to {} is not as expected".format( srcEntry[ "host" ],
+                                                                                           dstEntry[ "host" ] ) )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=result,
+                                 onpass="Verify {} multicast traffic: Pass".format( routeName ),
+                                 onfail="Verify {} multicast traffic: Fail".format( routeName ) )
+        if skipOnFail and trafficResult != main.TRUE:
+            Testcaselib.saveOnosDiagnostics( main )
+            Testcaselib.cleanup( main, copyKarafLog=False )
+            main.skipCase()
 
     @staticmethod
-    def verifyPing( main, srcList, dstList, ipv6=False, expect=True, wait=1, acceptableFailed=0, skipOnFail=True ):
+    def verifyPing( main, srcList, dstList, ipv6=False, expect=True, wait=1,
+                    acceptableFailed=0, skipOnFail=True, stepMsg="Verify Ping" ):
         """
         Verify reachability from each host in srcList to each host in dstList
         """
@@ -1098,32 +1130,47 @@ class Testcaselib:
             main.topo
         except ( NameError, AttributeError ):
             main.topo = Topology()
+        main.step( stepMsg )
         pingResult = main.topo.ping( srcList, dstList, ipv6, expect, wait, acceptableFailed, skipOnFail )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=pingResult,
+                                 onpass="{}: Pass".format( stepMsg ),
+                                 onfail="{}: Fail".format( stepMsg ) )
         if not pingResult and skipOnFail:
             Testcaselib.saveOnosDiagnostics( main )
             Testcaselib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
             main.skipCase()
 
     @staticmethod
-    def verifyHostLocation( main, hostName, locations, ipv6=False, retry=0 ):
+    def verifyHostLocations( main, locationDict, retry=2 ):
         """
         Verify if the specified host is discovered by ONOS on the given locations
         Required:
-            hostName: name of the host. ex. "h1"
-            locations: expected locations of the host. ex. "of:0000000000000005/8"
-                       Could be a string or list
-        Optional:
-            ipv6: Use True for IPv6 only hosts
+            locationDict: a dictionary that maps host names to expected locations.
+                          locations could be a string or a list.
+                          ex. { "h1v4": ["of:0000000000000005/8"] }
         Returns:
             main.TRUE if host is discovered on all locations provided, otherwise main.FALSE
         """
-        main.log.info( "Verify host {} is discovered at {}".format( hostName, locations ) )
-        hostIp = main.Network.getIPAddress( hostName, proto='IPV6' if ipv6 else 'IPV4' )
-        result = utilities.retry( main.Cluster.active( 0 ).CLI.verifyHostLocation,
-                                  main.FALSE,
-                                  args=( hostIp, locations ),
-                                  attempts=retry + 1,
-                                  sleep=10 )
+        main.step( "Verify locations of hosts {}".format( locationDict.keys() ) )
+        result = main.TRUE
+        for hostName, locations in locationDict.items():
+            main.log.info( "Verify host {} is discovered at {}".format( hostName, locations ) )
+            hostIp = main.Network.getIPAddress( hostName, proto='IPV4' )
+            if not hostIp:
+                hostIp = main.Network.getIPAddress( hostName, proto='IPV6' )
+            if not hostIp:
+                main.log.warn( "Failed to find IP address for host {}, skipping location verification".format( hostName ) )
+                result = main.FALSE
+                continue
+            locationResult = utilities.retry( main.Cluster.active( 0 ).CLI.verifyHostLocation,
+                                              main.FALSE,
+                                              args=( hostIp, locations ),
+                                              attempts=retry + 1,
+                                              sleep=10 )
+            if not locationResult:
+                result = main.FALSE
+                main.log.warn( "location verification for host {} failed".format( hostName ) )
         utilities.assert_equals( expect=main.TRUE, actual=result,
-                                 onpass="Location verification for Host {} passed".format( hostName ),
-                                 onfail="Location verification for Host {} failed".format( hostName ) )
+                                 onpass="Location verification passed",
+                                 onfail="Location verification failed" )

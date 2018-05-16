@@ -18,7 +18,7 @@
 #     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Example script:
-# Rscript trendCHO event.csv failure.csv error.csv master 60 /path/to/save/directory/
+# Rscript trendCHO event.csv failure.csv error.csv master 60 168 /path/to/save/directory/
 
 # **********************************************************
 # STEP 1: Data management.
@@ -522,7 +522,7 @@ saveGraph( failedChecksFilename ) # from saveGraph.R
 
 print( "Generating 'errors' graph data." )
 
-yLabel <- ylab( "Errors" )
+yLabel <- ylab( "Warnings/Errors" )
 
 xScaleConfig <- scale_x_continuous( breaks = errors_dataFrame$iterative,
                                     label = errors_dataFrame$timeStamps )

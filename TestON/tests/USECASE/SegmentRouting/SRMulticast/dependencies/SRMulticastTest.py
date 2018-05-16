@@ -146,7 +146,7 @@ def verifyLinkDown( main, link, affectedLinkNum, expectList={ "ipv4": True, "ipv
     if hostsToDiscover:
         main.Network.discoverHosts( hostList=hostsToDiscover )
     if hostLocations:
-        lib.verifyHostLocations( main, hostLocations, retry=5 )
+        lib.verifyHostLocations( main, hostLocations, retry=int( main.params[ "RETRY" ][ "hostDiscovery" ] ) )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 
@@ -156,17 +156,19 @@ def verifyPortDown( main, dpid, port, expectList={ "ipv4": True, "ipv6": True },
     Reenable the port and verify traffic
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    # Disable the port(s)
     main.step( "Disable port {}/{}".format( dpid, port ) )
     main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="disable" )
     time.sleep( 10 )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, expectList[ routeName ] )
-    # Restore the link(s)
+    # Reenable the port(s)
+    main.step( "Enable port {}/{}".format( dpid, port ) )
     main.Cluster.active( 0 ).CLI.portstate( dpid=dpid, port=port, state="enable" )
     if hostsToDiscover:
         main.Network.discoverHosts( hostList=hostsToDiscover )
     if hostLocations:
-        lib.verifyHostLocations( main, hostLocations, retry=5 )
+        lib.verifyHostLocations( main, hostLocations, retry=int( main.params[ "RETRY" ][ "hostDiscovery" ] ) )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 
@@ -184,7 +186,7 @@ def verifySwitchDown( main, switchName, affectedLinkNum, expectList={ "ipv4": Tr
     # Recover the switch(es)
     lib.recoverSwitch( main, switchName, int( main.params[ "TOPO" ][ "switchNum" ] ), int( main.params[ "TOPO" ][ "linkNum" ] ), True if hostsToDiscover else False, hostsToDiscover )
     if hostLocations:
-        lib.verifyHostLocations( main, hostLocations, retry=5 )
+        lib.verifyHostLocations( main, hostLocations, retry=int( main.params[ "RETRY" ][ "hostDiscovery" ] ) )
     for routeName in expectList.keys():
         lib.verifyMulticastTraffic( main, routeName, True )
 

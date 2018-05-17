@@ -43,6 +43,10 @@
         <mcastSleep>5</mcastSleep>
     </timers>
 
+    <RETRY>
+        <hostDiscovery>10</hostDiscovery>
+    </RETRY>
+
     <SCAPY>
         <HOSTNAMES>h3v4,h4v4,h8v4,h10v4,h1v6,h3v6</HOSTNAMES>
     </SCAPY>

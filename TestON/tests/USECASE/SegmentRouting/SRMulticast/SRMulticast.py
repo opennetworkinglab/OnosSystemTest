@@ -215,7 +215,7 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1, 2 ] }, "ipv6": { "src": [ 0 ], "dst": [ 0 ] } }
         setupTest( main, test_idx=103, onosNodes=3 )
         verifyMcastRoutes( main )
-        verifyLinkDown( main, [ "spine103", "spine101" ], 4 )
+        verifyLinkDown( main, [ "spine103", "spine101" ], 2 )
         verifyMcastRemoval( main )
         lib.cleanup( main, copyKarafLog=False )
 

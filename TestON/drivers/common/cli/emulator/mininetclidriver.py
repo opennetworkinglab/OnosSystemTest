@@ -909,9 +909,11 @@ class MininetCliDriver( Emulator ):
         else:
             return main.TRUE
 
-    def moveHost( self, host, oldSw, newSw ):
+    def moveHost( self, host, oldSw, newSw, macAddr=None, prefixLen=None ):
         """
            Moves a host from one switch to another on the fly
+           If macAddr is specified, change MAC address of the host interface
+           to specified MAC address.
            Note: The intf between host and oldSw when detached
                 using detach(), will still show up in the 'net'
                 cmd, because switch.detach() doesn't affect switch.intfs[]
@@ -941,7 +943,10 @@ class MininetCliDriver( Emulator ):
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
 
-                cmd = "px macaddr = hintf.MAC()"
+                if macAddr is None:
+                    cmd = "px macaddr = hintf.MAC()"
+                else:
+                    cmd = 'px macaddr = "%s"' % macAddr
                 print "cmd3= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -960,7 +965,7 @@ class MininetCliDriver( Emulator ):
 
                 # Determine hostintf and Newswitchintf
                 cmd = "px hintf,sintf = " + host + ".connectionsTo(" + newSw +\
-                      ")[0]"
+                      ")[-1]"
                 print "cmd6= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -972,7 +977,8 @@ class MininetCliDriver( Emulator ):
                 self.handle.expect( "mininet>" )
 
                 # Set ipaddress of the host-newSw interface
-                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf)"
+                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf, " \
+                                     "prefixLen = %s )" % str( prefixLen )
                 print "cmd7 = ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -1010,9 +1016,11 @@ class MininetCliDriver( Emulator ):
                 main.log.exception( self.name + ": Uncaught exception!" )
                 return main.FALSE
 
-    def moveHostv6( self, host, oldSw, newSw ):
+    def moveHostv6( self, host, oldSw, newSw, macAddr=None ):
         """
            Moves a host from one switch to another on the fly
+           If macAddr is specified, change MAC address of the host interface
+           to specified MAC address.
            Note: The intf between host and oldSw when detached
                 using detach(), will still show up in the 'net'
                 cmd, because switch.detach() doesn't affect switch.intfs[]
@@ -1043,7 +1051,10 @@ class MininetCliDriver( Emulator ):
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
 
-                cmd = "px macaddr = hintf.MAC()"
+                if macAddr is None:
+                    cmd = "px macaddr = hintf.MAC()"
+                else:
+                    cmd = 'px macaddr = "%s"' % macAddr
                 print "cmd3= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -1062,7 +1073,7 @@ class MininetCliDriver( Emulator ):
 
                 # Determine hostintf and Newswitchintf
                 cmd = "px hintf,sintf = " + host + ".connectionsTo(" + newSw +\
-                      ")[0]"
+                      ")[-1]"
                 print "cmd6= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )

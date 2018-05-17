@@ -1134,3 +1134,27 @@ class SRRouting:
                          int( main.params[ "TOPO" ][ "linkNum" ] ), 3 )
         verify( main )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE651( self, main ):
+        """
+        Move a single-homed host from port A to port B in DAAS-1
+        Test connectivity (expect no failure)
+
+        Repeat with DAAS-2
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Move a single-homed host to another port in the same DAAS" )
+        setupTest( main, test_idx=651, onosNodes=3 )
+        main.Cluster.active( 0 ).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        verify( main )
+
+        h1v4cfg = '{"of:0000000000000001/7" : { "interfaces" : [ { "ips" : [ "10.1.0.254/24" ], "vlan-untagged": 10 } ] } }'
+        lib.moveHost( main, "h1v4", "leaf1", "leaf1", "10.1.0.254", prefixLen=24, cfg=h1v4cfg )
+        verify( main )
+
+        h13v4cfg = '''{"of:0000000000000006/7" : { "interfaces" : [ { "ips" : [ "10.5.20.254/24" ], "vlan-untagged": 20 } ] } }'''
+        lib.moveHost( main, "h13v4", "leaf6", "leaf6", "10.5.20.254", prefixLen=24, cfg=h13v4cfg )
+        verify( main )

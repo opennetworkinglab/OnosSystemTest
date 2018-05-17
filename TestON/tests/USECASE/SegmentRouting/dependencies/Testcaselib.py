@@ -1142,7 +1142,7 @@ class Testcaselib:
                                  actual=result,
                                  onpass="Verify {} multicast traffic: Pass".format( routeName ),
                                  onfail="Verify {} multicast traffic: Fail".format( routeName ) )
-        if skipOnFail and trafficResult != main.TRUE:
+        if skipOnFail and result != main.TRUE:
             Testcaselib.saveOnosDiagnostics( main )
             Testcaselib.cleanup( main, copyKarafLog=False )
             main.skipCase()

@@ -6470,12 +6470,15 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def composeT3Command( self, sAddr, dAddr, ipv6=False, verbose=True ):
+    def composeT3Command( self, sAddr, dAddr, ipv6=False, verbose=True, simple=False ):
         """
         Compose and return t3-troubleshoot cli command for given source and destination addresses
         Options:
             sAddr: IP address of the source host
             dAddr: IP address of the destination host
+            ipv6: True if hosts are IPv6
+            verbose: return verbose t3 output if True
+            simple: compose command for t3-troubleshoot-simple if True
         """
         try:
             # Collect information of both hosts from onos
@@ -6492,21 +6495,25 @@ class OnosCliDriver( CLI ):
                     break
             assert sHost, "Not able to find host with IP {}".format( sAddr )
             cmdStr = "t3-troubleshoot"
+            if simple:
+                cmdStr += "-simple"
             if verbose:
                 cmdStr += " -vv"
-            cmdStr += " -s " + str( sAddr )
-            # TODO: collect t3 for all locations of source host?
-            cmdStr += " -sp " + str( sHost[ "locations" ][ 0 ][ "elementId" ] ) + "/" + str( sHost[ "locations" ][ 0 ][ "port" ] )
-            cmdStr += " -sm " + str( sHost[ "mac" ] )
-            if sHost[ "vlan" ] != "None":
-                cmdStr += " -vid " + sHost[ "vlan" ]
-            cmdStr += " -d " + str( dAddr )
-            netcfg = self.netcfg( args="devices {}".format( sHost[ "locations" ][ 0 ][ "elementId" ] ) )
-            netcfg = json.loads( netcfg )
-            assert netcfg, "Failed to get netcfg"
-            cmdStr += " -dm " + str( netcfg[ "segmentrouting" ][ "routerMac" ] )
             if ipv6:
                 cmdStr += " -et ipv6"
+            if simple:
+                cmdStr += " {}/{} {}/{}".format( sHost[ "mac" ], sHost[ "vlan" ], dHost[ "mac" ], dHost[ "vlan" ] )
+            else:
+                cmdStr += " -s " + str( sAddr )
+                cmdStr += " -sp " + str( sHost[ "locations" ][ 0 ][ "elementId" ] ) + "/" + str( sHost[ "locations" ][ 0 ][ "port" ] )
+                cmdStr += " -sm " + str( sHost[ "mac" ] )
+                if sHost[ "vlan" ] != "None":
+                    cmdStr += " -vid " + sHost[ "vlan" ]
+                cmdStr += " -d " + str( dAddr )
+                netcfg = self.netcfg( args="devices {}".format( sHost[ "locations" ][ 0 ][ "elementId" ] ) )
+                netcfg = json.loads( netcfg )
+                assert netcfg, "Failed to get netcfg"
+                cmdStr += " -dm " + str( netcfg[ "segmentrouting" ][ "routerMac" ] )
             return cmdStr
         except AssertionError:
             main.log.exception( "" )

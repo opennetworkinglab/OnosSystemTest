@@ -228,7 +228,7 @@ class Topology:
                                  onfail="ONOS incorrectly discovered the topology" )
         return topoResults
 
-    def ping( self, srcList, dstList, ipv6=False, expect=True, wait=1, acceptableFailed=0, collectT3=True ):
+    def ping( self, srcList, dstList, ipv6=False, expect=True, wait=1, acceptableFailed=0, collectT3=True, t3Simple=False ):
         """
         Description:
             Ping from every host in srcList to every host in dstList and
@@ -241,6 +241,7 @@ class Topology:
             acceptableFailed: maximum number of failed pings acceptable for
                               each src-dst host pair
             collectT3: save t3-troubleshoot output for src and dst host that failed to ping
+            t3Simple: use t3-troubleshoot-simple command when collecting t3 output
         Returns:
             main.TRUE if all ping results are expected, otherwise main.FALSE
         """
@@ -291,7 +292,7 @@ class Topology:
                 srcIp = unexpectedPing[ 0 ]
                 dstIp = unexpectedPing[ 1 ]
                 main.log.debug( "Collecting t3 with source {} and destination {}".format( srcIp, dstIp ) )
-                cmd = main.Cluster.active( 0 ).CLI.composeT3Command( srcIp, dstIp, ipv6 )
+                cmd = main.Cluster.active( 0 ).CLI.composeT3Command( srcIp, dstIp, ipv6, True, t3Simple )
                 main.log.debug( "t3 command: {}".format( cmd ) )
                 if cmd:
                     main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, cmd, main.logdir,

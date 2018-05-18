@@ -1159,7 +1159,7 @@ class Testcaselib:
         except ( NameError, AttributeError ):
             main.topo = Topology()
         main.step( stepMsg )
-        pingResult = main.topo.ping( srcList, dstList, ipv6, expect, wait, acceptableFailed, skipOnFail )
+        pingResult = main.topo.ping( srcList, dstList, ipv6, expect, wait, acceptableFailed, skipOnFail, True )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=pingResult,
                                  onpass="{}: Pass".format( stepMsg ),

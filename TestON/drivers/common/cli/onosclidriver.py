@@ -2943,16 +2943,15 @@ class OnosCliDriver( CLI ):
         main.log.debug( "found {} groups".format( count ) )
         return count if ((count > expectedGroupCount) if (comparison == 0) else (count == expectedGroupCount)) else main.FALSE
 
-    def getGroups( self, deviceId, group_type="any"):
+    def getGroups( self, deviceId, groupType="any" ):
         """
         Retrieve groups from a specific device.
-        group_type = Type of group
+        deviceId: Id of the device from which we retrieve groups
+        groupType: Type of group
         """
-
         try:
-            group_cmd = "groups -t {0} any {1}".format(group_type, deviceId)
-            self.sendline(group_cmd, showResponse=False)
-            handle = self.sendline( group_cmd )
+            groupCmd = "groups -t {0} any {1}".format( groupType, deviceId )
+            handle = self.sendline( groupCmd )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle

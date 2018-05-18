@@ -527,6 +527,59 @@ class SRRouting:
         verify( main, disconnected=False, external=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
+    def CASE602( self, main ):
+        """"
+        Take down a leaf switch that is paired and has a dual homed host
+        Restore the leaf switch
+        Repeat for various dual homed hosts and paired switches
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Drop a leaf switch that is paired and has a dual homed host." )
+        setupTest( main, test_idx=602, onosNodes=3 )
+        verify( main, disconnected=False )
+        # Kill leaf-2
+        lib.killSwitch( main, "leaf2", 9, 38 )
+        hostLocations = { "h4v6": "of:0000000000000003/6",
+                          "h5v6": "of:0000000000000003/7",
+                          "h4v4": "of:0000000000000003/10",
+                          "h5v4": "of:0000000000000003/11" }
+        lib.verifyHostLocations( main, hostLocations )
+        main.disconnectedIpv4Hosts = [ "h3v4" ]
+        main.disconnectedIpv6Hosts = [ "h3v6" ]
+        verify( main )
+        # Recover leaf-2
+        lib.recoverSwitch( main, "leaf2", 10, 48, rediscoverHosts=True)
+        hostLocations = { "h4v6": [ "of:0000000000000002/7", "of:0000000000000003/6" ],
+                          "h5v6": [ "of:0000000000000002/8", "of:0000000000000003/7" ],
+                          "h4v4": [ "of:0000000000000002/10", "of:0000000000000003/10" ],
+                          "h5v4": [ "of:0000000000000002/11", "of:0000000000000003/11" ] }
+        lib.verifyHostLocations( main, hostLocations )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verify( main, disconnected=False )
+        # Kill leaf-4
+        lib.killSwitch( main, "leaf4", 9, 38 )
+        hostLocations = { "h9v6": "of:0000000000000005/6",
+                          "h10v6": "of:0000000000000005/7",
+                          "h9v4": "of:0000000000000005/9",
+                          "h10v4": "of:0000000000000005/10" }
+        lib.verifyHostLocations( main, hostLocations )
+        main.disconnectedIpv4Hosts = [ "h8v4" ]
+        main.disconnectedIpv6Hosts = [ "h8v6" ]
+        verify( main )
+        # Recover leaf-4
+        lib.recoverSwitch( main, "leaf4", 10, 48, rediscoverHosts=True)
+        hostLocations = { "h9v6": [ "of:0000000000000004/7", "of:0000000000000005/6" ],
+                          "h10v6": [ "of:0000000000000004/8", "of:0000000000000005/7" ],
+                          "h9v4": [ "of:0000000000000004/10", "of:0000000000000005/9" ],
+                          "h10v4": [ "of:0000000000000004/11", "of:0000000000000005/10" ] }
+        lib.verifyHostLocations( main, hostLocations )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verify( main, disconnected=False )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
     def CASE603( self, main ):
         """"
         Drop HAGG-1 device and test connectivity.
@@ -745,15 +798,61 @@ class SRRouting:
         main.case( "Take down one of double links towards the spine" )
         setupTest( main, test_idx=620, onosNodes=3 )
         verify( main, disconnected=False )
+        groupBuckets = { "of:0000000000000002": { "10.1.0.0/24": 4, "10.1.10.0/24": 4,
+                                                  "10.2.0.0/24": 1, "10.2.30.0/24": 1, "10.2.20.0/24": 1,
+                                                  "10.2.10.0/24": 4, "10.2.40.0/24": 4,
+                                                  "10.3.0.0/24": 4, "10.3.10.0/24": 8, "10.3.30.0/24": 8,
+                                                  "10.3.20.0/24": 4, "10.5.10.0/24": 4, "10.5.20.0/24": 4 },
+                         "of:0000000000000003": { "10.1.0.0/24": 4, "10.1.10.0/24": 4,
+                                                  "10.2.0.0/24": 4, "10.2.30.0/24": 1, "10.2.20.0/24": 1,
+                                                  "10.2.10.0/24": 1, "10.2.40.0/24": 1,
+                                                  "10.3.0.0/24": 4, "10.3.10.0/24": 8, "10.3.30.0/24": 8,
+                                                  "10.3.20.0/24": 4, "10.5.10.0/24": 4, "10.5.20.0/24": 4 },
+                         "of:0000000000000004": { "10.1.0.0/24": 4, "10.1.10.0/24": 4,
+                                                  "10.2.0.0/24": 4, "10.2.30.0/24": 8, "10.2.20.0/24": 8,
+                                                  "10.2.10.0/24": 4, "10.2.40.0/24": 4,
+                                                  "10.3.0.0/24": 1, "10.3.10.0/24": 1, "10.3.30.0/24": 1,
+                                                  "10.3.20.0/24": 4, "10.5.10.0/24": 4, "10.5.20.0/24": 4 },
+                         "of:0000000000000005": { "10.1.0.0/24": 4, "10.1.10.0/24": 4,
+                                                  "10.2.0.0/24": 4, "10.2.30.0/24": 8, "10.2.20.0/24": 8,
+                                                  "10.2.10.0/24": 4, "10.2.40.0/24": 4,
+                                                  "10.3.0.0/24": 4, "10.3.10.0/24": 1, "10.3.30.0/24": 1,
+                                                  "10.3.20.0/24": 1, "10.5.10.0/24": 4, "10.5.20.0/24": 4 } }
+        for switch, subnets in groupBuckets.items():
+            lib.checkGroupsForBuckets( main, switch, subnets )
+        # Take down one of double links
         portsToDisable = [ [ "of:0000000000000002", 1 ], [ "of:0000000000000002", 3 ],
                            [ "of:0000000000000003", 1 ], [ "of:0000000000000003", 3 ],
                            [ "of:0000000000000004", 1 ], [ "of:0000000000000004", 3 ],
                            [ "of:0000000000000005", 1 ], [ "of:0000000000000005", 3 ] ]
         lib.disablePortBatch( main, portsToDisable, 10, 32 )
-        # TODO: check buckets in groups
+        groupBucketsNew = { "of:0000000000000002": { "10.1.0.0/24": 2, "10.1.10.0/24": 2,
+                                                     "10.2.0.0/24": 1, "10.2.30.0/24": 1, "10.2.20.0/24": 1,
+                                                     "10.2.10.0/24": 2, "10.2.40.0/24": 2,
+                                                     "10.3.0.0/24": 2, "10.3.10.0/24": 4, "10.3.30.0/24": 4,
+                                                     "10.3.20.0/24": 2, "10.5.10.0/24": 2, "10.5.20.0/24": 2 },
+                            "of:0000000000000003": { "10.1.0.0/24": 2, "10.1.10.0/24": 2,
+                                                     "10.2.0.0/24": 2, "10.2.30.0/24": 1, "10.2.20.0/24": 1,
+                                                     "10.2.10.0/24": 1, "10.2.40.0/24": 1,
+                                                     "10.3.0.0/24": 2, "10.3.10.0/24": 4, "10.3.30.0/24": 4,
+                                                     "10.3.20.0/24": 2, "10.5.10.0/24": 2, "10.5.20.0/24": 2 },
+                            "of:0000000000000004": { "10.1.0.0/24": 2, "10.1.10.0/24": 2,
+                                                     "10.2.0.0/24": 2, "10.2.30.0/24": 4, "10.2.20.0/24": 4,
+                                                     "10.2.10.0/24": 2, "10.2.40.0/24": 2,
+                                                     "10.3.0.0/24": 1, "10.3.10.0/24": 1, "10.3.30.0/24": 1,
+                                                     "10.3.20.0/24": 2, "10.5.10.0/24": 2, "10.5.20.0/24": 2 },
+                            "of:0000000000000005": { "10.1.0.0/24": 2, "10.1.10.0/24": 2,
+                                                     "10.2.0.0/24": 2, "10.2.30.0/24": 4, "10.2.20.0/24": 4,
+                                                     "10.2.10.0/24": 2, "10.2.40.0/24": 2,
+                                                     "10.3.0.0/24": 2, "10.3.10.0/24": 1, "10.3.30.0/24": 1,
+                                                     "10.3.20.0/24": 1, "10.5.10.0/24": 2, "10.5.20.0/24": 2 } }
+        for switch, subnets in groupBucketsNew.items():
+            lib.checkGroupsForBuckets( main, switch, subnets )
         verify( main, disconnected=False )
+        # Bring up the links
         lib.enablePortBatch( main, portsToDisable, 10, 48 )
-        # TODO: check buckets in groups
+        for switch, subnets in groupBuckets.items():
+            lib.checkGroupsForBuckets( main, switch, subnets )
         verify( main, disconnected=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
@@ -818,7 +917,6 @@ class SRRouting:
         main.case( "Take down all uplinks from a paired leaf switch" )
         setupTest( main, test_idx=622, onosNodes=3 )
         verify( main, disconnected=False )
-        ctrl = main.Cluster.active( 0 )
         hostLocations = { "h4v6": [ "of:0000000000000002/7", "of:0000000000000003/6" ],
                           "h5v6": [ "of:0000000000000002/8", "of:0000000000000003/7" ],
                           "h4v4": [ "of:0000000000000002/10", "of:0000000000000003/10" ],
@@ -827,6 +925,8 @@ class SRRouting:
         linksToRemove = [ ["spine101", "leaf2"], ["spine102", "leaf2"] ]
         lib.killLinkBatch( main, linksToRemove, 40, 10 )
         # TODO: more verifications are required
+        main.disconnectedIpv4Hosts = [ "h3v4" ]
+        main.disconnectedIpv6Hosts = [ "h3v6" ]
         verify( main )
         hostLocations = { "h4v6": "of:0000000000000003/6",
                           "h5v6": "of:0000000000000003/7",
@@ -834,7 +934,9 @@ class SRRouting:
                           "h5v4": "of:0000000000000003/11" }
         lib.verifyHostLocations( main, hostLocations )
         lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
-        verify( main )
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        verify( main, disconnected=False )
         hostLocations = { "h4v6": [ "of:0000000000000002/7", "of:0000000000000003/6" ],
                           "h5v6": [ "of:0000000000000002/8", "of:0000000000000003/7" ],
                           "h4v4": [ "of:0000000000000002/10", "of:0000000000000003/10" ],

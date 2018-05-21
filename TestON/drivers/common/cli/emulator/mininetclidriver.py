@@ -4049,6 +4049,91 @@ class MininetCliDriver( Emulator ):
             main.log.warn( "Interface status should be up or down!" )
             return main.FALSE
 
+    def moveDualHomedHost( self, host, oldSw, oldPairSw, newSw, newPairSw,
+                           macAddr=None, prefixLen=None, bondedName='bond1' ):
+        """
+        Moves a dual-homed host from one switch-pair to another pair on the fly
+        If macAddr is specified, change MAC address of the bonded host interface
+        to specified MAC address.
+        Assumes that the host has two interfaces (eth0 and eth1) originally.
+        """
+
+        bond1 = "%s-%s" % ( host, bondedName )
+        newIntf = host + '-eth2'
+        newIntfPair = host + '-eth3'
+        commands = [
+            # Bring link between oldSw-host down
+            "py net.configLinkStatus('" + oldSw + "'," + "'" + host + "'," + "'down')",
+            # Bring link between oldPairSw-host down
+            "py net.configLinkStatus('" + oldPairSw + "'," + "'" + host + "'," + "'down')",
+            # Determine hostintf and Oldswitchintf
+            "px hintf,sintf = " + host + ".connectionsTo(" + oldSw + ")[0]",
+            # Determine ip and mac address of the host-oldSw interface
+            "px ipaddr = hintf.IP()",
+            "px macaddr = hintf.MAC()" if macAddr is None else 'px macaddr = "%s"' % macAddr,
+            # Detach interface between oldSw-host
+            "px " + oldSw + ".detach( sintf )",
+            # Determine hostintf and Oldpairswitchintf
+            "px sintfpair,hintfpair = " + oldPairSw + ".connectionsTo(" + host + ")[0]",
+            # Detach interface between oldPairSw-host
+            "px " + oldPairSw + ".detach( sintfpair )",
+            # Add link between host-newSw
+            "py net.addLink(" + host + "," + newSw + ", 2)",
+            # Add link between host-newPairSw
+            "py net.addLink(" + host + "," + newPairSw + ")",
+            # Determine hostintf and Newswitchintf
+            "px hintf,sintf = " + host + ".connectionsTo(" + newSw + ")[-1]",
+            # Determine hostintf and NewPairswitchintf
+            "px hintfpair,sintfpair = " + host + ".connectionsTo(" + newPairSw + ")[-1]",
+            # Attach interface between newSw-host
+            "px " + newSw + ".attach( sintf )",
+            # Attach interface between newPairSw-host
+            "px " + newPairSw + ".attach( sintfpair )",
+            # Bond two interfaces
+            host + ' ip link add %s type bond' % bond1,
+            host + ' ip link set %s down' % newIntf,
+            host + ' ip link set %s down' % newIntfPair,
+            host + ' ip link set %s master %s' % ( newIntf, bond1 ),
+            host + ' ip link set %s master %s' % ( newIntfPair, bond1 ),
+            host + ' ip addr flush dev %s' % newIntf,
+            host + ' ip addr flush dev %s' % newIntfPair,
+            host + ' ip link set %s up' % bond1,
+            "px lowestIntf = min( [ hintf, hintfpair ] )",
+            "px highestIntf = max( [ hintf, hintfpair ] )",
+            "px lowestIntf.name = '" + bond1 + "'",
+            "px " + host + ".nameToIntf['" + bond1 + "'] = lowestIntf",
+            "px del " + host + ".intfs[ " + host + ".ports[ highestIntf ] ]",
+            "px del " + host + ".ports[ highestIntf ]",
+            # Set ipaddress of the host-newSw interface
+            "px " + host + ".setIP( ip = ipaddr, intf = lowestIntf " +
+            ( ", prefixLen = %s )" % str( prefixLen ) if prefixLen is not None else " )" ),
+            # Set macaddress of the host-newSw interface
+            "px " + host + ".setMAC( mac = macaddr, intf = lowestIntf)",
+            "net",
+            # Determine ipaddress of the bonded host interface
+            host + " ifconfig",
+        ]
+
+        if self.handle:
+            try:
+                for cmd in commands:
+                    print "cmd= ", cmd
+                    self.handle.sendline( cmd )
+                    self.handle.expect( "mininet>" )
+                    main.log.info( "====> %s ", self.handle.before )
+                return main.TRUE
+
+            except pexpect.TIMEOUT:
+                main.log.error( self.name + ": TIMEOUT exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                main.cleanAndExit()
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                return main.FALSE
+            except Exception:
+                main.log.exception( self.name + ": Uncaught exception!" )
+                return main.FALSE
 
 if __name__ != "__main__":
     sys.modules[ __name__ ] = MininetCliDriver()

@@ -1277,3 +1277,53 @@ class Testcaselib:
                         del main.expectedHosts[ "onos" ][ hostName ]
                         main.expectedHosts[ "onos" ][ "{}/{}".format( macAddr, vlan ) ] = ip
                         break
+
+    @staticmethod
+    def moveDualHomedHost( main, hostName, srcSw, srcPairSw, dstSw, dstPairSw, gw,
+                           macAddr=None, prefixLen=24, cfg='', ipv6=False ):
+        """
+        Move specified dual-homed host from srcSw-srcPairSw to dstSw-dstPairSw.
+        If srcSw-srcPairSw and dstSw-dstPairSw are same, the host will be moved from current port
+        to next available port.
+        Required:
+            hostName: name of the host. e.g., "h1"
+            srcSw: name of the switch that the host is attached to. e.g., "leaf1"
+            srcPairSw: name of the paired-switch that the host is attached to. e.g., "leaf2"
+            dstSw: name of the switch that the host will be moved to. e.g., "leaf1"
+            dstPairSw: name of the paired-switch that the host will be moved to. e.g., "leaf2"
+            gw: ip address of the gateway of the new location
+        Optional:
+            macAddr: if specified, change MAC address of the host to the specified MAC address.
+            prefixLen: prefix length
+            cfg: port configurations as JSON string
+            ipv6: Use True to move IPv6 host (IPv6 is not supported now.)
+        """
+        # TODO: support IPv6 hosts and vlan-tagged hosts.
+        if not hasattr( main, 'Mininet1' ):
+            main.log.warn( "moveDualHomedHost is supposed to be used only in Mininet." )
+            return
+
+        if ipv6:
+            main.log.warn( "Moving IPv6 host is not implemented yet." )
+            return
+
+        main.Mininet1.moveDualHomedHost( hostName, srcSw, srcPairSw, dstSw, dstPairSw,
+                                         macAddr=macAddr, prefixLen=prefixLen )
+
+        main.Mininet1.changeDefaultGateway( hostName, gw )
+
+        if cfg:
+            main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
+                                                     subjectClass="ports" )
+
+        main.Mininet1.discoverHosts( [ hostName, ] )
+
+        # Update expectedHost when MAC address is changed.
+        if macAddr is not None:
+            ipAddr = main.expectedHosts[ "network" ][ hostName ]
+            if ipAddr is not None:
+                for hostName, ip in main.expectedHosts[ "onos" ].items():
+                    if ip == ipAddr:
+                        vlan = hostName.split( "/" )[ -1 ]
+                        del main.expectedHosts[ "onos" ][ hostName ]
+                        main.expectedHosts[ "onos" ][ "{}/{}".format( macAddr, vlan ) ] = ip

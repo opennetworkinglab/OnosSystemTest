@@ -264,10 +264,11 @@ class Topology:
             pool = []
             for src in srcList:
                 srcIp = srcIpList[ src ]
-                if srcIp == dstIp:
+                if not srcIp or not dstIp:
+                    if expect:
+                        unexpectedPings.append( [ src, dst, "no IP" ] )
                     continue
-                if expect and ( not srcIp or not dstIp ):
-                    unexpectedPings.append( [ src, dst, "no IP" ] )
+                if srcIp == dstIp:
                     continue
                 hostHandle = getattr( main, src )
                 thread = main.Thread( target=utilities.retry,

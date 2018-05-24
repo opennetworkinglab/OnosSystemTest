@@ -538,10 +538,16 @@ class SRRouting:
         main.case( "Drop a leaf switch that is paired and has a dual homed host." )
         setupTest( main, test_idx=602, onosNodes=3 )
         verify( main, disconnected=False )
+        # We need to disable ports toward dual-homed hosts before killing the leaf switch
+        portsToDisable = [ [ "of:0000000000000002", 7 ], [ "of:0000000000000002", 8 ],
+                           [ "of:0000000000000002", 10 ], [ "of:0000000000000002", 11 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48, 5 )
         # Kill leaf-2
         lib.killSwitch( main, "leaf2", 9, 38 )
+        # FIXME: the downed interfaces on h4v6 and h5v6 won't disappear because they are
+        # configured by netcfg
         hostLocations = { "h4v6": "of:0000000000000003/6",
-                          "h5v6": "of:0000000000000003/7",
+                          "h5v6": [ "of:0000000000000002/8", "of:0000000000000003/7" ],
                           "h4v4": "of:0000000000000003/10",
                           "h5v4": "of:0000000000000003/11" }
         lib.verifyHostLocations( main, hostLocations )
@@ -549,7 +555,7 @@ class SRRouting:
         main.disconnectedIpv6Hosts = [ "h3v6" ]
         verify( main )
         # Recover leaf-2
-        lib.recoverSwitch( main, "leaf2", 10, 48, rediscoverHosts=True)
+        lib.recoverSwitch( main, "leaf2", 10, 48, rediscoverHosts=True )
         hostLocations = { "h4v6": [ "of:0000000000000002/7", "of:0000000000000003/6" ],
                           "h5v6": [ "of:0000000000000002/8", "of:0000000000000003/7" ],
                           "h4v4": [ "of:0000000000000002/10", "of:0000000000000003/10" ],
@@ -558,10 +564,14 @@ class SRRouting:
         main.disconnectedIpv4Hosts = []
         main.disconnectedIpv6Hosts = []
         verify( main, disconnected=False )
+        # We need to disable ports toward dual-homed hosts before killing the leaf switch
+        portsToDisable = [ [ "of:0000000000000004", 7 ], [ "of:0000000000000004", 8 ],
+                           [ "of:0000000000000004", 10 ], [ "of:0000000000000004", 11 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48, 5 )
         # Kill leaf-4
         lib.killSwitch( main, "leaf4", 9, 38 )
-        hostLocations = { "h9v6": "of:0000000000000005/6",
-                          "h10v6": "of:0000000000000005/7",
+        hostLocations = { "h9v6": [ "of:0000000000000004/7", "of:0000000000000005/6" ],
+                          "h10v6": [ "of:0000000000000004/8", "of:0000000000000005/7" ],
                           "h9v4": "of:0000000000000005/9",
                           "h10v4": "of:0000000000000005/10" }
         lib.verifyHostLocations( main, hostLocations )
@@ -569,7 +579,7 @@ class SRRouting:
         main.disconnectedIpv6Hosts = [ "h8v6" ]
         verify( main )
         # Recover leaf-4
-        lib.recoverSwitch( main, "leaf4", 10, 48, rediscoverHosts=True)
+        lib.recoverSwitch( main, "leaf4", 10, 48, rediscoverHosts=True )
         hostLocations = { "h9v6": [ "of:0000000000000004/7", "of:0000000000000005/6" ],
                           "h10v6": [ "of:0000000000000004/8", "of:0000000000000005/7" ],
                           "h9v4": [ "of:0000000000000004/10", "of:0000000000000005/9" ],
@@ -929,7 +939,7 @@ class SRRouting:
         main.disconnectedIpv6Hosts = [ "h3v6" ]
         verify( main )
         hostLocations = { "h4v6": "of:0000000000000003/6",
-                          "h5v6": "of:0000000000000003/7",
+                          "h5v6": [ "of:0000000000000002/8", "of:0000000000000003/7" ],
                           "h4v4": "of:0000000000000003/10",
                           "h5v4": "of:0000000000000003/11" }
         lib.verifyHostLocations( main, hostLocations )
@@ -988,16 +998,20 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Drop an ONOS instance and switch(es) at the same time" )
         caseDict = { 'A': { 'switches': "spine101",
+                            'ports': [],
                             'disconnectedV4': [],
                             'disconnectedV6': [],
                             'expectedSwitches': 9,
                             'expectedLinks': 30 },
                      'B': { 'switches': "spine103",
+                            'ports': [],
                             'disconnectedV4': [],
                             'disconnectedV6': [],
                             'expectedSwitches': 9,
                             'expectedLinks': 42 },
                      'C': { 'switches': "leaf2",
+                            'ports': [ [ "of:0000000000000002", 7 ], [ "of:0000000000000002", 8 ],
+                                       [ "of:0000000000000002", 10 ], [ "of:0000000000000002", 11 ] ],
                             'disconnectedV4': [ "h3v4" ],
                             'disconnectedV6': [ "h3v6" ],
                             'expectedSwitches': 9,
@@ -1008,6 +1022,7 @@ class SRRouting:
         cases = sorted( caseDict.keys() )
         for case in cases:
             switches = caseDict[ case ][ 'switches' ]
+            ports = caseDict[ case ][ 'ports' ]
             expectedSwitches = caseDict[ case ][ 'expectedSwitches' ]
             expectedLinks = caseDict[ case ][ 'expectedLinks' ]
             main.step( "\n640{}: Drop ONOS{} and switch(es) {} at the same time".format( case,
@@ -1028,6 +1043,8 @@ class SRRouting:
                                      onfail="Failed to kill ONOS node" )
             instance.active = False
             main.Cluster.reset()
+            if ports:
+                lib.disablePortBatch( main, ports, 10, 48, 0 )
             # TODO: Remove sleeps from the concurrent events
             lib.killSwitch( main, switches, expectedSwitches, expectedLinks )
             main.disconnectedIpv4Hosts = caseDict[ case ][ 'disconnectedV4' ]
@@ -1081,16 +1098,20 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Drop an ONOS instance and recover switch(es) at the same time" )
         caseDict = { 'A': { 'switches': "spine101",
+                            'ports': [],
                             'disconnectedV4': [],
                             'disconnectedV6': [],
                             'expectedSwitches': 9,
                             'expectedLinks': 30 },
                      'B': { 'switches': "spine103",
+                            'ports': [],
                             'disconnectedV4': [],
                             'disconnectedV6': [],
                             'expectedSwitches': 9,
                             'expectedLinks': 42 },
                      'C': { 'switches': "leaf2",
+                            'ports': [ [ "of:0000000000000002", 7 ], [ "of:0000000000000002", 8 ],
+                                       [ "of:0000000000000002", 10 ], [ "of:0000000000000002", 11 ] ],
                             'disconnectedV4': [ "h3v4" ],
                             'disconnectedV6': [ "h3v6" ],
                             'expectedSwitches': 9,
@@ -1101,6 +1122,7 @@ class SRRouting:
         cases = sorted( caseDict.keys() )
         for case in cases:
             switches = caseDict[ case ][ 'switches' ]
+            ports = caseDict[ case ][ 'ports' ]
             expectedSwitches = caseDict[ case ][ 'expectedSwitches' ]
             expectedLinks = caseDict[ case ][ 'expectedLinks' ]
             main.step( "\n641{}: Drop ONOS{} and recover switch(es) {} at the same time".format( case,
@@ -1113,6 +1135,8 @@ class SRRouting:
             instance = main.Cluster.controllers[ nodeIndex ]
             verify( main, disconnected=False, external=False )
             # Drop the switch to setup scenario
+            if ports:
+                lib.disablePortBatch( main, ports, 10, 48, 5 )
             lib.killSwitch( main, switches, expectedSwitches, expectedLinks )
             main.disconnectedIpv4Hosts = caseDict[ case ][ 'disconnectedV4' ]
             main.disconnectedIpv6Hosts = caseDict[ case ][ 'disconnectedV6' ]

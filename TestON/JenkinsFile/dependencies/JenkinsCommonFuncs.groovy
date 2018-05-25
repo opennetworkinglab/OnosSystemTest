@@ -87,7 +87,11 @@ def fabricOn( branch ){
   // gets the fabric machines with the branch of onos.
   // branch : master, 1.12, 1.13...
 
-  return branch.reverse().take(4).reverse() == "1.12" ? '3' : '2'
+  switch( branch.reverse().take(4).reverse() ) {
+    case "master": return "4"
+    case "1.13": return "2"
+    case "1.12": return "3"
+  }
 }
 def printType(){
   // print the test type and test machine that was initialized.

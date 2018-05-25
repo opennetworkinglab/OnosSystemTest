@@ -34,7 +34,7 @@ previous_version = "1.13"
 before_previous_version = "1.12"
 
 // Function that will initialize the configuration of the Fabric.
-funcs.initializeTrend( "Fabric" );
+funcs.initializeTrend( "Fabric" )
 funcs.initialize( "Fabric" )
 triggerFuncs.init( funcs )
 
@@ -42,13 +42,11 @@ triggerFuncs.init( funcs )
 // It will only be used by the VM_BMJenkinsTrigger not in here.
 wikiContents = ""
 
-// Having two different SR and SR1 to allow current_version and previous_version to be run on same machine.
 testcases = [
     "FUNC" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
     "HA" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
     "SCPF" : [ tests : "" , nodeName : "BM", wikiContent : "" ],
-    "SR" : [ tests : "", nodeName : [ "Fabric2", "Fabric3" ], wikiContent : "" ],
-    "SR1" : [ tests : "", nodeName : [ "Fabric2", "Fabric3" ], wikiContent : "" ],
+    "SR" : [ tests : "", nodeName : [ "Fabric2", "Fabric3", "Fabric4" ], wikiContent : "" ],
     "USECASE" : [ tests : "" , nodeName : "BM", wikiContent : "" ]
 ]
 
@@ -119,7 +117,7 @@ if( !manually_run ){
         SR_choices += adder( "SR", "extra_B", true )
     }
     // removing last comma added at the end of the last test name.
-    SR_choices =  triggerFuncs.lastCommaRemover( SR_choices )
+    SR_choices = triggerFuncs.lastCommaRemover( SR_choices )
 }
 
 
@@ -131,7 +129,6 @@ if ( manually_run ){
 }else{
     // set the list of the tests to run.
     testcases[ "SR" ][ "tests" ] = SR_choices
-    testcases[ "SR1" ][ "tests" ] = SR_choices
     println "Defaulting to " + day + " tests:"
 }
 
@@ -141,7 +138,8 @@ triggerFuncs.print_tests( testcases )
 // This will hold the block of code to be run.
 def runTest = [
     "Fabric2" : [:],
-    "Fabric3" : [:]
+    "Fabric3" : [:],
+    "Fabric4" : [:]
 ]
 if ( manually_run ){
     // for manual run situation.
@@ -153,8 +151,8 @@ if ( manually_run ){
         }
     }
 }else{
-    // for automated situation, it will save current and previous version to Fabric2 and before_previous_version to Fabric3.
-    runTest[ "Fabric2" ][ "SR1" ] = triggerFuncs.trigger_pipeline( current_version, testcases[ "SR1" ][ "tests" ], testcases[ "SR1" ][ "nodeName" ][ 0 ], "SR", manually_run, onos_tag )
+    // for automated situation, it will save current version to Fabric4, previous version to Fabric2 and before_previous_version to Fabric3.
+    runTest[ "Fabric4" ][ "SR" ] = triggerFuncs.trigger_pipeline( current_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 2 ], "SR", manually_run, onos_tag )
     runTest[ "Fabric2" ][ "SR" ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 0 ], "SR", manually_run, onos_tag )
     runTest[ "Fabric3" ][ "SR" ] = triggerFuncs.trigger_pipeline( before_previous_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 1 ], "SR", manually_run, onos_tag )
 }
@@ -162,28 +160,34 @@ if ( manually_run ){
 def finalList = [:]
 
 // It will run each category of test to run sequentially on each branch.
-// In our case, it will run SR1 first then SR on Fabric2 and just SR on Fabric3
 finalList[ "Fabric2" ] = triggerFuncs.runTestSeq( runTest[ "Fabric2" ] )
 finalList[ "Fabric3" ] = triggerFuncs.runTestSeq( runTest[ "Fabric3" ] )
+finalList[ "Fabric4" ] = triggerFuncs.runTestSeq( runTest[ "Fabric4" ] )
 
-// It will then run Fabric2 and Fabric3 to be run concurrently.
+// It will then run Fabric2, Fabric3 and Fabric4 concurrently.
 // In our case,
-//                      ----> Fabric2 : current -> previous
-// This pipeline ----->
-//                      ----> Fabric3 : before_previous
+//                      ----> Fabric4 : current_version
+// This pipeline -----> ----> Fabric2 : previous_version
+//                      ----> Fabric3 : before_previous_version
 parallel finalList
 
 // Way we are generating pie graphs. not supported in SegmentRouting yet.
 /*
 if ( !manually_run ){
+    funcs.generateStatGraph( "TestStation-Fabric4s",
+                             funcs.branchWithPrefix( "current_version" ),
+                             AllTheTests,
+                             stat_graph_generator_file,
+                             pie_graph_generator_file,
+                             graph_saved_directory )
     funcs.generateStatGraph( "TestStation-Fabric2s",
-                             funcs.branchWithPrefix( "master" ),
+                             funcs.branchWithPrefix( "previous_version" ),
                              AllTheTests,
                              stat_graph_generator_file,
                              pie_graph_generator_file,
                              graph_saved_directory )
     funcs.generateStatGraph( "TestStation-Fabric3s",
-                             funcs.branchWithPrefix( "1.12" ),
+                             funcs.branchWithPrefix( "before_previous_version" ),
                              AllTheTests,
                              stat_graph_generator_file,
                              pie_graph_generator_file,
@@ -206,7 +210,11 @@ def adder( testCat, set, getResult ){
 }
 
 // check which node is on.
-// 1.12 runs on Fabric3 and rest on 1.13 and master
 def nodeOn( branch ){
-    return branch == "1.12" ? 1 : 0;
+    switch( branch ) {
+        case current_version: return 2
+        case previous_version: return 0
+        case before_previous_version: return 1
+        default: return 2
+    }
 }

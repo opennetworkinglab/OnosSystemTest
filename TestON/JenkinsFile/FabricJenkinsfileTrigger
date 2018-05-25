@@ -175,19 +175,19 @@ parallel finalList
 /*
 if ( !manually_run ){
     funcs.generateStatGraph( "TestStation-Fabric4s",
-                             funcs.branchWithPrefix( "current_version" ),
+                             funcs.branchWithPrefix( current_version ),
                              AllTheTests,
                              stat_graph_generator_file,
                              pie_graph_generator_file,
                              graph_saved_directory )
     funcs.generateStatGraph( "TestStation-Fabric2s",
-                             funcs.branchWithPrefix( "previous_version" ),
+                             funcs.branchWithPrefix( previous_version ),
                              AllTheTests,
                              stat_graph_generator_file,
                              pie_graph_generator_file,
                              graph_saved_directory )
     funcs.generateStatGraph( "TestStation-Fabric3s",
-                             funcs.branchWithPrefix( "before_previous_version" ),
+                             funcs.branchWithPrefix( before_previous_version ),
                              AllTheTests,
                              stat_graph_generator_file,
                              pie_graph_generator_file,

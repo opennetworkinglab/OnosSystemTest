@@ -86,11 +86,12 @@ def additionalInitForSR( branch ){
 def fabricOn( branch ){
   // gets the fabric machines with the branch of onos.
   // branch : master, 1.12, 1.13...
-
+  // branch.reverse().take(4).reverse() will get last 4 characters of the string.
   switch( branch.reverse().take(4).reverse() ) {
-    case "master": return "4"
+    case "ster": return "4"
     case "1.13": return "2"
     case "1.12": return "3"
+    default: return "4"
   }
 }
 def printType(){

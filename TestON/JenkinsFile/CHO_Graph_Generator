@@ -42,16 +42,16 @@ scriptDir = fileRelated.CHOScriptDir
 // create a bash script that will generate the graph
 graphScript = generateGraphScript( branchList )
 
-stage( 'Generating-Graph' ){
+stage( 'Generating-Graph' ) {
     // This will run on TestStation-Fabric5s node.
-    node( "TestStation-Fabric5s" ){
+    node( "TestStation-Fabric5s" ) {
         // run the bash script on this node.
         runScript( graphScript )
     }
 }
 // stage that will trigger postjob.
 // Need to be executed outside the current node to avoid deadlock.
-stage( 'posting-result' ){
+stage( 'posting-result' ) {
     postJob()
 }
 
@@ -60,7 +60,7 @@ def generateGraphScript( branchList ){
     graphScript = ''''''
 
     // In case there are multiple branches running.
-    for( branch in branchList ){
+    for ( branch in branchList ){
         branchDir = scriptDir + branch + "/"
         graphScript += '''export BRANCH=''' + branchDir + '''
                           # make branch dir if not existing.
@@ -75,14 +75,15 @@ def generateGraphScript( branchList ){
                           # run the log-summary that will export status
                           bash log-summary;''' + '''
                           # run Rscript with it's parameters.
-                          Rscript ''' +  script_file + ' ' + branchDir + 'event.csv ' +
-                                branchDir + 'failure.csv ' + branchDir + 'error.csv ' +
-                                branch + ' 60 ' + hours + ' ' +  saving_directory + ''';
+                          Rscript ''' + script_file + ' ' + branchDir + 'event.csv ' +
+                          branchDir + 'failure.csv ' + branchDir + 'error.csv ' +
+                          branch + ' 60 ' + hours + ' ' + saving_directory + ''';
         '''
         print( graphScript )
     }
     return graphScript
 }
+
 def runScript( graphScript ){
     // run bash script that will init the environment and run the graph generating part.
     sh '''#!/bin/bash -l
@@ -92,6 +93,7 @@ def runScript( graphScript ){
           cd ''' + scriptDir + ''';
           ''' + graphScript
 }
+
 def postJob(){
     // Triggering jenkins job called `postjob-Fabric5`
     jobToRun = "postjob-Fabric5"

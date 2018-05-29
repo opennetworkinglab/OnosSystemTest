@@ -36,7 +36,7 @@ graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
 funcs.initializeTrend( "VM" )
 
 onos_branch = params.ONOSbranch
-AllTheTests = test_lists.getAllTheTests("")
+AllTheTests = test_lists.getAllTheTests( "" )
 
 // generate the graph and post the result on TestStation-VMs. Right now, all the pie and histograms are saved
 // on VM.

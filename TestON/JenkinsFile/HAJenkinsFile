@@ -50,11 +50,12 @@ testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
 funcs.printTestToRun( testsToRun )
 
 // run the test sequentially and save the function into the dictionary.
-def tests = [:]
-for( String test : HA.keySet() ){
+def tests = [ : ]
+for ( String test : HA.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    tests[stepName] = funcs.runTest( test, toBeRun, prop, test, false, HA, graph_generator_file, graph_saved_directory )
+    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, test, false,
+                                       HA, graph_generator_file, graph_saved_directory )
 }
 
 // get the start time of the test.
@@ -68,4 +69,4 @@ for ( test in tests.keySet() ){
 funcs.generateOverallGraph( prop, HA, graph_saved_directory )
 
 // send the notification to Slack that running HA tests was ended.
-funcs.sendResultToSlack( start,  prop[ "manualRun" ], prop[ "WikiPrefix" ] )
+funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )

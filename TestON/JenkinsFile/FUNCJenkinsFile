@@ -50,11 +50,12 @@ testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
 funcs.printTestToRun( testsToRun )
 
 // run the test sequentially and save the function into the dictionary.
-def tests = [:]
-for( String test : FUNC.keySet() ){
-    toBeRun = testsToRun.contains( test )
+def tests = [ : ]
+for ( String test : FUNC.keySet() ){
+    def toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    tests[stepName] = funcs.runTest( test, toBeRun, prop, test, false, FUNC, graph_generator_file, graph_saved_directory )
+    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, test, false,
+                                       FUNC, graph_generator_file, graph_saved_directory )
 }
 
 // get the start time of the test.
@@ -69,4 +70,4 @@ for ( test in tests.keySet() ){
 funcs.generateOverallGraph( prop, FUNC, graph_saved_directory )
 
 // send the notification to Slack that running FUNC tests was ended.
-funcs.sendResultToSlack( start,  prop[ "manualRun" ], prop[ "WikiPrefix" ] )
+funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )

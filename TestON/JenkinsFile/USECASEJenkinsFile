@@ -45,22 +45,23 @@ testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
 funcs.printTestToRun( testsToRun )
 
 // save the function of the test running into the dictionary.
-def tests = [:]
-for( String test : USECASE.keySet() ){
+def tests = [ : ]
+for ( String test : USECASE.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, test, false, USECASE, graph_generator_file, graph_saved_directory )
+    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, test, false,
+                                       USECASE, graph_generator_file, graph_saved_directory )
 }
 
 // get start time of the test.
 start = funcs.getCurrentTime()
-// run the tests sequntially
+// run the tests sequentially
 for ( test in tests.keySet() ){
     tests[ test ].call()
 }
 
 // send the result to slack after USECASE test is done.
-funcs.sendResultToSlack( start,  prop[ "manualRun" ], prop[ "WikiPrefix" ] )
+funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )
 
 // generate the overall graph for USECASE.
 funcs.generateOverallGraph( prop, USECASE, graph_saved_directory )

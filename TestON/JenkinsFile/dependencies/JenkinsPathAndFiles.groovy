@@ -46,5 +46,6 @@ def init(){
     initLocation()
     initFiles()
 }
-return this;
+
+return this
 

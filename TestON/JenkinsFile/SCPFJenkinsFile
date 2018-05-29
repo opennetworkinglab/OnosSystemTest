@@ -25,8 +25,8 @@ SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/PerformanceFu
 SCPFfuncs.init()
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
 
-// init funcs with SCPF specificaton
-funcs.initialize( "SCPF", SCPFfuncs );
+// init funcs with SCPF specification
+funcs.initialize( "SCPF", SCPFfuncs )
 
 // read the information from TestON.property on BM
 def prop = null
@@ -43,8 +43,8 @@ isOldFlow = prop[ "isOldFlow" ] == "true"
 SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
 
 // set test to run as a list of function
-def tests = [:]
-for( String test : SCPFfuncs.SCPF.keySet() ){
+def tests = [ : ]
+for ( String test : SCPFfuncs.SCPF.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
 
@@ -60,4 +60,4 @@ for ( test in tests.keySet() ){
 }
 
 // send result to slack after running test is done.
-funcs.sendResultToSlack( start,  prop["manualRun"], prop[ "WikiPrefix" ] )
+funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )

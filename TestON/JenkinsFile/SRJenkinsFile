@@ -35,7 +35,8 @@ jobName = env.JOB_NAME
 // additional setup for Segment routing because it is running multiple branch concurrently on different machines.
 funcs.additionalInitForSR( jobName )
 
-// read the TestON.property depends on which branch it is running. ( currently master on Fabric4, 1.13 on Fabric2 and 1.12 on Fabric3 )
+// read the TestON.property depends on which branch it is running.
+// ( currently master on Fabric4, 1.13 on Fabric2 and 1.12 on Fabric3 )
 def prop = null
 prop = funcs.getProperties()
 SR = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SR" ]
@@ -51,11 +52,12 @@ testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
 funcs.printTestToRun( testsToRun )
 
 // save the functions to run test in the dictionary.
-def tests = [:]
-for( String test : SR.keySet() ){
+def tests = [ : ]
+for ( String test : SR.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    tests[stepName] = funcs.runTest( test, toBeRun, prop, test, false, SR, graph_generator_file, graph_saved_directory )
+    tests[stepName] = funcs.runTest( test, toBeRun, prop, test, false,
+                                     SR, graph_generator_file, graph_saved_directory )
 }
 
 // get start time
@@ -67,4 +69,4 @@ for ( test in tests.keySet() ){
 }
 //funcs.generateOverallGraph( prop, SR, graph_saved_directory )
 // send the notification of ending test after SR tests is done.
-funcs.sendResultToSlack( start,  prop[ "manualRun" ], prop[ "WikiPrefix" ] )
+funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )

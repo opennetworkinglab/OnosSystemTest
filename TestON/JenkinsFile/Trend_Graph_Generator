@@ -29,11 +29,12 @@ fileRelated.init()
 // read the node cluster ( VM or BM or Fabrics ) from the Jenkins job.
 nodeCluster = params.NodeCluster
 
-funcs.initializeTrend( nodeCluster );
+funcs.initializeTrend( nodeCluster )
 
 // do additional check for Fabric since it will be different depends on which branch it is running on.
-if( nodeCluster == "Fabric" )
-  funcs.additionalInitForSR( params.ONOSbranch )
+if ( nodeCluster == "Fabric" ){
+    funcs.additionalInitForSR( params.ONOSbranch )
+}
 def prop = null
 prop = funcs.getProperties()
 
@@ -43,16 +44,17 @@ prop[ "ONOSBranch" ] = params.ONOSbranch
 
 // set some of the paths of the file and directory
 graph_generator_file = fileRelated.trendIndividual
-graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-" + nodeCluster + ( nodeCluster == "Fabric" ? funcs.fabricOn( prop[ "ONOSBranch" ] ) : "" ) + "/"
+graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-" + nodeCluster +
+                        ( nodeCluster == "Fabric" ? funcs.fabricOn( prop[ "ONOSBranch" ] ) : "" ) + "/"
 
 def testsToRun = null
 testsToRun = funcs.getTestsToRun( Tests )
 
 // set functions into the dictionary.
-def tests = [:]
-for( String test : testsToRun ){
+def tests = [ : ]
+for ( String test : testsToRun ){
     println test
-    tests[ test ] = funcs.runTest( test, true, prop, test, true, [], graph_generator_file, graph_saved_directory )
+    tests[ test ] = funcs.runTest( test, true, prop, test, true, [ ], graph_generator_file, graph_saved_directory )
 }
 
 for ( test in tests.keySet() ){

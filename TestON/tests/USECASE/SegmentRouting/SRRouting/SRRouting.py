@@ -93,7 +93,7 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Ping between from ipv6 hosts to external host configured with route-add command" )
         setupTest( main, test_idx=8, onosNodes=3, ipv4=False, external=False )
-        verify( main, ipv6=False, internal=False, disconnected=False )
+        verify( main, ipv4=False, internal=False, disconnected=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE9( self, main ):

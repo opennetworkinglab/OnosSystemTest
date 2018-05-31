@@ -309,8 +309,10 @@ class SRMulticast:
         verifyMcastRoutes( main )
         verifySwitchDown( main, "leaf2", 10,
                           { "ipv4": False, "ipv6": False },
-                          [ "h4v4" ],
-                          { "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
+                          [ "h3v4", "h3v6", "h4v4" ],
+                          { "h3v4": "of:0000000000000002/9",
+                            "h3v6": "of:0000000000000002/6",
+                            "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
         verifyMcastRemoval( main, removeDHT1=False )
         lib.cleanup( main, copyKarafLog=False )
 

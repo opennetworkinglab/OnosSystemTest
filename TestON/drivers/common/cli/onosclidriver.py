@@ -6494,6 +6494,8 @@ class OnosCliDriver( CLI ):
                 if sHost and dHost:
                     break
             assert sHost, "Not able to find host with IP {}".format( sAddr )
+            if simple:
+                assert dHost, "Not able to find host with IP {}".format( dAddr )
             cmdStr = "t3-troubleshoot"
             if simple:
                 cmdStr += "-simple"

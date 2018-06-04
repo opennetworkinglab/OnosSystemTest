@@ -43,23 +43,11 @@ triggerFuncs.init( funcs )
 wikiContents = ""
 
 testcases = [
-    "FUNC" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
-    "HA" : [ tests : "" , nodeName : "VM", wikiContent : "" ],
-    "SCPF" : [ tests : "" , nodeName : "BM", wikiContent : "" ],
-    "SR" : [ tests : "", nodeName : [ "Fabric2", "Fabric3", "Fabric4" ], wikiContent : "" ],
-    "USECASE" : [ tests : "" , nodeName : "BM", wikiContent : "" ]
-]
-
-// depends on the First two letter of the testname, it will decide which category to put test.
-Prefix_organizer = [
-    "FU" : "FUNC",
-    "HA" : "HA",
-    "PL" : "USECASE",
-    "SA" : "USECASE",
-    "SC" : "SCPF",
-    "SR" : "SR",
-    "US" : "USECASE",
-    "VP" : "USECASE"
+        "FUNC": [ tests: "", nodeName: "VM", wikiContent: "" ],
+        "HA": [ tests: "", nodeName: "VM", wikiContent: "" ],
+        "SCPF": [ tests: "", nodeName: "BM", wikiContent: "" ],
+        "SR": [ tests: "", nodeName: [ "Fabric2", "Fabric3", "Fabric4" ], wikiContent: "" ],
+        "USECASE": [ tests: "", nodeName: "BM", wikiContent: "" ]
 ]
 
 // set some variables from the parameter
@@ -100,19 +88,20 @@ graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric/"
 
 // get the post_result. This will be affected only for the manual runs.
 post_result = params.PostResult
-if( !manually_run ){
+if ( !manually_run ){
     // If it is automated running, it will post the beginning message to the channel.
-    slackSend( channel:'sr-failures', color:'#03CD9F',
-               message:":sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:\n"
-                        + "Starting tests on : " + now.toString()
-                        + "\n:sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles::sparkles:" )
+    slackSend( channel: 'sr-failures', color: '#03CD9F',
+               message: ":sparkles:" * 16 + "\n" +
+                        "Starting tests on : " + now.toString() +
+                        "\n" + ":sparkles:" * 16 )
 
-    // Choices will get the list of the test with Segment Rounting type tests.
+    // Choices will get the list of the test with Segment Routing type tests.
     SR_choices += adder( "SR", "basic", true )
     if ( today == Calendar.FRIDAY ){
         // if today is Friday, it will also test tests with extra_A category
         SR_choices += adder( "SR", "extra_A", true )
-    } else if( today == Calendar.SATURDAY ){
+    }
+    else if ( today == Calendar.SATURDAY ){
         // if today is Saturday, it will add the test with extra_B category
         SR_choices += adder( "SR", "extra_B", true )
     }
@@ -126,7 +115,8 @@ if ( manually_run ){
 
     isOldFlow = params.isOldFlow
     println "Tests to be run manually : "
-}else{
+}
+else {
     // set the list of the tests to run.
     testcases[ "SR" ][ "tests" ] = SR_choices
     println "Defaulting to " + day + " tests:"
@@ -137,27 +127,46 @@ triggerFuncs.print_tests( testcases )
 
 // This will hold the block of code to be run.
 def runTest = [
-    "Fabric2" : [:],
-    "Fabric3" : [:],
-    "Fabric4" : [:]
+        "Fabric2": [ : ],
+        "Fabric3": [ : ],
+        "Fabric4": [ : ]
 ]
 if ( manually_run ){
     // for manual run situation.
-    for( String test in testcases.keySet() ){
+    for ( String test in testcases.keySet() ){
         println test
         // Unless the list of the tests on the test category is empty, it will save the block of code to run in dictionary.
         if ( testcases[ test ][ "tests" ] != "" ){
-            runTest[ testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ] ][ test ] = triggerFuncs.trigger_pipeline( onos_b, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ], test, manually_run, onos_tag )
+            runTest[ testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ] ][ test ] = triggerFuncs.
+                    trigger_pipeline( onos_b,
+                                      testcases[ test ][ "tests" ],
+                                      testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ],
+                                      test,
+                                      manually_run,
+                                      onos_tag )
         }
     }
-}else{
+}
+else {
     // for automated situation, it will save current version to Fabric4, previous version to Fabric2 and before_previous_version to Fabric3.
-    runTest[ "Fabric4" ][ "SR" ] = triggerFuncs.trigger_pipeline( current_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 2 ], "SR", manually_run, onos_tag )
-    runTest[ "Fabric2" ][ "SR" ] = triggerFuncs.trigger_pipeline( previous_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 0 ], "SR", manually_run, onos_tag )
-    runTest[ "Fabric3" ][ "SR" ] = triggerFuncs.trigger_pipeline( before_previous_version, testcases[ "SR" ][ "tests" ], testcases[ "SR" ][ "nodeName" ][ 1 ], "SR", manually_run, onos_tag )
+    runTest[ "Fabric4" ][ "SR" ] = triggerFuncs.trigger_pipeline( current_version,
+                                                                  testcases[ "SR" ][ "tests" ],
+                                                                  testcases[ "SR" ][ "nodeName" ][ 2 ],
+                                                                  "SR",
+                                                                  manually_run, onos_tag )
+    runTest[ "Fabric2" ][ "SR" ] = triggerFuncs.trigger_pipeline( previous_version,
+                                                                  testcases[ "SR" ][ "tests" ],
+                                                                  testcases[ "SR" ][ "nodeName" ][ 0 ],
+                                                                  "SR",
+                                                                  manually_run, onos_tag )
+    runTest[ "Fabric3" ][ "SR" ] = triggerFuncs.trigger_pipeline( before_previous_version,
+                                                                  testcases[ "SR" ][ "tests" ],
+                                                                  testcases[ "SR" ][ "nodeName" ][ 1 ],
+                                                                  "SR",
+                                                                  manually_run, onos_tag )
 }
 
-def finalList = [:]
+def finalList = [ : ]
 
 // It will run each category of test to run sequentially on each branch.
 finalList[ "Fabric2" ] = triggerFuncs.runTestSeq( runTest[ "Fabric2" ] )
@@ -200,10 +209,11 @@ def adder( testCat, set, getResult ){
     // set : set of the test ( Eg. basic, extra_A ... )
     // if getResult == true, it will add the result.
     result = ""
-    for( String test in AllTheTests[ testCat ].keySet() ){
-        if( AllTheTests[ testCat ][ test ][ set ] ){
-            if( getResult )
+    for ( String test in AllTheTests[ testCat ].keySet() ){
+        if ( AllTheTests[ testCat ][ test ][ set ] ){
+            if ( getResult ){
                 result += test + ","
+            }
         }
     }
     return result
@@ -211,7 +221,7 @@ def adder( testCat, set, getResult ){
 
 // check which node is on.
 def nodeOn( branch ){
-    switch( branch ) {
+    switch ( branch ){
         case current_version: return 2
         case previous_version: return 0
         case before_previous_version: return 1

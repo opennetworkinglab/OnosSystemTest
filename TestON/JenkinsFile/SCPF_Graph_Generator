@@ -20,7 +20,7 @@
 
 // This is the Jenkins script for manual-graph-generator-SCPF
 
-// read and set the functions from dependcies.
+// read and set the functions from dependencies.
 SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/PerformanceFuncs.groovy' )
 SCPFfuncs.init()
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
@@ -40,11 +40,11 @@ def testsToRun = null
 testsToRun = funcs.getTestsToRun( Tests )
 
 // pureTestName is because we don't want 'WFobj' to be used for test name.
-def tests = [:]
-for( String test : testsToRun ){
+def tests = [ : ]
+for ( String test : testsToRun ){
     println test
     pureTestName = test.replaceAll( "WithFlowObj", "" )
-    tests[ test ] = funcs.runTest( test, true, prop, pureTestName, true, [], "", "" )
+    tests[ test ] = funcs.runTest( test, true, prop, pureTestName, true, [ ], "", "" )
 }
 
 // generate the graphs sequentially.

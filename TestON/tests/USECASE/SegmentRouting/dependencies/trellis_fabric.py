@@ -165,7 +165,7 @@ class DualHomedLeafSpineFabric (Topo) :
         self.addLink(cs0, nat)
 
         # Internal Quagga bgp1
-        intfs = {'bgp1-eth0': {'ipAddrs': ['10.0.1.2/24', '2000::102/120'], 'mac': '00:88:00:00:00:02'},
+        intfs = {'bgp1-eth0': {'ipAddrs': ['10.0.1.2/24', '2000::102/120'], 'mac': '00:88:00:00:00:03'},
                  'bgp1-eth1': {'ipAddrs': ['172.16.0.2/12']}}
         bgp1 = self.addHost('bgp1', cls=BgpRouter,
                             interfaces=intfs,

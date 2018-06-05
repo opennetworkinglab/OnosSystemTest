@@ -52,10 +52,8 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
     lib.installOnos( main, skipPackage=skipPackage, cliSleep=5, parallel=False )
 
     # Load configuration files
-    main.cfgName = 'TEST_CONFIG_ipv4={}_ipv6={}_dhcp=1_routers=1{}{}'.format( 1 if ipv4 else 0,
-                                                                              1 if ipv6 else 0,
-                                                                              "_external=1" if external else "",
-                                                                              "_static=1" if static else "" )
+    main.cfgName = 'TEST_CONFIG_ipv4={}_ipv6={}'.format( 1 if ipv4 else 0,
+                                                         1 if ipv6 else 0)
     lib.loadJson( main )
     time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
     lib.loadHost( main )

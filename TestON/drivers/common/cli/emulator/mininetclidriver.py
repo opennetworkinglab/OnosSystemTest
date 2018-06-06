@@ -594,18 +594,21 @@ class MininetCliDriver( Emulator ):
                 hostList = hosts.keys()
             discoveryResult = main.TRUE
             for host in hostList:
+                flushCmd = ""
                 cmd = ""
                 if self.getIPAddress( host ):
+                    flushCmd = "{} ip neigh flush all".format( host )
                     cmd = "{} ping -c 1 -i 1 -W {} {}".format( host, wait, dstIp )
                     main.log.debug( "Sending IPv4 probe ping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
+                    flushCmd = "{} ip -6 neigh flush all".format( host )
                     cmd = "{} ping6 -c 1 -i 1 -W {} {}".format( host, wait, dstIp6 )
                     main.log.debug( "Sending IPv6 probe ping from host {}".format( host ) )
                 else:
                     main.log.warn( "No IP addresses configured on host {}, skipping discovery".format( host ) )
                     discoveryResult = main.FALSE
                 if cmd:
-                    self.handle.sendline( "{} ip neigh flush all".format( host ) )
+                    self.handle.sendline( flushCmd )
                     self.handle.expect( "mininet>" )
                     self.handle.sendline( cmd )
                     self.handle.expect( "mininet>", timeout=wait + 5 )

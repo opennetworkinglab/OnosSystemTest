@@ -21,7 +21,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3</cellApps>
+        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3,hostprobingprovider</cellApps>
     </ENV>
 
     <GIT>

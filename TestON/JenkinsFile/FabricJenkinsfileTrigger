@@ -47,6 +47,7 @@ testcases = [
         "HA": [ tests: "", nodeName: "VM", wikiContent: "" ],
         "SCPF": [ tests: "", nodeName: "BM", wikiContent: "" ],
         "SR": [ tests: "", nodeName: [ "Fabric2", "Fabric3", "Fabric4" ], wikiContent: "" ],
+        "SRHA": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
         "USECASE": [ tests: "", nodeName: "BM", wikiContent: "" ]
 ]
 
@@ -97,16 +98,21 @@ if ( !manually_run ){
 
     // Choices will get the list of the test with Segment Routing type tests.
     SR_choices += adder( "SR", "basic", true )
+    SRHA_choices += adder( "SRHA", "basic", true )
     if ( today == Calendar.FRIDAY ){
         // if today is Friday, it will also test tests with extra_A category
         SR_choices += adder( "SR", "extra_A", true )
+        SRHA_choices += adder( "SRHA", "extra_A", true )
     }
     else if ( today == Calendar.SATURDAY ){
         // if today is Saturday, it will add the test with extra_B category
         SR_choices += adder( "SR", "extra_B", true )
+        SRHA_choices += adder( "SRHA", "extra_B", true )
     }
     // removing last comma added at the end of the last test name.
     SR_choices = triggerFuncs.lastCommaRemover( SR_choices )
+    SRHA_choices = triggerFuncs.lastCommaRemover( SRHA_choices )
+
 }
 
 
@@ -119,6 +125,7 @@ if ( manually_run ){
 else {
     // set the list of the tests to run.
     testcases[ "SR" ][ "tests" ] = SR_choices
+    testcases[ "SRHA" ][ "tests" ] = SRHA_choices
     println "Defaulting to " + day + " tests:"
 }
 
@@ -127,6 +134,7 @@ triggerFuncs.print_tests( testcases )
 
 // This will hold the block of code to be run.
 def runTest = [
+        "Fabric": [ : ],
         "Fabric2": [ : ],
         "Fabric3": [ : ],
         "Fabric4": [ : ]
@@ -164,11 +172,17 @@ else {
                                                                   testcases[ "SR" ][ "nodeName" ][ 1 ],
                                                                   "SR",
                                                                   manually_run, onos_tag )
+    runTest[ "Fabric" ][ "SRHA" ] = triggerFuncs.trigger_pipeline( current_version,
+                                                                   testcases[ "SRHA" ][ "tests" ],
+                                                                   testcases[ "SRHA" ][ "nodeName" ],
+                                                                   "SRHA",
+                                                                   manually_run, onos_tag )
 }
 
 def finalList = [ : ]
 
 // It will run each category of test to run sequentially on each branch.
+finalList[ "Fabric" ] = triggerFuncs.runTestSeq( runTest[ "Fabric" ] )
 finalList[ "Fabric2" ] = triggerFuncs.runTestSeq( runTest[ "Fabric2" ] )
 finalList[ "Fabric3" ] = triggerFuncs.runTestSeq( runTest[ "Fabric3" ] )
 finalList[ "Fabric4" ] = triggerFuncs.runTestSeq( runTest[ "Fabric4" ] )

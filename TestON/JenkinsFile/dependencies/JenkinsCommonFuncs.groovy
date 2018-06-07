@@ -38,6 +38,7 @@ def initializeTrend( machine ){
     testMachine = "TestStation-" + machine + "s"
     this.machine = machine
     isSCPF = false
+    hasArgs = false
     isTrend = true
 }
 
@@ -49,6 +50,7 @@ def initialize( type, SCPFfuncs ){
     init( type )
     SCPFfunc = SCPFfuncs
     isSCPF = true
+    hasArgs = true // Has TestON cli arguments to be added when running the test
     machine = machineType[ type ]
 }
 
@@ -63,6 +65,7 @@ def initialize( type ){
     trend_generator_file = fileRelated.trendMultiple
     build_stats_generator_file = fileRelated.histogramMultiple
     isSCPF = false
+    hasArgs = false
 }
 
 def init( type ){
@@ -188,10 +191,10 @@ def initAndRunTest( testName, testCategory ){
         timeout 240 stc teardown | head -100
         timeout 240 stc shutdown | head -100
         cd ~/OnosSystemTest/TestON/bin
-        git log |head
+        git log | head
         ./cleanup.sh -f
         ''' + "./cli.py run " +
-           ( !isSCPF ? testName : testCategory[ testName ][ 'test' ] ) +
+           ( !hasArgs ? testName : testCategory[ testName ][ 'test' ] ) +
            " --params GRAPH/nodeCluster=" + machineType[ testType ] + '''
         ./cleanup.sh -f
         # cleanup config changes
@@ -367,7 +370,7 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
     // prop : dictionary property on the machine
     // pureTestName : Pure name of the test. ( ex. pureTestName of SCPFflowTpFobj will be SCPFflowTp )
     // graphOnly : check if it is generating graph job. If so, it will only generate the generating graph part
-    // testCategory : category of the test ( SCPF, SR, FUNC ... )
+    // testCategory : Map for the test suit ( SCPF, SR, FUNC, ... ) which contains information about the tests
     // graph_generator_file : Rscript file with the full path.
     // graph_saved_directory : where the generated graph will be saved to.
 

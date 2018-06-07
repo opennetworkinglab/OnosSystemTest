@@ -47,6 +47,7 @@ testcases = [
         "HA": [ tests: "", nodeName: "VM", wikiContent: "" ],
         "SCPF": [ tests: "", nodeName: "BM", wikiContent: "" ],
         "SR": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
+        "SRHA": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
         "USECASE": [ tests: "", nodeName: "BM", wikiContent: "" ]
 ]
 
@@ -89,6 +90,7 @@ USECASE_choices = ""
 FUNC_choices = ""
 HA_choices = ""
 SR_choices = ""
+SRHA_choices = ""
 
 // init some paths for the files and directories.
 stat_graph_generator_file = fileRelated.histogramMultiple
@@ -106,6 +108,7 @@ if ( !manually_run ){
     SCPF_choices = triggerFuncs.lastCommaRemover( SCPF_choices )
     USECASE_choices = triggerFuncs.lastCommaRemover( USECASE_choices )
     SR_choices = triggerFuncs.lastCommaRemover( SR_choices )
+    SRHA_choices = triggerFuncs.lastCommaRemover( SRHA_choices )
 }
 
 
@@ -121,6 +124,7 @@ else {
     testcases[ "FUNC" ][ "tests" ] = FUNC_choices
     testcases[ "HA" ][ "tests" ] = HA_choices
     testcases[ "SR" ][ "tests" ] = SR_choices
+    testcases[ "SRHA" ][ "tests" ] = SRHA_choices
     println "Defaulting to " + day + " tests:"
 }
 
@@ -237,6 +241,9 @@ def monday( getResult ){
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", true, "M", false )
     closingHeader( "SR" )
+    addingHeader( "SRHA" )
+    SRHA_choices += adder( "SRHA", "basic", true, "M", false )
+    closingHeader( "SRHA" )
     addingHeader( "USECASE" )
     closingHeader( "USECASE" )
 }
@@ -259,6 +266,9 @@ def tuesday( getDay, getResult ){
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", getDay, "T", false )
     closingHeader( "SR" )
+    addingHeader( "SRHA" )
+    SRHA_choices += adder( "SRHA", "basic", getDay, "T", false )
+    closingHeader( "SRHA" )
     addingHeader( "USECASE" )
     USECASE_choices += adder( "USECASE", "basic", getDay, "T", getResult )
     USECASE_choices += adder( "USECASE", "extra_A", getDay, "T", getResult )
@@ -281,6 +291,9 @@ def wednesday( getDay, getResult ){
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", getDay, "W", false )
     closingHeader( "SR" )
+    addingHeader( "SRHA" )
+    SRHA_choices += adder( "SRHA", "basic", getDay, "W", false )
+    closingHeader( "SRHA" )
     addingHeader( "USECASE" )
     closingHeader( "USECASE" )
 }
@@ -301,6 +314,9 @@ def thursday( getDay, getResult ){
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", getDay, "Th", false )
     closingHeader( "SR" )
+    addingHeader( "SRHA" )
+    SRHA_choices += adder( "SRHA", "basic", getDay, "Th", false )
+    closingHeader( "SRHA" )
     addingHeader( "USECASE" )
     closingHeader( "USECASE" )
 }
@@ -323,6 +339,10 @@ def friday( getDay, getResult ){
     SR_choices += adder( "SR", "basic", getDay, "F", false )
     SR_choices += adder( "SR", "extra_A", getDay, "F", false )
     closingHeader( "SR" )
+    addingHeader( "SRHA" )
+    SRHA_choices += adder( "SRHA", "basic", getDay, "F", false )
+    SRHA_choices += adder( "SRHA", "extra_A", getDay, "F", false )
+    closingHeader( "SRHA" )
     addingHeader( "USECASE" )
     closingHeader( "USECASE" )
 }
@@ -349,6 +369,10 @@ def saturday( getDay, getResult ){
     SR_choices += adder( "SR", "basic", getDay, "Sa", false )
     SR_choices += adder( "SR", "extra_B", getDay, "Sa", false )
     closingHeader( "SR" )
+    addingHeader( "SRHA" )
+    SRHA_choices += adder( "SRHA", "basic", getDay, "Sa", false )
+    SRHA_choices += adder( "SRHA", "extra_B", getDay, "Sa", false )
+    closingHeader( "SRHA" )
     addingHeader( "USECASE" )
     USECASE_choices += adder( "USECASE", "basic", getDay, "Sa", getResult )
     closingHeader( "USECASE" )
@@ -375,6 +399,9 @@ def sunday( getDay, getResult ){
     addingHeader( "SR" )
     SR_choices += adder( "SR", "basic", getDay, "S", false )
     closingHeader( "SR" )
+    addingHeader( "SRHA" )
+    SRHA_choices += adder( "SRHA", "basic", getDay, "S", false )
+    closingHeader( "SRHA" )
     addingHeader( "USECASE" )
     USECASE_choices += adder( "USECASE", "basic", getDay, "S", getResult )
     closingHeader( "USECASE" )

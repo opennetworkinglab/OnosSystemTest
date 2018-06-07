@@ -106,7 +106,6 @@ def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     test_branch = "master"
     node( "TestStation-" + nodeName + "s" ) {
         envSetup( branch, test_branch, onosTag, jobOn, manuallyRun )
-
         exportEnvProperty( branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
     }
 

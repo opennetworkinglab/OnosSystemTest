@@ -1,5 +1,5 @@
 #!groovy
-// Copyright 2017 Open Networking Foundation (ONF)
+// Copyright 2018 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 // the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -18,7 +18,7 @@
 //     You should have received a copy of the GNU General Public License
 //     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
-// This is the Jenkins script for SR-pipeline-<branch>
+// This is the Jenkins script for SRHA-pipeline-<branch>
 
 // read dependencies.
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
@@ -29,21 +29,24 @@ fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPath
 fileRelated.init()
 funcs.initialize( "SR" )
 
+// Allow to run with --params-file argument
+hasArgs = true
+
 // get the name of the Jenkins job.
 jobName = env.JOB_NAME
 
-// additional setup for Segment routing because it is running multiple branch concurrently on different machines.
-funcs.additionalInitForSR( jobName )
+// SRHA has it's own test machine
+// testmachine = "Fabrics"
 
 // read the TestON.property depends on which branch it is running.
 // ( currently master on Fabric4, 1.13 on Fabric2 and 1.12 on Fabric3 )
 def prop = null
 prop = funcs.getProperties()
-SR = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SR" ]
+SRHA = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SRHA" ]
 
 // set the file paths and directory
 graph_generator_file = fileRelated.trendIndividual
-graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric" + funcs.fabricOn( prop[ "ONOSBranch" ] ) + "/"
+graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric" + "/"
 
 // get the list of the tests.
 echo( "Testcases:" )
@@ -53,11 +56,11 @@ funcs.printTestToRun( testsToRun )
 
 // save the functions to run test in the dictionary.
 def tests = [ : ]
-for ( String test : SR.keySet() ){
+for ( String test : SRHA.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
     tests[stepName] = funcs.runTest( test, toBeRun, prop, test, false,
-                                     SR, graph_generator_file, graph_saved_directory )
+                                     SRHA, graph_generator_file, graph_saved_directory )
 }
 
 // get start time
@@ -68,5 +71,5 @@ for ( test in tests.keySet() ){
     tests[ test ].call()
 }
 //funcs.generateOverallGraph( prop, SR, graph_saved_directory )
-// send the notification of ending test after SR tests is done.
+// send the notification of ending test after SRHA tests are done.
 funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )

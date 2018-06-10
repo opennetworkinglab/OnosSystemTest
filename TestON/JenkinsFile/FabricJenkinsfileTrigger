@@ -81,6 +81,7 @@ USECASE_choices = ""
 FUNC_choices = ""
 HA_choices = ""
 SR_choices = ""
+SRHA_choices = ""
 
 // initialize the graph generating files.
 stat_graph_generator_file = fileRelated.histogramMultiple

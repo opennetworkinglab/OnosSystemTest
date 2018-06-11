@@ -59,7 +59,7 @@ def tests = [ : ]
 for ( String test : SRHA.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    tests[stepName] = funcs.runTest( test, toBeRun, prop, test, false,
+    tests[stepName] = funcs.runTest( test, toBeRun, prop, prop[ test ][ "test" ], false,
                                      SRHA, graph_generator_file, graph_saved_directory )
 }
 

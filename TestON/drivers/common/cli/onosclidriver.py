@@ -6513,7 +6513,7 @@ class OnosCliDriver( CLI ):
 
     def composeT3Command( self, sAddr, dAddr, ipv6=False, verbose=True, simple=False ):
         """
-        Compose and return t3-troubleshoot cli command for given source and destination addresses
+        Compose and return a list of t3-troubleshoot cli commands for given source and destination addresses
         Options:
             sAddr: IP address of the source host
             dAddr: IP address of the destination host
@@ -6535,29 +6535,35 @@ class OnosCliDriver( CLI ):
                 if sHost and dHost:
                     break
             assert sHost, "Not able to find host with IP {}".format( sAddr )
+            cmdList = []
             if simple:
                 assert dHost, "Not able to find host with IP {}".format( dAddr )
-            cmdStr = "t3-troubleshoot"
-            if simple:
-                cmdStr += "-simple"
-            if verbose:
-                cmdStr += " -vv"
-            if ipv6:
-                cmdStr += " -et ipv6"
-            if simple:
+                cmdStr = "t3-troubleshoot-simple"
+                if verbose:
+                    cmdStr += " -vv"
+                if ipv6:
+                    cmdStr += " -et ipv6"
                 cmdStr += " {}/{} {}/{}".format( sHost[ "mac" ], sHost[ "vlan" ], dHost[ "mac" ], dHost[ "vlan" ] )
+                cmdList.append( cmdStr )
             else:
-                cmdStr += " -s " + str( sAddr )
-                cmdStr += " -sp " + str( sHost[ "locations" ][ 0 ][ "elementId" ] ) + "/" + str( sHost[ "locations" ][ 0 ][ "port" ] )
-                cmdStr += " -sm " + str( sHost[ "mac" ] )
-                if sHost[ "vlan" ] != "None":
-                    cmdStr += " -vid " + sHost[ "vlan" ]
-                cmdStr += " -d " + str( dAddr )
-                netcfg = self.netcfg( args="devices {}".format( sHost[ "locations" ][ 0 ][ "elementId" ] ) )
-                netcfg = json.loads( netcfg )
-                assert netcfg, "Failed to get netcfg"
-                cmdStr += " -dm " + str( netcfg[ "segmentrouting" ][ "routerMac" ] )
-            return cmdStr
+                for location in sHost[ "locations" ]:
+                    cmdStr = "t3-troubleshoot"
+                    if verbose:
+                        cmdStr += " -vv"
+                    if ipv6:
+                        cmdStr += " -et ipv6"
+                    cmdStr += " -s " + str( sAddr )
+                    cmdStr += " -sp " + str( location[ "elementId" ] ) + "/" + str( location[ "port" ] )
+                    cmdStr += " -sm " + str( sHost[ "mac" ] )
+                    if sHost[ "vlan" ] != "None":
+                        cmdStr += " -vid " + sHost[ "vlan" ]
+                    cmdStr += " -d " + str( dAddr )
+                    netcfg = self.netcfg( args="devices {}".format( location[ "elementId" ] ) )
+                    netcfg = json.loads( netcfg )
+                    assert netcfg, "Failed to get netcfg"
+                    cmdStr += " -dm " + str( netcfg[ "segmentrouting" ][ "routerMac" ] )
+                    cmdList.append( cmdStr )
+            return cmdList
         except AssertionError:
             main.log.exception( "" )
             return None
@@ -6570,20 +6576,24 @@ class OnosCliDriver( CLI ):
 
     def t3( self, sAddr, dAddr, ipv6=False ):
         """
-        Run t3-troubleshoot cli command for given source and destination addresses
+        Run t3-troubleshoot cli commands for all posible routes given source and destination addresses
         Options:
             sAddr: IP address of the source host
             dAddr: IP address of the destination host
         """
         try:
-            cmdStr = self.composeT3Command( sAddr, dAddr, ipv6 )
-            handle = self.sendline( cmdStr )
-            assert handle is not None, "Error in sendline"
-            assert "Command not found:" not in handle, handle
-            assert "Unsupported command:" not in handle, handle
-            assert "Error executing command" not in handle, handle
-            assert "Tracing packet" in handle
-            return handle
+            cmdList = self.composeT3Command( sAddr, dAddr, ipv6 )
+            assert cmdList is not None, "composeT3Command returned None"
+            t3Output = ""
+            for cmdStr in cmdList:
+                handle = self.sendline( cmdStr )
+                assert handle is not None, "Error in sendline"
+                assert "Command not found:" not in handle, handle
+                assert "Unsupported command:" not in handle, handle
+                assert "Error executing command" not in handle, handle
+                assert "Tracing packet" in handle
+                t3Output += handle
+            return t3Output
         except AssertionError:
             main.log.exception( "" )
             return None

@@ -1179,7 +1179,8 @@ class Testcaselib:
 
     @staticmethod
     def verifyPing( main, srcList, dstList, ipv6=False, expect=True, wait=1,
-                    acceptableFailed=0, skipOnFail=True, stepMsg="Verify Ping" ):
+                    acceptableFailed=0, skipOnFail=True, stepMsg="Verify Ping",
+                    t3Simple=True ):
         """
         Verify reachability from each host in srcList to each host in dstList
         """
@@ -1189,7 +1190,7 @@ class Testcaselib:
         except ( NameError, AttributeError ):
             main.topo = Topology()
         main.step( stepMsg )
-        pingResult = main.topo.ping( srcList, dstList, ipv6, expect, wait, acceptableFailed, skipOnFail, True )
+        pingResult = main.topo.ping( srcList, dstList, ipv6, expect, wait, acceptableFailed, skipOnFail, t3Simple )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=pingResult,
                                  onpass="{}: Pass".format( stepMsg ),

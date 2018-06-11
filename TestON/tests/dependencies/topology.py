@@ -293,11 +293,16 @@ class Topology:
                 srcIp = unexpectedPing[ 0 ]
                 dstIp = unexpectedPing[ 1 ]
                 main.log.debug( "Collecting t3 with source {} and destination {}".format( srcIp, dstIp ) )
-                cmd = main.Cluster.active( 0 ).CLI.composeT3Command( srcIp, dstIp, ipv6, True, t3Simple )
-                main.log.debug( "t3 command: {}".format( cmd ) )
-                if cmd:
+                cmdList = main.Cluster.active( 0 ).CLI.composeT3Command( srcIp, dstIp, ipv6, True, t3Simple )
+                if not cmdList:
+                    main.log.warn( "Failed to compose T3 command with source {} and destination {}".format( srcIp, dstIp ) )
+                    continue
+                for i in range( 0, len( cmdList ) ):
+                    cmd = cmdList[ i ]
+                    main.log.debug( "t3 command: {}".format( cmd ) )
                     main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, cmd, main.logdir,
-                                                "t3-CASE{}-{}-{}-".format( main.CurrentTestCaseNumber, srcIp, dstIp ) )
+                                                "t3-CASE{}-{}-{}-route{}-".format( main.CurrentTestCaseNumber, srcIp, dstIp, i ),
+                                                timeout=10 )
         return main.FALSE if unexpectedPings else main.TRUE
 
     def sendScapyPackets( self, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True, acceptableFailed=0, collectT3=True, t3Command="" ):

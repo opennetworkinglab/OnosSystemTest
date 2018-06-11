@@ -928,12 +928,14 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def onosCli( self, ONOSIp, cmdstr ):
+    def onosCli( self, ONOSIp, cmdstr, timeout=60 ):
         """
         Uses 'onos' command to send various ONOS CLI arguments.
         Required:
             * ONOSIp: specify the ip of the cell machine
             * cmdstr: specify the command string to send
+        Optional:
+            * timeout: pexpect timeout for running the command
 
         This function is intended to expose the entire karaf
         CLI commands for ONOS. Try to use this function first
@@ -960,15 +962,20 @@ class OnosDriver( CLI ):
             self.handle.expect( self.prompt )
 
             self.handle.sendline( "onos " + ONOSIp + " " + cmdstr )
-            self.handle.expect( self.prompt )
-
-            handleBefore = self.handle.before
-            main.log.info( "Command sent successfully" )
-            # Obtain return handle that consists of result from
-            # the onos command. The string may need to be
-            # configured further.
-            returnString = handleBefore
-            return returnString
+            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=timeout )
+            if i == 0:
+                handleBefore = self.handle.before
+                main.log.info( "Command sent successfully" )
+                # Obtain return handle that consists of result from
+                # the onos command. The string may need to be
+                # configured further.
+                returnString = handleBefore
+                return returnString
+            elif i == 1:
+                main.log.error( self.name + ": Timeout when sending " + cmdstr )
+                self.handle.sendline( "\x03" )  # Control-C
+                self.handle.expect( self.prompt )
+                return main.FALSE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Timeout when sending " + cmdstr )
             return main.FALSE
@@ -1614,7 +1621,7 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def dumpONOSCmd( self, ONOSIp, CMD, destDir, filename, options="" ):
+    def dumpONOSCmd( self, ONOSIp, CMD, destDir, filename, options="", timeout=60 ):
         """
         Dump Cmd to a desired directory.
         For debugging purposes, you may want to use
@@ -1627,7 +1634,9 @@ class OnosDriver( CLI ):
             * destDir: specify directory to copy to.
               ex ) /tmp/
             * fileName: Name of the file
+        Optional:
             * options: Options for ONOS command
+            * timeout: pexpect timeout for running the ONOS command
         """
 
         localtime = time.strftime( '%x %X' )
@@ -1637,7 +1646,7 @@ class OnosDriver( CLI ):
         if destDir[ -1: ] != "/":
             destDir += "/"
         cmd = CMD + " " + options + " > " + str( destDir ) + str( filename ) + localtime
-        return self.onosCli( ONOSIp, cmd )
+        return self.onosCli( ONOSIp, cmd, timeout=timeout )
 
     def cpLogsToDir( self, logToCopy,
                      destDir, copyFileName="" ):

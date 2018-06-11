@@ -60,18 +60,18 @@ class Controller():
         if hasattr( self.REST, name ):
             if not usedDriver:
                 usedDriver = True
-                main.log.debug("Using Rest driver's attribute for '%s'" % (name))
-                f = getattr( self.REST, name)
+                main.log.debug( "%s: Using Rest driver's attribute for '%s'" % ( self.name, name ) )
+                f = getattr( self.REST, name )
         if hasattr( self.CLI, name ):
             if not usedDriver:
                 usedDriver = True
-                main.log.debug("Using CLI driver's attribute for '%s'" % (name))
-                f = getattr( self.CLI, name)
+                main.log.debug( "%s: Using CLI driver's attribute for '%s'" % ( self.name, name ) )
+                f = getattr( self.CLI, name )
         if hasattr( self.Bench, name ):
             if not usedDriver:
                 usedDriver = True
-                main.log.debug("Using Bench driver's attribute for '%s'" % (name))
-                f = getattr( self.Bench, name)
+                main.log.debug( "%s: Using Bench driver's attribute for '%s'" % ( self.name, name ) )
+                f = getattr( self.Bench, name )
         if usedDriver:
             return f
         raise AttributeError( "Could not find the attribute %s in %r or it's component handles" % ( name, self ) )
@@ -128,9 +128,9 @@ class OnosClusterDriver( CLI ):
                 elif key == "cluster_name":
                     prefix = self.options[ key ]
 
-            self.home = self.checkOptions(self.home, "~/onos" )
-            self.karafUser = self.checkOptions(self.karafUser, self.user_name)
-            self.karafPass = self.checkOptions(self.karafPass, self.pwd )
+            self.home = self.checkOptions( self.home, "~/onos" )
+            self.karafUser = self.checkOptions( self.karafUser, self.user_name )
+            self.karafPass = self.checkOptions( self.karafPass, self.pwd )
             prefix = self.checkOptions( prefix, "ONOS" )
 
             self.name = self.options[ 'name' ]

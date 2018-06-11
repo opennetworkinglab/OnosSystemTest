@@ -2557,7 +2557,7 @@ class OnosDriver( CLI ):
         """
             Run onos-diagnostics with given ONOS instance IPs and save output to dstDir
             with suffix specified E.g. onos-diags-suffix.tar.gz
-            required argDuments:
+            required arguments:
                 onosIPs - list of ONOS IPs for collecting diags
                 dstDir - diags file will be saved under the directory specified
                 suffix - diags file will be named with the suffix specified
@@ -2588,6 +2588,44 @@ class OnosDriver( CLI ):
             return main.TRUE
         except AssertionError:
             main.log.exception( "{} Error in onos-diagnostics output:".format( self.name ) )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def onosPower( self, onosIP, toggle, userName=None ):
+        """
+            Run onos-power script to tell the cell warden to simulate a power faulure
+            for the given container.
+            required :
+                onosIP - ONOS node IP
+                toggle - either "off" or "on", used to indicate whether
+                      the node should be powered off or on
+            returns:
+                main.FALSE if there's an error executing the command, and main.TRUE otherwise
+        """
+        try:
+            cmd = "onos-power {} {}".format( onosIP, toggle )
+            if userName:
+                cmd += " {}".format( userName )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( handle )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Exception:" not in handle, handle
+            assert "usage:" not in handle, handle
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "{} Error in onos-power output:".format( self.name ) )
             return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

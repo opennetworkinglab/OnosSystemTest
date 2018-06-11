@@ -1,5 +1,5 @@
 """
-Copyright 2015 Open Networking Foundation (ONF)
+Copyright 2018 Open Networking Foundation ( ONF )
 
 Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -8,7 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     TestON is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    ( at your option ) any later version.
 
     TestON is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 """
 Description: This test is to determine if ONOS can handle
     a minority of it's nodes restarting
@@ -30,11 +29,8 @@ CASE21: Assign mastership to controllers
 CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
-CASE60: Initialize the upgrade.
-CASE61: Upgrade a minority of nodes PHASE 1
-CASE62: Transfer to new version. PHASE 2
-CASE63: Upgrade the rest of the nodes
-CASE64: Commit to the upgrade.
+CASE61: The Failure inducing case.
+CASE62: The Failure recovery case.
 CASE7: Check state after control plane failure
 CASE8: Compare topo
 CASE9: Link s3-s28 down
@@ -47,7 +43,7 @@ CASE15: Check that Leadership Election is still functional
 CASE16: Install Distributed Primitives app
 CASE17: Check for basic functionality with distributed primitives
 """
-class HAupgrade:
+class HApowerFailure:
 
     def __init__( self ):
         self.default = ''
@@ -70,7 +66,7 @@ class HAupgrade:
         start cli sessions
         start tcpdump
         """
-        main.log.info( "ONOS HA test: Stop a minority of ONOS nodes - " +
+        main.log.info( "ONOS HA test: Simulate a power failure on a minority of ONOS nodes - " +
                          "initialization" )
         # These are for csv plotting in jenkins
         main.HAlabels = []
@@ -92,8 +88,10 @@ class HAupgrade:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        applyFuncs = [ main.HA.copyBackupConfig ]
-        applyArgs = [ None ]
+        applyFuncs = [ main.HA.customizeOnosGenPartitions,
+                       main.HA.copyBackupConfig,
+                       main.ONOSbench.preventAutoRespawn ]
+        applyArgs = [ None, None, None ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
@@ -109,7 +107,6 @@ class HAupgrade:
                                   applyArgs=applyArgs,
                                   extraClean=main.HA.cleanUpGenPartition,
                                   includeCaseDesc=False )
-
         main.HA.initialSetUp( serviceClean=True )
 
         main.step( 'Set logging levels' )
@@ -173,40 +170,50 @@ class HAupgrade:
         """
         main.HA.readingState( main )
 
-    def CASE60( self, main ):
-        """
-        Initialize the upgrade.
-        """
-        assert main, "main not defined"
-        assert utilities.assert_equals, "utilities.assert_equals not defined"
-        main.case( "Initialize upgrade" )
-        main.HA.upgradeInit( main )
-
     def CASE61( self, main ):
         """
-        Upgrade a minority of nodes PHASE 1
+        The Failure case.
         """
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        main.case( "Upgrade minority of ONOS nodes" )
+        main.case( "Simulate a power failure on a minority of ONOS nodes" )
 
         main.step( "Checking ONOS Logs for errors" )
         for ctrl in main.Cluster.active():
             main.log.debug( "Checking logs for errors on " + ctrl.name + ":" )
             main.log.warn( ctrl.checkLogs( ctrl.ipAddress ) )
 
-        main.kill = []
+        main.kill = [ main.Cluster.runningNodes[ 0 ] ]  # ONOS node to kill, listed by index in main.nodes
         n = len( main.Cluster.runningNodes )  # Number of nodes
-        p = n / 2  # Number of nodes in the minority
-        for i in range( p ):
-            main.kill.append( main.Cluster.runningNodes[ i ] )  # ONOS node to kill, listed by index in main.nodes
-        main.HA.upgradeNodes( main )
+        p = ( ( n + 1 ) / 2 ) + 1  # Number of partitions
+        if n > 3:
+            main.kill.append( main.Cluster.runningNodes[ p - 1 ] )
+            # NOTE: This only works for cluster sizes of 3,5, or 7.
+
+        # NOTE: This is to fix an issue with wiki formating
+        nodeNames = [ node.name for node in main.kill ]
+        # Set the env variables so we actually use the warden power ON/OFF functionality
+        # NOTE: Only works with warden
+        main.ONOSbench.setEnv( "HARD_POWER_OFF", "True" )
+        main.ONOSbench.setEnv( "ONOS_CELL", "borrow" )
+        main.step( "Killing nodes: " + str( nodeNames ) )
+        killResults = main.TRUE
+        userName = main.params[ 'cell' ][ 'user' ]
+        for ctrl in main.kill:
+            killResults = killResults and\
+                          main.ONOSbench.onosPower( ctrl.ipAddress, "off", userName )
+            ctrl.active = False
+        main.Cluster.reset()
+        utilities.assert_equals( expect=main.TRUE, actual=killResults,
+                                 onpass="ONOS nodes killed successfully",
+                                 onfail="ONOS nodes NOT successfully killed" )
 
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
                                        sleep=15,
                                        attempts=5 )
+
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
@@ -219,92 +226,27 @@ class HAupgrade:
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanAndExit()
 
+        for i in range( 1, 100 ):
+            main.Cluster.next().summary()
+        for i in range( 1, 100 ):
+            main.Cluster.next().partitions()
+        for ctrl in main.Cluster.active():
+            main.log.warn( repr( ctrl ) )
+
     def CASE62( self, main ):
         """
-        Transfer to new version. PHASE 2
+        The bring up stopped nodes
         """
-        assert main, "main not defined"
-        assert utilities.assert_equals, "utilities.assert_equals not defined"
-        main.case( "Start the upgrade" )
-
-        main.step( "Send the command to switch to new version" )
-        ctrl = main.Cluster.next().CLI
-        upgraded = ctrl.issuUpgrade()
-        utilities.assert_equals( expect=main.TRUE, actual=upgraded,
-                                 onpass="Cluster has moved to the upgraded nodes",
-                                 onfail="Error transitioning to the upgraded nodes" )
-
-        main.step( "Check the status of the upgrade" )
-        ctrl = main.Cluster.next().CLI
-        status = ctrl.issu()
-        main.log.debug( status )
-        # TODO: check things here?
-
-        main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                       False,
-                                       sleep=15,
-                                       attempts=5 )
-        utilities.assert_equals( expect=True, actual=nodeResults,
-                                 onpass="Nodes check successful",
-                                 onfail="Nodes check NOT successful" )
-
-    def CASE63( self, main ):
-        """
-        Upgrade the rest of the nodes
-        """
-        main.case( "Upgrade remaining nodes" )
-        upgraded = main.kill
-        main.kill = []
-        for node in main.Cluster.runningNodes:
-            if node not in upgraded:
-                main.kill.append( node )
-
-        main.HA.upgradeNodes( main )
-        main.step( "Checking ONOS nodes" )
-
-        nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                       False,
-                                       sleep=15,
-                                       attempts=5 )
-        utilities.assert_equals( expect=True, actual=nodeResults,
-                                 onpass="Nodes check successful",
-                                 onfail="Nodes check NOT successful" )
-
-    def CASE64( self, main ):
-        """
-        Commit to the upgrade.
-        """
-        assert main, "main not defined"
-        assert utilities.assert_equals, "utilities.assert_equals not defined"
-        main.case( "Commit upgrade" )
-
-        main.step( "Send the command to commit the upgrade" )
+        userName = main.params[ 'cell' ][ 'user' ]
+        # NOTE: The warden will actually power up in reverse alphabetical order of container
+        #       names in a cell, ignoring the ip given.
+        for ctrl in main.kill:
+            main.ONOSbench.onosPower( ctrl.ipAddress, "on", userName )
+            for component in [ ctrl.CLI, ctrl.server ]:
+                component.connect()
+        main.HA.bringUpStoppedNodes( main )
         for ctrl in main.Cluster.active():
-            status = ctrl.issu()
-            main.log.debug( status )
-        ctrl = main.Cluster.next().CLI
-        committed = ctrl.issuCommit()
-        utilities.assert_equals( expect=main.TRUE, actual=committed,
-                                 onpass="Upgrade has been committed",
-                                 onfail="Error committing the upgrade" )
-        for ctrl in main.Cluster.active():
-            status = ctrl.issu()
-            main.log.debug( status )
-
-        main.step( "Check the status of the upgrade" )
-        ctrl = main.Cluster.next().CLI
-        status = ctrl.issu()
-        main.log.debug( status )
-        # TODO: check things here?
-
-        nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                       False,
-                                       sleep=15,
-                                       attempts=5 )
-        utilities.assert_equals( expect=True, actual=nodeResults,
-                                 onpass="Nodes check successful",
-                                 onfail="Nodes check NOT successful" )
+            main.log.warn( repr( ctrl ) )
 
     def CASE7( self, main ):
         """
@@ -395,8 +337,6 @@ class HAupgrade:
         """
         Clean up
         """
-        main.HAlabels.append( "Restart" )
-        main.HAdata.append( str( main.restartTime ) )
         main.HA.cleanUp( main )
 
     def CASE14( self, main ):

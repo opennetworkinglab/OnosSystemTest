@@ -42,10 +42,14 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
     main.internalIpv6Hosts = main.params[ 'TOPO' ][ 'internalIpv6Hosts' ].split( ',' )
     main.externalIpv4Hosts = main.params[ 'TOPO' ][ 'externalIpv4Hosts' ].split( ',' )
     main.externalIpv6Hosts = main.params[ 'TOPO' ][ 'externalIpv6Hosts' ].split( ',' )
+    main.staticIpv4Hosts = main.params[ 'TOPO' ][ 'staticIpv4Hosts' ].split( ',' )
+    main.staticIpv6Hosts = main.params[ 'TOPO' ][ 'staticIpv6Hosts' ].split( ',' )
     main.disconnectedIpv4Hosts = []
     main.disconnectedIpv6Hosts = []
-    main.disconnectedExternalIpv4Hosts = [ ]
-    main.disconnectedExternalIpv6Hosts = [ ]
+    main.disconnectedExternalIpv4Hosts = []
+    main.disconnectedExternalIpv6Hosts = []
+    main.disconnectedStaticIpv4Hosts = []
+    main.disconnectedStaticIpv6Hosts = []
     main.resultFileName = 'CASE%03d' % test_idx
     main.Cluster.setRunningNode( onosNodes )
 

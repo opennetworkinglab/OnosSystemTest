@@ -79,7 +79,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Ping between from ipv4 hosts to external host configured with route-add command" )
-        setupTest( main, test_idx=7, onosNodes=3, ipv6=False, external=False )
+        setupTest( main, test_idx=7, onosNodes=3, ipv6=False, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, ipv6=False, internal=False, disconnected=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
@@ -92,7 +94,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Ping between from ipv6 hosts to external host configured with route-add command" )
-        setupTest( main, test_idx=8, onosNodes=3, ipv4=False, external=False )
+        setupTest( main, test_idx=8, onosNodes=3, ipv4=False, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, ipv4=False, internal=False, disconnected=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
@@ -105,7 +109,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Ping between from ipv4 and ipv6 hosts to external host configured with route-add command" )
-        setupTest( main, test_idx=9, onosNodes=3, external=False )
+        setupTest( main, test_idx=9, onosNodes=3, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, internal=False, disconnected=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
@@ -196,7 +202,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test link failures with IPv4 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=107, onosNodes=3, ipv6=False, external=False )
+        setupTest( main, test_idx=107, onosNodes=3, ipv6=False, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, ipv6=False, disconnected=False )
         verifyLinkFailure( main, ipv6=False, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -210,7 +218,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test link failures with IPv6 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=108, onosNodes=3, ipv4=False, external=False )
+        setupTest( main, test_idx=108, onosNodes=3, ipv4=False, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, ipv4=False, disconnected=False )
         verifyLinkFailure( main, ipv4=False, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -224,7 +234,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test link failures with IPv4 and IPv6 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=109, onosNodes=3, external=False )
+        setupTest( main, test_idx=109, onosNodes=3, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, disconnected=False )
         verifyLinkFailure( main, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -316,7 +328,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test switch failures with IPv4 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=207, onosNodes=3, ipv6=False, external=False )
+        setupTest( main, test_idx=207, onosNodes=3, ipv6=False, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, ipv6=False, disconnected=False )
         verifySwitchFailure( main, ipv6=False, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -330,7 +344,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test switch failures with IPv6 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=208, onosNodes=3, ipv4=False, external=False )
+        setupTest( main, test_idx=208, onosNodes=3, ipv4=False, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, ipv4=False, disconnected=False )
         verifySwitchFailure( main, ipv4=False, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -344,7 +360,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test switch failures with IPv4 and IPv6 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=209, onosNodes=3, external=False )
+        setupTest( main, test_idx=209, onosNodes=3, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, disconnected=False )
         verifySwitchFailure( main, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -436,7 +454,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test onos failures with IPv4 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=307, onosNodes=3, ipv6=False, external=False )
+        setupTest( main, test_idx=307, onosNodes=3, ipv6=False, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, ipv6=False, disconnected=False )
         verifyOnosFailure( main, ipv6=False, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -450,7 +470,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test onos failures with IPv6 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=308, onosNodes=3, ipv4=False, external=False )
+        setupTest( main, test_idx=308, onosNodes=3, ipv4=False, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, ipv4=False, disconnected=False )
         verifyOnosFailure( main, ipv4=False, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
@@ -464,7 +486,9 @@ class SRRouting:
         from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
         main.case( "Test onos failures with IPv4 and IPv6 hosts including external hosts configured with route-add command" )
-        setupTest( main, test_idx=309, onosNodes=3, external=False )
+        setupTest( main, test_idx=309, onosNodes=3, external=False, static=True )
+        main.externalIpv4Hosts = main.staticIpv4Hosts
+        main.externalIpv6Hosts = main.staticIpv6Hosts
         verify( main, disconnected=False )
         verifyOnosFailure( main, internal=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )

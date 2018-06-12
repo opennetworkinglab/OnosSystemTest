@@ -48,6 +48,8 @@
         <internalIpv6Hosts>h1v6,h2v6,h3v6,h4v6,h5v6,h6v6,h7v6,h8v6,h9v6,h10v6,h11v6,h12v6,h13v6</internalIpv6Hosts>
         <externalIpv4Hosts>rh1v4,rh2v4</externalIpv4Hosts>
         <externalIpv6Hosts>rh1v6,rh11v6,rh2v6,rh22v6</externalIpv6Hosts>
+        <staticIpv4Hosts>rh5v4</staticIpv4Hosts>
+        <staticIpv6Hosts>rh5v6</staticIpv6Hosts>
         <switchNum>10</switchNum>
         <linkNum>48</linkNum>
     </TOPO>

@@ -48,7 +48,7 @@ for ( String test : SCPFfuncs.SCPF.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
 
-    pureTestName = test.replaceAll( "WithFlowObj", "" )
+    def pureTestName = test.replaceAll( "WithFlowObj", "" )
     tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false, SCPFfuncs.SCPF, "", "" )
 }
 

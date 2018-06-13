@@ -35,9 +35,6 @@ hasArgs = true
 // get the name of the Jenkins job.
 jobName = env.JOB_NAME
 
-// SRHA has it's own test machine
-// testmachine = "Fabrics"
-
 // read the TestON.property depends on which branch it is running.
 // ( currently master on Fabric4, 1.13 on Fabric2 and 1.12 on Fabric3 )
 def prop = null
@@ -60,8 +57,8 @@ for ( String test : SRHA.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
     def pureTestName = SRHA[ test ][ "test" ].split().head()
-    tests[stepName] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
-                                     SRHA, graph_generator_file, graph_saved_directory )
+    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
+                                       SRHA, graph_generator_file, graph_saved_directory )
 }
 
 // get start time

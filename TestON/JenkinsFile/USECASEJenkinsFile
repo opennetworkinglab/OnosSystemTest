@@ -49,7 +49,8 @@ def tests = [ : ]
 for ( String test : USECASE.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, test, false,
+    def pureTestName = USECASE[ test ][ "test" ].split().head()
+    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
                                        USECASE, graph_generator_file, graph_saved_directory )
 }
 

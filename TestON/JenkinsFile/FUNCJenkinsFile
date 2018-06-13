@@ -54,7 +54,8 @@ def tests = [ : ]
 for ( String test : FUNC.keySet() ){
     def toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, test, false,
+    def pureTestName = FUNC[ test ][ "test" ].split().head()
+    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
                                        FUNC, graph_generator_file, graph_saved_directory )
 }
 

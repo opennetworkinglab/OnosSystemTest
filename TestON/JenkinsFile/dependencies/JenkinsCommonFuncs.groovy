@@ -202,9 +202,8 @@ def initAndRunTest( testName, testCategory ){
         git clean -df'''
 }
 
-def copyLogs( testName ){
-    // bash script part for copy the logs and other neccessary element for SR tests.
-    // testName : name of the test.
+def copyLogs(){
+    // bash script to copy the logs and other necessary element for SR tests.
 
     result = ""
     if ( testType == "SR" ){
@@ -238,7 +237,7 @@ def cleanAndCopyFiles( testName ){
         sudo rm ${WORKSPACE}/*.csv
         #copy files to workspace
         cd `ls -t ~/OnosSystemTest/TestON/logs/*/ | head -1 | sed 's/://'`
-        ''' + copyLogs( testName ) + '''
+        ''' + copyLogs() + '''
         sudo cp *.txt ${WORKSPACE}/
         sudo cp *.csv ${WORKSPACE}/
         cd ${WORKSPACE}/
@@ -256,7 +255,7 @@ def fetchLogs( testName ){
     return '''#!/bin/bash
   set +e
   cd ~/OnosSystemTest/TestON/logs
-  echo "Job Name is: " + ''' + testName + '''
+  echo "TestON test name is: "''' + testName + '''
   TestONlogDir=$(ls -t | grep ${TEST_NAME}_  |head -1)
   echo "########################################################################################"
   echo "#####  copying ONOS logs from all nodes to TestON/logs directory: ${TestONlogDir}"
@@ -309,18 +308,18 @@ def getSlackChannel(){
     return "#" + ( testType == "SR" ? "sr-failures" : "jenkins-related" )
 }
 
-def analyzeResult( prop, workSpace, testName, otherTestName, resultURL, wikiLink, isSCPF ){
+def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink, isSCPF ){
     // analyzing the result of the test and send to slack if the test was failed.
     // prop : property dictionary
     // workSpace : workSpace where the result file is saved
-    // testName : real name of the test
-    // otherTestName : other name of the test for SCPF tests ( SCPFflowTPFobj )
+    // pureTestName : TestON name of the test
+    // testName : Jenkins name of the test. Example: SCPFflowTPFobj
     // resultURL : url for the logs for SR tests. Will not be posted if it is empty
     // wikiLink : link of the wiki page where the result was posted
     // isSCPF : Check if it is SCPF. If so, it won't post the wiki link.
 
     node( testMachine ) {
-        def resultContents = readFile( workSpace + "/" + testName + "Result.txt" )
+        def resultContents = readFile( workSpace + "/" + pureTestName + "Result.txt" )
         resultContents = resultContents.split( "\n" )
         if ( resultContents[ 0 ] == "1" ){
             print "All passed"
@@ -330,7 +329,7 @@ def analyzeResult( prop, workSpace, testName, otherTestName, resultURL, wikiLink
             if ( prop[ "manualRun" ] == "false" ){
                 slackSend( channel: getSlackChannel(),
                            color: "FF0000",
-                           message: "[" + prop[ "ONOSBranch" ] + "]" + otherTestName + " : Failed!\n" +
+                           message: "[" + prop[ "ONOSBranch" ] + "]" + testName + " : Failed!\n" +
                                     resultContents[ 1 ] + "\n" +
                                     "[TestON log] : \n" +
                                     "https://jenkins.onosproject.org/blue/organizations/jenkins/${ env.JOB_NAME }/detail/${ env.JOB_NAME }/${ env.BUILD_NUMBER }/pipeline" +
@@ -364,7 +363,7 @@ def publishToConfluence( isManualRun, isPostResult, wikiLink, file ){
 def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, graph_generator_file,
              graph_saved_directory ){
     // run the test on the machine that contains all the steps : init and run test, copy files, publish result ...
-    // testName : name of the test
+    // testName : name of the test in Jenkins
     // toBeRun : boolean value whether the test will be run or not. If not, it won't be run but shows up with empty
     //           result on pipeline view
     // prop : dictionary property on the machine
@@ -392,7 +391,8 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                                 // For the Wiki page
                                 sh cleanAndCopyFiles( pureTestName )
                             }
-                            databaseAndGraph( prop, testName, graphOnly, graph_generator_file, graph_saved_directory )
+                            databaseAndGraph( prop, testName, pureTestName, graphOnly,
+                                              graph_generator_file, graph_saved_directory )
                             if ( !graphOnly ){
                                 sh fetchLogs( pureTestName )
                                 if ( !isSCPF ){
@@ -405,7 +405,7 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                     }
                     postResult( prop, graphOnly )
                     if ( !graphOnly ){
-                        resultURL = postLogs( testName, prop[ "WikiPrefix" ] )
+                        def resultURL = postLogs( testName, prop[ "WikiPrefix" ] )
                         analyzeResult( prop, workSpace, pureTestName, testName, resultURL,
                                        isSCPF ? "" : testCategory[ testName ][ 'wiki_link' ],
                                        isSCPF )
@@ -416,15 +416,15 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
     }
 }
 
-def databaseAndGraph( prop, testName, graphOnly, graph_generator_file, graph_saved_directory ){
+def databaseAndGraph( prop, testName, pureTestName, graphOnly, graph_generator_file, graph_saved_directory ){
     // part where it insert the data into the database.
     // It will use the predefined encrypted variables from the Jenkins.
     // prop : property dictionary that was read from the machine
-    // testName : name of the test
+    // testName : Jenkins name for the test
+    // pureTestName : TestON name for the test
     // graphOnly : boolean whether it is graph only or not
     // graph_generator_file : Rscript file with the full path.
     // graph_saved_directory : where the generated graph will be saved to.
-
     if ( graphOnly || isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
         // Post Results
         withCredentials( [
@@ -438,7 +438,7 @@ def databaseAndGraph( prop, testName, graphOnly, graph_generator_file, graph_sav
               export DATE=\$(date +%F_%T)
               cd ~
               pwd ''' + ( graphOnly ? "" :
-                          ( !isSCPF ? databasePart( prop[ "WikiPrefix" ], testName, database_command ) :
+                          ( !isSCPF ? databasePart( prop[ "WikiPrefix" ], pureTestName, database_command ) :
                             SCPFfunc.databasePart( testName, database_command ) ) ) + '''
               ''' + ( !isSCPF ? graphGenerating( host, port, user, pass, testName, prop, graph_saved_directory,
                                                  graph_generator_file ) :

@@ -26,7 +26,6 @@ funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFunc
 // get current time and send the notification of starting the test.
 def now = funcs.getCurrentTime()
 print now.toString()
-today = now[ Calendar.DAY_OF_WEEK ]
 
 // read the passed parameters from the Jenkins.
 machines = params.machines

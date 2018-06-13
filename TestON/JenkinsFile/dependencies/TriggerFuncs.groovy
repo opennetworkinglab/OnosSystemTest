@@ -197,8 +197,6 @@ def preSetup( onos_branch, test_branch, onos_tag, isManual ){
         echo -e "\n #### check karaf version ######"
         env |grep karaf
         cd ~/onos
-        rm -rf buck-out/*
-        ~/onos/tools/build/onos-buck clean
         git checkout HEAD~1      # Make sure you aren't pn a branch
         git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
         git branch -D ''' + onos_branch + ''' # just incase there are local changes. This will normally result in a branch not found error

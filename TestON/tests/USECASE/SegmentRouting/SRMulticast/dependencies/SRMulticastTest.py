@@ -37,7 +37,7 @@ def setupTest( main, test_idx, onosNodes ):
     lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
     # Load configuration files
     main.step( "Load configurations" )
-    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1_dhcp=1_routers=1"
+    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1"
     lib.loadJson( main )
     time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
     main.cfgName = "common"

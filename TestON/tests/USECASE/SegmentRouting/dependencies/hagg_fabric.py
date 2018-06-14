@@ -96,7 +96,7 @@ class ComcastLeafSpineFabric(Topo):
 
         h9 = self.addHost('h9v4', cls=TrellisHost,
                           mac='00:aa:00:00:00:07', ips=['10.3.10.1/24'],
-                          gateway='10.3.10.254', dhcpClient=dhcp, vlan=40,
+                          gateway='10.3.10.254', dhcpClient=dhcp, vlan=50,
                           dualHomed=True)
         self.addLink(h9, self.leafs[3])
         self.addLink(h9, self.leafs[4])
@@ -104,7 +104,7 @@ class ComcastLeafSpineFabric(Topo):
 
         h10 = self.addHost('h10v4', cls=TrellisHost,
                            mac='00:aa:00:00:00:08', ips=['10.3.30.1/24'],
-                           gateway='10.3.30.254', dhcpClient=dhcp, vlan=40,
+                           gateway='10.3.30.254', dhcpClient=dhcp, vlan=60,
                            dualHomed=True)
         self.addLink(h10, self.leafs[3])
         self.addLink(h10, self.leafs[4])
@@ -112,13 +112,13 @@ class ComcastLeafSpineFabric(Topo):
 
         h11 = self.addHost('h11v4', cls=TrellisHost,
                            mac='00:aa:00:00:00:0a', ips=['10.3.20.1/24'],
-                           gateway='10.3.20.254', dhcpClient=dhcp, vlan=40)
+                           gateway='10.3.20.254', dhcpClient=dhcp, vlan=70)
         self.addLink(h11, self.leafs[4])
         self.hosts_dict['h11v4'] = h11
 
         h12 = self.addHost('h12v4', cls=TrellisHost,
                            mac='00:aa:00:00:02:01', ips=['10.5.10.1/24'],
-                           gateway='10.5.10.254', dhcpClient=dhcp, vlan=10)
+                           gateway='10.5.10.254', dhcpClient=dhcp, vlan=80)
         self.addLink(h12, self.leafs[5])
         self.hosts_dict['h12v4'] = h12
 
@@ -127,7 +127,6 @@ class ComcastLeafSpineFabric(Topo):
                            gateway='10.5.20.254', dhcpClient=dhcp)
         self.addLink(h13, self.leafs[5])
         self.hosts_dict['h13v4'] = h13
-
         return
 
     def createIpv6Hosts(self, dhcp):
@@ -161,7 +160,7 @@ class ComcastLeafSpineFabric(Topo):
         h5 = self.addHost('h5v6', cls=TrellisHost,
                           mac='00:bb:00:00:00:04', ips=['1004::3fe/120'],
                           gateway='1004::3ff', dhcpClient=False, ipv6=1,
-                          vlan=30,
+                          vlan=121,
                           dualHomed=True)
         self.addLink(h5, self.leafs[1])
         self.addLink(h5, self.leafs[2])
@@ -170,14 +169,14 @@ class ComcastLeafSpineFabric(Topo):
         h6 = self.addHost('h6v6', cls=TrellisHost,
                           mac='00:bb:00:00:00:05', ips=['1005::3fe/120'],
                           gateway='1005::3ff', dhcpClient=False, ipv6=1,
-                          vlan=20)
+                          vlan=122)
         self.addLink(h6, self.leafs[2])
         self.hosts_dict['h6v6'] = h6
 
         h7 = self.addHost('h7v6', cls=TrellisHost,
                           mac='00:bb:00:00:01:05', ips=['1006::3fe/120'],
                           gateway='1006::3ff', dhcpClient=False, ipv6=1,
-                          vlan=40)
+                          vlan=123)
         self.addLink(h7, self.leafs[2])
         self.hosts_dict['h7v6'] = h7
 
@@ -189,7 +188,7 @@ class ComcastLeafSpineFabric(Topo):
 
         h9 = self.addHost('h9v6', cls=TrellisHost,
                           mac='00:bb:00:00:00:07', ips=['1008::3fe/120'],
-                          gateway='1008::3ff', dhcpClient=False, vlan=40,
+                          gateway='1008::3ff', dhcpClient=False, vlan=124,
                           dualHomed=True, ipv6=1)
         self.addLink(h9, self.leafs[3])
         self.addLink(h9, self.leafs[4])
@@ -197,7 +196,7 @@ class ComcastLeafSpineFabric(Topo):
 
         h10 = self.addHost('h10v6', cls=TrellisHost,
                            mac='00:bb:00:00:00:08', ips=['1009::3fe/120'],
-                           gateway='1009::3ff', dhcpClient=False, vlan=40,
+                           gateway='1009::3ff', dhcpClient=False, vlan=125,
                            dualHomed=True, ipv6=1)
         self.addLink(h10, self.leafs[3])
         self.addLink(h10, self.leafs[4])
@@ -205,14 +204,14 @@ class ComcastLeafSpineFabric(Topo):
 
         h11 = self.addHost('h11v6', cls=TrellisHost,
                            mac='00:bb:00:00:00:0a', ips=['1010::3fe/120'],
-                           gateway='1010::3ff', dhcpClient=False, vlan=40,
+                           gateway='1010::3ff', dhcpClient=False, vlan=126,
                            ipv6=1)
         self.addLink(h11, self.leafs[4])
         self.hosts_dict['h11v6'] = h11
 
         h12 = self.addHost('h12v6', cls=TrellisHost,
                            mac='00:bb:00:00:01:0a', ips=['1011::3fe/120'],
-                           gateway='1011::3ff', dhcpClient=False, vlan=10,
+                           gateway='1011::3ff', dhcpClient=False, vlan=127,
                            ipv6=1)
         self.addLink(h12, self.leafs[5])
         self.hosts_dict['h12v6'] = h12

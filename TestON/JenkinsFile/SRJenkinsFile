@@ -56,8 +56,8 @@ def tests = [ : ]
 for ( String test : SR.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    def pureTestName = SR[ test ][ "test" ].split().head()
-    tests[stepName] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
+    def pureTestName = ( SR[ test ].containsKey( "test" ) : SR[ test ][ "test" ].split().head() ? test )
+    tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
                                      SR, graph_generator_file, graph_saved_directory )
 }
 

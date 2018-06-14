@@ -54,7 +54,7 @@ def tests = [ : ]
 for ( String test : HA.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    def pureTestName = ( HA[ test ].containsKey( "test" ) : HA[ test ][ "test" ].split().head() ? test )
+    def pureTestName = ( HA[ test ].containsKey( "test" ) ? HA[ test ][ "test" ].split().head() : test )
     tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
                                        HA, graph_generator_file, graph_saved_directory )
 }

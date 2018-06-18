@@ -1181,8 +1181,6 @@ class SRRouting:
 
             # verify functionality
             main.log.debug( main.Cluster.next().summary() )
-            lib.recoverSwitch( main, switches, totalSwitches, totalLinks, rediscoverHosts=True )
-            main.log.debug( main.Cluster.next().summary() )
             lib.verifyTopology( main, totalSwitches, totalLinks, main.Cluster.numCtrls - 1 )
             lib.verifyNodes( main )
             verify( main, disconnected=False, external=False )

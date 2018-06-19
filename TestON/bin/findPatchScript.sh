@@ -87,10 +87,10 @@ runScript() {
         fi
 
         cd ~/onos
+        PREVIOUS_COMMIT=$COMMIT
         COMMIT=$(git log -1 --skip $SKIP_COMMIT --pretty=fuller | grep -m1 -Po "(?<=commit\s)\w+")
         echo "New commit to be tested : $COMMIT"
         echo "New commit to be tested : $COMMIT" >> $LOG_FILE
-        PREVIOUS_COMMIT=$COMMIT
         STASH_RESULT=$(git stash)
         git checkout $COMMIT
         if [ "$STASH_RESULT" != "No local changes to save" ]; then

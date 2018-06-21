@@ -2601,6 +2601,10 @@ class OnosDriver( CLI ):
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in onosDiagnostics" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

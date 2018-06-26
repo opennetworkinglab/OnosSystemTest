@@ -232,6 +232,8 @@ class OnosDriver( CLI ):
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found in onosPackage" )
             main.log.error( self.name + ":    " + self.handle.before )
+            self.handle.send( "\x03" )  # Control-C
+            self.handle.expect( self.prompt )
             return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -390,6 +392,8 @@ class OnosDriver( CLI ):
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
+            self.handle.send( "\x03" )  # Control-C
+            self.handle.expect( self.prompt )
             return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -515,6 +519,8 @@ class OnosDriver( CLI ):
                 main.log.error(
                     self.name + " Response was: " + str(
                         self.handle.before ) )
+                self.handle.send( "\x03" )  # Control-C
+                self.handle.expect( self.prompt )
                 return main.ERROR
             else:
                 main.log.error(
@@ -598,6 +604,8 @@ class OnosDriver( CLI ):
                 main.log.error( self.name + ": Git Checkout- TIMEOUT" )
                 main.log.error(
                     self.name + " Response was: " + str( self.handle.before ) )
+                self.handle.send( "\x03" )  # Control-C
+                self.handle.expect( self.prompt )
                 return main.ERROR
             elif i == 5:
                 self.handle.expect( "Aborting" )
@@ -973,7 +981,7 @@ class OnosDriver( CLI ):
                 return returnString
             elif i == 1:
                 main.log.error( self.name + ": Timeout when sending " + cmdstr )
-                self.handle.sendline( "\x03" )  # Control-C
+                self.handle.send( "\x03" )  # Control-C
                 self.handle.expect( self.prompt )
                 return main.FALSE
         except pexpect.TIMEOUT:
@@ -1088,6 +1096,8 @@ class OnosDriver( CLI ):
                     " timed out" )
                 self.handle.expect( self.prompt )
                 main.log.warn( self.handle.before )
+                self.handle.send( "\x03" )  # Control-C
+                self.handle.expect( self.prompt )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1196,6 +1206,8 @@ class OnosDriver( CLI ):
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Timeout in onosUninstall" )
+            self.handle.send( "\x03" )  # Control-C
+            self.handle.expect( self.prompt )
             return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1854,6 +1866,8 @@ class OnosDriver( CLI ):
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Timeout exception in "
                                 "setIpTables function" )
+            self.handle.send( "\x03" )  # Control-C
+            self.handle.expect( self.prompt )
             return main.ERROR
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1898,6 +1912,8 @@ class OnosDriver( CLI ):
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Timeout exception in "
                                 "setIpTables function" )
+            self.handle.send( "\x03" )  # Control-C
+            self.handle.expect( self.prompt )
             return 'ERROR', "Pexpect Timeout"
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -2604,6 +2620,8 @@ class OnosDriver( CLI ):
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found in onosDiagnostics" )
             main.log.error( self.name + ":    " + self.handle.before )
+            self.handle.send( "\x03" )  # Control-C
+            self.handle.expect( self.prompt )
             return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

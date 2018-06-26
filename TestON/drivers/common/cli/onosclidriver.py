@@ -502,6 +502,8 @@ class OnosCliDriver( CLI ):
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": ONOS timeout" )
             main.log.debug( self.handle.before )
+            self.handle.send( "\x03" )
+            self.handle.expect( "onos>" )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -588,6 +590,8 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ": ONOS timeout" )
             if debug:
                 main.log.debug( self.handle.before )
+            self.handle.send( "\x03" )
+            self.handle.expect( "onos>" )
             return None
         except IndexError:
             main.log.exception( self.name + ": Object not as expected" )

@@ -184,13 +184,14 @@ class SCPFmastershipFailoverLat:
             for CLInum in range( 0, main.Cluster.numCtrls - 1 ):
                 eventOutput = main.Cluster.active( CLInum ).CLI.events( args='-a' ).split( "\r\n" )
                 for line in reversed( eventOutput ):
+                    timestamp = line[ :23 ] if line[ 19 ] != '-' else line[ :19 ] + '.000'
                     if "INSTANCE_DEACTIVATED" in line and len( instanceDeactivatedLats ) == CLInum:
                         deactivateTime = float( datetime.datetime.strptime(
-                                            line.split()[ 0 ][ : 23 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
+                                            timestamp, "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
                         instanceDeactivatedLats.append( deactivateTime - time1 )
                     elif "MASTER_CHANGED" in line and len( masterChangedLats ) == CLInum:
                         changedTime = float( datetime.datetime.strptime(
-                                            line.split()[ 0 ][ : 23 ], "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
+                                            timestamp, "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
                         masterChangedLats.append( changedTime - time1 )
                     if len( instanceDeactivatedLats ) > CLInum and len( masterChangedLats ) > CLInum:
                         break

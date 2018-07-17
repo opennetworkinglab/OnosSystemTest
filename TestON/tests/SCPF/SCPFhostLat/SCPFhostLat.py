@@ -226,7 +226,8 @@ class SCPFhostLat:
                     temp = metricsResult
                 metricsResult = temp
 
-            addingHostTime.append( float( metricsResult ) - tsharkResultTime )
+            if i >= main.iterIgnore:
+                addingHostTime.append( float( metricsResult ) - tsharkResultTime )
             main.log.info( "Result of this iteration: {}".format( str( float( metricsResult ) - tsharkResultTime ) ) )
             # gethost to remove
             gethost = main.Cluster.active( 0 ).REST.hosts()

@@ -2578,7 +2578,7 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def onosDiagnostics( self, onosIPs, dstDir, suffix ):
+    def onosDiagnostics( self, onosIPs, dstDir, suffix, timeout=300 ):
         """
             Run onos-diagnostics with given ONOS instance IPs and save output to dstDir
             with suffix specified E.g. onos-diags-suffix.tar.gz
@@ -2595,7 +2595,7 @@ class OnosDriver( CLI ):
             for ip in onosIPs:
                 cmd += " " + str( ip )
             self.handle.sendline( cmd )
-            self.handle.expect( self.prompt )
+            self.handle.expect( self.prompt, timeout=timeout )
             handle = self.handle.before
             main.log.debug( handle )
             assert handle is not None, "Error in sendline"

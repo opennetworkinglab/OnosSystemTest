@@ -1303,6 +1303,14 @@ class SRRouting:
         lib.moveHost( main, "h1v4", "leaf1", "leaf1", "10.1.0.254", prefixLen=24, cfg=h1v4cfg )
         verify( main )
 
-        h13v4cfg = '''{"of:0000000000000006/7" : { "interfaces" : [ { "ips" : [ "10.5.20.254/24" ], "vlan-untagged": 20 } ] } }'''
+        h1v6cfg = '{"of:0000000000000001/8" : { "interfaces" : [ { "ips" : [ "1000::3ff/120" ], "vlan-untagged": 21 } ] } }'
+        lib.moveHost( main, "h1v6", "leaf1", "leaf1", "1000::3fe", prefixLen=128, cfg=h1v6cfg, ipv6=True )
+        verify( main )
+
+        h13v4cfg = '{"of:0000000000000006/7" : { "interfaces" : [ { "ips" : [ "10.5.20.254/24" ], "vlan-untagged": 20 } ] } }'
         lib.moveHost( main, "h13v4", "leaf6", "leaf6", "10.5.20.254", prefixLen=24, cfg=h13v4cfg )
+        verify( main )
+
+        h13v6cfg = '{"of:0000000000000006/8" : { "interfaces" : [ { "ips" : [ "1012::3ff/120" ], "vlan-untagged": 26 } ] } }'
+        lib.moveHost( main, "h13v6", "leaf6", "leaf6", "1012::3fe", prefixLen=128, cfg=h13v6cfg, ipv6=True )
         verify( main )

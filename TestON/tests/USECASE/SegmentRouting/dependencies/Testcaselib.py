@@ -1251,20 +1251,21 @@ class Testcaselib:
             cfg: port configuration as JSON string
             ipv6: Use True to move IPv6 host
         """
-
         if not hasattr( main, 'Mininet1' ):
             main.log.warn( "moveHost is supposed to be used only in Mininet." )
             return
 
+        main.step( "Moving host {} from {} to {}".format( hostName, srcSw, dstSw ) )
         if ipv6:
-            main.Mininet1.moveHostv6( hostName, srcSw, dstSw, macAddr )
+            main.Mininet1.moveHostv6( hostName, srcSw, dstSw, macAddr, prefixLen )
         else:
             main.Mininet1.moveHost( hostName, srcSw, dstSw, macAddr, prefixLen )
-
-        main.Mininet1.changeDefaultGateway( hostName, gw )
+            main.Mininet1.changeDefaultGateway( hostName, gw )
         if cfg:
             main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
                                                      subjectClass="ports" )
+            # Wait for the host to get RA for setting up default gateway
+            time.sleep( 5 )
 
         main.Mininet1.discoverHosts( [ hostName, ] )
 

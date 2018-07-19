@@ -912,7 +912,7 @@ class MininetCliDriver( Emulator ):
         else:
             return main.TRUE
 
-    def moveHost( self, host, oldSw, newSw, macAddr=None, prefixLen=None ):
+    def moveHost( self, host, oldSw, newSw, macAddr=None, prefixLen=24 ):
         """
            Moves a host from one switch to another on the fly
            If macAddr is specified, change MAC address of the host interface
@@ -1019,7 +1019,7 @@ class MininetCliDriver( Emulator ):
                 main.log.exception( self.name + ": Uncaught exception!" )
                 return main.FALSE
 
-    def moveHostv6( self, host, oldSw, newSw, macAddr=None ):
+    def moveHostv6( self, host, oldSw, newSw, macAddr=None, prefixLen=64 ):
         """
            Moves a host from one switch to another on the fly
            If macAddr is specified, change MAC address of the host interface
@@ -1032,7 +1032,7 @@ class MininetCliDriver( Emulator ):
         """
         if self.handle:
             try:
-                IP = str( self.getIPAddress( host, proto='IPV6' ) ) + "/64"
+                IP = str( self.getIPAddress( host, proto='IPV6' ) ) + "/" + str( prefixLen )
                 # Bring link between oldSw-host down
                 cmd = "py net.configLinkStatus('" + oldSw + "'," + "'" + host +\
                       "'," + "'down')"
@@ -1049,7 +1049,7 @@ class MininetCliDriver( Emulator ):
                 self.handle.expect( "mininet>" )
 
                 # Determine ip and mac address of the host-oldSw interface
-                cmd = "px ipaddr = " + str( IP )
+                cmd = 'px ipaddr = "{}"'.format( IP )
                 print "cmd3= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -1094,7 +1094,8 @@ class MininetCliDriver( Emulator ):
                 self.handle.expect( "mininet>" )
 
                 # Set ipaddress of the host-newSw interface
-                cmd = "px " + host + ".setIP(ip = ipaddr, intf = hintf)"
+                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf, " \
+                                     "prefixLen = %s )" % str( prefixLen )
                 print "cmd8 = ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -1103,7 +1104,7 @@ class MininetCliDriver( Emulator ):
                 print "cmd9 =", cmd
                 response = self.execute( cmd = cmd, prompt="mininet>", timeout=10 )
                 print response
-                pattern = "h\d-eth([\w])"
+                pattern = "-eth([\w])"
                 ipAddressSearch = re.search( pattern, response )
                 print ipAddressSearch.group( 1 )
                 intf = host + "-eth" + str( ipAddressSearch.group( 1 ) )

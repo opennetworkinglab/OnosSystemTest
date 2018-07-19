@@ -1277,7 +1277,7 @@ class Testcaselib:
                     if ip == ipAddr:
                         vlan = hostName.split( "/" )[ -1 ]
                         del main.expectedHosts[ "onos" ][ hostName ]
-                        main.expectedHosts[ "onos" ][ "{}/{}".format( macAddr, vlan ) ] = ip
+                        main.expectedHosts[ "onos" ][ "{}/{}".format( macAddr.upper(), vlan ) ] = ip
                         break
 
     @staticmethod
@@ -1298,25 +1298,27 @@ class Testcaselib:
             macAddr: if specified, change MAC address of the host to the specified MAC address.
             prefixLen: prefix length
             cfg: port configurations as JSON string
-            ipv6: Use True to move IPv6 host (IPv6 is not supported now.)
+            ipv6: Use True to move IPv6 host
         """
-        # TODO: support IPv6 hosts and vlan-tagged hosts.
+        # TODO: support vlan-tagged hosts.
         if not hasattr( main, 'Mininet1' ):
             main.log.warn( "moveDualHomedHost is supposed to be used only in Mininet." )
             return
 
+        main.step( "Moving host {} from {} and {} to {} and {}".format( hostName, srcSw, srcPairSw,
+                                                                        dstSw, dstPairSw ) )
         if ipv6:
-            main.log.warn( "Moving IPv6 host is not implemented yet." )
-            return
-
-        main.Mininet1.moveDualHomedHost( hostName, srcSw, srcPairSw, dstSw, dstPairSw,
-                                         macAddr=macAddr, prefixLen=prefixLen )
-
-        main.Mininet1.changeDefaultGateway( hostName, gw )
-
+            main.Mininet1.moveDualHomedHostv6( hostName, srcSw, srcPairSw, dstSw, dstPairSw,
+                                               macAddr=macAddr, prefixLen=prefixLen )
+        else:
+            main.Mininet1.moveDualHomedHost( hostName, srcSw, srcPairSw, dstSw, dstPairSw,
+                                             macAddr=macAddr, prefixLen=prefixLen )
+            main.Mininet1.changeDefaultGateway( hostName, gw )
         if cfg:
             main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
                                                      subjectClass="ports" )
+            # Wait for the host to get RA for setting up default gateway
+            time.sleep( 5 )
 
         main.Mininet1.discoverHosts( [ hostName, ] )
 
@@ -1328,4 +1330,4 @@ class Testcaselib:
                     if ip == ipAddr:
                         vlan = hostName.split( "/" )[ -1 ]
                         del main.expectedHosts[ "onos" ][ hostName ]
-                        main.expectedHosts[ "onos" ][ "{}/{}".format( macAddr, vlan ) ] = ip
+                        main.expectedHosts[ "onos" ][ "{}/{}".format( macAddr.upper(), vlan ) ] = ip

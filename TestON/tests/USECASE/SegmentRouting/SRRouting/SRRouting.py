@@ -1324,6 +1324,7 @@ class SRRouting:
         verify( main )
 
         # TODO: test vlan tagged hosts
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE652( self, main ):
         """
@@ -1356,6 +1357,7 @@ class SRRouting:
 
         # TODO: test static routes that point to the moved host
         # TODO: test vlan tagged hosts
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE653( self, main ):
         """
@@ -1388,3 +1390,4 @@ class SRRouting:
 
         # TODO: test static routes that point to the moved host
         # TODO: test vlan tagged hosts
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )

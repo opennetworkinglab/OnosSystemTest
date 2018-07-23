@@ -306,7 +306,7 @@ def getAllTheTests( wikiPrefix ){
                     "SCPFscalingMaxIntentsWithFlowObj": [
                             "basic": false,
                             "extra_A": false,
-                            "extra_B": true,
+                            "extra_B": false,
                             "extra_C": false,
                             "extra_D": false,
                             "new_Test": false,
@@ -332,7 +332,7 @@ def getAllTheTests( wikiPrefix ){
                             "extra_A": false,
                             "extra_B": false,
                             "extra_C": false,
-                            "extra_D": true,
+                            "extra_D": false,
                             "new_Test": false,
                             "day": " " ],
                     "SCPFmastershipFailoverLat": [

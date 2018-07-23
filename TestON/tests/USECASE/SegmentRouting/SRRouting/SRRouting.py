@@ -1301,16 +1301,90 @@ class SRRouting:
 
         h1v4cfg = '{"of:0000000000000001/7" : { "interfaces" : [ { "ips" : [ "10.1.0.254/24" ], "vlan-untagged": 10 } ] } }'
         lib.moveHost( main, "h1v4", "leaf1", "leaf1", "10.1.0.254", prefixLen=24, cfg=h1v4cfg )
+        hostLocations = { "h1v4": "of:0000000000000001/7" }
+        lib.verifyHostLocations( main, hostLocations )
         verify( main )
 
         h1v6cfg = '{"of:0000000000000001/8" : { "interfaces" : [ { "ips" : [ "1000::3ff/120" ], "vlan-untagged": 21 } ] } }'
         lib.moveHost( main, "h1v6", "leaf1", "leaf1", "1000::3fe", prefixLen=128, cfg=h1v6cfg, ipv6=True )
+        hostLocations = { "h1v6": "of:0000000000000001/8" }
+        lib.verifyHostLocations( main, hostLocations )
         verify( main )
 
         h13v4cfg = '{"of:0000000000000006/7" : { "interfaces" : [ { "ips" : [ "10.5.20.254/24" ], "vlan-untagged": 20 } ] } }'
         lib.moveHost( main, "h13v4", "leaf6", "leaf6", "10.5.20.254", prefixLen=24, cfg=h13v4cfg )
+        hostLocations = { "h13v4": "of:0000000000000006/7" }
+        lib.verifyHostLocations( main, hostLocations )
         verify( main )
 
         h13v6cfg = '{"of:0000000000000006/8" : { "interfaces" : [ { "ips" : [ "1012::3ff/120" ], "vlan-untagged": 26 } ] } }'
         lib.moveHost( main, "h13v6", "leaf6", "leaf6", "1012::3fe", prefixLen=128, cfg=h13v6cfg, ipv6=True )
+        hostLocations = { "h13v6": "of:0000000000000006/8" }
+        lib.verifyHostLocations( main, hostLocations )
         verify( main )
+
+        # TODO: test vlan tagged hosts
+
+    def CASE652( self, main ):
+        """
+        Move a dual-homed host from porst 1A and 1B to ports 2A and 2B
+        Host retains the same MAC and IP address
+        Test connectivity (expect no failure)
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Move a dual-homed host from porst 1A and 1B to ports 2A and 2B with the same MAC and IP" )
+        setupTest( main, test_idx=652, onosNodes=3 )
+        main.Cluster.active( 0 ).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        verify( main )
+
+        h4v4cfg = '''{"of:0000000000000002/12" : { "interfaces" : [ { "ips" : [ "10.2.30.254/24" ], "vlan-untagged": 16 } ] },
+                      "of:0000000000000003/14" : { "interfaces" : [ { "ips" : [ "10.2.30.254/24" ], "vlan-untagged": 16 } ] } }'''
+        lib.moveDualHomedHost( main, "h4v4", "leaf2", "leaf3", "leaf2", "leaf3", "10.2.30.254", prefixLen=24, cfg=h4v4cfg )
+        hostLocations = { "h4v4": [ "of:0000000000000002/12", "of:0000000000000003/14" ] }
+        lib.verifyHostLocations( main, hostLocations )
+        verify( main )
+
+        h4v6cfg = '''{"of:0000000000000002/13" : { "interfaces" : [ { "ips" : [ "1003::3ff/120" ], "vlan-untagged": 24 } ] },
+                      "of:0000000000000003/15" : { "interfaces" : [ { "ips" : [ "1003::3ff/120" ], "vlan-untagged": 24 } ] } }'''
+        lib.moveDualHomedHost( main, "h4v6", "leaf2", "leaf3", "leaf2", "leaf3", "1003::3fe", prefixLen=128, cfg=h4v6cfg, ipv6=True )
+        hostLocations = { "h4v6": [ "of:0000000000000002/13", "of:0000000000000003/15" ] }
+        lib.verifyHostLocations( main, hostLocations )
+        verify( main )
+
+        # TODO: test static routes that point to the moved host
+        # TODO: test vlan tagged hosts
+
+    def CASE653( self, main ):
+        """
+        Move a dual-homed host from porst 1A and 1B to ports 2A and 2B
+        Host retains the same IP but MAC address changes
+        Test connectivity (expect no failure)
+        """
+        import time
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Move a dual-homed host from porst 1A and 1B to ports 2A and 2B with the same IP and different MAC" )
+        setupTest( main, test_idx=653, onosNodes=3 )
+        main.Cluster.active( 0 ).CLI.balanceMasters()
+        time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
+        verify( main )
+
+        h4v4cfg = '''{"of:0000000000000002/12" : { "interfaces" : [ { "ips" : [ "10.2.30.254/24" ], "vlan-untagged": 16 } ] },
+                      "of:0000000000000003/14" : { "interfaces" : [ { "ips" : [ "10.2.30.254/24" ], "vlan-untagged": 16 } ] } }'''
+        lib.moveDualHomedHost( main, "h4v4", "leaf2", "leaf3", "leaf2", "leaf3", "10.2.30.254", macAddr="00:aa:01:00:00:03", prefixLen=24, cfg=h4v4cfg )
+        hostLocations = { "h4v4": [ "of:0000000000000002/12", "of:0000000000000003/14" ] }
+        lib.verifyHostLocations( main, hostLocations )
+        verify( main )
+
+        h4v6cfg = '''{"of:0000000000000002/13" : { "interfaces" : [ { "ips" : [ "1003::3ff/120" ], "vlan-untagged": 24 } ] },
+                      "of:0000000000000003/15" : { "interfaces" : [ { "ips" : [ "1003::3ff/120" ], "vlan-untagged": 24 } ] } }'''
+        lib.moveDualHomedHost( main, "h4v6", "leaf2", "leaf3", "leaf2", "leaf3", "1003::3fe", macAddr="00:bb:01:00:00:03", prefixLen=128, cfg=h4v6cfg, ipv6=True )
+        hostLocations = { "h4v6": [ "of:0000000000000002/13", "of:0000000000000003/15" ] }
+        lib.verifyHostLocations( main, hostLocations )
+        verify( main )
+
+        # TODO: test static routes that point to the moved host
+        # TODO: test vlan tagged hosts

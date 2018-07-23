@@ -1235,7 +1235,7 @@ class Testcaselib:
                                  onfail="Location verification failed" )
 
     @staticmethod
-    def moveHost( main, hostName, srcSw, dstSw, gw, macAddr=None, prefixLen=None, cfg='', ipv6=False ):
+    def moveHost( main, hostName, srcSw, dstSw, gw, macAddr=None, prefixLen=None, cfg='', ipv6=False, vlan=None ):
         """
         Move specified host from srcSw to dstSw.
         If srcSw and dstSw are same, the host will be moved from current port to
@@ -1250,16 +1250,15 @@ class Testcaselib:
             prefixLen: prefix length
             cfg: port configuration as JSON string
             ipv6: Use True to move IPv6 host
+            vlan: vlan number of the host
         """
         if not hasattr( main, 'Mininet1' ):
             main.log.warn( "moveHost is supposed to be used only in Mininet." )
             return
 
-        main.step( "Moving host {} from {} to {}".format( hostName, srcSw, dstSw ) )
-        if ipv6:
-            main.Mininet1.moveHostv6( hostName, srcSw, dstSw, macAddr, prefixLen )
-        else:
-            main.Mininet1.moveHost( hostName, srcSw, dstSw, macAddr, prefixLen )
+        main.step( "Moving {} host {} from {} to {}".format( 'tagged' if vlan else 'untagged', hostName, srcSw, dstSw ) )
+        main.Mininet1.moveHost( hostName, srcSw, dstSw, macAddr, prefixLen, ipv6, vlan=vlan )
+        if not ipv6:
             main.Mininet1.changeDefaultGateway( hostName, gw )
         if cfg:
             main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
@@ -1282,7 +1281,7 @@ class Testcaselib:
 
     @staticmethod
     def moveDualHomedHost( main, hostName, srcSw, srcPairSw, dstSw, dstPairSw, gw,
-                           macAddr=None, prefixLen=24, cfg='', ipv6=False ):
+                           macAddr=None, prefixLen=24, cfg='', ipv6=False, vlan=None ):
         """
         Move specified dual-homed host from srcSw-srcPairSw to dstSw-dstPairSw.
         If srcSw-srcPairSw and dstSw-dstPairSw are same, the host will be moved from current port
@@ -1299,20 +1298,17 @@ class Testcaselib:
             prefixLen: prefix length
             cfg: port configurations as JSON string
             ipv6: Use True to move IPv6 host
+            vlan: vlan number of the host
         """
-        # TODO: support vlan-tagged hosts.
         if not hasattr( main, 'Mininet1' ):
             main.log.warn( "moveDualHomedHost is supposed to be used only in Mininet." )
             return
 
-        main.step( "Moving host {} from {} and {} to {} and {}".format( hostName, srcSw, srcPairSw,
-                                                                        dstSw, dstPairSw ) )
-        if ipv6:
-            main.Mininet1.moveDualHomedHostv6( hostName, srcSw, srcPairSw, dstSw, dstPairSw,
-                                               macAddr=macAddr, prefixLen=prefixLen )
-        else:
-            main.Mininet1.moveDualHomedHost( hostName, srcSw, srcPairSw, dstSw, dstPairSw,
-                                             macAddr=macAddr, prefixLen=prefixLen )
+        main.step( "Moving {} host {} from {} and {} to {} and {}".format( 'tagged' if vlan else 'untagged', hostName,
+                                                                           srcSw, srcPairSw, dstSw, dstPairSw ) )
+        main.Mininet1.moveDualHomedHost( hostName, srcSw, srcPairSw, dstSw, dstPairSw,
+                                         macAddr=macAddr, prefixLen=prefixLen, ipv6=ipv6, vlan=vlan )
+        if not ipv6:
             main.Mininet1.changeDefaultGateway( hostName, gw )
         if cfg:
             main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),

@@ -912,233 +912,6 @@ class MininetCliDriver( Emulator ):
         else:
             return main.TRUE
 
-    def moveHost( self, host, oldSw, newSw, macAddr=None, prefixLen=24 ):
-        """
-           Moves an IPv4 host from one switch to another on the fly
-           If macAddr is specified, change MAC address of the host interface
-           to specified MAC address.
-           Note: The intf between host and oldSw when detached
-                using detach(), will still show up in the 'net'
-                cmd, because switch.detach() doesn't affect switch.intfs[]
-                ( which is correct behavior since the interfaces
-                haven't moved ).
-        """
-        if self.handle:
-            try:
-                # Bring link between oldSw-host down
-                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'" + host +\
-                      "'," + "'down')"
-                print "cmd1= ", cmd
-                response = self.execute( cmd=cmd,
-                                         prompt="mininet>",
-                                         timeout=10 )
-
-                # Determine hostintf and Oldswitchintf
-                cmd = "px hintf,sintf = " + host + ".connectionsTo(" + oldSw +\
-                      ")[0]"
-                print "cmd2= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Determine ip and mac address of the host-oldSw interface
-                cmd = "px ipaddr = hintf.IP()"
-                print "cmd3= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                if macAddr is None:
-                    cmd = "px macaddr = hintf.MAC()"
-                else:
-                    cmd = 'px macaddr = "%s"' % macAddr
-                print "cmd3= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Detach interface between oldSw-host
-                cmd = "px " + oldSw + ".detach( sintf )"
-                print "cmd4= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Add link between host-newSw
-                cmd = "py net.addLink(" + host + "," + newSw + ")"
-                print "cmd5= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Determine hostintf and Newswitchintf
-                cmd = "px hintf,sintf = " + host + ".connectionsTo(" + newSw +\
-                      ")[-1]"
-                print "cmd6= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Attach interface between newSw-host
-                cmd = "px " + newSw + ".attach( sintf )"
-                print "cmd3= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Set ipaddress of the host-newSw interface
-                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf, " \
-                                     "prefixLen = %s )" % str( prefixLen )
-                print "cmd7 = ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Set macaddress of the host-newSw interface
-                cmd = "px " + host + ".setMAC( mac = macaddr, intf = hintf)"
-                print "cmd8 = ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                cmd = "net"
-                print "cmd9 = ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-                print "output = ", self.handle.before
-
-                # Determine ipaddress of the host-newSw interface
-                cmd = host + " ifconfig"
-                print "cmd10= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-                print "ifconfig o/p = ", self.handle.before
-
-                return main.TRUE
-
-            except pexpect.TIMEOUT:
-                main.log.error( self.name + ": TIMEOUT exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanAndExit()
-            except pexpect.EOF:
-                main.log.error( self.name + ": EOF exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
-                return main.FALSE
-            except Exception:
-                main.log.exception( self.name + ": Uncaught exception!" )
-                return main.FALSE
-
-    def moveHostv6( self, host, oldSw, newSw, macAddr=None, prefixLen=64 ):
-        """
-           Moves an IPv6 host from one switch to another on the fly
-           If macAddr is specified, change MAC address of the host interface
-           to specified MAC address.
-           Note: The intf between host and oldSw when detached
-                using detach(), will still show up in the 'net'
-                cmd, because switch.detach() doesn't affect switch.intfs[]
-                ( which is correct behavior since the interfaces
-                haven't moved ).
-        """
-        if self.handle:
-            try:
-                IP = str( self.getIPAddress( host, proto='IPV6' ) ) + "/" + str( prefixLen )
-                # Bring link between oldSw-host down
-                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'" + host +\
-                      "'," + "'down')"
-                print "cmd1= ", cmd
-                response = self.execute( cmd=cmd,
-                                         prompt="mininet>",
-                                         timeout=10 )
-
-                # Determine hostintf and Oldswitchintf
-                cmd = "px hintf,sintf = " + host + ".connectionsTo(" + oldSw +\
-                      ")[0]"
-                print "cmd2= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Determine ip and mac address of the host-oldSw interface
-                cmd = 'px ipaddr = "{}"'.format( IP )
-                print "cmd3= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                if macAddr is None:
-                    cmd = "px macaddr = hintf.MAC()"
-                else:
-                    cmd = 'px macaddr = "%s"' % macAddr
-                print "cmd3= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Detach interface between oldSw-host
-                cmd = "px " + oldSw + ".detach(sintf)"
-                print "cmd4= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Add link between host-newSw
-                cmd = "py net.addLink(" + host + "," + newSw + ")"
-                print "cmd5= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Determine hostintf and Newswitchintf
-                cmd = "px hintf,sintf = " + host + ".connectionsTo(" + newSw +\
-                      ")[-1]"
-                print "cmd6= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Attach interface between newSw-host
-                cmd = "px " + newSw + ".attach(sintf)"
-                print "cmd6= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Set macaddress of the host-newSw interface
-                cmd = "px " + host + ".setMAC(mac = macaddr, intf = hintf)"
-                print "cmd7 = ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                # Set ipaddress of the host-newSw interface
-                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf, " \
-                                     "prefixLen = %s )" % str( prefixLen )
-                print "cmd8 = ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                cmd = host + " ifconfig"
-                print "cmd9 =", cmd
-                response = self.execute( cmd = cmd, prompt="mininet>", timeout=10 )
-                print response
-                pattern = "-eth([\w])"
-                ipAddressSearch = re.search( pattern, response )
-                print ipAddressSearch.group( 1 )
-                intf = host + "-eth" + str( ipAddressSearch.group( 1 ) )
-                cmd = host + " ip -6 addr add %s dev %s" % ( IP, intf )
-                print "cmd10 = ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-
-                cmd = "net"
-                print "cmd11 = ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-                print "output = ", self.handle.before
-
-                # Determine ipaddress of the host-newSw interface
-                cmd = host + " ifconfig"
-                print "cmd12= ", cmd
-                self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )
-                print "ifconfig o/p = ", self.handle.before
-
-                return main.TRUE
-            except pexpect.TIMEOUT:
-                main.log.error( self.name + ": TIMEOUT exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanAndExit()
-            except pexpect.EOF:
-                main.log.error( self.name + ": EOF exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
-                return main.FALSE
-            except Exception:
-                main.log.exception( self.name + ": Uncaught exception!" )
-                return main.FALSE
-
     def changeIP( self, host, intf, newIP, newNetmask ):
         """
            Changes the ip address of a host on the fly
@@ -4053,80 +3826,73 @@ class MininetCliDriver( Emulator ):
             main.log.warn( "Interface status should be up or down!" )
             return main.FALSE
 
-    def moveDualHomedHost( self, host, oldSw, oldPairSw, newSw, newPairSw,
-                           macAddr=None, prefixLen=None, bondedName='bond1' ):
+    def moveHost( self, host, oldSw, newSw, macAddr=None, prefixLen=64, ipv6=False, intfSuffix="eth1", vlan=None ):
         """
-        Moves a dual-homed IPv4 host from one switch-pair to another pair on the fly
-        If macAddr is specified, change MAC address of the bonded host interface
-        to specified MAC address.
-        Assumes that the host has two interfaces (eth0 and eth1) originally.
+           Moves a host from one switch to another on the fly
+           Optional:
+               macAddr: when specified, change MAC address of the host interface to specified MAC address.
+               prefixLen: length of the host IP prefix
+               ipv6: move an IPv6 host if True
+               intfSuffix: suffix of the new interface after host movement
+               vlan: vlan ID of the host. Use None for non-vlan host
+           Note: The intf between host and oldSw when detached
+                using detach(), will still show up in the 'net'
+                cmd, because switch.detach() doesn't affect switch.intfs[]
+                ( which is correct behavior since the interfaces
+                haven't moved ).
         """
-
-        bond1 = "%s-%s" % ( host, bondedName )
-        newIntf = host + '-eth2'
-        newIntfPair = host + '-eth3'
-        commands = [
-            # Bring link between oldSw-host down
-            "py net.configLinkStatus('" + oldSw + "'," + "'" + host + "'," + "'down')",
-            # Bring link between oldPairSw-host down
-            "py net.configLinkStatus('" + oldPairSw + "'," + "'" + host + "'," + "'down')",
-            # Determine hostintf and Oldswitchintf
-            "px hintf,sintf = " + host + ".connectionsTo(" + oldSw + ")[0]",
-            # Determine ip and mac address of the host-oldSw interface
-            "px ipaddr = hintf.IP()",
-            "px macaddr = hintf.MAC()" if macAddr is None else 'px macaddr = "%s"' % macAddr,
-            # Detach interface between oldSw-host
-            "px " + oldSw + ".detach( sintf )",
-            # Determine hostintf and Oldpairswitchintf
-            "px sintfpair,hintfpair = " + oldPairSw + ".connectionsTo(" + host + ")[0]",
-            # Detach interface between oldPairSw-host
-            "px " + oldPairSw + ".detach( sintfpair )",
-            # Add link between host-newSw
-            "py net.addLink(" + host + "," + newSw + ", 2)",
-            # Add link between host-newPairSw
-            "py net.addLink(" + host + "," + newPairSw + ")",
-            # Determine hostintf and Newswitchintf
-            "px hintf,sintf = " + host + ".connectionsTo(" + newSw + ")[-1]",
-            # Determine hostintf and NewPairswitchintf
-            "px hintfpair,sintfpair = " + host + ".connectionsTo(" + newPairSw + ")[-1]",
-            # Attach interface between newSw-host
-            "px " + newSw + ".attach( sintf )",
-            # Attach interface between newPairSw-host
-            "px " + newPairSw + ".attach( sintfpair )",
-            # Bond two interfaces
-            host + ' ip link add %s type bond' % bond1,
-            host + ' ip link set %s down' % newIntf,
-            host + ' ip link set %s down' % newIntfPair,
-            host + ' ip link set %s master %s' % ( newIntf, bond1 ),
-            host + ' ip link set %s master %s' % ( newIntfPair, bond1 ),
-            host + ' ip addr flush dev %s' % newIntf,
-            host + ' ip addr flush dev %s' % newIntfPair,
-            host + ' ip link set %s up' % bond1,
-            "px lowestIntf = min( [ hintf, hintfpair ] )",
-            "px highestIntf = max( [ hintf, hintfpair ] )",
-            "px lowestIntf.name = '" + bond1 + "'",
-            "px " + host + ".nameToIntf['" + bond1 + "'] = lowestIntf",
-            "px del " + host + ".intfs[ " + host + ".ports[ highestIntf ] ]",
-            "px del " + host + ".ports[ highestIntf ]",
-            # Set ipaddress of the host-newSw interface
-            "px " + host + ".setIP( ip = ipaddr, intf = lowestIntf " +
-            ( ", prefixLen = %s )" % str( prefixLen ) if prefixLen is not None else " )" ),
-            # Set macaddress of the host-newSw interface
-            "px " + host + ".setMAC( mac = macaddr, intf = lowestIntf)",
-            "net",
-            # Determine ipaddress of the bonded host interface
-            host + " ifconfig",
-        ]
-
         if self.handle:
             try:
+                newIntf = "%s-%s" % ( host, intfSuffix )
+                commands = [
+                    # Bring link between oldSw-host down
+                    "py net.configLinkStatus('" + oldSw + "'," + "'" + host + "'," + "'down')",
+                    # Determine hostintf and Oldswitchintf
+                    "px hintf,sintf = " + host + ".connectionsTo(" + oldSw + ")[0]",
+                ]
+                # Determine ip address of the host-oldSw interface
+                IP = str( self.getIPAddress( host, proto='IPV6' if ipv6 else 'IPV4' ) ) + "/" + str( prefixLen )
+                commands.append( 'px ipaddr = "{}"'.format( IP ) )
+                commands += [
+                    # Determine mac address of the host-oldSw interface
+                    "px macaddr = hintf.MAC()" if macAddr is None else 'px macaddr = "%s"' % macAddr,
+                    # Detach interface between oldSw-host
+                    "px " + oldSw + ".detach( sintf )",
+                    # Add link between host-newSw
+                    "py net.addLink(" + host + "," + newSw + ")",
+                    # Determine hostintf and Newswitchintf
+                    "px hintf,sintf = " + host + ".connectionsTo(" + newSw + ")[-1]",
+                    # Attach interface between newSw-host
+                    "px " + newSw + ".attach( sintf )",
+                ]
+                if vlan:
+                    vlanIntf = "%s.%s" % ( newIntf, vlan )
+                    commands += [
+                        host + " ip link add link %s name %s type vlan id %s" % ( newIntf, vlanIntf, vlan ),
+                        host + " ip link set up %s" % vlanIntf,
+                        "px hintf.name = '" + vlanIntf + "'",
+                        "px " + host + ".nameToIntf[ '" + vlanIntf + "' ] = hintf"
+                    ]
+                    newIntf = vlanIntf
+                commands += [
+                    # Set mac address of the host-newSw interface
+                    "px " + host + ".setMAC( mac = macaddr, intf = hintf )",
+                    # Set IP address of the host-newSw interface
+                    "px " + host + ".setIP( ip = ipaddr, intf = hintf " +
+                    ( ", prefixLen = %s )" % str( prefixLen ) if prefixLen is not None else " )" )
+                ]
+                if ipv6:
+                    commands.append( host + " ip -6 addr add %s dev %s" % ( IP, newIntf ) )
+                commands += [
+                    "net",
+                    host + " ifconfig"
+                ]
                 for cmd in commands:
                     print "cmd= ", cmd
                     self.handle.sendline( cmd )
                     self.handle.expect( "mininet>" )
                     main.log.info( "====> %s ", self.handle.before )
                 return main.TRUE
-
             except pexpect.TIMEOUT:
                 main.log.error( self.name + ": TIMEOUT exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -4139,21 +3905,25 @@ class MininetCliDriver( Emulator ):
                 main.log.exception( self.name + ": Uncaught exception!" )
                 return main.FALSE
 
-    def moveDualHomedHostv6( self, host, oldSw, oldPairSw, newSw, newPairSw,
-                             macAddr=None, prefixLen=None, bondedName='bond1' ):
+    def moveDualHomedHost( self, host, oldSw, oldPairSw, newSw, newPairSw,
+                           macAddr=None, prefixLen=None, ipv6=False,
+                           intfSuffix1='eth2', intfSuffix2='eth3', bondSuffix='bond1', vlan=None ):
         """
-        Moves a dual-homed IPv6 host from one switch-pair to another pair on the fly
-        If macAddr is specified, change MAC address of the bonded host interface
-        to specified MAC address.
-        Assumes that the host has two interfaces (eth0 and eth1) originally.
+           Moves a dual-homed host from one switch-pair to another pair on the fly
+           Optional:
+               macAddr: when specified, change MAC address of the host interface to specified MAC address.
+               prefixLen: length of the host IP prefix
+               ipv6: move an IPv6 host if True
+               intfSuffix1: suffix of the first new interface
+               intfSuffix2: suffix of the second new interface
+               bondSuffix: suffix of the new bond interface
+               vlan: vlan ID of the host. Use None for non-vlan host
         """
-
         if self.handle:
             try:
-                IP = str( self.getIPAddress( host, proto='IPV6' ) ) + "/" + str( prefixLen )
-                bond1 = "%s-%s" % ( host, bondedName )
-                newIntf = host + '-eth2'
-                newIntfPair = host + '-eth3'
+                bondIntf = "%s-%s" % ( host, bondSuffix )
+                newIntf = "%s-%s" % ( host, intfSuffix1 )
+                newIntfPair = "%s-%s" % ( host, intfSuffix2 )
                 commands = [
                     # Bring link between oldSw-host down
                     "py net.configLinkStatus('" + oldSw + "'," + "'" + host + "'," + "'down')",
@@ -4161,8 +3931,12 @@ class MininetCliDriver( Emulator ):
                     "py net.configLinkStatus('" + oldPairSw + "'," + "'" + host + "'," + "'down')",
                     # Determine hostintf and Oldswitchintf
                     "px hintf,sintf = " + host + ".connectionsTo(" + oldSw + ")[0]",
-                    # Determine ip and mac address of the host-oldSw interface
-                    'px ipaddr = "{}"'.format( IP ),
+                ]
+                # Determine ip address of the host-oldSw interface
+                IP = str( self.getIPAddress( host, proto='IPV6' if ipv6 else 'IPV4' ) ) + "/" + str( prefixLen )
+                commands.append( 'px ipaddr = "{}"'.format( IP ) )
+                commands += [
+                    # Determine mac address of the host-oldSw interface
                     "px macaddr = hintf.MAC()" if macAddr is None else 'px macaddr = "%s"' % macAddr,
                     # Detach interface between oldSw-host
                     "px " + oldSw + ".detach( sintf )",
@@ -4183,38 +3957,49 @@ class MininetCliDriver( Emulator ):
                     # Attach interface between newPairSw-host
                     "px " + newPairSw + ".attach( sintfpair )",
                     # Bond two interfaces
-                    host + ' ip link add %s type bond' % bond1,
+                    host + ' ip link add %s type bond' % bondIntf,
                     host + ' ip link set %s down' % newIntf,
                     host + ' ip link set %s down' % newIntfPair,
-                    host + ' ip link set %s master %s' % ( newIntf, bond1 ),
-                    host + ' ip link set %s master %s' % ( newIntfPair, bond1 ),
+                    host + ' ip link set %s master %s' % ( newIntf, bondIntf ),
+                    host + ' ip link set %s master %s' % ( newIntfPair, bondIntf ),
                     host + ' ip addr flush dev %s' % newIntf,
                     host + ' ip addr flush dev %s' % newIntfPair,
-                    host + ' ip link set %s up' % bond1,
+                    host + ' ip link set %s up' % bondIntf,
                     "px lowestIntf = min( [ hintf, hintfpair ] )",
                     "px highestIntf = max( [ hintf, hintfpair ] )",
-                    "px lowestIntf.name = '" + bond1 + "'",
-                    "px " + host + ".nameToIntf['" + bond1 + "'] = lowestIntf",
+                    "px lowestIntf.name = '" + bondIntf + "'",
+                    "px " + host + ".nameToIntf['" + bondIntf + "'] = lowestIntf",
                     "px del " + host + ".intfs[ " + host + ".ports[ highestIntf ] ]",
                     "px del " + host + ".ports[ highestIntf ]",
+                ]
+                if vlan:
+                    vlanIntf = "%s.%s" % ( bondIntf, vlan )
+                    commands += [
+                        host + " ip link add link %s name %s type vlan id %s" % ( bondIntf, vlanIntf, vlan ),
+                        host + " ip link set up %s" % vlanIntf,
+                        "px lowestIntf.name = '" + vlanIntf + "'",
+                        "px " + host + ".nameToIntf[ '" + vlanIntf + "' ] = lowestIntf",
+                    ]
+                    bondIntf = vlanIntf
+                commands += [
+                    # Set macaddress of the host-newSw interface
+                    "px " + host + ".setMAC( mac = macaddr, intf = lowestIntf)",
                     # Set ipaddress of the host-newSw interface
                     "px " + host + ".setIP( ip = ipaddr, intf = lowestIntf " +
                     ( ", prefixLen = %s )" % str( prefixLen ) if prefixLen is not None else " )" ),
-                    # Set macaddress of the host-newSw interface
-                    "px " + host + ".setMAC( mac = macaddr, intf = lowestIntf)",
-                    host + " ip -6 addr add %s dev %s" % ( IP, bond1 ),
-                    "net",
-                    # Determine ipaddress of the bonded host interface
-                    host + " ifconfig",
                 ]
-
+                if ipv6:
+                    commands.append( host + " ip -6 addr add %s dev %s" % ( IP, bondIntf ) )
+                commands += [
+                    "net",
+                    host + " ifconfig"
+                ]
                 for cmd in commands:
                     print "cmd= ", cmd
                     self.handle.sendline( cmd )
                     self.handle.expect( "mininet>" )
                     main.log.info( "====> %s ", self.handle.before )
                 return main.TRUE
-
             except pexpect.TIMEOUT:
                 main.log.error( self.name + ": TIMEOUT exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )

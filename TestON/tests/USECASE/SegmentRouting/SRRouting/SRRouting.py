@@ -1306,10 +1306,12 @@ class SRRouting:
         verify( main )
 
         h1v6cfg = '{"of:0000000000000001/8" : { "interfaces" : [ { "ips" : [ "1000::3ff/120" ], "vlan-untagged": 21 } ] } }'
-        lib.moveHost( main, "h1v6", "leaf1", "leaf1", "1000::3fe", prefixLen=128, cfg=h1v6cfg, ipv6=True )
+        lib.moveHost( main, "h1v6", "leaf1", "leaf1", "1000::3ff", prefixLen=128, cfg=h1v6cfg, ipv6=True )
         hostLocations = { "h1v6": "of:0000000000000001/8" }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
+
+        # FIXME: We don't have any tagged hosts on DAAS-1
 
         h13v4cfg = '{"of:0000000000000006/7" : { "interfaces" : [ { "ips" : [ "10.5.20.254/24" ], "vlan-untagged": 20 } ] } }'
         lib.moveHost( main, "h13v4", "leaf6", "leaf6", "10.5.20.254", prefixLen=24, cfg=h13v4cfg )
@@ -1318,12 +1320,26 @@ class SRRouting:
         verify( main )
 
         h13v6cfg = '{"of:0000000000000006/8" : { "interfaces" : [ { "ips" : [ "1012::3ff/120" ], "vlan-untagged": 26 } ] } }'
-        lib.moveHost( main, "h13v6", "leaf6", "leaf6", "1012::3fe", prefixLen=128, cfg=h13v6cfg, ipv6=True )
+        lib.moveHost( main, "h13v6", "leaf6", "leaf6", "1012::3ff", prefixLen=128, cfg=h13v6cfg, ipv6=True )
         hostLocations = { "h13v6": "of:0000000000000006/8" }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
 
-        # TODO: test vlan tagged hosts
+        h12v4cfg = '{"of:0000000000000006/9" : { "interfaces" : [ { "ips" : [ "10.5.10.254/24" ], "vlan-tagged": [80] } ] } }'
+        lib.moveHost( main, "h12v4", "leaf6", "leaf6", "10.5.10.254", prefixLen=24, cfg=h12v4cfg, vlan=80 )
+        hostLocations = { "h12v4": "of:0000000000000006/9" }
+        lib.verifyHostLocations( main, hostLocations )
+        verify( main )
+
+        # FIXME: Due to CORD-3079, we are not able to test movement of tagged IPv6 hosts at the moment
+        '''
+        h12v6cfg = '{"of:0000000000000006/10" : { "interfaces" : [ { "ips" : [ "1011::3ff/120" ], "vlan-tagged": [127] } ] } }'
+        lib.moveHost( main, "h12v6", "leaf6", "leaf6", "1011::3ff", prefixLen=128, cfg=h12v6cfg, ipv6=True, vlan=127 )
+        hostLocations = { "h12v6": "of:0000000000000006/10" }
+        lib.verifyHostLocations( main, hostLocations )
+        verify( main )
+        '''
+
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE652( self, main ):
@@ -1355,8 +1371,14 @@ class SRRouting:
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
 
+        h5v4cfg = '''{"of:0000000000000002/14" : { "interfaces" : [ { "ips" : [ "10.2.20.254/24" ], "vlan-tagged": [30] } ] },
+                      "of:0000000000000003/16" : { "interfaces" : [ { "ips" : [ "10.2.20.254/24" ], "vlan-tagged": [30] } ] } }'''
+        lib.moveDualHomedHost( main, "h5v4", "leaf2", "leaf3", "leaf2", "leaf3", "10.2.20.254", prefixLen=24, cfg=h5v4cfg, vlan=30 )
+        hostLocations = { "h5v4": [ "of:0000000000000002/14", "of:0000000000000003/16" ] }
+        lib.verifyHostLocations( main, hostLocations )
+        verify( main )
+
         # TODO: test static routes that point to the moved host
-        # TODO: test vlan tagged hosts
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE653( self, main ):
@@ -1388,6 +1410,12 @@ class SRRouting:
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
 
+        h5v4cfg = '''{"of:0000000000000002/14" : { "interfaces" : [ { "ips" : [ "10.2.20.254/24" ], "vlan-tagged": [30] } ] },
+                      "of:0000000000000003/16" : { "interfaces" : [ { "ips" : [ "10.2.20.254/24" ], "vlan-tagged": [30] } ] } }'''
+        lib.moveDualHomedHost( main, "h5v4", "leaf2", "leaf3", "leaf2", "leaf3", "10.2.20.254", macAddr="00:aa:01:00:00:04", prefixLen=24, cfg=h5v4cfg, vlan=30 )
+        hostLocations = { "h5v4": [ "of:0000000000000002/14", "of:0000000000000003/16" ] }
+        lib.verifyHostLocations( main, hostLocations )
+        verify( main )
+
         # TODO: test static routes that point to the moved host
-        # TODO: test vlan tagged hosts
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )

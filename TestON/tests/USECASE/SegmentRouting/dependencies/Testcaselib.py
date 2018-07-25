@@ -1102,23 +1102,71 @@ class Testcaselib:
         main.Cluster.active( 0 ).REST.setNetCfg( json.loads( json.dumps( cfg ) ) )
 
     @staticmethod
-    def startScapyHosts( main ):
+    def startScapyHosts( main, scapyNames=[], mininetNames=[] ):
         """
         Create host components and start Scapy CLIs
+        scapyNames: list of names that will be used as component names for scapy hosts
+        mininetNames: used when scapy host names are different from the host names
+        in Mininet. E.g. when scapyNames=['h1Scapy'], it's required to specify the
+        name of the corresponding Mininet host by mininetNames=['h1']
         """
         main.step( "Start Scapy CLIs" )
-        main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
+        if scapyNames:
+            main.scapyNames = scapyNames
+        else:
+            main.scapyNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
         main.scapyHosts = []
-        for hostName in main.scapyHostNames:
-            main.Scapy.createHostComponent( hostName )
-            main.scapyHosts.append( getattr( main, hostName ) )
-        for host in main.scapyHosts:
-            host.startHostCli()
-            host.startScapy()
-            host.updateSelf()
-            main.log.debug( host.name )
-            main.log.debug( host.hostIp )
-            main.log.debug( host.hostMac )
+        for scapyName in main.scapyNames:
+            main.Scapy.createHostComponent( scapyName )
+            scapyHandle = getattr( main, scapyName )
+            main.scapyHosts.append( scapyHandle )
+            if mininetNames:
+                mininetName = mininetNames[ scapyNames.index( scapyName ) ]
+            else:
+                mininetName = None
+            scapyHandle.startHostCli( mininetName )
+            scapyHandle.startScapy()
+            scapyHandle.updateSelf()
+            main.log.debug( scapyHandle.name )
+            main.log.debug( scapyHandle.hostIp )
+            main.log.debug( scapyHandle.hostMac )
+
+    @staticmethod
+    def verifyTraffic( main, srcHosts, dstIp, dstHost, dstIntf, ipv6=False, expect=True, skipOnFail=True, maxRetry=2 ):
+        """
+        Verify unicast traffic by pinging from source hosts to the destination IP
+        and capturing the packets at the destination host using Scapy.
+        srcHosts: List of host names to send the ping packets
+        dstIp: destination IP of the ping packets
+        dstHost: host that runs Scapy to capture the packets
+        dstIntf: name of the interface on the destination host
+        expect: use True if the ping is expected to be captured at destination;
+                Otherwise False
+        skipOnFail: skip the rest of this test case if result is not expected
+        maxRetry: number of retries allowed
+        """
+        from tests.dependencies.topology import Topology
+        try:
+            main.topo
+        except ( NameError, AttributeError ):
+            main.topo = Topology()
+        main.step( "Verify traffic to {} by capturing packets on {}".format( dstIp, dstHost ) )
+        result = main.TRUE
+        for srcHost in srcHosts:
+            trafficResult = main.topo.pingAndCapture( srcHost, dstIp, dstHost, dstIntf, ipv6,
+                                                      expect, maxRetry, True )
+            if not trafficResult:
+                main.stop()
+                result = main.FALSE
+                main.log.warn( "Scapy result from {} to {} is not as expected".format( srcHost, dstIp ) )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=result,
+                                 onpass="Verify traffic to {}: Pass".format( dstIp ),
+                                 onfail="Verify traffic to {}: Fail".format( dstIp ) )
+        if skipOnFail and result != main.TRUE:
+            Testcaselib.saveOnosDiagnostics( main )
+            Testcaselib.cleanup( main, copyKarafLog=False )
+            main.skipCase()
 
     @staticmethod
     def verifyMulticastTraffic( main, routeName, expect, skipOnFail=True, maxRetry=1 ):

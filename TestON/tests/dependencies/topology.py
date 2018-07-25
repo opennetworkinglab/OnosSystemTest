@@ -308,9 +308,8 @@ class Topology:
     def sendScapyPackets( self, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True, acceptableFailed=0, collectT3=True, t3Command="" ):
         """
         Description:
-            Call sendScapyPacket and retry if neccessary
+            Send Scapy packets from sender to receiver and verify if result is as expected and retry if neccessary
             If collectT3 is True and t3Command is specified, collect t3-troubleshoot output on unexpected scapy results
-            Buiid packets on the sender side by calling functions in Scapy CLI driver
         Options:
             sender: the component of the host that is sending packets
             receiver: the component of the host that is receiving packets
@@ -321,10 +320,11 @@ class Topology:
             collectT3: save t3-troubleshoot output for unexpected scapy results
         Returns:
             main.TRUE if scapy result is expected, otherwise main.FALSE
+        Note: It is assumed that Scapy is already started on the destination host
         """
         main.log.info( "Sending scapy packets from  {} to {}, expected result is {}".format( sender.name, receiver.name,
                                                                                              "pass" if expect else "fail" ) )
-        scapyResult = utilities.retry( self.sendScapyPacket,
+        scapyResult = utilities.retry( self.sendScapyPacketsHelper,
                                        main.FALSE,
                                        args=( sender, receiver, pktFilter, pkt,
                                               sIface, dIface, expect ),
@@ -337,7 +337,7 @@ class Topology:
                                         "t3-CASE{}-{}-{}-".format( main.CurrentTestCaseNumber, sender.name, receiver.name ) )
         return scapyResult
 
-    def sendScapyPacket( self, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True ):
+    def sendScapyPacketsHelper( self, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True ):
         """
         Description:
             Send Scapy packets from sender to receiver and verify if result is as expected
@@ -365,4 +365,84 @@ class Topology:
             sender.handle.expect( sender.scapyPrompt )
             main.log.debug( sender.handle.before )
         packetCaptured = True if pkt in packet else False
+        return main.TRUE if packetCaptured == expect else main.FALSE
+
+    def pingAndCapture( self, srcHost, dstIp, dstHost, dstIntf, ipv6=False, expect=True, acceptableFailed=0, collectT3=True, t3Simple=False ):
+        """
+        Description:
+            Ping from src host to dst IP and capture packets at dst Host using Scapy and retry if neccessary
+            If collectT3 is True, collect t3-troubleshoot output on unexpected scapy results
+        Options:
+            srcHost: name of the source host
+            dstIp: destination IP of the ping packets
+            dstHost: host that runs Scapy to capture the packets
+            dstIntf: name of the interface on the destination host
+            ipv6: ping with IPv6 if True; Otherwise IPv4
+            expect: use True if the ping is expected to be captured at destination;
+                    Otherwise False
+            acceptableFailed: maximum number of failed pings acceptable
+            collectT3: save t3-troubleshoot output for src and dst host that failed to ping
+            t3Simple: use t3-troubleshoot-simple command when collecting t3 output
+        Returns:
+            main.TRUE if packet capturing result is expected, otherwise main.FALSE
+        Note: It is assumed that Scapy is already started on the destination host
+        """
+        main.log.info( "Pinging from {} to {}, expected {} capture the packet at {}".format( srcHost, dstIp,
+                       "to" if expect else "not to", dstHost ) )
+        # Verify host component has been created
+        if not hasattr( main, srcHost ):
+            main.log.info( "Creating component for host {}".format( srcHost ) )
+            main.Network.createHostComponent( srcHost )
+            srcHandle = getattr( main, srcHost )
+            main.log.info( "Starting CLI on host {}".format( srcHost ) )
+            srcHandle.startHostCli()
+        trafficResult = utilities.retry( self.pingAndCaptureHelper,
+                                         main.FALSE,
+                                         args=( srcHost, dstIp, dstHost, dstIntf, ipv6, expect ),
+                                         attempts=acceptableFailed + 1,
+                                         sleep=1 )
+        if not trafficResult and collectT3:
+            srcIp = main.Network.getIPAddress( srcHost, proto='IPV6' if ipv6 else 'IPV4' )
+            main.log.debug( "Collecting t3 with source {} and destination {}".format( srcIp, dstIp ) )
+            cmdList = main.Cluster.active( 0 ).CLI.composeT3Command( srcIp, dstIp, ipv6, True, t3Simple )
+            if not cmdList:
+                main.log.warn( "Failed to compose T3 command with source {} and destination {}".format( srcIp, dstIp ) )
+            for i in range( 0, len( cmdList ) ):
+                cmd = cmdList[ i ]
+                main.log.debug( "t3 command: {}".format( cmd ) )
+                main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, cmd, main.logdir,
+                                            "t3-CASE{}-{}-{}-route{}-".format( main.CurrentTestCaseNumber, srcIp, dstIp, i ),
+                                            timeout=10 )
+        return trafficResult
+
+    def pingAndCaptureHelper( self, srcHost, dstIp, dstHost, dstIntf, ipv6=False, expect=True ):
+        """
+        Description:
+            Ping from src host to dst IP and capture packets at dst Host using Scapy
+        Options:
+            srcHost: name of the source host
+            dstIp: destination IP of the ping packets
+            dstHost: host that runs Scapy to capture the packets
+            dstIntf: name of the interface on the destination host
+            ipv6: ping with IPv6 if True; Otherwise IPv4
+            expect: use True if the ping is expected to be captured at destination;
+                    Otherwise False
+        Returns:
+            main.TRUE if packet capturing result is expected, otherwise main.FALSE
+        """
+        packetCaptured = True
+        srcHandle = getattr( main, srcHost )
+        dstHandle = getattr( main, dstHost )
+        dstHandle.startFilter( ifaceName=dstIntf, pktFilter="ip host {}".format( dstIp ) )
+        srcHandle.pingHostSetAlternative( [ dstIp ], IPv6=ipv6 )
+        finished = dstHandle.checkFilter()
+        packet = ""
+        if finished:
+            packets = dstHandle.readPackets()
+            for packet in packets.splitlines():
+                main.log.debug( packet )
+        else:
+            kill = dstHandle.killFilter()
+            main.log.debug( kill )
+        packetCaptured = True if "dst={}".format( dstIp ) in packet else False
         return main.TRUE if packetCaptured == expect else main.FALSE

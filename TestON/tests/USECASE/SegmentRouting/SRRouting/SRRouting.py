@@ -1298,39 +1298,38 @@ class SRRouting:
         main.Cluster.active( 0 ).CLI.balanceMasters()
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
-
+        # Move an untagged IPv4 host on DAAS-1
         h1v4cfg = '{"of:0000000000000001/7" : { "interfaces" : [ { "ips" : [ "10.1.0.254/24" ], "vlan-untagged": 10 } ] } }'
         lib.moveHost( main, "h1v4", "leaf1", "leaf1", "10.1.0.254", prefixLen=24, cfg=h1v4cfg )
         hostLocations = { "h1v4": "of:0000000000000001/7" }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
-
+        # Move an untagged IPv6 host on DAAS-1
         h1v6cfg = '{"of:0000000000000001/8" : { "interfaces" : [ { "ips" : [ "1000::3ff/120" ], "vlan-untagged": 21 } ] } }'
         lib.moveHost( main, "h1v6", "leaf1", "leaf1", "1000::3ff", prefixLen=128, cfg=h1v6cfg, ipv6=True )
         hostLocations = { "h1v6": "of:0000000000000001/8" }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
-
         # FIXME: We don't have any tagged hosts on DAAS-1
 
+        # Move an untagged IPv4 host on DAAS-2
         h13v4cfg = '{"of:0000000000000006/7" : { "interfaces" : [ { "ips" : [ "10.5.20.254/24" ], "vlan-untagged": 20 } ] } }'
         lib.moveHost( main, "h13v4", "leaf6", "leaf6", "10.5.20.254", prefixLen=24, cfg=h13v4cfg )
         hostLocations = { "h13v4": "of:0000000000000006/7" }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
-
+        # Move an untagged IPv6 host on DAAS-2
         h13v6cfg = '{"of:0000000000000006/8" : { "interfaces" : [ { "ips" : [ "1012::3ff/120" ], "vlan-untagged": 26 } ] } }'
         lib.moveHost( main, "h13v6", "leaf6", "leaf6", "1012::3ff", prefixLen=128, cfg=h13v6cfg, ipv6=True )
         hostLocations = { "h13v6": "of:0000000000000006/8" }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
-
+        # Move a tagged IPv4 host on DAAS-2
         h12v4cfg = '{"of:0000000000000006/9" : { "interfaces" : [ { "ips" : [ "10.5.10.254/24" ], "vlan-tagged": [80] } ] } }'
         lib.moveHost( main, "h12v4", "leaf6", "leaf6", "10.5.10.254", prefixLen=24, cfg=h12v4cfg, vlan=80 )
         hostLocations = { "h12v4": "of:0000000000000006/9" }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
-
         # FIXME: Due to CORD-3079, we are not able to test movement of tagged IPv6 hosts at the moment
         '''
         h12v6cfg = '{"of:0000000000000006/10" : { "interfaces" : [ { "ips" : [ "1011::3ff/120" ], "vlan-tagged": [127] } ] } }'
@@ -1357,28 +1356,42 @@ class SRRouting:
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
 
+        # Move an untagged IPv4 host
+        lib.addStaticOnosRoute( main, "10.2.31.0/24", "10.2.30.1" )
+        lib.startScapyHosts( main, scapyNames=[ 'h4v4Scapy' ], mininetNames=[ 'h4v4' ] )
+        lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.31.1", "h4v4Scapy", "h4v4-bond0" )
         h4v4cfg = '''{"of:0000000000000002/12" : { "interfaces" : [ { "ips" : [ "10.2.30.254/24" ], "vlan-untagged": 16 } ] },
                       "of:0000000000000003/14" : { "interfaces" : [ { "ips" : [ "10.2.30.254/24" ], "vlan-untagged": 16 } ] } }'''
         lib.moveDualHomedHost( main, "h4v4", "leaf2", "leaf3", "leaf2", "leaf3", "10.2.30.254", prefixLen=24, cfg=h4v4cfg )
         hostLocations = { "h4v4": [ "of:0000000000000002/12", "of:0000000000000003/14" ] }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
+        lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.31.1", "h4v4Scapy", "h4v4-bond1" )
 
+        # Move an untagged IPv6 host
+        lib.addStaticOnosRoute( main, "1003::400/120", "1003::3fe" )
+        lib.startScapyHosts( main, scapyNames=[ 'h4v6Scapy' ], mininetNames=[ 'h4v6' ] )
+        lib.verifyTraffic( main, main.internalIpv6Hosts, "1003::4fe", "h4v6Scapy", "h4v6-bond0", ipv6=True )
         h4v6cfg = '''{"of:0000000000000002/13" : { "interfaces" : [ { "ips" : [ "1003::3ff/120" ], "vlan-untagged": 24 } ] },
                       "of:0000000000000003/15" : { "interfaces" : [ { "ips" : [ "1003::3ff/120" ], "vlan-untagged": 24 } ] } }'''
         lib.moveDualHomedHost( main, "h4v6", "leaf2", "leaf3", "leaf2", "leaf3", "1003::3fe", prefixLen=128, cfg=h4v6cfg, ipv6=True )
         hostLocations = { "h4v6": [ "of:0000000000000002/13", "of:0000000000000003/15" ] }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
+        lib.verifyTraffic( main, main.internalIpv6Hosts, "1003::4fe", "h4v6Scapy", "h4v6-bond1", ipv6=True )
 
+        # Move a tagged IPv4 host
+        lib.addStaticOnosRoute( main, "10.2.21.0/24", "10.2.20.1" )
+        lib.startScapyHosts( main, scapyNames=[ 'h5v4Scapy' ], mininetNames=[ 'h5v4' ] )
+        lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.21.1", "h5v4Scapy", "h5v4-bond0" )
         h5v4cfg = '''{"of:0000000000000002/14" : { "interfaces" : [ { "ips" : [ "10.2.20.254/24" ], "vlan-tagged": [30] } ] },
                       "of:0000000000000003/16" : { "interfaces" : [ { "ips" : [ "10.2.20.254/24" ], "vlan-tagged": [30] } ] } }'''
         lib.moveDualHomedHost( main, "h5v4", "leaf2", "leaf3", "leaf2", "leaf3", "10.2.20.254", prefixLen=24, cfg=h5v4cfg, vlan=30 )
         hostLocations = { "h5v4": [ "of:0000000000000002/14", "of:0000000000000003/16" ] }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
+        lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.21.1", "h5v4Scapy", "h5v4-bond1" )
 
-        # TODO: test static routes that point to the moved host
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE653( self, main ):
@@ -1396,26 +1409,40 @@ class SRRouting:
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
 
+        # Move an untagged IPv4 host
+        lib.addStaticOnosRoute( main, "10.2.31.0/24", "10.2.30.1" )
+        lib.startScapyHosts( main, scapyNames=[ 'h4v4Scapy' ], mininetNames=[ 'h4v4' ] )
+        lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.31.1", "h4v4Scapy", "h4v4-bond0" )
         h4v4cfg = '''{"of:0000000000000002/12" : { "interfaces" : [ { "ips" : [ "10.2.30.254/24" ], "vlan-untagged": 16 } ] },
                       "of:0000000000000003/14" : { "interfaces" : [ { "ips" : [ "10.2.30.254/24" ], "vlan-untagged": 16 } ] } }'''
         lib.moveDualHomedHost( main, "h4v4", "leaf2", "leaf3", "leaf2", "leaf3", "10.2.30.254", macAddr="00:aa:01:00:00:03", prefixLen=24, cfg=h4v4cfg )
         hostLocations = { "h4v4": [ "of:0000000000000002/12", "of:0000000000000003/14" ] }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
+        lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.31.1", "h4v4Scapy", "h4v4-bond1" )
 
+        # Move an untagged IPv6 host
+        lib.addStaticOnosRoute( main, "1003::400/120", "1003::3fe" )
+        lib.startScapyHosts( main, scapyNames=[ 'h4v6Scapy' ], mininetNames=[ 'h4v6' ] )
+        lib.verifyTraffic( main, main.internalIpv6Hosts, "1003::4fe", "h4v6Scapy", "h4v6-bond0", ipv6=True )
         h4v6cfg = '''{"of:0000000000000002/13" : { "interfaces" : [ { "ips" : [ "1003::3ff/120" ], "vlan-untagged": 24 } ] },
                       "of:0000000000000003/15" : { "interfaces" : [ { "ips" : [ "1003::3ff/120" ], "vlan-untagged": 24 } ] } }'''
         lib.moveDualHomedHost( main, "h4v6", "leaf2", "leaf3", "leaf2", "leaf3", "1003::3fe", macAddr="00:bb:01:00:00:03", prefixLen=128, cfg=h4v6cfg, ipv6=True )
         hostLocations = { "h4v6": [ "of:0000000000000002/13", "of:0000000000000003/15" ] }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
+        lib.verifyTraffic( main, main.internalIpv6Hosts, "1003::4fe", "h4v6Scapy", "h4v6-bond1", ipv6=True )
 
+        # Move a tagged IPv4 host
+        lib.addStaticOnosRoute( main, "10.2.21.0/24", "10.2.20.1" )
+        lib.startScapyHosts( main, scapyNames=[ 'h5v4Scapy' ], mininetNames=[ 'h5v4' ] )
+        lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.21.1", "h5v4Scapy", "h5v4-bond0" )
         h5v4cfg = '''{"of:0000000000000002/14" : { "interfaces" : [ { "ips" : [ "10.2.20.254/24" ], "vlan-tagged": [30] } ] },
                       "of:0000000000000003/16" : { "interfaces" : [ { "ips" : [ "10.2.20.254/24" ], "vlan-tagged": [30] } ] } }'''
         lib.moveDualHomedHost( main, "h5v4", "leaf2", "leaf3", "leaf2", "leaf3", "10.2.20.254", macAddr="00:aa:01:00:00:04", prefixLen=24, cfg=h5v4cfg, vlan=30 )
         hostLocations = { "h5v4": [ "of:0000000000000002/14", "of:0000000000000003/16" ] }
         lib.verifyHostLocations( main, hostLocations )
         verify( main )
+        lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.21.1", "h5v4Scapy", "h5v4-bond1" )
 
-        # TODO: test static routes that point to the moved host
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )

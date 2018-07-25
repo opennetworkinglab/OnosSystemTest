@@ -32,5 +32,15 @@
             </COMPONENTS>
         </Mininet1>
 
+        <Scapy>
+            <host>OCN</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>MininetScapyCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+                <prompt></prompt>
+            </COMPONENTS>
+        </Scapy>
     </COMPONENT>
 </TOPOLOGY>

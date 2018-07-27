@@ -1446,3 +1446,173 @@ class SRRouting:
         lib.verifyTraffic( main, main.internalIpv4Hosts, "10.2.21.1", "h5v4Scapy", "h5v4-bond1" )
 
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE660( self, main ):
+        """
+        External router failure
+        - Bring down quagga external router-1. Hosts that are behind router-2 should still be reachable. Hosts that are behind router-1 should not be reachable.
+        - Bring router up again, all external hosts are reachable again.
+        - Repeat this with external router-2.
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "External router failure with cross-link" )
+        setupTest( main, test_idx=660, onosNodes=3, static=True )
+        main.externalIpv4Hosts += main.staticIpv4Hosts
+        main.externalIpv6Hosts += main.staticIpv6Hosts
+        verify( main, disconnected=False )
+        # Bring down/up external router-1
+        verifyRouterFailure( main, "r1", [ "rh5v4" ], [ "rh11v6", "rh5v6" ] )
+        # Bring down/up external router-2
+        verifyRouterFailure( main, "r2", [], [ "rh22v6" ] )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE661( self, main ):
+        """
+        External router link failure
+        - Drop a non-cross-link for external router-1. All external hosts should be reachable (via cross-link).
+        - Bring up the link. All external hosts should be reachable.
+        - Repeat the steps above with the cross-link of external router-1
+        - Repeat all steps above with external router-2
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "External router link failure with cross-link" )
+        setupTest( main, test_idx=661, onosNodes=3, static=True )
+        main.externalIpv4Hosts += main.staticIpv4Hosts
+        main.externalIpv6Hosts += main.staticIpv6Hosts
+        verify( main, disconnected=False )
+        # Bring down/up a non-cross-link for external router-1
+        portsToDisable = [ [ "of:0000000000000005", 13 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        lib.enablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        # Bring down/up a cross-link for external router-1
+        portsToDisable = [ [ "of:0000000000000005", 14 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        lib.enablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        # Bring down/up a non-cross-link for external router-2
+        portsToDisable = [ [ "of:0000000000000004", 14 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        lib.enablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        # Bring down/up a cross-link for external router-2
+        portsToDisable = [ [ "of:0000000000000004", 13 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        lib.enablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE662( self, main ):
+        """
+        Internal router failure
+        - Bring down quagga internal router-1. All external hosts should be reachable (via cross-link).
+        - Bring the router up. All external hosts should be reachable.
+        - Repeat this with internal router-2.
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Internal router failure with cross-link" )
+        setupTest( main, test_idx=662, onosNodes=3, static=True )
+        main.externalIpv4Hosts += main.staticIpv4Hosts
+        main.externalIpv6Hosts += main.staticIpv6Hosts
+        verify( main, disconnected=False )
+        # Bring down/up internal router-1
+        verifyRouterFailure( main, "bgp1" )
+        # Bring down/up internal router-2
+        verifyRouterFailure( main, "bgp2" )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE663( self, main ):
+        """
+        External router failure without cross-link
+        - Drop the cross-link for both external routers. All external hosts should be reachable.
+        - Bring down quagga external router-1. Hosts that are behind router-2 should still be reachable. Hosts that are behind router-1 should not be reachable.
+        - Bring router up again, all external hosts are reachable again.
+        - Repeat this with external router-2.
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "External router failure without cross-link" )
+        setupTest( main, test_idx=663, onosNodes=3, static=True )
+        main.externalIpv4Hosts += main.staticIpv4Hosts
+        main.externalIpv6Hosts += main.staticIpv6Hosts
+        verify( main, disconnected=False )
+        # Drop the cross-link
+        portsToDisable = [ [ "of:0000000000000004", 13 ], [ "of:0000000000000005", 14 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        # Bring down/up external router-1
+        verifyRouterFailure( main, "r1", [ "rh5v4" ], [ "rh11v6", "rh5v6" ] )
+        # Bring down/up external router-2
+        verifyRouterFailure( main, "r2", [], [ "rh22v6" ] )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE664( self, main ):
+        """
+        External router link failure without cross-link
+        - Drop the cross-link for both external routers. All external hosts should be reachable.
+        - Drop an extra link for external router-1. Only hosts connected to router-2 should be reachable.
+        - Bring up single link for external router-1. All external hosts should be reachable.
+        - Repeat the two steps above with external router-2
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "External router link failure without cross-link" )
+        setupTest( main, test_idx=664, onosNodes=3, static=True )
+        main.externalIpv4Hosts += main.staticIpv4Hosts
+        main.externalIpv6Hosts += main.staticIpv6Hosts
+        verify( main, disconnected=False )
+        # Drop the cross-link
+        portsToDisable = [ [ "of:0000000000000004", 13 ], [ "of:0000000000000005", 14 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        # Bring down/up a non-cross-link for external router-1
+        portsToDisable = [ [ "of:0000000000000005", 13 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        main.disconnectedExternalIpv4Hosts = [ 'rh5v4' ]
+        main.disconnectedExternalIpv6Hosts = [ "rh11v6", "rh5v6" ]
+        verify( main, internal=False )
+        lib.enablePortBatch( main, portsToDisable, 10, 48 )
+        main.disconnectedExternalIpv4Hosts = []
+        main.disconnectedExternalIpv6Hosts = []
+        verify( main, disconnected=False, internal=False )
+        # Bring down/up a non-cross-link for external router-2
+        portsToDisable = [ [ "of:0000000000000004", 14 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        main.disconnectedExternalIpv6Hosts = [ "rh22v6" ]
+        verify( main, internal=False )
+        lib.enablePortBatch( main, portsToDisable, 10, 48 )
+        main.disconnectedExternalIpv6Hosts = []
+        verify( main, disconnected=False, internal=False )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE665( self, main ):
+        """
+        Internal router failure without cross-link
+        - Drop the cross-link for both external routers. All external hosts should be reachable.
+        - Bring down quagga internal router-1. Hosts that are behind router-2 should still be reachable. Hosts that are behind router-1 should not be reachable.
+        - Bring router up again, all external hosts are reachable again.
+        - Repeat this with internal router-2.
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Internal router failure without cross-link" )
+        setupTest( main, test_idx=665, onosNodes=3, static=True )
+        main.externalIpv4Hosts += main.staticIpv4Hosts
+        main.externalIpv6Hosts += main.staticIpv6Hosts
+        verify( main, disconnected=False )
+        # Drop the cross-link
+        portsToDisable = [ [ "of:0000000000000004", 13 ], [ "of:0000000000000005", 14 ] ]
+        lib.disablePortBatch( main, portsToDisable, 10, 48 )
+        verify( main, disconnected=False, internal=False )
+        # Bring down/up internal router-1
+        verifyRouterFailure( main, "bgp1", [], [ "rh22v6" ] )
+        # Bring down/up internal router-2
+        verifyRouterFailure( main, "bgp2", [ "rh5v4" ], [ "rh11v6", "rh5v6" ] )
+        lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )

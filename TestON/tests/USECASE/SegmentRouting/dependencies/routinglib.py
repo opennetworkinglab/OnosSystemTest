@@ -156,6 +156,14 @@ class QuaggaRouter(Router):
         if self.defaultRoute:
             self.cmd('ip route add default via %s' % self.defaultRoute)
 
+    def stopProtocols(self, **kwargs):
+        for p in self.protocols:
+            p.stop(**kwargs)
+
+    def startProtocols(self, **kwargs):
+        for p in self.protocols:
+            p.start(**kwargs)
+
     def terminate(self, **kwargs):
         self.cmd("ps ax | grep '%s' | awk '{print $1}' | xargs kill"
                  % (self.socket))
@@ -173,6 +181,12 @@ class Protocol(object):
         self.qr = qr
 
     def config(self, **kwargs):
+        pass
+
+    def stop(self, **kwargs):
+        pass
+
+    def start(self, **kwargs):
         pass
 
     def terminate(self, **kwargs):
@@ -196,6 +210,14 @@ class BgpProtocol(Protocol):
 
         bgpdPidFile = '%s/bgpd%s.pid' % (self.qr.runDir, self.qr.name)
 
+        self.qr.cmd('%s/bgpd -d -f %s -z %s -i %s'
+                     % (QuaggaRouter.binDir, self.configFile, self.qr.socket, bgpdPidFile))
+
+    def stop(self, **kwargs):
+        self.qr.cmd('pkill -f %s' % self.configFile)
+
+    def start(self, **kwargs):
+        bgpdPidFile = '%s/bgpd%s.pid' % (self.qr.runDir, self.qr.name)
         self.qr.cmd('%s/bgpd -d -f %s -z %s -i %s'
                      % (QuaggaRouter.binDir, self.configFile, self.qr.socket, bgpdPidFile))
 

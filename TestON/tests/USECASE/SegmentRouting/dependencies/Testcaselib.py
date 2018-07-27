@@ -781,6 +781,40 @@ class Testcaselib:
                                  onfail="Failed to recover switch?" )
 
     @staticmethod
+    def killRouter( main, router, sleep=None ):
+        """
+        Kill bgpd process on a quagga router
+        router: name of the router to be killed. E.g. "bgp1"
+        """
+        sleep = float( sleep )
+        main.step( "Kill " + str( router ) )
+        if hasattr( main, 'Mininet1' ):
+            main.Mininet1.handle.sendline( "px {}.stopProtocols()".format( router ) )
+            main.Mininet1.handle.expect( "mininet>" )
+        else:
+            # TODO: support killing router in physical network
+            pass
+        main.log.info( "Waiting %s seconds for router down to be discovered" % ( sleep ) )
+        time.sleep( sleep )
+
+    @staticmethod
+    def recoverRouter( main, router, sleep=None ):
+        """
+        Restart bgpd process on a quagga router
+        router: name of the router to be recovered. E.g. "bgp1"
+        """
+        sleep = float( sleep )
+        main.step( "Recovering " + str( router ) )
+        if hasattr( main, 'Mininet1' ):
+            main.Mininet1.handle.sendline( "px {}.startProtocols()".format( router ) )
+            main.Mininet1.handle.expect( "mininet>" )
+        else:
+            # TODO: support recovering router in physical network
+            pass
+        main.log.info( "Waiting %s seconds for router up to be discovered" % ( sleep ) )
+        time.sleep( sleep )
+
+    @staticmethod
     def cleanup( main, copyKarafLog=True, removeHostComponent=False ):
         """
         Stop Onos-cluster.

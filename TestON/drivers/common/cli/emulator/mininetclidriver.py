@@ -3888,7 +3888,7 @@ class MininetCliDriver( Emulator ):
                     host + " ifconfig"
                 ]
                 for cmd in commands:
-                    print "cmd= ", cmd
+                    main.log.info( "cmd={}".format( cmd ) )
                     self.handle.sendline( cmd )
                     self.handle.expect( "mininet>" )
                     main.log.info( "====> %s ", self.handle.before )
@@ -3995,7 +3995,7 @@ class MininetCliDriver( Emulator ):
                     host + " ifconfig"
                 ]
                 for cmd in commands:
-                    print "cmd= ", cmd
+                    main.log.info( "cmd={}".format( cmd ) )
                     self.handle.sendline( cmd )
                     self.handle.expect( "mininet>" )
                     main.log.info( "====> %s ", self.handle.before )

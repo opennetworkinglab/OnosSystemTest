@@ -67,8 +67,10 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
     if static:
         if ipv4:
             lib.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.1.1")
+            lib.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.5.1")
         if ipv6:
             lib.addStaticOnosRoute( main, "2000::8700/120", "2000::101")
+            lib.addStaticOnosRoute( main, "2000::8700/120", "2000::501")
     if countFlowsGroups:
         lib.loadCount( main )
 
@@ -248,3 +250,18 @@ def verify( main, ipv4=True, ipv6=True, disconnected=True, internal=True, extern
         lib.checkFlowsGroupsFromFile( main )
     # ping hosts
     verifyPing( main, ipv4, ipv6, disconnected, internal, external )
+
+def verifyRouterFailure( main, routerToKill, affectedIpv4Hosts=[], affectedIpv6Hosts=[],
+                         ipv4=True, ipv6=True, countFlowsGroups=False ):
+    """
+    Kill and recover a quagga router and verify connectivities to external hosts
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    lib.killRouter( main, routerToKill, 5 )
+    main.disconnectedExternalIpv4Hosts = affectedIpv4Hosts
+    main.disconnectedExternalIpv6Hosts = affectedIpv6Hosts
+    verify( main, ipv4, ipv6, True if (affectedIpv4Hosts or affectedIpv6Hosts) else False, False, True, countFlowsGroups )
+    lib.recoverRouter( main, routerToKill, 5 )
+    main.disconnectedExternalIpv4Hosts = []
+    main.disconnectedExternalIpv6Hosts = []
+    verify( main, ipv4, ipv6, False, False, True, countFlowsGroups )

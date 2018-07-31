@@ -53,7 +53,7 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
     main.resultFileName = 'CASE%03d' % test_idx
     main.Cluster.setRunningNode( onosNodes )
 
-    lib.installOnos( main, skipPackage=skipPackage, cliSleep=5, parallel=False )
+    lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
 
     # Load configuration files
     main.cfgName = 'TEST_CONFIG_ipv4={}_ipv6={}'.format( 1 if ipv4 else 0,

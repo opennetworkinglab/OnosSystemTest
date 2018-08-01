@@ -183,6 +183,23 @@ class ONOSSetup:
             # main.scale[ 0 ] determines the current number of ONOS controller
             main.Cluster.setRunningNode( int( main.scale.pop( 0 ) ) )
 
+    def killingAllAtomix( self, cluster, killRemoveMax, stopAtomix ):
+        """
+        Description:
+            killing atomix. It will either kill the current runningnodes or
+            max number of the nodes.
+        Required:
+            * cluster - the cluster driver that will be used.
+            * killRemoveMax - The boolean that will decide either to kill
+            only running nodes ( False ) or max number of nodes ( True ).
+            * stopAtomix - If wish to stop atomix before killing it. True for
+            enable stop, False for disable stop.
+        Returns:
+            Returns main.TRUE if successfully killing it.
+        """
+        main.log.info( "Safety check, killing all Atomix processes" )
+        return cluster.killAtomix( killRemoveMax, stopAtomix )
+
     def killingAllOnos( self, cluster, killRemoveMax, stopOnos ):
         """
         Description:
@@ -193,13 +210,12 @@ class ONOSSetup:
             * killRemoveMax - The boolean that will decide either to kill
             only running nodes ( False ) or max number of nodes ( True ).
             * stopOnos - If wish to stop onos before killing it. True for
-            enable stop , False for disable stop.
+            enable stop, False for disable stop.
         Returns:
             Returns main.TRUE if successfully killing it.
         """
         main.log.info( "Safety check, killing all ONOS processes" )
-
-        return cluster.kill( killRemoveMax, stopOnos )
+        return cluster.killOnos( killRemoveMax, stopOnos )
 
     def createApplyCell( self, cluster, newCell, cellName, cellApps,
                          mininetIp, useSSH, ips, installMax=False ):
@@ -229,6 +245,25 @@ class ONOSSetup:
                                  onfail="Failed to apply cell to environment" )
         return stepResult
 
+    def uninstallAtomix( self, cluster, uninstallMax ):
+        """
+        Description:
+            uninstalling atomix and verify the result.
+        Required:
+            * cluster - a cluster driver that will be used.
+            * uninstallMax - True for uninstalling max number of nodes
+            False for uninstalling the current running nodes.
+        Returns:
+            Returns main.TRUE if it successfully uninstalled.
+        """
+        main.step( "Uninstalling Atomix" )
+        atomixUninstallResult = cluster.uninstallAtomix( uninstallMax )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=atomixUninstallResult,
+                                 onpass="Successfully uninstalled Atomix",
+                                 onfail="Failed to uninstall Atomix" )
+        return atomixUninstallResult
+
     def uninstallOnos( self, cluster, uninstallMax ):
         """
         Description:
@@ -241,7 +276,7 @@ class ONOSSetup:
             Returns main.TRUE if it successfully uninstalled.
         """
         main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = cluster.uninstall( uninstallMax )
+        onosUninstallResult = cluster.uninstallOnos( uninstallMax )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=onosUninstallResult,
                                  onpass="Successfully uninstalled ONOS package",
@@ -265,6 +300,29 @@ class ONOSSetup:
                                  onfail="Failed to create ONOS package" )
         return packageResult
 
+    def installAtomix( self, cluster, installMax, parallel=True ):
+        """
+        Description:
+            Installing atomix and verify the result
+        Required:
+            * cluster - the cluster driver that will be used.
+            * installMax - True for installing max number of nodes
+            False for installing current running nodes only.
+        Returns:
+            Returns main.TRUE if it successfully installed
+        """
+        main.step( "Installing Atomix" )
+        atomixInstallResult = main.TRUE
+
+        cluster.installAtomix( installMax, parallel )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=atomixInstallResult,
+                                 onpass="Successfully installed Atomix",
+                                 onfail="Failed to install Atomix" )
+        if not atomixInstallResult:
+            main.cleanAndExit()
+        return atomixInstallResult
+
     def installOnos( self, cluster, installMax, parallel=True ):
         """
         Description:
@@ -279,7 +337,7 @@ class ONOSSetup:
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
 
-        cluster.install( installMax, parallel )
+        cluster.installOnos( installMax, parallel )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=onosInstallResult,
                                  onpass="Successfully installed ONOS package",
@@ -359,7 +417,8 @@ class ONOSSetup:
     def ONOSSetUp( self, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
                    cellName="temp", cellApps="drivers", mininetIp="", removeLog=False, extraApply=None, applyArgs=None,
                    extraClean=None, cleanArgs=None, skipPack=False, installMax=False, useSSH=True,
-                   killRemoveMax=True, stopOnos=False, installParallel=True, cellApply=True, includeCaseDesc=True ):
+                   killRemoveMax=True, stopAtomix=False, stopOnos=False, installParallel=True, cellApply=True,
+                   includeCaseDesc=True ):
         """
         Description:
             Initial ONOS setting up of the tests. It will also verify the result of each steps.
@@ -394,6 +453,7 @@ class ONOSSetup:
             * useSSH - True for using ssh when creating a cell
             * killRemoveMax - True for removing/killing max number of nodes. False for
             removing/killing running nodes only.
+            * stopAtomix - True if wish to stop atomix before killing it.
             * stopOnos - True if wish to stop onos before killing it.
         Returns:
             Returns main.TRUE if it everything successfully proceeded.
@@ -404,7 +464,9 @@ class ONOSSetup:
                        " node(s) ONOS cluster" )
             main.caseExplanation = "Set up ONOS with " + str( cluster.numCtrls ) + \
                                    " node(s) ONOS cluster"
-        killResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
+        atomixKillResult = self.killingAllAtomix( cluster, killRemoveMax, stopAtomix )
+        onosKillResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
+        killResult = atomixKillResult and onosKillResult
 
         main.log.info( "NODE COUNT = " + str( cluster.numCtrls ) )
         cellResult = main.TRUE
@@ -428,13 +490,17 @@ class ONOSSetup:
         if removeLog:
             main.log.info("Removing raft logs")
             main.ONOSbench.onosRemoveRaftLogs()
+        atomixUninstallResult = self.uninstallAtomix( cluster, killRemoveMax )
         onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
+        uninstallResult = atomixUninstallResult and onosUninstallResult
         self.processList( extraApply, applyArgs )
 
         if not skipPack:
             packageResult = self.buildOnos(cluster)
 
+        atomixInstallResult = self.installAtomix( cluster, installMax, installParallel )
         onosInstallResult = self.installOnos( cluster, installMax, installParallel )
+        installResult = atomixInstallResult and onosInstallResult
 
         self.processList( extraClean, cleanArgs )
         secureSshResult = self.setupSsh( cluster )
@@ -444,5 +510,5 @@ class ONOSSetup:
         if startOnos:
             onosCliResult = self.startOnosClis( cluster )
 
-        return killResult and cellResult and packageResult and onosUninstallResult and \
-               onosInstallResult and secureSshResult and onosServiceResult and onosCliResult
+        return killResult and cellResult and packageResult and uninstallResult and \
+               installResult and secureSshResult and onosServiceResult and onosCliResult

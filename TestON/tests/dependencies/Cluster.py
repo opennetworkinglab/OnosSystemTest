@@ -176,27 +176,7 @@ class Cluster():
                       specificDriver=1,
                       getFrom=0 if installMax else 1 )
 
-    def uninstallAtomix( self, uninstallMax ):
-        """
-        Description:
-            uninstalling atomix
-        Required:
-            * uninstallMax - True for uninstalling max number of nodes
-            False for uninstalling the current running nodes.
-        Returns:
-            Returns main.TRUE if it successfully uninstalled.
-        """
-        result = main.TRUE
-        uninstallResult = self.command( "atomixUninstall",
-                                        kwargs={ "nodeIp": "ipAddress" },
-                                        specificDriver=1,
-                                        getFrom=0 if uninstallMax else 1,
-                                        funcFromCtrl=True )
-        for uninstallR in uninstallResult:
-            result = result and uninstallR
-        return result
-
-    def uninstallOnos( self, uninstallMax ):
+    def uninstall( self, uninstallMax ):
         """
         Description:
             uninstalling onos
@@ -264,31 +244,7 @@ class Cluster():
                 main.log.warn( ctrl.name + " may not be up." )
         return onosIsUp
 
-    def killAtomix( self, killMax, stopAtomix ):
-        """
-        Description:
-            killing atomix. It will either kill the current runningnodes or
-            max number of the nodes.
-        Required:
-            * killRemoveMax - The boolean that will decide either to kill
-            only running nodes ( False ) or max number of nodes ( True ).
-            * stopAtomix - If wish to atomix onos before killing it. True for
-            enable stop, False for disable stop.
-        Returns:
-            Returns main.TRUE if successfully killing it.
-        """
-        result = main.TRUE
-        killResult = self.command( "atomixKill",
-                                   args=[ "ipAddress" ],
-                                   specificDriver=1,
-                                   getFrom=0 if killMax else 1,
-                                   funcFromCtrl=True )
-        for i in range( len( killResult ) ):
-            result = result and killResult[ i ]
-            self.controllers[ i ].active = False
-        return result
-
-    def killOnos( self, killMax, stopOnos ):
+    def kill( self, killMax, stopOnos ):
         """
         Description:
             killing the onos. It will either kill the current runningnodes or
@@ -331,42 +287,7 @@ class Cluster():
             result = result and sshR
         return result
 
-    def installAtomix( self, installMax=True, installParallel=True ):
-        """
-        Description:
-            Installing onos.
-        Required:
-            * installMax - True for installing max number of nodes
-            False for installing current running nodes only.
-        Returns:
-            Returns main.TRUE if it successfully installed
-        """
-        result = main.TRUE
-        threads = []
-        i = 0
-        for ctrl in self.controllers if installMax else self.runningNodes:
-            options = ""
-            if installMax and i >= self.numCtrls:
-                # TODO: is installMax supported here?
-                pass
-            if installParallel:
-                t = main.Thread( target=ctrl.Bench.atomixInstall,
-                                 name="atomix-install-" + ctrl.name,
-                                 kwargs={ "node" : ctrl.ipAddress,
-                                          "options" : options } )
-                threads.append( t )
-                t.start()
-            else:
-                result = result and \
-                            main.ONOSbench.atomixInstall( node=ctrl.ipAddress, options=options )
-            i += 1
-        if installParallel:
-            for t in threads:
-                t.join()
-                result = result and t.result
-        return result
-
-    def installOnos( self, installMax=True, installParallel=True ):
+    def install( self, installMax=True, installParallel=True ):
         """
         Description:
             Installing onos.
@@ -385,7 +306,7 @@ class Cluster():
                 options = "-nf"
             if installParallel:
                 t = main.Thread( target=ctrl.Bench.onosInstall,
-                                 name="onos-install-" + ctrl.name,
+                                 name="install-" + ctrl.name,
                                  kwargs={ "node" : ctrl.ipAddress,
                                           "options" : options } )
                 threads.append( t )

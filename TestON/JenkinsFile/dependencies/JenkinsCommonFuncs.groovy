@@ -573,4 +573,14 @@ def branchWithPrefix( branch ){
     return ( ( branch != "master" ) ? "onos-" : "" ) + branch
 }
 
+def testBranchWithPrefix( branch ){
+    // get TestON branch with the prefix ( "onos-" )
+    if ( branch == "1.13" )
+        return "onos-1.13"
+    else if ( branch == "1.12" )
+        return "onos-1.13"
+    else
+        return "master"
+}
+
 return this

@@ -100,10 +100,12 @@ def organize_tests( tests, testcases ){
 def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     // triggering function that will setup the environment and determine which pipeline to trigger
 
-    println jobOn + "-pipeline-" + manuallyRun ? "manually" : branch
+    println "Job name: " + jobOn + "-pipeline-" + ( manuallyRun ? "manually" : branch )
     def wiki = branch
     onos_branch = funcs.branchWithPrefix( branch )
     test_branch = funcs.testBranchWithPrefix( branch )
+    println "onos_branch with prefix: " + onos_branch
+    println "test_branch with prefix: " + test_branch
     node( "TestStation-" + nodeName + "s" ) {
         envSetup( onos_branch, test_branch, onosTag, jobOn, manuallyRun )
         exportEnvProperty( onos_branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
@@ -145,7 +147,8 @@ def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manual
 // Initialize the environment Setup for the onos and OnosSystemTest
 def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun ){
     // to setup the environment using the bash script
-
+    println "onos_branch is set to " + onos_branch
+    println "test_branch is set to " + test_branch
     stage( "envSetup" ) {
         // after env: ''' + borrow_mn( jobOn ) + '''
         sh '''#!/bin/bash -l

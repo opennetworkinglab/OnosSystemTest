@@ -102,11 +102,11 @@ def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 
     println jobOn + "-pipeline-" + manuallyRun ? "manually" : branch
     def wiki = branch
-    branch = funcs.branchWithPrefix( branch )
+    onos_branch = funcs.branchWithPrefix( branch )
     test_branch = funcs.testBranchWithPrefix( branch )
     node( "TestStation-" + nodeName + "s" ) {
-        envSetup( branch, test_branch, onosTag, jobOn, manuallyRun )
-        exportEnvProperty( branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
+        envSetup( onos_branch, test_branch, onosTag, jobOn, manuallyRun )
+        exportEnvProperty( onos_branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
     }
 
     jobToRun = jobOn + "-pipeline-" + ( manuallyRun ? "manually" : wiki )

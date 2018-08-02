@@ -102,8 +102,8 @@ def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 
     println "Job name: " + jobOn + "-pipeline-" + ( manuallyRun ? "manually" : branch )
     def wiki = branch
-    onos_branch = funcs.branchWithPrefix( branch )
-    test_branch = funcs.testBranchWithPrefix( branch )
+    def onos_branch = funcs.branchWithPrefix( branch )
+    def test_branch = funcs.testBranchWithPrefix( branch )
     println "onos_branch with prefix: " + onos_branch
     println "test_branch with prefix: " + test_branch
     node( "TestStation-" + nodeName + "s" ) {

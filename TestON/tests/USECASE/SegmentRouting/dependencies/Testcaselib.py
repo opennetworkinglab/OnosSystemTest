@@ -1149,7 +1149,8 @@ class Testcaselib:
             main.scapyNames = scapyNames
         else:
             main.scapyNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
-        main.scapyHosts = []
+        if not hasattr( main, "scapyHosts" ):
+            main.scapyHosts = []
         for scapyName in main.scapyNames:
             main.Scapy.createHostComponent( scapyName )
             scapyHandle = getattr( main, scapyName )

@@ -251,7 +251,7 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1, 2 ] }, "ipv6": { "src": [ 0 ], "dst": [ 0 ] } }
         setupTest( main, test_idx=105, onosNodes=3 )
         verifyMcastRoutes( main )
-        verifyLinkDown( main, [ "leaf2", "h4v4" ], 0 )
+        verifyPortDown( main, "of:0000000000000002", 10, hostLocations={ "h4v4": ["of:0000000000000002/10", "of:0000000000000003/10"] } )
         verifyMcastRemoval( main )
         lib.cleanup( main, copyKarafLog=False )
 
@@ -269,7 +269,7 @@ class SRMulticast:
         main.mcastRoutes = { "ipv4": { "src": [ 0 ], "dst": [ 0, 1, 2 ] }, "ipv6": { "src": [ 0 ], "dst": [ 0 ] } }
         setupTest( main, test_idx=106, onosNodes=3 )
         verifyMcastRoutes( main )
-        verifyLinkDown( main, [ "leaf5", "h10v4" ], 0 )
+        verifyPortDown( main, "of:0000000000000005", 10, hostLocations={ "h10v4": ["of:0000000000000004/11", "of:0000000000000005/10"] } )
         verifyMcastRemoval( main )
         lib.cleanup( main, copyKarafLog=False )
 

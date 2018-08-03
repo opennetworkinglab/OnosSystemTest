@@ -350,7 +350,10 @@ class Topology:
         Returns:
             main.TRUE if scapy result is expected, otherwise main.FALSE
         """
-        receiver.startFilter( ifaceName=dIface, pktFilter=pktFilter )
+        started = receiver.startFilter( ifaceName=dIface, pktFilter=pktFilter )
+        if not started:
+            main.log.error("Failed to start Scapy packet filter")
+            return main.FALSE
         sender.sendPacket( iface=sIface )
         finished = receiver.checkFilter()
         packet = ""
@@ -433,7 +436,10 @@ class Topology:
         packetCaptured = True
         srcHandle = getattr( main, srcHost )
         dstHandle = getattr( main, dstHost )
-        dstHandle.startFilter( ifaceName=dstIntf, pktFilter="ip host {}".format( dstIp ) )
+        started = dstHandle.startFilter( ifaceName=dstIntf, pktFilter="ip host {}".format( dstIp ) )
+        if not started:
+            main.log.error("Failed to start Scapy packet filter")
+            return main.FALSE
         srcHandle.pingHostSetAlternative( [ dstIp ], IPv6=ipv6 )
         finished = dstHandle.checkFilter()
         packet = ""

@@ -725,6 +725,13 @@ class ScapyCliDriver( Emulator ):
             main.log.info( "Filter on " + self.name + ' > ' + cmd )
             self.handle.sendline( cmd )
             self.handle.expect( '"\)\r\n' )
+            # Make sure the sniff function didn't exit due to failures
+            i = self.handle.expect( [ self.scapyPrompt, pexpect.TIMEOUT ], timeout=3 )
+            if i == 0:
+                # sniff exited
+                main.log.error( self.name + ": sniff function exited" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                return main.FALSE
             # TODO: parse this?
             return main.TRUE
         except pexpect.TIMEOUT:

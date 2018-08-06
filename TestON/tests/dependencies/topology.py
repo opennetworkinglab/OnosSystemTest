@@ -436,7 +436,8 @@ class Topology:
         packetCaptured = True
         srcHandle = getattr( main, srcHost )
         dstHandle = getattr( main, dstHost )
-        started = dstHandle.startFilter( ifaceName=dstIntf, pktFilter="ip host {}".format( dstIp ) )
+        pktFilter = "ip6 host {}".format( dstIp ) if ipv6 else "ip host {}".format( dstIp )
+        started = dstHandle.startFilter( ifaceName=dstIntf, pktFilter=pktFilter )
         if not started:
             main.log.error("Failed to start Scapy packet filter")
             return main.FALSE

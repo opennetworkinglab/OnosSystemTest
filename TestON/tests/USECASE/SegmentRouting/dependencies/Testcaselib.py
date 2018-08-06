@@ -1078,7 +1078,7 @@ class Testcaselib:
                                  onfail="Verify network host IP failed" )
 
     @staticmethod
-    def verifyOnosHostIp( main, attempts=10, sleep=10 ):
+    def verifyOnosHostIp( main, attempts=10, sleep=10, skipOnFail=True ):
         """
         Verifies host IP address assignment from ONOS
         """
@@ -1106,6 +1106,10 @@ class Testcaselib:
         utilities.assert_equals( expect=main.TRUE, actual=ipResult,
                                  onpass="Verify ONOS host IP succeded",
                                  onfail="Verify ONOS host IP failed" )
+        if not ipResult and skipOnFail:
+            Testcaselib.saveOnosDiagnostics( main )
+            Testcaselib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+            main.skipCase()
 
     @staticmethod
     def updateIntfCfg( main, connectPoint, ips=[], untagged=0, tagged=[], native=0 ):

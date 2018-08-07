@@ -403,6 +403,60 @@ class OnosDriver( CLI ):
             main.log.exception( "Failed to build and package ONOS" )
             main.cleanAndExit()
 
+    def bazelBuild( self, timeout=180 ):
+        """
+        Build onos using bazel.
+        """
+        try:
+            ret = main.TRUE
+            self.handle.sendline( "bazel build onos" )
+            self.handle.expect( "bazel build onos" )
+            output = ""
+            while True:
+                i = self.handle.expect( [ "command is only supported from within a workspace",
+                                          "\n",
+                                          "FAILED",
+                                          "ERROR",
+                                          "command not found",
+                                          self.prompt ],
+                                        timeout=timeout )
+                output += str( self.handle.before + self.handle.after )
+                if i == 0:
+                    main.log.error( "Please run the build from root of ONOS project" )
+                    ret = main.FALSE
+                elif i == 1:
+                    # end of a line, buck is still printing output
+                    pass
+                elif i == 2:
+                    # Build failed
+                    main.log.error( "Build failed" )
+                    ret = main.FALSE
+                elif i == 3:
+                    # Build failed
+                    main.log.error( "Build failed" )
+                    ret = main.FALSE
+                elif i == 4:
+                    main.log.error( "Command not found" )
+                    ret = main.FALSE
+                elif i == 5:
+                    # Prompt returned
+                    break
+            main.log.debug( output )
+            return ret
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            self.handle.send( "\x03" )  # Control-C
+            self.handle.expect( self.prompt )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( "Failed to build and package ONOS" )
+            main.cleanAndExit()
+
     def gitPull( self, comp1="", fastForward=True ):
         """
         Assumes that "git pull" works without login

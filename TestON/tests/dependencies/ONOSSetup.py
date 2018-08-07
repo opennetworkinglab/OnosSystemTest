@@ -286,14 +286,14 @@ class ONOSSetup:
     def buildOnos( self, cluster ):
         """
         Description:
-            build the onos using buck build onos and verify the result
+            build the onos using bazel build onos and verify the result
         Required:
             * cluster - the cluster driver that will be used.
         Returns:
             Returns main.TRUE if it successfully built.
         """
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.buckBuild()
+        packageResult = main.ONOSbench.bazelBuild()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=packageResult,
                                  onpass="Successfully created ONOS package",

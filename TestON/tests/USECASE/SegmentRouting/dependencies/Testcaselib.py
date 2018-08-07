@@ -1108,7 +1108,7 @@ class Testcaselib:
                                  onfail="Verify ONOS host IP failed" )
         if not ipResult and skipOnFail:
             Testcaselib.saveOnosDiagnostics( main )
-            Testcaselib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+            Testcaselib.cleanup( main, copyKarafLog=False )
             main.skipCase()
 
     @staticmethod

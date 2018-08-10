@@ -161,15 +161,11 @@ class Cluster():
             * ips - ip( s ) of the node( s ).
         Returns:
         """
-        try:
-            apps = main.apps
-        except ( NameError, AttributeError ):
-            apps = cellApps
         self.command( "createCellFile",
                       args=[ main.ONOSbench.ip_address,
                              cellName,
                              mininetIp,
-                             apps,
+                             cellApps,
                              ips,
                              main.ONOScell.karafUser,
                              useSSH ],
@@ -420,6 +416,13 @@ class Cluster():
         return result
 
     def nodesCheck( self ):
+        """
+        Description:
+            Checking if all the onos nodes are in READY state
+        Required:
+        Returns:
+            Returns True if it successfully checked
+        """
         results = True
         nodesOutput = self.command( "nodes", specificDriver=2 )
         ips = sorted( self.getIps( activeOnly=True ) )
@@ -439,6 +442,30 @@ class Cluster():
                 main.log.warn( repr( i ) )
                 currentResult = False
             results = results and currentResult
+        return results
+
+    def appsCheck( self, apps ):
+        """
+        Description:
+            Checking if all the applications are activated
+        Required:
+            apps: list of applications that are expected to be activated
+        Returns:
+            Returns True if it successfully checked
+        """
+        results = True
+        for app in apps:
+            states = self.command( "appStatus",
+                                   args=[ app ],
+                                   specificDriver=2 )
+            for i in range( len( states ) ):
+                ctrl = self.controllers[ i ]
+                if states[ i ] == "ACTIVE":
+                    results = results and True
+                    main.log.info( "{}: {} is activated".format( ctrl.name, app ) )
+                else:
+                    results = False
+                    main.log.warn( "{}: {} is in {} state".format( ctrl.name, app, states[ i ] ) )
         return results
 
     def printResult( self, results, activeList, logLevel="debug" ):

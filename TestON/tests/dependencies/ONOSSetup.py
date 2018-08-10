@@ -346,6 +346,57 @@ class ONOSSetup:
                                  onfail="Failed to start ONOS cli" )
         return startCliResult
 
+    def checkOnosNodes( self, cluster ):
+        """
+        Description:
+            Checking if the onos nodes are in READY state
+        Required:
+            * cluster - the cluster driver that will be used.
+        Returns:
+            Returns main.TRUE if it successfully checked
+        """
+        main.step( "Checking ONOS nodes" )
+        stepResult = utilities.retry( main.Cluster.nodesCheck,
+                                      False,
+                                      attempts=9 )
+
+        utilities.assert_equals( expect=True,
+                                 actual=stepResult,
+                                 onpass="All ONOS nodes are in READY state",
+                                 onfail="Not all ONOS nodes are in READY state" )
+
+        if not stepResult:
+            for ctrl in main.Cluster.active():
+                main.log.debug( "{} components not ACTIVE: \n{}".format(
+                    ctrl.name,
+                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+            main.log.error( "Failed to start ONOS, stopping test" )
+        return main.TRUE if stepResult else main.FALSE
+
+    def checkOnosApps( self, cluster, apps ):
+        """
+        Description:
+            Checking if the onos applications are activated
+        Required:
+            * cluster - the cluster driver that will be used.
+            * apps: list of applications that are expected to be activated
+        Returns:
+            Returns main.TRUE if it successfully checked
+        """
+        main.step( "Checking ONOS applications" )
+        stepResult = utilities.retry( main.Cluster.appsCheck,
+                                      False,
+                                      args = [ apps ],
+                                      sleep=5,
+                                      attempts=9 )
+
+        utilities.assert_equals( expect=True,
+                                 actual=stepResult,
+                                 onpass="All ONOS apps are activated",
+                                 onfail="Not all ONOS apps are activated" )
+
+        return main.TRUE if stepResult else main.FALSE
+
     def processList( self, functions, args ):
         if functions is not None:
             if isinstance( functions, list ):
@@ -381,7 +432,7 @@ class ONOSSetup:
             * startOnos - True if wish to start onos.
             * newCell - True for making a new cell and False for not making it.
             * cellName - Name of the cell that will be used.
-            * cellApps - The cell apps string.
+            * cellApps - The cell apps string. Will be overwritten by main.apps if it exists
             * mininetIp - Mininet IP address.
             * removeLog - True if wish to remove raft logs
             * extraApply - Function( s ) that will be called before building ONOS. Default to None.
@@ -411,6 +462,11 @@ class ONOSSetup:
         packageResult = main.TRUE
         onosCliResult = main.TRUE
         if cellApply:
+            try:
+                apps = main.apps
+            except ( NameError, AttributeError ):
+                apps = cellApps
+            main.log.debug( "Apps: " + str( apps ) )
             tempOnosIp = []
             for ctrl in cluster.runningNodes:
                 tempOnosIp.append( ctrl.ipAddress )
@@ -421,7 +477,7 @@ class ONOSSetup:
                         mininetIp = getattr( main, key ).ip_address
                         break
             cellResult = self.createApplyCell( cluster, newCell,
-                                               cellName, cellApps,
+                                               cellName, apps,
                                                mininetIp, useSSH,
                                                tempOnosIp, installMax )
 
@@ -444,5 +500,16 @@ class ONOSSetup:
         if startOnos:
             onosCliResult = self.startOnosClis( cluster )
 
-        return killResult and cellResult and packageResult and onosUninstallResult and \
-               onosInstallResult and secureSshResult and onosServiceResult and onosCliResult
+        onosNodesResult = self.checkOnosNodes( cluster )
+
+        onosAppsResult = main.TRUE
+        if cellApply:
+            if apps:
+                apps = apps.split( ',' )
+                onosAppsResult = self.checkOnosApps( cluster, apps )
+            else:
+                main.log.warn( "No apps were specified to be checked after startup" )
+
+        return killResult and cellResult and packageResult and uninstallResult and \
+               installResult and secureSshResult and onosServiceResult and onosCliResult and \
+               onosNodesResult and onosAppsResult

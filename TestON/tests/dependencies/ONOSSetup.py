@@ -408,7 +408,8 @@ class ONOSSetup:
                 functions( *args ) if args is not None else functions()
 
     def ONOSSetUp( self, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
-                   cellName="temp", cellApps="drivers", mininetIp="", removeLog=False, extraApply=None, applyArgs=None,
+                   cellName="temp", cellApps="drivers", appPrefix="org.onosproject.",
+                   mininetIp="", removeLog=False, extraApply=None, applyArgs=None,
                    extraClean=None, cleanArgs=None, skipPack=False, installMax=False, useSSH=True,
                    killRemoveMax=True, stopOnos=False, installParallel=True, cellApply=True, includeCaseDesc=True ):
         """
@@ -433,6 +434,7 @@ class ONOSSetup:
             * newCell - True for making a new cell and False for not making it.
             * cellName - Name of the cell that will be used.
             * cellApps - The cell apps string. Will be overwritten by main.apps if it exists
+            * appPrefix - Prefix of app names. Will use "org.onosproject." by default
             * mininetIp - Mininet IP address.
             * removeLog - True if wish to remove raft logs
             * extraApply - Function( s ) that will be called before building ONOS. Default to None.
@@ -506,6 +508,7 @@ class ONOSSetup:
         if cellApply:
             if apps:
                 apps = apps.split( ',' )
+                apps = [ appPrefix + app for app in apps ]
                 onosAppsResult = self.checkOnosApps( cluster, apps )
             else:
                 main.log.warn( "No apps were specified to be checked after startup" )

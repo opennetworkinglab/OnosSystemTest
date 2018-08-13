@@ -3731,7 +3731,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def appStatus( self, appName, appNamePrefix="org.onosproject." ):
+    def appStatus( self, appName ):
         """
         Uses the onos:apps cli command to return the status of an application.
         Returns:
@@ -3745,7 +3745,6 @@ class OnosCliDriver( CLI ):
                 main.log.error( self.name + ".appStatus(): appName must be" +
                                 " a string" )
                 return None
-            appName = appNamePrefix + appName
             output = self.apps( jsonFormat=True )
             appsJson = json.loads( output )
             state = None

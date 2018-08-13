@@ -97,7 +97,7 @@ class HAsanity:
             applyFuncs = main.HA.startingMininet
 
         main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
-                                  extraApply=applyFuncs,
+                                  extraApply=applyFuncs, stopAtomix=True,
                                   includeCaseDesc=False )
         main.HA.initialSetUp()
 

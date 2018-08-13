@@ -601,6 +601,6 @@ class Cluster():
         ret = True
         for n in self.runningNodes:
             # Partition logs
-            ret = ret and n.server.folderSize( "/opt/onos/apache-karaf-*/data/db/partitions/*/*.log",
+            ret = ret and n.server.folderSize( "/opt/atomix/data/raft/partitions/*/*.log",
                                                size=maxSize, unit=units, ignoreRoot=False )
         return ret

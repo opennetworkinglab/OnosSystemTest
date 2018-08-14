@@ -1111,7 +1111,6 @@ class OnosDriver( CLI ):
             i = self.handle.expect( [ "Network\sis\sunreachable",
                                       "onos\sstart/running,\sprocess",
                                       "ONOS\sis\salready\sinstalled",
-                                      "already\sup-to-date",
                                       "does not exist",
                                       self.prompt,
                                       pexpect.TIMEOUT ], timeout=180 )
@@ -1128,21 +1127,21 @@ class OnosDriver( CLI ):
                     " and started" )
                 self.handle.expect( self.prompt )
                 return main.TRUE
-            elif i == 2 or i == 3:
+            elif i == 2:
                 # same bits are already on ONOS node
                 main.log.info( "ONOS is already installed on " + node )
                 self.handle.expect( self.prompt )
                 return main.TRUE
-            elif i == 4:
+            elif i == 3:
                 # onos not packaged
                 main.log.error( "ONOS package not found." )
                 self.handle.expect( self.prompt )
                 return main.FALSE
-            elif i == 5:
+            elif i == 4:
                 # prompt
                 main.log.info( "ONOS was installed on " + node )
                 return main.TRUE
-            elif i == 6:
+            elif i == 5:
                 # timeout
                 main.log.info(
                     "Installation of ONOS on " +

@@ -9,6 +9,11 @@
         <password>karaf</password>
     </DOCKER>
 
+    <GRAPH>
+        <nodeCluster>BM</nodeCluster>
+        <builds>20</builds>
+    </GRAPH>
+
     <SCALE>
         <nodelist>onos1,onos2,onos3</nodelist>
     </SCALE>

@@ -513,6 +513,6 @@ class ONOSSetup:
             else:
                 main.log.warn( "No apps were specified to be checked after startup" )
 
-        return killResult and cellResult and packageResult and uninstallResult and \
-               installResult and secureSshResult and onosServiceResult and onosCliResult and \
+        return killResult and cellResult and packageResult and onosUninstallResult and \
+               onosInstallResult and secureSshResult and onosServiceResult and onosCliResult and \
                onosNodesResult and onosAppsResult

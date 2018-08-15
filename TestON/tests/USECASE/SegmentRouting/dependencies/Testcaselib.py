@@ -1195,7 +1195,6 @@ class Testcaselib:
             trafficResult = main.topo.pingAndCapture( srcHost, dstIp, dstHost, dstIntf, ipv6,
                                                       expect, maxRetry, True )
             if not trafficResult:
-                main.stop()
                 result = main.FALSE
                 main.log.warn( "Scapy result from {} to {} is not as expected".format( srcHost, dstIp ) )
         utilities.assert_equals( expect=main.TRUE,

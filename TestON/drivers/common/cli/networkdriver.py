@@ -29,6 +29,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 import pexpect
 import os
+import re
 import types
 from drivers.common.clidriver import CLI
 
@@ -123,26 +124,154 @@ class NetworkDriver( CLI ):
             for key, value in main.componentDictionary.items():
                 if hasattr( main, key ):
                     if value[ 'type' ] in [ 'MininetSwitchDriver', 'OFDPASwitchDriver' ]:
-                        self.switches[ key ] = getattr( main, key )
+                        component = getattr( main, key )
+                        shortName = component.options[ 'shortName' ]
+                        localName = self.name + "-" + shortName
+                        self.copyComponent( key, localName )
+                        self.switches[ shortName ] = getattr( main, localName )
                     elif value[ 'type' ] in [ 'MininetHostDriver', 'HostDriver' ]:
-                        self.hosts[ key ] = getattr( main, key )
+                        component = getattr( main, key )
+                        shortName = component.options[ 'shortName' ]
+                        localName = self.name + "-" + shortName
+                        self.copyComponent( key, localName )
+                        self.hosts[ shortName ] = getattr( main, localName )
+            main.log.debug( self.name + ": found switches: {}".format( self.switches ) )
+            main.log.debug( self.name + ": found hosts: {}".format( self.hosts ) )
             return main.TRUE
         except Exception:
             main.log.error( self.name + ": failed to connect to network" )
             return main.FALSE
 
-    def getHosts( self, verbose=False, updateTimeout=1000 ):
+    def disconnectFromNet( self ):
         """
-        Return a dictionary which maps short names to host data
+        Disconnect from the physical network connected
         """
-        hosts = {}
         try:
-            for hostComponent in self.hosts.values():
-                # TODO: return more host data
-                hosts[ hostComponent.options[ 'shortName' ] ] = {}
+            for key, value in main.componentDictionary.items():
+                if hasattr( main, key ) and key.startswith( self.name + "-" ):
+                    self.removeComponent( key )
+            self.switches = {}
+            self.hosts = {}
+            return main.TRUE
         except Exception:
-            main.log.error( self.name + ": host component not as expected" )
-        return hosts
+            main.log.error( self.name + ": failed to disconnect from network" )
+            return main.FALSE
+
+    def copyComponent( self, name, newName ):
+        """
+        Copy the component initialized from the .topo file
+        The copied components are only supposed to be called within this driver
+        Required:
+            name: name of the component to be copied
+            newName: name of the new component
+        """
+        try:
+            main.componentDictionary[ newName ] = main.componentDictionary[ name ].copy()
+            main.componentInit( newName )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def removeHostComponent( self, name ):
+        """
+        Remove host component
+        Required:
+            name: name of the component to be removed
+        """
+        try:
+            self.removeComponent( name )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def removeComponent( self, name ):
+        """
+        Remove host/switch component
+        Required:
+            name: name of the component to be removed
+        """
+        try:
+            component = getattr( main, name )
+        except AttributeError:
+            main.log.error( "Component " + name + " does not exist." )
+            return main.FALSE
+        try:
+            # Disconnect from component
+            component.disconnect()
+            # Delete component
+            delattr( main, name )
+            # Delete component from ComponentDictionary
+            del( main.componentDictionary[ name ] )
+            return main.TRUE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def createComponent( self, name ):
+        """
+        Creates switch/host component with the same parameters as the one copied to local.
+        Arguments:
+            name - The string of the name of this component. The new component
+                   will be assigned to main.<name> .
+                   In addition, main.<name>.name = str( name )
+        """
+        try:
+            # look to see if this component already exists
+            getattr( main, name )
+        except AttributeError:
+            # namespace is clear, creating component
+            localName = self.name + "-" + name
+            main.componentDictionary[ name ] = main.componentDictionary[ localName ].copy()
+            main.componentInit( name )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+        else:
+            # namespace is not clear!
+            main.log.error( name + " component already exists!" )
+            main.cleanAndExit()
+
+    def connectInbandHosts( self ):
+        """
+        Connect to hosts using data plane IPs specified
+        """
+        result = main.TRUE
+        try:
+            for hostName, hostComponent in self.hosts.items():
+                if hostComponent.options[ 'inband' ] == 'True':
+                    main.log.info( self.name + ": connecting inband host " + hostName )
+                    result = hostComponent.connectInband() and result
+            return result
+        except Exception:
+            main.log.error( self.name + ": failed to connect to inband hosts" )
+            return main.FALSE
+
+    def disconnectInbandHosts( self ):
+        """
+        Terminate the connections to hosts using data plane IPs
+        """
+        result = main.TRUE
+        try:
+            for hostName, hostComponent in self.hosts.items():
+                if hostComponent.options[ 'inband' ] == 'True':
+                    main.log.info( self.name + ": disconnecting inband host " + hostName )
+                    result = hostComponent.disconnectInband() and result
+            return result
+        except Exception:
+            main.log.error( self.name + ": failed to disconnect inband hosts" )
+            return main.FALSE
+
+    def getSwitches( self ):
+        """
+        Return a dictionary which maps short names to switch component
+        """
+        return self.switches
+
+    def getHosts( self ):
+        """
+        Return a dictionary which maps short names to host component
+        """
+        return self.hosts
 
     def getMacAddress( self, host ):
         """
@@ -150,7 +279,8 @@ class NetworkDriver( CLI ):
         """
         import re
         try:
-            hostComponent = self.getHostComponentByShortName( host )
+            hosts = self.getHosts()
+            hostComponent = hosts[ host ]
             response = hostComponent.ifconfig()
             pattern = r'HWaddr\s([0-9A-F]{2}[:-]){5}([0-9A-F]{2})'
             macAddressSearch = re.search( pattern, response, re.I )
@@ -160,24 +290,17 @@ class NetworkDriver( CLI ):
         except Exception:
             main.log.error( self.name + ": failed to get host MAC address" )
 
-    def getSwitchComponentByShortName( self, shortName ):
+    def runCmdOnHost( self, hostName, cmd ):
         """
-        Get switch component by its short name i.e. "s1"
+        Run shell command on specified host and return output
+        Required:
+            hostName: name of the host e.g. "h1"
+            cmd: command to run on the host
         """
-        for switchComponent in self.switches.values():
-            if switchComponent.options[ 'shortName' ] == shortName:
-                return switchComponent
-        main.log.warn( self.name + ": failed to find switch component by name " + shortName )
-        return None
-
-    def getHostComponentByShortName( self, shortName ):
-        """
-        Get host component by its short name i.e. "h1"
-        """
-        for hostComponent in self.hosts.values():
-            if hostComponent.options[ 'shortName' ] == shortName:
-                return hostComponent
-        main.log.warn( self.name + ": failed to find host component by name " + shortName )
+        hosts = self.getHosts()
+        hostComponent = hosts[ hostName ]
+        if hostComponent:
+            return hostComponent.command( cmd )
         return None
 
     def assignSwController( self, sw, ip, port="6653", ptcp="" ):
@@ -243,7 +366,7 @@ class NetworkDriver( CLI ):
             index = 0
             for switch in switchList:
                 assigned = False
-                switchComponent = self.getSwitchComponentByShortName( switch )
+                switchComponent = self.switches[ switch ]
                 if switchComponent:
                     ptcp = ptcpList[ index ] if ptcpList else ""
                     assignResult = assignResult and switchComponent.assignSwController( ip=ip, port=port, ptcp=ptcp )
@@ -281,7 +404,8 @@ class NetworkDriver( CLI ):
             returnValue = main.TRUE
             ipv6 = True if protocol == "IPv6" else False
             startTime = time.time()
-            hostPairs = itertools.permutations( list( self.hosts.values() ), 2 )
+            hosts = self.getHosts()
+            hostPairs = itertools.permutations( list( hosts.values() ), 2 )
             for hostPair in list( hostPairs ):
                 ipDst = hostPair[ 1 ].options[ 'ip6' ] if ipv6 else hostPair[ 1 ].options[ 'ip' ]
                 pingResult = hostPair[ 0 ].ping( ipDst, ipv6=ipv6 )
@@ -322,8 +446,9 @@ class NetworkDriver( CLI ):
         import time
         import itertools
         hostComponentList = []
+        hosts = self.getHosts()
         for hostName in hostList:
-            hostComponent = self.getHostComponentByShortName( hostName )
+            hostComponent = hosts[ hostName ]
             if hostComponent:
                 hostComponentList.append( hostComponent )
         try:
@@ -361,3 +486,80 @@ class NetworkDriver( CLI ):
         main.log.info( self.name + ": Simple iperf TCP test between two hosts" )
         # TODO: complete this function
         return main.TRUE
+
+    def update( self ):
+        return main.TRUE
+
+    def verifyHostIp( self, hostList=[], prefix="", update=False ):
+        """
+        Description:
+            Verify that all hosts have IP address assigned to them
+        Optional:
+            hostList: If specified, verifications only happen to the hosts
+            in hostList
+            prefix: at least one of the ip address assigned to the host
+            needs to have the specified prefix
+        Returns:
+            main.TRUE if all hosts have specific IP address assigned;
+            main.FALSE otherwise
+        """
+        try:
+            hosts = self.getHosts()
+            if not hostList:
+                hostList = hosts.keys()
+            for hostName, hostComponent in hosts.items():
+                if hostName not in hostList:
+                    continue
+                ipList = []
+                ipa = hostComponent.ip()
+                ipv4Pattern = r'inet ((?:[0-9]{1,3}\.){3}[0-9]{1,3})/'
+                ipList += re.findall( ipv4Pattern, ipa )
+                # It's tricky to make regex for IPv6 addresses and this one is simplified
+                ipv6Pattern = r'inet6 ((?:[0-9a-fA-F]{1,4})?(?:[:0-9a-fA-F]{1,4}){1,7}(?:::)?(?:[:0-9a-fA-F]{1,4}){1,7})/'
+                ipList += re.findall( ipv6Pattern, ipa )
+                main.log.debug( self.name + ": IP list on host " + str( hostName ) + ": " + str( ipList ) )
+                if not ipList:
+                    main.log.warn( self.name + ": Failed to discover any IP addresses on host " + str( hostName ) )
+                else:
+                    if not any( ip.startswith( str( prefix ) ) for ip in ipList ):
+                        main.log.warn( self.name + ": None of the IPs on host " + str( hostName ) + " has prefix " + str( prefix ) )
+                    else:
+                        main.log.debug( self.name + ": Found matching IP on host " + str( hostName ) )
+                        hostList.remove( hostName )
+            return main.FALSE if hostList else main.TRUE
+        except KeyError:
+            main.log.exception( self.name + ": host data not as expected: " + hosts )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
+    def addRoute( self, host, dstIP, interface, ipv6=False ):
+        """
+        Add a route to host
+        Ex: h1 route add -host 224.2.0.1 h1-eth0
+        """
+        try:
+            if ipv6:
+                cmd = "sudo route -A inet6 add "
+            else:
+                cmd = "sudo route add -host "
+            cmd += str( dstIP ) + " " + str( interface )
+            response = self.runCmdOnHost( host, cmd )
+            main.log.debug( "response = " + response )
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

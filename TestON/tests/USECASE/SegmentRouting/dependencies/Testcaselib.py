@@ -220,7 +220,7 @@ class Testcaselib:
             main.cleanAndExit()
 
     @staticmethod
-    def connectToPhysicalNetwork( main, switchNames ):
+    def connectToPhysicalNetwork( main ):
         main.step( "Connecting to physical netowrk" )
         topoResult = main.NetworkBench.connectToNet()
         stepResult = topoResult
@@ -234,14 +234,33 @@ class Testcaselib:
 
         main.step( "Assign switches to controllers." )
         assignResult = main.TRUE
-        for name in switchNames:
-            assignResult = assignResult & main.NetworkBench.assignSwController( sw=name,
-                                                                                ip=main.Cluster.getIps(),
-                                                                                port='6653' )
+        switches = main.NetworkBench.getSwitches()
+        pool = []
+        for name in switches.keys():
+            thread = main.Thread( target=main.NetworkBench.assignSwController,
+                                  name="assignSwitchToController",
+                                  args=[ name, main.Cluster.getIps(), '6653' ] )
+            pool.append( thread )
+            thread.start()
+        for thread in pool:
+            thread.join( 300 )
+            if not thread.result:
+                stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully assign switches to controllers",
                                  onfail="Failed to assign switches to controllers" )
+
+        # Check devices
+        Testcaselib.checkDevices( main, switches=int( main.params[ 'TOPO' ][ 'switchNum' ] ) )
+        time.sleep( float( main.params[ "timers" ][ "connectToNetSleep" ] ) )
+        # Connecting to hosts that only have data plane connectivity
+        main.step( "Connecting inband hosts" )
+        stepResult = main.Network.connectInbandHosts()
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully connected inband hosts",
+                                 onfail="Failed to connect inband hosts" )
 
     @staticmethod
     def saveOnosDiagnostics( main ):
@@ -821,33 +840,36 @@ class Testcaselib:
         Stops Mininet
         Copies ONOS log
         """
-        try:
-            from tests.dependencies.utils import Utils
-        except ImportError:
-            main.log.error( "Utils not found exiting the test" )
-            main.cleanAndExit()
-        try:
-            main.utils
-        except ( NameError, AttributeError ):
-            main.utils = Utils()
-
+        from tests.dependencies.utils import Utils
+        main.utils = Utils()
+        # Clean up scapy hosts
         if hasattr( main, "scapyHosts" ):
             scapyResult = main.TRUE
             for host in main.scapyHosts:
                 scapyResult = host.stopScapy() and scapyResult
                 main.log.info( "Stopped Scapy Host: {0}".format( host.name ) )
             for host in main.scapyHosts:
-                scapyResult = main.Scapy.removeHostComponent( host.name ) and scapyResult
+                if hasattr( main, 'Mininet1' ):
+                    scapyResult = main.Scapy.removeHostComponent( host.name ) and scapyResult
+                else:
+                    scapyResult = main.Network.removeHostComponent( host.name ) and scapyResult
                 main.log.info( "Removed Scapy Host Component: {0}".format( host.name ) )
             main.scapyHosts = []
 
         if removeHostComponent:
             for host in main.internalIpv4Hosts + main.internalIpv6Hosts + main.externalIpv4Hosts + main.externalIpv6Hosts:
                 if hasattr( main, host ):
+                    if hasattr( main, 'Mininet1' ):
+                        pass
+                    else:
+                        getattr( main, host ).disconnectInband()
                     main.Network.removeHostComponent( host )
 
         if hasattr( main, 'Mininet1' ):
             main.utils.mininetCleanup( main.Mininet1 )
+        else:
+            main.Network.disconnectInbandHosts()
+            main.Network.disconnectFromNet()
 
         if copyKarafLog:
             main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
@@ -1149,21 +1171,22 @@ class Testcaselib:
         name of the corresponding Mininet host by mininetNames=['h1']
         """
         main.step( "Start Scapy CLIs" )
-        if scapyNames:
-            main.scapyNames = scapyNames
-        else:
-            main.scapyNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
-        if not hasattr( main, "scapyHosts" ):
-            main.scapyHosts = []
+        main.scapyNames = scapyNames if scapyNames else main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
+        main.scapyHosts = [] if not hasattr( main, "scapyHosts" ) else main.scapyHosts
         for scapyName in main.scapyNames:
-            main.Scapy.createHostComponent( scapyName )
-            scapyHandle = getattr( main, scapyName )
-            main.scapyHosts.append( scapyHandle )
-            if mininetNames:
-                mininetName = mininetNames[ scapyNames.index( scapyName ) ]
+            if hasattr( main, 'Mininet1' ):
+                main.Scapy.createHostComponent( scapyName )
+                scapyHandle = getattr( main, scapyName )
+                if mininetNames:
+                    mininetName = mininetNames[ scapyNames.index( scapyName ) ]
+                else:
+                    mininetName = None
+                scapyHandle.startHostCli( mininetName )
             else:
-                mininetName = None
-            scapyHandle.startHostCli( mininetName )
+                main.Network.createComponent( scapyName )
+                scapyHandle = getattr( main, scapyName )
+                scapyHandle.connectInband()
+            main.scapyHosts.append( scapyHandle )
             scapyHandle.startScapy()
             scapyHandle.updateSelf()
             main.log.debug( scapyHandle.name )

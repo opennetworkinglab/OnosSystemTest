@@ -1,0 +1,27 @@
+{
+    "ipv4": {
+        "ipVersion": 4,
+        "group": "224.2.0.1",
+        "src": [
+            {
+                "host": "h1",
+                "ip": "10.0.202.8",
+                "id": "12:1C:B7:5C:69:68/None",
+                "port": "of:0000000000000202/8",
+                "interface": "bond0",
+                "Ether": "01:00:5e:02:00:01",
+                "UDP": 40051,
+                "filter": "ip host 224.2.0.1",
+                "packet": "dst=01:00:5e:02:00:01 src=12:1c:b7:5c:69:68"
+            }
+        ],
+        "dst": [
+            {
+                "host": "h2",
+                "id": "A2:9B:16:E8:2A:52/None",
+                "interface": "bond0",
+                "dualHomed": "True"
+            }
+        ]
+    }
+}

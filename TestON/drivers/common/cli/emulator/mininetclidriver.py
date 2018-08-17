@@ -830,14 +830,7 @@ class MininetCliDriver( Emulator ):
                     isReachable = main.FALSE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
-            response = self.handle.before
-            # NOTE: Send ctrl-c to make sure command is stopped
-            self.handle.send( "\x03" )
-            self.handle.expect( "Interrupt" )
-            response += self.handle.before + self.handle.after
-            self.handle.expect( "mininet>" )
-            response += self.handle.before + self.handle.after
-            main.log.debug( response )
+            self.exitFromCmd( self.hostPrompt )
             isReachable = main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

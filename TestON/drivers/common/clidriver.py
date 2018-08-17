@@ -554,3 +554,34 @@ class CLI( Component ):
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
+
+    def exitFromCmd( self, expect, retry=10 ):
+        """
+        Call this function when sending ctrl+c is required to kill the current
+        command. It will retry multiple times until the running command is
+        completely killed and expected string is returned from the handle.
+        Required:
+            expect: the expected string which indicates that the previous command
+                    was killed successfully.
+        Optional:
+            retry: maximum number of ctrl+c that will be sent.
+        """
+        try:
+            while retry >= 0:
+                main.log.debug( self.name + ": sending ctrl+c to kill the command" )
+                self.handle.send( "\x03" )
+                i = self.handle.expect( [ expect, pexpect.TIMEOUT ], timeout=3 )
+                main.log.debug( self.handle.before )
+                if i == 0:
+                    main.log.debug( self.name + ": successfully killed the command" )
+                    return main.TRUE
+                retry -= 1
+            main.log.warn( self.name + ": failed to kill the command" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE

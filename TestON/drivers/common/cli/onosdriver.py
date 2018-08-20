@@ -2620,8 +2620,7 @@ class OnosDriver( CLI ):
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found in onosDiagnostics" )
             main.log.error( self.name + ":    " + self.handle.before )
-            self.handle.send( "\x03" )  # Control-C
-            self.handle.expect( self.prompt )
+            self.exitFromCmd( self.prompt, 100 )
             return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

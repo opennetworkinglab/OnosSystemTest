@@ -103,6 +103,7 @@ def fabricOn( branch ){
     switch ( branch.reverse().take( 4 ).reverse() ){
         case "ster": return "4"
         case "1.13": return "2"
+        case "1.14": return "3"
         case "1.12": return "3"
         default: return "4"
     }

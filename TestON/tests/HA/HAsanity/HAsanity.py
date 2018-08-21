@@ -96,7 +96,7 @@ class HAsanity:
         except (KeyError, IndexError):
             applyFuncs = main.HA.startingMininet
 
-        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName,
                                   extraApply=applyFuncs, stopAtomix=True,
                                   includeCaseDesc=False )
         main.HA.initialSetUp()

@@ -545,9 +545,8 @@ class OnosCliDriver( CLI ):
                 logStr = "\"Sending CLI command: '" + cmdStr + "'\""
                 self.log( logStr, noExit=noExit )
             self.handle.sendline( cmdStr )
-            i = self.handle.expect( "onos>", timeout )
+            self.handle.expect( "onos>", timeout )
             response = self.handle.before
-            # TODO: do something with i
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
                            + self.name + "." )
             if debug:

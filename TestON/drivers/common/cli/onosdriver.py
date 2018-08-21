@@ -29,7 +29,6 @@ import pexpect
 import os
 import re
 import subprocess
-from requests.models import Response
 from drivers.common.clidriver import CLI
 
 class OnosDriver( CLI ):
@@ -712,8 +711,7 @@ class OnosDriver( CLI ):
     def getBranchName( self ):
         import re
         try:
-            main.log.info( "self.home = " )
-            main.log.info( self.home )
+            main.log.info( self.name + " home is " + self.home )
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( self.prompt )
             self.handle.sendline( "git name-rev --name-only HEAD" )
@@ -788,7 +786,8 @@ class OnosDriver( CLI ):
             main.cleanAndExit()
 
     def createCellFile( self, benchIp, fileName, mnIpAddrs,
-                        appString, onosIpAddrs, onosUser="sdn", useSSH=True ):
+                        appString, onosIpAddrs, atomixIps,
+                        onosUser="sdn", useSSH=True ):
         """
         Creates a cell file based on arguments
         Required:
@@ -817,6 +816,8 @@ class OnosDriver( CLI ):
             cellFile = open( tempDirectory + fileName, 'w+' )
             if isinstance( onosIpAddrs, types.StringType ):
                 onosIpAddrs = [ onosIpAddrs ]
+            if isinstance( atomixIps, types.StringType ):
+                atomixIps = [ atomixIps ]
 
             # App string is hardcoded environment variables
             # That you may wish to use by default on startup.
@@ -831,7 +832,7 @@ class OnosDriver( CLI ):
             if mnIpAddrs == "":
                 mnString = ""
             onosString = "export OC"
-            tempCount = 1
+            atomixString = "export OCC"
 
             # Create ONOSNIC ip address prefix
             tempOnosIp = str( onosIpAddrs[ 0 ] )
@@ -847,14 +848,21 @@ class OnosDriver( CLI ):
             # Start writing to file
             cellFile.write( onosNicString + "\n" )
 
+            onosIndex = 1
             for arg in onosIpAddrs:
                 # For each argument in onosIpAddrs, write to file
                 # Output should look like the following:
                 #   export OC1="10.128.20.11"
                 #   export OC2="10.128.20.12"
-                cellFile.write( onosString + str( tempCount ) +
+                cellFile.write( onosString + str( onosIndex ) +
                                 "=\"" + arg + "\"\n" )
-                tempCount = tempCount + 1
+                onosIndex = onosIndex + 1
+
+            atomixIndex = 1
+            for ip in atomixIps:
+                cellFile.write( atomixString + str( atomixIndex ) +
+                                    "=\"" + ip + "\"\n" )
+                atomixIndex += 1
 
             cellFile.write( "export OCI=$OC1\n" )
             if mnString:
@@ -942,7 +950,7 @@ class OnosDriver( CLI ):
             main.log.info( "Verify cell returned: " + handleBefore +
                            handleAfter )
             return main.TRUE
-        except pexpect.ExceptionPexpect as e:
+        except pexpect.ExceptionPexpect:
             main.log.exception( self.name + ": Pexpect exception found: " )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
@@ -982,7 +990,7 @@ class OnosDriver( CLI ):
             if "value=" + paramValue + "," in self.handle.before:
                 main.log.info( "cfg " + configName + " successfully set to " + configParam )
                 return main.TRUE
-        except pexpect.ExceptionPexpect as e:
+        except pexpect.ExceptionPexpect:
             main.log.exception( self.name + ": Pexpect exception found: " )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
@@ -1072,15 +1080,17 @@ class OnosDriver( CLI ):
                                       pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
                 # can't reach ONOS node
-                main.log.warn( "Network is unreachable" )
+                main.log.warn( self.name + ": Network is unreachable" )
                 self.handle.expect( self.prompt )
                 return main.FALSE
             elif i == 1:
                 # Process started
-                main.log.info(
-                    "Secure SSH performed on " +
-                    node )
+                main.log.info( self.name + ": Secure SSH performed on " + node )
                 return main.TRUE
+            elif i == 2:
+                # timeout
+                main.log.error( self.name + ": Failed to secure ssh on " + node )
+                main.log.debug( self.handle.before )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1139,7 +1149,8 @@ class OnosDriver( CLI ):
                 return main.FALSE
             elif i == 4:
                 # prompt
-                main.log.info( "ONOS was installed on " + node )
+                main.log.info( "ONOS was installed on {} {}.".format(  node,
+                               "but not started" if 'n' in options else "and started" ) )
                 return main.TRUE
             elif i == 5:
                 # timeout
@@ -1429,9 +1440,9 @@ class OnosDriver( CLI ):
                 # NOTE: since this function won't return until ONOS is ready,
                 #   we will kill it on timeout
                 if i == 1:
-                    main.log.error( "ONOS has not started yet" )
+                    main.log.error( "{}: ONOS {} has not started yet".format( self.name, node ) )
                 elif i == 2:
-                    main.log.error( "Cannot login to ONOS CLI, try using onos-secure-ssh" )
+                    main.log.error( "{}: Cannot login to ONOS CLI {}, try using onos-secure-ssh".format( self.name, node ) )
                 self.handle.send( "\x03" )  # Control-C
                 self.handle.expect( self.prompt )
                 return main.FALSE
@@ -2162,10 +2173,10 @@ class OnosDriver( CLI ):
             main.cleanAndExit()
         except AssertionError:
             main.log.info( "Settings did not post to ONOS" )
-            main.log.error( varification )
+            main.log.error( verification )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
-            main.log.error( varification )
+            main.log.error( verification )
             main.cleanAndExit()
 
     def getOnosIps( self ):
@@ -2356,7 +2367,7 @@ class OnosDriver( CLI ):
         DBString = ""
 
         for item in testData:
-            if isinstance( item, string ):
+            if isinstance( item, str ):
                 item = "'" + item + "'"
             if testData.index( item ) < len( testData - 1 ):
                 item += ","
@@ -2469,10 +2480,12 @@ class OnosDriver( CLI ):
         import time
 
         self.createCellFile( self.ip_address,
-                                       "temp",
-                                       self.ip_address,
-                                       "drivers",
-                                       nodeList, onosUser )
+                             "temp",
+                             self.ip_address,
+                             "drivers",
+                             nodeList,
+                             nodeList,
+                             onosUser=onosUser )
 
         main.log.info( self.name + ": Apply cell to environment" )
         cellResult = self.setCell( "temp" )
@@ -2801,21 +2814,21 @@ class OnosDriver( CLI ):
                                       pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
                 # can't reach ONOS node
-                main.log.warn( "Network is unreachable" )
+                main.log.warn( self.name + ": Network is unreachable" )
                 self.handle.expect( self.prompt )
                 return main.FALSE
             elif i == 1:
                 # same bits are already on Atomix node
-                main.log.info( "Atomix is already installed on " + node )
+                main.log.info( self.name + ": Atomix is already installed on " + node )
                 self.handle.expect( self.prompt )
                 return main.TRUE
             elif i == 2 or i == 3:
-                main.log.info( "Atomix was installed on " + node )
+                main.log.info( self.name + ": Atomix was installed on " + node )
                 self.handle.expect( self.prompt )
                 return main.TRUE
             elif i == 4:
                 # timeout
-                main.log.info( "Installation of Atomix on " + node + " timed out" )
+                main.log.info( self.name + ": Installation of Atomix on " + node + " timed out" )
                 self.handle.expect( self.prompt )
                 main.log.warn( self.handle.before )
                 self.handle.send( "\x03" )  # Control-C

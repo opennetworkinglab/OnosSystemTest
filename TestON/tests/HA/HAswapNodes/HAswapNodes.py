@@ -81,8 +81,6 @@ class HAswapNodes:
         try:
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-            from tests.HA.HAswapNodes.dependencies.Server import Server
-            main.Server = Server()
             # load some variables from the params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
@@ -91,11 +89,8 @@ class HAswapNodes:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        applyFuncs = [ main.HA.setServerForCluster,
-                       main.HA.swapNodeMetadata,
-                       main.HA.copyBackupConfig,
-                       main.HA.setMetadataUrl ]
-        applyArgs = [ None, None, None, None ]
+        applyFuncs = [ main.HA.swapNodeMetadata ]
+        applyArgs = [ None ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
@@ -106,13 +101,12 @@ class HAswapNodes:
                 applyFuncs.append( main.HA.startingMininet )
                 applyArgs.append( None )
 
-        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName,
                                   extraApply=applyFuncs,
                                   applyArgs=applyArgs,
-                                  extraClean=main.HA.cleanUpOnosService,
                                   installMax=True,
                                   includeCaseDesc=False )
-        main.HA.initialSetUp( serviceClean=True )
+        main.HA.initialSetUp()
 
         main.step( 'Set logging levels' )
         logging = True
@@ -179,7 +173,6 @@ class HAswapNodes:
         """
         The Scaling case.
         """
-        import time
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         try:
@@ -201,8 +194,6 @@ class HAswapNodes:
             main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
         activeNodes = main.Cluster.getRunningPos()
-        # Todo : this could be wrong. need to double check.
-        main.step( "Generate new metadata file" )
         old = [ activeNodes[ 1 ], activeNodes[ -2 ] ]
         new = range( main.Cluster.maxCtrls )[ -2: ]
         assert len( old ) == len( new ), "Length of nodes to swap don't match"
@@ -217,20 +208,22 @@ class HAswapNodes:
             activeNodes.remove( x )
             activeNodes.append( y )
 
-        genResult = main.Server.generateFile( main.Cluster.numCtrls )
-        utilities.assert_equals( expect=main.TRUE, actual=genResult,
-                                 onpass="New cluster metadata file generated",
-                                 onfail="Failled to generate new metadata file" )
-        time.sleep( 5 )  # Give time for nodes to read new file
         main.Cluster.clearActive()
         # Note : done up to this point.
         main.step( "Start new nodes" )  # OR stop old nodes?
         started = main.TRUE
+        stopped = main.TRUE
         for i in new:
-            started = main.ONOSbench.onosStart( main.Cluster.controllers[ i ].ipAddress ) and main.TRUE
+            started = main.ONOSbench.onosStart( main.Cluster.controllers[ i ].ipAddress ) and started
         utilities.assert_equals( expect=main.TRUE, actual=started,
                                  onpass="ONOS started",
                                  onfail="ONOS start NOT successful" )
+        for i in old:
+            main.log.debug( "Stopping " + str( main.Cluster.controllers[ i ].ipAddress ) )
+            stopped = main.ONOSbench.onosStop( main.Cluster.controllers[ i ].ipAddress ) and stopped
+        utilities.assert_equals( expect=main.TRUE, actual=stopped,
+                                 onpass="ONOS stopped",
+                                 onfail="ONOS stop NOT successful" )
 
         main.Cluster.setRunningNode( activeNodes )
 
@@ -242,16 +235,16 @@ class HAswapNodes:
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       attempts=5 )
+                                       attempts=15 )
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
 
         ready = utilities.retry( main.Cluster.command,
-                                  False,
-                                  kwargs={ "function": "summary", "contentCheck": True },
-                                  sleep=30,
-                                  attempts=10 )
+                                 False,
+                                 kwargs={ "function": "summary", "contentCheck": True },
+                                 sleep=30,
+                                 attempts=10 )
         utilities.assert_equals( expect=True, actual=ready,
                                  onpass="ONOS summary command succeded",
                                  onfail="ONOS summary command failed" )
@@ -347,13 +340,6 @@ class HAswapNodes:
         Clean up
         """
         main.HA.cleanUp( main )
-
-        main.step( "Stopping webserver" )
-        status = main.Server.stop()
-        utilities.assert_equals( expect=main.TRUE, actual=status,
-                                 onpass="Stop Server",
-                                 onfail="Failled to stop SimpleHTTPServer" )
-        del main.Server
 
     def CASE14( self, main ):
         """

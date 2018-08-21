@@ -27,10 +27,6 @@
         <builds>20</builds>
     </GRAPH>
 
-    <server>
-        <port>8000</port>
-        <interface></interface>
-    </server>
     <apps></apps>
     <ONOS_Configuration>
         <org.onosproject.net.intent.impl.compiler.IntentConfigurableRegistrator>

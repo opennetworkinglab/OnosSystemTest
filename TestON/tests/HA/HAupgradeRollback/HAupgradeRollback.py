@@ -104,7 +104,7 @@ class HAupgradeRollback:
                 applyFuncs.append( main.HA.startingMininet )
                 applyArgs.append( None )
 
-        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName,
                                   extraApply=applyFuncs,
                                   applyArgs=applyArgs,
                                   extraClean=main.HA.cleanUpGenPartition,

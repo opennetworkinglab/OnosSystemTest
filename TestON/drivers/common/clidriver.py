@@ -561,18 +561,19 @@ class CLI( Component ):
         command. It will retry multiple times until the running command is
         completely killed and expected string is returned from the handle.
         Required:
-            expect: the expected string which indicates that the previous command
-                    was killed successfully.
+            expect: expected string or list of strings which indicates that the
+                    previous command was killed successfully.
         Optional:
             retry: maximum number of ctrl+c that will be sent.
         """
+        expect = [ expect ] if isinstance( expect, str ) else expect
         try:
             while retry >= 0:
                 main.log.debug( self.name + ": sending ctrl+c to kill the command" )
                 self.handle.send( "\x03" )
-                i = self.handle.expect( [ expect, pexpect.TIMEOUT ], timeout=3 )
+                i = self.handle.expect( expect + [ pexpect.TIMEOUT ], timeout=3 )
                 main.log.debug( self.handle.before )
-                if i == 0:
+                if i < len( expect ):
                     main.log.debug( self.name + ": successfully killed the command" )
                     return main.TRUE
                 retry -= 1

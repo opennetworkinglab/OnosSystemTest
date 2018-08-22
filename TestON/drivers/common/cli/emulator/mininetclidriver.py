@@ -830,7 +830,7 @@ class MininetCliDriver( Emulator ):
                     isReachable = main.FALSE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
-            self.exitFromCmd( self.hostPrompt )
+            self.exitFromCmd( [ self.hostPrompt, self.bashPrompt ] )
             isReachable = main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -2234,7 +2234,9 @@ class MininetCliDriver( Emulator ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanAndExit()
+            # Do not exit the entire test when pexpect.EOF is caught
+            # FIXME: We might need to do something else here
+            return main.ERROR
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()

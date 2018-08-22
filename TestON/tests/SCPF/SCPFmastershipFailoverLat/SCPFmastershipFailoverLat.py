@@ -185,21 +185,21 @@ class SCPFmastershipFailoverLat:
                 eventOutput = main.Cluster.active( CLInum ).CLI.events( args='-a' ).split( "\r\n" )
                 for line in reversed( eventOutput ):
                     timestamp = line[ :23 ] if line[ 19 ] != '-' else line[ :19 ] + '.000'
-                    if "INSTANCE_DEACTIVATED" in line and len( instanceDeactivatedLats ) == CLInum:
-                        deactivateTime = float( datetime.datetime.strptime(
-                                            timestamp, "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
-                        instanceDeactivatedLats.append( deactivateTime - time1 )
-                    elif "MASTER_CHANGED" in line and len( masterChangedLats ) == CLInum:
-                        changedTime = float( datetime.datetime.strptime(
-                                            timestamp, "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
-                        masterChangedLats.append( changedTime - time1 )
-                    if len( instanceDeactivatedLats ) > CLInum and len( masterChangedLats ) > CLInum:
+                    timestamp = float( datetime.datetime.strptime( timestamp, "%Y-%m-%dT%H:%M:%S.%f" ).strftime( '%s.%f' ) ) * 1000.0
+                    if timestamp - time1 >= 0:
+                        if "INSTANCE_DEACTIVATED" in line:
+                            instanceDeactivatedLats.append( timestamp - time1 )
+                        elif "MASTER_CHANGED" in line:
+                            masterChangedLats.append( timestamp - time1 )
+                    else:
                         break
 
             instanceDeactivatedLats.sort()
+            masterChangedLats.sort()
             instanceDeactivated = instanceDeactivatedLats[ 0 ]
+            masterChanged = masterChangedLats[ 0 ]
 
-            eventLatCheck = True if masterChangedLats and instanceDeactivated else False
+            eventLatCheck = True if masterChanged and instanceDeactivated else False
             if not eventLatCheck:
                 main.log.warn( "Latencies were NOT obtained from 'events' successfully." )
 
@@ -221,20 +221,26 @@ class SCPFmastershipFailoverLat:
             validDataCheck = False
             if tsharkLatCheck:
                 main.log.info( "instanceDeactivated: " + str( instanceDeactivated ) )
-                main.log.info( "roleRequestLat - instanceDeactivated: " + str( roleRequestLat - instanceDeactivated ) )
+                main.log.info( "masterChanged: " + str( masterChanged ) )
+                main.log.info( "roleRequestLat: " + str( roleRequestLat ) )
                 if iteration >= main.warmUp:
                     main.log.info( "Verifying that the data are valid." )  # Don't record data during a warm-up
-                    validDataCheck = roleRequestLat - instanceDeactivated >= 0 and \
-                                     instanceDeactivated >= 0
+                    validDataCheck = roleRequestLat >= 0 and \
+                                     instanceDeactivated >= 0 and \
+                                     masterChanged >= 0
                     if not validDataCheck:
                         main.log.warn( "Data are NOT valid." )
 
                     if eventLatCheck and tsharkLatCheck and validDataCheck:
                         main.log.info( "Saving data..." )
-                        main.latencyData[ 'kill_to_deactivation' ]\
-                            .append( instanceDeactivated )
-                        main.latencyData[ 'deactivation_to_role_request' ]\
-                            .append( roleRequestLat - instanceDeactivated )
+                        if roleRequestLat >= instanceDeactivated:
+                            main.latencyData[ 'kill_to_deactivation' ].append( instanceDeactivated )
+                            main.latencyData[ 'deactivation_to_role_request' ].append( roleRequestLat - instanceDeactivated )
+                        else:
+                            main.latencyData[ 'kill_to_deactivation' ].append( roleRequestLat )
+                            main.latencyData[ 'deactivation_to_role_request' ].append( 0 )
+                        main.log.info( "kill_to_deactivation: " + str( main.latencyData[ 'kill_to_deactivation' ][ -1 ] ) )
+                        main.log.info( "deactivation_to_role_request: " + str( main.latencyData[ 'deactivation_to_role_request' ][ -1 ] ) )
 
             # Restart ONOS node
             main.log.info( "Restart ONOS node " + strNodeNumToKill + " and checking status of restart." )

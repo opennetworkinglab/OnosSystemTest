@@ -118,7 +118,11 @@ class SCPFintentEventTp:
 
     def CASE2( self, main ):
         import numpy
-
+        # If we activate intentperf from the cell, there's chance that it doesn't get all cluster
+        # nodes when some of the nodes have a large startup delay
+        main.log.info( "Activate intentperf app" )
+        main.Cluster.active( 0 ).CLI.app( "intentperf", "activate" )
+        time.sleep( 5 )
         main.log.info( "Cluster Count = " + str( main.Cluster.numCtrls ) )
         neighbors = '0' if main.neighbor.pop( 0 ) == '0' else str( main.Cluster.numCtrls - 1 )
         main.log.info( "Neighbors: " + neighbors )

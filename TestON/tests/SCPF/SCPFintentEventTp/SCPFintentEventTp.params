@@ -11,7 +11,7 @@
 
     <ENV>
     <cellName>intentTP</cellName>
-    <cellApps>drivers,null,intentperf</cellApps>
+    <cellApps>drivers,null</cellApps>
     </ENV>
 
     <SCALE>1,3,3,5,5,7,7</SCALE>

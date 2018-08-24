@@ -3750,10 +3750,14 @@ class MininetCliDriver( Emulator ):
         try:
             # Disconnect from component
             component.disconnect()
+            component.close_log_handles()
             # Delete component
             delattr( main, name )
             # Delete component from ComponentDictionary
             del( main.componentDictionary[ name ] )
+        except StandardError:
+            self.log.exception( "Exception while closing log files for " + name )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

@@ -218,11 +218,15 @@ class MininetScapyCliDriver( ScapyCliDriver ):
         try:
             # Disconnect from component
             component.disconnect()
+            component.close_log_handles()
             # Delete component
             delattr( main, name )
             # Delete component from ComponentDictionary
             del( main.componentDictionary[ name ] )
             return main.TRUE
+        except StandardError:
+            self.log.exception( "Exception while closing log files for " + name )
+            return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()

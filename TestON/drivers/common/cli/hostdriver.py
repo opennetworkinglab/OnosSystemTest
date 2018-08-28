@@ -27,9 +27,9 @@ import types
 import os
 import time
 from math import pow
-from drivers.common.clidriver import CLI
+from drivers.common.cli.emulator.scapyclidriver import ScapyCliDriver
 
-class HostDriver( CLI ):
+class HostDriver( ScapyCliDriver ):
     """
     This class is created as a standalone host driver.
     """
@@ -39,6 +39,9 @@ class HostDriver( CLI ):
         self.name = None
         self.shortName = None
         self.home = None
+        self.inband = False
+        self.prompt = "\$"
+        self.scapyPrompt = ">>>"
 
     def connect( self, **connectargs ):
         """
@@ -111,9 +114,7 @@ class HostDriver( CLI ):
                 self.handle.sendline( "exit" )
                 i = self.handle.expect( [ "closed", pexpect.TIMEOUT ], timeout=2 )
                 if i == 1:
-                    main.log.error(
-                        self.name +
-                        ": timeout when waiting for response" )
+                    main.log.error( self.name + ": timeout when waiting for response" )
                     main.log.error( "response: " + str( self.handle.before ) )
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -128,6 +129,70 @@ class HostDriver( CLI ):
             main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
         return response
+
+    def connectInband( self ):
+        """
+        ssh to the host using its data plane IP
+        """
+        try:
+            if not self.options[ 'inband' ] == 'True':
+                main.log.info( "Skip connecting the host via data plane" )
+                return main.TRUE
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "ssh {}@{}".format( self.options[ 'username' ],
+                                                      self.options[ 'ip' ] ) )
+            i = self.handle.expect( [ "password:|Password:", self.prompt, pexpect.TIMEOUT ], timeout=30 )
+            if i == 0:
+                self.handle.sendline( self.options[ 'password' ] )
+                j = self.handle.expect( [ "password:|Password:", self.prompt, pexpect.TIMEOUT ], timeout=10 )
+                if j != 1:
+                    main.log.error( "Incorrect password" )
+                    return main.FALSE
+            elif i == 1:
+                main.log.info( "Password not required logged in" )
+            else:
+                main.log.error( "Failed to connect to the host" )
+                return main.FALSE
+            self.inband = True
+            return main.TRUE
+        except KeyError:
+            main.log.error( self.name + ": host component not as expected" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+
+    def disconnectInband( self ):
+        """
+        Terminate the ssh connection to the host's data plane IP
+        """
+        try:
+            if not self.options[ 'inband' ] == 'True':
+                main.log.info( "Skip disconnecting the host via data plane" )
+                return main.TRUE
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "exit" )
+            i = self.handle.expect( [ "closed", pexpect.TIMEOUT ], timeout=2 )
+            if i == 1:
+                main.log.error( self.name + ": timeout when waiting for response" )
+                main.log.error( "response: " + str( self.handle.before ) )
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
 
     def ping( self, dst, ipv6=False, wait=3 ):
         """
@@ -185,8 +250,6 @@ class HostDriver( CLI ):
                     self.name +
                     ": timeout when waiting for response" )
                 main.log.error( "response: " + str( self.handle.before ) )
-            self.handle.sendline( "" )
-            self.handle.expect( self.prompt )
             response = self.handle.before
             return response
         except pexpect.EOF:
@@ -194,5 +257,52 @@ class HostDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanAndExit()
         except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.exception( self.name + ": uncaught exception!" )
+            main.cleanAndExit()
+
+    def ip( self, options="a", wait=3 ):
+        """
+        Run ip command on host and return output
+        """
+        try:
+            command = "ip {}".format( options )
+            main.log.info( self.name + ": Sending: " + command )
+            self.handle.sendline( command )
+            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ],
+                                    timeout=wait + 5 )
+            if i == 1:
+                main.log.error( self.name + ": timeout when waiting for response" )
+                main.log.error( "response: " + str( self.handle.before ) )
+            response = self.handle.before
+            return response
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": uncaught exception!" )
+            main.cleanAndExit()
+
+    def command( self, cmd, wait=3 ):
+        """
+        Run shell command on host and return output
+        Required:
+            cmd: command to run on the host
+        """
+        try:
+            main.log.info( self.name + ": Sending: " + cmd )
+            self.handle.sendline( cmd )
+            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ],
+                                    timeout=wait + 5 )
+            if i == 1:
+                main.log.error( self.name + ": timeout when waiting for response" )
+                main.log.error( "response: " + str( self.handle.before ) )
+            response = self.handle.before
+            return response
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": uncaught exception!" )
             main.cleanAndExit()

@@ -457,12 +457,9 @@ class ONOSSetup:
                        " node(s) ONOS cluster" )
             main.caseExplanation = "Set up ONOS with " + str( cluster.numCtrls ) + \
                                    " node(s) ONOS cluster"
-        killResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
 
         main.log.info( "NODE COUNT = " + str( cluster.numCtrls ) )
         cellResult = main.TRUE
-        packageResult = main.TRUE
-        onosCliResult = main.TRUE
         if cellApply:
             try:
                 apps = main.apps
@@ -483,12 +480,15 @@ class ONOSSetup:
                                                mininetIp, useSSH,
                                                tempOnosIp, installMax )
 
+        killResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
+
         if removeLog:
             main.log.info("Removing raft logs")
             main.ONOSbench.onosRemoveRaftLogs()
         onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
         self.processList( extraApply, applyArgs )
 
+        packageResult = main.TRUE
         if not skipPack:
             packageResult = self.buildOnos(cluster)
 
@@ -499,6 +499,7 @@ class ONOSSetup:
 
         onosServiceResult = self.checkOnosService( cluster )
 
+        onosCliResult = main.TRUE
         if startOnos:
             onosCliResult = self.startOnosClis( cluster )
 

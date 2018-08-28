@@ -376,6 +376,9 @@ class OnosClusterDriver( CLI ):
         main.componentDictionary[name]['host'] = ipAddress
         home = main.componentDictionary[name]['COMPONENTS'].get( "onos_home", None )
         main.componentDictionary[name]['home'] = self.checkOptions( home, None )
+        # TODO: for now we use karaf user name and password also for logging to the onos nodes
+        main.componentDictionary[name]['user'] = self.karafUser
+        main.componentDictionary[name]['password'] = self.karafPass
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
         main.log.debug( main.componentDictionary[name] )
 

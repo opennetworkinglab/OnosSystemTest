@@ -56,9 +56,12 @@ class OFDPASwitchDriver( CLI ):
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
             # Get the name
-            self.name = self.options['name']
+            self.name = self.options[ 'name' ]
             # Get the dpid
             self.dpid = self.options[ 'dpid' ]
+            # Get ofagent patch
+            if 'confDir' in self.options:
+                self.switchDirectory = self.options[ 'confDir' ]
             # Parse the IP address
             try:
                 if os.getenv( str( self.ip_address ) ) is not None:
@@ -135,7 +138,7 @@ class OFDPASwitchDriver( CLI ):
             response = main.FALSE
             return response
 
-    def assignSwController( self, ip, port="6653", ptcp=""):
+    def assignSwController( self, ip, port="6653", ptcp="", updateConf=False ):
         """
         Description:
             The assignment is realized properly creating the agent.conf
@@ -145,6 +148,9 @@ class OFDPASwitchDriver( CLI ):
         Optional:
             port - controller port is ignored
             ptcp - ptcp information is ignored
+            updateConf - create new ofagent conf file and push to the switch if
+                         set to True; otherwise will use the existing conf file
+                         on the switch.
         Return:
             Returns main.TRUE if the switch is correctly assigned to controllers,
             otherwise it will return main.FALSE or an appropriate exception(s)
@@ -165,22 +171,23 @@ class OFDPASwitchDriver( CLI ):
                 return main.FALSE
             # Complete the arguments adding the dpid
             opt_args += onosIp + '-i %s' % self.dpid + '"'
-            # Create a copy of the cfg file using the template
-            self.createCfg()
-            # Load the cfg file and adds the missing option
-            self.updateCfg( opt_args )
-            # Backup the cfg on the switch
-            self.backupCfg()
-            # Push the new cfg on the device
-            self.pushCfg()
-            # Start the ofagent on the device
+            if updateConf:
+                # Create a copy of the cfg file using the template
+                self.createCfg()
+                # Load the cfg file and adds the missing option
+                self.updateCfg( opt_args )
+                # Backup the cfg on the switch
+                self.backupCfg()
+                # Push the new cfg on the device
+                self.pushCfg()
+                # Start the ofagent on the device
             self.startOfAgent()
             # Enable all the ports
             assignResult = utilities.retry(
                 self.enablePorts,
                 main.FALSE,
                 kwargs={},
-                attempts=5,
+                attempts=10,
                 sleep=10)
             # Done return true
             return assignResult
@@ -317,11 +324,13 @@ class OFDPASwitchDriver( CLI ):
         self.handle.expect( self.prompt )
         response = self.handle.before
         if "Error from ofdpaClientInitialize()" in response:
-            main.log.warn(
-                self.name +
-                ": Not yet started" )
+            main.log.warn( self.name + ": Not yet started" )
             return main.FALSE
-        main.log.info( self.name + ": started" )
-        self.handle.sendline( "sh portspeed.sh" )
+        # Change port speed
+        self.handle.sendline( "sh portspeed" )
         self.handle.expect( self.prompt )
+        response = self.handle.before
+        if "Failure calling" in response:
+            main.log.warn( self.name + ": failed to change port speed" )
+            return main.FALSE
         return main.TRUE

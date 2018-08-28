@@ -53,6 +53,6 @@ class Network():
         # Get a list of network components that are created in the test
         self.components = []
         for key, value in main.componentDictionary.items():
-            if value[ 'type' ] in [ 'MininetCliDriver', 'RemoteMininetDriver', 'NetworkDriver', 'OFDPASwitchDriver' ] and hasattr( main, key ):
+            if value[ 'type' ] in [ 'MininetCliDriver', 'RemoteMininetDriver', 'NetworkDriver' ] and hasattr( main, key ):
                 self.components.append( getattr( main, key ) )
         main.log.debug( "%s initialized with components: %s" % ( self.name, self.components ) )

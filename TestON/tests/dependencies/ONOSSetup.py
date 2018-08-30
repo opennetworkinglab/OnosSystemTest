@@ -371,7 +371,8 @@ class ONOSSetup:
                     ctrl.name,
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
-        return main.TRUE if stepResult else main.FALSE
+            main.cleanAndExit()
+        return main.TRUE
 
     def checkOnosApps( self, cluster, apps ):
         """

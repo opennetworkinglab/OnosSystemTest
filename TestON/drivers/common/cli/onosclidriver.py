@@ -778,7 +778,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def devices( self, jsonFormat=True ):
+    def devices( self, jsonFormat=True, timeout=30 ):
         """
         Lists all infrastructure devices or switches
         Optional argument:
@@ -788,7 +788,7 @@ class OnosCliDriver( CLI ):
             cmdStr = "devices"
             if jsonFormat:
                 cmdStr += " -j"
-            handle = self.sendline( cmdStr )
+            handle = self.sendline( cmdStr, timeout=timeout )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
@@ -936,7 +936,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def ports( self, jsonFormat=True ):
+    def ports( self, jsonFormat=True, timeout=30 ):
         """
         Lists all ports
         Optional argument:
@@ -946,7 +946,7 @@ class OnosCliDriver( CLI ):
             cmdStr = "ports"
             if jsonFormat:
                 cmdStr += " -j"
-            handle = self.sendline( cmdStr )
+            handle = self.sendline( cmdStr, timeout=timeout )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle

@@ -81,7 +81,8 @@ class SAMPstartTemplate_1node:
         import time
         main.case( "Start up " + str( main.Cluster.numCtrls ) + "-node onos cluster." )
         main.step( "Start ONOS cluster with basic (drivers) app." )
-        stepResult = main.testSetUp.ONOSSetUp( main.Cluster )
+        main.restartCluster = True if main.params[ 'CASE10' ][ 'restartCluster' ] == 'True' else False
+        stepResult = main.testSetUp.ONOSSetUp( main.Cluster, restartCluster=main.restartCluster )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully started basic ONOS cluster ",

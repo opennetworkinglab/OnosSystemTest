@@ -483,7 +483,7 @@ class ONOSSetup:
                    extraClean=None, cleanArgs=None, skipPack=False, installMax=False,
                    atomixClusterSize=None, useSSH=True, killRemoveMax=True, stopAtomix=False,
                    stopOnos=False, installParallel=True, cellApply=True,
-                   includeCaseDesc=True ):
+                   includeCaseDesc=True, restartCluster=True ):
         """
         Description:
             Initial ONOS setting up of the tests. It will also verify the result of each steps.
@@ -523,6 +523,7 @@ class ONOSSetup:
                 removing/killing running nodes only.
             * stopAtomix - True if wish to stop atomix before killing it.
             * stopOnos - True if wish to stop onos before killing it.
+            * restartCluster - True if wish to kill and restart atomix and onos clusters
         Returns:
             Returns main.TRUE if it everything successfully proceeded.
         """
@@ -556,25 +557,34 @@ class ONOSSetup:
                                                tempOnosIp, installMax,
                                                atomixClusterSize )
 
-        atomixKillResult = self.killingAllAtomix( cluster, killRemoveMax, stopAtomix )
-        onosKillResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
-        killResult = atomixKillResult and onosKillResult
+        if restartCluster:
+            atomixKillResult = self.killingAllAtomix( cluster, killRemoveMax, stopAtomix )
+            onosKillResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
+            killResult = atomixKillResult and onosKillResult
+        else:
+            killResult = main.TRUE
 
-        atomixUninstallResult = self.uninstallAtomix( cluster, killRemoveMax )
-        onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
-        uninstallResult = atomixUninstallResult and onosUninstallResult
-        self.processList( extraApply, applyArgs )
+        if restartCluster:
+            atomixUninstallResult = self.uninstallAtomix( cluster, killRemoveMax )
+            onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
+            uninstallResult = atomixUninstallResult and onosUninstallResult
+            self.processList( extraApply, applyArgs )
 
-        packageResult = main.TRUE
-        if not skipPack:
-            packageResult = self.buildOnos(cluster)
+            packageResult = main.TRUE
+            if not skipPack:
+                packageResult = self.buildOnos(cluster)
 
-        atomixInstallResult = self.installAtomix( cluster, installParallel )
-        onosInstallResult = self.installOnos( cluster, installMax, installParallel )
-        installResult = atomixInstallResult and onosInstallResult
+            atomixInstallResult = self.installAtomix( cluster, installParallel )
+            onosInstallResult = self.installOnos( cluster, installMax, installParallel )
+            installResult = atomixInstallResult and onosInstallResult
 
-        self.processList( extraClean, cleanArgs )
-        secureSshResult = self.setupSsh( cluster )
+            self.processList( extraClean, cleanArgs )
+            secureSshResult = self.setupSsh( cluster )
+        else:
+            packageResult = main.TRUE
+            uninstallResult = main.TRUE
+            installResult = main.TRUE
+            secureSshResult = main.TRUE
 
         onosServiceResult = self.checkOnosService( cluster )
 

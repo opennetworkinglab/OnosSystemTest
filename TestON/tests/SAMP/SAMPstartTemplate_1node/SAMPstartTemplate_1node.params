@@ -47,6 +47,7 @@
     </CASE1>
 
     <CASE10>
+        <restartCluster>True</restartCluster>
         <numNodes>1</numNodes>
         <Apps>
             org.onosproject.openflow

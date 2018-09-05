@@ -36,6 +36,7 @@
     </CASE1>
 
     <CASE10>
+        <restartCluster>True</restartCluster>
         <Apps>
             org.onosproject.openflow
         </Apps>

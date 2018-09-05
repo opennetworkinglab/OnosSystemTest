@@ -28,9 +28,9 @@ fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPath
 
 // set the versions of the onos
 fileRelated.init()
-current_version = "1.14"
-previous_version = "1.13"
-before_previous_version = "master"
+current_version = "master"
+previous_version = "1.14"
+before_previous_version = "1.13"
 
 // init trend graphs to be on VM.
 funcs.initializeTrend( "VM" );

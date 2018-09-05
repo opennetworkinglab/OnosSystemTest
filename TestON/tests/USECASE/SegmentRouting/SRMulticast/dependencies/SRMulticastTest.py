@@ -37,10 +37,10 @@ def setupTest( main, test_idx, onosNodes ):
     lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
     # Load configuration files
     main.step( "Load configurations" )
-    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1"
+    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1" if hasattr( main, "Mininet1" ) else "flex"
     lib.loadJson( main )
     time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
-    main.cfgName = "common"
+    main.cfgName = "common" if hasattr( main, "Mininet1" ) else "flex"
     lib.loadMulticastConfig( main )
     lib.loadHost( main )
 
@@ -51,9 +51,7 @@ def setupTest( main, test_idx, onosNodes ):
         time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
     else:
         # Run the test with physical devices
-        lib.connectToPhysicalNetwork( main, self.switchNames )
-        # Check if the devices are up
-        lib.checkDevices( main, switches=len( self.switchNames ) )
+        lib.connectToPhysicalNetwork( main )
 
     # Create scapy components
     lib.startScapyHosts( main )

@@ -86,7 +86,7 @@ class ScapyCliDriver( Emulator ):
                                self.user_name +
                                "@" +
                                self.ip_address )
-                return main.TRUE
+                return self.handle
             else:
                 main.log.error( "Connection failed to the host " +
                                 self.user_name +
@@ -135,7 +135,7 @@ class ScapyCliDriver( Emulator ):
                       'bind_layers(MPLS, IP)' ]
 
         try:
-            self.handle.sendline( "scapy" )
+            self.handle.sendline( "sudo scapy" )
             self.handle.expect( self.scapyPrompt )
             self.handle.sendline( "conf.color_theme = NoTheme()" )
             self.handle.expect( self.scapyPrompt )

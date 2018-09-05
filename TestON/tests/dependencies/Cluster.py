@@ -26,10 +26,16 @@ class Cluster():
 
     def __repr__( self ):
         controllers = []
-        runningNodes = []
+        runningNodes = self.getRunningNodes()
+        atomixNodes = []
         for ctrl in self.controllers:
-            controllers.append( str( ctrl ) )
-        return "%s[%s]" % ( self.name, ", ".join( controllers ) )
+            controllers.append( "{%s:%s, %s - %s}" % ( ctrl.name,
+                                                       ctrl.ipAddress,
+                                                       "Configured" if ctrl in runningNodes else "Not Configured",
+                                                       "Active" if ctrl.active else "Inactive" ) )
+        for node in self.atomixNodes:
+            atomixNodes.append( "{%s:%s}" % ( node.name, node.ipAddress ) )
+        return "%s[%s; Atomix Nodes:%s]" % ( self.name, ", ".join( controllers ), ", ".join( atomixNodes ) )
 
     def __init__( self, ctrlList=[], name="Cluster" ):
         """
@@ -45,7 +51,32 @@ class Cluster():
         self.numCtrls = len( self.runningNodes )
         self.maxCtrls = len( self.controllers )
         self.name = str( name )
+        self.atomixNodes = ctrlList
         self.iterator = iter( self.active() )
+
+    def fromNode( self, ctrlList ):
+        """
+        Helper function to get a specific list of controllers
+        Required Arguments:
+        * ctrlList - The list of controllers to return. This can be either an index or a keyword
+            Index | Keyword   | List returned
+            0     | "all"     | self.controllers
+            1     | "running" | self.runningNodes
+            2     | "active   | self.active()
+
+        Throws a ValueError exception if ctrlList value is not recognized
+        """
+        # TODO: Add Atomix Nodes?
+        if isinstance( ctrlList, str ):
+            ctrlList = ctrlList.lower()
+        if ctrlList == 0 or ctrlList == "all":
+            return self.controllers
+        elif ctrlList == 1 or ctrlList == "running":
+            return self.runningNodes
+        elif ctrlList == 2 or ctrlList == "active":
+            return self.active()
+        else:
+            raise ValueError( "Unknown argument: {}".format( ctrlList ) )
 
     def getIps( self, activeOnly=False, allNode=False ):
         """
@@ -108,15 +139,58 @@ class Cluster():
             self.runningNodes.append( self.controllers[ i ] )
         self.numCtrls = len( numCtrls ) if isinstance( numCtrls, list ) else numCtrls
 
+    def setAtomixNodes( self, nodes ):
+        """
+        Description:
+            Sets the list of Atomix nodes for the cluster
+            If nodes is a list, it will add the nodes of the list.
+            If nodes is an int, the function will set the Atomix nodes
+            to be the first n in the list of controllers.
+        Required:
+            * nodes - number of nodes to be set, or a list of nodes to set
+        Returns:
+        """
+        self.atomixNodes = []
+        for i in nodes if isinstance( nodes, list ) else range( nodes ):
+            self.atomixNodes.append( self.controllers[ i ] )
+
+    def getControllers( self, node=None ):
+        """
+        Description:
+            Get the list of all controllers in a cluster or a controller at an index in the list
+        Optional Arguments:
+            * node - position of the node to get from the list of controllers.
+        Returns:
+            Return a list of controllers in the cluster if node is None
+            if not, it will return the controller at the given index.
+        """
+        result = self.controllers
+        return result if node is None else result[ node % len( result ) ]
+
+    def getRunningNodes( self, node=None ):
+        """
+        Description:
+            Get the list of all controllers in a cluster that should be running or
+            a controller at an index in the list
+        Optional Arguments:
+            * node - position of the node to get from the list of controllers.
+        Returns:
+            Return a list of controllers in the cluster if node is None
+            if not, it will return the controller at the given index.
+        """
+        result = self.runningNodes
+        return result if node is None else result[ node % len( result ) ]
+
     def active( self, node=None ):
         """
         Description:
-            get the list/controller of the active controller.
-        Required:
-            * node - position of the node to get from the active controller.
+            Get the list of all active controllers in a cluster or
+            a controller at an index in the list
+        Optional Arguments:
+            * node - position of the node to get from the list of controllers.
         Returns:
-            Return a list of active controllers in the cluster if node is None
-            if not, it will return the nth controller.
+            Return a list of controllers in the cluster if node is None
+            if not, it will return the controller at the given index.
         """
         result = [ ctrl for ctrl in self.runningNodes
                       if ctrl.active ]
@@ -149,7 +223,8 @@ class Cluster():
         """
         self.iterator = iter( self.active() )
 
-    def createCell( self, cellName, cellApps, mininetIp, useSSH, ips, installMax=False ):
+    def createCell( self, cellName, cellApps, mininetIp, useSSH, onosIps,
+                    atomixIps, installMax=False ):
         """
         Description:
             create a new cell
@@ -158,7 +233,9 @@ class Cluster():
             * cellApps - The ONOS apps string.
             * mininetIp - Mininet IP address.
             * useSSH - True for using ssh when creating a cell
-            * ips - ip( s ) of the node( s ).
+            * onosIps - ip( s ) of the ONOS node( s ).
+            * atomixIps - ip( s ) of the Atomix node( s ).
+
         Returns:
         """
         self.command( "createCellFile",
@@ -166,11 +243,12 @@ class Cluster():
                              cellName,
                              mininetIp,
                              cellApps,
-                             ips,
+                             onosIps,
+                             atomixIps,
                              main.ONOScell.karafUser,
                              useSSH ],
                       specificDriver=1,
-                      getFrom=0 if installMax else 1 )
+                      getFrom="all" if installMax else "running" )
 
     def uninstallAtomix( self, uninstallMax ):
         """
@@ -186,7 +264,7 @@ class Cluster():
         uninstallResult = self.command( "atomixUninstall",
                                         kwargs={ "nodeIp": "ipAddress" },
                                         specificDriver=1,
-                                        getFrom=0 if uninstallMax else 1,
+                                        getFrom="all" if uninstallMax else "running",
                                         funcFromCtrl=True )
         for uninstallR in uninstallResult:
             result = result and uninstallR
@@ -206,7 +284,7 @@ class Cluster():
         uninstallResult = self.command( "onosUninstall",
                                         kwargs={ "nodeIp": "ipAddress" },
                                         specificDriver=1,
-                                        getFrom=0 if uninstallMax else 1,
+                                        getFrom="all" if uninstallMax else "running",
                                         funcFromCtrl=True )
         for uninstallR in uninstallResult:
             result = result and uninstallR
@@ -225,13 +303,15 @@ class Cluster():
         setCellResult = self.command( "setCell",
                                       args=[ cellName ],
                                       specificDriver=1,
-                                      getFrom=0 if installMax else 1 )
+                                      getFrom="all" )
+        benchCellResult = main.ONOSbench.setCell( cellName )
         verifyResult = self.command( "verifyCell",
                                      specificDriver=1,
-                                     getFrom=0 if installMax else 1 )
+                                     getFrom="all" )
         result = main.TRUE
         for i in range( len( setCellResult ) ):
             result = result and setCellResult[ i ] and verifyResult[ i ]
+        result = result and benchCellResult
         return result
 
     def checkService( self ):
@@ -243,16 +323,16 @@ class Cluster():
         Returns:
             Returns main.TRUE if it successfully checked
         """
-        stopResult = main.TRUE
-        startResult = main.TRUE
+        getFrom = "running"
         onosIsUp = main.TRUE
         onosUp = self.command( "isup",
                                  args=[ "ipAddress" ],
                                  specificDriver=1,
-                                 getFrom=1,
+                                 getFrom=getFrom,
                                  funcFromCtrl=True )
+        ctrlList = self.fromNode( getFrom )
         for i in range( len( onosUp ) ):
-            ctrl = self.controllers[ i ]
+            ctrl = ctrlList[ i ]
             onosIsUp = onosIsUp and onosUp[ i ]
             if onosUp[ i ] == main.TRUE:
                 main.log.info( ctrl.name + " is up and ready" )
@@ -277,11 +357,10 @@ class Cluster():
         killResult = self.command( "atomixKill",
                                    args=[ "ipAddress" ],
                                    specificDriver=1,
-                                   getFrom=0 if killMax else 1,
+                                   getFrom="all" if killMax else "running",
                                    funcFromCtrl=True )
         for i in range( len( killResult ) ):
             result = result and killResult[ i ]
-            self.controllers[ i ].active = False
         return result
 
     def killOnos( self, killMax, stopOnos ):
@@ -297,15 +376,17 @@ class Cluster():
         Returns:
             Returns main.TRUE if successfully killing it.
         """
+        getFrom = "all" if killMax else "running"
         result = main.TRUE
         killResult = self.command( "onosKill",
                                    args=[ "ipAddress" ],
                                    specificDriver=1,
-                                   getFrom=0 if killMax else 1,
+                                   getFrom=getFrom,
                                    funcFromCtrl=True )
+        ctrlList = self.fromNode( getFrom )
         for i in range( len( killResult ) ):
             result = result and killResult[ i ]
-            self.controllers[ i ].active = False
+            ctrlList[ i ].active = False
         return result
 
     def ssh( self ):
@@ -321,30 +402,25 @@ class Cluster():
         sshResult = self.command( "onosSecureSSH",
                                    kwargs={ "node": "ipAddress" },
                                    specificDriver=1,
-                                   getFrom=1,
+                                   getFrom="running",
                                    funcFromCtrl=True )
         for sshR in sshResult:
             result = result and sshR
         return result
 
-    def installAtomix( self, installMax=True, installParallel=True ):
+    def installAtomix( self, installParallel=True ):
         """
         Description:
-            Installing onos.
+            Installing Atomix.
         Required:
-            * installMax - True for installing max number of nodes
-            False for installing current running nodes only.
         Returns:
             Returns main.TRUE if it successfully installed
         """
         result = main.TRUE
         threads = []
         i = 0
-        for ctrl in self.controllers if installMax else self.runningNodes:
-            options = ""
-            if installMax and i >= self.numCtrls:
-                # TODO: is installMax supported here?
-                pass
+        for ctrl in self.atomixNodes:
+            options = "-f"
             if installParallel:
                 t = main.Thread( target=ctrl.Bench.atomixInstall,
                                  name="atomix-install-" + ctrl.name,
@@ -404,15 +480,17 @@ class Cluster():
         Returns:
             Returns main.TRUE if it successfully started.
         """
+        getFrom = "running"
         result = main.TRUE
         cliResults = self.command( "startOnosCli",
                                    args=[ "ipAddress" ],
                                    specificDriver=2,
-                                   getFrom=1,
+                                   getFrom=getFrom,
                                    funcFromCtrl=True )
+        ctrlList = self.fromNode( getFrom )
         for i in range( len( cliResults ) ):
             result = result and cliResults[ i ]
-            self.controllers[ i ].active = True
+            ctrlList[ i ].active = True
         return result
 
     def nodesCheck( self ):
@@ -437,6 +515,8 @@ class Cluster():
                 activeIps.sort()
                 if ips == activeIps:
                     currentResult = True
+                else:
+                    main.log.error( "{} != {}".format( ips, activeIps ) )
             except ( ValueError, TypeError ):
                 main.log.error( "Error parsing nodes output" )
                 main.log.warn( repr( i ) )
@@ -526,7 +606,7 @@ class Cluster():
         return all( resultOne == result for result in results )
 
     def command( self, function, args=(), kwargs={}, returnBool=False,
-                 specificDriver=0, contentCheck=False, getFrom=2,
+                 specificDriver=0, contentCheck=False, getFrom="active",
                  funcFromCtrl=False ):
         """
         Description:
@@ -546,9 +626,9 @@ class Cluster():
             * contentCheck - If this is True, it will check if the result has some
             contents.
             * getFrom - from which nodes
-                2 - active nodes
-                1 - current running nodes
-                0 - all nodes
+                2 or "active" - active nodes
+                1 or "running" - current running nodes
+                0 or "all" - all nodes
             * funcFromCtrl - specific function of the args/kwargs
                  from each controller from the list of the controllers
         Returns:
@@ -558,9 +638,8 @@ class Cluster():
         """
         threads = []
         drivers = [ None, "Bench", "CLI", "REST" ]
-        fromNode = [ self.controllers, self.runningNodes, self.active() ]
         results = []
-        for ctrl in fromNode[ getFrom ]:
+        for ctrl in self.fromNode( getFrom ):
             try:
                 funcArgs = []
                 funcKwargs = {}
@@ -587,9 +666,9 @@ class Cluster():
             t.join()
             results.append( t.result )
         if returnBool:
-            return self.allTrueResultCheck( results, fromNode[ getFrom ] )
+            return self.allTrueResultCheck( results, self.fromNode( getFrom ) )
         elif contentCheck:
-            return self.notEmptyResultCheck( results, fromNode[ getFrom ] )
+            return self.notEmptyResultCheck( results, self.fromNode( getFrom ) )
         return results
 
     def checkPartitionSize( self, segmentSize='64', units='M', multiplier='3' ):

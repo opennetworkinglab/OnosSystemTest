@@ -86,6 +86,7 @@ class FUNCformCluster:
                                     main.Mininet1.ip_address,
                                     main.apps,
                                     cluster.ip_address,
+                                    cluster.ip_address,
                                     main.ONOScell.karafUser,
                                     True ] )
             threads.append( t )

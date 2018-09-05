@@ -267,7 +267,8 @@ def fetchLogs( testName ){
       echo "Job name does not match any test suite name to move log!"
   else
       pwd
-      for i in $OC{1..7}; do onos-fetch-logs $i || echo log does not exist; done
+      for i in $OC{1..7}; do onos-fetch-logs $i || echo log does not exist for onos $i; done
+      for i in $OC{1..7}; do atomix-fetch-logs $i || echo log does not exist for atomix $i; done
   fi
   cd'''
 }

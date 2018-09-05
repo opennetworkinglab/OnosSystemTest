@@ -97,8 +97,7 @@ class HAclusterRestart:
         except (KeyError, IndexError):
             applyFuncs = main.HA.startingMininet
 
-        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
-                                  extraApply=applyFuncs )
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, extraApply=applyFuncs )
 
         main.HA.initialSetUp()
 

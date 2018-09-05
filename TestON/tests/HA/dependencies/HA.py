@@ -71,47 +71,11 @@ class HA():
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
 
-    def scalingMetadata( self ):
-        main.step( "Generate initial metadata file" )
-        main.scaling = main.params[ 'scaling' ].split( "," )
-        main.log.debug( main.scaling )
-        scale = main.scaling.pop( 0 )
-        main.log.debug( scale )
-        if "b" in scale:
-            equal = True
-        else:
-            equal = False
-        main.log.debug( equal )
-        main.Cluster.setRunningNode( int( re.search( "\d+", scale ).group( 0 ) ) )
-        genResult = main.Server.generateFile( main.Cluster.numCtrls, equal=equal )
-        utilities.assert_equals( expect=main.TRUE, actual=genResult,
-                                 onpass="New cluster metadata file generated",
-                                 onfail="Failled to generate new metadata file" )
-
     def swapNodeMetadata( self ):
-        main.step( "Generate initial metadata file" )
         if main.Cluster.numCtrls >= 5:
             main.Cluster.setRunningNode( main.Cluster.numCtrls - 2 )
         else:
             main.log.error( "Not enough ONOS nodes to run this test. Requires 5 or more" )
-        genResult = main.Server.generateFile( main.Cluster.numCtrls )
-        utilities.assert_equals( expect=main.TRUE, actual=genResult,
-                                 onpass="New cluster metadata file generated",
-                                 onfail="Failled to generate new metadata file" )
-
-    def setServerForCluster( self ):
-        import os
-        main.step( "Setup server for cluster metadata file" )
-        main.serverPort = main.params[ 'server' ][ 'port' ]
-        rootDir = os.path.dirname( main.testFile ) + "/dependencies"
-        main.log.debug( "Root dir: {}".format( rootDir ) )
-        status = main.Server.start( main.ONOSbench,
-                                    rootDir,
-                                    port=main.serverPort,
-                                    logDir=main.logdir + "/server.log" )
-        utilities.assert_equals( expect=main.TRUE, actual=status,
-                                 onpass="Server started",
-                                 onfail="Failled to start SimpleHTTPServer" )
 
     def copyBackupConfig( self ):
         main.step( "Copying backup config files" )
@@ -181,7 +145,8 @@ class HA():
             onosCounters = []
             for i in range( len( onosCountersRaw ) ):
                 try:
-                    onosCounters.append( json.loads( onosCountersRaw[ i ] ) )
+                    value = json.loads( onosCountersRaw[ i ] )
+                    onosCounters.append( value )
                 except ( ValueError, TypeError ):
                     main.log.error( "Could not parse counters response from " +
                                     str( main.Cluster.active( i ) ) )
@@ -2519,6 +2484,8 @@ class HA():
         main.step( "Checking raft log size" )
         # TODO: this is a flaky check, but the intent is to make sure the raft logs
         #       get compacted periodically
+
+        # FIXME: We need to look at the raft servers, which might not be on the ONOS machine
         logCheck = main.Cluster.checkPartitionSize()
         utilities.assert_equals( expect=True, actual=logCheck,
                                  onpass="Raft log size is not too big",
@@ -2860,7 +2827,8 @@ class HA():
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, cellName,
                                        main.Mininet1.ip_address,
-                                       cellAppString, ipList, main.ONOScli1.karafUser )
+                                       cellAppString, ipList, ipList,
+                                       main.ONOScli1.karafUser )
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
@@ -2879,7 +2847,7 @@ class HA():
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Running ONOS Constant State Tests" )
 
-        OnosAfterWhich = [ "failure", "scaliing" ]
+        OnosAfterWhich = [ "failure", "scaling" ]
 
         # Assert that each device has a master
         self.checkRoleNotNull()

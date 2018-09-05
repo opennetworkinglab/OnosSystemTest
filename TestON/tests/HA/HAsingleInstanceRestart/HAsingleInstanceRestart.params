@@ -40,7 +40,7 @@
         <org.onosproject.events>TRACE</org.onosproject.events>
     </ONOS_Logging>
     <ENV>
-        <cellName>HA</cellName>
+        <cellName>SingleHA</cellName>
         <appString>events,drivers,openflow,proxyarp,mobility</appString>
     </ENV>
     <GIT>

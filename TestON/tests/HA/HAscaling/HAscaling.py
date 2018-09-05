@@ -65,6 +65,7 @@ class HAscaling:
         start cli sessions
         start tcpdump
         """
+        import re
         main.log.info( "ONOS HA test: Restart all ONOS nodes - " +
                          "initialization" )
         # set global variables
@@ -82,8 +83,6 @@ class HAscaling:
         try:
             from tests.HA.dependencies.HA import HA
             main.HA = HA()
-            from tests.HA.HAswapNodes.dependencies.Server import Server
-            main.Server = Server()
             # load some variables from the params file
             cellName = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'appString' ]
@@ -92,11 +91,14 @@ class HAscaling:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        applyFuncs = [ main.HA.setServerForCluster,
-                       main.HA.scalingMetadata,
-                       main.HA.copyBackupConfig,
-                       main.HA.setMetadataUrl ]
-        applyArgs = [ None, None, None, None ]
+        main.scaling = main.params[ 'scaling' ].split( "," )
+        main.log.debug( main.scaling )
+        scale = main.scaling.pop( 0 )
+        main.log.debug( scale )
+        main.Cluster.setRunningNode( int( re.search( "\d+", scale ).group( 0 ) ) )
+
+        applyFuncs = []
+        applyArgs = []
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
@@ -107,13 +109,13 @@ class HAscaling:
                 applyFuncs.append( main.HA.startingMininet )
                 applyArgs.append( None )
 
-        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName,
                                   extraApply=applyFuncs,
                                   applyArgs=applyArgs,
-                                  extraClean=main.HA.cleanUpOnosService,
                                   installMax=True,
+                                  atomixClusterSize=3,
                                   includeCaseDesc=False )
-        main.HA.initialSetUp( serviceClean=True )
+        main.HA.initialSetUp()
 
         main.step( 'Set logging levels' )
         logging = True
@@ -203,37 +205,39 @@ class HAscaling:
             main.log.warn( main.ONOSbench.checkLogs( ctrl.ipAddress ) )
 
         """
-        pop # of nodes from a list, might look like 1,3b,3,5b,5,7b,7,7b,5,5b,3...
-        modify cluster.json file appropriately
+        pop # of nodes from a list, might look like 1,3,5,7,5,3...
         install/deactivate node as needed
         """
         try:
-            prevNodes = main.Cluster.active()
+            prevNodes = main.Cluster.getRunningPos()
+            prevSize = main.Cluster.numCtrls
             scale = main.scaling.pop( 0 )
-            if "b" in scale:
-                equal = True
-            else:
-                equal = False
             main.Cluster.setRunningNode( int( re.search( "\d+", scale ).group( 0 ) ) )
-            main.step( "Scaling to {} nodes; Equal partitions: {}".format( main.Cluster.numCtrls, equal ) )
-            genResult = main.Server.generateFile( main.Cluster.numCtrls, equal=equal )
-            utilities.assert_equals( expect=main.TRUE, actual=genResult,
-                                     onpass="New cluster metadata file generated",
-                                     onfail="Failled to generate new metadata file" )
-            time.sleep( 5 )  # Give time for nodes to read new file
-        except IndexError:
+            main.step( "Scaling from {} to {} nodes".format(
+                prevSize, main.Cluster.numCtrls ) )
+        except IndexError as e:
+            main.log.debug( e )
             main.cleanAndExit()
 
         activeNodes = range( 0, main.Cluster.numCtrls )
         newNodes = [ x for x in activeNodes if x not in prevNodes ]
+        deadNodes = [ x for x in prevNodes if x not in activeNodes ]
         main.Cluster.clearActive()
         main.step( "Start new nodes" )  # OR stop old nodes?
         started = main.TRUE
+        stopped = main.TRUE
         for i in newNodes:
-            started = main.ONOSbench.onosStart( main.Cluster.runningNodes[ i ].ipAddress ) and main.TRUE
+            main.log.debug( "Starting " + str( main.Cluster.runningNodes[ i ].ipAddress ) )
+            started = main.ONOSbench.onosStart( main.Cluster.runningNodes[ i ].ipAddress ) and started
         utilities.assert_equals( expect=main.TRUE, actual=started,
                                  onpass="ONOS started",
                                  onfail="ONOS start NOT successful" )
+        for i in deadNodes:
+            main.log.debug( "Stopping " + str( main.Cluster.controllers[ i ].ipAddress ) )
+            stopped = main.ONOSbench.onosStop( main.Cluster.controllers[ i ].ipAddress ) and stopped
+        utilities.assert_equals( expect=main.TRUE, actual=stopped,
+                                 onpass="ONOS stopped",
+                                 onfail="ONOS stop NOT successful" )
 
         main.testSetUp.setupSsh( main.Cluster )
 
@@ -244,7 +248,7 @@ class HAscaling:
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       attempts=5 )
+                                       attempts=90 )
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )
@@ -275,8 +279,6 @@ class HAscaling:
                                  onpass="Reran for election",
                                  onfail="Failed to rerun for election" )
 
-        # TODO: Make this configurable
-        time.sleep( 60 )
         main.HA.commonChecks()
 
     def CASE7( self, main ):
@@ -355,13 +357,6 @@ class HAscaling:
         Clean up
         """
         main.HA.cleanUp( main )
-
-        main.step( "Stopping webserver" )
-        status = main.Server.stop()
-        utilities.assert_equals( expect=main.TRUE, actual=status,
-                                 onpass="Stop Server",
-                                 onfail="Failled to stop SimpleHTTPServer" )
-        del main.Server
 
     def CASE14( self, main ):
         """

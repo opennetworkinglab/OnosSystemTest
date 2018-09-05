@@ -91,8 +91,10 @@ class HAsingleInstanceRestart:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
+        cellApps = str( main.params["ENV"]["appString"] )
+        cellNAme = str( main.params["ENV"]["appString"] )
         applyFuncs = [ main.testSetUp.createApplyCell ]
-        applyArgs = [ [ main.Cluster, True, "SingleHA", "", "", True, main.Cluster.runningNodes[ 0 ].ipAddress ] ]
+        applyArgs = [ [ main.Cluster, True, cellName , cellApps, "", True, main.Cluster.runningNodes[ 0 ].ipAddress ] ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
@@ -105,7 +107,7 @@ class HAsingleInstanceRestart:
 
         main.Cluster.setRunningNode( int( main.params[ 'num_controllers' ] ) )
         ip = main.Cluster.getIps( allNode=True )
-        main.testSetUp.ONOSSetUp( main.Cluster, cellName="SingleHA", removeLog=True,
+        main.testSetUp.ONOSSetUp( main.Cluster, cellName="SingleHA",
                                   extraApply=applyFuncs,
                                   applyArgs=applyArgs,
                                   includeCaseDesc=False )

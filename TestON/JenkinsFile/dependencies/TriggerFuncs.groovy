@@ -232,15 +232,14 @@ def oldFlowCheck( jobOn, onos_branch ){
 }
 
 def postSetup( onos_branch, test_branch, onos_tag, isManual ){
-    // setup that will build the onos using buck.
+    // setup that will build ONOS
 
     result = ""
     if ( !isManual ){
         result = '''echo -e "\n##### build ONOS skip unit tests ######"
-        #mvn clean install -DskipTests
-        # Force buck update
-        rm -f ~/onos/bin/buck
-        ~/onos/tools/build/onos-buck build onos
+        cd ~/onos
+        . tools/dev/bash_profile
+        op
         sleep 30
         echo -e "\n##### Stop all running instances of Karaf #####"
         kill $(ps -efw | grep karaf | grep -v grep | awk '{print $2}')

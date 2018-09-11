@@ -256,7 +256,7 @@ class HA():
         main.step( "Checking ONOS nodes" )
         nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                        False,
-                                       attempts=9 )
+                                       attempts=90 )
 
         utilities.assert_equals( expect=True, actual=nodeResults,
                                  onpass="Nodes check successful",

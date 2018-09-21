@@ -288,7 +288,7 @@ class OnosClusterDriver( CLI ):
         user = main.componentDictionary[name]['COMPONENTS'].get( "web_user", "onos" )
         main.componentDictionary[name]['user'] = self.checkOptions( user, "onos" )
         password = main.componentDictionary[name]['COMPONENTS'].get( "web_pass", "rocks" )
-        main.componentDictionary[name]['pass'] = self.checkOptions( password, "rocks" )
+        main.componentDictionary[name]['password'] = self.checkOptions( password, "rocks" )
         main.componentDictionary[name]['host'] = host
         port = main.componentDictionary[name]['COMPONENTS'].get( "rest_port", "8181" )
         main.componentDictionary[name]['port'] = self.checkOptions( port, "8181" )

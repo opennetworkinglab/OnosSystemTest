@@ -207,6 +207,8 @@ def preSetup( onos_branch, test_branch, onos_tag, isManual ){
         git fetch --all # update all caches from remotes
         git reset --hard origin/''' + onos_branch + '''  # force local index to match remote branch
         git clean -df # clean any local files
+        rm -rf buck-out
+        rm -rf bazel-*
         ''' + tagCheck( onos_tag, onos_branch ) + '''
         git branch
         git log -1 --decorate

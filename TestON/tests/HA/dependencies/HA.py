@@ -1429,7 +1429,6 @@ class HA():
             main.caseExplanation = "Test the methods of the distributed " +\
                                     "primitives (counters and sets) throught the cli"
             # DISTRIBUTED ATOMIC COUNTERS
-            # Partitioned counters
             main.step( "Increment then get a default counter on each node" )
             pCounters = main.Cluster.command( "counterTestAddAndGet",
                                               args=[ main.pCounterName ] )
@@ -3631,7 +3630,12 @@ class HA():
                 oldLeaderCLI = ctrl
                 break
         else:  # FOR/ELSE statement
-            main.log.error( "Leader election, could not find current leader" )
+            main.log.error( "Leader election, could not find current leader amongst active nodes" )
+            for ctrl in main.Cluster.controllers:
+                if oldLeader == ctrl.ipAddress:
+                    oldLeaderCLI = ctrl
+                    main.log.warn( "Old leader was found as node " + str( ctrl.ipAddress ) )
+                    # Should we skip the next if statement then? There should be a new leader elected?
         if oldLeader:
             withdrawResult = oldLeaderCLI.electionTestWithdraw()
         utilities.assert_equals(

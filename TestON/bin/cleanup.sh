@@ -54,5 +54,8 @@ if [ "$1" = "-f" ]; then
         echo "Restoring iptables rules on ${i}"
         ssh sdn@$i "sudo iptables -F"
         ssh sdn@$i "sudo iptables-restore < /etc/iptables/rules.v4"
+        echo "Restoring ip6tables rules on ${i}"
+        ssh sdn@$i "sudo ip6tables -F"
+        ssh sdn@$i "sudo ip6tables-restore < /etc/iptables/rules.v6"
     done
 fi

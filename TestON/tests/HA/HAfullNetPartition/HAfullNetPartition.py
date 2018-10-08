@@ -198,22 +198,33 @@ class HAfullNetPartition:
         nodeList = [ str( i + 1 ) for i in main.partition ]
         main.log.info( "Nodes to be partitioned: " + str( nodeList ) )
         partitionResults = main.TRUE
+        standalonePort = "5679"  # use params file and default to this
+        embeddedPort = "9876"  # use params file and default to this
+        # We are blocking traffic from the embedded Atomix instance on nodes in main.partition
         for i in range( 0, n ):
             iCtrl = main.Cluster.runningNodes[ i ]
             this = iCtrl.Bench.sshToNode( iCtrl.ipAddress )
-            if i not in main.partition:
-                for j in main.partition:
+            if i not in main.partition:  # i is in the majority partition
+                for j in main.partition:  # j is in the minority partition
                     foe = main.Cluster.runningNodes[ j ]
                     main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress,
                                                                                     foe.ipAddress ) )
                     # CMD HERE
+                    # On node i in majority partition: add rule to block from j in minority partition
+                    cmdList = [ ]
+                    cmdList.append( "sudo iptables -A {} -p tcp --sp {} -d {} -s {} -j DROP".format( "INPUT",
+                                                                                                     embeddedPort,
+                                                                                                     iCtrl.ipAddress,
+                                                                                                     foe.ipAddress ) )
+                    cmdList.append( "sudo ip6tables -A {} -p tcp --sp {} -d {} -s {} -j DROP".format( "INPUT",
+                                                                                                      embeddedPort,
+                                                                                                      iCtrl.ipAddress,
+                                                                                                      foe.ipAddress ) )
                     try:
-                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT",
-                                                                                   iCtrl.ipAddress,
-                                                                                   foe.ipAddress )
-                        this.sendline( cmdStr )
-                        this.expect( "\$" )
-                        main.log.debug( this.before )
+                        for cmd in cmdList:
+                            this.sendline( cmd )
+                            this.expect( "\$" )
+                            main.log.debug( this.before )
                     except pexpect.EOF:
                         main.log.error( iCtrl.name + ": EOF exception found" )
                         main.log.error( iCtrl.name + ":    " + this.before )
@@ -224,17 +235,43 @@ class HAfullNetPartition:
             else:
                 for j in range( 0, n ):
                     if j not in main.partition:
+                        # On node i in minority partition: add rule to block from j in majority partition
                         foe = main.Cluster.runningNodes[ j ]
                         main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress,
                                                                                         foe.ipAddress ) )
                         # CMD HERE
-                        cmdStr = "sudo iptables -A {} -d {} -s {} -j DROP".format( "INPUT",
-                                                                                   iCtrl.ipAddress,
-                                                                                   foe.ipAddress )
+                        cmdList = [ ]
+                        cmdList.append( "sudo iptables -A {} -p tcp --dp {} -d {} -s {} -j DROP".format( "INPUT",
+                                                                                                         embeddedPort,
+                                                                                                         iCtrl.ipAddress,
+                                                                                                         foe.ipAddress ) )
+                        cmdList.append( "sudo ip6tables -A {} -p tcp --dp {} -d {} -s {} -j DROP".format( "INPUT",
+                                                                                                          embeddedPort,
+                                                                                                          iCtrl.ipAddress,
+                                                                                                          foe.ipAddress ) )
+                        cmdList.append( "sudo iptables -A {} -p tcp --sp {} -s {} -j DROP".format( "OUTPUT",
+                                                                                                   embeddedPort,
+                                                                                                   iCtrl.ipAddress ) )
+                        cmdList.append( "sudo ip6tables -A {} -p tcp --sp {} -s {} -j DROP".format( "OUTPUT",
+                                                                                                    embeddedPort,
+                                                                                                    iCtrl.ipAddress ) )
+                        cmdList.append( "sudo iptables -A {} -p tcp --sp {} -s {} -m conntrack --ctstate ESTABLISHED -j DROP".format( "OUTPUT",
+                                                                                                                                      embeddedPort,
+                                                                                                                                      iCtrl.ipAddress ) )
+                        cmdList.append( "sudo ip6tables -A {} -p tcp --sp {} -s {} -m conntrack --ctstate ESTABLISHED -j DROP".format( "OUTPUT",
+                                                                                                                                       embeddedPort,
+                                                                                                                                       iCtrl.ipAddress ) )
+                        cmdList.append( "sudo iptables -A {} -p tcp --sp {} -s {} -m conntrack --ctstate ESTABLISHED -j DROP".format( "INPUT",
+                                                                                                                                      embeddedPort,
+                                                                                                                                      foe.ipAddress ) )
+                        cmdList.append( "sudo ip6tables -A {} -p tcp --sp {} -s {} -m conntrack --ctstate ESTABLISHED -j DROP".format( "INPUT",
+                                                                                                                                       embeddedPort,
+                                                                                                                                       foe.ipAddress ) )
                         try:
-                            this.sendline( cmdStr )
-                            this.expect( "\$" )
-                            main.log.debug( this.before )
+                            for cmd in cmdList:
+                                this.sendline( cmd )
+                                this.expect( "\$" )
+                                main.log.debug( this.before )
                         except pexpect.EOF:
                             main.log.error( iCtrl.name + ": EOF exception found" )
                             main.log.error( iCtrl.name + ":    " + this.before )
@@ -242,14 +279,43 @@ class HAfullNetPartition:
                         except Exception:
                             main.log.exception( iCtrl.name + ": Uncaught exception!" )
                             main.cleanAndExit()
+                # From embedded atomix to standalone atomix on same node, node i in minority partition
+                foe = main.Cluster.runningNodes[ i ]
+                main.log.warn( "Setting IP Tables rule from {} to {}. ".format( iCtrl.ipAddress,
+                                                                                foe.ipAddress ) )
+                # CMD HERE
+                cmdStr = "sudo iptables -A {} -p tcp --sp {} -d {} -s {} -j DROP".format( "INPUT",
+                                                                                             embeddedPort,
+                                                                                             iCtrl.ipAddress,
+                                                                                             foe.ipAddress )
+                cmdStr2 = "sudo iptables -A {} -p tcp --dp {} -d {} -s {} -j DROP".format( "INPUT",
+                                                                                              embeddedPort,
+                                                                                              iCtrl.ipAddress,
+                                                                                              foe.ipAddress )
+                cmdStr3 = "sudo iptables -A {} -p tcp --sp {} -j DROP".format( "OUTPUT",
+                                                                                   embeddedPort )
+                try:
+                    this.sendline( cmdStr )
+                    this.expect( "\$" )
+                    main.log.debug( this.before )
+                    this.sendline( cmdStr2 )
+                    this.expect( "\$" )
+                    main.log.debug( this.before )
+                except pexpect.EOF:
+                    main.log.error( iCtrl.name + ": EOF exception found" )
+                    main.log.error( iCtrl.name + ":    " + this.before )
+                    main.cleanAndExit()
+                except Exception:
+                    main.log.exception( iCtrl.name + ": Uncaught exception!" )
+                    main.cleanAndExit()
                 main.Cluster.runningNodes[ i ].active = False
+            # end if/else
             iCtrl.Bench.exitFromSsh( this, iCtrl.ipAddress )
-        # NOTE: When dynamic clustering is finished, we need to start checking
-        #       main.partion nodes still work when partitioned
         utilities.assert_equals( expect=main.TRUE, actual=partitionResults,
                                  onpass="Firewall rules set successfully",
                                  onfail="Error setting firewall rules" )
         main.Cluster.reset()
+        main.log.debug( main.Cluster.active )
 
         main.step( "Sleeping 60 seconds" )
         time.sleep( 60 )

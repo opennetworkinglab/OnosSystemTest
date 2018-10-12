@@ -194,13 +194,14 @@ class SCPFmastershipFailoverLat:
                     else:
                         break
 
-            instanceDeactivatedLats.sort()
-            masterChangedLats.sort()
-            instanceDeactivated = instanceDeactivatedLats[ 0 ]
-            masterChanged = masterChangedLats[ 0 ]
-
-            eventLatCheck = True if masterChanged and instanceDeactivated else False
-            if not eventLatCheck:
+            if instanceDeactivatedLats and masterChangedLats:
+                instanceDeactivatedLats.sort()
+                masterChangedLats.sort()
+                instanceDeactivated = instanceDeactivatedLats[ 0 ]
+                masterChanged = masterChangedLats[ 0 ]
+                eventLatCheck = True
+            else:
+                eventLatCheck = False
                 main.log.warn( "Latencies were NOT obtained from 'events' successfully." )
 
             main.log.info( "Obtain latency from tshark output." )

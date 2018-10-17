@@ -339,6 +339,11 @@ def sqlCommand( testName ){
            "','\$BUILD_NUMBER', '\$ONOSBranch', " + affectedByOldFlow( isOldFlow, testName ) + "\$line);\""
 }
 
+def cleanupDatabaseFile( testName ){
+    // clean up the database file created under /tmp
+    return 'rm /tmp/' + SCPF[ testName ][ 'file' ]
+}
+
 def databasePart( testName, database_command ){
     // read the file from the machine and insert it to the database
 

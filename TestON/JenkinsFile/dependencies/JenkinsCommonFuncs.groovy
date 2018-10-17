@@ -389,6 +389,10 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                                    'WikiPrefix=' + prop[ "WikiPrefix" ],
                                    'WORKSPACE=' + workSpace ] ) {
                             if ( !graphOnly ){
+                                if ( isSCPF ){
+                                    // Remove the old database file
+                                    sh SCPFfunc.cleanupDatabaseFile( testName )
+                                }
                                 sh initAndRunTest( testName, testCategory )
                                 // For the Wiki page
                                 sh cleanAndCopyFiles( pureTestName )

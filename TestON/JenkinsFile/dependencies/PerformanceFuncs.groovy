@@ -341,7 +341,7 @@ def sqlCommand( testName ){
 
 def cleanupDatabaseFile( testName ){
     // clean up the database file created under /tmp
-    return 'rm /tmp/' + SCPF[ testName ][ 'file' ]
+    return 'rm -f /tmp/' + SCPF[ testName ][ 'file' ]
 }
 
 def databasePart( testName, database_command ){

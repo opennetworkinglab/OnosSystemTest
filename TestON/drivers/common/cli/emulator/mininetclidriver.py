@@ -574,23 +574,23 @@ class MininetCliDriver( Emulator ):
 
             main.cleanAndExit()
 
-    def discoverHosts( self, hostList=[], wait=1, dstIp="6.6.6.6", dstIp6="1020::3fe" ):
+    def discoverHosts( self, hostList=[], wait=1000, dstIp="6.6.6.6", dstIp6="1020::3fe" ):
         '''
-        Hosts in hostList will do a single ping to a non-existent address for ONOS to
-        discover them. A host will use ping/ping6 to send echo requests depending on if
-        it has IPv4/IPv6 addresses configured.
+        Hosts in hostList will do a single ARP/ND to a non-existent address for ONOS to
+        discover them. A host will use arping/ndisc6 to send ARP/ND depending on if it
+        has IPv4/IPv6 addresses configured.
         Optional:
             hostList: a list of names of the hosts that need to be discovered. If not
                       specified mininet will send ping from all the hosts
-            wait: timeout for IPv4/IPv6 echo requests
+            wait: timeout for ARP/ND in milliseconds
             dstIp: destination address used by IPv4 hosts
             dstIp6: destination address used by IPv6 hosts
         Returns:
-            main.TRUE if all ping packets were successfully sent. Otherwise main.FALSE
+            main.TRUE if all packets were successfully sent. Otherwise main.FALSE
         '''
         try:
+            hosts = self.getHosts()
             if not hostList:
-                hosts = self.getHosts( getInterfaces=False )
                 hostList = hosts.keys()
             discoveryResult = main.TRUE
             for host in hostList:
@@ -598,12 +598,13 @@ class MininetCliDriver( Emulator ):
                 cmd = ""
                 if self.getIPAddress( host ):
                     flushCmd = "{} ip neigh flush all".format( host )
-                    cmd = "{} ping -c 1 -i 1 -W {} {}".format( host, wait, dstIp )
-                    main.log.debug( "Sending IPv4 probe ping from host {}".format( host ) )
+                    cmd = "{} arping -c 1 -w {} {}".format( host, wait, dstIp )
+                    main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
                     flushCmd = "{} ip -6 neigh flush all".format( host )
-                    cmd = "{} ping6 -c 1 -i 1 -W {} {}".format( host, wait, dstIp6 )
-                    main.log.debug( "Sending IPv6 probe ping from host {}".format( host ) )
+                    intf = hosts[host]['interfaces'][0]['name']
+                    cmd = "{} ndisc6 -r 1 -w {} {} {}".format( host, wait, dstIp6, intf )
+                    main.log.debug( "Sending IPv6 ND from host {}".format( host ) )
                 else:
                     main.log.warn( "No IP addresses configured on host {}, skipping discovery".format( host ) )
                     discoveryResult = main.FALSE

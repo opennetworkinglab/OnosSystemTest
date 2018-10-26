@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,1</testcases>
+    <testcases>1,2,4</testcases>
 
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
@@ -14,6 +14,7 @@
     <DEPENDENCY>
         <useCommonConf>False</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
+        <confName>flex</confName>
         <topology>hagg_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
         <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
@@ -48,7 +49,7 @@
     </RETRY>
 
     <SCAPY>
-        <HOSTNAMES>h1,h2</HOSTNAMES>
+        <HOSTNAMES>h1,h2,h3,h4</HOSTNAMES>
     </SCAPY>
 
     <TOPO>

@@ -37,10 +37,10 @@ def setupTest( main, test_idx, onosNodes ):
     lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
     # Load configuration files
     main.step( "Load configurations" )
-    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1" if hasattr( main, "Mininet1" ) else "flex"
+    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
     lib.loadJson( main )
     time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
-    main.cfgName = "common" if hasattr( main, "Mininet1" ) else "flex"
+    main.cfgName = "common" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
     lib.loadMulticastConfig( main )
     lib.loadHost( main )
 

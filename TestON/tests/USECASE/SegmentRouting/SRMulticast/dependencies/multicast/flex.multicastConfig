@@ -17,8 +17,20 @@
         ],
         "dst": [
             {
+                "host": "h3",
+                "id": "0A:5E:0D:F3:EC:D4/None",
+                "interface": "bond0",
+                "dualHomed": "True"
+            },
+            {
                 "host": "h2",
                 "id": "A2:9B:16:E8:2A:52/None",
+                "interface": "bond0",
+                "dualHomed": "True"
+            },
+            {
+                "host": "h4",
+                "id": "EA:DA:19:1E:CB:7D/None",
                 "interface": "bond0",
                 "dualHomed": "True"
             }

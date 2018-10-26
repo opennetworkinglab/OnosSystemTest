@@ -184,6 +184,40 @@
             </COMPONENTS>
         </Host2>
 
+        <Host3>
+            <host>10.192.21.61</host>
+            <user>vyatta</user>
+            <password>vyatta</password>
+            <type>HostDriver</type>
+            <connect_order>15</connect_order>
+            <COMPONENTS>
+                <ip>10.0.202.7</ip>
+                <ip6></ip6>
+                <shortName>h3</shortName>
+                <ifaceName>bond0</ifaceName>
+                <inband>True</inband>
+                <username>ubuntu</username>
+                <password>ubuntu</password>
+            </COMPONENTS>
+        </Host3>
+
+        <Host4>
+            <host>10.192.21.61</host>
+            <user>vyatta</user>
+            <password>vyatta</password>
+            <type>HostDriver</type>
+            <connect_order>16</connect_order>
+            <COMPONENTS>
+                <ip>10.0.204.7</ip>
+                <ip6></ip6>
+                <shortName>h4</shortName>
+                <ifaceName>bond0</ifaceName>
+                <inband>True</inband>
+                <username>ubuntu</username>
+                <password>ubuntu</password>
+            </COMPONENTS>
+        </Host4>
+
         <NetworkBench>
             <host>localhost</host>
             <user>sdn</user>

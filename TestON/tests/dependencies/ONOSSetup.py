@@ -325,7 +325,7 @@ class ONOSSetup:
         main.step( "Installing Atomix" )
         atomixInstallResult = main.TRUE
 
-        cluster.installAtomix( parallel )
+        atomixInstallResult = cluster.installAtomix( parallel )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=atomixInstallResult,
                                  onpass="Successfully installed Atomix",

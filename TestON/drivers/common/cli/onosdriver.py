@@ -2822,10 +2822,26 @@ class OnosDriver( CLI ):
                 main.log.info( self.name + ": Atomix is already installed on " + node )
                 self.handle.expect( self.prompt )
                 return main.TRUE
-            elif i == 2 or i == 3:
+            elif i == 2:
                 main.log.info( self.name + ": Atomix was installed on " + node )
                 self.handle.expect( self.prompt )
                 return main.TRUE
+            elif i == 3:
+                self.handle.sendline( "echo Return code: $?" )
+                self.handle.expect( "\$\?" )
+                self.handle.expect( self.prompt )
+                main.log.debug( self.handle.before + self.handle.before )
+                match = re.search( "Return code: (\d+)", self.handle.before )
+                if match:
+                    exitCode = int( match.group( 1 ) )
+                else:
+                    # Didn't match pattern
+                    main.log.error( "Could not parse exit code of atomix-install" )
+                    return main.FALSE
+                if exitCode == 0:
+                    return main.TRUE
+                else:
+                    return main.FALSE
             elif i == 4:
                 # timeout
                 main.log.info( self.name + ": Installation of Atomix on " + node + " timed out" )

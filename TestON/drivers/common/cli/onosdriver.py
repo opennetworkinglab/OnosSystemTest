@@ -2830,17 +2830,19 @@ class OnosDriver( CLI ):
                 self.handle.sendline( "echo Return code: $?" )
                 self.handle.expect( "\$\?" )
                 self.handle.expect( self.prompt )
-                main.log.debug( self.handle.before + self.handle.before )
                 match = re.search( "Return code: (\d+)", self.handle.before )
                 if match:
                     exitCode = int( match.group( 1 ) )
                 else:
                     # Didn't match pattern
                     main.log.error( "Could not parse exit code of atomix-install" )
+                    main.log.debug( self.handle.before + self.handle.before )
                     return main.FALSE
                 if exitCode == 0:
                     return main.TRUE
                 else:
+                    main.log.error( "Unsuccessful exit code of atomix-install" )
+                    main.log.debug( self.handle.before + self.handle.before )
                     return main.FALSE
             elif i == 4:
                 # timeout

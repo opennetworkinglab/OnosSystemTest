@@ -79,6 +79,7 @@ class SCPFscaleTopo:
             main.stopNetTime = int( main.params[ 'TIMEOUT' ][ 'stopNet' ] )
             main.MNupdateTime = int( main.params[ 'TIMEOUT' ][ 'update' ] )
             main.MNLinksTime = int( main.params[ 'TIMEOUT' ][ 'links' ] )
+            main.getTopoTime = int( main.params[ 'TIMEOUT' ][ 'getTopo' ] )
             main.currScale = None
             main.threadID = 0
             if main.hostDiscover == 'True':
@@ -257,9 +258,9 @@ class SCPFscaleTopo:
                     currentDevicesResult = main.TRUE
                     currentLinksResult = main.TRUE
                     # While loop for retry
-                    devices = main.topoRelated.getAll( "devices" )
-                    ports = main.topoRelated.getAll( "ports" )
-                    links = main.topoRelated.getAll( "links" )
+                    devices = main.topoRelated.getAll( "devices", kwargs={ 'timeout': main.getTopoTime } )
+                    ports = main.topoRelated.getAll( "ports", kwargs={ 'timeout': main.getTopoTime } )
+                    links = main.topoRelated.getAll( "links", kwargs={ 'timeout': main.getTopoTime } )
                     if None in devices or None in ports or None in links:
                         main.log.warn( "Something went wrong. Retrying..." )
                         time.sleep( 20 )

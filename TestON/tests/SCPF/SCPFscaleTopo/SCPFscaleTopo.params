@@ -68,6 +68,7 @@
         <stopNet>60</stopNet>
         <update>40</update>
         <links>60</links>
+        <getTopo>120</getTopo>
     </TIMEOUT>
 
     <ATTEMPTS>

@@ -40,10 +40,10 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
 
     main.internalIpv4Hosts = main.params[ 'TOPO' ][ 'internalIpv4Hosts' ].split( ',' )
     main.internalIpv6Hosts = main.params[ 'TOPO' ][ 'internalIpv6Hosts' ].split( ',' )
-    main.externalIpv4Hosts = main.params[ 'TOPO' ][ 'externalIpv4Hosts' ].split( ',' )
-    main.externalIpv6Hosts = main.params[ 'TOPO' ][ 'externalIpv6Hosts' ].split( ',' )
-    main.staticIpv4Hosts = main.params[ 'TOPO' ][ 'staticIpv4Hosts' ].split( ',' )
-    main.staticIpv6Hosts = main.params[ 'TOPO' ][ 'staticIpv6Hosts' ].split( ',' )
+    main.externalIpv4Hosts = main.params[ 'TOPO' ][ 'externalIpv4Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('externalIpv4Hosts') else []
+    main.externalIpv6Hosts = main.params[ 'TOPO' ][ 'externalIpv6Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('externalIpv6Hosts') else []
+    main.staticIpv4Hosts = main.params[ 'TOPO' ][ 'staticIpv4Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('staticIpv4Hosts') else []
+    main.staticIpv6Hosts = main.params[ 'TOPO' ][ 'staticIpv6Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('staticIpv6Hosts') else []
     main.disconnectedIpv4Hosts = []
     main.disconnectedIpv6Hosts = []
     main.disconnectedExternalIpv4Hosts = []
@@ -56,8 +56,11 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
     lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
 
     # Load configuration files
-    main.cfgName = 'TEST_CONFIG_ipv4={}_ipv6={}'.format( 1 if ipv4 else 0,
-                                                         1 if ipv6 else 0)
+    if hasattr( main, "Mininet1" ):
+        main.cfgName = 'TEST_CONFIG_ipv4={}_ipv6={}'.format( 1 if ipv4 else 0,
+                                                             1 if ipv6 else 0)
+    else:
+        main.cfgName = main.params[ "DEPENDENCY" ][ "confName" ]
     lib.loadJson( main )
     time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
     lib.loadHost( main )
@@ -82,9 +85,8 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
         time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
     else:
         # Run the test with physical devices
-        lib.connectToPhysicalNetwork( main, self.switchNames )
-        # Check if the devices are up
-        lib.checkDevices( main, switches=len( self.switchNames ) )
+        lib.connectToPhysicalNetwork( main )
+
     # wait some time for onos to install the rules!
     time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )
 

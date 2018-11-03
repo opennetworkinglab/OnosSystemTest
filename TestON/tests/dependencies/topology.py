@@ -254,8 +254,11 @@ class Topology:
                 main.log.info( "Creating component for host {}".format( src ) )
                 main.Network.createHostComponent( src )
                 hostHandle = getattr( main, src )
-                main.log.info( "Starting CLI on host {}".format( src ) )
-                hostHandle.startHostCli()
+                if hasattr( main, 'Mininet1' ):
+                    main.log.info( "Starting CLI on host {}".format( src ) )
+                    hostHandle.startHostCli()
+                else:
+                    hostHandle.connectInband()
             srcIpList[ src ] = main.Network.getIPAddress( src, proto='IPV6' if ipv6 else 'IPV4' )
         unexpectedPings = []
         for dst in dstList:

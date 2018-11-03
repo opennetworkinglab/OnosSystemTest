@@ -207,9 +207,9 @@ class NetworkDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def createComponent( self, name ):
+    def createHostComponent( self, name ):
         """
-        Creates switch/host component with the same parameters as the one copied to local.
+        Creates host component with the same parameters as the one copied to local.
         Arguments:
             name - The string of the name of this component. The new component
                    will be assigned to main.<name> .
@@ -563,3 +563,24 @@ class NetworkDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def getIPAddress( self, host, proto='IPV4' ):
+        """
+        Returns IP address of the host
+        """
+        response = self.runCmdOnHost( host, "ifconfig" )
+        pattern = ''
+        if proto == 'IPV4':
+            pattern = "inet\s(\d+\.\d+\.\d+\.\d+)\s\snetmask"
+        else:
+            pattern = "inet6\s([\w,:]*)/\d+\s\sprefixlen"
+        ipAddressSearch = re.search( pattern, response )
+        if not ipAddressSearch:
+            return None
+        main.log.info(
+            self.name +
+            ": IP-Address of Host " +
+            host +
+            " is " +
+            ipAddressSearch.group( 1 ) )
+        return ipAddressSearch.group( 1 )

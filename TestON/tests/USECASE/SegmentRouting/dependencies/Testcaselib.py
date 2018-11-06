@@ -897,7 +897,7 @@ class Testcaselib:
             for ctrl in main.Cluster.runningNodes:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     ctrl.name,
-                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.CLI.sendline( "onos:scr-list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to kill ONOS, stopping test" )
             main.cleanAndExit()
 

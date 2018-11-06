@@ -58,6 +58,7 @@ class OnosCliDriver( CLI ):
         self.handle = None
         self.karafUser = None
         self.karafPass = None
+        self.karafPrompt = "sdn@root >"  # FIXME:  make configurable
         self.graph = Graph()
         super( OnosCliDriver, self ).__init__()
 
@@ -171,7 +172,7 @@ class OnosCliDriver( CLI ):
         try:
             if self.handle:
                 self.handle.sendline( "" )
-                i = self.handle.expect( [ "onos>", self.prompt, pexpect.TIMEOUT ],
+                i = self.handle.expect( [ self.karafPrompt, self.prompt, pexpect.TIMEOUT ],
                                         timeout=10 )
                 if i == 0:  # In ONOS CLI
                     self.handle.sendline( "logout" )
@@ -273,7 +274,7 @@ class OnosCliDriver( CLI ):
             # Check if we are already in the cli
             self.handle.sendline( "" )
             x = self.handle.expect( [
-                self.prompt, "onos>" ], commandlineTimeout )
+                self.prompt, self.karafPrompt ], commandlineTimeout )
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
                 return main.TRUE
@@ -286,26 +287,27 @@ class OnosCliDriver( CLI ):
                 startCliCommand = "onos "
             self.handle.sendline( startCliCommand + str( ONOSIp ) )
             i = self.handle.expect( [
-                "onos>",
+                self.karafPrompt,
                 pexpect.TIMEOUT ], onosStartTimeout )
 
             if i == 0:
                 main.log.info( str( ONOSIp ) + " CLI Started successfully" )
-                if karafTimeout:
+                if karafTimeout:  # FIXME: This doesn't look right
                     self.handle.sendline(
                         "config:property-set -p org.apache.karaf.shell\
                                  sshIdleTimeout " +
                         karafTimeout )
                     self.handle.expect( self.prompt )
                     self.handle.sendline( startCliCommand + str( ONOSIp ) )
-                    self.handle.expect( "onos>" )
+                    self.handle.expect( self.karafPrompt )
+                main.log.debug( self.handle.before )
                 return main.TRUE
             else:
                 # If failed, send ctrl+c to process and try again
                 main.log.info( "Starting CLI failed. Retrying..." )
                 self.handle.send( "\x03" )
                 self.handle.sendline( startCliCommand + str( ONOSIp ) )
-                i = self.handle.expect( [ "onos>", pexpect.TIMEOUT ],
+                i = self.handle.expect( [ self.karafPrompt, pexpect.TIMEOUT ],
                                         timeout=30 )
                 if i == 0:
                     main.log.info( str( ONOSIp ) + " CLI Started " +
@@ -317,7 +319,7 @@ class OnosCliDriver( CLI ):
                             karafTimeout )
                         self.handle.expect( self.prompt )
                         self.handle.sendline( startCliCommand + str( ONOSIp ) )
-                        self.handle.expect( "onos>" )
+                        self.handle.expect( self.karafPrompt )
                     return main.TRUE
                 else:
                     main.log.error( "Connection to CLI " +
@@ -356,7 +358,7 @@ class OnosCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             x = self.handle.expect( [
-                self.prompt, "onos>" ], commandlineTimeout )
+                self.prompt, self.karafPrompt ], commandlineTimeout )
 
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
@@ -365,26 +367,27 @@ class OnosCliDriver( CLI ):
             # Wait for onos start ( onos-wait-for-start ) and enter onos cli
             self.handle.sendline( "/opt/onos/bin/onos" )
             i = self.handle.expect( [
-                "onos>",
+                self.karafPrompt,
                 pexpect.TIMEOUT ], onosStartTimeout )
 
             if i == 0:
                 main.log.info( self.name + " CLI Started successfully" )
-                if karafTimeout:
+                if karafTimeout:  # FIXME: This doesn't look right
                     self.handle.sendline(
                         "config:property-set -p org.apache.karaf.shell\
                                  sshIdleTimeout " +
                         karafTimeout )
                     self.handle.expect( self.prompt )
                     self.handle.sendline( "/opt/onos/bin/onos" )
-                    self.handle.expect( "onos>" )
+                    self.handle.expect( self.karafPrompt )
+                main.log.debug( self.handle.before )
                 return main.TRUE
             else:
                 # If failed, send ctrl+c to process and try again
                 main.log.info( "Starting CLI failed. Retrying..." )
                 self.handle.send( "\x03" )
                 self.handle.sendline( "/opt/onos/bin/onos" )
-                i = self.handle.expect( [ "onos>", pexpect.TIMEOUT ],
+                i = self.handle.expect( [ self.karafPrompt, pexpect.TIMEOUT ],
                                         timeout=30 )
                 if i == 0:
                     main.log.info( self.name + " CLI Started " +
@@ -396,7 +399,7 @@ class OnosCliDriver( CLI ):
                             karafTimeout )
                         self.handle.expect( self.prompt )
                         self.handle.sendline( "/opt/onos/bin/onos" )
-                        self.handle.expect( "onos>" )
+                        self.handle.expect( self.karafPrompt )
                     return main.TRUE
                 else:
                     main.log.error( "Connection to CLI " +
@@ -431,7 +434,7 @@ class OnosCliDriver( CLI ):
 
             self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
             self.handle.expect( "log:log" )
-            self.handle.expect( "onos>" )
+            self.handle.expect( self.karafPrompt )
 
             response = self.handle.before
             if re.search( "Error", response ):
@@ -472,7 +475,7 @@ class OnosCliDriver( CLI ):
         try:
             # Try to reconnect if disconnected from cli
             self.handle.sendline( "" )
-            i = self.handle.expect( [ "onos>", self.prompt, pexpect.TIMEOUT ] )
+            i = self.handle.expect( [ self.karafPrompt, self.prompt, pexpect.TIMEOUT ] )
             response = self.handle.before
             if i == 1:
                 main.log.error( self.name + ": onos cli session closed. " )
@@ -493,7 +496,7 @@ class OnosCliDriver( CLI ):
                 main.log.warn( "Timeout when testing cli responsiveness" )
                 main.log.debug( self.handle.before )
                 self.handle.send( "\x03" )  # Send ctrl-c to clear previous output
-                self.handle.expect( "onos>" )
+                self.handle.expect( self.karafPrompt )
 
             response += self.handle.before
             if debug:
@@ -503,7 +506,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ": ONOS timeout" )
             main.log.debug( self.handle.before )
             self.handle.send( "\x03" )
-            self.handle.expect( "onos>" )
+            self.handle.expect( self.karafPrompt )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -519,7 +522,7 @@ class OnosCliDriver( CLI ):
             else:
                 main.cleanAndExit()
 
-    def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False ):
+    def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False, relaxedRegex=True ):
         """
         A wrapper around pexpect's sendline/expect. Will return all the output from a given command
 
@@ -533,6 +536,7 @@ class OnosCliDriver( CLI ):
                   before a timeout.
         noExit - Defaults to False. If True, will not exit TestON in the event of a
                  closed channel, but instead return None
+        relaxedRegex - Defaults to True. If there is a pipe in the command send, will only try to match the last part of the piped command.
 
         Warning: There are no sanity checking to commands sent using this method.
 
@@ -545,7 +549,7 @@ class OnosCliDriver( CLI ):
                 logStr = "\"Sending CLI command: '" + cmdStr + "'\""
                 self.log( logStr, noExit=noExit )
             self.handle.sendline( cmdStr )
-            self.handle.expect( "onos>", timeout )
+            self.handle.expect( self.karafPrompt, timeout )
             response = self.handle.before
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
                            + self.name + "." )
@@ -553,11 +557,24 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": Raw output" )
                 main.log.debug( self.name + ": " + repr( response ) )
 
+            # Remove control codes from karaf 4.2.1
+            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79Cx|\x1b(>|=)|\x1b\[90m~)" )
+            response = karafEscape.sub( '', response )
+            if debug:
+                main.log.debug( self.name + ": karafEscape output" )
+                main.log.debug( self.name + ": " + repr( response ) )
             # Remove ANSI color control strings from output
-            ansiEscape = re.compile( r'\x1b[^m]*m' )
+            ansiEscape = re.compile( r'((\x9b|\x1b\[)[0-?]*[ -/]*[@-~])' )
             response = ansiEscape.sub( '', response )
             if debug:
                 main.log.debug( self.name + ": ansiEscape output" )
+                main.log.debug( self.name + ": " + repr( response ) )
+
+            # Remove ANSI color control strings from output
+            backspaceEscape = re.compile( r'((..\x08\x08)|(.|\s)\x08)' )
+            response = backspaceEscape.sub( '', response )
+            if debug:
+                main.log.debug( self.name + ": backspaceEscape output" )
                 main.log.debug( self.name + ": " + repr( response ) )
 
             # Remove extra return chars that get added
@@ -574,7 +591,13 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": " + repr( response ) )
 
             # parse for just the output, remove the cmd from response
-            output = response.split( cmdStr.strip(), 1 )
+            if relaxedRegex:
+                # This was added because karaf 4.2 is stripping some characters from the command echo
+                endStr = cmdStr.split( '|' )[-1]
+                main.log.warn( endStr )
+                output = response.split( endStr.strip(), 1 )
+            else:
+                output = response.split( cmdStr.strip(), 1 )
             if output:
                 if debug:
                     main.log.debug( self.name + ": split output" )
@@ -590,7 +613,7 @@ class OnosCliDriver( CLI ):
             if debug:
                 main.log.debug( self.handle.before )
             self.handle.send( "\x03" )
-            self.handle.expect( "onos>" )
+            self.handle.expect( self.karafPrompt )
             return None
         except IndexError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -5171,7 +5194,7 @@ class OnosCliDriver( CLI ):
         """
         try:
             self.handle.sendline( "log:set %s %s" % ( level, app ) )
-            self.handle.expect( "onos>" )
+            self.handle.expect( self.karafPrompt )
 
             response = self.handle.before
             if re.search( "Error", response ):

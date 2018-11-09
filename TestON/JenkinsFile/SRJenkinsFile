@@ -36,7 +36,7 @@ jobName = env.JOB_NAME
 funcs.additionalInitForSR( jobName )
 
 // read the TestON.property depends on which branch it is running.
-// ( currently master on Fabric4, 1.13 on Fabric2 and 1.12 on Fabric3 )
+// ( currently master on Fabric4, 1.15 on Fabric2 and 1.14 on Fabric3 )
 def prop = null
 prop = funcs.getProperties()
 SR = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SR" ]

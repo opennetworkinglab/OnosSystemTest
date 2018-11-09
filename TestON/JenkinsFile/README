@@ -11,8 +11,8 @@ Some tips for the Jenkins File:
   1) go to VM_BMJenkinsfileTrigger
   2) change the portion on line 31 :
      current_version = "master"
-     previous_version = "1.13"
-     before_previous_version = "1.12"
+     previous_version = "1.15"
+     before_previous_version = "1.14"
 
 
 2. If you want to change the branch to be run for the Segment Routing tests :
@@ -20,19 +20,19 @@ Some tips for the Jenkins File:
   1) go to the FabricJenkinsfileTrigger
   2) change the variable values on line 32:
      current_version = "master"
-     previous_version = "1.13"
-     before_previous_version = "1.12"
+     previous_version = "1.15"
+     before_previous_version = "1.14"
   3) If you want certain branch to be run on different machine then change
      a) line 155 - 157:
         testcases[ "SR" ][ "nodeName" ][ <node you want> ] 0: Fabric2, 1: Fabric3, 2: Fabric4
      b) Then, go to dependencies/JenkinsCommonFuncs.groovy
         change def fabricOn( branch ) on line 86.
-        Currently, master, 1.13 and 1.12 run on Fabric4, 2 and 3 respectively.
-     c) Make sure to change the URLs on Wiki as well. If 1.12 runs on Fabric2 instead of Fabric3, then you
+        Currently, master, 1.15 and 1.14 run on Fabric4, 2 and 3 respectively.
+     c) Make sure to change the URLs on Wiki as well. If 1.14 runs on Fabric2 instead of Fabric3, then you
         have to update the URL from
-          https://jenkins.onosproject.org/view/QA/job/postjob-Fabric3/lastSuccessfulBuild/artifact/SRBridging_onos-1.12_20-builds_graph.jpg
+          https://jenkins.onosproject.org/view/QA/job/postjob-Fabric3/lastSuccessfulBuild/artifact/SRBridging_onos-1.14_20-builds_graph.jpg
           to
-          https://jenkins.onosproject.org/view/QA/job/postjob-Fabric2/lastSuccessfulBuild/artifact/SRBridging_onos-1.12_20-builds_graph.jpg
+          https://jenkins.onosproject.org/view/QA/job/postjob-Fabric2/lastSuccessfulBuild/artifact/SRBridging_onos-1.14_20-builds_graph.jpg
 
 
 3. If you want to upload additional logs for the Segment Routing tests:

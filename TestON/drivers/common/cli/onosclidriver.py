@@ -598,6 +598,8 @@ class OnosCliDriver( CLI ):
                 output = response.split( endStr.strip(), 1 )
             else:
                 output = response.split( cmdStr.strip(), 1 )
+                if len(output) < 2:
+                    output = response.split( endStr.strip()[-5:], 1 )
             if output:
                 if debug:
                     main.log.debug( self.name + ": split output" )

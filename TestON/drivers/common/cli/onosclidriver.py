@@ -594,7 +594,6 @@ class OnosCliDriver( CLI ):
             if relaxedRegex:
                 # This was added because karaf 4.2 is stripping some characters from the command echo
                 endStr = cmdStr.split( '|' )[-1]
-                main.log.warn( endStr )
                 output = response.split( endStr.strip(), 1 )
             else:
                 output = response.split( cmdStr.strip(), 1 )
@@ -631,6 +630,45 @@ class OnosCliDriver( CLI ):
                 return None
             else:
                 main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            if noExit:
+                return None
+            else:
+                main.cleanAndExit()
+
+    def lineCount( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False, relaxedRegex=True ):
+        """
+        A wrapper around sendline(). Will return the number of lines returned or None on error
+
+        Required Arguments:
+        cmdStr - String to send to the pexpect session
+
+        Optional Arguments:
+        showResponse - Defaults to False. If True will log the response.
+        debug - Defaults to False. If True, will enable debug logging.
+        timeout - Defaults to 10. Amount of time in seconds for a command to return
+                  before a timeout.
+        noExit - Defaults to False. If True, will not exit TestON in the event of a
+                 closed channel, but instead return None
+        relaxedRegex - Defaults to True. If there is a pipe in the command send, will only try to match the last part of the piped command.
+
+        Warning: There are no sanity checking to commands sent using this method.
+
+        """
+        try:
+            numLines = self.sendline( cmdStr, showResponse, debug, timeout, noExit, relaxedRegex )
+            parsed = numLines.split( "      " )
+            if len( parsed ) != 2:
+                main.log.warn( "Warning, output of karaf's wc may have changed" )
+            return parsed[0]
+        except IndexError:
+            main.log.exception( self.name + ": Object not as expected" )
+            main.log.debug( "response: {}".format( repr( response ) ) )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             if noExit:
@@ -2920,7 +2958,7 @@ class OnosCliDriver( CLI ):
             else:
                 cmdStr = "flows any " + str( deviceId ) + " | " +\
                          "grep 'state=ADDED' | wc -l"
-            handle = self.sendline( cmdStr )
+            handle = self.lineCount( cmdStr )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
@@ -2949,7 +2987,7 @@ class OnosCliDriver( CLI ):
             else:
                 cmdStr = "groups any " + str( deviceId ) + " | " +\
                          "grep 'state=ADDED' | wc -l"
-            handle = self.sendline( cmdStr )
+            handle = self.lineCount( cmdStr )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             return handle
@@ -3462,7 +3500,7 @@ class OnosCliDriver( CLI ):
         try:
             dpid = str( dpid )
             cmdStr = "onos:ports -e " + dpid + " | wc -l"
-            output = self.sendline( cmdStr )
+            output = self.lineCount( cmdStr )
             assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             if re.search( "No such device", output ):
@@ -3490,7 +3528,7 @@ class OnosCliDriver( CLI ):
         try:
             dpid = str( dpid )
             cmdStr = "onos:links " + dpid + " | grep ACTIVE | wc -l"
-            output = self.sendline( cmdStr )
+            output = self.lineCount( cmdStr )
             assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             if re.search( "No such device", output ):
@@ -5365,7 +5403,7 @@ class OnosCliDriver( CLI ):
                 num = self.sendline( cmd )
                 return num
             elif mode == 'total':
-                totalLines = self.sendline( "cat /opt/onos/log/karaf.log | wc -l" )
+                totalLines = self.lineCount( "cat /opt/onos/log/karaf.log | wc -l" )
                 return int( totalLines )
             else:
                 main.log.error( self.name + " unsupported mode" )

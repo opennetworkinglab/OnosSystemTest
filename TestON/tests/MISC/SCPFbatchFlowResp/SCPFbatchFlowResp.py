@@ -279,7 +279,7 @@ class SCPFbatchFlowResp:
             if main.params[ 'CASE2100' ][ 'RESTchkFlow' ] == 'main.TRUE':
                 resp = main.Cluster.active( 0 ).REST.checkFlowsState()
             else:
-                handle = main.Cluster.active( 0 ).CLI.flows( state=" |grep PEND|wc -l", jsonFormat=False )
+                handle = main.Cluster.active( 0 ).CLI.lineCount( "flows |grep PEND|wc -l", timeout=60 )
                 main.log.info( "handle returns PENDING flows: " + handle )
                 if handle == "0":
                     resp = main.TRUE
@@ -351,7 +351,7 @@ class SCPFbatchFlowResp:
             if main.params[ 'CASE3100' ][ 'RESTchkFlow' ] == 'main.TRUE':
                 resp = main.Cluster.active( 0 ).REST.checkFlowsState()
             else:
-                handle = main.Cluster.active( 0 ).CLI.flows( state=" |grep PEND|wc -l", jsonFormat=False )
+                handle = main.Cluster.active( 0 ).CLI.lineCount( "flows |grep PEND|wc -l", timeout=60 )
                 main.log.info( "handle returns PENDING flows: " + handle )
                 if handle == "0":
                     resp = main.TRUE

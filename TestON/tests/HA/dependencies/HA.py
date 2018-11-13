@@ -266,7 +266,7 @@ class HA():
             for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     ctrl.name,
-                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.CLI.sendline( "onos:scr-list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanAndExit()
 
@@ -2716,7 +2716,7 @@ class HA():
             for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     ctrl.name,
-                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.CLI.sendline( "onos:scr-list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanAndExit()
 
@@ -2805,7 +2805,7 @@ class HA():
             for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     ctrl.name,
-                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.CLI.sendline( "onos:scr-list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanAndExit()
 
@@ -3392,7 +3392,7 @@ class HA():
             for ctrl in main.Cluster.active():
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     ctrl.name,
-                    ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
+                    ctrl.CLI.sendline( "onos:scr-list | grep -v ACTIVE" ) ) )
 
         if not topoResult:
             main.cleanAndExit()

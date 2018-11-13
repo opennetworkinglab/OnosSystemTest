@@ -63,7 +63,7 @@ class CLI( Component ):
                 '@' +
                 self.ip_address +
                 ' -o ServerAliveInterval=120 -o TCPKeepAlive=yes',
-                env={ "TERM": "xterm-mono" },
+                env={ "TERM": "vt100" },
                 maxread=1000000 )
         else:
             self.handle = pexpect.spawn(
@@ -72,7 +72,7 @@ class CLI( Component ):
                 '@' +
                 self.ip_address +
                 ' -o ServerAliveInterval=120 -o TCPKeepAlive=yes',
-                env={ "TERM": "xterm-mono" },
+                env={ "TERM": "vt100" },
                 maxread=1000000,
                 timeout=60 )
 
@@ -375,7 +375,7 @@ class CLI( Component ):
                                 uName +
                                 '@' +
                                 ipAddress,
-                                env={ "TERM": "xterm-mono" },
+                                env={ "TERM": "vt100" },
                                 maxread=1000000,
                                 timeout=60 )
 

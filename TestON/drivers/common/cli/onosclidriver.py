@@ -596,8 +596,9 @@ class OnosCliDriver( CLI ):
                 endStr = cmdStr.split( '|' )[-1]
                 output = response.split( endStr.strip(), 1 )
             else:
-                output = response.split( cmdStr.strip(), 1 )
-                if len(output) < 2:
+                output = response.split( endStr.strip(), 1 )
+                if len( output ) < 2:
+                    main.log.warn( "Relaxing regex match to last 5 characters of the sent command" )
                     output = response.split( endStr.strip()[-5:], 1 )
             if output:
                 if debug:
@@ -658,10 +659,11 @@ class OnosCliDriver( CLI ):
         """
         try:
             numLines = self.sendline( cmdStr, showResponse, debug, timeout, noExit, relaxedRegex )
-            parsed = numLines.split( "      " )
-            if len( parsed ) != 2:
-                main.log.warn( "Warning, output of karaf's wc may have changed" )
-            return parsed[0]
+            parsed = re.search( "(\d+)\s+(\d+)", numLines )
+            if not parsed:
+                main.log.error( "Warning, output of karaf's wc may have changed" )
+                return None
+            return parsed.group( 1 )
         except IndexError:
             main.log.exception( self.name + ": Object not as expected" )
             main.log.debug( "response: {}".format( repr( response ) ) )

@@ -1183,7 +1183,7 @@ class Testcaselib:
                     mininetName = None
                 scapyHandle.startHostCli( mininetName )
             else:
-                main.Network.createComponent( scapyName )
+                main.Network.createHostComponent( scapyName )
                 scapyHandle = getattr( main, scapyName )
                 scapyHandle.connectInband()
             main.scapyHosts.append( scapyHandle )

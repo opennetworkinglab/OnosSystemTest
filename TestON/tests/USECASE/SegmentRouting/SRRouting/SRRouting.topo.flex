@@ -150,73 +150,74 @@
             </COMPONENTS>
         </OFDPASwitchLeaf228>
 
-        <Host1>
+        <Host4v4>
             <host>10.192.21.61</host>
             <user>vyatta</user>
             <password>vyatta</password>
             <type>HostDriver</type>
             <connect_order>13</connect_order>
             <COMPONENTS>
-                <ip>10.0.202.8</ip>
+                <ip>10.0.202.7</ip>
                 <ip6></ip6>
-                <shortName>h1</shortName>
+                <shortName>h4v4</shortName>
                 <ifaceName>bond0</ifaceName>
                 <inband>True</inband>
                 <username>ubuntu</username>
                 <password>ubuntu</password>
             </COMPONENTS>
-        </Host1>
+        </Host4v4>
 
-        <Host2>
+
+        <Host5v4>
             <host>10.192.21.61</host>
             <user>vyatta</user>
             <password>vyatta</password>
             <type>HostDriver</type>
             <connect_order>14</connect_order>
             <COMPONENTS>
-                <ip>10.0.204.8</ip>
+                <ip>10.0.202.8</ip>
                 <ip6></ip6>
-                <shortName>h2</shortName>
+                <shortName>h5v4</shortName>
                 <ifaceName>bond0</ifaceName>
                 <inband>True</inband>
                 <username>ubuntu</username>
                 <password>ubuntu</password>
             </COMPONENTS>
-        </Host2>
+        </Host5v4>
 
-        <Host3>
+        <Host9v4>
             <host>10.192.21.61</host>
             <user>vyatta</user>
             <password>vyatta</password>
             <type>HostDriver</type>
             <connect_order>15</connect_order>
             <COMPONENTS>
-                <ip>10.0.202.7</ip>
+                <ip>10.0.204.7</ip>
                 <ip6></ip6>
-                <shortName>h3</shortName>
+                <shortName>h9v4</shortName>
                 <ifaceName>bond0</ifaceName>
                 <inband>True</inband>
                 <username>ubuntu</username>
                 <password>ubuntu</password>
             </COMPONENTS>
-        </Host3>
+        </Host9v4>
 
-        <Host4>
+        <Host10v4>
             <host>10.192.21.61</host>
             <user>vyatta</user>
             <password>vyatta</password>
             <type>HostDriver</type>
             <connect_order>16</connect_order>
             <COMPONENTS>
-                <ip>10.0.204.7</ip>
+                <ip>10.0.204.8</ip>
                 <ip6></ip6>
-                <shortName>h4</shortName>
+                <shortName>h10v4</shortName>
                 <ifaceName>bond0</ifaceName>
                 <inband>True</inband>
                 <username>ubuntu</username>
                 <password>ubuntu</password>
             </COMPONENTS>
-        </Host4>
+        </Host10v4>
 
         <NetworkBench>
             <host>localhost</host>
@@ -227,6 +228,5 @@
             <COMPONENTS>
             </COMPONENTS>
         </NetworkBench>
-
     </COMPONENT>
 </TOPOLOGY>

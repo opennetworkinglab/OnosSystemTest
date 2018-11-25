@@ -16,6 +16,8 @@ from routinglib import BgpRouter
 from trellislib import TrellisHost, DhcpRelay
 from functools import partial
 
+from bmv2 import ONOSBmv2Switch
+
 # Parse command line options and dump results
 def parseOptions():
     "Parse command line options"
@@ -43,14 +45,24 @@ def parseOptions():
                        help='Use another DHCP server for indirectly connected DHCP clients if True' )
     parser.add_option( '--remote-dhcp-server', action="store_true", dest='remoteServer', default=False,
                        help='Connect DHCP server indirectly (via gateway) if True' )
+    parser.add_option( '--switch', dest='switch', type='str', default='ovs',
+                       help='Switch type: ovs, bmv2 (with fabric.p4)' )
     ( options, args ) = parser.parse_args()
     return options, args
-
 
 opts, args = parseOptions()
 
 IP6_SUBNET_CLASS = 120
 IP4_SUBNET_CLASS = 24
+FABRIC_PIPECONF = "org.onosproject.pipelines.fabric"
+
+SWITCH_TO_PARAMS_DICT = {
+    "ovs": dict(cls=OVSSwitch),
+    "bmv2": dict(cls=ONOSBmv2Switch, pipeconf=FABRIC_PIPECONF)
+}
+if opts.switch not in SWITCH_TO_PARAMS_DICT:
+    raise Exception("Unknown switch type '%s'" % opts.switch)
+SWITCH_PARAMS = SWITCH_TO_PARAMS_DICT[opts.switch]
 
 # TODO: DHCP support
 class IpHost( Host ):
@@ -111,11 +123,15 @@ class DualHomedLeafSpineFabric (Topo) :
         linkopts = dict( bw=100 )
         # Create spine switches
         for s in range(spine):
-            spines[s] = self.addSwitch('spine10%s' % (s + 1), dpid = "00000000010%s" % (s + 1) )
+            spines[s] = self.addSwitch( 'spine10%s' % (s + 1),
+                                        dpid="00000000010%s" % (s + 1),
+                                        **SWITCH_PARAMS )
 
         # Create leaf switches
         for ls in range(leaf):
-            leafs[ls] = self.addSwitch('leaf%s' % (ls + 1), dpid = "00000000000%s" % ( ls + 1) )
+            leafs[ls] = self.addSwitch( 'leaf%s' % (ls + 1),
+                                        dpid="00000000000%s" % (ls + 1),
+                                        **SWITCH_PARAMS )
 
             # Connect leaf to all spines with dual link
             for s in range( spine ):
@@ -239,11 +255,15 @@ class LeafSpineFabric (Topo) :
 
         # Create spine switches
         for s in range(spine):
-            spines[s] = self.addSwitch('spine10%s' % (s + 1), dpid = "00000000010%s" % (s + 1) )
+            spines[s] = self.addSwitch( 'spine10%s' % (s + 1),
+                                        dpid="00000000010%s" % (s + 1),
+                                        **SWITCH_PARAMS )
 
         # Create leaf switches
         for ls in range(leaf):
-            leafs[ls] = self.addSwitch('leaf%s' % (ls + 1), dpid = "00000000000%s" % ( ls + 1) )
+            leafs[ls] = self.addSwitch( 'leaf%s' % (ls + 1),
+                                        dpid="00000000000%s" % (ls + 1),
+                                        **SWITCH_PARAMS )
 
             # Connect leaf to all spines
             for s in range( spine ):

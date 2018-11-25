@@ -2731,7 +2731,7 @@ class OnosCliDriver( CLI ):
                 for l in rawFlows:
                     totalFlows += int( l.split( "Count=" )[ 1 ] )
             else:
-                main.log.error( "Response not as expected!" )
+                main.log.warn( "Response not as expected!" )
                 return None
             return totalFlows
 

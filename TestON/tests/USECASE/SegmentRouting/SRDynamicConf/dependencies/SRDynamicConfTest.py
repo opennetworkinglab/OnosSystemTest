@@ -19,6 +19,8 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
+
 class SRDynamicConfTest:
     def __init__( self ):
         self.default = ''
@@ -69,17 +71,34 @@ class SRDynamicConfTest:
 
         # Provide common configuration
         # TODO: Generate json and chart dynamically, according to topologies and scenarios
+        if main.useBmv2:
+            # Translate configuration file from OVS-OFDPA to BMv2 driver
+            translator.ofdpaToBmv2( main )
+        else:
+            translator.bmv2ToOfdpa( main )
         run.loadJson( main )
         run.loadChart( main )
 
         # Provide topology-specific interface configuration
         import json
         try:
-            with open( "%s%s%s.json" % (main.configPath, main.forJson, TAG) ) as cfg:
+            intfCfg = "%s%s%s.json" % ( main.configPath, main.forJson, TAG )
+            if main.useBmv2:
+                # Translate configuration file from OVS-OFDPA to BMv2 driver
+                translator.ofdpaToBmv2( main, intfCfg )
+            else:
+                translator.bmv2ToOfdpa( main, intfCfg )
+            with open( intfCfg ) as cfg:
                 main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
         except IOError:
             # Load default interface configuration
-            with open( "%s%s%s_ports.json" % (main.configPath, main.forJson, topology) ) as cfg:
+            defaultIntfCfg = "%s%s%s_ports.json" % ( main.configPath, main.forJson, topology )
+            if main.useBmv2:
+                # Translate configuration file from OVS-OFDPA to BMv2 driver
+                translator.ofdpaToBmv2( main, defaultIntfCfg )
+            else:
+                translator.bmv2ToOfdpa( main, defaultIntfCfg )
+            with open( defaultIntfCfg ) as cfg:
                 main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
 
         try:
@@ -101,6 +120,9 @@ class SRDynamicConfTest:
                     mininet_args += ',0,0,0,0'
             if dualHomed:
                 mininet_args += ' --dual-homed'
+            if main.useBmv2:
+                mininet_args += ' --switch bmv2'
+                main.log.info( "Using BMv2 switch" )
 
             run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
         else:
@@ -113,7 +135,10 @@ class SRDynamicConfTest:
         # Check connectivity before changing interface configuration
         run.pingAll( main, '%s_Before' % TAG, retryAttempts=2 )
 
-        leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( topo[ topology ][ 1 ] ) ]
+        if main.useBmv2:
+            leaf_dpid = [ "device:bmv2:leaf%d" % ( ls + 1 ) for ls in range( topo[ topology ][ 1 ] ) ]
+        else:
+            leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( topo[ topology ][ 1 ] ) ]
         for dpid in leaf_dpid:
             run.checkFlowsByDpid( main, dpid, minFlowCountPerLeaf, sleep=5 )
 
@@ -347,8 +372,16 @@ class SRDynamicConfTest:
     @staticmethod
     def updateIntfCfg( main, portNum, dualHomed, ips=[], untagged=0, tagged=[], native=0 ):
         from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
-        run.updateIntfCfg( main, "of:0000000000000001/%d" % portNum,
-                           ips=ips, untagged=untagged, tagged=tagged, native=native )
-        if dualHomed:
-            run.updateIntfCfg( main, "of:0000000000000002/%d" % portNum,
+        if main.useBmv2:
+            run.updateIntfCfg( main, "device:bmv2:leaf1/%d" % portNum,
                                ips=ips, untagged=untagged, tagged=tagged, native=native )
+        else:
+            run.updateIntfCfg( main, "of:0000000000000001/%d" % portNum,
+                               ips=ips, untagged=untagged, tagged=tagged, native=native )
+        if dualHomed:
+            if main.useBmv2:
+                run.updateIntfCfg( main, "device:bmv2:leaf2/%d" % portNum,
+                                   ips=ips, untagged=untagged, tagged=tagged, native=native )
+            else:
+                run.updateIntfCfg( main, "of:0000000000000002/%d" % portNum,
+                                   ips=ips, untagged=untagged, tagged=tagged, native=native )

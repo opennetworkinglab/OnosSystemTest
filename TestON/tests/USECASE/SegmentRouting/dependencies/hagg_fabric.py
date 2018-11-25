@@ -3,7 +3,7 @@ import os
 import re
 from optparse import OptionParser
 from ipaddress import ip_network
-from mininet.node import RemoteController, OVSBridge, Host
+from mininet.node import RemoteController, OVSBridge, Host, OVSSwitch
 from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.net import Mininet
@@ -13,6 +13,8 @@ from mininet.cli import CLI
 
 from routinglib import BgpRouter, RoutedHost
 from trellislib import DhcpServer, TaggedRoutedHost, DualHomedRoutedHost, DualHomedTaggedRoutedHost, DhcpClient, Dhcp6Client, DhcpServer, Dhcp6Server, TrellisHost
+
+from bmv2 import ONOSBmv2Switch
 
 # Parse command line options and dump results
 def parseOptions():
@@ -27,12 +29,24 @@ def parseOptions():
     parser.add_option( '--ipv4', dest='ipv4', type='int', default=1,
                        help='Configure hosts with ipv4 or not' )
     parser.add_option( '--onos-ip', dest='onosIp', type='str', default='',
-                        help='IP address list of ONOS instances, separated by comma(,). Overrides --onos option' )
+                       help='IP address list of ONOS instances, separated by comma(,). Overrides --onos option' )
+    parser.add_option( '--switch', dest='switch', type='str', default='ovs',
+                       help='Switch type: ovs, bmv2 (with fabric.p4)' )
 
     ( options, args ) = parser.parse_args()
     return options, args
 
 opts, args = parseOptions()
+
+FABRIC_PIPECONF = "org.onosproject.pipelines.fabric"
+
+SWITCH_TO_PARAMS_DICT = {
+    "ovs": dict(cls=OVSSwitch),
+    "bmv2": dict(cls=ONOSBmv2Switch, pipeconf=FABRIC_PIPECONF)
+}
+if opts.switch not in SWITCH_TO_PARAMS_DICT:
+    raise Exception("Unknown switch type '%s'" % opts.switch)
+SWITCH_PARAMS = SWITCH_TO_PARAMS_DICT[opts.switch]
 
 class ComcastLeafSpineFabric(Topo):
 
@@ -237,11 +251,15 @@ class ComcastLeafSpineFabric(Topo):
 
         # Create spine switches
         for s in range(spine):
-            self.spines[s] = self.addSwitch('spine10%s' % (s + 1), dpid = "00000000010%s" % (s + 1) )
+            self.spines[s] = self.addSwitch( 'spine10%s' % (s + 1),
+                                             dpid = "00000000010%s" % (s + 1),
+                                             **SWITCH_PARAMS )
 
         # Create leaf switches
         for ls in range(leaf):
-            self.leafs[ls] = self.addSwitch('leaf%s' % (ls + 1), dpid = "00000000000%s" % ( ls + 1) )
+            self.leafs[ls] = self.addSwitch( 'leaf%s' % (ls + 1),
+                                             dpid = "00000000000%s" % (ls + 1),
+                                             **SWITCH_PARAMS )
 
         # connecting leaf and spines, leafs 1-5 have double links
         for s in range(2):

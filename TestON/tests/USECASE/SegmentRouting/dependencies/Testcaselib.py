@@ -59,7 +59,9 @@ class Testcaselib:
             main.useCommonTopo = main.params[ 'DEPENDENCY' ][ 'useCommonTopo' ] == 'True'
             main.topoPath = main.path + ( "/.." if main.useCommonTopo else "" ) + "/dependencies/"
             main.useCommonConf = main.params[ 'DEPENDENCY' ][ 'useCommonConf' ] == 'True'
+            main.useBmv2 = main.params[ 'DEPENDENCY' ][ 'useBmv2' ] == 'True'
             main.configPath = main.path + ( "/.." if main.useCommonConf else "" ) + "/dependencies/"
+            main.bmv2Path = main.path + "/../dependencies/"
             main.forJson = "json/"
             main.forChart = "chart/"
             main.forConfig = "conf/"
@@ -70,6 +72,7 @@ class Testcaselib:
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             main.topologyLib = main.params[ 'DEPENDENCY' ][ 'lib' ] if 'lib' in main.params[ 'DEPENDENCY' ] else None
             main.topologyConf = main.params[ 'DEPENDENCY' ][ 'conf' ] if 'conf' in main.params[ 'DEPENDENCY' ] else None
+            main.bmv2 = "bmv2.py"
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
 
@@ -200,6 +203,10 @@ class Testcaselib:
                                                                 main.configPath + main.forConfig + conf,
                                                                 "~/",
                                                                 direction="to" )
+        copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
+                                                        main.bmv2Path + main.bmv2,
+                                                        main.Mininet1.home + "custom",
+                                                        direction="to" )
         stepResult = copyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -369,7 +376,7 @@ class Testcaselib:
                                  attempts=10,
                                  sleep=sleep )
         if count == main.FALSE:
-            count == main.Cluster.active( 0 ).CLI.checkFlowCount()
+            count = main.Cluster.active( 0 ).CLI.checkFlowCount()
         utilities.assertEquals(
                 expect=True,
                 actual=( count > minFlowCount ),
@@ -456,7 +463,7 @@ class Testcaselib:
                                  attempts=5,
                                  sleep=sleep )
         if count == main.FALSE:
-            count = main.Cluseter.active( 0 ).CLI.checkGroupAddedCount( dpid )
+            count = main.Cluster.active( 0 ).CLI.checkGroupAddedCount( dpid )
         utilities.assertEquals(
                 expect=True,
                 actual=( count == groupCount ),

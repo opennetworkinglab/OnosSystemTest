@@ -88,10 +88,11 @@ class HAkillNodes:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        applyFuncs = [ main.HA.customizeOnosGenPartitions,
+        applyFuncs = [ main.HA.removeKarafConsoleLogging,
+                       main.HA.customizeOnosGenPartitions,
                        main.HA.copyBackupConfig,
                        main.ONOSbench.preventAutoRespawn ]
-        applyArgs = [ None, None, None ]
+        applyArgs = [ None, None, None, None ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )

@@ -90,8 +90,8 @@ class HAfullNetPartition:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        applyFuncs = [ main.HA.customizeOnosGenPartitions ]
-        applyArgs = [ None ]
+        applyFuncs = [ main.HA.removeKarafConsoleLogging, main.HA.customizeOnosGenPartitions ]
+        applyArgs = [ None, None ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )

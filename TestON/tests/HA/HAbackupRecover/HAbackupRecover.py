@@ -88,14 +88,15 @@ class HAbackupRecover:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
+        applyFuncs = [ main.HA.removeKarafConsoleLogging ]
+
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )
-                applyFuncs = None
             else:
-                applyFuncs = main.HA.startingMininet
+                applyFuncs.append( main.HA.startingMininet )
         except (KeyError, IndexError):
-            applyFuncs = main.HA.startingMininet
+            applyFuncs.append( main.HA.startingMininet )
 
         main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName, extraApply=applyFuncs )
 

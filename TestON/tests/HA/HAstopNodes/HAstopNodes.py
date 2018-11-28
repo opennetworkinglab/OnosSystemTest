@@ -88,8 +88,8 @@ class HAstopNodes:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        applyFuncs = [ main.HA.customizeOnosGenPartitions, main.HA.copyBackupConfig ]
-        applyArgs = [ None, None ]
+        applyFuncs = [ main.HA.removeKarafConsoleLogging, main.HA.customizeOnosGenPartitions, main.HA.copyBackupConfig ]
+        applyArgs = [ None, None, None ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )

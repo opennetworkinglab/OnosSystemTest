@@ -92,9 +92,9 @@ class HAsingleInstanceRestart:
         main.testSetUp.evnSetupConclusion( stepResult )
 
         cellApps = str( main.params["ENV"]["appString"] )
-        cellNAme = str( main.params["ENV"]["appString"] )
-        applyFuncs = [ main.testSetUp.createApplyCell ]
-        applyArgs = [ [ main.Cluster, True, cellName , cellApps, "", True, main.Cluster.runningNodes[ 0 ].ipAddress ] ]
+        cellName = str( main.params["ENV"]["appString"] )
+        applyFuncs = [ main.HA.removeKarafConsoleLogging, main.testSetUp.createApplyCell ]
+        applyArgs = [ None, [ main.Cluster, True, cellName , cellApps, "", True, main.Cluster.runningNodes[ 0 ].ipAddress ] ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )

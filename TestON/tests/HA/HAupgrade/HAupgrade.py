@@ -92,8 +92,8 @@ class HAupgrade:
             main.testSetUp.envSetupException( e )
         main.testSetUp.evnSetupConclusion( stepResult )
 
-        applyFuncs = [ main.HA.copyBackupConfig ]
-        applyArgs = [ None ]
+        applyFuncs = [ main.HA.removeKarafConsoleLogging, main.HA.copyBackupConfig ]
+        applyArgs = [ None, None ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )

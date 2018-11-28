@@ -97,8 +97,8 @@ class HAscaling:
         main.log.debug( scale )
         main.Cluster.setRunningNode( int( re.search( "\d+", scale ).group( 0 ) ) )
 
-        applyFuncs = []
-        applyArgs = []
+        applyFuncs = [ main.HA.removeKarafConsoleLogging ]
+        applyArgs = [ None ]
         try:
             if main.params[ 'topology' ][ 'topoFile' ]:
                 main.log.info( 'Skipping start of Mininet in this case, make sure you start it elsewhere' )

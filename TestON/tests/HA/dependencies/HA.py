@@ -30,6 +30,12 @@ class HA():
         self.default = ''
         main.topoMappings = {}
 
+    def removeKarafConsoleLogging( self ):
+        main.ONOSbench.handle.sendline( "cd " + main.ONOSbench.home )
+        main.ONOSbench.handle.expect( main.ONOSbench.prompt )
+        main.ONOSbench.handle.sendline( "sed -i 's/-Dkaraf.log.console=INFO //g' tools/package/bin/onos-service" )
+        main.ONOSbench.handle.expect( main.ONOSbench.prompt )
+
     def customizeOnosGenPartitions( self ):
         # copy gen-partions file to ONOS
         # NOTE: this assumes TestON and ONOS are on the same machine

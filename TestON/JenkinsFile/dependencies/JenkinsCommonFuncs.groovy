@@ -587,9 +587,9 @@ def testBranchWithPrefix( branch ){
     else if ( branch == "1.13" )
         return "onos-1.13"
     else if ( branch == "1.14" )
-        return "onos-1.14"
+        return "onos-1.15"
     else if ( branch == "1.15" )
-        return "onos-1.14"
+        return "onos-1.15"
     else
         return "master"
 }

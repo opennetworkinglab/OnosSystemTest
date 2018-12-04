@@ -558,7 +558,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": " + repr( response ) )
 
             # Remove control codes from karaf 4.2.1
-            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79Cx|\x1b(>|=)|\x1b\[90m~)" )
+            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79C|\x1b(>|=)|\x1b\[90m~)" )
             response = karafEscape.sub( '', response )
             if debug:
                 main.log.debug( self.name + ": karafEscape output" )

@@ -558,7 +558,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": " + repr( response ) )
 
             # Remove control codes from karaf 4.2.1
-            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79C|\x1b(>|=)|\x1b\[90m~)" )
+            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79C(x)?|\x1b(>|=)|\x1b\[90m~)" )
             response = karafEscape.sub( '', response )
             if debug:
                 main.log.debug( self.name + ": karafEscape output" )
@@ -595,6 +595,9 @@ class OnosCliDriver( CLI ):
                 # This was added because karaf 4.2 is stripping some characters from the command echo
                 endStr = cmdStr.split( '|' )[-1]
                 output = response.split( endStr.strip(), 1 )
+                if len( output ) < 2:
+                    main.log.warn( "Relaxing regex match to last 5 characters of the sent command" )
+                    output = response.split( endStr.strip()[-5:], 1 )
             else:
                 output = response.split( endStr.strip(), 1 )
                 if len( output ) < 2:

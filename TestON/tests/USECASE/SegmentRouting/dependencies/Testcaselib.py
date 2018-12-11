@@ -321,12 +321,7 @@ class Testcaselib:
         """
         Adds an ONOS static route with the use route-add command.
         """
-        main.step("Add static route for subnet {0} towards router interface {1}".format(subnet, intf))
         routeResult = main.Cluster.active( 0 ).addStaticRoute(subnet, intf)
-
-        utilities.assert_equals( expect=True, actual=( not routeResult ),
-                                 onpass="route-add command succeeded",
-                                 onfail="route-add command failed")
 
     @staticmethod
     def checkGroupsForBuckets( main, deviceId, subnetDict, routingTable=30 ):
@@ -898,7 +893,7 @@ class Testcaselib:
                 main.log.debug( "{} components not ACTIVE: \n{}".format(
                     ctrl.name,
                     ctrl.CLI.sendline( "onos:scr-list | grep -v ACTIVE" ) ) )
-            main.log.error( "Failed to kill ONOS, stopping test" )
+            main.log.error( "Failed to verify nodes, stopping test" )
             main.cleanAndExit()
 
     @staticmethod

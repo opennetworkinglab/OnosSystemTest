@@ -591,23 +591,34 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": " + repr( response ) )
 
             # parse for just the output, remove the cmd from response
+            cmdPattern = cmdStr.strip()
+            main.log.debug( "REGEX PATTERN SET TO: " + repr( cmdPattern ) +
+                            "\nSENT COMMAND STRING WAS: " + repr( cmdStr ) )
             if relaxedRegex:
+                cmdPattern = cmdPattern.split( '|' )[ -1 ].strip()
+                main.log.debug( "REGEX PATTERN SET TO: " + repr( cmdPattern ) +
+                                "\nSENT COMMAND STRING WAS: " + repr( cmdStr ) )
                 # This was added because karaf 4.2 is stripping some characters from the command echo
-                endStr = cmdStr.split( '|' )[-1]
-                output = response.split( endStr.strip(), 1 )
+                output = response.split( cmdPattern, 1 )
                 if len( output ) < 2:
                     main.log.warn( "Relaxing regex match to last 5 characters of the sent command" )
-                    output = response.split( endStr.strip()[-5:], 1 )
+                    cmdPattern = cmdPattern[ -5: ]
+                    main.log.debug( "REGEX PATTERN SET TO: " + repr( cmdPattern ) +
+                                    "\nSENT COMMAND STRING WAS: " + repr( cmdStr ) )
+                    output = response.split( cmdPattern, 1 )
             else:
-                output = response.split( endStr.strip(), 1 )
-                if len( output ) < 2:
+                output = response.split( cmdPattern, 1 )
+                if len( output ) < 2:  # TODO: Should we do this without the relaxedRegex flag?
                     main.log.warn( "Relaxing regex match to last 5 characters of the sent command" )
-                    output = response.split( endStr.strip()[-5:], 1 )
+                    output = response.split( cmdPattern[ -5: ], 1 )
             if output:
                 if debug:
                     main.log.debug( self.name + ": split output" )
                     for r in output:
                         main.log.debug( self.name + ": " + repr( r ) )
+                if len( output ) == 1:
+                    main.log.error( "Could not remove sent command echo from output" )
+                    return output
                 output = output[ 1 ].strip()
             if showResponse:
                 main.log.info( "Response from ONOS: {}".format( output ) )
@@ -669,7 +680,7 @@ class OnosCliDriver( CLI ):
             return parsed.group( 1 )
         except IndexError:
             main.log.exception( self.name + ": Object not as expected" )
-            main.log.debug( "response: {}".format( repr( response ) ) )
+            main.log.debug( "response: {}".format( repr( numLines ) ) )
             return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

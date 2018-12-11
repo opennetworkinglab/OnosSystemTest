@@ -202,7 +202,7 @@ class SCPFintentInstallWithdrawLat:
                                 continue
 
                         try:
-                            latency = int( installResult.split()[ 5 ] )
+                            latency = int( installResult.split()[ -2 ] )
                             main.log.info( installResult )
                         except:
                             main.log.error( "Failed to get latency, ignore this iteration." )
@@ -245,7 +245,7 @@ class SCPFintentInstallWithdrawLat:
                                 continue
 
                         try:
-                            latency = int( withdrawResult.split()[ 5 ] )
+                            latency = int( withdrawResult.split()[ -2 ] )
                             main.log.info( withdrawResult )
                         except:
                             main.log.error( "Failed to get latency, ignore this iteration." )

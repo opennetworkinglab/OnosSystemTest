@@ -2813,6 +2813,10 @@ class OnosCliDriver( CLI ):
                 return None
             return totalFlows
 
+        except IndexError:
+            main.log.exception( "{}: Object not as expected!".format( self.name ) )
+            main.log.debug( "rawFlows: {}".format( rawFlows ) )
+            return None
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected!".format( self.name ) )
             return None

@@ -558,7 +558,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": " + repr( response ) )
 
             # Remove control codes from karaf 4.2.1
-            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79C(x)?|\x1b(>|=)|\x1b\[90m~)" )
+            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79C(x|\s)?|\x1b(>|=)|\x1b\[90m~)" )
             response = karafEscape.sub( '', response )
             if debug:
                 main.log.debug( self.name + ": karafEscape output" )
@@ -571,6 +571,8 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": " + repr( response ) )
 
             # Remove ANSI color control strings from output
+            # NOTE: karaf is sometimes adding a single character then two
+            #       backspaces and sometimes adding 2 characters with 2 backspaces??
             backspaceEscape = re.compile( r'((..\x08\x08)|(.|\s)\x08)' )
             response = backspaceEscape.sub( '', response )
             if debug:

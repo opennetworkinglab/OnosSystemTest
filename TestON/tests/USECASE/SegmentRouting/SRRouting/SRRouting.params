@@ -39,7 +39,7 @@
         <OnosDiscovery>45</OnosDiscovery>
         <loadNetcfgSleep>5</loadNetcfgSleep>
         <startMininetSleep>25</startMininetSleep>
-        <dhcpSleep>60</dhcpSleep>
+        <dhcpSleep>120</dhcpSleep>
         <balanceMasterSleep>10</balanceMasterSleep>
     </timers>
 

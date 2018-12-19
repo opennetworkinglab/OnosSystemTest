@@ -39,7 +39,7 @@ def getTimestampFromString( main, targetString ):
         timeString = timeString[ 0 ]
         from datetime import datetime
         # convert time string to timestamp
-        t = datetime.strptime( timeString, "%Y-%m-%d %H:%M:%S,%f" )
+        t = datetime.strptime( timeString, "%Y-%m-%dT%H:%M:%S,%f" )
         import time
         timestamp = time.mktime( t.timetuple() )
         timestamp += int( t.microsecond / 1000 ) / 1000.0

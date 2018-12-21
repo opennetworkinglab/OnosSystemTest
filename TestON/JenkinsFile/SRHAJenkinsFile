@@ -36,7 +36,7 @@ hasArgs = true
 jobName = env.JOB_NAME
 
 // read the TestON.property depends on which branch it is running.
-// ( currently master on Fabric4, 1.15 on Fabric2 and 1.14 on Fabric3 )
+// ( currently master on Fabric4, 2.0 on Fabric3 and 1.15 on Fabric2 )
 def prop = null
 prop = funcs.getProperties()
 SRHA = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SRHA" ]

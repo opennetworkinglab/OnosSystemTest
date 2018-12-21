@@ -83,7 +83,7 @@ def init( type ){
 
 def additionalInitForSR( branch ){
     // additional setup for SegmentRouting tests to determine the machine depends on the branch it is running.
-    // branch : branch of the onos. ( master, 1.15, 1.14... )
+    // branch : branch of the onos. ( master, 2.0, 1.15... )
 
     testMachine = ( ( new StringBuilder( testMachine ) ).insert( testMachine.size() - 1, fabricOn( branch ) ) ).
             toString()
@@ -98,14 +98,15 @@ def additionalInitForSR( branch ){
 
 def fabricOn( branch ){
     // gets the fabric machines with the branch of onos.
-    // branch : master, 1.15, 1.14...
+    // branch : master, 2.0, 1.15...
     // branch.reverse().take(4).reverse() will get last 4 characters of the string.
-    switch ( branch.reverse().take( 4 ).reverse() ){
-        case "ster": return "4"
-        case "1.15": return "2"
-        case "1.14": return "3"
-        case "1.13": return "2"
-        case "1.12": return "3"
+    switch ( branch.reverse().take( 3 ).reverse() ){
+        case "ter": return "4"
+        case "2.0": return "3"
+        case ".15": return "2"
+        case ".14": return "3"
+        case ".13": return "2"
+        case ".12": return "3"
         default: return "4"
     }
 }
@@ -294,7 +295,7 @@ def postResult( prop, graphOnly ){
 def postLogs( testName, prefix ){
     // posting logs of the onos jobs specifically SR tests
     // testName : name of the test
-    // prefix : branch prefix ( master, 1.15, 1.14 ... )
+    // prefix : branch prefix ( master, 2.0, 1.15 ... )
 
     resultURL = ""
     if ( testType == "SR" ){
@@ -463,7 +464,7 @@ def generateCategoryStatsGraph( testMachineOn, manualRun, postresult, stat_file,
     // stat_file : file name with full path for Rscript for the stat graph
     // pie_file : file name with full path for Rscript for the pie graph
     // type : type of the test ( USECASE, FUNC, HA )
-    // branch : branch of the test ( master, onos-1.15, onos-1.14 )
+    // branch : branch of the test ( master, onos-2.0, onos-1.15 )
     // testListPart : list of the test to be included
     // save_path : path that will save the graphs to
     // pieTestListPart : list of the test for pie graph
@@ -590,6 +591,8 @@ def testBranchWithPrefix( branch ){
         return "onos-1.15"
     else if ( branch == "1.15" )
         return "onos-1.15"
+    else if ( branch == "2.0" )
+        return "master"
     else
         return "master"
 }

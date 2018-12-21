@@ -26,7 +26,7 @@
 
 def getAllTheTests( wikiPrefix ){
     // This contains the dictionary of the test and the category of them
-    // wikiPrefix : master, 1.15, 1.14 ...
+    // wikiPrefix : master, 2.0, 1.15 ...
 
     // category: it will be used to distinguish which category to be run on which days ( basic,extra_A, extra_B ... )
     // day: it will be used to display the schedule of the test to be run to the slack. It is empty in the first place but will be

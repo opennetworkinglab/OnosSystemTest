@@ -1435,6 +1435,8 @@ class OnosDriver( CLI ):
             i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT, "Password:" ], timeout )
             if i == 0:
                 main.log.info( self.name + ": " + node + " is up" )
+                # FIXME: for now we sleep 5s for CLI to become ready
+                time.sleep( 5 )
                 return main.TRUE
             elif i == 1 or i == 2:
                 # NOTE: since this function won't return until ONOS is ready,

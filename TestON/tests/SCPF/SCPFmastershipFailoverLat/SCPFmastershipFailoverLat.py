@@ -220,7 +220,7 @@ class SCPFmastershipFailoverLat:
                 main.log.warn( "Latency was NOT obtained from tshark successfully." )
 
             validDataCheck = False
-            if tsharkLatCheck:
+            if eventLatCheck and tsharkLatCheck:
                 main.log.info( "instanceDeactivated: " + str( instanceDeactivated ) )
                 main.log.info( "masterChanged: " + str( masterChanged ) )
                 main.log.info( "roleRequestLat: " + str( roleRequestLat ) )
@@ -271,8 +271,8 @@ class SCPFmastershipFailoverLat:
             main.log.info( "Checking ONOS nodes." )
             nodeResults = utilities.retry( main.Cluster.nodesCheck,
                                            False,
-                                           sleep=1,
-                                           attempts=3 )
+                                           sleep=5,
+                                           attempts=50 )
 
             if not nodeResults:
                 main.log.error( "Nodes check NOT successful." )

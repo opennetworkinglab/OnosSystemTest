@@ -53,7 +53,7 @@
 
         # Percent of data that can be invalid per sample size iteration.
         # Any more than this will cause the test to fail and stop. Must be a float between 0 and 1.
-        <failPercent>0.25</failPercent>
+        <failPercent>0.5</failPercent>
 
    </TEST>
 

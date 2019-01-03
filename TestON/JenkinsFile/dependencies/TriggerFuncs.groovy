@@ -135,7 +135,7 @@ def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manual
             echo "TestONBranch=''' + test_branch + '''" >> /var/jenkins/TestONOS.property
             echo "ONOSTag=''' + onosTag + '''" >> /var/jenkins/TestONOS.property
             echo "WikiPrefix=''' + wiki + '''" >> /var/jenkins/TestONOS.property
-            echo "ONOSJVMHeap=''' + env.ONOSJVMHeap + '''" >> /var/jenkins/TestONOS.property
+            echo "ONOSJAVAOPTS=''' + env.ONOSJAVAOPTS + '''" >> /var/jenkins/TestONOS.property
             echo "Tests=''' + tests + '''" >> /var/jenkins/TestONOS.property
             echo "postResult=''' + postResult + '''" >> /var/jenkins/TestONOS.property
             echo "manualRun=''' + manually_run + '''" >> /var/jenkins/TestONOS.property
@@ -213,8 +213,8 @@ def preSetup( onos_branch, test_branch, onos_tag, isManual ){
         git branch
         git log -1 --decorate
         echo -e "\n##### set jvm heap size to 8G #####"
-        echo ${ONOSJVMHeap}
-        inserted_line="export JAVA_OPTS=\"\${ONOSJVMHeap}\""
+        echo ${ONOSJAVAOPTS}
+        inserted_line="export JAVA_OPTS=\"\${ONOSJAVAOPTS}\""
         sed -i "s/bash/bash\\n$inserted_line/" ~/onos/tools/package/bin/onos-service
         echo "##### Check onos-service setting..... #####"
         cat ~/onos/tools/package/bin/onos-service

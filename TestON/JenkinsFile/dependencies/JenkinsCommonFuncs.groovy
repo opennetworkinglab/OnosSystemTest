@@ -385,7 +385,7 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                     def fileContents = ""
                     node( testMachine ) {
                         withEnv( [ 'ONOSBranch=' + prop[ "ONOSBranch" ],
-                                   'ONOSJVMHeap=' + prop[ "ONOSJVMHeap" ],
+                                   'ONOSJAVAOPTS=' + prop[ "ONOSJAVAOPTS" ],
                                    'TestONBranch=' + prop[ "TestONBranch" ],
                                    'ONOSTag=' + prop[ "ONOSTag" ],
                                    'WikiPrefix=' + prop[ "WikiPrefix" ],

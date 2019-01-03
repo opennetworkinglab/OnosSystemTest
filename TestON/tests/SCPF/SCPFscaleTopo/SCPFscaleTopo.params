@@ -78,7 +78,7 @@
 
     <TOPOLOGY>
         <topology>torus</topology>
-        <scale>10,20,30,40,50,55,60</scale>
+        <scale>10,20,30,40,50</scale>
         <host>True</host>
     </TOPOLOGY>
 

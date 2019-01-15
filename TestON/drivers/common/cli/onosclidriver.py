@@ -522,7 +522,7 @@ class OnosCliDriver( CLI ):
             else:
                 main.cleanAndExit()
 
-    def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False, relaxedRegex=True ):
+    def sendline( self, cmdStr, showResponse=False, debug=False, timeout=10, noExit=False, relaxedRegex=True, expectJson=False ):
         """
         A wrapper around pexpect's sendline/expect. Will return all the output from a given command
 
@@ -602,6 +602,12 @@ class OnosCliDriver( CLI ):
                                 "\nSENT COMMAND STRING WAS: " + repr( cmdStr ) )
                 # This was added because karaf 4.2 is stripping some characters from the command echo
                 output = response.split( cmdPattern, 1 )
+                if expectJson:
+                    main.log.warn( "Relaxed Regex: Searching for a json string amongst the output" )
+                    jsonPattern = r'\{.*\}'
+                    match = re.search( jsonPattern, output[ 0 ] )
+                    if match:
+                        output = [ '' , match.group( 0 ) ]  # We expect a list with the second element to be the output
                 if len( output ) < 2:
                     main.log.warn( "Relaxing regex match to last 5 characters of the sent command" )
                     cmdPattern = cmdPattern[ -5: ]
@@ -4230,9 +4236,11 @@ class OnosCliDriver( CLI ):
                     componentStr += " " + propName
             if jsonFormat:
                 baseStr += " -j"
+                expectJson = True
             elif short:
                 baseStr += " -s"
-            output = self.sendline( baseStr + cmdStr + componentStr )
+                expectJson = False
+            output = self.sendline( baseStr + cmdStr + componentStr, expectJson=expectJson )
             assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
@@ -4594,6 +4602,9 @@ class OnosCliDriver( CLI ):
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
+            main.log.debug( self.name + ": Counters unparsed: " + output )
+            output = output.split( "\r\n" )[ -1 ]
+            main.log.debug( self.name + ": Counters parsed: " + output )
             assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output
@@ -4701,6 +4712,9 @@ class OnosCliDriver( CLI ):
             cmdStr = "value-test {} {}".format( valueName,
                                                 operation )
             output = self.distPrimitivesSend( cmdStr )
+            main.log.debug( self.name + ": value test unparsed: " + output )
+            output = output.split( "\r\n" )[ -1 ]
+            main.log.debug( self.name + ": value test parsed: " + output )
             pattern = "(\w+)"
             match = re.search( pattern, output )
             if match:
@@ -5965,6 +5979,9 @@ class OnosCliDriver( CLI ):
             operation = "totalPending"
             cmdStr = " ".join( [ prefix, queueName, operation ] )
             output = self.distPrimitivesSend( cmdStr )
+            main.log.debug( self.name + ": work queue unparsed: " + output )
+            output = output.split( "\r\n" )[ -1 ]
+            main.log.debug( self.name + ": work queue parsed: " + output )
             pattern = r'\d+'
             if "Invalid operation name" in output:
                 main.log.warn( output )
@@ -5998,6 +6015,9 @@ class OnosCliDriver( CLI ):
             operation = "totalCompleted"
             cmdStr = " ".join( [ prefix, queueName, operation ] )
             output = self.distPrimitivesSend( cmdStr )
+            main.log.debug( self.name + ": work queue unparsed: " + output )
+            output = output.split( "\r\n" )[ -1 ]
+            main.log.debug( self.name + ": work queue parsed: " + output )
             pattern = r'\d+'
             if "Invalid operation name" in output:
                 main.log.warn( output )
@@ -6031,6 +6051,9 @@ class OnosCliDriver( CLI ):
             operation = "totalInProgress"
             cmdStr = " ".join( [ prefix, queueName, operation ] )
             output = self.distPrimitivesSend( cmdStr )
+            main.log.debug( self.name + ": work queue unparsed: " + output )
+            output = output.split( "\r\n" )[ -1 ]
+            main.log.debug( self.name + ": work queue parsed: " + output )
             pattern = r'\d+'
             if "Invalid operation name" in output:
                 main.log.warn( output )

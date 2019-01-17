@@ -196,7 +196,7 @@ class OnosCliDriver( CLI ):
                         return main.FALSE
                 elif i == 1:  # not in CLI
                     return main.TRUE
-                elif i == 3:  # Timeout
+                elif i == 2:  # Timeout
                     return main.FALSE
             else:
                 return main.TRUE

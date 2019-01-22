@@ -412,6 +412,14 @@
         <linkDownUpInterval>1</linkDownUpInterval>
     </CASE21>
 
+    <CASE40>
+        <sleepSec>10</sleepSec>
+    </CASE40>
+
+    <CASE41>
+        <sleepSec>10</sleepSec>
+    </CASE41>
+
     <CASE70>
         <sleepSec>2</sleepSec>
         <addHostIntentWeight>3</addHostIntentWeight>

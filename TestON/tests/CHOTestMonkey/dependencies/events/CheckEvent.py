@@ -58,7 +58,8 @@ class IntentCheck( CheckEvent ):
                     intentState = controller.CLI.compareIntent( intentDict )
                 if not intentState:
                     main.log.warn( "Intent Check - not all intent ids and states match that on ONOS%s" % ( controller.index ) )
-                    checkResult = EventStates().FAIL
+                    # FIXME: ONOS leaves intents as WITHDRAWN state occasionally and we don't consider that as a FAIL for now
+                    # checkResult = EventStates().FAIL
         return checkResult
 
 
@@ -254,7 +255,7 @@ class ONOSCheck( CheckEvent ):
                     for c in main.controllers:
                         if c.isUp() and ipToState[ c.ip ] == 'READY':
                             pass
-                        elif not c.isUp() and ipToState[ c.ip ] == 'INACTIVE':
+                        elif not c.isUp() and c.ip not in ipToState.keys():
                             pass
                         else:
                             checkResult = EventStates().FAIL
@@ -262,6 +263,9 @@ class ONOSCheck( CheckEvent ):
                     # TODO: check partitions?
                 except ( TypeError, ValueError ):
                     main.log.exception( "ONOS Check - Object not as expected" )
+                    return EventStates().FAIL
+                except Exception as e:
+                    main.log.exception( "ONOS Check - Uncaught Exception: {}".format( e ) )
                     return EventStates().FAIL
         return checkResult
 

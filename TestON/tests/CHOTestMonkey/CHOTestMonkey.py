@@ -588,7 +588,7 @@ class CHOTestMonkey:
                                  actual=main.caseResult,
                                  onpass="Randomly bring down ONOS test passed",
                                  onfail="Randomly bring down ONOS test failed" )
-        time.sleep( main.caseSleep )
+        time.sleep( int( main.params[ 'CASE40' ][ 'sleepSec' ] ) )
 
     def CASE41( self, main ):
         """
@@ -621,7 +621,7 @@ class CHOTestMonkey:
                                  actual=main.caseResult,
                                  onpass="Randomly bring up ONOS test passed",
                                  onfail="Randomly bring up ONOS test failed" )
-        time.sleep( main.caseSleep )
+        time.sleep( int( main.params[ 'CASE41' ][ 'sleepSec' ] ) )
 
     def CASE50( self, main ):
         """

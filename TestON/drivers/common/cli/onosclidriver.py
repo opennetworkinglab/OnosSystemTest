@@ -3795,13 +3795,15 @@ class OnosCliDriver( CLI ):
         # "features":"[onos-openflow]","state":"ACTIVE"}]
         try:
             cmdStr = "onos:apps"
+            expectJson = False
             if summary:
                 cmdStr += " -s"
             if active:
                 cmdStr += " -a"
             if jsonFormat:
                 cmdStr += " -j"
-            output = self.sendline( cmdStr )
+                expectJson = True
+            output = self.sendline( cmdStr, expectJson=expectJson )
             assert output is not None, "Error in sendline"
             assert "Command not found:" not in output, output
             assert "Error executing command" not in output, output

@@ -54,7 +54,8 @@ class Device( NetworkElement ):
         NetworkElement.__init__( self, index )
         self.name = name
         self.dpid = dpid
-        self.hosts = []
+        self.hosts = {}
+        self.downPorts = []
         # For each bidirectional link, we only store one direction here
         self.outgoingLinks = []
 
@@ -64,24 +65,27 @@ class Device( NetworkElement ):
 
 class Host( NetworkElement ):
 
-    def __init__( self, index, name, id, mac, device, devicePort, vlan, ipAddresses ):
+    def __init__( self, index, name, id, mac, devices, vlan, ipAddresses ):
         NetworkElement.__init__( self, index )
         self.name = name
         self.id = id
         self.mac = mac
-        self.device = device
-        self.devicePort = devicePort
+        self.devices = devices
         self.vlan = vlan
         self.ipAddresses = ipAddresses
         self.correspondents = []
         self.handle = None
+        self.isDualHomed = True if len( self.devices ) == 2 else False
 
     def __str__( self ):
-        return "name: " + self.name + ", mac: " + self.mac + ", device: " + self.device.dpid + ", ipAddresses: " + str( self.ipAddresses ) + ", status: " + self.status
+        return "name: " + self.name + ", mac: " + self.mac + ", devices: " + str( [ device.dpid for device in self.devices ] ) + ", ipAddresses: " + str( self.ipAddresses ) + ", status: " + self.status
 
     def setHandle( self, handle ):
         self.handle = handle
 
+    def setRemoved( self ):
+        if all( device.isRemoved() for device in self.devices ):
+            self.status = 'removed'
 
 class Link( NetworkElement ):
 

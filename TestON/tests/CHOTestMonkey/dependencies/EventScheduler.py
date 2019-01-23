@@ -60,7 +60,7 @@ class EventScheduler:
         param:
             index: the position to insert into pendingEvents, default value -1 implies the tail of pendingEvents
         """
-        if not typeIndex in main.enabledEvents.keys():
+        if typeIndex not in main.enabledEvents.keys():
             main.log.warn( "Event Scheduler - event type %s not enabled" % ( typeIndex ) )
             return
         if main.enabledEvents[ typeIndex ] in main.params[ 'EVENT' ].keys():
@@ -84,7 +84,7 @@ class EventScheduler:
             else:
                 main.log.warn( "Event Scheduler - invalid index when isnerting event: %s" % ( index ) )
             self.pendingEventsCondition.notify()
-        #self.printEvents()
+        # self.printEvents()
 
     def startScheduler( self ):
         """
@@ -133,7 +133,7 @@ class EventScheduler:
 
         with self.runningEventsCondition:
             self.runningEvents.append( eventTuple )
-        #self.printEvents()
+        # self.printEvents()
         rerunNum = 0
         result = eventTuple.startEvent()
         while result == EventStates().FAIL and rerunNum < eventTuple.maxRerunNum:
@@ -145,9 +145,8 @@ class EventScheduler:
             main.log.error( eventTuple.typeString + " failed" )
             main.caseResult = main.FALSE
             if main.params[ 'TEST' ][ 'pauseTest' ] == 'on':
-                #self.isRunning = False
-                #main.log.error( "Event Scheduler - Test paused. To resume test, run \'resume-test\' command in CLI debugging mode" )
-                main.stop()
+                self.isRunning = False
+                main.log.error( "Event Scheduler - Test paused. To resume test, run \'resume-test\' command in CLI debugging mode" )
         with self.runningEventsCondition:
             self.runningEvents.remove( eventTuple )
             if len( self.runningEvents ) == 0:
@@ -156,7 +155,7 @@ class EventScheduler:
                     if len( self.pendingEvents ) == 0:
                         with self.idleCondition:
                             self.idleCondition.notify()
-        #self.printEvents()
+        # self.printEvents()
 
     def printEvents( self ):
         """
@@ -198,5 +197,5 @@ class EventScheduler:
         self.pendingEventsCapacity = capacity
 
     def setRunningState( self, state ):
-        assert state or state == False
+        assert state or state is False
         self.isRunning = state

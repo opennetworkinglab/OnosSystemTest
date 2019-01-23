@@ -46,9 +46,13 @@ class Controller:
 
     def bringDown( self ):
         self.status = 'down'
+        main.Cluster.runningNodes[ self.index - 1 ].active = False
+        main.Cluster.reset()
 
     def bringUp( self ):
         self.status = 'up'
+        main.Cluster.runningNodes[ self.index - 1 ].active = True
+        main.Cluster.reset()
 
 
 class Intent:

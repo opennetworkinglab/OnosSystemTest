@@ -5336,7 +5336,8 @@ class OnosCliDriver( CLI ):
                                            'annotations': idToDevice[ nodeA ][ 'annotations' ]}
                 else:
                     # Assert nodeB is not connected to any current links of nodeA
-                    assert nodeB not in graphDict[ nodeA ][ 'edges' ].keys()
+                    # assert nodeB not in graphDict[ nodeA ][ 'edges' ].keys()
+                    pass
                 graphDict[ nodeA ][ 'edges' ][ nodeB ] = { 'port': link[ 'src' ][ 'port' ],
                                                            'type': link[ 'type' ],
                                                            'state': link[ 'state' ] }

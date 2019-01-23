@@ -51,7 +51,8 @@ class LinkEvent( Event ):
             if args[ 0 ] == 'random' or args[ 1 ] == 'random':
                 if self.typeIndex == EventType().NETWORK_LINK_DOWN:
                     with main.mininetLock:
-                        linkRandom = main.Mininet1.getLinkRandom()
+                        linkRandom = main.Mininet1.getLinkRandom( switchClasses=r"(OVSSwitch)",
+                                                                  excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ] )
                     if linkRandom is None:
                         main.log.warn( "No link available, aborting event" )
                         return EventStates().ABORT
@@ -188,7 +189,8 @@ class DeviceEvent( Event ):
                 import random
                 if self.typeIndex == EventType().NETWORK_DEVICE_DOWN:
                     with main.mininetLock:
-                        switchRandom = main.Mininet1.getSwitchRandom()
+                        switchRandom = main.Mininet1.getSwitchRandom( switchClasses=r"(OVSSwitch)",
+                                                                      excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ] )
                     if switchRandom is None:
                         main.log.warn( "No switch available, aborting event" )
                         return EventStates().ABORT
@@ -232,8 +234,15 @@ class DeviceDown( DeviceEvent ):
                 main.log.warn( "Device Down - device has been removed" )
                 return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.device.name ) )
+        result = main.TRUE
         with main.mininetLock:
-            result = main.Mininet1.delSwitch( self.device.name )
+            # Disable ports toward dual-homed hosts
+            for host, port in self.device.hosts.items():
+                if host.isDualHomed:
+                    main.log.info( "Disable port {}/{} which connects to a dual-homed host before bringing down this device".format( self.device.dpid, port ) )
+                    result = result and main.Cluster.active( 0 ).CLI.portstate( dpid=self.device.dpid, port=port, state="disable" )
+            # result = main.Mininet1.delSwitch( self.device.name )
+            result = result and main.Mininet1.switch( SW=self.device.name, OPTION="stop" )
         if not result:
             main.log.warn( "%s - failed to bring down device" % ( self.typeString ) )
             return EventStates().FAIL
@@ -269,12 +278,14 @@ class DeviceUp( DeviceEvent ):
         # Re-add the device
         main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.device.name ) )
         with main.mininetLock:
-            result = main.Mininet1.addSwitch( self.device.name, dpid=self.device.dpid[ 3: ] )
+            # result = main.Mininet1.addSwitch( self.device.name, dpid=self.device.dpid[ 3: ] )
+            result = main.Mininet1.switch( SW=self.device.name, OPTION='start' )
         if not result:
             main.log.warn( "%s - failed to re-add device" % ( self.typeString ) )
             return EventStates().FAIL
         with main.variableLock:
             self.device.bringUp()
+        '''
         # Re-add links
         # We add host-device links first since we did the same in mininet topology file
         # TODO: a more rubust way is to add links according to the port info of the device
@@ -303,35 +314,168 @@ class DeviceUp( DeviceEvent ):
                         if intent.deviceA == self.device and intent.deviceB.isUp() or\
                                 intent.deviceB == self.device and intent.deviceA.isUp():
                             intent.setInstalled()
+        '''
         # Re-assign mastership for the device
         with main.mininetLock:
             ips = main.Cluster.getIps()
             main.Mininet1.assignSwController( sw=self.device.name, ip=ips )
-        # Re-discover hosts
-        for host in self.device.hosts:
-            correspondent = None
-            for h in main.hosts:
-                if h.isUp() and h != host:
-                    correspondent = h
-                    break
-            if correspondent is None:
-                with main.mininetLock:
-                    main.Mininet1.pingall()
-                    if main.enableIPv6:
-                        main.Mininet1.pingall( protocol="IPv6" )
+        for link in self.device.outgoingLinks:
+            neighbor = link.deviceB
+            # Skip bringing up any link that connecting this device to a removed neighbor
+            if neighbor.isRemoved():
+                continue
+            # Bring down again any link that was brought down before the device was down
+            if int( link.portB ) in link.deviceB.downPorts:
+                with main.variableLock:
+                    link.bringDown()
+                    link.backwardLink.bringDown()
             else:
-                ipv4Addr = None
-                ipv6Addr = None
-                for ipAddress in correspondent.ipAddresses:
-                    if ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv6Prefix' ] ) ) and ipv6Addr is None:
-                        ipv6Addr = ipAddress
-                    elif ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv4Prefix' ] ) ) and ipv4Addr is None:
-                        ipv4Addr = ipAddress
-                assert ipv4Addr is not None
-                host.handle.pingHostSetAlternative( [ ipv4Addr ], 1 )
-                if main.enableIPv6:
-                    assert ipv6Addr is not None
-                    host.handle.pingHostSetAlternative( [ ipv6Addr ], 1, True )
+                with main.variableLock:
+                    link.bringUp()
+                    link.backwardLink.bringUp()
+        # Re-discover hosts
+        if self.device.hosts:
+            main.Mininet1.discoverHosts( hostList=[ host.name for host in self.device.hosts ] )
+        for host in self.device.hosts:
             with main.variableLock:
                 host.bringUp()
+        self.device.downPorts = []
+        return EventStates().PASS
+
+
+class PortEvent( Event ):
+
+    def __init__( self ):
+        Event.__init__( self )
+        self.device = None
+        self.port = None
+        self.link = None
+
+    def startPortEvent( self ):
+        return EventStates().PASS
+
+    def startEvent( self, args ):
+        """
+        args are the device name and port number, e.g. [ 's1', '5' ]
+        """
+        with self.eventLock:
+            # main.log.info( "%s - starting event" % ( self.typeString ) )
+            if len( args ) < 2:
+                main.log.warn( "%s - Not enough arguments: %s" % ( self.typeString, args ) )
+                return EventStates().ABORT
+            elif len( args ) > 2:
+                main.log.warn( "%s - Too many arguments: %s" % ( self.typeString, args ) )
+                return EventStates().ABORT
+            if args[ 0 ] == 'random' or args[ 1 ] == 'random':
+                if self.typeIndex == EventType().NETWORK_PORT_DOWN:
+                    with main.mininetLock:
+                        linkRandom = main.Mininet1.getLinkRandom( switchClasses=r"(OVSSwitch)",
+                                                                  excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ])
+                    if linkRandom is None:
+                        main.log.warn( "No link available, aborting event" )
+                        return EventStates().ABORT
+                    for link in main.links:
+                        if link.deviceA.name == linkRandom[ 0 ] and link.deviceB.name == linkRandom[ 1 ]:
+                            self.device = link.deviceA
+                            self.port = int( link.portA )
+                    if not self.device:
+                        main.log.warn( "Failed to get a radnom device port, aborting event" )
+                        return EventStates().ABORT
+                elif self.typeIndex == EventType().NETWORK_PORT_UP:
+                    import random
+                    with main.variableLock:
+                        downPorts = {}
+                        for link in main.links:
+                            if link.isDown():
+                                if int( link.portA ) in link.deviceA.downPorts:
+                                    downPorts[ link.deviceA ] = link.portA
+                        if len( downPorts ) == 0:
+                            main.log.warn( "None of the links are in 'down' state, aborting event" )
+                            return EventStates().ABORT
+                        deviceList = random.sample( downPorts, 1 )
+                        self.device = deviceList[ 0 ]
+                        self.port = int( downPorts[ self.device ] )
+            if self.device is None:
+                for device in main.devices:
+                    if device.name == args[ 0 ]:
+                        self.device = device
+                if self.device is None:
+                    main.log.warn( "Device %s does not exist: " % ( args[ 0 ] ) )
+                    return EventStates().ABORT
+            if self.port is None:
+                try:
+                    self.port = int( args[ 1 ] )
+                except Exception:
+                    main.log.warn( "Device port is not a number: {}".format( args[ 1 ] ) )
+                    return EventStates().ABORT
+            if self.link is None:
+                for link in main.links:
+                    if link.deviceA.name == self.device.name and int( link.portA ) == self.port:
+                        self.link = link
+                if self.link is None:
+                    main.log.warn( "There's no link on device {} port {}".format( self.device.name, self.port ) )
+                    return EventStates().ABORT
+            main.log.debug( "%s - %s:%s" % ( self.typeString, self.device, self.port ) )
+            return self.startPortEvent()
+
+
+class PortDown( PortEvent ):
+
+    """
+    Generate a port down event giving the device name and port number
+    """
+    def __init__( self ):
+        PortEvent.__init__( self )
+        self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+
+    def startPortEvent( self ):
+        assert self.device is not None and self.port is not None and self.link is not None
+        if self.link.isDown():
+            main.log.warn( "port Down - link already down" )
+            return EventStates().ABORT
+        elif self.link.isRemoved():
+            main.log.warn( "port Down - link has been removed" )
+            return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.device.name, self.port ) )
+        with main.mininetLock:
+            result = main.Cluster.active( 0 ).CLI.portstate( dpid=self.device.dpid, port=self.port, state="disable" )
+        if not result:
+            main.log.warn( "%s - failed to bring down port" % ( self.typeString ) )
+            return EventStates().FAIL
+        with main.variableLock:
+            self.device.downPorts.append( self.port )
+            self.link.bringDown()
+            self.link.backwardLink.bringDown()
+        return EventStates().PASS
+
+
+class PortUp( PortEvent ):
+
+    """
+    Generate a port up event giving the device name and port number
+    """
+    def __init__( self ):
+        PortEvent.__init__( self )
+        self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+
+    def startPortEvent( self ):
+        assert self.device is not None and self.port is not None and self.link is not None
+        if self.link.isUp():
+            main.log.warn( "port up - link already up" )
+            return EventStates().ABORT
+        elif self.link.isRemoved():
+            main.log.warn( "port up - link has been removed" )
+            return EventStates().ABORT
+        main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.device.name, self.port ) )
+        with main.mininetLock:
+            result = main.Cluster.active( 0 ).CLI.portstate( dpid=self.device.dpid, port=self.port, state="enable" )
+        if not result:
+            main.log.warn( "%s - failed to bring up port " % ( self.typeString ) )
+            return EventStates().FAIL
+        with main.variableLock:
+            self.device.downPorts.remove( self.port )
+            self.link.bringUp()
+            self.link.backwardLink.bringUp()
         return EventStates().PASS

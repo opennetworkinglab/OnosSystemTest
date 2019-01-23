@@ -147,20 +147,23 @@ class TopoCheck( CheckEvent ):
                     upHostNum += 1
         clusterNum = 1
         with main.mininetLock:
-            graphDictMininet = main.Mininet1.getGraphDict( useId=True )
+            graphDictMininet = main.Mininet1.getGraphDict( useId=True, switchClasses=r"(OVSSwitch)",
+                                                           excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ] )
         for controller in main.controllers:
             if controller.isUp():
                 with controller.CLILock:
+                    '''
                     topoState = controller.CLI.checkStatus( upDeviceNum, upLinkNum )
-                    # if not topoState:
-                    #    main.log.warn( "Topo Check - link or device number discoverd by ONOS%s is incorrect" % ( controller.index ) )
-                    #    checkResult = EventStates().FAIL
+                    if not topoState:
+                        main.log.warn( "Topo Check - link or device number discoverd by ONOS%s is incorrect" % ( controller.index ) )
+                        checkResult = EventStates().FAIL
                     # Compare ONOS and Mininet topologies
                     graphDictONOS = controller.CLI.getGraphDict()
                     compareResult = main.graph.compareGraphs( graphDictONOS, graphDictMininet )
                     if not compareResult:
                         checkResult = EventStates().FAIL
                         main.log.warn( "Topo Check - ONOS and Mininet topologies do not match" )
+                    '''
                     try:
                         # Check links
                         links = controller.CLI.links()
@@ -181,8 +184,10 @@ class TopoCheck( CheckEvent ):
                         # Check hosts
                         hosts = controller.CLI.hosts()
                         hosts = json.loads( hosts )
+                        if hasattr( main, "expectedHosts" ):
+                            hosts = [ host for host in hosts if host[ 'id' ] in main.expectedHosts[ 'onos' ].keys() ]
                         if not len( hosts ) == upHostNum:
-                            checkResult = EventStates().FAIL
+                            # checkResult = EventStates().FAIL
                             main.log.warn( "Topo Check - host number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, upHostNum, len( hosts ) ) )
                         # Check clusters
                         clusters = controller.CLI.clusters()
@@ -288,6 +293,7 @@ class TrafficCheck( CheckEvent ):
         for host in main.hosts:
             if host.isUp():
                 upHosts.append( host )
+        import re
         for host in upHosts:
             dstIPv4List[ host.index ] = []
             dstIPv6List[ host.index ] = []
@@ -295,10 +301,12 @@ class TrafficCheck( CheckEvent ):
                 if correspondent not in upHosts:
                     continue
                 for ipAddress in correspondent.ipAddresses:
-                    if ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv6Prefix' ] ) ):
+                    if re.match( str( main.params[ 'TEST' ][ 'ipv6Regex' ] ), ipAddress ):
                         dstIPv6List[ host.index ].append( ipAddress )
-                    elif ipAddress.startswith( str( main.params[ 'TEST' ][ 'ipv4Prefix' ] ) ):
+                    elif re.match( str( main.params[ 'TEST' ][ 'ipv4Regex' ] ), ipAddress ):
                         dstIPv4List[ host.index ].append( ipAddress )
+            if dstIPv4List[ host.index ]:
+                main.log.debug( "Check ping from host {} to {}".format( host.name, dstIPv4List[ host.index ] ) )
             thread = main.Thread( target=host.handle.pingHostSetAlternative,
                                   threadID=main.threadID,
                                   name="pingHostSetAlternative",
@@ -317,6 +325,8 @@ class TrafficCheck( CheckEvent ):
             return checkResult
         # Check ipv6 ping
         for host in upHosts:
+            if dstIPv6List[ host.index ]:
+                main.log.debug( "Check ping from host {} to {}".format( host.name, dstIPv6List[ host.index ] ) )
             thread = main.Thread( target=host.handle.pingHostSetAlternative,
                                   threadID=main.threadID,
                                   name="pingHostSetAlternative",

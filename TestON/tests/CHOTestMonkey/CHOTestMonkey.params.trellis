@@ -1,29 +1,16 @@
 <PARAMS>
     # 0. Initialize CHOTestMonkey
     # 1. Set IPv6 configure
+    # 2. Load network configuration files
+    # 4. Copy topology libs and config files to Mininet
     # 5. Load topology and balances all switches
     # 6. Collect and store device and link data from ONOS
     # 7. Collect and store host data from ONOS
-    # 10. Run all enabled checks
-    # 20. Bring down/up links and check topology and ping
-    # 21. Bring down/up a group of links and check topology and ping
-    # 30. Install host intents and check intent states and ping
-    # 31. Uninstall host intents and check intent states
-    # 32. Install point intents and check intent states and ping
-    # 33. Uninstall point intents and check intent states
-    # 40. Randomly bring down one ONOS node
-    # 41. Randomly bring up one ONOS node that is down
-    # 50. Set FlowObjective to True
-    # 51. Set FlowObjective to False
-    # 60. Rebalance devices across controllers
     # 70. Run randomly generated events
-    # 80. Replay events from log file
-    # 90. Sleep for some time
     # 100. Do nothing
-    # Sample sequence: 0,1,2,3,[10,30,21,31,10,32,21,33,50,10,30,21,31,10,32,21,33,51,40,60,10,30,21,31,10,32,21,33,50,10,30,21,31,10,32,21,33,51,41,60]*500,100
 
     <testcases>
-        0,1,5,6,7,70
+        0,2,4,5,6,7,70
     </testcases>
 
     <GIT>
@@ -32,14 +19,14 @@
     </GIT>
 
     <TEST>
-        <topo>1</topo>
+        <topo>10</topo>
         <IPv6>on</IPv6>
-        <dataPlaneConnectivity>False</dataPlaneConnectivity>
+        <dataPlaneConnectivity>True</dataPlaneConnectivity>
         <numCtrl>3</numCtrl>
-        <pauseTest>off</pauseTest>
+        <pauseTest>on</pauseTest>
         <caseSleep>0</caseSleep>
-        <ipv6Regex>1000::[0-9]+</ipv6Regex>
-        <ipv4Regex>10\.1\.[0-9]+\.[0-9]+</ipv4Regex>
+        <ipv6Regex>10[0-9]+::[0-9]+</ipv6Regex>
+        <ipv4Regex>10\.[0-9]+\.[0-9]+\.[0-9]+</ipv4Regex>
         <karafCliTimeout>7200000</karafCliTimeout>
         <testDuration>86400</testDuration>
         <package>on</package>
@@ -51,8 +38,8 @@
     </GRAPH>
 
     <ENV>
-        <cellName>choCell</cellName>
-        <cellApps>drivers,openflow,proxyarp,events</cellApps>
+        <cellName>choTrellisCell</cellName>
+        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3,hostprobingprovider</cellApps>
     </ENV>
 
     <EVENT>
@@ -90,8 +77,16 @@
             <CLIParamNum>1</CLIParamNum>
         </TestSleep>
 
-        <IntentCheck>
+        <TestDebug>
             <status>on</status>
+            <typeIndex>4</typeIndex>
+            <typeString>TEST_DEBUG</typeString>
+            <CLI>debug-test</CLI>
+            <CLIParamNum>0</CLIParamNum>
+        </TestDebug>
+
+        <IntentCheck>
+            <status>off</status>
             <typeIndex>10</typeIndex>
             <typeString>CHECK_INTENT</typeString>
             <CLI>check-intent</CLI>
@@ -101,7 +96,7 @@
         </IntentCheck>
 
         <FlowCheck>
-            <status>on</status>
+            <status>off</status>
             <typeIndex>11</typeIndex>
             <typeString>CHECK_FLOW</typeString>
             <CLI>check-flow</CLI>
@@ -118,8 +113,8 @@
             <typeString>CHECK_TRAFFIC</typeString>
             <CLI>check-traffic</CLI>
             <CLIParamNum>0</CLIParamNum>
-            <rerunInterval>5</rerunInterval>
-            <maxRerunNum>5</maxRerunNum>
+            <rerunInterval>10</rerunInterval>
+            <maxRerunNum>10</maxRerunNum>
             <pingWait>1</pingWait>
             <pingTimeout>10</pingTimeout>
         </TrafficCheck>
@@ -140,7 +135,7 @@
             <typeString>CHECK_ONOS</typeString>
             <CLI>check-onos</CLI>
             <CLIParamNum>0</CLIParamNum>
-            <rerunInterval>5</rerunInterval>
+            <rerunInterval>10</rerunInterval>
             <maxRerunNum>5</maxRerunNum>
         </ONOSCheck>
 
@@ -184,45 +179,21 @@
             <CLIParamNum>1</CLIParamNum>
         </DeviceUp>
 
-        <AddHostIntent>
+        <PortDown>
             <status>on</status>
-            <typeIndex>30</typeIndex>
-            <typeString>APP_INTENT_HOST_ADD</typeString>
-            <CLI>add-host-intent</CLI>
-            <CLIParamNum>3</CLIParamNum>
-            <rerunInterval>5</rerunInterval>
-            <maxRerunNum>5</maxRerunNum>
-        </AddHostIntent>
+            <typeIndex>24</typeIndex>
+            <typeString>NETWORK_PORT_DOWN</typeString>
+            <CLI>port-down</CLI>
+            <CLIParamNum>2</CLIParamNum>
+        </PortDown>
 
-        <DelHostIntent>
+        <PortUp>
             <status>on</status>
-            <typeIndex>31</typeIndex>
-            <typeString>APP_INTENT_HOST_DEL</typeString>
-            <CLI>del-host-intent</CLI>
-            <CLIParamNum>3</CLIParamNum>
-            <rerunInterval>5</rerunInterval>
-            <maxRerunNum>5</maxRerunNum>
-        </DelHostIntent>
-
-        <AddPointIntent>
-            <status>on</status>
-            <typeIndex>32</typeIndex>
-            <typeString>APP_INTENT_POINT_ADD</typeString>
-            <CLI>add-point-intent</CLI>
-            <CLIParamNum>3</CLIParamNum>
-            <rerunInterval>5</rerunInterval>
-            <maxRerunNum>5</maxRerunNum>
-        </AddPointIntent>
-
-        <DelPointIntent>
-            <status>on</status>
-            <typeIndex>33</typeIndex>
-            <typeString>APP_INTENT_POINT_DEL</typeString>
-            <CLI>del-point-intent</CLI>
-            <CLIParamNum>3</CLIParamNum>
-            <rerunInterval>5</rerunInterval>
-            <maxRerunNum>5</maxRerunNum>
-        </DelPointIntent>
+            <typeIndex>25</typeIndex>
+            <typeString>NETWORK_PORT_UP</typeString>
+            <CLI>port-up</CLI>
+            <CLIParamNum>2</CLIParamNum>
+        </PortUp>
 
         <ONOSDown>
             <status>on</status>
@@ -254,16 +225,6 @@
             <maxRerunNum>5</maxRerunNum>
         </SetCfg>
 
-        <SetFlowObj>
-            <status>on</status>
-            <typeIndex>43</typeIndex>
-            <typeString>ONOS_SET_FLOWOBJ</typeString>
-            <CLI>set-flowobj</CLI>
-            <CLIParamNum>1</CLIParamNum>
-            <rerunInterval>5</rerunInterval>
-            <maxRerunNum>5</maxRerunNum>
-        </SetFlowObj>
-
         <BalanceMasters>
             <status>on</status>
             <typeIndex>44</typeIndex>
@@ -273,16 +234,6 @@
             <rerunInterval>5</rerunInterval>
             <maxRerunNum>5</maxRerunNum>
         </BalanceMasters>
-
-        <SetFlowObjCompiler>
-            <status>on</status>
-            <typeIndex>45</typeIndex>
-            <typeString>ONOS_SET_FLOWOBJ_COMPILER</typeString>
-            <CLI>set-flowobj-compiler</CLI>
-            <CLIParamNum>1</CLIParamNum>
-            <rerunInterval>5</rerunInterval>
-            <maxRerunNum>5</maxRerunNum>
-        </SetFlowObjCompiler>
 
         <addAllChecks>
             <status>on</status>
@@ -328,42 +279,6 @@
             <sleepBeforeCheck>10</sleepBeforeCheck>
         </randomDeviceGroupToggle>
 
-        <installAllHostIntents>
-            <status>on</status>
-            <typeIndex>130</typeIndex>
-            <typeString>APP_INTENT_HOST_ADD_ALL</typeString>
-            <CLI>add-all-host-intents</CLI>
-            <CLIParamNum>0</CLIParamNum>
-            <sleepBeforeCheck>10</sleepBeforeCheck>
-        </installAllHostIntents>
-
-        <removeAllHostIntents>
-            <status>on</status>
-            <typeIndex>131</typeIndex>
-            <typeString>APP_INTENT_HOST_DEL_ALL</typeString>
-            <CLI>del-all-host-intents</CLI>
-            <CLIParamNum>0</CLIParamNum>
-            <sleepBeforeCheck>5</sleepBeforeCheck>
-        </removeAllHostIntents>
-
-        <installAllPointIntents>
-            <status>on</status>
-            <typeIndex>132</typeIndex>
-            <typeString>APP_INTENT_POINT_ADD_ALL</typeString>
-            <CLI>add-all-point-intents</CLI>
-            <CLIParamNum>0</CLIParamNum>
-            <sleepBeforeCheck>10</sleepBeforeCheck>
-        </installAllPointIntents>
-
-        <removeAllPointIntents>
-            <status>on</status>
-            <typeIndex>133</typeIndex>
-            <typeString>APP_INTENT_POINT_DEL_ALL</typeString>
-            <CLI>del-all-point-intents</CLI>
-            <CLIParamNum>0</CLIParamNum>
-            <sleepBeforeCheck>5</sleepBeforeCheck>
-        </removeAllPointIntents>
-
         <randomONOSToggle>
             <status>on</status>
             <typeIndex>140</typeIndex>
@@ -386,70 +301,37 @@
     </GENERATOR>
 
     <TOPO>
-        <topo0>
-            <fileName>topoTripleIpv6.py</fileName>
-        </topo0>
-
-        <topo1>
-            <fileName>topoAttIpv6.py</fileName>
-        </topo1>
-
-        <topo2>
-            <fileName>topoChordalIpv6.py</fileName>
-        </topo2>
-
-        <topo3>
-            <fileName>topoSpineIpv6.py</fileName>
-        </topo3>
-
-        <topo4>
-            <fileName>topoRingIpv6.py</fileName>
-        </topo4>
-        <mininetArgs></mininetArgs>
-        <loadTopoSleep>5</loadTopoSleep>
+        <topo10>
+            <fileName>hagg.py</fileName>
+        </topo10>
+        <mininetArgs>--dhcp=1 --routers=1 --ipv6=1 --ipv4=1</mininetArgs>
+        <loadTopoSleep>90</loadTopoSleep>
     </TOPO>
 
-    <CASE1>
-        <setIPv6CfgSleep>5</setIPv6CfgSleep>
-    </CASE1>
+    <CASE2>
+        <fileName>hagg.json</fileName>
+        <hostFileName>hagg.host</hostFileName>
+    </CASE2>
 
-    <CASE20>
-        <linkToggleNum>5</linkToggleNum>
-        <linkDownUpInterval>1</linkDownUpInterval>
-    </CASE20>
-
-    <CASE21>
-        <linkGroupSize>5</linkGroupSize>
-        <linkDownDownInterval>1</linkDownDownInterval>
-        <linkDownUpInterval>1</linkDownUpInterval>
-    </CASE21>
-
-    <CASE40>
-        <sleepSec>10</sleepSec>
-    </CASE40>
-
-    <CASE41>
-        <sleepSec>10</sleepSec>
-    </CASE41>
+    <CASE4>
+        <lib>routinglib.py,trellislib.py,trellis_fabric.py</lib>
+        <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
+    </CASE4>
 
     <CASE70>
-        <sleepSec>2</sleepSec>
-        <addHostIntentWeight>3</addHostIntentWeight>
-        <addPointIntentWeight>3</addPointIntentWeight>
-        <linkDownWeight>3</linkDownWeight>
+        <sleepSec>30</sleepSec>
+        <addHostIntentWeight>0</addHostIntentWeight>
+        <addPointIntentWeight>0</addPointIntentWeight>
+        <linkDownWeight>0</linkDownWeight>
         <deviceDownWeight>2</deviceDownWeight>
-        <portDownWeight>0</portDownWeight>
+        <portDownWeight>3</portDownWeight>
         <onosDownWeight>1</onosDownWeight>
         <toggleFlowObj>0</toggleFlowObj>
     </CASE70>
 
     <CASE80>
         <filePath>/home/sdn/log-for-replay</filePath>
-        <sleepTime>0.1</sleepTime>
+        <sleepTime>10</sleepTime>
         <skipChecks>on</skipChecks>
     </CASE80>
-
-    <CASE90>
-        <sleepSec>60</sleepSec>
-    </CASE90>
 </PARAMS>

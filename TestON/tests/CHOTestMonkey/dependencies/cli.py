@@ -114,7 +114,7 @@ def startCLI():
 if __name__ == '__main__':
     import xml.etree.ElementTree
     try:
-        root = xml.etree.ElementTree.parse( '../CHOTestMonkey.params' ).getroot()
+        root = xml.etree.ElementTree.parse( '../CHOTestMonkey.params.trellis' ).getroot()
     except Exception:
         print "Uncaught exception!"
     for child in root:

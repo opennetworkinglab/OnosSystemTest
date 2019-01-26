@@ -2589,6 +2589,7 @@ class OnosCliDriver( CLI ):
     def checkFlowCount( self, min=0, timeout=60 ):
         count = self.getTotalFlowsNum( timeout=timeout )
         count = int( count ) if count else 0
+        main.log.debug( "found {} flows".format( count ) )
         return count if ( count > min ) else False
 
     def checkFlowsState( self, isPENDING=True, timeout=60, noExit=False ):

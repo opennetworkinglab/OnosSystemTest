@@ -368,9 +368,11 @@ class Testcaselib:
                                  kwargs={ 'min': minFlowCount },
                                  attempts=10,
                                  sleep=sleep )
+        if count == main.FALSE:
+            count == main.Cluster.active( 0 ).CLI.checkFlowCount()
         utilities.assertEquals(
                 expect=True,
-                actual=( count > 0 ),
+                actual=( count > minFlowCount ),
                 onpass="Flow count looks correct: " + str( count ),
                 onfail="Flow count looks wrong: " + str( count ) )
 
@@ -419,11 +421,13 @@ class Testcaselib:
                                  args=( dpid, minFlowCount ),
                                  attempts=5,
                                  sleep=sleep )
+        if count == main.FALSE:
+            count = main.Cluster.active( 0 ).CLI.checkFlowAddedCount( dpid )
         utilities.assertEquals(
             expect=True,
             actual=( count > minFlowCount ),
             onpass="Flow count looks correct: " + str( count ),
-            onfail="Flow count looks wrong. " )
+            onfail="Flow count looks wrong: " + str( count ) )
 
     @staticmethod
     def checkFlowEqualityByDpid( main, dpid, flowCount, sleep=10 ):
@@ -434,10 +438,11 @@ class Testcaselib:
                                  args=( dpid, flowCount, False, 1 ),
                                  attempts=5,
                                  sleep=sleep )
-
+        if count == main.FALSE:
+            count = main.Cluster.active( 0 ).CLI.checkFlowAddedCount( dpid )
         utilities.assertEquals(
                 expect=True,
-                actual=( int( count ) == flowCount ),
+                actual=( count == flowCount ),
                 onpass="Flow count looks correct: " + str( count ) ,
                 onfail="Flow count looks wrong. found {},  should be {}.".format( count, flowCount ) )
 
@@ -450,7 +455,8 @@ class Testcaselib:
                                  args=( dpid, groupCount, False, 1),
                                  attempts=5,
                                  sleep=sleep )
-
+        if count == main.FALSE:
+            count = main.Cluseter.active( 0 ).CLI.checkGroupAddedCount( dpid )
         utilities.assertEquals(
                 expect=True,
                 actual=( count == groupCount ),

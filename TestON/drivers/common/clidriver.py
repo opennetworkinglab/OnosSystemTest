@@ -156,6 +156,7 @@ class CLI( Component ):
         prompt => represents expect command prompt or output,
         timeout => timeout for command execution,
         more => to provide a key press if it is on.
+        logCmd => log the command executed if True
 
         It will return output of command exection.
         """
@@ -164,7 +165,8 @@ class CLI( Component ):
         args = utilities.parse_args( [ "CMD",
                                        "TIMEOUT",
                                        "PROMPT",
-                                       "MORE" ],
+                                       "MORE",
+                                       "LOGCMD" ],
                                      **execparams )
 
         expectPrompt = args[ "PROMPT" ] if args[ "PROMPT" ] else defaultPrompt
@@ -188,9 +190,10 @@ class CLI( Component ):
         if index == 0:
             self.LASTRSP = self.LASTRSP + \
                 self.handle.before + self.handle.after
-            main.log.info( "Executed :" + str( cmd ) +
-                           " \t\t Expected Prompt '" + str( expectPrompt ) +
-                           "' Found" )
+            if not args[ "LOGCMD" ] is False:
+                main.log.info( "Executed :" + str( cmd ) +
+                               " \t\t Expected Prompt '" + str( expectPrompt ) +
+                               "' Found" )
         elif index == 1:
             self.LASTRSP = self.LASTRSP + self.handle.before
             self.handle.send( args[ "MORE" ] )

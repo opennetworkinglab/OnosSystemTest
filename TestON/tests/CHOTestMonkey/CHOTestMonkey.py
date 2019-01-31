@@ -67,8 +67,7 @@ class CHOTestMonkey:
         try:
             onosPackage = main.params[ 'TEST' ][ 'package' ]
             karafTimeout = main.params[ 'TEST' ][ 'karafCliTimeout' ]
-            main.enableIPv6 = main.params[ 'TEST' ][ 'IPv6' ]
-            main.enableIPv6 = True if main.enableIPv6 == "on" else False
+            main.enableIPv6 = main.params[ 'TEST' ][ 'IPv6' ].lower() == "on"
             main.caseSleep = int( main.params[ 'TEST' ][ 'caseSleep' ] )
             main.onosCell = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
@@ -82,7 +81,6 @@ class CHOTestMonkey:
             for eventName in main.params[ 'EVENT' ].keys():
                 if main.params[ 'EVENT' ][ eventName ][ 'status' ] == 'on':
                     main.enabledEvents[ int( main.params[ 'EVENT' ][ eventName ][ 'typeIndex' ] ) ] = eventName
-            print main.enabledEvents
             main.graph = Graph()
             main.eventScheduler = EventScheduler()
             main.eventGenerator = EventGenerator()
@@ -102,29 +100,8 @@ class CHOTestMonkey:
                                                 cellName=main.onosCell )
         for i in range( 1, main.Cluster.numCtrls + 1 ):
             newController = Controller( i )
-            newController.setCLI( main.Cluster.active( i - 1 ).CLI )
+            newController.setCLI( main.Cluster.runningNodes[ i - 1 ].CLI )
             main.controllers.append( newController )
-
-        main.step( "Set IPv6 cfg parameters for Neighbor Discovery" )
-        setIPv6CfgSleep = int( main.params[ 'TEST' ][ 'setIPv6CfgSleep' ] )
-        if main.enableIPv6:
-            time.sleep( setIPv6CfgSleep )
-            cfgResult1 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.net.neighbour.impl.NeighbourResolutionManager",
-                                                           "ndpEnabled",
-                                                           "true" )
-            time.sleep( setIPv6CfgSleep )
-            cfgResult2 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider",
-                                                           "requestIpv6ND",
-                                                           "true" )
-        else:
-            main.log.info( "Skipped setting IPv6 cfg parameters as it is disabled in params file" )
-            cfgResult1 = main.TRUE
-            cfgResult2 = main.TRUE
-        cfgResult = cfgResult1 and cfgResult2
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=cfgResult,
-                                 onpass="ipv6NeighborDiscovery cfg is set to true",
-                                 onfail="Failed to cfg set ipv6NeighborDiscovery" )
 
         main.step( "Start a thread for the scheduler" )
         t = main.Thread( target=main.eventScheduler.startScheduler,
@@ -150,7 +127,7 @@ class CHOTestMonkey:
         with main.variableLock:
             main.threadID = main.threadID + 1
 
-        caseResult = setupResult and cfgResult
+        caseResult = setupResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=caseResult,
                                  onpass="Set up test environment PASS",
@@ -158,28 +135,118 @@ class CHOTestMonkey:
 
     def CASE1( self, main ):
         """
-        Load Mininet topology and balances all switches
+        Set IPv6 cfg parameters for Neighbor Discovery
+        """
+        main.step( "Set IPv6 cfg parameters for Neighbor Discovery" )
+        setIPv6CfgSleep = int( main.params[ 'CASE1' ][ 'setIPv6CfgSleep' ] )
+        if main.enableIPv6:
+            time.sleep( setIPv6CfgSleep )
+            cfgResult1 = main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.net.neighbour.impl.NeighbourResolutionManager",
+                                                              "ndpEnabled",
+                                                              "true" )
+            time.sleep( setIPv6CfgSleep )
+            cfgResult2 = main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.provider.host.impl.HostLocationProvider",
+                                                              "requestIpv6ND",
+                                                              "true" )
+        else:
+            main.log.info( "Skipped setting IPv6 cfg parameters as it is disabled in params file" )
+            cfgResult1 = main.TRUE
+            cfgResult2 = main.TRUE
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=cfgResult,
+                                 onpass="ipv6NeighborDiscovery cfg is set to true",
+                                 onfail="Failed to cfg set ipv6NeighborDiscovery" )
+
+    def CASE2( self, main ):
+        """
+        Load network configuration files
+        """
+        import json
+        main.case( "Load json files for configuring the network" )
+
+        main.step( "Load json files for configuring the network" )
+        cfgResult = main.TRUE
+        jsonFileName = main.params[ 'CASE2' ][ 'fileName' ]
+        jsonFile = main.testDir + "/dependencies/topologies/json/" + jsonFileName
+        with open( jsonFile ) as cfg:
+            main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
+
+        main.step( "Load host files" )
+        hostFileName = main.params[ 'CASE2' ][ 'hostFileName' ]
+        hostFile = main.testDir + "/dependencies/topologies/host/" + hostFileName
+        with open( hostFile ) as cfg:
+            main.expectedHosts = json.load( cfg )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=cfgResult,
+                                 onpass="Correctly loaded network configurations",
+                                 onfail="Failed to load network configurations" )
+
+    def CASE4( self, main ):
+        """
+        Copy topology lib and config files to Mininet node
         """
         import re
+        main.case( "Copy topology lib and config files to Mininet node" )
+
+        copyResult = main.TRUE
+        main.step( "Copy topology lib files to Mininet node" )
+        for libFileName in main.params[ 'CASE4' ][ 'lib' ].split(","):
+            libFile = main.testDir + "/dependencies/topologies/lib/" + libFileName
+            copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
+                                                            libFile,
+                                                            main.Mininet1.home + "/custom",
+                                                            direction="to" )
+
+        main.step( "Copy topology config files to Mininet node" )
+        controllerIPs = [ ctrl.ipAddress for ctrl in main.Cluster.runningNodes ]
+        index = 0
+        for confFileName in main.params[ 'CASE4' ][ 'conf' ].split(","):
+            confFile = main.testDir + "/dependencies/topologies/conf/" + confFileName
+            # Update zebra configurations with correct ONOS instance IP
+            if confFileName in [ "zebradbgp1.conf", "zebradbgp2.conf" ]:
+                ip = controllerIPs[ index ]
+                index = ( index + 1 ) % len( controllerIPs )
+                with open( confFile ) as f:
+                    s = f.read()
+                s = re.sub( r"(fpm connection ip).*(port 2620)", r"\1 " + ip + r" \2", s )
+                with open( confFile, "w" ) as f:
+                    f.write( s )
+            copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
+                                                            confFile,
+                                                            "~/",
+                                                            direction="to" )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=copyResult,
+                                 onpass="Successfully copied topo lib/conf files",
+                                 onfail="Failed to copy topo lib/conf files" )
+
+    def CASE5( self, main ):
+        """
+        Load Mininet topology and balances all switches
+        """
         import time
-        import copy
-
-        main.topoIndex = "topo" + str( main.params[ 'TEST' ][ 'topo' ] )
-
+        import re
         main.log.report( "Load Mininet topology and Balance all Mininet switches across controllers" )
         main.log.report( "________________________________________________________________________" )
         main.case( "Assign and Balance all Mininet switches across controllers" )
 
+        main.step( "Copy Mininet topology files" )
+        main.topoIndex = "topo" + str( main.params[ 'TEST' ][ 'topo' ] )
+        topoFileName = main.params[ 'TOPO' ][ main.topoIndex ][ 'fileName' ]
+        topoFile = main.testDir + "/dependencies/topologies/" + topoFileName
+        copyResult = main.ONOSbench.scp( main.Mininet1, topoFile, main.Mininet1.home + "/custom", direction="to" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=copyResult,
+                                 onpass="Successfully copied topo files",
+                                 onfail="Failed to copy topo files" )
+
         main.step( "Start Mininet topology" )
-        newTopo = main.params[ 'TOPO' ][ main.topoIndex ][ 'fileName' ]
-        mininetDir = main.Mininet1.home + "/custom/"
-        topoPath = main.testDir + "/dependencies/topologies/" + newTopo
-        main.ONOSbench.secureCopy( main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to" )
-        topoPath = mininetDir + newTopo
-        startStatus = main.Mininet1.startNet( topoFile=topoPath )
-        main.mininetSwitches = main.Mininet1.getSwitches()
-        main.mininetHosts = main.Mininet1.getHosts()
-        main.mininetLinks = main.Mininet1.getLinks( timeout=60 )
+        startStatus = main.Mininet1.startNet( topoFile=main.Mininet1.home + "/custom/" + topoFileName,
+                                              args=main.params[ 'TOPO' ][ 'mininetArgs' ] )
+        main.mininetSwitches = main.Mininet1.getSwitches( switchClasses=r"(OVSSwitch)" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=startStatus,
                                  onpass="Start Mininet topology test PASS",
@@ -191,7 +258,7 @@ class CHOTestMonkey:
             ips = main.Cluster.getIps()
             main.Mininet1.assignSwController( sw=switchName, ip=ips )
             response = main.Mininet1.getSwController( switchName )
-            print( "Response is " + str( response ) )
+            main.log.debug( "Response is " + str( response ) )
             if re.search( "tcp:" + main.Cluster.active( 0 ).ipAddress, response ):
                 switchMastership = switchMastership and main.TRUE
             else:
@@ -201,13 +268,22 @@ class CHOTestMonkey:
                                  onpass="Assign switches to controllers test PASS",
                                  onfail="Assign switches to controllers test FAIL" )
         # Waiting here to make sure topology converges across all nodes
-        sleep = int( main.params[ 'TEST' ][ 'loadTopoSleep' ] )
+        sleep = int( main.params[ 'TOPO' ][ 'loadTopoSleep' ] )
         time.sleep( sleep )
 
         main.step( "Balance devices across controllers" )
         balanceResult = main.Cluster.active( 0 ).CLI.balanceMasters()
         # giving some breathing time for ONOS to complete re-balance
-        time.sleep( sleep )
+        time.sleep( 5 )
+
+        # Get mininet hosts and links
+        main.mininetHosts = main.Mininet1.getHosts()
+        if hasattr( main, "expectedHosts" ):
+            main.mininetHosts = { key: value for key, value in main.mininetHosts.items() if key in main.expectedHosts[ "network" ].keys() }
+        main.mininetLinks = main.Mininet1.getLinks( timeout=60 )
+        main.mininetLinks = [ link for link in main.mininetLinks if
+                              link[ 'node1' ] in main.mininetHosts.keys() + main.mininetSwitches.keys() and
+                              link[ 'node2' ] in main.mininetHosts.keys() + main.mininetSwitches.keys() ]
 
         caseResult = ( startStatus and switchMastership and balanceResult )
         utilities.assert_equals( expect=main.TRUE,
@@ -215,7 +291,7 @@ class CHOTestMonkey:
                                  onpass="Starting new Att topology test PASS",
                                  onfail="Starting new Att topology test FAIL" )
 
-    def CASE2( self, main ):
+    def CASE6( self, main ):
         """
         Collect and store device and link data from ONOS
         """
@@ -225,6 +301,7 @@ class CHOTestMonkey:
         main.log.report( "Collect and Store topology details from ONOS" )
         main.log.report( "____________________________________________________________________" )
         main.case( "Collect and Store Topology Details from ONOS" )
+
         topoResult = main.TRUE
         topologyOutput = main.Cluster.active( 0 ).CLI.topology()
         topologyResult = main.Cluster.active( 0 ).CLI.getTopology( topologyOutput )
@@ -238,13 +315,13 @@ class CHOTestMonkey:
             dpidToName = {}
             for key, value in main.mininetSwitches.items():
                 dpidToName[ 'of:' + str( value[ 'dpid' ] ) ] = key
-            devicesRaw = main.Cluster.active( 0 ).CLI.devices()
-            devices = json.loads( devicesRaw )
+            main.devicesRaw = main.Cluster.active( 0 ).CLI.devices()
+            devices = json.loads( main.devicesRaw )
             deviceInitIndex = 0
             for device in devices:
                 name = dpidToName[ device[ 'id' ] ]
                 newDevice = Device( deviceInitIndex, name, device[ 'id' ] )
-                print newDevice
+                main.log.info( 'New device: {}'.format( newDevice ) )
                 main.devices.append( newDevice )
                 deviceInitIndex += 1
             utilities.assert_equals( expect=main.TRUE,
@@ -254,8 +331,8 @@ class CHOTestMonkey:
 
             main.step( "Collect and store link data" )
             stepResult = main.TRUE
-            linksRaw = main.Cluster.active( 0 ).CLI.links()
-            links = json.loads( linksRaw )
+            main.linksRaw = main.Cluster.active( 0 ).CLI.links()
+            links = json.loads( main.linksRaw )
             linkInitIndex = 0
             for link in links:
                 for device in main.devices:
@@ -265,7 +342,7 @@ class CHOTestMonkey:
                         deviceB = device
                 assert deviceA is not None and deviceB is not None
                 newLink = Link( linkInitIndex, deviceA, link[ 'src' ][ 'port' ], deviceB, link[ 'dst' ][ 'port' ] )
-                print newLink
+                main.log.info( 'New link: {}'.format( newLink ) )
                 main.links.append( newLink )
                 linkInitIndex += 1
             # Set backward links and outgoing links of devices
@@ -301,7 +378,7 @@ class CHOTestMonkey:
             main.log.info( "Topology does not match, exiting test..." )
             main.cleanAndExit()
 
-    def CASE3( self, main ):
+    def CASE7( self, main ):
         """
         Collect and store host data from ONOS
         """
@@ -310,28 +387,41 @@ class CHOTestMonkey:
 
         main.log.report( "Collect and store host adta from ONOS" )
         main.log.report( "______________________________________________" )
-        main.case( "Use fwd app and pingall to discover all the hosts, then collect and store host data" )
+        main.case( "Use fwd app and pingall to discover all the hosts if necessary, then collect and store host data" )
 
-        main.step( "Enable Reactive forwarding" )
-        appResult = main.controllers[ 0 ].CLI.activateApp( "org.onosproject.fwd" )
-        cfgResult1 = main.TRUE
-        cfgResult2 = main.TRUE
-        if main.enableIPv6:
-            cfgResult1 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
-            cfgResult2 = main.controllers[ 0 ].CLI.setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
-        stepResult = appResult and cfgResult1 and cfgResult2
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully enabled reactive forwarding",
-                                 onfail="Failed to enable reactive forwarding" )
+        if main.params[ 'TEST' ][ 'dataPlaneConnectivity' ] == 'False':
+            main.step( "Enable Reactive forwarding" )
+            appResult = main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.fwd" )
+            cfgResult1 = main.TRUE
+            cfgResult2 = main.TRUE
+            if main.enableIPv6:
+                cfgResult1 = main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+                cfgResult2 = main.Cluster.active( 0 ).CLI.setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
+            stepResult = appResult and cfgResult1 and cfgResult2
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass="Successfully enabled reactive forwarding",
+                                     onfail="Failed to enable reactive forwarding" )
 
-        main.step( "Discover hosts using pingall" )
+            main.step( "Discover hosts using pingall" )
+            main.Mininet1.pingall()
+            if main.enableIPv6:
+                ping6Result = main.Mininet1.pingall( protocol="IPv6" )
+
+            main.step( "Disable Reactive forwarding" )
+            appResult = main.Cluster.active( 0 ).CLI.deactivateApp( "org.onosproject.fwd" )
+            stepResult = appResult
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass="Successfully deactivated fwd app",
+                                     onfail="Failed to deactivate fwd app" )
+
+        main.step( "Verify host discovery" )
         stepResult = main.TRUE
-        main.Mininet1.pingall()
-        if main.enableIPv6:
-            ping6Result = main.Mininet1.pingall( protocol="IPv6" )
-        hosts = main.controllers[ 0 ].CLI.hosts()
-        hosts = json.loads( hosts )
+        main.hostsRaw = main.Cluster.active( 0 ).CLI.hosts()
+        hosts = json.loads( main.hostsRaw )
+        if hasattr( main, "expectedHosts" ):
+            hosts = [ host for host in hosts if host[ 'id' ] in main.expectedHosts[ 'onos' ].keys() ]
         if not len( hosts ) == len( main.mininetHosts ):
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
@@ -341,14 +431,6 @@ class CHOTestMonkey:
         if not stepResult:
             main.log.debug( hosts )
             main.cleanAndExit()
-
-        main.step( "Disable Reactive forwarding" )
-        appResult = main.controllers[ 0 ].CLI.deactivateApp( "org.onosproject.fwd" )
-        stepResult = appResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully deactivated fwd app",
-                                 onfail="Failed to deactivate fwd app" )
 
         main.step( "Collect and store host data" )
         stepResult = main.TRUE
@@ -361,33 +443,52 @@ class CHOTestMonkey:
         hostInitIndex = 0
         for host in hosts:
             name = macToName[ host[ 'mac' ] ]
-            dpid = host[ 'locations' ][ 0 ][ 'elementId' ]
-            device = dpidToDevice[ dpid ]
+            devices = {}
+            for location in host[ 'locations' ]:
+                device = dpidToDevice[ location[ 'elementId' ] ]
+                devices[ device ] = location[ 'port' ]
             newHost = Host( hostInitIndex,
                             name, host[ 'id' ], host[ 'mac' ],
-                            device, host[ 'locations' ][ 0 ][ 'port' ],
+                            devices,
                             host[ 'vlan' ], host[ 'ipAddresses' ] )
-            print newHost
+            main.log.info( 'New host: {}'.format( newHost ) )
             main.hosts.append( newHost )
-            main.devices[ device.index ].hosts.append( newHost )
             hostInitIndex += 1
+            for location in host[ 'locations' ]:
+                device = dpidToDevice[ location[ 'elementId' ] ]
+                main.devices[ device.index ].hosts[ newHost ] = location[ 'port' ]
+
+        # Collect IPv4 and IPv6 hosts
+        main.ipv4Hosts = []
+        main.ipv6Hosts = []
+        for host in main.hosts:
+            if any( re.match( str( main.params[ 'TEST' ][ 'ipv6Regex' ] ), ipAddress ) for ipAddress in host.ipAddresses ):
+                main.ipv6Hosts.append( host )
+            if any( re.match( str( main.params[ 'TEST' ][ 'ipv4Regex' ] ), ipAddress ) for ipAddress in host.ipAddresses ):
+                main.ipv4Hosts.append( host )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully collected and stored host data",
                                  onfail="Failed to collect and store host data" )
 
         main.step( "Create one host component for each host and then start host cli" )
+        startCLIResult = main.TRUE
         for host in main.hosts:
             main.Mininet1.createHostComponent( host.name )
             hostHandle = getattr( main, host.name )
             main.log.info( "Starting CLI on host " + str( host.name ) )
-            startCLIResult = hostHandle.startHostCli()
+            startCLIResult = startCLIResult and hostHandle.startHostCli()
             host.setHandle( hostHandle )
-            stepResult = startCLIResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=startCLIResult,
-                                     onpass="Host CLI started",
-                                     onfail="Failed to start host CLI" )
+            if main.params[ 'TEST' ][ 'dataPlaneConnectivity' ] == 'True':
+                # Hosts should already be able to ping each other
+                if host in main.ipv4Hosts:
+                    host.correspondents += main.ipv4Hosts
+                if host in main.ipv6Hosts:
+                    host.correspondents += main.ipv6Hosts
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=startCLIResult,
+                                 onpass="Host CLI started",
+                                 onfail="Failed to start host CLI" )
 
     def CASE10( self, main ):
         """
@@ -711,8 +812,10 @@ class CHOTestMonkey:
         pointIntentNum = 0
         downDeviceNum = 0
         downLinkNum = 0
+        downPortNum = 0
+        downOnosNum = 0
         flowObj = False
-        upControllers = [ 1, 2, 3 ]
+        upControllers = range( 1, int( main.params[ 'TEST' ][ 'numCtrl' ] ) + 1 )
         while True:
             events = []
             for i in range( int( main.params[ 'CASE70' ][ 'toggleFlowObj' ] ) ):
@@ -725,14 +828,23 @@ class CHOTestMonkey:
                 events.append( 'link-down' )
             for i in range( int( main.params[ 'CASE70' ][ 'deviceDownWeight' ] ) ):
                 events.append( 'device-down' )
+            for i in range( int( main.params[ 'CASE70' ][ 'portDownWeight' ] ) ):
+                events.append( 'port-down' )
+            if downOnosNum == 0:
+                for i in range( int( main.params[ 'CASE70' ][ 'onosDownWeight' ] ) ):
+                    events.append( 'onos-down' )
             for i in range( int( pow( hostIntentNum, 1.5 ) / 100 ) ):
                 events.append( 'del-host-intent' )
             for i in range( int( pow( pointIntentNum, 1.5 ) / 100 ) ):
                 events.append( 'del-point-intent' )
-            for i in range( pow( 2, downLinkNum ) - 1 ):
+            for i in range( pow( 4, downLinkNum ) - 1 ):
                 events.append( 'link-up' )
-            for i in range( pow( 5, downDeviceNum ) - 1 ):
+            for i in range( pow( 4, downDeviceNum ) - 1 ):
                 events.append( 'device-up' )
+            for i in range( pow( 4, downPortNum ) - 1 ):
+                events.append( 'port-up' )
+            for i in range( pow( 4, downOnosNum ) - 1 ):
+                events.append( 'onos-up' )
             main.log.debug( events )
             event = random.sample( events, 1 )[ 0 ]
             if event == 'add-host-intent':
@@ -771,6 +883,19 @@ class CHOTestMonkey:
             elif event == 'device-up':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_DEVICE_UP, EventScheduleMethod().RUN_BLOCK, 'random' )
                 downDeviceNum -= 1
+            elif event == 'port-down':
+                main.eventGenerator.triggerEvent( EventType().NETWORK_PORT_DOWN, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
+                downPortNum += 1
+            elif event == 'port-up':
+                main.eventGenerator.triggerEvent( EventType().NETWORK_PORT_UP, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
+                downPortNum -= 1
+            elif event == 'onos-down':
+                main.eventGenerator.triggerEvent( EventType().ONOS_ONOS_DOWN, EventScheduleMethod().RUN_BLOCK, 1 )
+                downOnosNum += 1
+            elif event == 'onos-up':
+                main.eventGenerator.triggerEvent( EventType().ONOS_ONOS_UP, EventScheduleMethod().RUN_BLOCK, 1 )
+                downOnosNum -= 1
+                main.eventGenerator.triggerEvent( EventType().ONOS_BALANCE_MASTERS, EventScheduleMethod().RUN_BLOCK )
             elif event == 'toggle-flowobj':
                 if not flowObj:
                     main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'true' )
@@ -828,7 +953,7 @@ class CHOTestMonkey:
                     main.eventGenerator.triggerEvent( eventIndex, EventScheduleMethod().RUN_BLOCK, *args )
                     time.sleep( float( main.params[ 'CASE80' ][ 'sleepTime' ] ) )
         except Exception as e:
-            print e
+            main.log.error( "Uncaught exception: {}".format( e ) )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=main.caseResult,
                                  onpass="Replay from log file passed",

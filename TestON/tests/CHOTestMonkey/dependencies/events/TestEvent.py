@@ -85,3 +85,16 @@ class TestSleep( TestEvent ):
         sleepTime = int( args[ 0 ] )
         time.sleep( sleepTime )
         return result
+
+
+class TestDebug( TestEvent ):
+
+    def __init__( self ):
+        TestEvent.__init__( self )
+        self.typeString = main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeString' ]
+        self.typeIndex = int( main.params[ 'EVENT' ][ self.__class__.__name__ ][ 'typeIndex' ] )
+
+    def startTestEvent( self, args=None ):
+        result = EventStates().PASS
+        main.stop()
+        return result

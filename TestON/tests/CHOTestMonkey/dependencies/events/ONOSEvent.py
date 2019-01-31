@@ -68,7 +68,7 @@ class ONOSDown( ONOSEvent ):
                 return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.ONOSIndex ) )
         with main.ONOSbenchLock:
-            result = main.ONOSbench.onosStop( main.controllers[ self.ONOSIndex - 1 ].ip )
+            result = main.ONOSbench.onosDie( main.controllers[ self.ONOSIndex - 1 ].ip )
         if not result:
             main.log.warn( "%s - failed to bring down ONOS" % ( self.typeString ) )
             return EventStates().FAIL

@@ -636,8 +636,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ": ONOS timeout" )
             if debug:
                 main.log.debug( self.handle.before )
-            self.handle.send( "\x03" )
-            self.handle.expect( self.karafPrompt )
+            self.exitFromCmd( self.karafPrompt, 100 )
             return None
         except IndexError:
             main.log.exception( self.name + ": Object not as expected" )

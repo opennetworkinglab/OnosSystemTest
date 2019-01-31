@@ -134,7 +134,7 @@ class TopoCheck( CheckEvent ):
         checkResult = EventStates().PASS
         upLinkNum = 0
         upDeviceNum = 0
-        upHostNum = 0
+        upHostList = []
         with main.variableLock:
             for link in main.links:
                 if not link.isDown() and not link.isRemoved():
@@ -144,11 +144,22 @@ class TopoCheck( CheckEvent ):
                     upDeviceNum += 1
             for host in main.hosts:
                 if not host.isDown() and not host.isRemoved():
-                    upHostNum += 1
+                    upHostList.append( host )
         clusterNum = 1
+        # Verify host IPs
+        if hasattr( main, "expectedHosts" ):
+            for host in upHostList:
+                ipResult = main.Mininet1.verifyHostIp( hostList=[ host.name ],
+                                                       prefix=main.expectedHosts[ 'network' ][ host.name ],
+                                                       update=False )
+                if not ipResult:
+                    checkResult = EventStates().FAIL
+                    main.log.warn( "Topo Check - Failed to verify IP address on host %s" % ( host.name ) )
+        '''
         with main.mininetLock:
             graphDictMininet = main.Mininet1.getGraphDict( useId=True, switchClasses=r"(OVSSwitch)",
                                                            excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ] )
+        '''
         for controller in main.controllers:
             if controller.isUp():
                 with controller.CLILock:
@@ -186,9 +197,17 @@ class TopoCheck( CheckEvent ):
                         hosts = json.loads( hosts )
                         if hasattr( main, "expectedHosts" ):
                             hosts = [ host for host in hosts if host[ 'id' ] in main.expectedHosts[ 'onos' ].keys() ]
-                        if not len( hosts ) == upHostNum:
+                        if not len( hosts ) == len( upHostList ):
                             # checkResult = EventStates().FAIL
-                            main.log.warn( "Topo Check - host number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, upHostNum, len( hosts ) ) )
+                            main.log.warn( "Topo Check - host number discoverd by ONOS%s is incorrect: %s expected and %s actual" % ( controller.index, len( upHostList ), len( hosts ) ) )
+                        # Check Host IPs
+                        if hasattr( main, "expectedHosts" ):
+                            for host in upHostList:
+                                ipResult = controller.CLI.verifyHostIp( hostList=[ host.id ],
+                                                                        prefix=main.expectedHosts[ 'onos' ][ host.id ] )
+                                if not ipResult:
+                                    checkResult = EventStates().FAIL
+                                    main.log.warn( "Topo Check - ONOS%s failed to verify IP address on host %s" % ( controller.index, host.id ) )
                         # Check clusters
                         clusters = controller.CLI.clusters()
                         clusters = json.loads( clusters )

@@ -1931,7 +1931,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getSwitchRandom( self, timeout=60, nonCut=True, switchClasses=None, excludeNodes=[] ):
+    def getSwitchRandom( self, timeout=60, nonCut=True, switchClasses=None, excludeNodes=[], excludeSwitches=[] ):
         """
         Randomly get a switch from Mininet topology.
         If nonCut is True, it gets a list of non-cut switches (the deletion
@@ -1940,6 +1940,7 @@ class MininetCliDriver( Emulator ):
         it just randomly returns one switch from all current switches in
         Mininet.
         excludeNodes will be pased to getGraphDict method
+        Switches specified in excludeSwitches will be excluded
         Returns the name of the chosen switch.
         """
         import random
@@ -1958,6 +1959,7 @@ class MininetCliDriver( Emulator ):
                     return None
                 self.graph.update( graphDict )
                 candidateSwitches = self.graph.getNonCutVertices()
+                candidateSwitches = [ switch for switch in candidateSwitches if switch not in excludeSwitches ]
             if candidateSwitches is None:
                 return None
             elif len( candidateSwitches ) == 0:

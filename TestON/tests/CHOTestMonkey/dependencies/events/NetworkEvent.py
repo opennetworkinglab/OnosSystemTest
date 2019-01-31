@@ -188,9 +188,14 @@ class DeviceEvent( Event ):
             if args[ 0 ] == 'random':
                 import random
                 if self.typeIndex == EventType().NETWORK_DEVICE_DOWN:
+                    if main.params[ 'TOPO' ][ 'excludeSwitches' ]:
+                        excludeSwitches = main.params[ 'TOPO' ][ 'excludeSwitches' ].split( ',' )
+                    else:
+                        excludeSwitches = []
                     with main.mininetLock:
                         switchRandom = main.Mininet1.getSwitchRandom( switchClasses=r"(OVSSwitch)",
-                                                                      excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ] )
+                                                                      excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ],
+                                                                      excludeSwitches=excludeSwitches )
                     if switchRandom is None:
                         main.log.warn( "No switch available, aborting event" )
                         return EventStates().ABORT

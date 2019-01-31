@@ -6,11 +6,13 @@
     # 5. Load topology and balances all switches
     # 6. Collect and store device and link data from ONOS
     # 7. Collect and store host data from ONOS
+    # 10. Run all enabled checks
     # 70. Run randomly generated events
+    # 80. Replay events from log file
     # 100. Do nothing
 
     <testcases>
-        0,2,4,5,6,7,70
+        0,2,4,5,6,7,10,70,100
     </testcases>
 
     <GIT>
@@ -114,7 +116,7 @@
             <CLI>check-traffic</CLI>
             <CLIParamNum>0</CLIParamNum>
             <rerunInterval>10</rerunInterval>
-            <maxRerunNum>10</maxRerunNum>
+            <maxRerunNum>5</maxRerunNum>
             <pingWait>1</pingWait>
             <pingTimeout>10</pingTimeout>
         </TrafficCheck>
@@ -305,7 +307,8 @@
             <fileName>hagg.py</fileName>
         </topo10>
         <mininetArgs>--dhcp=1 --routers=1 --ipv6=1 --ipv4=1</mininetArgs>
-        <loadTopoSleep>90</loadTopoSleep>
+        <loadTopoSleep>120</loadTopoSleep>
+        <excludeSwitches>leaf5</excludeSwitches>
     </TOPO>
 
     <CASE2>
@@ -319,7 +322,7 @@
     </CASE4>
 
     <CASE70>
-        <sleepSec>30</sleepSec>
+        <sleepSec>60</sleepSec>
         <addHostIntentWeight>0</addHostIntentWeight>
         <addPointIntentWeight>0</addPointIntentWeight>
         <linkDownWeight>0</linkDownWeight>

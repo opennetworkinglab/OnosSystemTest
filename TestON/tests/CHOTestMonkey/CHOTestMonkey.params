@@ -407,6 +407,7 @@
         </topo4>
         <mininetArgs></mininetArgs>
         <loadTopoSleep>5</loadTopoSleep>
+        <excludeSwitches></excludeSwitches>
     </TOPO>
 
     <CASE1>

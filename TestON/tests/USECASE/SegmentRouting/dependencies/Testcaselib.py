@@ -451,7 +451,7 @@ class Testcaselib:
                                  attempts=5,
                                  sleep=sleep )
         if count == main.FALSE:
-            count = main.Cluseter.active( 0 ).CLI.checkGroupAddedCount( dpid )
+            count = main.Cluster.active( 0 ).CLI.checkGroupAddedCount( dpid )
         utilities.assertEquals(
                 expect=True,
                 actual=( count == groupCount ),

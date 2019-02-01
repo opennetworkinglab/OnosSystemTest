@@ -109,8 +109,8 @@ class FlowCheck( CheckEvent ):
                     switchList = []
                     for device in main.devices:
                         switchList.append( device.name )
-                    with main.mininetLock:
-                        flowCompareResult = main.Mininet1.checkFlowId( switchList, flowIDList, debug=False )
+                    with main.networkLock:
+                        flowCompareResult = main.Network.checkFlowId( switchList, flowIDList, debug=False )
                     if not flowCompareResult:
                         main.log.warn( "Flow Check - flows on ONOS%s do not match that in Mininet" % ( controller.index ) )
                         checkResult = EventStates().FAIL
@@ -149,16 +149,16 @@ class TopoCheck( CheckEvent ):
         # Verify host IPs
         if hasattr( main, "expectedHosts" ):
             for host in upHostList:
-                ipResult = main.Mininet1.verifyHostIp( hostList=[ host.name ],
+                ipResult = main.Network.verifyHostIp( hostList=[ host.name ],
                                                        prefix=main.expectedHosts[ 'network' ][ host.name ],
                                                        update=False )
                 if not ipResult:
                     checkResult = EventStates().FAIL
                     main.log.warn( "Topo Check - Failed to verify IP address on host %s" % ( host.name ) )
         '''
-        with main.mininetLock:
-            graphDictMininet = main.Mininet1.getGraphDict( useId=True, switchClasses=r"(OVSSwitch)",
-                                                           excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ] )
+        with main.networkLock:
+            graphDictMininet = main.Network.getGraphDict( useId=True,
+                                                          excludeNodes=main.excludeNodes )
         '''
         for controller in main.controllers:
             if controller.isUp():

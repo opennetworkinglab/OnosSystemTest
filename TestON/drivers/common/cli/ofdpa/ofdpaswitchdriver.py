@@ -38,6 +38,7 @@ class OFDPASwitchDriver( CLI ):
         """
         super( CLI, self ).__init__()
         self.name = None
+        self.shortName = None
         self.handle = None
         self.prompt = "~#"
         # Respect to bin folder
@@ -46,6 +47,8 @@ class OFDPASwitchDriver( CLI ):
         self.tempDirectory = "/tmp/"
         self.conf = "ofagent.conf"
         self.switchDirectory = "/etc/ofagent/"
+        self.ports = []
+        self.isup = False
 
     def connect( self, **connectargs ):
         """
@@ -57,9 +60,19 @@ class OFDPASwitchDriver( CLI ):
                 vars( self )[ key ] = connectargs[ key ]
             # Get the name
             self.name = self.options[ 'name' ]
+            self.shortName = self.options[ 'shortName' ]
             # Get the dpid
             self.dpid = self.options[ 'dpid' ]
             # Get ofagent patch
+            for key, value in self.options.items():
+                if re.match( 'link[\d]+', key ):
+                    self.ports.append( { 'enabled': True,
+                                         'ips': [ None ],
+                                         'mac': None,
+                                         'name': None,
+                                         'node2': value[ 'node2' ],
+                                         'port2': value[ 'port2' ],
+                                         'of_port': value[ 'port1' ] } )
             if 'confDir' in self.options:
                 self.switchDirectory = self.options[ 'confDir' ]
             # Parse the IP address
@@ -165,7 +178,7 @@ class OFDPASwitchDriver( CLI ):
                 onosIp = "-t " + str( ip )
             elif isinstance( ip, types.ListType ):
                 for ipAddress in ip:
-                        onosIp += "-t " + str( ipAddress ) + " "
+                    onosIp += "-t " + str( ipAddress ) + " "
             else:
                 main.log.error( self.name + ": Invalid ip address" )
                 return main.FALSE
@@ -189,6 +202,10 @@ class OFDPASwitchDriver( CLI ):
                 kwargs={},
                 attempts=10,
                 sleep=10)
+            if not assignResult:
+                self.isup = False
+            else:
+                self.isup = True
             # Done return true
             return assignResult
         # Errors handling
@@ -221,10 +238,21 @@ class OFDPASwitchDriver( CLI ):
         """
         Create a backup file of the old configuration on the switch
         """
-        self.handle.sendline( "" )
-        self.handle.expect( self.prompt )
-        self.handle.sendline( "cp %s%s %s%s.backup" % (self.switchDirectory, self.conf, self.switchDirectory, self.conf) )
-        self.handle.expect( self.prompt )
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "cp %s%s %s%s.backup" % (self.switchDirectory, self.conf, self.switchDirectory, self.conf) )
+            self.handle.expect( self.prompt )
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
 
     def pushCfg( self ):
         """
@@ -236,23 +264,75 @@ class OFDPASwitchDriver( CLI ):
         os.system( "scp " + self.tempDirectory + self.conf + " " +
                    self.user_name + "@" + self.ip_address + ":" + self.switchDirectory)
 
+    def ofagentIsRunning( self ):
+        """
+        Return main.TRUE if service ofagentd is running on the
+        switch; otherwise main.FALSE
+        """
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "service ofagentd status" )
+            self.handle.expect( self.prompt )
+            response = self.handle.before
+            if "ofagentd is running" in response:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def startOfAgent( self ):
         """
         Start the ofagent on the device
         """
-        self.handle.sendline( "" )
-        self.handle.expect( self.prompt )
-        self.handle.sendline( "service ofagentd start" )
-        self.handle.expect( self.prompt )
+        try:
+            if self.ofagentIsRunning():
+                main.log.warn( self.name + ": ofagentd is already running" )
+                return main.TRUE
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "service ofagentd start" )
+            self.handle.expect( self.prompt )
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
 
     def stopOfAgent( self ):
         """
         Stop the ofagent on the device
         """
-        self.handle.sendline( "" )
-        self.handle.expect( self.prompt )
-        self.handle.sendline( "service ofagentd stop" )
-        self.handle.expect( self.prompt )
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "service ofagentd stop" )
+            self.handle.expect( self.prompt )
+            self.isup = False
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
 
     def dumpFlows( self ):
         """
@@ -318,19 +398,89 @@ class OFDPASwitchDriver( CLI ):
         Enable all the ports on the devices
         It needs to wait for the boot
         """
-        self.handle.sendline( "" )
-        self.handle.expect( self.prompt )
-        self.handle.sendline( "client_port_table_dump" )
-        self.handle.expect( self.prompt )
-        response = self.handle.before
-        if "Error from ofdpaClientInitialize()" in response:
-            main.log.warn( self.name + ": Not yet started" )
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "client_port_table_dump" )
+            self.handle.expect( self.prompt )
+            response = self.handle.before
+            if "Error from ofdpaClientInitialize()" in response:
+                main.log.warn( self.name + ": Not yet started" )
+                return main.FALSE
+            # Change port speed
+            self.handle.sendline( "sh portspeed" )
+            self.handle.expect( self.prompt )
+            response = self.handle.before
+            if "Failure calling" in response:
+                main.log.warn( self.name + ": failed to change port speed" )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
             return main.FALSE
-        # Change port speed
-        self.handle.sendline( "sh portspeed" )
-        self.handle.expect( self.prompt )
-        response = self.handle.before
-        if "Failure calling" in response:
-            main.log.warn( self.name + ": failed to change port speed" )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def setPortSpeed( self, index, speed=40000 ):
+        """
+        Run client_drivshell on the switch to set speed for a
+        specific port
+        index: port index, e.g. 1
+        speed: port speed, e.g. 40000
+        """
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            cmd = "client_drivshell port {} sp={}".format( index, speed )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
+            response = self.handle.before
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
             return main.FALSE
-        return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def updatePorts( self ):
+        """
+        Get latest port status on the switch by running
+        client_port_table_dump commmand and parsing the output
+        """
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "client_port_table_dump" )
+            self.handle.expect( self.prompt )
+            ports = self.handle.before
+            if "Error from ofdpaClientInitialize()" in ports:
+                main.log.warn( self.name + ": Not yet started" )
+                return main.FALSE
+            ports = re.findall( r"0x[\d]+.*port[\d]+:\r\r\n.*\r\r\n.*PeerFeature:.*\r\r\n", ports )
+            for port in ports:
+                m = re.match( r".*port([\d]+):\r\r\n.*state = (.*), mac", port )
+                index = m.group( 1 )
+                enabled = True if m.group( 2 ) == '0x00000000' else False
+                for p in self.ports:
+                    if p[ 'of_port' ] == index:
+                        p[ 'enabled' ] = enabled
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

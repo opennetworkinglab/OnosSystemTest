@@ -314,7 +314,6 @@ class AddPointIntent( PointIntentEvent ):
     def startPointIntentEvent( self ):
         try:
             assert self.deviceA is not None and self.deviceB is not None
-            controller = main.controllers[ self.CLIIndex - 1 ]
             # TODO: support multiple hosts under one device
             # Check whether there already exists some intent for the device pair
             # For now we should avoid installing overlapping intents

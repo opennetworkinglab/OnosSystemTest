@@ -12,7 +12,7 @@
     # 100. Do nothing
 
     <testcases>
-        0,2,4,5,6,7,10,70
+        0,2,5,6,7,10,70
     </testcases>
 
     <GIT>
@@ -21,15 +21,14 @@
     </GIT>
 
     <TEST>
-        <topo>10</topo>
-        <IPv6>on</IPv6>
-        <restartCluster>True</restartCluster>
+        <IPv6>off</IPv6>
+        <restartCluster>False</restartCluster>
         <dataPlaneConnectivity>True</dataPlaneConnectivity>
         <numCtrl>3</numCtrl>
         <pauseTest>on</pauseTest>
         <caseSleep>0</caseSleep>
         <ipv6Regex>10[0-9]+::[0-9]+</ipv6Regex>
-        <ipv4Regex>10\.[0-9]+\.[0-9]+\.[0-9]+</ipv4Regex>
+        <ipv4Regex>10\.0\.[0-9]+\.[0-9]+</ipv4Regex>
         <karafCliTimeout>7200000</karafCliTimeout>
         <testDuration>86400</testDuration>
         <package>on</package>
@@ -41,7 +40,7 @@
     </GRAPH>
 
     <ENV>
-        <cellName>choTrellisCell</cellName>
+        <cellName>choFlexCell</cellName>
         <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3,hostprobingprovider</cellApps>
     </ENV>
 
@@ -127,22 +126,6 @@
             <CLI>check-raft-size</CLI>
             <CLIParamNum>0</CLIParamNum>
         </RaftLogSizeCheck>
-
-        <LinkDown>
-            <status>on</status>
-            <typeIndex>20</typeIndex>
-            <typeString>NETWORK_LINK_DOWN</typeString>
-            <CLI>link-down</CLI>
-            <CLIParamNum>2</CLIParamNum>
-        </LinkDown>
-
-        <LinkUp>
-            <status>on</status>
-            <typeIndex>21</typeIndex>
-            <typeString>NETWORK_LINK_UP</typeString>
-            <CLI>link-up</CLI>
-            <CLIParamNum>2</CLIParamNum>
-        </LinkUp>
 
         <DeviceDown>
             <status>on</status>
@@ -237,38 +220,29 @@
     </GENERATOR>
 
     <TOPO>
-        <topo10>
-            <fileName>hagg.py</fileName>
-        </topo10>
-        <mininetArgs>--dhcp=1 --routers=1 --ipv6=1 --ipv4=1</mininetArgs>
-        <loadTopoSleep>120</loadTopoSleep>
-        <excludeNodes>cs0,cs1,r1,r2,nat,bgp1,bgp2,dhcp,dhcp6</excludeNodes>
+        <loadTopoSleep>60</loadTopoSleep>
+        <excludeNodes></excludeNodes>
     </TOPO>
 
     <CASE2>
-        <fileName>hagg.json</fileName>
-        <hostFileName>hagg.host</hostFileName>
+        <fileName>flex.json</fileName>
+        <hostFileName>flex.host</hostFileName>
     </CASE2>
-
-    <CASE4>
-        <lib>routinglib.py,trellislib.py,trellis_fabric.py</lib>
-        <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
-    </CASE4>
 
     <CASE70>
         <sleepSec>60</sleepSec>
         <eventWeight>
-            <port-down>3</port-down>
+            <port-down>2</port-down>
             <device-down>2</device-down>
             <onos-down>1</onos-down>
         </eventWeight>
-        <skipSwitches>leaf5</skipSwitches>
-        <skipLinks>spine103,spine104,leaf1,leaf6</skipLinks>
+        <skipSwitches>s201,s228</skipSwitches>
+        <skipLinks></skipLinks>
     </CASE70>
 
     <CASE80>
         <filePath>/home/sdn/log-for-replay</filePath>
         <sleepTime>5</sleepTime>
-        <skipChecks>on</skipChecks>
+        <skipChecks>off</skipChecks>
     </CASE80>
 </PARAMS>

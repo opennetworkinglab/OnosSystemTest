@@ -34,6 +34,7 @@
     <TEST>
         <topo>1</topo>
         <IPv6>on</IPv6>
+        <restartCluster>True</restartCluster>
         <dataPlaneConnectivity>False</dataPlaneConnectivity>
         <numCtrl>3</numCtrl>
         <pauseTest>off</pauseTest>
@@ -407,7 +408,7 @@
         </topo4>
         <mininetArgs></mininetArgs>
         <loadTopoSleep>5</loadTopoSleep>
-        <excludeSwitches></excludeSwitches>
+        <excludeNodes></excludeNodes>
     </TOPO>
 
     <CASE1>
@@ -435,13 +436,16 @@
 
     <CASE70>
         <sleepSec>2</sleepSec>
-        <addHostIntentWeight>3</addHostIntentWeight>
-        <addPointIntentWeight>3</addPointIntentWeight>
-        <linkDownWeight>3</linkDownWeight>
-        <deviceDownWeight>2</deviceDownWeight>
-        <portDownWeight>0</portDownWeight>
-        <onosDownWeight>1</onosDownWeight>
-        <toggleFlowObj>0</toggleFlowObj>
+        <eventWeight>
+            <add-host-intent>3</add-host-intent>
+            <add-point-intent>3</add-point-intent>
+            <link-down>3</link-down>
+            <device-down>2</device-down>
+            <onos-down>1</onos-down>
+            <toggle-flowobj>0</toggle-flowobj>
+        </eventWeight>
+        <skipSwitches></skipSwitches>
+        <skipLinks></skipLinks>
     </CASE70>
 
     <CASE80>

@@ -32,6 +32,7 @@ import os
 import re
 import types
 from drivers.common.clidriver import CLI
+from core.graph import Graph
 
 class NetworkDriver( CLI ):
 
@@ -45,7 +46,9 @@ class NetworkDriver( CLI ):
         self.handle = None
         self.switches = {}
         self.hosts = {}
+        self.links = {}
         super( NetworkDriver, self ).__init__()
+        self.graph = Graph()
 
     def checkOptions( self, var, defaultVar ):
         if var is None or var == "":
@@ -261,17 +264,81 @@ class NetworkDriver( CLI ):
             main.log.error( self.name + ": failed to disconnect inband hosts" )
             return main.FALSE
 
-    def getSwitches( self ):
+    def getSwitches( self, timeout=60, excludeNodes=[], includeStopped=False ):
         """
-        Return a dictionary which maps short names to switch component
+        Return a dictionary which maps short names to switch data
+        If includeStopped is True, stopped switches will also be included
         """
-        return self.switches
+        switches = {}
+        for switchName, switchComponent in self.switches.items():
+            if switchName in excludeNodes:
+                continue
+            if not includeStopped and not switchComponent.isup:
+                continue
+            dpid = switchComponent.dpid.replace( '0x', '' ).zfill( 16 )
+            ports = switchComponent.ports
+            swClass = 'Unknown'
+            pid = None
+            options = None
+            switches[ switchName ] = { "dpid": dpid,
+                                       "ports": ports,
+                                       "swClass": swClass,
+                                       "pid": pid,
+                                       "options": options }
+        return switches
 
-    def getHosts( self ):
+    def getHosts( self, hostClass=None ):
         """
-        Return a dictionary which maps short names to host component
+        Return a dictionary which maps short names to host data
         """
-        return self.hosts
+        hosts = {}
+        for hostName, hostComponent in self.hosts.items():
+            interfaces = hostComponent.interfaces
+            hosts[ hostName ] = { "interfaces": interfaces }
+        return hosts
+
+    def updateLinks( self, timeout=60, excludeNodes=[] ):
+        """
+        Update self.links by getting up-to-date port information from
+        switches
+        """
+        # TODO: also inlcude switch-to-host links
+        self.links = {}
+        for node1 in self.switches.keys():
+            if node1 in excludeNodes:
+                continue
+            self.links[ node1 ] = {}
+            self.switches[ node1 ].updatePorts()
+            for port in self.switches[ node1 ].ports:
+                if not port[ 'enabled' ]:
+                    continue
+                node2 = getattr( main, port[ 'node2' ] ).shortName
+                if node2 in excludeNodes:
+                    continue
+                port1 = port[ 'of_port' ]
+                port2 = port[ 'port2' ]
+                if not self.links[ node1 ].get( node2 ):
+                    self.links[ node1 ][ node2 ] = {}
+                # Check if this link already exists
+                if self.links.get( node2 ):
+                    if self.links[ node2 ].get( node1 ):
+                        if self.links[ node2 ].get( node1 ).get( port2 ):
+                            assert self.links[ node2 ][ node1 ][ port2 ] == port1
+                            continue
+                self.links[ node1 ][ node2 ][ port1 ] = port2
+
+    def getLinks( self, timeout=60, excludeNodes=[] ):
+        """
+        Return a list of links specify both node names and port numbers
+        """
+        self.updateLinks( timeout=timeout, excludeNodes=excludeNodes )
+        links = []
+        for node1, nodeLinks in self.links.items():
+            for node2, ports in nodeLinks.items():
+                for port1, port2 in ports.items():
+                    links.append( { 'node1': node1, 'node2': node2,
+                                    'port1': port1, 'port2': port2 } )
+        return links
 
     def getMacAddress( self, host ):
         """
@@ -279,8 +346,7 @@ class NetworkDriver( CLI ):
         """
         import re
         try:
-            hosts = self.getHosts()
-            hostComponent = hosts[ host ]
+            hostComponent = self.hosts[ host ]
             response = hostComponent.ifconfig()
             pattern = r'HWaddr\s([0-9A-F]{2}[:-]){5}([0-9A-F]{2})'
             macAddressSearch = re.search( pattern, response, re.I )
@@ -297,8 +363,7 @@ class NetworkDriver( CLI ):
             hostName: name of the host e.g. "h1"
             cmd: command to run on the host
         """
-        hosts = self.getHosts()
-        hostComponent = hosts[ hostName ]
+        hostComponent = self.hosts[ hostName ]
         if hostComponent:
             return hostComponent.command( cmd )
         return None
@@ -404,8 +469,7 @@ class NetworkDriver( CLI ):
             returnValue = main.TRUE
             ipv6 = True if protocol == "IPv6" else False
             startTime = time.time()
-            hosts = self.getHosts()
-            hostPairs = itertools.permutations( list( hosts.values() ), 2 )
+            hostPairs = itertools.permutations( list( self.hosts.values() ), 2 )
             for hostPair in list( hostPairs ):
                 ipDst = hostPair[ 1 ].options[ 'ip6' ] if ipv6 else hostPair[ 1 ].options[ 'ip' ]
                 pingResult = hostPair[ 0 ].ping( ipDst, ipv6=ipv6 )
@@ -446,9 +510,8 @@ class NetworkDriver( CLI ):
         import time
         import itertools
         hostComponentList = []
-        hosts = self.getHosts()
         for hostName in hostList:
-            hostComponent = hosts[ hostName ]
+            hostComponent = self.hosts[ hostName ]
             if hostComponent:
                 hostComponentList.append( hostComponent )
         try:
@@ -504,10 +567,9 @@ class NetworkDriver( CLI ):
             main.FALSE otherwise
         """
         try:
-            hosts = self.getHosts()
             if not hostList:
-                hostList = hosts.keys()
-            for hostName, hostComponent in hosts.items():
+                hostList = self.hosts.keys()
+            for hostName, hostComponent in self.hosts.items():
                 if hostName not in hostList:
                     continue
                 ipList = []
@@ -528,7 +590,7 @@ class NetworkDriver( CLI ):
                         hostList.remove( hostName )
             return main.FALSE if hostList else main.TRUE
         except KeyError:
-            main.log.exception( self.name + ": host data not as expected: " + hosts )
+            main.log.exception( self.name + ": host data not as expected: " + self.hosts.keys() )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -584,3 +646,272 @@ class NetworkDriver( CLI ):
             " is " +
             ipAddressSearch.group( 1 ) )
         return ipAddressSearch.group( 1 )
+
+    def getLinkRandom( self, timeout=60, nonCut=True, excludeNodes=[], skipLinks=[] ):
+        """
+        Randomly get a link from network topology.
+        If nonCut is True, it gets a list of non-cut links (the deletion
+        of a non-cut link will not increase the number of connected
+        component of a graph) and randomly returns one of them, otherwise
+        it just randomly returns one link from all current links.
+        excludeNodes will be passed to getLinks and getGraphDict method.
+        Any link that has either end included in skipLinks will be excluded.
+        Returns the link as a list, e.g. [ 's1', 's2' ].
+        """
+        import random
+        candidateLinks = []
+        try:
+            if not nonCut:
+                links = self.getLinks( timeout=timeout, excludeNodes=excludeNodes )
+                assert len( links ) != 0
+                for link in links:
+                    # Exclude host-switch link
+                    if link[ 'node1' ].startswith( 'h' ) or link[ 'node2' ].startswith( 'h' ):
+                        continue
+                    candidateLinks.append( [ link[ 'node1' ], link[ 'node2' ] ] )
+            else:
+                graphDict = self.getGraphDict( timeout=timeout, useId=False,
+                                               excludeNodes=excludeNodes )
+                if graphDict is None:
+                    return None
+                self.graph.update( graphDict )
+                candidateLinks = self.graph.getNonCutEdges()
+            candidateLinks = [ link for link in candidateLinks
+                               if link[0] not in skipLinks and link[1] not in skipLinks ]
+            if candidateLinks is None:
+                return None
+            elif len( candidateLinks ) == 0:
+                main.log.info( self.name + ": No candidate link for deletion" )
+                return None
+            else:
+                link = random.sample( candidateLinks, 1 )
+                return link[ 0 ]
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return None
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
+    def getSwitchRandom( self, timeout=60, nonCut=True, excludeNodes=[], skipSwitches=[] ):
+        """
+        Randomly get a switch from network topology.
+        If nonCut is True, it gets a list of non-cut switches (the deletion
+        of a non-cut switch will not increase the number of connected
+        components of a graph) and randomly returns one of them, otherwise
+        it just randomly returns one switch from all current switches in
+        Mininet.
+        excludeNodes will be pased to getSwitches and getGraphDict method.
+        Switches specified in skipSwitches will be excluded.
+        Returns the name of the chosen switch.
+        """
+        import random
+        candidateSwitches = []
+        try:
+            if not nonCut:
+                switches = self.getSwitches( timeout=timeout, excludeNodes=excludeNodes )
+                assert len( switches ) != 0
+                for switchName in switches.keys():
+                    candidateSwitches.append( switchName )
+            else:
+                graphDict = self.getGraphDict( timeout=timeout, useId=False,
+                                               excludeNodes=excludeNodes )
+                if graphDict is None:
+                    return None
+                self.graph.update( graphDict )
+                candidateSwitches = self.graph.getNonCutVertices()
+            candidateSwitches = [ switch for switch in candidateSwitches if switch not in skipSwitches ]
+            if candidateSwitches is None:
+                return None
+            elif len( candidateSwitches ) == 0:
+                main.log.info( self.name + ": No candidate switch for deletion" )
+                return None
+            else:
+                switch = random.sample( candidateSwitches, 1 )
+                return switch[ 0 ]
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return None
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
+    def getGraphDict( self, timeout=60, useId=True, includeHost=False,
+                      excludeNodes=[] ):
+        """
+        Return a dictionary which describes the latest network topology data as a
+        graph.
+        An example of the dictionary:
+        { vertex1: { 'edges': ..., 'name': ..., 'protocol': ... },
+          vertex2: { 'edges': ..., 'name': ..., 'protocol': ... } }
+        Each vertex should at least have an 'edges' attribute which describes the
+        adjacency information. The value of 'edges' attribute is also represented by
+        a dictionary, which maps each edge (identified by the neighbor vertex) to a
+        list of attributes.
+        An example of the edges dictionary:
+        'edges': { vertex2: { 'port': ..., 'weight': ... },
+                   vertex3: { 'port': ..., 'weight': ... } }
+        If useId == True, dpid/mac will be used instead of names to identify
+        vertices, which is helpful when e.g. comparing network topology with ONOS
+        topology.
+        If includeHost == True, all hosts (and host-switch links) will be included
+        in topology data.
+        excludeNodes will be passed to getSwitches and getLinks methods to exclude
+        unexpected switches and links.
+        """
+        # TODO: support excludeNodes
+        graphDict = {}
+        try:
+            links = self.getLinks( timeout=timeout, excludeNodes=excludeNodes )
+            portDict = {}
+            switches = self.getSwitches( excludeNodes=excludeNodes )
+            if includeHost:
+                hosts = self.getHosts()
+            for link in links:
+                # TODO: support 'includeHost' argument
+                if link[ 'node1' ].startswith( 'h' ) or link[ 'node2' ].startswith( 'h' ):
+                    continue
+                nodeName1 = link[ 'node1' ]
+                nodeName2 = link[ 'node2' ]
+                if not self.switches[ nodeName1 ].isup or not self.switches[ nodeName2 ].isup:
+                    continue
+                port1 = link[ 'port1' ]
+                port2 = link[ 'port2' ]
+                # Loop for two nodes
+                for i in range( 2 ):
+                    portIndex = port1
+                    if useId:
+                        node1 = 'of:' + str( switches[ nodeName1 ][ 'dpid' ] )
+                        node2 = 'of:' + str( switches[ nodeName2 ][ 'dpid' ] )
+                    else:
+                        node1 = nodeName1
+                        node2 = nodeName2
+                    if node1 not in graphDict.keys():
+                        if useId:
+                            graphDict[ node1 ] = { 'edges': {},
+                                                   'dpid': switches[ nodeName1 ][ 'dpid' ],
+                                                   'name': nodeName1,
+                                                   'ports': switches[ nodeName1 ][ 'ports' ],
+                                                   'swClass': switches[ nodeName1 ][ 'swClass' ],
+                                                   'pid': switches[ nodeName1 ][ 'pid' ],
+                                                   'options': switches[ nodeName1 ][ 'options' ] }
+                        else:
+                            graphDict[ node1 ] = { 'edges': {} }
+                    else:
+                        # Assert node2 is not connected to any current links of node1
+                        # assert node2 not in graphDict[ node1 ][ 'edges' ].keys()
+                        pass
+                    for port in switches[ nodeName1 ][ 'ports' ]:
+                        if port[ 'of_port' ] == str( portIndex ):
+                            # Use -1 as index for disabled port
+                            if port[ 'enabled' ]:
+                                graphDict[ node1 ][ 'edges' ][ node2 ] = { 'port': portIndex }
+                            else:
+                                graphDict[ node1 ][ 'edges' ][ node2 ] = { 'port': -1 }
+                    # Swap two nodes/ports
+                    nodeName1, nodeName2 = nodeName2, nodeName1
+                    port1, port2 = port2, port1
+            # Remove links with disabled ports
+            linksToRemove = []
+            for node, edges in graphDict.items():
+                for neighbor, port in edges[ 'edges' ].items():
+                    if port[ 'port' ] == -1:
+                        linksToRemove.append( ( node, neighbor ) )
+            for node1, node2 in linksToRemove:
+                for i in range( 2 ):
+                    if graphDict.get( node1 )[ 'edges' ].get( node2 ):
+                        graphDict[ node1 ][ 'edges' ].pop( node2 )
+                    node1, node2 = node2, node1
+            return graphDict
+        except KeyError:
+            main.log.exception( self.name + ": KeyError exception found" )
+            return None
+        except AssertionError:
+            main.log.exception( self.name + ": AssertionError exception found" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            return None
+
+    def switch( self, **switchargs ):
+        """
+        start/stop a switch
+        """
+        args = utilities.parse_args( [ "SW", "OPTION" ], **switchargs )
+        sw = args[ "SW" ] if args[ "SW" ] is not None else ""
+        option = args[ "OPTION" ] if args[ "OPTION" ] is not None else ""
+        try:
+            switchComponent = self.switches[ sw ]
+            if option == 'stop':
+                switchComponent.stopOfAgent()
+            elif option == 'start':
+                switchComponent.startOfAgent()
+            else:
+                main.log.warn( self.name + ": Unknown switch command" )
+                return main.FALSE
+            return main.TRUE
+        except KeyError:
+            main.log.error( self.name + ": Not able to find switch [}".format( sw ) )
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception" )
+            main.cleanAndExit()
+
+    def discoverHosts( self, hostList=[], wait=1000, dstIp="6.6.6.6", dstIp6="1020::3fe" ):
+        '''
+        Hosts in hostList will do a single ARP/ND to a non-existent address for ONOS to
+        discover them. A host will use arping/ndisc6 to send ARP/ND depending on if it
+        has IPv4/IPv6 addresses configured.
+        Optional:
+            hostList: a list of names of the hosts that need to be discovered. If not
+                      specified mininet will send ping from all the hosts
+            wait: timeout for ARP/ND in milliseconds
+            dstIp: destination address used by IPv4 hosts
+            dstIp6: destination address used by IPv6 hosts
+        Returns:
+            main.TRUE if all packets were successfully sent. Otherwise main.FALSE
+        '''
+        try:
+            hosts = self.getHosts()
+            if not hostList:
+                hostList = hosts.keys()
+            discoveryResult = main.TRUE
+            for host in hostList:
+                flushCmd = ""
+                cmd = ""
+                if self.getIPAddress( host ):
+                    flushCmd = "sudo ip neigh flush all"
+                    cmd = "arping -c 1 -w {} {}".format( wait, dstIp )
+                    main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
+                elif self.getIPAddress( host, proto='IPV6' ):
+                    flushCmd = "sudo ip -6 neigh flush all"
+                    intf = hosts[host]['interfaces'][0]['name']
+                    cmd = "ndisc6 -r 1 -w {} {} {}".format( wait, dstIp6, intf )
+                    main.log.debug( "Sending IPv6 ND from host {}".format( host ) )
+                else:
+                    main.log.warn( "No IP addresses configured on host {}, skipping discovery".format( host ) )
+                    discoveryResult = main.FALSE
+                if cmd:
+                    self.runCmdOnHost( host, flushCmd )
+                    self.runCmdOnHost( host, cmd )
+            return discoveryResult
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

@@ -45,7 +45,6 @@ class CHOTestMonkey:
         onos-uninstall
         onos-install
         onos-start-cli
-        Set IPv6 cfg parameters for Neighbor Discovery
         start event scheduler
         start event listener
         """
@@ -64,6 +63,9 @@ class CHOTestMonkey:
             main.cleanAndExit()
         main.testSetUp.envSetupDescription()
 
+        from tests.dependencies.Network import Network
+        main.Network = Network()
+
         try:
             onosPackage = main.params[ 'TEST' ][ 'package' ]
             karafTimeout = main.params[ 'TEST' ][ 'karafCliTimeout' ]
@@ -71,12 +73,19 @@ class CHOTestMonkey:
             main.caseSleep = int( main.params[ 'TEST' ][ 'caseSleep' ] )
             main.onosCell = main.params[ 'ENV' ][ 'cellName' ]
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            main.restartCluster = main.params[ 'TEST' ][ 'restartCluster' ] == "True"
+            main.excludeNodes = main.params[ 'TOPO' ][ 'excludeNodes' ].split( ',' ) \
+                                if main.params[ 'TOPO' ][ 'excludeNodes' ] else []
+            main.skipSwitches = main.params[ 'CASE70' ][ 'skipSwitches' ].split( ',' ) \
+                                if main.params[ 'CASE70' ][ 'skipSwitches' ] else []
+            main.skipLinks = main.params[ 'CASE70' ][ 'skipLinks' ].split( ',' ) \
+                             if main.params[ 'CASE70' ][ 'skipLinks' ] else []
             main.controllers = []
-
             main.devices = []
             main.links = []
             main.hosts = []
             main.intents = []
+            main.flowObj = False
             main.enabledEvents = {}
             for eventName in main.params[ 'EVENT' ].keys():
                 if main.params[ 'EVENT' ][ eventName ][ 'status' ] == 'on':
@@ -85,7 +94,7 @@ class CHOTestMonkey:
             main.eventScheduler = EventScheduler()
             main.eventGenerator = EventGenerator()
             main.variableLock = Lock()
-            main.mininetLock = Lock()
+            main.networkLock = Lock()
             main.ONOSbenchLock = Lock()
             main.threadID = 0
             main.eventID = 0
@@ -97,7 +106,8 @@ class CHOTestMonkey:
         main.testSetUp.evnSetupConclusion( stepResult )
 
         setupResult = main.testSetUp.ONOSSetUp( main.Cluster,
-                                                cellName=main.onosCell )
+                                                cellName=main.onosCell,
+                                                restartCluster=main.restartCluster )
         for i in range( 1, main.Cluster.numCtrls + 1 ):
             newController = Controller( i )
             newController.setCLI( main.Cluster.runningNodes[ i - 1 ].CLI )
@@ -225,71 +235,92 @@ class CHOTestMonkey:
 
     def CASE5( self, main ):
         """
-        Load Mininet topology and balances all switches
+        Load Mininet or physical network topology and balances switch mastership
         """
         import time
         import re
-        main.log.report( "Load Mininet topology and Balance all Mininet switches across controllers" )
+        main.log.report( "Load Mininet or physical network topology and Balance switch mastership" )
         main.log.report( "________________________________________________________________________" )
-        main.case( "Assign and Balance all Mininet switches across controllers" )
+        main.case( "Load Mininet or physical network topology and Balance switch mastership" )
 
-        main.step( "Copy Mininet topology files" )
-        main.topoIndex = "topo" + str( main.params[ 'TEST' ][ 'topo' ] )
-        topoFileName = main.params[ 'TOPO' ][ main.topoIndex ][ 'fileName' ]
-        topoFile = main.testDir + "/dependencies/topologies/" + topoFileName
-        copyResult = main.ONOSbench.scp( main.Mininet1, topoFile, main.Mininet1.home + "/custom", direction="to" )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=copyResult,
-                                 onpass="Successfully copied topo files",
-                                 onfail="Failed to copy topo files" )
+        if hasattr( main, 'Mininet1' ):
+            main.step( "Copy Mininet topology files" )
+            main.topoIndex = "topo" + str( main.params[ 'TEST' ][ 'topo' ] )
+            topoFileName = main.params[ 'TOPO' ][ main.topoIndex ][ 'fileName' ]
+            topoFile = main.testDir + "/dependencies/topologies/" + topoFileName
+            copyResult = main.ONOSbench.scp( main.Mininet1, topoFile, main.Mininet1.home + "/custom", direction="to" )
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=copyResult,
+                                     onpass="Successfully copied topo files",
+                                     onfail="Failed to copy topo files" )
 
-        main.step( "Start Mininet topology" )
-        startStatus = main.Mininet1.startNet( topoFile=main.Mininet1.home + "/custom/" + topoFileName,
-                                              args=main.params[ 'TOPO' ][ 'mininetArgs' ] )
-        main.mininetSwitches = main.Mininet1.getSwitches( switchClasses=r"(OVSSwitch)" )
+        main.step( "Load topology" )
+        if hasattr( main, 'Mininet1' ):
+            topoResult = main.Mininet1.startNet( topoFile=main.Mininet1.home + "/custom/" + topoFileName,
+                                                  args=main.params[ 'TOPO' ][ 'mininetArgs' ] )
+        else:
+            topoResult = main.NetworkBench.connectToNet()
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=startStatus,
-                                 onpass="Start Mininet topology test PASS",
-                                 onfail="Start Mininet topology test FAIL" )
+                                 actual=topoResult,
+                                 onpass="Successfully loaded topology",
+                                 onfail="Failed to load topology" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanAndExit()
 
         main.step( "Assign switches to controllers" )
-        switchMastership = main.TRUE
-        for switchName in main.mininetSwitches.keys():
+        if hasattr( main, 'Mininet1' ):
+            main.networkSwitches = main.Network.getSwitches( excludeNodes=main.excludeNodes )
+        else:
+            main.networkSwitches = main.Network.getSwitches( excludeNodes=main.excludeNodes,
+                                                             includeStopped=True )
+        assignResult = main.TRUE
+        for name in main.networkSwitches.keys():
             ips = main.Cluster.getIps()
-            main.Mininet1.assignSwController( sw=switchName, ip=ips )
-            response = main.Mininet1.getSwController( switchName )
-            main.log.debug( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.Cluster.active( 0 ).ipAddress, response ):
-                switchMastership = switchMastership and main.TRUE
-            else:
-                switchMastership = main.FALSE
+            assignResult = assignResult and main.Network.assignSwController( sw=name, ip=ips )
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=switchMastership,
-                                 onpass="Assign switches to controllers test PASS",
-                                 onfail="Assign switches to controllers test FAIL" )
+                                 actual=assignResult,
+                                 onpass="Successfully assign switches to controllers",
+                                 onfail="Failed to assign switches to controllers" )
+
         # Waiting here to make sure topology converges across all nodes
         sleep = int( main.params[ 'TOPO' ][ 'loadTopoSleep' ] )
         time.sleep( sleep )
 
         main.step( "Balance devices across controllers" )
         balanceResult = main.Cluster.active( 0 ).CLI.balanceMasters()
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=balanceResult,
+                                 onpass="Successfully balanced mastership",
+                                 onfail="Faild to balance mastership" )
         # giving some breathing time for ONOS to complete re-balance
         time.sleep( 5 )
 
-        # Get mininet hosts and links
-        main.mininetHosts = main.Mininet1.getHosts()
-        if hasattr( main, "expectedHosts" ):
-            main.mininetHosts = { key: value for key, value in main.mininetHosts.items() if key in main.expectedHosts[ "network" ].keys() }
-        main.mininetLinks = main.Mininet1.getLinks( timeout=60 )
-        main.mininetLinks = [ link for link in main.mininetLinks if
-                              link[ 'node1' ] in main.mininetHosts.keys() + main.mininetSwitches.keys() and
-                              link[ 'node2' ] in main.mininetHosts.keys() + main.mininetSwitches.keys() ]
+        # Connecting to hosts that only have data plane connectivity
+        if hasattr( main, 'NetworkBench' ):
+            main.step( "Connecting inband hosts" )
+            hostResult = main.NetworkBench.connectInbandHosts()
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=hostResult,
+                                     onpass="Successfully connected inband hosts",
+                                     onfail="Failed to connect inband hosts" )
+        else:
+            hostResult = main.TRUE
 
-        caseResult = ( startStatus and switchMastership and balanceResult )
+        # Get network hosts and links
+        main.networkHosts = main.Network.getHosts()
+        if hasattr( main, "expectedHosts" ):
+            main.networkHosts = { key: value for key, value in main.networkHosts.items() if key in main.expectedHosts[ "network" ].keys() }
+        main.networkLinks = main.Network.getLinks()
+        main.networkLinks = [ link for link in main.networkLinks if
+                              link[ 'node1' ] in main.networkHosts.keys() + main.networkSwitches.keys() and
+                              link[ 'node2' ] in main.networkHosts.keys() + main.networkSwitches.keys() ]
+
+        caseResult = ( topoResult and assignResult and balanceResult and hostResult )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=caseResult,
-                                 onpass="Starting new Att topology test PASS",
-                                 onfail="Starting new Att topology test FAIL" )
+                                 onpass="Starting new topology test PASS",
+                                 onfail="Starting new topology test FAIL" )
 
     def CASE6( self, main ):
         """
@@ -307,13 +338,16 @@ class CHOTestMonkey:
         topologyResult = main.Cluster.active( 0 ).CLI.getTopology( topologyOutput )
         ONOSDeviceNum = int( topologyResult[ 'devices' ] )
         ONOSLinkNum = int( topologyResult[ 'links' ] )
-        mininetSwitchNum = len( main.mininetSwitches )
-        mininetLinkNum = ( len( main.mininetLinks ) - len( main.mininetHosts ) ) * 2
-        if mininetSwitchNum == ONOSDeviceNum and mininetLinkNum == ONOSLinkNum:
+        networkSwitchNum = len( main.networkSwitches )
+        if hasattr( main, 'Mininet1' ):
+            networkLinkNum = ( len( main.networkLinks ) - len( main.networkHosts ) ) * 2
+        else:
+            networkLinkNum = len( main.networkLinks ) * 2
+        if networkSwitchNum == ONOSDeviceNum and networkLinkNum == ONOSLinkNum:
             main.step( "Collect and store device data" )
             stepResult = main.TRUE
             dpidToName = {}
-            for key, value in main.mininetSwitches.items():
+            for key, value in main.networkSwitches.items():
                 dpidToName[ 'of:' + str( value[ 'dpid' ] ) ] = key
             main.devicesRaw = main.Cluster.active( 0 ).CLI.devices()
             devices = json.loads( main.devicesRaw )
@@ -364,7 +398,7 @@ class CHOTestMonkey:
                                      onpass="Successfully collected and stored link data",
                                      onfail="Failed to collect and store link data" )
         else:
-            main.log.info( "Devices (expected): %s, Links (expected): %s" % ( mininetSwitchNum, mininetLinkNum ) )
+            main.log.info( "Devices (expected): %s, Links (expected): %s" % ( networkSwitchNum, networkLinkNum ) )
             main.log.info( "Devices (actual): %s, Links (actual): %s" % ( ONOSDeviceNum, ONOSLinkNum ) )
             topoResult = main.FALSE
 
@@ -404,9 +438,9 @@ class CHOTestMonkey:
                                      onfail="Failed to enable reactive forwarding" )
 
             main.step( "Discover hosts using pingall" )
-            main.Mininet1.pingall()
+            main.Network.pingall()
             if main.enableIPv6:
-                ping6Result = main.Mininet1.pingall( protocol="IPv6" )
+                ping6Result = main.Network.pingall( protocol="IPv6" )
 
             main.step( "Disable Reactive forwarding" )
             appResult = main.Cluster.active( 0 ).CLI.deactivateApp( "org.onosproject.fwd" )
@@ -422,7 +456,7 @@ class CHOTestMonkey:
         hosts = json.loads( main.hostsRaw )
         if hasattr( main, "expectedHosts" ):
             hosts = [ host for host in hosts if host[ 'id' ] in main.expectedHosts[ 'onos' ].keys() ]
-        if not len( hosts ) == len( main.mininetHosts ):
+        if not len( hosts ) == len( main.networkHosts ):
             stepResult = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -435,7 +469,7 @@ class CHOTestMonkey:
         main.step( "Collect and store host data" )
         stepResult = main.TRUE
         macToName = {}
-        for key, value in main.mininetHosts.items():
+        for key, value in main.networkHosts.items():
             macToName[ value[ 'interfaces' ][ 0 ][ 'mac' ].upper() ] = key
         dpidToDevice = {}
         for device in main.devices:
@@ -472,12 +506,16 @@ class CHOTestMonkey:
                                  onfail="Failed to collect and store host data" )
 
         main.step( "Create one host component for each host and then start host cli" )
-        startCLIResult = main.TRUE
+        hostResult = main.TRUE
         for host in main.hosts:
-            main.Mininet1.createHostComponent( host.name )
+            main.Network.createHostComponent( host.name )
             hostHandle = getattr( main, host.name )
-            main.log.info( "Starting CLI on host " + str( host.name ) )
-            startCLIResult = startCLIResult and hostHandle.startHostCli()
+            if hasattr( main, "Mininet1" ):
+                main.log.info( "Starting CLI on host " + str( host.name ) )
+                hostResult = hostResult and hostHandle.startHostCli()
+            else:
+                main.log.info( "Connecting inband host " + str( host.name ) )
+                hostResult = hostResult and hostHandle.connectInband()
             host.setHandle( hostHandle )
             if main.params[ 'TEST' ][ 'dataPlaneConnectivity' ] == 'True':
                 # Hosts should already be able to ping each other
@@ -486,9 +524,9 @@ class CHOTestMonkey:
                 if host in main.ipv6Hosts:
                     host.correspondents += main.ipv6Hosts
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=startCLIResult,
-                                 onpass="Host CLI started",
-                                 onfail="Failed to start host CLI" )
+                                 actual=hostResult,
+                                 onpass="Host components created",
+                                 onfail="Failed to create host components" )
 
     def CASE10( self, main ):
         """
@@ -808,43 +846,26 @@ class CHOTestMonkey:
         main.step( "Randomly generate events" )
         main.caseResult = main.TRUE
         sleepSec = int( main.params[ 'CASE70' ][ 'sleepSec' ] )
-        hostIntentNum = 0
-        pointIntentNum = 0
-        downDeviceNum = 0
-        downLinkNum = 0
-        downPortNum = 0
-        downOnosNum = 0
-        flowObj = False
-        upControllers = range( 1, int( main.params[ 'TEST' ][ 'numCtrl' ] ) + 1 )
+        allControllers = range( 1, int( main.params[ 'TEST' ][ 'numCtrl' ] ) + 1 )
         while True:
+            upControllers = [ i for i in allControllers if main.controllers[ i - 1 ].isUp() ]
+            downOnosNum = len( allControllers ) - len( upControllers )
+            hostIntentNum = len( [ intent for intent in main.intents if intent.type == 'INTENT_HOST' ] )
+            pointIntentNum = len( [ intent for intent in main.intents if intent.type == 'INTENT_POINT' ] )
+            downDeviceNum = len( [ device for device in main.devices if device.isDown() or device.isRemoved() ] )
+            downLinkNum = len( [ link for link in main.links if link.isDown() ] ) / 2
+            downPortNum = sum( [ len( device.downPorts ) for device in main.devices ] )
             events = []
-            for i in range( int( main.params[ 'CASE70' ][ 'toggleFlowObj' ] ) ):
-                events.append( 'toggle-flowobj' )
-            for i in range( int( main.params[ 'CASE70' ][ 'addHostIntentWeight' ] ) ):
-                events.append( 'add-host-intent' )
-            for i in range( int( main.params[ 'CASE70' ][ 'addPointIntentWeight' ] ) ):
-                events.append( 'add-point-intent' )
-            for i in range( int( main.params[ 'CASE70' ][ 'linkDownWeight' ] ) ):
-                events.append( 'link-down' )
-            for i in range( int( main.params[ 'CASE70' ][ 'deviceDownWeight' ] ) ):
-                events.append( 'device-down' )
-            for i in range( int( main.params[ 'CASE70' ][ 'portDownWeight' ] ) ):
-                events.append( 'port-down' )
-            if downOnosNum == 0:
-                for i in range( int( main.params[ 'CASE70' ][ 'onosDownWeight' ] ) ):
-                    events.append( 'onos-down' )
-            for i in range( int( pow( hostIntentNum, 1.5 ) / 100 ) ):
-                events.append( 'del-host-intent' )
-            for i in range( int( pow( pointIntentNum, 1.5 ) / 100 ) ):
-                events.append( 'del-point-intent' )
-            for i in range( pow( 4, downLinkNum ) - 1 ):
-                events.append( 'link-up' )
-            for i in range( pow( 4, downDeviceNum ) - 1 ):
-                events.append( 'device-up' )
-            for i in range( pow( 4, downPortNum ) - 1 ):
-                events.append( 'port-up' )
-            for i in range( pow( 4, downOnosNum ) - 1 ):
-                events.append( 'onos-up' )
+            for event, weight in main.params[ 'CASE70' ][ 'eventWeight' ].items():
+                events += [ event ] * int( weight )
+            events += [ 'del-host-intent' ] * int( pow( hostIntentNum, 1.5 ) / 100 )
+            events += [ 'del-point-intent' ] * int( pow( pointIntentNum, 1.5 ) / 100 )
+            events += [ 'device-up' ] * int( pow( 4, downDeviceNum ) - 1 )
+            if 'link-down' in main.params[ 'CASE70' ][ 'eventWeight' ].keys():
+                events += [ 'link-up' ] * int( pow( 4, downLinkNum ) - 1 )
+            if 'port-down' in main.params[ 'CASE70' ][ 'eventWeight' ].keys():
+                events += [ 'port-up' ] * int( pow( 4, downPortNum ) - 1 )
+            events += [ 'onos-up' ] * int( pow( 4, downOnosNum ) - 1 )
             main.log.debug( events )
             event = random.sample( events, 1 )[ 0 ]
             if event == 'add-host-intent':
@@ -852,64 +873,43 @@ class CHOTestMonkey:
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
                     main.eventGenerator.triggerEvent( EventType().APP_INTENT_HOST_ADD, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex )
-                    hostIntentNum += 1
             elif event == 'del-host-intent':
                 n = random.randint( 5, hostIntentNum )
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
                     main.eventGenerator.triggerEvent( EventType().APP_INTENT_HOST_DEL, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex )
-                    hostIntentNum -= 1
             elif event == 'add-point-intent':
                 n = random.randint( 5, 50 )
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
                     main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_ADD, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
-                    pointIntentNum += 2
             elif event == 'del-point-intent':
                 n = random.randint( 5, pointIntentNum / 2 )
                 for i in range( n ):
                     cliIndex = random.sample( upControllers, 1 )[ 0 ]
                     main.eventGenerator.triggerEvent( EventType().APP_INTENT_POINT_DEL, EventScheduleMethod().RUN_BLOCK, 'random', 'random', cliIndex, 'bidirectional' )
-                    pointIntentNum -= 2
             elif event == 'link-down':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_LINK_DOWN, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
-                downLinkNum += 1
             elif event == 'link-up':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_LINK_UP, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
-                downLinkNum -= 1
             elif event == 'device-down':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_DEVICE_DOWN, EventScheduleMethod().RUN_BLOCK, 'random' )
-                downDeviceNum += 1
             elif event == 'device-up':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_DEVICE_UP, EventScheduleMethod().RUN_BLOCK, 'random' )
-                downDeviceNum -= 1
             elif event == 'port-down':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_PORT_DOWN, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
-                downPortNum += 1
             elif event == 'port-up':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_PORT_UP, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
-                downPortNum -= 1
-            elif event == 'onos-down':
+            elif event == 'onos-down' and downOnosNum == 0:
                 main.eventGenerator.triggerEvent( EventType().ONOS_ONOS_DOWN, EventScheduleMethod().RUN_BLOCK, 1 )
-                downOnosNum += 1
             elif event == 'onos-up':
                 main.eventGenerator.triggerEvent( EventType().ONOS_ONOS_UP, EventScheduleMethod().RUN_BLOCK, 1 )
-                downOnosNum -= 1
                 main.eventGenerator.triggerEvent( EventType().ONOS_BALANCE_MASTERS, EventScheduleMethod().RUN_BLOCK )
             elif event == 'toggle-flowobj':
-                if not flowObj:
-                    main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'true' )
-                else:
-                    main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'false' )
-                flowObj = not flowObj
+                main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'false' if main.flowObj else 'true' )
             else:
                 pass
-            main.eventGenerator.triggerEvent( EventType().CHECK_TOPO, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventGenerator.triggerEvent( EventType().CHECK_ONOS, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventGenerator.triggerEvent( EventType().CHECK_TRAFFIC, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventGenerator.triggerEvent( EventType().CHECK_FLOW, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventGenerator.triggerEvent( EventType().CHECK_INTENT, EventScheduleMethod().RUN_NON_BLOCK )
-            main.eventGenerator.triggerEvent( EventType().CHECK_RAFT_LOG_SIZE, EventScheduleMethod().RUN_NON_BLOCK )
+            main.eventGenerator.triggerEvent( EventType().CHECK_ALL, EventScheduleMethod().RUN_NON_BLOCK )
             with main.eventScheduler.idleCondition:
                 while not main.eventScheduler.isIdle():
                     main.eventScheduler.idleCondition.wait()

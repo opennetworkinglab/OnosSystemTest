@@ -479,7 +479,7 @@ class ONOSSetup:
             else:
                 functions( *args ) if args is not None else functions()
 
-    def ONOSSetUp( self, cluster, hasMultiNodeRounds=False, startOnos=True, newCell=True,
+    def ONOSSetUp( self, cluster, hasMultiNodeRounds=False, startOnosCli=True, newCell=True,
                    cellName="temp", cellApps="drivers", appPrefix="org.onosproject.",
                    mininetIp="", extraApply=None, applyArgs=None,
                    extraClean=None, cleanArgs=None, skipPack=False, installMax=False,
@@ -505,7 +505,7 @@ class ONOSSetup:
             * cluster - the cluster driver that will be used.
         Optional Arguments:
             * hasMultiNodeRounds - True if the test is testing different set of nodes
-            * startOnos - True if wish to start onos.
+            * startOnosCli - True if wish to start onos CLI.
             * newCell - True for making a new cell and False for not making it.
             * cellName - Name of the cell that will be used.
             * cellApps - The cell apps string. Will be overwritten by main.apps if it exists
@@ -591,7 +591,7 @@ class ONOSSetup:
         onosServiceResult = self.checkOnosService( cluster )
 
         onosCliResult = main.TRUE
-        if startOnos:
+        if startOnosCli:
             onosCliResult = self.startOnosClis( cluster )
 
         onosNodesResult = self.checkOnosNodes( cluster )

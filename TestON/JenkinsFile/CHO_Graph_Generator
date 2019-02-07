@@ -41,7 +41,6 @@ scriptDir = fileRelated.CHOScriptDir
 
 // create a bash script that will generate the graph
 graphScript = generateGraphScript( branchList )
-
 stage( 'Generating-Graph' ) {
     // This will run on TestStation-Fabric5s node.
     node( "TestStation-Fabric5s" ) {
@@ -53,6 +52,19 @@ stage( 'Generating-Graph' ) {
 // Need to be executed outside the current node to avoid deadlock.
 stage( 'posting-result' ) {
     postJob()
+}
+
+saving_directory = fileRelated.jenkinsWorkspace + "postjob-Trellis-POD/"
+graphScript = generateGraphScript( branchList )
+stage( 'Generating-Graph-POD' ) {
+    // This will run on TestStation-Trellis-POD node.
+    node( "TestStation-Trellis-PODs" ) {
+        // run the bash script on this node.
+        runScript( graphScript )
+    }
+}
+stage( 'posting-result-POD' ) {
+    postJobPOD()
 }
 
 def generateGraphScript( branchList ){
@@ -97,5 +109,11 @@ def runScript( graphScript ){
 def postJob(){
     // Triggering jenkins job called `postjob-Fabric5`
     jobToRun = "postjob-Fabric5"
+    build job: jobToRun, propagate: false
+}
+
+def postJobPOD(){
+    // Triggering jenkins job called `postjob-Trellis-POD`
+    jobToRun = "postjob-Trellis-POD"
     build job: jobToRun, propagate: false
 }

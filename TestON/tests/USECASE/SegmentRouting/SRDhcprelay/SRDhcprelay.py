@@ -211,7 +211,7 @@ class SRDhcprelay:
         SRDhcprelayTest.runTest( main,
                                  testIndex=22,
                                  onosNodes=3,
-                                 description="DHCP v4 tests with 4 clients attached to switch directly and 1 server attached to switch indirectly (via gateway)",
+                                 description="DHCP v4 tests with tagged hosts: 4 clients attached to switch directly and 1 server attached to switch indirectly (via gateway)",
                                  remoteServer=True,
                                  vlan=[ 20, 20, 30, 30 ] )
 

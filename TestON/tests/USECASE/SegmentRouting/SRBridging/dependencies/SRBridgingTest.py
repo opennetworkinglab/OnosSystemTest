@@ -20,19 +20,21 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
+import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
 
 class SRBridgingTest ():
 
     def __init__( self ):
         self.default = ''
         self.topo = dict()
-        # (number of spine switch, number of leaf switch, dual-homed, description, minFlowCount - leaf)
-        self.topo[ '0x1' ] = ( 0, 1, False, 'single ToR', 28 )
-        self.topo[ '0x2' ] = ( 0, 2, True, 'dual-homed ToR', 37 )
-        self.topo[ '2x2' ] = ( 2, 2, False, '2x2 leaf-spine topology', 37 )
+        # TODO: Check minFlowCount of leaf for BMv2 switch
+        # (number of spine switch, number of leaf switch, dual-homed, description, minFlowCount - leaf (OvS), minFlowCount - leaf (BMv2))
+        self.topo[ '0x1' ] = ( 0, 1, False, 'single ToR', 28, 28 )
+        self.topo[ '0x2' ] = ( 0, 2, True, 'dual-homed ToR', 37, 37 )
+        self.topo[ '2x2' ] = ( 2, 2, False, '2x2 leaf-spine topology', 37, 32 )
         # TODO: Implement 2x3 topology
         # topo[ '2x3' ] = ( 2, 3, True, '2x3 leaf-spine topology with dual ToR and single ToR', 28 )
-        self.topo[ '2x4' ] = ( 2, 4, True, '2x4 dual-homed leaf-spine topology', 53 )
+        self.topo[ '2x4' ] = ( 2, 4, True, '2x4 dual-homed leaf-spine topology', 53, 53 )
         self.switchNames = {}
         self.switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
 
@@ -52,6 +54,11 @@ class SRBridgingTest ():
         main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
+        if main.useBmv2:
+            # Translate configuration file from OVS-OFDPA to BMv2 driver
+            translator.ofdpaToBmv2( main )
+        else:
+            translator.bmv2ToOfdpa( main )
         run.loadJson( main )
         run.loadChart( main )
         if hasattr( main, 'Mininet1' ):
@@ -61,16 +68,22 @@ class SRBridgingTest ():
                 mininet_args += ' --dual-homed'
             if len( vlan ) > 0 :
                 mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
+            if main.useBmv2:
+                mininet_args += ' --switch bmv2'
+                main.log.info( "Using BMv2 switch" )
 
             run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
         else:
             # Run the test with physical devices
             run.connectToPhysicalNetwork( main, self.switchNames[ topology ] )
 
-        run.checkFlows( main, minFlowCount=self.topo[ topology ][ 4 ] * self.topo[ topology ][ 1 ], sleep=5 )
-        leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( self.topo[ topology ][ 1 ] ) ]
+        run.checkFlows( main, minFlowCount=self.topo[ topology ][ 5 if main.useBmv2 else 4 ] * self.topo[ topology ][ 1 ], sleep=5 )
+        if main.useBmv2:
+            leaf_dpid = [ "device:bmv2:leaf%d" % ( ls + 1 ) for ls in range( self.topo[ topology ][ 1 ]) ]
+        else:
+            leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( self.topo[ topology ][ 1 ] ) ]
         for dpid in leaf_dpid:
-            run.checkFlowsByDpid( main, dpid, self.topo[ topology ][ 4 ], sleep=5 )
+            run.checkFlowsByDpid( main, dpid, self.topo[ topology ][ 5 if main.useBmv2 else 4 ], sleep=5 )
         run.pingAll( main )
 
         run.cleanup( main )

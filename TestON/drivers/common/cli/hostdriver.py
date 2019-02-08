@@ -38,6 +38,7 @@ class HostDriver( ScapyCliDriver ):
         self.handle = self
         self.name = None
         self.shortName = None
+        self.interfaces = []
         self.home = None
         self.inband = False
         self.prompt = "\$"
@@ -56,6 +57,10 @@ class HostDriver( ScapyCliDriver ):
                 vars( self )[ key ] = connectargs[ key ]
             self.name = self.options[ 'name' ]
             self.shortName = self.options[ 'shortName' ]
+            self.interfaces.append( { 'ips': [ self.options[ 'ip' ] ],
+                                      'isUp': True,
+                                      'mac': self.options[ 'mac' ],
+                                      'name': None } )
 
             try:
                 if os.getenv( str( self.ip_address ) ) is not None:
@@ -109,13 +114,26 @@ class HostDriver( ScapyCliDriver ):
         try:
             if self.handle:
                 # Disconnect from the host
-                self.handle.sendline( "" )
-                self.handle.expect( self.prompt )
-                self.handle.sendline( "exit" )
-                i = self.handle.expect( [ "closed", pexpect.TIMEOUT ], timeout=2 )
-                if i == 1:
-                    main.log.error( self.name + ": timeout when waiting for response" )
-                    main.log.error( "response: " + str( self.handle.before ) )
+                if not self.options[ 'inband' ] == 'True':
+                    self.handle.sendline( "" )
+                    self.handle.expect( self.prompt )
+                    self.handle.sendline( "exit" )
+                    i = self.handle.expect( [ "closed", pexpect.TIMEOUT ] )
+                    if i == 1:
+                        main.log.error( self.name + ": timeout when waiting for response" )
+                        main.log.error( "response: " + str( self.handle.before ) )
+                else:
+                    self.handle.sendline( "" )
+                    i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=2 )
+                    if i == 1:
+                        main.log.warn( self.name + ": timeout when waiting for response" )
+                        main.log.warn( "response: " + str( self.handle.before ) )
+                    self.handle.sendline( "exit" )
+                    i = self.handle.expect( [ "closed", pexpect.TIMEOUT ], timeout=2 )
+                    if i == 1:
+                        main.log.warn( self.name + ": timeout when waiting for response" )
+                        main.log.warn( "response: " + str( self.handle.before ) )
+                return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             response = main.FALSE
@@ -178,7 +196,7 @@ class HostDriver( ScapyCliDriver ):
                 main.log.info( "Skip disconnecting the host via data plane" )
                 return main.TRUE
             self.handle.sendline( "" )
-            self.handle.expect( self.prompt )
+            self.handle.expect( self.prompt, timeout=2 )
             self.handle.sendline( "exit" )
             i = self.handle.expect( [ "closed", pexpect.TIMEOUT ], timeout=2 )
             if i == 1:

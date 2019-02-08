@@ -202,6 +202,7 @@ class SetFlowObj( CfgEvent ):
         if not result:
             main.log.warn( "%s - failed to set configuration" % ( self.typeString ) )
             return EventStates().FAIL
+        main.flowObj = True if self.value == 'true' else False
         return EventStates().PASS
 
 

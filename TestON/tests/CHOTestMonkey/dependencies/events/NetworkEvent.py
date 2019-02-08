@@ -50,9 +50,9 @@ class LinkEvent( Event ):
                 return EventStates().ABORT
             if args[ 0 ] == 'random' or args[ 1 ] == 'random':
                 if self.typeIndex == EventType().NETWORK_LINK_DOWN:
-                    with main.mininetLock:
-                        linkRandom = main.Mininet1.getLinkRandom( switchClasses=r"(OVSSwitch)",
-                                                                  excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ] )
+                    with main.networkLock:
+                        linkRandom = main.Network.getLinkRandom( excludeNodes=main.excludeNodes,
+                                                                 skipLinks=main.skipLinks )
                     if linkRandom is None:
                         main.log.warn( "No link available, aborting event" )
                         return EventStates().ABORT
@@ -110,14 +110,14 @@ class LinkDown( LinkEvent ):
                 main.log.warn( "Link Down - link has been removed" )
                 return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.linkA.deviceA.name, self.linkA.deviceB.name ) )
-        with main.mininetLock:
+        with main.networkLock:
             """
-            result = main.Mininet1.link( END1=self.linkA.deviceA.name,
-                                         END2=self.linkA.deviceB.name,
-                                         OPTION="down" )
+            result = main.Network.link( END1=self.linkA.deviceA.name,
+                                        END2=self.linkA.deviceB.name,
+                                        OPTION="down" )
             """
-            result = main.Mininet1.delLink( self.linkA.deviceA.name,
-                                            self.linkA.deviceB.name )
+            result = main.Network.delLink( self.linkA.deviceA.name,
+                                           self.linkA.deviceB.name )
         if not result:
             main.log.warn( "%s - failed to bring down link" % ( self.typeString ) )
             return EventStates().FAIL
@@ -147,14 +147,14 @@ class LinkUp( LinkEvent ):
                 main.log.warn( "Link Up - link has been removed" )
                 return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.linkA.deviceA.name, self.linkA.deviceB.name ) )
-        with main.mininetLock:
+        with main.networkLock:
             """
-            result = main.Mininet1.link( END1=self.linkA.deviceA.name,
-                                         END2=self.linkA.deviceB.name,
-                                         OPTION="up" )
+            result = main.Network.link( END1=self.linkA.deviceA.name,
+                                        END2=self.linkA.deviceB.name,
+                                        OPTION="up" )
             """
-            result = main.Mininet1.addLink( self.linkA.deviceA.name,
-                                            self.linkA.deviceB.name )
+            result = main.Network.addLink( self.linkA.deviceA.name,
+                                           self.linkA.deviceB.name )
         if not result:
             main.log.warn( "%s - failed to bring up link" % ( self.typeString ) )
             return EventStates().FAIL
@@ -188,14 +188,9 @@ class DeviceEvent( Event ):
             if args[ 0 ] == 'random':
                 import random
                 if self.typeIndex == EventType().NETWORK_DEVICE_DOWN:
-                    if main.params[ 'TOPO' ][ 'excludeSwitches' ]:
-                        excludeSwitches = main.params[ 'TOPO' ][ 'excludeSwitches' ].split( ',' )
-                    else:
-                        excludeSwitches = []
-                    with main.mininetLock:
-                        switchRandom = main.Mininet1.getSwitchRandom( switchClasses=r"(OVSSwitch)",
-                                                                      excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ],
-                                                                      excludeSwitches=excludeSwitches )
+                    with main.networkLock:
+                        switchRandom = main.Network.getSwitchRandom( excludeNodes=main.excludeNodes,
+                                                                     skipSwitches=main.skipSwitches )
                     if switchRandom is None:
                         main.log.warn( "No switch available, aborting event" )
                         return EventStates().ABORT
@@ -240,14 +235,14 @@ class DeviceDown( DeviceEvent ):
                 return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.device.name ) )
         result = main.TRUE
-        with main.mininetLock:
+        with main.networkLock:
             # Disable ports toward dual-homed hosts
             for host, port in self.device.hosts.items():
                 if host.isDualHomed:
                     main.log.info( "Disable port {}/{} which connects to a dual-homed host before bringing down this device".format( self.device.dpid, port ) )
                     result = result and main.Cluster.active( 0 ).CLI.portstate( dpid=self.device.dpid, port=port, state="disable" )
-            # result = main.Mininet1.delSwitch( self.device.name )
-            result = result and main.Mininet1.switch( SW=self.device.name, OPTION="stop" )
+            # result = main.Network.delSwitch( self.device.name )
+            result = result and main.Network.switch( SW=self.device.name, OPTION="stop" )
         if not result:
             main.log.warn( "%s - failed to bring down device" % ( self.typeString ) )
             return EventStates().FAIL
@@ -282,53 +277,29 @@ class DeviceUp( DeviceEvent ):
                 return EventStates().ABORT
         # Re-add the device
         main.log.info( "Event recorded: {} {} {}".format( self.typeIndex, self.typeString, self.device.name ) )
-        with main.mininetLock:
-            # result = main.Mininet1.addSwitch( self.device.name, dpid=self.device.dpid[ 3: ] )
-            result = main.Mininet1.switch( SW=self.device.name, OPTION='start' )
-        if not result:
-            main.log.warn( "%s - failed to re-add device" % ( self.typeString ) )
-            return EventStates().FAIL
+        if hasattr( main, 'Mininet1' ):
+            with main.networkLock:
+                # result = main.Network.addSwitch( self.device.name, dpid=self.device.dpid[ 3: ] )
+                result = main.Network.switch( SW=self.device.name, OPTION='start' )
+            if not result:
+                main.log.warn( "%s - failed to re-add device" % ( self.typeString ) )
+                return EventStates().FAIL
+        # Re-assign mastership for the device
+        with main.networkLock:
+            result = main.Network.assignSwController( sw=self.device.name, ip=main.Cluster.getIps() )
+            if not result:
+                main.log.warn( "%s - failed to assign device to controller" % ( self.typeString ) )
+                return EventStates().FAIL
         with main.variableLock:
             self.device.bringUp()
-        '''
-        # Re-add links
-        # We add host-device links first since we did the same in mininet topology file
-        # TODO: a more rubust way is to add links according to the port info of the device
-        for host in self.device.hosts:
-            # Add host-device link
-            with main.mininetLock:
-                result = main.Mininet1.addLink( self.device.name, host.name )
-            if not result:
-                main.log.warn( "%s - failed to re-connect host %s to device" % ( self.typeString, host.name ) )
-                return EventStates().FAIL
         for link in self.device.outgoingLinks:
             neighbor = link.deviceB
             # Skip bringing up any link that connecting this device to a removed neighbor
             if neighbor.isRemoved():
                 continue
-            with main.mininetLock:
-                result = main.Mininet1.addLink( self.device.name, neighbor.name )
-            if not result:
-                main.log.warn( "%s - failed to re-add link to %s" % ( self.typeString, neighbor.name ) )
-                return EventStates().FAIL
-            with main.variableLock:
-                link.bringUp()
-                link.backwardLink.bringUp()
-                for intent in main.intents:
-                    if intent.isFailed():
-                        if intent.deviceA == self.device and intent.deviceB.isUp() or\
-                                intent.deviceB == self.device and intent.deviceA.isUp():
-                            intent.setInstalled()
-        '''
-        # Re-assign mastership for the device
-        with main.mininetLock:
-            ips = main.Cluster.getIps()
-            main.Mininet1.assignSwController( sw=self.device.name, ip=ips )
-        for link in self.device.outgoingLinks:
-            neighbor = link.deviceB
-            # Skip bringing up any link that connecting this device to a removed neighbor
-            if neighbor.isRemoved():
-                continue
+            # FIXME: remove this temporary hack for CORD-3240
+            if neighbor.name == 's225':
+                main.NetworkBench.switches[ 's225' ].setPortSpeed( index=link.portB )
             # Bring down again any link that was brought down before the device was down
             if int( link.portB ) in link.deviceB.downPorts:
                 with main.variableLock:
@@ -340,7 +311,7 @@ class DeviceUp( DeviceEvent ):
                     link.backwardLink.bringUp()
         # Re-discover hosts
         if self.device.hosts:
-            main.Mininet1.discoverHosts( hostList=[ host.name for host in self.device.hosts ] )
+            main.Network.discoverHosts( hostList=[ host.name for host in self.device.hosts ] )
         for host in self.device.hosts:
             with main.variableLock:
                 host.bringUp()
@@ -373,9 +344,9 @@ class PortEvent( Event ):
                 return EventStates().ABORT
             if args[ 0 ] == 'random' or args[ 1 ] == 'random':
                 if self.typeIndex == EventType().NETWORK_PORT_DOWN:
-                    with main.mininetLock:
-                        linkRandom = main.Mininet1.getLinkRandom( switchClasses=r"(OVSSwitch)",
-                                                                  excludeNodes=[ 'bgp', 'cs', 'nat', 'dhcp', 'r' ])
+                    with main.networkLock:
+                        linkRandom = main.Network.getLinkRandom( excludeNodes=main.excludeNodes,
+                                                                 skipLinks=main.skipLinks )
                     if linkRandom is None:
                         main.log.warn( "No link available, aborting event" )
                         return EventStates().ABORT
@@ -443,7 +414,7 @@ class PortDown( PortEvent ):
             main.log.warn( "port Down - link has been removed" )
             return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.device.name, self.port ) )
-        with main.mininetLock:
+        with main.networkLock:
             result = main.Cluster.active( 0 ).CLI.portstate( dpid=self.device.dpid, port=self.port, state="disable" )
         if not result:
             main.log.warn( "%s - failed to bring down port" % ( self.typeString ) )
@@ -474,11 +445,14 @@ class PortUp( PortEvent ):
             main.log.warn( "port up - link has been removed" )
             return EventStates().ABORT
         main.log.info( "Event recorded: {} {} {} {}".format( self.typeIndex, self.typeString, self.device.name, self.port ) )
-        with main.mininetLock:
+        with main.networkLock:
             result = main.Cluster.active( 0 ).CLI.portstate( dpid=self.device.dpid, port=self.port, state="enable" )
         if not result:
             main.log.warn( "%s - failed to bring up port " % ( self.typeString ) )
             return EventStates().FAIL
+        # FIXME: remove this temporary hack for CORD-3240
+        if self.link.deviceB.name == 's225':
+            main.NetworkBench.switches[ 's225' ].setPortSpeed( index=self.link.portB )
         with main.variableLock:
             self.device.downPorts.remove( self.port )
             self.link.bringUp()

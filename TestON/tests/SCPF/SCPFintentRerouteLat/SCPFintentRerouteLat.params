@@ -27,6 +27,7 @@
 
     <TEST>
         <warmUp>5</warmUp>
+        <maxLatency>1000</maxLatency>
         <sampleSize>20</sampleSize>
         <intents>1,100,1000</intents>                       #list format, will be split on ','
         <FObjintents>1,100</FObjintents>

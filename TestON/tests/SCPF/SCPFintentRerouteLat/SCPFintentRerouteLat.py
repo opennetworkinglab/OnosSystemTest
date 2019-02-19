@@ -282,8 +282,10 @@ class SCPFintentRerouteLat:
 
                     firstLocalLatnecy, lastLocalLatnecy, firstGlobalLatency, lastGlobalLatnecy \
                         = main.intentRerouteLatFuncs.calculateLatency( main, topologyTimestamps, intentTimestamps )
-                    if firstLocalLatnecy < 0:
-                        main.log.info( "Got negative latency, skipping this iteration..." )
+                    maxLatency = float( main.params[ 'TEST' ][ 'maxLatency' ] )
+                    if firstLocalLatnecy < 0 or lastLocalLatnecy < 0 or \
+                       firstLocalLatnecy > maxLatency or lastLocalLatnecy > maxLatency:
+                        main.log.info( "Got invalid latency, skipping this iteration..." )
                         main.intentRerouteLatFuncs.bringBackTopology( main )
                         if main.validRun >= main.warmUp:
                             main.invalidRun += 1

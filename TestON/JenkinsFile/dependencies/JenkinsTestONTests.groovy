@@ -191,7 +191,7 @@ def getAllTheTests( wikiPrefix ){
                             wiki_file: "HAbackupRecoverWiki.txt" ],
                     "HAupgrade": [
                             "basic": false,
-                            "extra_A": true,
+                            "extra_A": false,
                             "extra_B": false,
                             "new_Test": false,
                             "day": "",
@@ -199,7 +199,7 @@ def getAllTheTests( wikiPrefix ){
                             wiki_file: "HAupgradeWiki.txt" ],
                     "HAupgradeRollback": [
                             "basic": false,
-                            "extra_A": true,
+                            "extra_A": false,
                             "extra_B": false,
                             "new_Test": false,
                             "day": "",
@@ -586,7 +586,7 @@ def getAllTheTests( wikiPrefix ){
                             "test": "HAupgrade --params-file HAupgrade.params.fabric",
                             "basic": false,
                             "extra_A": false,
-                            "extra_B": true,
+                            "extra_B": false,
                             "new_Test": false,
                             "day": "",
                             wiki_link: wikiPrefix + "-" + "SR HA Upgrade",
@@ -594,7 +594,7 @@ def getAllTheTests( wikiPrefix ){
                     "SRHAupgradeRollback": [
                             "test": "HAupgradeRollback --params-file HAupgradeRollback.params.fabric",
                             "basic": false,
-                            "extra_A": true,
+                            "extra_A": false,
                             "extra_B": false,
                             "new_Test": false,
                             "day": "",

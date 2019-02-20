@@ -803,6 +803,7 @@ class TestON:
             self.testCaseResult[ str( self.CurrentTestCaseNumber ) ] = self.FALSE
             self.organizeResult( self.CurrentTestCaseNumber, self.FALSE )
             self.logger.updateCaseResults( self )
+        self.log.alarm( "Test exited unexpectedly" )
         self.cleanup()
         self.exit()
 

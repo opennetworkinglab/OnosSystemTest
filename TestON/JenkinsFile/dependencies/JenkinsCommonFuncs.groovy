@@ -162,9 +162,12 @@ def sendResultToSlack( start, isManualRun, branch ){
         if ( isManualRun == "false" ){
             end = getCurrentTime()
             TimeDuration duration = TimeCategory.minus( end, start )
+            // FIXME: for now we disable notifications of normal test results
+            /*
             slackSend( color: "#5816EE",
                        message: testType + "-" + branch + " tests ended at: " + end.toString() +
                                 "\nTime took : " + duration )
+            */
         }
     }
     catch ( all ){
@@ -308,11 +311,13 @@ def getSlackChannel(){
     // get name of the slack channel.
     // if the test is SR, it will return sr-failures
 
-    return "#" + ( testType == "SR" ? "sr-failures" : "jenkins-related" )
+    // FIXME: For now we move all notifications to #jenkins-related
+    // return "#" + ( testType == "SR" ? "sr-failures" : "jenkins-related" )
+    return "#jenkins-related"
 }
 
 def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink, isSCPF ){
-    // analyzing the result of the test and send to slack if the test was failed.
+    // analyzing the result of the test and send to slack if any abnormal result is logged.
     // prop : property dictionary
     // workSpace : workSpace where the result file is saved
     // pureTestName : TestON name of the test
@@ -322,18 +327,15 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
     // isSCPF : Check if it is SCPF. If so, it won't post the wiki link.
 
     node( testMachine ) {
-        def resultContents = readFile( workSpace + "/" + pureTestName + "Result.txt" )
-        resultContents = resultContents.split( "\n" )
-        if ( resultContents[ 0 ] == "1" ){
-            print "All passed"
-        }
-        else {
-            print "Failed"
+        def alarmFile = workSpace + "/" + pureTestName + "Alarm.txt"
+        if ( fileExists( alarmFile ) ) {
+            print "Abnormal test result logged"
+            def alarmContents = readFile( alarmFile )
             if ( prop[ "manualRun" ] == "false" ){
                 slackSend( channel: getSlackChannel(),
                            color: "FF0000",
-                           message: "[" + prop[ "ONOSBranch" ] + "]" + testName + " : Failed!\n" +
-                                    resultContents[ 1 ] + "\n" +
+                           message: "[" + prop[ "ONOSBranch" ] + "]" + testName + " : triggered alarms:\n" +
+                                    alarmContents + "\n" +
                                     "[TestON log] : \n" +
                                     "https://jenkins.onosproject.org/blue/organizations/jenkins/${ env.JOB_NAME }/detail/${ env.JOB_NAME }/${ env.BUILD_NUMBER }/pipeline" +
                                     ( isSCPF ? "" : ( "\n[Result on Wiki] : \n" +
@@ -344,6 +346,9 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
                            teamDomain: 'onosproject' )
             }
             Failed
+        }
+        else {
+            print "Test results are normal"
         }
     }
 }

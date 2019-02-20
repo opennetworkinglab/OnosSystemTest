@@ -124,6 +124,7 @@ class Logger:
         main.SummaryFileName = main.logdir + "/" + main.TEST + "Summary.txt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
         main.resultFile = main.logdir + "/" + main.TEST + "Result.txt"
+        main.alarmFileName = main.logdir + "/" + main.TEST + "Alarm.txt"
 
         main.TOTAL_TC_SUCCESS = 0
 
@@ -213,6 +214,17 @@ class Logger:
             print newmsg
 
         main.log.step = step
+
+        def alarm( msg ):
+            '''
+                Format of the alarm type log defined here.
+            '''
+            main.log._log( 6, msg, "OpenFlowAutoMattion", "OFAutoMation" )
+            main.alarmFile = open( main.alarmFileName, "a+" )
+            main.alarmFile.write( msg + "\n" )
+            main.alarmFile.close()
+
+        main.log.alarm = alarm
 
         main.LogFileHandler = logging.FileHandler( main.LogFileName )
         self._printHeader( main )

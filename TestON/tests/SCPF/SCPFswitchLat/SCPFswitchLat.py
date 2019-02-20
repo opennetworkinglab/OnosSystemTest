@@ -230,51 +230,40 @@ class SCPFswitchLat:
 
             main.log.report( "=====node{} Summary:=====".format( str( i ) ) )
             main.log.report( "=============Switch up=======" )
-
-            main.log.report(
-                            "End to End average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'E_E' ] ) ) )
-            main.log.report(
-                            "End to End Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] ) ) )
-
-            main.log.report(
-                            "TCP to Feature average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'T_F' ] ) ) )
-            main.log.report(
-                            "TCP to Feature Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'T_F' ] ) ) )
-
-            main.log.report(
-                            "Feature to Device average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'F_D' ] ) ) )
-            main.log.report(
-                            "Feature to Device Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'F_D' ] ) ) )
-
-            main.log.report(
-                            "Device to Graph average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] ) ) )
-            main.log.report(
-                            "Device to Graph Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] ) ) )
+            main.log.report( "End to End average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'E_E' ] ) ) )
+            main.log.report( "End to End Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] ) ) )
+            main.log.report( "TCP to Feature average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'T_F' ] ) ) )
+            main.log.report( "TCP to Feature Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'T_F' ] ) ) )
+            main.log.report( "Feature to Device average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'F_D' ] ) ) )
+            main.log.report( "Feature to Device Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'F_D' ] ) ) )
+            main.log.report( "Device to Graph average: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] ) ) )
+            main.log.report( "Device to Graph Std: {}".format( str( resultDict[ "up" ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] ) ) )
 
             main.log.report( "=============Switch down=======" )
+            main.log.report( "End to End average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'E_E' ] ) ) )
+            main.log.report( "End to End Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] ) ) )
+            main.log.report( "Fin_ACK to ACK average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'FA_A' ] ) ) )
+            main.log.report( "Fin_ACK to ACK Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'FA_A' ] ) ) )
+            main.log.report( "ACK to Device average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'A_D' ] ) ) )
+            main.log.report( "ACK to Device Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'A_D' ] ) ) )
+            main.log.report( "Device to Graph average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] ) ) )
+            main.log.report( "Device to Graph Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] ) ) )
 
-            main.log.report(
-                            "End to End average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'E_E' ] ) ) )
-            main.log.report(
-                            "End to End Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'E_E' ] ) ) )
-
-            main.log.report(
-                            "Fin_ACK to ACK average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'FA_A' ] ) ) )
-            main.log.report(
-                            "Fin_ACK to ACK Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'FA_A' ] ) ) )
-
-            main.log.report(
-                            "ACK to Device average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'A_D' ] ) ) )
-            main.log.report(
-                            "ACK to Device Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'A_D' ] ) ) )
-
-            main.log.report(
-                            "Device to Graph average: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Ave' ][ 'D_G' ] ) ) )
-            main.log.report(
-                            "Device to Graph Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] ) ) )
+        # Check if any result is abnormal
+        result = resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'E_E' ]
+        if result > float( main.params[ 'ALARM' ][ 'maxSwitchUpAve' ].split( ',' )[ main.cycle - 1 ] ):
+            main.log.alarm( "Average of switch up latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        result = resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Std' ][ 'E_E' ]
+        if result > float( main.params[ 'ALARM' ][ 'maxSwitchUpStd' ].split( ',' )[ main.cycle - 1 ] ):
+            main.log.alarm( "Std of switch up latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        result = resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'E_E' ]
+        if result > float( main.params[ 'ALARM' ][ 'maxSwitchDownAve' ].split( ',' )[ main.cycle - 1 ] ):
+            main.log.alarm( "Average of switch down latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        result = resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Std' ][ 'E_E' ]
+        if result > float( main.params[ 'ALARM' ][ 'maxSwitchDownStd' ].split( ',' )[ main.cycle - 1 ] ):
+            main.log.alarm( "Std of switch down latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
 
         with open( main.dbFileName, "a" ) as dbFile:
-            # TODO: Save STD to Database
             # Scale number
             temp = str( main.Cluster.numCtrls )
             temp += ",'baremetal1'"

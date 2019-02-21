@@ -332,20 +332,18 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
         if ( fileExists( alarmFile ) ) {
             print "Abnormal test result logged"
             def alarmContents = readFile( alarmFile )
-            if ( prop[ "manualRun" ] == "false" ){
-                slackSend( channel: getSlackChannel(),
-                           color: "FF0000",
-                           message: "[" + prop[ "ONOSBranch" ] + "]" + testName + " : triggered alarms:\n" +
-                                    alarmContents + "\n" +
-                                    "[TestON log] : \n" +
-                                    "https://jenkins.onosproject.org/blue/organizations/jenkins/${ env.JOB_NAME }/detail/${ env.JOB_NAME }/${ env.BUILD_NUMBER }/pipeline" +
-                                    ( isSCPF ? "" : ( "\n[Result on Wiki] : \n" +
-                                                      "https://wiki.onosproject.org/display/ONOS/" +
-                                                      wikiLink.replaceAll( "\\s", "+" ) ) ) +
-                                    ( resultURL != "" ? ( "\n[Karaf log] : \n" +
-                                                          resultURL + "artifact/" ) : "" ),
-                           teamDomain: 'onosproject' )
-            }
+            slackSend( channel: getSlackChannel(),
+                       color: "FF0000",
+                       message: "[" + prop[ "ONOSBranch" ] + "]" + testName + " : triggered alarms:\n" +
+                                alarmContents + "\n" +
+                                "[TestON log] : \n" +
+                                "https://jenkins.onosproject.org/blue/organizations/jenkins/${ env.JOB_NAME }/detail/${ env.JOB_NAME }/${ env.BUILD_NUMBER }/pipeline" +
+                                ( isSCPF ? "" : ( "\n[Result on Wiki] : \n" +
+                                                  "https://wiki.onosproject.org/display/ONOS/" +
+                                                  wikiLink.replaceAll( "\\s", "+" ) ) ) +
+                                ( resultURL != "" ? ( "\n[Karaf log] : \n" +
+                                                      resultURL + "artifact/" ) : "" ),
+                       teamDomain: 'onosproject' )
             Failed
         }
         else {

@@ -1,13 +1,13 @@
 <PARAMS>
-    <testcases>0,1,2,1,2,1,2,1,2</testcases>
+    <testcases>0,1,2,1,2,1,2</testcases>
 
     <GRAPH>
         <nodeCluster>BM</nodeCluster>
         <builds>20</builds>
     </GRAPH>
 
-    <SCALE>1,3,5,7</SCALE>
-    <max>7</max>
+    <SCALE>1,3,5</SCALE>
+    <max>5</max>
 
     <ENV>
         <cellName>topo_perf_test</cellName>
@@ -73,4 +73,11 @@
         <linkTimestamp>topologyLinkEventTimestamp</linkTimestamp>
         <graphTimestamp>topologyGraphEventTimestamp</graphTimestamp>
     </JSON>
+
+    <ALARM>
+        <maxPortUpAve>10,20,21</maxPortUpAve>
+        <maxPortUpStd>10,10,10</maxPortUpStd>
+        <maxPortDownAve>6,6,7</maxPortDownAve>
+        <maxPortDownStd>2,2,2</maxPortDownStd>
+    </ALARM>
 </PARAMS>

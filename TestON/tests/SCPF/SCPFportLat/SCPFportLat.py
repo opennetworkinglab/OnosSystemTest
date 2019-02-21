@@ -230,6 +230,20 @@ class SCPFportLat:
                 main.log.report(
                     "Link to Grapg Std: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'LtoG' ] ) ) )
 
+        # Check if any result is abnormal
+        result = resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'EtoE' ]
+        if result > float( main.params[ 'ALARM' ][ 'maxPortUpAve' ].split( ',' )[ main.cycle - 1 ] ):
+            main.log.alarm( "Average of port up latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        result = resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Std' ][ 'EtoE' ]
+        if result > float( main.params[ 'ALARM' ][ 'maxPortUpStd' ].split( ',' )[ main.cycle - 1 ] ):
+            main.log.alarm( "Std of port up latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        result = resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'EtoE' ]
+        if result > float( main.params[ 'ALARM' ][ 'maxPortDownAve' ].split( ',' )[ main.cycle - 1 ] ):
+            main.log.alarm( "Average of port down latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        result = resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Std' ][ 'EtoE' ]
+        if result > float( main.params[ 'ALARM' ][ 'maxPortDownStd' ].split( ',' )[ main.cycle - 1 ] ):
+            main.log.alarm( "Std of port down latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+
         with open( main.dbFileName, "a" ) as dbFile:
             # Scale number
             temp = str( main.Cluster.numCtrls )

@@ -602,9 +602,10 @@ class MininetCliDriver( Emulator ):
                     main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
                     flushCmd = "{} ip -6 neigh flush all".format( host )
-                    intf = hosts[host]['interfaces'][0]['name']
-                    cmd = "{} ndisc6 -r 1 -w {} {} {}".format( host, wait, dstIp6, intf )
-                    main.log.debug( "Sending IPv6 ND from host {}".format( host ) )
+                    for intf in hosts[ host ][ 'interfaces' ]:
+                        intfName = intf[ 'name' ]
+                        cmd = "{} ndisc6 -r 1 -w {} {} {}".format( host, wait, dstIp6, intfName )
+                        main.log.debug( "Sending IPv6 ND from interface {} on host {}".format( intfName, host ) )
                 else:
                     main.log.warn( "No IP addresses configured on host {}, skipping discovery".format( host ) )
                     discoveryResult = main.FALSE

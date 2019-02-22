@@ -18,7 +18,6 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
-# SCPFintentRerouteLat
 """
 SCPFintentRerouteLat
     - Test Intent Reroute Latency
@@ -333,6 +332,17 @@ class SCPFintentRerouteLat:
                 main.log.report( "Local latency std:................" + str( stdLocalLatency ) )
                 main.log.report( "Global latency std:................" + str( stdGlobalLatency ) )
                 main.log.report( "________________________________________________________" )
+
+                # Check test results
+                index = len( main.intentsList ) * ( main.cycle - 1 ) + main.intentsList.index( batchSize )
+                # Check installation results
+                if main.flowObj:
+                    threshold = float( main.params[ 'ALARM' ][ 'maxLatFlowObj' ].split( ',' )[ index ])
+                else:
+                    threshold = float( main.params[ 'ALARM' ][ 'maxLat' ].split( ',' )[ index ])
+                if aveLocalLatency > threshold:
+                    main.log.alarm( "{}-node install avg: {} ms > {} ms".format( main.Cluster.numCtrls,
+                                                                                 aveLocalLatency, threshold ) )
 
                 if not ( numpy.isnan( aveLocalLatency ) or numpy.isnan( aveGlobalLatency ) ):
                     # check if got NaN for result

@@ -117,6 +117,12 @@ class SCPFcbench:
                 main.log.info( "Average: \t\t\t" + avg )
                 main.log.info( "Standard Deviation: \t" + stdev )
 
+                # Check cbench test results
+                threshold = float( main.params[ 'ALARM' ][ 'minTp' ].split( ',' )[ main.cycle - 1 ] )
+                if float( avg ) < threshold:
+                    main.log.alarm( "{}-node: {}/s < {}/s".format( main.Cluster.numCtrls,
+                                                                   avg, threshold ) )
+
                 try:
                     dbFileName = "/tmp/CbenchDB"
                     dbfile = open( dbFileName, "w+" )

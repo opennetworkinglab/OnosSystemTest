@@ -7,8 +7,9 @@
     # 100 - balance master and bring onos node down
     # 200 - bring onos node up and balance masters
     # 1000 - report logs
+    # 1001 - report alarms
     # 1,[2,10,300,11,100,300,11,200,300,11,1000]*3
-    <testcases>1,[3,2,10,300,11,1000]*7,3</testcases>
+    <testcases>1,[3,2,10,300,11,1000]*5,3,1001</testcases>
 
     <GRAPH>
         <nodeCluster>BM</nodeCluster>
@@ -81,5 +82,9 @@
         <scale>10,20,30,40,50</scale>
         <host>True</host>
     </TOPOLOGY>
+
+    <ALARM>
+        <minMaxScale>40</minMaxScale>
+    </ALARM>
 
 </PARAMS>

@@ -75,9 +75,9 @@
     </JSON>
 
     <ALARM>
-        <maxPortUpAve>10,20,21</maxPortUpAve>
+        <maxPortUpAvg>10,20,21</maxPortUpAvg>
         <maxPortUpStd>10,10,10</maxPortUpStd>
-        <maxPortDownAve>6,6,7</maxPortDownAve>
+        <maxPortDownAvg>6,6,7</maxPortDownAvg>
         <maxPortDownStd>2,2,2</maxPortDownStd>
     </ALARM>
 </PARAMS>

@@ -231,18 +231,24 @@ class SCPFportLat:
                     "Link to Grapg Std: {}".format( str( resultDict[ d ][ 'node' + str( i ) ][ 'Std' ][ 'LtoG' ] ) ) )
 
         # Check if any result is abnormal
+        # Port-up
         result = resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'EtoE' ]
-        if result > float( main.params[ 'ALARM' ][ 'maxPortUpAve' ].split( ',' )[ main.cycle - 1 ] ):
-            main.log.alarm( "Average of port up latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        threshold = float( main.params[ 'ALARM' ][ 'maxPortUpAvg' ].split( ',' )[ main.cycle - 1 ] )
+        if result > threshold:
+            main.log.alarm( "{}-node port-up avg: {} ms > {} ms".format( main.Cluster.numCtrls, result, threshold ) )
         result = resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Std' ][ 'EtoE' ]
-        if result > float( main.params[ 'ALARM' ][ 'maxPortUpStd' ].split( ',' )[ main.cycle - 1 ] ):
-            main.log.alarm( "Std of port up latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        threshold = float( main.params[ 'ALARM' ][ 'maxPortUpStd' ].split( ',' )[ main.cycle - 1 ] )
+        if result > threshold:
+            main.log.alarm( "{}-node port-up std: {} ms > {} ms".format( main.Cluster.numCtrls, result, threshold ) )
+        # Port-down
         result = resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'EtoE' ]
-        if result > float( main.params[ 'ALARM' ][ 'maxPortDownAve' ].split( ',' )[ main.cycle - 1 ] ):
-            main.log.alarm( "Average of port down latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        threshold = float( main.params[ 'ALARM' ][ 'maxPortDownAvg' ].split( ',' )[ main.cycle - 1 ] )
+        if result > threshold:
+            main.log.alarm( "{}-node port-down avg: {} ms > {} ms".format( main.Cluster.numCtrls, result, threshold ) )
         result = resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Std' ][ 'EtoE' ]
-        if result > float( main.params[ 'ALARM' ][ 'maxPortDownStd' ].split( ',' )[ main.cycle - 1 ] ):
-            main.log.alarm( "Std of port down latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        threshold = float( main.params[ 'ALARM' ][ 'maxPortDownStd' ].split( ',' )[ main.cycle - 1 ] )
+        if result > threshold:
+            main.log.alarm( "{}-node port-down std: {} ms > {} ms".format( main.Cluster.numCtrls, result, threshold ) )
 
         with open( main.dbFileName, "a" ) as dbFile:
             # Scale number

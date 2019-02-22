@@ -240,7 +240,7 @@ def cleanAndCopyFiles( testName ){
         sudo rm ${WORKSPACE}/*Wiki.txt
         sudo rm ${WORKSPACE}/*Summary.txt
         sudo rm ${WORKSPACE}/*Result.txt
-        sudo rm ${WORKSPACE}/*Alarm.txt
+        sudo rm ${WORKSPACE}/*Alarm.txt || true
         sudo rm ${WORKSPACE}/*.csv
         #copy files to workspace
         cd `ls -t ~/OnosSystemTest/TestON/logs/*/ | head -1 | sed 's/://'`

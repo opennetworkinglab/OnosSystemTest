@@ -680,7 +680,7 @@ class OnosCliDriver( CLI ):
         """
         try:
             numLines = self.sendline( cmdStr, showResponse, debug, timeout, noExit, relaxedRegex )
-            parsed = re.search( "(\d+)\s+(\d+)", numLines )
+            parsed = re.search( "(\d+)", numLines )
             if not parsed:
                 main.log.error( "Warning, output of karaf's wc may have changed" )
                 return None

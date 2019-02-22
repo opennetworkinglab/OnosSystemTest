@@ -292,8 +292,17 @@ class SCPFflowTp1g:
 
         stdTP = numpy.std( tp )
 
-        main.log.info( "Average thoughput:  " + str( avgTP ) + " K" + toInstall + "/second" )
-        main.log.info( "Standard deviation of throughput: " + str( stdTP ) + " K" + toInstall + "/second" )
+        main.log.info( "Average thoughput:  " + str( avgTP ) + " K " + toInstall + "/second" )
+        main.log.info( "Standard deviation of throughput: " + str( stdTP ) + " K " + toInstall + "/second" )
+
+        # Check if throughput result is abnormal
+        if isFlowObj:
+            threshold = float( main.params[ 'ALARM' ][ 'minTpFlowObj' ].split( ',' )[ main.cycle - 1 ] )
+        else:
+            threshold = float( main.params[ 'ALARM' ][ 'minTp' ].split( ',' )[ main.cycle - 1 ] )
+        if avgTP < threshold:
+            main.log.alarm( "{}-node with {} neighbor: {}K/s < {}K/s".format( main.Cluster.numCtrls,
+                                                                              neighbors, avgTP, threshold ) )
 
         resultsLog = open( str( resultFile ), "a" )
         resultString = ( "'" + main.commit + "'," )

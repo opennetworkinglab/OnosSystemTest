@@ -11,8 +11,8 @@
     <availableNodes>1</availableNodes>
 
     <ENV>
-    <cellName>Cbenchcell</cellName>
-    <cellApps>drivers,openflow-base,fwd</cellApps>
+        <cellName>Cbenchcell</cellName>
+        <cellApps>drivers,openflow-base,fwd</cellApps>
     </ENV>
 
     <TEST>
@@ -44,7 +44,8 @@
         <user>sdn</user>
     </CBENCH>
 
-    <JSON>
-    </JSON>
+    <ALARM>
+        <minTp>1000000</minTp>
+    </ALARM>
 
 </PARAMS>

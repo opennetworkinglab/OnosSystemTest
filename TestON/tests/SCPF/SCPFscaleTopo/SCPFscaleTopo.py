@@ -81,6 +81,7 @@ class SCPFscaleTopo:
             main.MNLinksTime = int( main.params[ 'TIMEOUT' ][ 'links' ] )
             main.getTopoTime = int( main.params[ 'TIMEOUT' ][ 'getTopo' ] )
             main.currScale = None
+            main.maxScale = 1
             main.threadID = 0
             if main.hostDiscover == 'True':
                 main.hostDiscover = True
@@ -464,6 +465,7 @@ class SCPFscaleTopo:
                 main.log.error( "The results of two capture are different!" )
             main.log.debug( "The data is " + str( main.allinfo ) )
             if main.writeData != -1:
+                main.maxScale = main.currScale
                 main.log.info( "Write the date into database" )
                 # write the date into data base
                 with open( main.dbFilePath, "a" ) as dbFile:
@@ -490,3 +492,12 @@ class SCPFscaleTopo:
                                                                   "ERROR",
                                                                   "Except" ],
                                                                   "s" )
+
+    def CASE1001( self, main ):
+        """
+            Write abnormal test results to alarm log
+        """
+        threshold = int( main.params[ 'ALARM' ][ 'minMaxScale' ] )
+        if int( main.maxScale ) < threshold:
+            main.log.alarm( "Max scale: {}x{} < {}x{}".format( main.maxScale, main.maxScale,
+                                                               threshold, threshold ) )

@@ -276,6 +276,26 @@ class SCPFintentInstallWithdrawLat:
                 main.log.report( "Intent batch: " + str( batchSize ) )
                 main.log.report( "Install average: {}    std: {}".format( installave, installstd ) )
                 main.log.report( "Withdraw average: {}   std: {}".format( withdrawave, withdrawstd ) )
+
+                # Check test results
+                index = len( main.intentsList ) * ( main.cycle - 1 ) + main.intentsList.index( batchSize )
+                # Check installation results
+                if main.flowObj:
+                    threshold = float( main.params[ 'ALARM' ][ 'maxInstallLatFlowObj' ].split( ',' )[ index ])
+                else:
+                    threshold = float( main.params[ 'ALARM' ][ 'maxInstallLat' ].split( ',' )[ index ])
+                if installave > threshold:
+                    main.log.alarm( "{}-node install avg: {} ms > {} ms".format( main.Cluster.numCtrls,
+                                                                                 installave, threshold ) )
+                # Check withdrawal results
+                if main.flowObj:
+                    threshold = float( main.params[ 'ALARM' ][ 'maxWithdrawLatFlowObj' ].split( ',' )[ index ])
+                else:
+                    threshold = float( main.params[ 'ALARM' ][ 'maxWithdrawLat' ].split( ',' )[ index ])
+                if withdrawave > threshold:
+                    main.log.alarm( "{}-node withdraw avg: {} ms > {} ms".format( main.Cluster.numCtrls,
+                                                                                  withdrawave, threshold ) )
+
                 # write result to database file
                 if not ( numpy.isnan( installave ) or numpy.isnan( installstd ) or
                          numpy.isnan( withdrawstd ) or numpy.isnan( withdrawave ) ):

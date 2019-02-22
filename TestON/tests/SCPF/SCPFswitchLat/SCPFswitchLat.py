@@ -250,18 +250,24 @@ class SCPFswitchLat:
             main.log.report( "Device to Graph Std: {}".format( str( resultDict[ "down" ][ 'node' + str( i ) ][ 'Std' ][ 'D_G' ] ) ) )
 
         # Check if any result is abnormal
+        # Switch-up
         result = resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Ave' ][ 'E_E' ]
-        if result > float( main.params[ 'ALARM' ][ 'maxSwitchUpAve' ].split( ',' )[ main.cycle - 1 ] ):
-            main.log.alarm( "Average of switch up latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        threshold = float( main.params[ 'ALARM' ][ 'maxSwitchUpAvg' ].split( ',' )[ main.cycle - 1 ] )
+        if result > threshold:
+            main.log.alarm( "{}-node switch-up avg: {} ms > {} ms".format( main.Cluster.numCtrls, result, threshold ) )
         result = resultDict[ 'up' ][ 'node' + str( maxDict[ 'up' ][ 'node' ] ) ][ 'Std' ][ 'E_E' ]
-        if result > float( main.params[ 'ALARM' ][ 'maxSwitchUpStd' ].split( ',' )[ main.cycle - 1 ] ):
-            main.log.alarm( "Std of switch up latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        threshold = float( main.params[ 'ALARM' ][ 'maxSwitchUpStd' ].split( ',' )[ main.cycle - 1 ] )
+        if result > threshold:
+            main.log.alarm( "{}-node switch-up std: {} ms > {} ms".format( main.Cluster.numCtrls, result, threshold ) )
+        # Switch-down
         result = resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Ave' ][ 'E_E' ]
-        if result > float( main.params[ 'ALARM' ][ 'maxSwitchDownAve' ].split( ',' )[ main.cycle - 1 ] ):
-            main.log.alarm( "Average of switch down latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        threshold = float( main.params[ 'ALARM' ][ 'maxSwitchDownAvg' ].split( ',' )[ main.cycle - 1 ] )
+        if result > threshold:
+            main.log.alarm( "{}-node switch-down avg: {} ms > {} ms".format( main.Cluster.numCtrls, result, threshold ) )
         result = resultDict[ 'down' ][ 'node' + str( maxDict[ 'down' ][ 'node' ] ) ][ 'Std' ][ 'E_E' ]
-        if result > float( main.params[ 'ALARM' ][ 'maxSwitchDownStd' ].split( ',' )[ main.cycle - 1 ] ):
-            main.log.alarm( "Std of switch down latency is {} with cluster size {}".format( result, main.Cluster.numCtrls ) )
+        threshold = float( main.params[ 'ALARM' ][ 'maxSwitchDownStd' ].split( ',' )[ main.cycle - 1 ] )
+        if result > threshold:
+            main.log.alarm( "{}-node switch-down std: {} ms > {} ms".format( main.Cluster.numCtrls, result, threshold ) )
 
         with open( main.dbFileName, "a" ) as dbFile:
             # Scale number

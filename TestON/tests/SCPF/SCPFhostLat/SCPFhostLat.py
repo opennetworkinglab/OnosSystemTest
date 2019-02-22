@@ -245,6 +245,12 @@ class SCPFhostLat:
         stdResult = numpy.std( addingHostTime )
         main.log.info( "std: {}".format( stdResult ) )
 
+        # Check test results
+        threshold = float( main.params[ 'ALARM' ][ 'maxLat' ].split( ',' )[ main.cycle - 1 ] )
+        if averageResult > threshold:
+            main.log.alarm( "{}-node: {} ms > {} ms".format( main.Cluster.numCtrls,
+                                                             averageResult, threshold ) )
+
         # write to DB file
         main.log.info( "Writing results to DS file" )
         with open( main.dbFileName, "a" ) as dbFile:

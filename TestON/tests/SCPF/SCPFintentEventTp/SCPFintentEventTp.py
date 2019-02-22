@@ -58,7 +58,6 @@ class SCPFintentEventTp:
             main.BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
             main.BENCHUser = main.params[ 'BENCH' ][ 'user' ]
             main.MN1Ip = main.params[ 'MN' ][ 'ip1' ]
-            main.numSwitches = ( main.params[ 'TEST' ][ 'numSwitches' ] ).split( "," )
             main.skipRelRsrc = main.params[ 'TEST' ][ 'skipReleaseResourcesOnWithdrawal' ]
             main.flowObj = main.params[ 'TEST' ][ 'flowObj' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
@@ -148,10 +147,21 @@ class SCPFintentEventTp:
         main.log.info( "Stop intent-perf" )
         for ctrl in main.Cluster.active():
             ctrl.CLI.sendline( "intent-perf-stop" )
+        tp = 0.0
         if result:
             for ctrl in main.Cluster.active():
                 main.log.info( "Node {} final Overall Rate: {}".format( ctrl.ipAddress,
                                                                         result[ ctrl.ipAddress ] ) )
+                tp += float( result[ ctrl.ipAddress ] )
+
+        # Check if throughput result is abnormal
+        if main.flowObj:
+            threshold = float( main.params[ 'ALARM' ][ 'minTpFlowObj' ].split( ',' )[ main.cycle - 1 ] )
+        else:
+            threshold = float( main.params[ 'ALARM' ][ 'minTp' ].split( ',' )[ main.cycle - 1 ] )
+        if tp < threshold:
+            main.log.alarm( "{}-node with {} neighbor: {}/s < {}/s".format( main.Cluster.numCtrls,
+                                                                            neighbors, tp, threshold ) )
 
         with open( main.dbFileName, "a" ) as resultDB:
             for nodes in range( main.Cluster.numCtrls ):

@@ -30,7 +30,7 @@ print now.toString()
 // read the passed parameters from the Jenkins.
 machines = params.machines
 manually_run = params.manual_run
-# FIXME: for now we disable any other slack notifications excpet alarms
+// FIXME: for now we disable any other slack notifications excpet alarms
 /*
 if ( !manually_run ){
     slackSend( color: '#03CD9F',

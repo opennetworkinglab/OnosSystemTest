@@ -203,23 +203,7 @@ class HAkillNodes:
                                  onpass="ONOS nodes killed successfully",
                                  onfail="ONOS nodes NOT successfully killed" )
 
-        main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                       False,
-                                       sleep=15,
-                                       attempts=5 )
-
-        utilities.assert_equals( expect=True, actual=nodeResults,
-                                 onpass="Nodes check successful",
-                                 onfail="Nodes check NOT successful" )
-
-        if not nodeResults:
-            for ctrl in main.Cluster.active():
-                main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    ctrl.name,
-                    ctrl.CLI.sendline( "onos:scr-list | grep -v ACTIVE" ) ) )
-            main.log.error( "Failed to start ONOS, stopping test" )
-            main.cleanAndExit()
+        main.testSetUp.checkOnosNodes( main.Cluster )
 
     def CASE62( self, main ):
         """

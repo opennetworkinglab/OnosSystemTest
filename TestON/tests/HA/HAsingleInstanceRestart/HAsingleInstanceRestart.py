@@ -427,20 +427,7 @@ class HAsingleInstanceRestart:
         utilities.assert_equals( expect=main.TRUE, actual=topoResult,
                                  onpass="Topology Check Test successful",
                                  onfail="Topology Check Test NOT successful" )
-        main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                       False,
-                                       attempts=5 )
-
-        utilities.assert_equals( expect=True, actual=nodeResults,
-                                 onpass="Nodes check successful",
-                                 onfail="Nodes check NOT successful" )
-        if not nodeResults:
-            for ctrl in main.Cluster.active():
-                main.log.debug( "{} components not ACTIVE: \n{}".format(
-                    ctrl.name,
-                    ctrl.CLI.sendline( "onos:scr-list | grep -v ACTIVE" ) ) )
-
+        main.testSetUp.checkOnosNodes( main.Cluster )
         if not topoResult:
             main.cleanAndExit()
 

@@ -123,9 +123,9 @@ class OnosRestDriver( Controller ):
             if debug:
                 main.log.debug( response )
             return ( response.status_code, response.text.encode( 'utf8' ) )
-        except requests.exceptions:
+        except requests.ConnectionError:
             main.log.exception( "Error sending request." )
-            return None
+            return ( None, None )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()

@@ -440,8 +440,7 @@ class ONOSSetup:
                     ctrl.name,
                     ctrl.CLI.sendline( "scr:list | grep -v ACTIVE" ) ) )
             main.log.error( "Failed to start ONOS, stopping test" )
-            main.log.alarm( "Failed to start ONOS: not all nodes are in READY state" )
-            main.cleanAndExit()
+            main.cleanAndExit( msg="Failed to start ONOS: not all nodes are in READY state" )
         return main.TRUE
 
     def checkOnosApps( self, cluster, apps ):

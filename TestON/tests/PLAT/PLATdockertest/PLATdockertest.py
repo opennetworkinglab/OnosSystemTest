@@ -112,7 +112,7 @@ class PLATdockertest:
             main.cleanAndExit()
         if imageTagCounter > len( imageTagList ):
             main.log.info( "All images have been tested" )
-            main.cleanAndExit()
+            main.cleanAndExit( alarm=False )
 
     def CASE5( self, main ):
         """

@@ -146,6 +146,9 @@ class FUNCvirNetNB:
                 onpass="Post Success",
                 onfail="Post Failed " + str( Poststatus ) + str( result ) )
 
+        if not Poststatus:
+            main.cleanAndExit( alarm=False )
+
         main.step( "Get Data via HTTP" )
         Getstatus, result = ctrl.REST.send( ctrlip, port, network.id, path + 'networks/',
                                             'GET', None, None )

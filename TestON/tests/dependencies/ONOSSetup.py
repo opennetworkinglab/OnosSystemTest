@@ -310,6 +310,8 @@ class ONOSSetup:
                                  actual=packageResult,
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
+        if not packageResult:
+            main.cleanAndExit()
         return packageResult
 
     def installAtomix( self, cluster, parallel=True ):

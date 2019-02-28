@@ -277,12 +277,14 @@ class SCPFflowTp1g:
             main.log.info( resultString )
             print( "\n" )
 
-        avgOfMaxes = numpy.mean( maxes )
-        main.log.info( "Average of max value from each test iteration: " + str( avgOfMaxes ) )
-
-        stdOfMaxes = numpy.std( maxes )
-        main.log.info( "Standard Deviation of max values: " + str( stdOfMaxes ) )
-        print( "\n\n" )
+        try:
+            avgOfMaxes = numpy.mean( maxes )
+            main.log.info( "Average of max value from each test iteration: " + str( avgOfMaxes ) )
+            stdOfMaxes = numpy.std( maxes )
+            main.log.info( "Standard Deviation of max values: " + str( stdOfMaxes ) )
+            print( "\n\n" )
+        except TypeError:
+            main.cleanAndExit( msg="flow-tester execution failed" )
 
         avgTP = int( installCount ) / avgOfMaxes  # result in kflows/second
 

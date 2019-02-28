@@ -793,17 +793,30 @@ class TestON:
         os.system( "stty sane" )  # fix format if necessary
         sys.exit()
 
-    def cleanAndExit( self ):
+    def cleanAndExit( self, alarm=True, msg="" ):
         """
             It will set the testcase result to be FAILED and update it
             before cleaning up and exitting the test.
+            alarm: when set to True, it will write to the alarm log before
+            cleaning up and exitting; otherwise it will write to error log.
+            msg: message that will be written to the log if specified;
+            otherwise a default message will be written.
         :return:
         """
         if self.CurrentTestCaseNumber:
             self.testCaseResult[ str( self.CurrentTestCaseNumber ) ] = self.FALSE
             self.organizeResult( self.CurrentTestCaseNumber, self.FALSE )
             self.logger.updateCaseResults( self )
-        self.log.alarm( "Test exited unexpectedly" )
+        if alarm:
+            if msg:
+                self.log.alarm( "Test exited unexpectedly: {}".format( msg ) )
+            else:
+                self.log.alarm( "Test exited unexpectedly" )
+        else:
+            if msg:
+                self.log.error( "Test exited unexpectedly: {}".format( msg ) )
+            else:
+                self.log.error( "Test exited unexpectedly" )
         self.cleanup()
         self.exit()
 

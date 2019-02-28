@@ -145,7 +145,7 @@ def pingSpeakerToPeer( main, speakers=[ "spk1" ],
                              onfail="Ping test results are Not expected" )
 
     if not result:
-        main.cleanAndExit()
+        main.cleanAndExit( alarm=False )
 
 
 def pingHostToHost( main, hosts=[ "h64514", "h64515", "h64516" ],

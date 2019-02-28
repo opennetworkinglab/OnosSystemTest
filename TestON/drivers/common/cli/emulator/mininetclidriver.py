@@ -595,23 +595,26 @@ class MininetCliDriver( Emulator ):
             discoveryResult = main.TRUE
             for host in hostList:
                 flushCmd = ""
-                cmd = ""
+                cmds = []
                 if self.getIPAddress( host ):
                     flushCmd = "{} ip neigh flush all".format( host )
-                    cmd = "{} arping -c 1 -w {} {}".format( host, wait, dstIp )
+                    cmds.append( "{} arping -c 1 -w {} {}".format( host, wait, dstIp ) )
                     main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
                     flushCmd = "{} ip -6 neigh flush all".format( host )
+                    # FIXME: we are using the same ipv6Addr for all interfaces
+                    ipv6Addr = self.getIPAddress( host, proto='IPV6' )
                     for intf in hosts[ host ][ 'interfaces' ]:
                         intfName = intf[ 'name' ]
-                        cmd = "{} ndisc6 -r 1 -w {} {} {}".format( host, wait, dstIp6, intfName )
+                        cmds.append( "{} ndsend {} {}".format( host, ipv6Addr, intfName ) )
                         main.log.debug( "Sending IPv6 ND from interface {} on host {}".format( intfName, host ) )
                 else:
                     main.log.warn( "No IP addresses configured on host {}, skipping discovery".format( host ) )
                     discoveryResult = main.FALSE
-                if cmd:
+                if flushCmd:
                     self.handle.sendline( flushCmd )
                     self.handle.expect( "mininet>" )
+                for cmd in cmds:
                     self.handle.sendline( cmd )
                     self.handle.expect( "mininet>", timeout=wait + 5 )
             return discoveryResult

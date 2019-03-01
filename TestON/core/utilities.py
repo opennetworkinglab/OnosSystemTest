@@ -220,13 +220,13 @@ class Utilities:
                 sub = "Result summary of \"" + main.TEST + "\" run on component \"" + \
                       main.test_target + "\" Version \"" + \
                       vars( main )[ main.test_target ].get_version() + "\": " + \
-                      str( main.TOTAL_TC_SUCCESS ) + "% Passed"
+                      str( main.TOTAL_TC_SUCCESS_PERCENT ) + "% Passed"
             else:
                 sub = "Result summary of \"" + main.TEST + "\": " + \
-                      str( main.TOTAL_TC_SUCCESS ) + "% Passed"
+                      str( main.TOTAL_TC_SUCCESS_PERCENT ) + "% Passed"
         except( KeyError, AttributeError ):
             sub = "Result summary of \"" + main.TEST + "\": " + \
-                  str( main.TOTAL_TC_SUCCESS ) + "% Passed"
+                  str( main.TOTAL_TC_SUCCESS_PERCENT ) + "% Passed"
 
         msg[ 'Subject' ] = sub
         msg[ 'From' ] = main.sender

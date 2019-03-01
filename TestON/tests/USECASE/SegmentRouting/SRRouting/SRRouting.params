@@ -55,4 +55,7 @@
         <linkNum>48</linkNum>
     </TOPO>
 
+    <ALARM>
+        <minPassPercent>80</minPassPercent>
+    </ALARM>
 </PARAMS>

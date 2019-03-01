@@ -42,4 +42,8 @@
     <SLEEP>
         <startup>10</startup>
     </SLEEP>
+
+    <ALARM>
+        <minPassPercent>100</minPassPercent>
+    </ALARM>
 </PARAMS>

@@ -126,7 +126,7 @@ class Logger:
         main.resultFile = main.logdir + "/" + main.TEST + "Result.txt"
         main.alarmFileName = main.logdir + "/" + main.TEST + "Alarm.txt"
 
-        main.TOTAL_TC_SUCCESS = 0
+        main.TOTAL_TC_SUCCESS_PERCENT = 0
 
         # Add log-level - Report
         logging.addLevelName( 9, "REPORT" )
@@ -283,9 +283,9 @@ class Logger:
         main.ENDTIME = datetime.datetime.now()
         main.EXECTIME = main.ENDTIME - main.STARTTIME
         if ( main.TOTAL_TC_PASS == 0 ):
-            main.TOTAL_TC_SUCCESS = 0
+            main.TOTAL_TC_SUCCESS_PERCENT = 0
         else:
-            main.TOTAL_TC_SUCCESS = str( ( main.TOTAL_TC_PASS * 100 ) / main.TOTAL_TC_RUN )
+            main.TOTAL_TC_SUCCESS_PERCENT = main.TOTAL_TC_PASS * 100 / main.TOTAL_TC_RUN
         if ( main.TOTAL_TC_RUN == 0 ):
             main.TOTAL_TC_EXECPERCENT = 0
         else:
@@ -294,13 +294,13 @@ class Logger:
         testResult = testResult + "\n Test Start           : " + str( main.STARTTIME.strftime( "%d %b %Y %H:%M:%S" ) )
         testResult = testResult + "\n Test End             : " + str( main.ENDTIME.strftime( "%d %b %Y %H:%M:%S" ) )
         testResult = testResult + "\n Execution Time       : " + str( main.EXECTIME )
-        testResult = testResult + "\n Total tests planned  : " + str( main.TOTAL_TC_PLANNED )
-        testResult = testResult + "\n Total tests RUN      : " + str( main.TOTAL_TC_RUN )
+        testResult = testResult + "\n Total Tests Planned  : " + str( main.TOTAL_TC_PLANNED )
+        testResult = testResult + "\n Total Tests Run      : " + str( main.TOTAL_TC_RUN )
         testResult = testResult + "\n Total Pass           : " + str( main.TOTAL_TC_PASS )
         testResult = testResult + "\n Total Fail           : " + str( main.TOTAL_TC_FAIL )
         testResult = testResult + "\n Total No Result      : " + str( main.TOTAL_TC_NORESULT )
-        testResult = testResult + "\n Success Percentage   : " + str( main.TOTAL_TC_SUCCESS ) + "%"
-        testResult = testResult + "\n Execution Result     : " + str( main.TOTAL_TC_EXECPERCENT ) + "%\n"
+        testResult = testResult + "\n Success Percentage   : " + str( main.TOTAL_TC_SUCCESS_PERCENT ) + "%"
+        testResult = testResult + "\n Execution Percentage : " + str( main.TOTAL_TC_EXECPERCENT ) + "%\n"
         if main.failedCase:
             testResult = testResult + "\n Case Failed          : " + str( main.failedCase )
         if main.noResultCase:
@@ -310,6 +310,12 @@ class Logger:
         # main.log.report(testResult)
         main.testResult = testResult
         main.log.exact( testResult )
+
+        # Write to alarm log if Success Percentage is lower than expected
+        if 'ALARM' in main.params.keys() and 'minPassPercent' in main.params[ 'ALARM' ].keys():
+            minPassPercent = int( main.params[ 'ALARM' ][ 'minPassPercent' ] )
+            if main.TOTAL_TC_SUCCESS_PERCENT < minPassPercent:
+                main.log.alarm( 'Success percentage: {}% < {}%'.format( main.TOTAL_TC_SUCCESS_PERCENT, minPassPercent ) )
 
         # CSV output needed for Jenkin's plot plugin
         # NOTE: the elements were orded based on the colors assigned to the data

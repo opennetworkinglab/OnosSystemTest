@@ -232,13 +232,7 @@ class HAswapNodes:
 
         main.testSetUp.startOnosClis( main.Cluster )
 
-        main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                       False,
-                                       attempts=15 )
-        utilities.assert_equals( expect=True, actual=nodeResults,
-                                 onpass="Nodes check successful",
-                                 onfail="Nodes check NOT successful" )
+        main.testSetUp.checkOnosNodes( main.Cluster )
 
         ready = utilities.retry( main.Cluster.command,
                                  False,

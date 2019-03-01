@@ -209,15 +209,7 @@ class HApowerFailure:
                                  onpass="ONOS nodes killed successfully",
                                  onfail="ONOS nodes NOT successfully killed" )
 
-        main.step( "Checking ONOS nodes" )
-        nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                       False,
-                                       sleep=15,
-                                       attempts=5 )
-
-        utilities.assert_equals( expect=True, actual=nodeResults,
-                                 onpass="Nodes check successful",
-                                 onfail="Nodes check NOT successful" )
+        main.testSetUp.checkOnosNodes( main.Cluster )
 
         if not nodeResults:
             for ctrl in main.Cluster.active():

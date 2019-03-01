@@ -420,15 +420,7 @@ class VPLSfailsafe:
             # Run some basic checks to see if ONOS node truly has succesfully restarted:
 
             # Checking if all nodes appear with status READY using 'nodes' command
-            main.step( "Checking ONOS nodes." )
-            nodeResults = utilities.retry( main.Cluster.nodesCheck,
-                                           False,
-                                           sleep=main.timeSleep,
-                                           attempts=main.numAttempts )
-
-            utilities.assert_equals( expect=True, actual=nodeResults,
-                                     onpass="Nodes check successful.",
-                                     onfail="Nodes check NOT successful." )
+            main.testSetUp.checkOnosNodes( main.Cluster )
 
             # All apps that are present are active
             main.log.info( "Checking if apps are active." )

@@ -386,7 +386,7 @@ class MininetCliDriver( Emulator ):
                                         str( response ) )
                         # NOTE: Send ctrl-c to make sure pingall is done
                         self.exitFromCmd( [ "Interrupt", "mininet>" ] )
-                        self.handle.send( "" )
+                        self.handle.sendline( "" )
                         self.handle.expect( "mininet>" )
                         break
                 pattern = "Results\:"
@@ -398,7 +398,7 @@ class MininetCliDriver( Emulator ):
                 else:
                     # NOTE: Send ctrl-c to make sure pingall is done
                     self.exitFromCmd( [ "Interrupt", "mininet>" ] )
-                    self.handle.send( "" )
+                    self.handle.sendline( "" )
                     self.handle.expect( "mininet>" )
                     return main.FALSE
             else:
@@ -492,7 +492,7 @@ class MininetCliDriver( Emulator ):
             # NOTE: Send ctrl-c to make sure command is stopped
             self.exitFromCmd( [ "Interrupt", "mininet>" ] )
             response += self.handle.before + self.handle.after
-            self.handle.send( "" )
+            self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
             response += self.handle.before + self.handle.after
             main.log.debug( response )
@@ -560,7 +560,7 @@ class MininetCliDriver( Emulator ):
             # NOTE: Send ctrl-c to make sure command is stopped
             self.exitFromCmd( [ "Interrupt", "mininet>" ] )
             response += self.handle.before + self.handle.after
-            self.handle.send( "" )
+            self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
             response += self.handle.before + self.handle.after
             main.log.debug( response )
@@ -624,7 +624,7 @@ class MininetCliDriver( Emulator ):
             # NOTE: Send ctrl-c to make sure command is stopped
             self.exitFromCmd( [ "Interrupt", "mininet>" ] )
             response += self.handle.before + self.handle.after
-            self.handle.send( "" )
+            self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
             response += self.handle.before + self.handle.after
             main.log.debug( response )
@@ -688,7 +688,7 @@ class MininetCliDriver( Emulator ):
             # NOTE: Send ctrl-c to make sure command is stopped
             self.exitFromCmd( [ "Interrupt", "mininet>" ] )
             response += self.handle.before + self.handle.after
-            self.handle.send( "" )
+            self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
             response += self.handle.before + self.handle.after
             main.log.debug( response )
@@ -1354,7 +1354,7 @@ class MininetCliDriver( Emulator ):
                             repr( self.handle.before ) )
             # NOTE: Send ctrl-c to make sure iperf is done
             self.exitFromCmd( [ "Interrupt", "mininet>" ] )
-            self.handle.send( "" )
+            self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
             return main.FALSE
         except pexpect.EOF:
@@ -1389,7 +1389,7 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ": TIMEOUT exception found" )
             main.log.error( self.name + " response: " + repr( self.handle.before ) )
             self.exitFromCmd( [ "Interrupt", "mininet>" ] )
-            self.handle.send( "" )
+            self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
             return main.FALSE
         except pexpect.EOF:

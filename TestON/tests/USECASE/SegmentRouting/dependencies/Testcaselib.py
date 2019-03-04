@@ -59,7 +59,10 @@ class Testcaselib:
             main.useCommonTopo = main.params[ 'DEPENDENCY' ][ 'useCommonTopo' ] == 'True'
             main.topoPath = main.path + ( "/.." if main.useCommonTopo else "" ) + "/dependencies/"
             main.useCommonConf = main.params[ 'DEPENDENCY' ][ 'useCommonConf' ] == 'True'
-            main.useBmv2 = main.params[ 'DEPENDENCY' ][ 'useBmv2' ] == 'True'
+            if main.params[ 'DEPENDENCY' ].get( 'useBmv2' ):
+                main.useBmv2 = main.params[ 'DEPENDENCY' ][ 'useBmv2' ] == 'True'
+            else:
+                main.useBmv2 = False
             main.configPath = main.path + ( "/.." if main.useCommonConf else "" ) + "/dependencies/"
             main.bmv2Path = main.path + "/../dependencies/"
             main.forJson = "json/"

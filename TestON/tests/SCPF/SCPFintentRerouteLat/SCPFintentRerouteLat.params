@@ -113,7 +113,7 @@
     </BENCH>
 
     <ALARM>
-        <maxLat>20,22,0,35,40,0,30,35,0</maxLat>
+        <maxLat>20,22,55,35,40,60,30,35,60</maxLat>
         <maxLatFlowObj>35,1300,50,700,60,600</maxLatFlowObj>
     </ALARM>
 

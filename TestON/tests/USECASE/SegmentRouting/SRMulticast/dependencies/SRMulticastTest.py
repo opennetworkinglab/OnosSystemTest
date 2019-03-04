@@ -23,6 +23,8 @@ import time
 
 def setupTest( main, test_idx, onosNodes ):
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
+
     skipPackage = False
     init = False
     if not hasattr( main, "apps" ):
@@ -38,6 +40,11 @@ def setupTest( main, test_idx, onosNodes ):
     # Load configuration files
     main.step( "Load configurations" )
     main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
+    if main.useBmv2:
+        # Translate configuration file from OVS-OFDPA to BMv2 driver
+        translator.ofdpaToBmv2( main )
+    else:
+        translator.bmv2ToOfdpa( main )
     lib.loadJson( main )
     time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
     main.cfgName = "common" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
@@ -47,6 +54,9 @@ def setupTest( main, test_idx, onosNodes ):
     if hasattr( main, "Mininet1" ):
         # Run the test with Mininet
         mininet_args = " --dhcp=1 --routers=1 --ipv6=1 --ipv4=1"
+        if main.useBmv2:
+            mininet_args += ' --switch bmv2'
+            main.log.info( "Using BMv2 switch" )
         lib.startMininet( main, main.params[ "DEPENDENCY" ][ "topology" ], args=mininet_args )
         time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
     else:

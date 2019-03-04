@@ -14,6 +14,7 @@
     <DEPENDENCY>
         <useCommonConf>False</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
+        <useBmv2>False</useBmv2>
         <topology>hagg_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
         <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
@@ -21,7 +22,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting,openflow,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3,mcast,hostprobingprovider</cellApps>
+        <cellApps>drivers,segmentrouting,openflow,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3,mcast,hostprobingprovider,drivers.bmv2,pipelines.fabric</cellApps>
     </ENV>
 
     <GIT>

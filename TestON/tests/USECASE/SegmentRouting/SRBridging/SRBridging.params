@@ -15,13 +15,14 @@
     <DEPENDENCY>
         <useCommonConf>False</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
+        <useBmv2>False</useBmv2>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting,openflow,fpm,netcfghostprovider</cellApps>
+        <cellApps>drivers,segmentrouting,openflow,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric</cellApps>
     </ENV>
 
     <GIT>

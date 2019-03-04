@@ -516,7 +516,7 @@ class Cluster():
                 if ips == activeIps:
                     currentResult = True
                 else:
-                    main.log.error( "{} != {}".format( ips, activeIps ) )
+                    main.log.warn( "{} != {}".format( ips, activeIps ) )
             except ( ValueError, TypeError ):
                 main.log.error( "Error parsing nodes output" )
                 main.log.warn( repr( i ) )

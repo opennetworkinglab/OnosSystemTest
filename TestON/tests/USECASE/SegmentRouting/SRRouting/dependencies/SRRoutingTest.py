@@ -25,6 +25,7 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
     SRRouting test setup
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
     import time
 
     skipPackage = False
@@ -61,6 +62,11 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
                                                              1 if ipv6 else 0)
     else:
         main.cfgName = main.params[ "DEPENDENCY" ][ "confName" ]
+    if main.useBmv2:
+        # Translate configuration file from OVS-OFDPA to BMv2 driver
+        translator.ofdpaToBmv2( main )
+    else:
+        translator.bmv2ToOfdpa( main )
     lib.loadJson( main )
     time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
     lib.loadHost( main )
@@ -81,6 +87,9 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
         # Run the test with Mininet
         mininet_args = ' --dhcp=1 --routers=1 --ipv6={} --ipv4={}'.format( 1 if ipv6 else 0,
                                                                            1 if ipv4 else 0 )
+        if main.useBmv2:
+            mininet_args += ' --switch bmv2'
+            main.log.info( "Using BMv2 switch" )
         lib.startMininet( main, main.params[ 'DEPENDENCY' ][ 'topology' ], args=mininet_args )
         time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
     else:

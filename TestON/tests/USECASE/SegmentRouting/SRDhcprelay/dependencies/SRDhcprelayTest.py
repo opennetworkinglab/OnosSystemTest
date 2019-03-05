@@ -20,6 +20,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
+import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
 
 class SRDhcprelayTest ():
 
@@ -44,6 +45,11 @@ class SRDhcprelayTest ():
         main.resultFileName = 'CASE%02d' % testIndex
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
+        if main.useBmv2:
+            # Translate configuration file from OVS-OFDPA to BMv2 driver
+            translator.ofdpaToBmv2( main )
+        else:
+            translator.bmv2ToOfdpa( main )
         run.loadJson( main )
         run.loadHost( main )
         if hasattr( main, 'Mininet1' ):
@@ -63,6 +69,9 @@ class SRDhcprelayTest ():
                 mininet_args += ' --ipv6'
             if len( vlan ) > 0 :
                 mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
+            if main.useBmv2:
+                mininet_args += ' --switch bmv2'
+                main.log.info( "Using BMv2 switch" )
 
             run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
         else:

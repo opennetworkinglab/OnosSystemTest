@@ -34,6 +34,11 @@
         <package>on</package>
     </TEST>
 
+    <LOGGING>
+        <DEBUG>org.onosproject.segmentrouting,org.onosproject.driver,org.onosproject.net.flowobjective.impl,org.onosproject.routeservice.impl,org.onosproject.routeservice.store,org.onosproject.routing.fpm,org.onosproject.mcast</DEBUG>
+        <TRACE>org.onosproject.events</TRACE>
+    </LOGGING>
+
     <GRAPH>
         <nodeCluster>CHO</nodeCluster>
         <builds>20</builds>

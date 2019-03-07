@@ -46,6 +46,11 @@
         <package>on</package>
     </TEST>
 
+    <LOGGING>
+        <DEBUG></DEBUG>
+        <TRACE></TRACE>
+    </LOGGING>
+
     <GRAPH>
         <nodeCluster>CHO</nodeCluster>
         <builds>20</builds>

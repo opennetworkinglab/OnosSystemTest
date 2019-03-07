@@ -113,6 +113,13 @@ class CHOTestMonkey:
             newController.setCLI( main.Cluster.runningNodes[ i - 1 ].CLI )
             main.controllers.append( newController )
 
+        # Set logging levels
+        for logLevel in [ 'DEBUG', 'TRACE' ]:
+            if main.params[ 'LOGGING' ].get( logLevel ):
+                for logger in main.params[ 'LOGGING' ][ logLevel ].split( ',' ):
+                    for ctrl in main.Cluster.active():
+                        ctrl.CLI.logSet( logLevel, logger )
+
         main.step( "Start a thread for the scheduler" )
         t = main.Thread( target=main.eventScheduler.startScheduler,
                          threadID=main.threadID,

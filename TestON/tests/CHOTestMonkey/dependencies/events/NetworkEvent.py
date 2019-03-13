@@ -24,6 +24,7 @@ Author: you@onlab.us
 """
 from tests.CHOTestMonkey.dependencies.events.Event import EventType, EventStates, Event
 from tests.CHOTestMonkey.dependencies.elements.NetworkElement import NetworkElement, Device, Host, Link
+import time
 
 
 class LinkEvent( Event ):
@@ -299,6 +300,7 @@ class DeviceUp( DeviceEvent ):
                 continue
             # FIXME: remove this temporary hack for CORD-3240
             if neighbor.name == 's225':
+                time.sleep( 5 )
                 main.NetworkBench.switches[ 's225' ].setPortSpeed( index=link.portB )
             # Bring down again any link that was brought down before the device was down
             if int( link.portB ) in link.deviceB.downPorts:

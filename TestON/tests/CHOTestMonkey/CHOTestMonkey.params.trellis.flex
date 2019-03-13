@@ -22,7 +22,7 @@
 
     <TEST>
         <IPv6>off</IPv6>
-        <restartCluster>False</restartCluster>
+        <restartCluster>True</restartCluster>
         <dataPlaneConnectivity>True</dataPlaneConnectivity>
         <numCtrl>3</numCtrl>
         <pauseTest>on</pauseTest>
@@ -241,7 +241,7 @@
             <device-down>2</device-down>
             <onos-down>1</onos-down>
         </eventWeight>
-        <skipSwitches>s201,s228</skipSwitches>
+        <skipSwitches>s201,s228,s203,s225,s204</skipSwitches>
         <skipLinks></skipLinks>
     </CASE70>
 

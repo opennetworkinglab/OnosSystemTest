@@ -856,7 +856,7 @@ class CHOTestMonkey:
         allControllers = range( 1, int( main.params[ 'TEST' ][ 'numCtrl' ] ) + 1 )
         while True:
             upControllers = [ i for i in allControllers if main.controllers[ i - 1 ].isUp() ]
-            downOnosNum = len( allControllers ) - len( upControllers )
+            downControllers = [ i for i in allControllers if i not in upControllers ]
             hostIntentNum = len( [ intent for intent in main.intents if intent.type == 'INTENT_HOST' ] )
             pointIntentNum = len( [ intent for intent in main.intents if intent.type == 'INTENT_POINT' ] )
             downDeviceNum = len( [ device for device in main.devices if device.isDown() or device.isRemoved() ] )
@@ -867,12 +867,12 @@ class CHOTestMonkey:
                 events += [ event ] * int( weight )
             events += [ 'del-host-intent' ] * int( pow( hostIntentNum, 1.5 ) / 100 )
             events += [ 'del-point-intent' ] * int( pow( pointIntentNum, 1.5 ) / 100 )
-            events += [ 'device-up' ] * int( pow( 4, downDeviceNum ) - 1 )
+            events += [ 'device-up' ] * int( pow( 3, downDeviceNum ) - 1 )
             if 'link-down' in main.params[ 'CASE70' ][ 'eventWeight' ].keys():
-                events += [ 'link-up' ] * int( pow( 4, downLinkNum ) - 1 )
+                events += [ 'link-up' ] * int( pow( 3, downLinkNum ) - 1 )
             if 'port-down' in main.params[ 'CASE70' ][ 'eventWeight' ].keys():
-                events += [ 'port-up' ] * int( pow( 4, downPortNum ) - 1 )
-            events += [ 'onos-up' ] * int( pow( 4, downOnosNum ) - 1 )
+                events += [ 'port-up' ] * int( pow( 3, downPortNum ) - 1 )
+            events += [ 'onos-up' ] * int( pow( 3, len( downControllers ) - 1 ) )
             main.log.debug( events )
             event = random.sample( events, 1 )[ 0 ]
             if event == 'add-host-intent':
@@ -907,10 +907,11 @@ class CHOTestMonkey:
                 main.eventGenerator.triggerEvent( EventType().NETWORK_PORT_DOWN, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
             elif event == 'port-up':
                 main.eventGenerator.triggerEvent( EventType().NETWORK_PORT_UP, EventScheduleMethod().RUN_BLOCK, 'random', 'random' )
-            elif event == 'onos-down' and downOnosNum == 0:
-                main.eventGenerator.triggerEvent( EventType().ONOS_ONOS_DOWN, EventScheduleMethod().RUN_BLOCK, 1 )
-            elif event == 'onos-up':
-                main.eventGenerator.triggerEvent( EventType().ONOS_ONOS_UP, EventScheduleMethod().RUN_BLOCK, 1 )
+            elif event == 'onos-down' and len( downControllers ) == 0:
+                onosIndex = random.sample( upControllers, 1 )[ 0 ]
+                main.eventGenerator.triggerEvent( EventType().ONOS_ONOS_DOWN, EventScheduleMethod().RUN_BLOCK, onosIndex )
+            elif event == 'onos-up' and len( downControllers ) > 0:
+                main.eventGenerator.triggerEvent( EventType().ONOS_ONOS_UP, EventScheduleMethod().RUN_BLOCK, downControllers[ 0 ] )
                 main.eventGenerator.triggerEvent( EventType().ONOS_BALANCE_MASTERS, EventScheduleMethod().RUN_BLOCK )
             elif event == 'toggle-flowobj':
                 main.eventGenerator.triggerEvent( EventType().ONOS_SET_FLOWOBJ, EventScheduleMethod().RUN_BLOCK, 'false' if main.flowObj else 'true' )

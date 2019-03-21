@@ -163,14 +163,15 @@ class SCPFintentEventTp:
             main.log.alarm( "{}-node with {} neighbor: {}/s < {}/s".format( main.Cluster.numCtrls,
                                                                             neighbors, tp, threshold ) )
 
-        with open( main.dbFileName, "a" ) as resultDB:
-            for nodes in range( main.Cluster.numCtrls ):
-                resultString = "'" + main.commit + "',"
-                resultString += "'1gig',"
-                resultString += str( main.Cluster.numCtrls ) + ","
-                resultString += "'baremetal" + str(nodes + 1) + "',"
-                resultString += neighbors + ","
-                resultString += result[ main.Cluster.active( nodes ).ipAddress ] + ","
-                resultString += str( 0 ) + "\n"  # no stddev
-                resultDB.write( resultString )
-        resultDB.close()
+        if result:
+            with open( main.dbFileName, "a" ) as resultDB:
+                for nodes in range( main.Cluster.numCtrls ):
+                    resultString = "'" + main.commit + "',"
+                    resultString += "'1gig',"
+                    resultString += str( main.Cluster.numCtrls ) + ","
+                    resultString += "'baremetal" + str(nodes + 1) + "',"
+                    resultString += neighbors + ","
+                    resultString += result[ main.Cluster.active( nodes ).ipAddress ] + ","
+                    resultString += str( 0 ) + "\n"  # no stddev
+                    resultDB.write( resultString )
+            resultDB.close()

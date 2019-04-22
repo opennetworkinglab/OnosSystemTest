@@ -31,7 +31,7 @@ fileRelated.init()
 // set the versions of the onos.
 current_version = "master"
 previous_version = "1.15"
-before_previous_version = "2.0"
+before_previous_version = "2.1"
 
 // Function that will initialize the configuration of the Fabric.
 funcs.initializeTrend( "Fabric" )

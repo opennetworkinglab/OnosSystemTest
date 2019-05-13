@@ -22,11 +22,12 @@
 
 // read dependencies.
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 // init configuration to be SR
 fileRelated.init()
+test_list.init()
 funcs.initialize( "SR" )
 
 // get the name of the Jenkins job.
@@ -39,7 +40,7 @@ funcs.additionalInitForSR( jobName )
 // ( currently master on Fabric4, 1.15 on Fabric2 and 2.1 on Fabric3 )
 def prop = null
 prop = funcs.getProperties()
-SR = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SR" ]
+SR_tests = test_list.getTestsFromCategory( "SR" )
 
 // set the file paths and directory
 graph_generator_file = fileRelated.trendIndividual
@@ -53,12 +54,12 @@ funcs.printTestToRun( testsToRun )
 
 // save the functions to run test in the dictionary.
 def tests = [ : ]
-for ( String test : SR.keySet() ){
+for ( String test : SR_tests.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    def pureTestName = ( SR[ test ].containsKey( "test" ) ? SR[ test ][ "test" ].split().head() : test )
+    def pureTestName = ( SR_tests[ test ].containsKey( "test" ) ? SR_tests[ test ][ "test" ].split().head() : test )
     tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
-                                     SR, graph_generator_file, graph_saved_directory )
+                                     SR_tests, graph_generator_file, graph_saved_directory )
 }
 
 // get start time

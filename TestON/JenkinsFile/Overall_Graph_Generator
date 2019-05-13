@@ -22,7 +22,6 @@
 
 // read the dependency functions.
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
@@ -36,13 +35,11 @@ graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
 funcs.initializeTrend( "VM" )
 
 onos_branch = params.ONOSbranch
-AllTheTests = test_lists.getAllTheTests( "" )
 
 // generate the graph and post the result on TestStation-VMs. Right now, all the pie and histograms are saved
 // on VM.
 funcs.generateStatGraph( "TestStation-VMs",
                          onos_branch,
-                         AllTheTests,
                          stat_graph_generator_file,
                          pie_graph_generator_file,
                          graph_saved_directory )

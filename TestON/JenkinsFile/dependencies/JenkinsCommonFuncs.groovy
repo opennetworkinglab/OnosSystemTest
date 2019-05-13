@@ -26,8 +26,10 @@ import groovy.time.TimeDuration
 
 generalFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/GeneralFuncs.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 
 fileRelated.init()
+test_list.init()
 
 def initializeTrend( machine ){
     // For initializing any trend graph jobs
@@ -495,22 +497,6 @@ def generateCategoryStatsGraph( testMachineOn, manualRun, postresult, stat_file,
     }
 }
 
-def makeTestList( list, commaNeeded ){
-    // make the list of the test in to a string.
-    // list : list of the test
-    // commaNeeded : if comma is needed for the string
-
-    return generalFuncs.getTestList( list ) + ( commaNeeded ? "," : "" )
-}
-
-def createStatsList( testCategory, list, semiNeeded ){
-    // make the list for stats
-    // testCategory : category of the test
-    // list : list of the test
-    // semiNeeded: if semi colon is needed
-
-    return testCategory + "-" + generalFuncs.getTestList( list ) + ( semiNeeded ? ";" : "" )
-}
 
 def generateOverallGraph( prop, testCategory, graph_saved_directory ){
     // generate the overall graph for the test
@@ -567,18 +553,24 @@ def databasePart( wikiPrefix, testName, database_command ){
     done '''
 }
 
-def generateStatGraph( testMachineOn, onos_branch, AllTheTests, stat_graph_generator_file, pie_graph_generator_file,
+def generateStatGraph( testMachineOn, onos_branch, stat_graph_generator_file, pie_graph_generator_file,
                        graph_saved_directory ){
-    // Will generate the stats graph.
 
-    testListPart = createStatsList( "FUNC", AllTheTests[ "FUNC" ], true ) +
-                   createStatsList( "HA", AllTheTests[ "HA" ], true ) +
-                   createStatsList( "USECASE", AllTheTests[ "USECASE" ], false )
-    pieTestList = makeTestList( AllTheTests[ "FUNC" ], true ) +
-                  makeTestList( AllTheTests[ "HA" ], true ) +
-                  makeTestList( AllTheTests[ "USECASE" ], false )
+    // Will generate the stats graph.
+    FUNCtestsStr = test_list.getTestListAsString( test_list.getTestsFromCategory( "FUNC" ) )
+    HAtestsStr = test_list.getTestListAsString( test_list.getTestsFromCategory( "HA" ) )
+    USECASEtestsStr = test_list.getTestListAsString( test_list.getTestsFromCategory( "USECASE" ) )
+
+    testListParam = "FUNC-"     + FUNCtestsStr + ";" +
+                    "HA-"       + HAtestsStr   + ";" +
+                    "USECASE-"  + USECASEtestsStr
+
+    pieTestListParam = FUNCtestsStr + "," +
+                       HAtestsStr   + "," +
+                       USECASEtestsStr
+
     generateCategoryStatsGraph( testMachineOn, "false", "true", stat_graph_generator_file, pie_graph_generator_file,
-                                "ALL", onos_branch, testListPart, graph_saved_directory, pieTestList )
+                                "ALL", onos_branch, testListParam, graph_saved_directory, pieTestListParam )
 }
 
 def branchWithPrefix( branch ){

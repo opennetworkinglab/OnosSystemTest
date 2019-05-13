@@ -1,0 +1,790 @@
+{
+    "FUNCflow": {
+        "wikiName": "FUNCflow",
+        "wikiFile": "FUNCflowWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCintent": {
+        "wikiName": "FUNCintent",
+        "wikiFile": "FUNCintentWiki.txt",
+        "schedule": {
+            "master": "mon_wed_fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCintentRest": {
+        "wikiName": "FUNCintentRest",
+        "wikiFile": "FUNCintentRestWiki.txt",
+        "schedule": {
+            "master": "tue_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCipv6Intent": {
+        "wikiName": "FUNCipv6Intent",
+        "wikiFile": "FUNCipv6IntentWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCnetCfg": {
+        "wikiName": "FUNCnetCfg",
+        "wikiFile": "FUNCnetCfgWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCnetconf": {
+        "wikiName": "FUNCnetconf",
+        "wikiFile": "FUNCnetconfWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCoptical": {
+        "wikiName": "FUNCoptical",
+        "wikiFile": "FUNCopticalWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCovsdbtest": {
+        "wikiName": "FUNCovsdbtest",
+        "wikiFile": "FUNCovsdbtestWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCgroup": {
+        "wikiName": "FUNCgroup",
+        "wikiFile": "FUNCgroupWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCformCluster": {
+        "wikiName": "FUNCformCluster",
+        "wikiFile": "FUNCformClusterWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "FUNC",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAsanity": {
+        "wikiName": "HA Sanity",
+        "wikiFile": "HAsanityWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAsingleInstanceRestart": {
+        "wikiName": "HA Single Instance Restart",
+        "wikiFile": "HAsingleInstanceRestartWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAclusterRestart": {
+        "wikiName": "HA Cluster Restart",
+        "wikiFile": "HAclusterRestart.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAkillNodes": {
+        "wikiName": "HA Kill Nodes",
+        "wikiFile": "HAkillNodes.txt",
+        "schedule": {
+            "master": "tue_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAstopNodes": {
+        "wikiName": "HA Stop Nodes",
+        "wikiFile": "HAstopNodes.txt",
+        "schedule": {
+            "master": "mon_wed_fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAfullNetPartition": {
+        "wikiName": "HA Full Network Partition",
+        "wikiFile": "HAfullNetPartitionWiki.txt",
+        "schedule": {
+            "master": "mon_wed_fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAscaling": {
+        "wikiName": "HA Scaling",
+        "wikiFile": "HAscalingWiki.txt",
+        "schedule": {
+            "master": "tue_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAswapNodes": {
+        "wikiName": "HA Swap Nodes",
+        "wikiFile": "HAswapNodesWiki.txt",
+        "schedule": {
+            "master": "tue_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAupgrade": {
+        "wikiName": "HA Upgrade",
+        "wikiFile": "HAupgradeWiki.txt",
+        "schedule": {
+
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAupgradeRollback": {
+        "wikiName": "HA Upgrade Rollback",
+        "wikiFile": "HAupgradeRollbackWiki.txt",
+        "schedule": {
+
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "HAbackupRecover": {
+        "wikiName": "HA Backup Recover",
+        "wikiFile": "HAbackupRecoverWiki.txt",
+        "schedule": {
+            "master": "tue_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "HA",
+        "nodeLabel": "VM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFswitchLat": {
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFportLat": {
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFintentInstallWithdrawLat": {
+        "schedule": {
+            "master": "wed_fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFintentInstallWithdrawLatWithFlowObj": {
+        "schedule": {
+            "master": "mon_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFintentRerouteLat": {
+        "schedule": {
+            "master": "wed_fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFintentRerouteLatWithFlowObj": {
+        "schedule": {
+            "master": "mon_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFintentEventTp": {
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFintentEventTpWithFlowObj": {
+        "schedule": {
+            "master": "mon_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFscaleTopo": {
+        "schedule": {
+            "master": "tue",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFflowTp1g": {
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFflowTp1gWithFlowObj": {
+        "schedule": {
+            "master": "mon_thu",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFcbench": {
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFscalingMaxIntents": {
+        "schedule": {
+
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFscalingMaxIntentsWithFlowObj": {
+        "schedule": {
+
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFbatchFlowResp": {
+        "schedule": {
+            "master": "wed_fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFhostLat": {
+        "schedule": {
+            "master": "wed_fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SCPFmastershipFailoverLat": {
+        "schedule": {
+            "master": "fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SCPF",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "SRBridging": {
+        "wikiName": "SR Bridging",
+        "wikiFile": "SRBridgingWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRRouting": {
+        "wikiName": "SR Routing",
+        "wikiFile": "SRRoutingWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRDhcprelay": {
+        "wikiName": "SR Dhcp Relay",
+        "wikiFile": "SRDhcprelayWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRDynamicConf": {
+        "wikiName": "SR Dynamic Config",
+        "wikiFile": "SRDynamicConfWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRMulticast": {
+        "wikiName": "SR Multi Cast",
+        "wikiFile": "SRMulticastWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRSanity": {
+        "wikiName": "SR Sanity",
+        "wikiFile": "SRSanityWiki.txt",
+        "schedule": {
+            "master": "fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRSwitchFailure": {
+        "wikiName": "SR Switch Failure",
+        "wikiFile": "SRSwitchFailureWiki.txt",
+        "schedule": {
+            "master": "fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRLinkFailure": {
+        "wikiName": "SR Link Failure",
+        "wikiFile": "SRLinkFailureWiki.txt",
+        "schedule": {
+            "master": "fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SROnosFailure": {
+        "wikiName": "SR Onos node Failure",
+        "wikiFile": "SROnosFailureWiki.txt",
+        "schedule": {
+            "master": "fri",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRClusterRestart": {
+        "wikiName": "SR Cluster Restart",
+        "wikiFile": "SRClusterRestartWiki.txt",
+        "schedule": {
+            "master": "sat",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRDynamic": {
+        "wikiName": "SR Dynamic",
+        "wikiFile": "SRDynamicWiki.txt",
+        "schedule": {
+            "master": "sat",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHighAvailability": {
+        "wikiName": "SR High Availability",
+        "wikiFile": "SRHighAvailabilityWiki.txt",
+        "schedule": {
+            "master": "sat",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAsanity": {
+        "test": "HAsanity --params-file HAsanity.params.fabric",
+        "wikiName": "SR HA Sanity",
+        "wikiFile": "HAsanityWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAclusterRestart": {
+        "test": "HAclusterRestart --params-file HAclusterRestart.params.fabric",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAsingleInstanceRestart": {
+        "test": "HAsingleInstanceRestart --params-file HAsingleInstanceRestart.params.fabric",
+        "wikiName": "SR HA Single Instance Restart",
+        "wikiFile": "HAsingleInstanceRestartWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAstopNodes": {
+        "test": "HAstopNodes --params-file HAstopNodes.params.fabric",
+        "wikiName": "SR HA Stop Nodes",
+        "wikiFile": "HAstopNodes.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAfullNetPartition": {
+        "test": "HAfullNetPartition --params-file HAfullNetPartition.params.fabric",
+        "wikiName": "SR HA Full Network Partition",
+        "wikiFile": "HAfullNetPartitionWiki.txt",
+        "schedule": {
+            "master": "fri"
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAswapNodes": {
+        "test": "HAswapNodes --params-file HAswapNodes.params.fabric",
+        "wikiName": "SR HA Swap Nodes",
+        "wikiFile": "HAswapNodesWiki.txt",
+        "schedule": {
+            "master": "sat"
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAscaling": {
+        "test": "HAscaling --params-file HAscaling.params.fabric",
+        "wikiName": "SR HA Scaling",
+        "wikiFile": "HAscalingWiki.txt",
+        "schedule": {
+            "master": "sat"
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAkillNodes": {
+        "test": "HAkillNodes --params-file HAkillNodes.params.fabric",
+        "wikiName": "SR HA Kill Nodes",
+        "wikiFile": "HAkillNodes.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAbackupRecover": {
+        "test": "HAbackupRecover --params-file HAbackupRecover.params.fabric",
+        "wikiName": "SR HA Backup Recover",
+        "wikiFile": "HAbackupRecoverWiki.txt",
+        "schedule": {
+            "master": "weekdays",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAupgrade": {
+        "test": "HAupgrade --params-file HAupgrade.params.fabric",
+        "wikiName": "SR HA Upgrade",
+        "wikiFile": "HAupgradeWiki.txt",
+        "schedule": {
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "SRHAupgradeRollback": {
+        "test": "HAupgradeRollback --params-file HAupgradeRollback.params.fabric",
+        "wikiName": "SR HA Upgrade Rollback",
+        "wikiFile": "HAupgradeRollbackWiki.txt",
+        "schedule": {
+        },
+        "category": "SR",
+        "nodeLabel": "Fabric",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCvirNetNB": {
+        "wikiName": "FUNCvirNetNB",
+        "wikiFile": "FUNCvirNetNBWiki.txt",
+        "schedule": {
+            "master": "USECASE_master",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "USECASE",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "FUNCbgpls": {
+        "wikiName": "FUNCbgpls",
+        "wikiFile": "FUNCbgplsWiki.txt",
+        "schedule": {
+            "master": "USECASE_master",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "USECASE",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "VPLSBasic": {
+        "wikiName": "VPLSBasic",
+        "wikiFile": "VPLSBasicWiki.txt",
+        "schedule": {
+            "master": "USECASE_master",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "USECASE",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "VPLSfailsafe": {
+        "wikiName": "VPLSfailsafe",
+        "wikiFile": "VPLSfailsafeWiki.txt",
+        "schedule": {
+            "master": "USECASE_master",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "USECASE",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "USECASE_SdnipFunction": {
+        "wikiName": "SDNIP Function",
+        "wikiFile": "USECASE_SdnipFunctionWiki.txt",
+        "schedule": {
+            "master": "USECASE_master",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "USECASE",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "USECASE_SdnipFunctionCluster": {
+        "wikiName": "SDNIP Function Cluster",
+        "wikiFile": "USECASE_SdnipFunctionClusterWiki.txt",
+        "schedule": {
+            "master": "USECASE_master",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "USECASE",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    },
+    "PLATdockertest": {
+        "wikiName": "Docker Images sanity test",
+        "wikiFile": "PLATdockertestTableWiki.txt",
+        "schedule": {
+            "master": "USECASE_master",
+            "onos-1.x": "onos-1.x_schedule",
+            "onos-2.x": "onos-2.x_schedule"
+        },
+        "category": "USECASE",
+        "nodeLabel": "BM",
+        "supportedBranches": [ "all" ]
+    }
+}

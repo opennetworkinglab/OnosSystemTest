@@ -26,6 +26,7 @@ test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestO
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
+test_list.init()
 
 // initialize the funcs with category of HA
 funcs.initialize( "HA" );
@@ -37,7 +38,7 @@ def prop = null
 prop = funcs.getProperties()
 
 // get the list of the test and init branch to it.
-HA = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "HA" ]
+HA_tests = test_list.getTestsFromCategory( "HA" )
 
 // init some directories
 graph_generator_file = fileRelated.trendIndividual
@@ -51,12 +52,12 @@ funcs.printTestToRun( testsToRun )
 
 // run the test sequentially and save the function into the dictionary.
 def tests = [ : ]
-for ( String test : HA.keySet() ){
+for ( String test : HA_tests.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    def pureTestName = ( HA[ test ].containsKey( "test" ) ? HA[ test ][ "test" ].split().head() : test )
+    def pureTestName = ( HA_tests[ test ].containsKey( "test" ) ? HA_tests[ test ][ "test" ].split().head() : test )
     tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
-                                       HA, graph_generator_file, graph_saved_directory )
+                                       HA_tests, graph_generator_file, graph_saved_directory )
 }
 
 // get the start time of the test.
@@ -67,7 +68,7 @@ for ( test in tests.keySet() ){
 }
 
 // generate the overall graph of the HA tests.
-funcs.generateOverallGraph( prop, HA, graph_saved_directory )
+funcs.generateOverallGraph( prop, HA_tests, graph_saved_directory )
 
 // send the notification to Slack that running HA tests was ended.
 funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )

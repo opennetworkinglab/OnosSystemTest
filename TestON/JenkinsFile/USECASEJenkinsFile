@@ -22,17 +22,18 @@
 
 // set the dependencies.
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 // init configuration of funcs to be USECASE
 fileRelated.init()
+test_list.init()
 funcs.initialize( "USECASE" );
 
 // read the TestON.property files and save it as a dictionary
 def prop = null
 prop = funcs.getProperties()
-USECASE = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "USECASE" ]
+USECASE_tests = test_list.getTestsFromCategory( "USECASE" )
 
 // save directory and file.
 graph_generator_file = fileRelated.trendIndividual
@@ -46,12 +47,12 @@ funcs.printTestToRun( testsToRun )
 
 // save the function of the test running into the dictionary.
 def tests = [ : ]
-for ( String test : USECASE.keySet() ){
+for ( String test : USECASE_tests.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    def pureTestName = ( USECASE[ test ].containsKey( "test" ) ? USECASE[ test ][ "test" ].split().head() : test )
+    def pureTestName = ( USECASE_tests[ test ].containsKey( "test" ) ? USECASE_tests[ test ][ "test" ].split().head() : test )
     tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
-                                       USECASE, graph_generator_file, graph_saved_directory )
+                                       USECASE_tests, graph_generator_file, graph_saved_directory )
 }
 
 // get start time of the test.
@@ -65,4 +66,4 @@ for ( test in tests.keySet() ){
 funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )
 
 // generate the overall graph for USECASE.
-funcs.generateOverallGraph( prop, USECASE, graph_saved_directory )
+funcs.generateOverallGraph( prop, USECASE_tests, graph_saved_directory )

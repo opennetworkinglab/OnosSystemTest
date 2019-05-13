@@ -22,9 +22,9 @@
 
 // set the functions of the dependencies.
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/TriggerFuncs.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 
 // set the versions of the onos
 fileRelated.init()
@@ -79,9 +79,6 @@ else {
         onos_b = before_previous_version
     }
 }
-
-// Get all the list of the tests from the JenkinsTestONTests.groovy
-AllTheTests = test_lists.getAllTheTests( onos_b )
 
 // list of the tests to be run will be saved in each choices.
 day = ""
@@ -166,7 +163,6 @@ else {
 if ( !manually_run ){
     funcs.generateStatGraph( "TestStation-VMs",
                              funcs.branchWithPrefix( onos_b ),
-                             AllTheTests,
                              stat_graph_generator_file,
                              pie_graph_generator_file,
                              graph_saved_directory )
@@ -174,259 +170,76 @@ if ( !manually_run ){
 
 // function that will divide tests depends on which day it is.
 def testDivider( today ){
-    switch ( today ){
-        case Calendar.MONDAY:
-            // THe reason Monday calls all the days is because we want to post the test schedules on the wiki
-            // and slack channel every monday.
-            // It will only generate the list of the test for monday.
-            initHtmlForWiki()
-            monday( true )
-            tuesday( true, false )
-            wednesday( true, false )
-            thursday( true, false )
-            friday( true, false )
-            saturday( false, false )
-            sunday( false, false )
-            day = "Monday"
-            closeHtmlForWiki()
-            postToWiki( wikiContents )
-            slackSend( color: '#FFD988',
-                       message: "Tests to be run this weekdays : \n" +
-                                triggerFuncs.printDaysForTest( AllTheTests ) )
-            break
-        case Calendar.TUESDAY:
-            tuesday( false, true )
-            day = "Tuesday"
-            break
-        case Calendar.WEDNESDAY:
-            wednesday( false, true )
-            day = "Wednesday"
-            break
-        case Calendar.THURSDAY:
-            thursday( false, true )
-            day = "Thursday"
-            break
-        case Calendar.FRIDAY:
-            friday( false, true )
-            day = "Friday"
-            break
-        case Calendar.SATURDAY:
-            saturday( false, true )
-            day = "Saturday"
-            break
-        case Calendar.SUNDAY:
-            sunday( false, true )
-            day = "Sunday"
-            break
+    todayStr = today.toString()
+
+    dayMap = [ ( Calendar.MONDAY )    : "mon",
+               ( Calendar.TUESDAY )   : "tue",
+               ( Calendar.WEDNESDAY ) : "wed",
+               ( Calendar.THURSDAY )  : "thu",
+               ( Calendar.FRIDAY )    : "fri",
+               ( Calendar.SATURDAY )  : "sat",
+               ( Calendar.SUNDAY )    : "sun" ]
+    fullDayMap = [ ( Calendar.MONDAY )    : "Monday",
+                   ( Calendar.TUESDAY )   : "Tuesday",
+                   ( Calendar.WEDNESDAY ) : "Wednesday",
+                   ( Calendar.THURSDAY )  : "Thursday",
+                   ( Calendar.FRIDAY )    : "Friday",
+                   ( Calendar.SATURDAY )  : "Saturday",
+                   ( Calendar.SUNDAY )    : "Sunday" ]
+
+    if ( today == Calendar.MONDAY ){
+        initHtmlForWiki()
+        day = fullDayMap[ today ]
+        for ( key in dayMap.keySet() ){
+            buildDay( dayMap[ key ], false )
+        }
+        closeHtmlForWiki()
+        postToWiki( wikiContents )
+        slackSend( color: '#FFD988',
+                   message: "Tests to be run this weekdays : \n" +
+                            triggerFuncs.printDaysForTest() )
+    } else {
+        day = fullDayMap[ today ]
+        buildDay( dayMap[ today ], true )
     }
 }
 
-// function for monday.
-def monday( getResult ){
-    // add header for wiki page script.
+def buildDay( dayStr, getResult ){
     addingHeader( "FUNC" )
-    // call category of basic and extra_A of FUNC tests.
-    // put M into the dictionary.
-    FUNC_choices += adder( "FUNC", "basic", true, "M", getResult )
-    FUNC_choices += adder( "FUNC", "extra_A", true, "M", getResult )
+    FUNC_choices += adder( "FUNC", dayStr, getResult )
     closingHeader( "FUNC" )
     addingHeader( "HA" )
-    HA_choices += adder( "HA", "basic", true, "M", getResult )
-    HA_choices += adder( "HA", "extra_A", true, "M", getResult )
+    HA_choices += adder( "HA", dayStr, getResult )
     closingHeader( "HA" )
     addingHeader( "SCPF" )
-    SCPF_choices += adder( "SCPF", "basic", true, "M", getResult )
-    SCPF_choices += adder( "SCPF", "extra_B", true, "M", getResult )
+    SCPF_choices += adder( "SCPF", dayStr, getResult )
     closingHeader( "SCPF" )
     addingHeader( "SR" )
-    SR_choices += adder( "SR", "basic", true, "M", false )
+    SR_choices += adder( "SR", dayStr, false )
     closingHeader( "SR" )
     addingHeader( "SRHA" )
-    SRHA_choices += adder( "SRHA", "basic", true, "M", false )
+    SRHA_choices += adder( "SRHA", dayStr, false )
     closingHeader( "SRHA" )
     addingHeader( "USECASE" )
-    closingHeader( "USECASE" )
-}
-
-// If get result is false, it will not add the test result to xx_choices, but will generate the
-// header and days
-def tuesday( getDay, getResult ){
-    addingHeader( "FUNC" )
-    FUNC_choices += adder( "FUNC", "basic", getDay, "T", getResult )
-    FUNC_choices += adder( "FUNC", "extra_B", getDay, "T", getResult )
-    closingHeader( "FUNC" )
-    addingHeader( "HA" )
-    HA_choices += adder( "HA", "basic", getDay, "T", getResult )
-    HA_choices += adder( "HA", "extra_B", getDay, "T", getResult )
-    closingHeader( "HA" )
-    addingHeader( "SCPF" )
-    SCPF_choices += adder( "SCPF", "basic", getDay, "T", getResult )
-    SCPF_choices += adder( "SCPF", "extra_C", getDay, "T", getResult )
-    closingHeader( "SCPF" )
-    addingHeader( "SR" )
-    SR_choices += adder( "SR", "basic", getDay, "T", false )
-    closingHeader( "SR" )
-    addingHeader( "SRHA" )
-    SRHA_choices += adder( "SRHA", "basic", getDay, "T", false )
-    closingHeader( "SRHA" )
-    addingHeader( "USECASE" )
-    USECASE_choices += adder( "USECASE", "basic", getDay, "T", getResult )
-    USECASE_choices += adder( "USECASE", "extra_A", getDay, "T", getResult )
-    closingHeader( "USECASE" )
-}
-
-def wednesday( getDay, getResult ){
-    addingHeader( "FUNC" )
-    FUNC_choices += adder( "FUNC", "basic", getDay, "W", getResult )
-    FUNC_choices += adder( "FUNC", "extra_A", getDay, "W", getResult )
-    closingHeader( "FUNC" )
-    addingHeader( "HA" )
-    HA_choices += adder( "HA", "basic", getDay, "W", getResult )
-    HA_choices += adder( "HA", "extra_A", getDay, "W", getResult )
-    closingHeader( "HA" )
-    addingHeader( "SCPF" )
-    SCPF_choices += adder( "SCPF", "basic", getDay, "W", getResult )
-    SCPF_choices += adder( "SCPF", "extra_A", getDay, "W", getResult )
-    closingHeader( "SCPF" )
-    addingHeader( "SR" )
-    SR_choices += adder( "SR", "basic", getDay, "W", false )
-    closingHeader( "SR" )
-    addingHeader( "SRHA" )
-    SRHA_choices += adder( "SRHA", "basic", getDay, "W", false )
-    closingHeader( "SRHA" )
-    addingHeader( "USECASE" )
-    closingHeader( "USECASE" )
-}
-
-def thursday( getDay, getResult ){
-    addingHeader( "FUNC" )
-    FUNC_choices += adder( "FUNC", "basic", getDay, "Th", getResult )
-    FUNC_choices += adder( "FUNC", "extra_B", getDay, "Th", getResult )
-    closingHeader( "FUNC" )
-    addingHeader( "HA" )
-    HA_choices += adder( "HA", "basic", getDay, "Th", getResult )
-    HA_choices += adder( "HA", "extra_B", getDay, "Th", getResult )
-    closingHeader( "HA" )
-    addingHeader( "SCPF" )
-    SCPF_choices += adder( "SCPF", "basic", getDay, "Th", getResult )
-    SCPF_choices += adder( "SCPF", "extra_B", getDay, "Th", getResult )
-    closingHeader( "SCPF" )
-    addingHeader( "SR" )
-    SR_choices += adder( "SR", "basic", getDay, "Th", false )
-    closingHeader( "SR" )
-    addingHeader( "SRHA" )
-    SRHA_choices += adder( "SRHA", "basic", getDay, "Th", false )
-    closingHeader( "SRHA" )
-    addingHeader( "USECASE" )
-    closingHeader( "USECASE" )
-}
-
-def friday( getDay, getResult ){
-    addingHeader( "FUNC" )
-    FUNC_choices += adder( "FUNC", "basic", getDay, "F", getResult )
-    FUNC_choices += adder( "FUNC", "extra_A", getDay, "F", getResult )
-    closingHeader( "FUNC" )
-    addingHeader( "HA" )
-    HA_choices += adder( "HA", "basic", getDay, "F", getResult )
-    HA_choices += adder( "HA", "extra_A", getDay, "F", getResult )
-    closingHeader( "HA" )
-    addingHeader( "SCPF" )
-    SCPF_choices += adder( "SCPF", "basic", getDay, "F", getResult )
-    SCPF_choices += adder( "SCPF", "extra_A", getDay, "F", getResult )
-    SCPF_choices += adder( "SCPF", "extra_D", getDay, "F", getResult )
-    closingHeader( "SCPF" )
-    addingHeader( "SR" )
-    SR_choices += adder( "SR", "basic", getDay, "F", false )
-    SR_choices += adder( "SR", "extra_A", getDay, "F", false )
-    closingHeader( "SR" )
-    addingHeader( "SRHA" )
-    SRHA_choices += adder( "SRHA", "basic", getDay, "F", false )
-    SRHA_choices += adder( "SRHA", "extra_A", getDay, "F", false )
-    closingHeader( "SRHA" )
-    addingHeader( "USECASE" )
-    closingHeader( "USECASE" )
-}
-
-def saturday( getDay, getResult ){
-    addingHeader( "FUNC" )
-    FUNC_choices += adder( "FUNC", "basic", getDay, "Sa", getResult )
-    FUNC_choices += adder( "FUNC", "extra_A", getDay, "Sa", getResult )
-    FUNC_choices += adder( "FUNC", "extra_B", getDay, "Sa", getResult )
-    closingHeader( "FUNC" )
-    addingHeader( "HA" )
-    HA_choices += adder( "HA", "basic", getDay, "Sa", getResult )
-    HA_choices += adder( "HA", "extra_A", getDay, "Sa", getResult )
-    HA_choices += adder( "HA", "extra_B", getDay, "Sa", getResult )
-    closingHeader( "HA" )
-    addingHeader( "SCPF" )
-    SCPF_choices += adder( "SCPF", "basic", getDay, "Sa", getResult )
-    SCPF_choices += adder( "SCPF", "extra_A", getDay, "Sa", getResult )
-    SCPF_choices += adder( "SCPF", "extra_B", getDay, "Sa", getResult )
-    SCPF_choices += adder( "SCPF", "extra_C", getDay, "Sa", getResult )
-    SCPF_choices += adder( "SCPF", "extra_D", getDay, "Sa", getResult )
-    closingHeader( "SCPF" )
-    addingHeader( "SR" )
-    SR_choices += adder( "SR", "basic", getDay, "Sa", false )
-    SR_choices += adder( "SR", "extra_B", getDay, "Sa", false )
-    closingHeader( "SR" )
-    addingHeader( "SRHA" )
-    SRHA_choices += adder( "SRHA", "basic", getDay, "Sa", false )
-    SRHA_choices += adder( "SRHA", "extra_B", getDay, "Sa", false )
-    closingHeader( "SRHA" )
-    addingHeader( "USECASE" )
-    USECASE_choices += adder( "USECASE", "basic", getDay, "Sa", getResult )
-    closingHeader( "USECASE" )
-}
-
-def sunday( getDay, getResult ){
-    addingHeader( "FUNC" )
-    FUNC_choices += adder( "FUNC", "basic", getDay, "S", getResult )
-    FUNC_choices += adder( "FUNC", "extra_A", getDay, "S", getResult )
-    FUNC_choices += adder( "FUNC", "extra_B", getDay, "S", getResult )
-    closingHeader( "FUNC" )
-    addingHeader( "HA" )
-    HA_choices += adder( "HA", "basic", getDay, "S", getResult )
-    HA_choices += adder( "HA", "extra_A", getDay, "S", getResult )
-    HA_choices += adder( "HA", "extra_B", getDay, "S", getResult )
-    closingHeader( "HA" )
-    addingHeader( "SCPF" )
-    SCPF_choices += adder( "SCPF", "basic", getDay, "S", getResult )
-    SCPF_choices += adder( "SCPF", "extra_A", getDay, "S", getResult )
-    SCPF_choices += adder( "SCPF", "extra_B", getDay, "S", getResult )
-    SCPF_choices += adder( "SCPF", "extra_C", getDay, "S", getResult )
-    SCPF_choices += adder( "SCPF", "extra_D", getDay, "S", getResult )
-    closingHeader( "SCPF" )
-    addingHeader( "SR" )
-    SR_choices += adder( "SR", "basic", getDay, "S", false )
-    closingHeader( "SR" )
-    addingHeader( "SRHA" )
-    SRHA_choices += adder( "SRHA", "basic", getDay, "S", false )
-    closingHeader( "SRHA" )
-    addingHeader( "USECASE" )
-    USECASE_choices += adder( "USECASE", "basic", getDay, "S", getResult )
+    USECASE_choices += adder( "USECASE", dayStr, getResult )
     closingHeader( "USECASE" )
 }
 
 // adder that will return the list of the tests.
-def adder( testCat, set, dayAdding, day, getResult ){
-    // testCat : the category of the test which will be either FUNC,HA,SR...
-    // set : the set of the test to be run which will be basic,extra_A,extra_B...
-    // dayAdding : boolean whether to add the days into the list or not
+def adder( category, day, getResult ){
+    // category : the category of the test which will be either FUNC,HA,SR...
     // day : the day you are trying to add (m,t,w,th... )
     // getResult : if want to get the list of the test to be run. False will return empty list.
     //             And once the list is empty, it will not be run.
     def result = ""
-    for ( String test in AllTheTests[ testCat ].keySet() ){
-        if ( AllTheTests[ testCat ][ test ][ set ] ){
-            if ( getResult ){
-                result += test + ","
-            }
-            if ( dayAdding ){
-                dayAdder( testCat, test, day )
-            }
-            // make HTML columns for wiki page on schedule.
-            makeHtmlColList( testCat, test )
+    selectedTests = getTestsFromCategory( category, getTestsFromDay( day, onos_b ) )
+
+    for ( String test in selectedTests.keySet() ){
+        if ( getResult ){
+            result += test + ","
         }
+        // make HTML columns for wiki page on schedule.
+        makeHtmlColList( category, test )
     }
     return result
 }
@@ -512,9 +325,4 @@ def postToWiki( contents ){
                                    "Automated Test Schedule",
                                    workspace + filename )
     }
-}
-
-// add the day to the "day" on the dictionary.
-def dayAdder( testCat, testName, dayOfWeek ){
-    AllTheTests[ testCat ][ testName ][ "day" ] += dayOfWeek + ","
 }

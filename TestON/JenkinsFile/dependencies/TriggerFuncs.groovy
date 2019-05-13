@@ -23,6 +23,8 @@
 // This will provide the portion that will set up the environment of the machine
 //      and trigger the corresponding jobs.
 
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+test_list.init()
 
 def init( commonFuncs ){
     funcs = commonFuncs
@@ -37,17 +39,20 @@ def lastCommaRemover( str ){
     return str
 }
 
-def printDaysForTest( AllTheTests ){
+def printDaysForTest(){
     // Print the days for what test has.
+    AllTheTests = test_list.getAllTests()
 
     result = ""
     for ( String test in AllTheTests.keySet() ){
-        result += test + " : \n"
-        for ( String each in AllTheTests[ test ].keySet() ){
-            AllTheTests[ test ][ each ][ "day" ] = lastCommaRemover( AllTheTests[ test ][ each ][ "day" ] )
-            result += "    " + each + ":[" + AllTheTests[ test ][ each ][ "day" ] + "]\n"
+        result += test + ": ["
+        test_schedule = test_list.getTestSchedule( test )
+        for ( String sch in test_schedule.keySet() ){
+            for ( String day in convertScheduleKeyToDays( sch ) ){
+                result += day + " "
+            }
         }
-        result += "\n"
+        result += "]\n"
     }
     return result
 }

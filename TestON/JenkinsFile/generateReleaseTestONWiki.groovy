@@ -25,7 +25,7 @@
 //         example, if you want to generate the test category pages, you will need the page ID
 //         of the top level branch results.
 
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 
 runningNode = "TestStation-BMs"
 
@@ -44,9 +44,6 @@ SCPF_system_environment = [  "Server: Dual XeonE5-2670 v2 2.5GHz; 64GB DDR3; 512
                              "System clock precision is +/- 1 ms",
                              "1Gbps NIC",
                              "JAVA_OPTS=\"\${JAVA_OPTS:--Xms8G -Xmx8G}\"" ]
-
-// Get all the list of the tests from the JenkinsTestONTests.groovy
-AllTheTests = test_lists.getAllTheTests( onos_v )
 
 // get the name of the job.
 jobName = env.JOB_NAME
@@ -158,12 +155,12 @@ def makeImage( imageClass, imageLink, width=-1 ){
 
 }
 
-def pageTree( category ){
+def pageTree( category, testsFromCategory ){
     pTree = "<ul>"
-    for ( String test in AllTheTests[ category ].keySet() ){
-        testTitle = AllTheTests[ category ][ test ][ "wiki_link" ]
+    for ( String test in testsFromCategory.keySet() ){
+        testTitle = onos_v + "-" + testsFromCategory[ test ][ "wikiName" ]
         pTree += "<li><h3><a href=\"https://wiki.onosproject.org/display/ONOS/" + testTitle + "\">"
-        pTree += AllTheTests[ category ][ test ][ "wiki_link" ] + "</a></h3></li>"
+        pTree += testTitle + "</a></h3></li>"
     }
     pTree += "</ul>"
     return pTree
@@ -272,7 +269,8 @@ def createGeneralPageContents( category ){
 
     titleHTML = "<h1>Test Results - " + title + "</h1>"
 
-    pageTreeHTML = pageTree( category )
+    testsFromCategory = test_list.getTestsFromCategory( category )
+    pageTreeHTML = pageTree( category, testsFromCategory )
 
     descriptionHTML = "<p>For test details, check out the <a href=\"" + testPlanLink + "\">test plans for " + category + " test cases</a>.</p>"
 
@@ -281,11 +279,12 @@ def createGeneralPageContents( category ){
 
     testGraphsHTML = ""
     testGraphsClass = "confluence-embedded-image confluence-external-resource confluence-content-image-border"
-    for ( String key in AllTheTests[ category ].keySet() ){
+
+
+    for ( String key in testsFromCategory.keySet() ){
         imageLink = testTrendPrefix + key + testTrendSuffix
         testGraphsHTML += makeImage( testGraphsClass, imageLink, 500 )
     }
-
     result = overallTrendHTML + titleHTML + pageTreeHTML + descriptionHTML + testGraphsHTML
 
     return result

@@ -22,11 +22,12 @@
 
 // init dependencies functions
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/TriggerFuncs.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
+test_list.init()
 
 // set the versions of the onos.
 current_version = "master"
@@ -70,7 +71,7 @@ if ( manually_run ){
 }
 
 // get the list of the tests from the JenkinsTestONTests.groovy
-AllTheTests = test_lists.getAllTheTests( onos_b )
+// AllTheTests = test_list.getAllTests()
 
 
 day = ""
@@ -219,16 +220,15 @@ if ( !manually_run ){
 }*/
 
 // Way to add list of the tests with specific category to the result
-def adder( testCat, set, getResult ){
-    // testCat : test Category ( Eg. FUNC, HA, SR ... )
-    // set : set of the test ( Eg. basic, extra_A ... )
+def adder( category, day, branch, getResult ){
+    // category : test Category ( Eg. FUNC, HA, SR ... )
     // if getResult == true, it will add the result.
     result = ""
-    for ( String test in AllTheTests[ testCat ].keySet() ){
-        if ( AllTheTests[ testCat ][ test ][ set ] ){
-            if ( getResult ){
-                result += test + ","
-            }
+    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, branch ) )
+
+    for ( String test in selectedTests.keySet() ){
+        if ( getResult ){
+            result += test + ","
         }
     }
     return result

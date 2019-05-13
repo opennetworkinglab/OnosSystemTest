@@ -22,10 +22,11 @@
 
 // read the dependency files
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
+test_list.init()
 
 // initialize the funcs with category of FUNC
 funcs.initialize( "FUNC" );
@@ -37,7 +38,7 @@ def prop = null
 prop = funcs.getProperties()
 
 // get the list of the test and init branch to it.
-FUNC = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "FUNC" ]
+FUNC_tests = test_list.getTestsFromCategory( "FUNC" )
 
 // init some directories
 graph_generator_file = fileRelated.trendIndividual
@@ -51,12 +52,12 @@ funcs.printTestToRun( testsToRun )
 
 // run the test sequentially and save the function into the dictionary.
 def tests = [ : ]
-for ( String test : FUNC.keySet() ){
+for ( String test : FUNC_tests.keySet() ){
     def toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    def pureTestName = ( FUNC[ test ].containsKey( "test" ) ? FUNC[ test ][ "test" ].split().head() : test )
+    def pureTestName = ( FUNC_tests[ test ].containsKey( "test" ) ? FUNC_tests[ test ][ "test" ].split().head() : test )
     tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
-                                       FUNC, graph_generator_file, graph_saved_directory )
+                                       FUNC_tests, graph_generator_file, graph_saved_directory )
 }
 
 // get the start time of the test.
@@ -68,7 +69,7 @@ for ( test in tests.keySet() ){
 }
 
 // generate the overall graph of the FUNC tests.
-funcs.generateOverallGraph( prop, FUNC, graph_saved_directory )
+funcs.generateOverallGraph( prop, FUNC_tests, graph_saved_directory )
 
 // send the notification to Slack that running FUNC tests was ended.
 funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )

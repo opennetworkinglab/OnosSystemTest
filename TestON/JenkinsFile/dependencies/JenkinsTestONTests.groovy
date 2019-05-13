@@ -1,6 +1,6 @@
 #!groovy
 
-// Copyright 2017 Open Networking Foundation (ONF)
+// Copyright 2019 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 // the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -19,589 +19,86 @@
 //     You should have received a copy of the GNU General Public License
 //     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
-// This is the dependency Jenkins script.
-// This will provide the basic information for the tests for scheduling.
-// Any new test to be added should be added here.
+import groovy.json.*
 
+allTests = [:]
+schedules = [:]
 
-def getAllTheTests( wikiPrefix ){
-    // This contains the dictionary of the test and the category of them
-    // wikiPrefix : master, 2.1, 1.15 ...
+def init(){
+    def jsonSlurper = new JsonSlurper()
+    def tests_buffer = new BufferedReader( new InputStreamReader( new FileInputStream( "tests.json" ),"UTF-8" ) )
+    def schedules_buffer = new BufferedReader( new InputStreamReader( new FileInputStream( "schedule.json" ),"UTF-8" ) )
+    allTests = jsonSlurper.parse( tests_buffer )
+    schedules = jsonSlurper.parse( schedules_buffer )
+}
 
-    // category: it will be used to distinguish which category to be run on which days ( basic,extra_A, extra_B ... )
-    // day: it will be used to display the schedule of the test to be run to the slack. It is empty in the first place but will be
-    //     filled out every monday.
-    // wiki_link : link of the wiki page that will be used to publish to confluence later on. SCPF tests don't need one.
+def getAllTests(){
+    return allTests
+}
 
-    return [
-            "FUNC": [
-                    "FUNCipv6Intent": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCipv6Intent",
-                            wiki_file: "FUNCipv6IntentWiki.txt" ],
-                    "FUNCoptical": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCoptical",
-                            wiki_file: "FUNCopticalWiki.txt" ],
-                    "FUNCflow": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCflow",
-                            wiki_file: "FUNCflowWiki.txt" ],
-                    "FUNCnetCfg": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCnetCfg",
-                            wiki_file: "FUNCnetCfgWiki.txt" ],
-                    "FUNCovsdbtest": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCovsdbtest",
-                            wiki_file: "FUNCovsdbtestWiki.txt" ],
-                    "FUNCnetconf": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCnetconf",
-                            wiki_file: "FUNCnetconfWiki.txt" ],
-                    "FUNCgroup": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCgroup",
-                            wiki_file: "FUNCgroupWiki.txt" ],
-                    "FUNCintent": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCintent",
-                            wiki_file: "FUNCintentWiki.txt" ],
-                    "FUNCintentRest": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCintentRest",
-                            wiki_file: "FUNCintentRestWiki.txt" ],
-                    "FUNCformCluster": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCformCluster",
-                            wiki_file: "FUNCformClusterWiki.txt" ]
-            ],
-            "HA": [
-                    "HAsanity": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Sanity",
-                            wiki_file: "HAsanityWiki.txt" ],
-                    "HAclusterRestart": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Cluster Restart",
-                            wiki_file: "HAclusterRestartWiki.txt" ],
-                    "HAsingleInstanceRestart": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Single Instance Restart",
-                            wiki_file: "HAsingleInstanceRestartWiki.txt" ],
-                    "HAstopNodes": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Stop Nodes",
-                            wiki_file: "HAstopNodes.txt" ],
-                    "HAfullNetPartition": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Full Network Partition",
-                            wiki_file: "HAfullNetPartitionWiki.txt" ],
-                    "HAswapNodes": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Swap Nodes",
-                            wiki_file: "HAswapNodesWiki.txt" ],
-                    "HAscaling": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Scaling",
-                            wiki_file: "HAscalingWiki.txt" ],
-                    "HAkillNodes": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Kill Nodes",
-                            wiki_file: "HAkillNodes.txt" ],
-                    "HAbackupRecover": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Backup Recover",
-                            wiki_file: "HAbackupRecoverWiki.txt" ],
-                    "HAupgrade": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Upgrade",
-                            wiki_file: "HAupgradeWiki.txt" ],
-                    "HAupgradeRollback": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "HA Upgrade Rollback",
-                            wiki_file: "HAupgradeRollbackWiki.txt" ]
-            ],
-            "SCPF": [
-                    "SCPFswitchLat": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": "" ],
-                    "SCPFcbench": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFportLat": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFflowTp1g": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFintentEventTp": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFhostLat": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFbatchFlowResp": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFintentRerouteLat": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFintentInstallWithdrawLat": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFflowTp1gWithFlowObj": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFintentEventTpWithFlowObj": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFintentRerouteLatWithFlowObj": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFscalingMaxIntentsWithFlowObj": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFintentInstallWithdrawLatWithFlowObj": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFscaleTopo": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": true,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFscalingMaxIntents": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": false,
-                            "new_Test": false,
-                            "day": " " ],
-                    "SCPFmastershipFailoverLat": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "extra_C": false,
-                            "extra_D": true,
-                            "new_Test": false,
-                            "day": " " ]
-            ],
-            "USECASE": [
-                    "FUNCvirNetNB": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCvirNetNB",
-                            wiki_file: "FUNCvirNetNBWiki.txt" ],
-                    "FUNCbgpls": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "FUNCbgpls",
-                            wiki_file: "FUNCbgplsWiki.txt" ],
-                    "VPLSBasic": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "VPLSBasic",
-                            wiki_file: "VPLSBasicWiki.txt" ],
-                    "VPLSfailsafe": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "VPLSfailsafe",
-                            wiki_file: "VPLSfailsafeWiki.txt" ],
-                    "USECASE_SdnipFunction": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SDNIP Function",
-                            wiki_file: "USECASE_SdnipFunctionWiki.txt" ],
-                    "USECASE_SdnipFunctionCluster": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SDNIP Function Cluster",
-                            wiki_file: "USECASE_SdnipFunctionClusterWiki.txt" ],
-                    "PLATdockertest": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: "Docker Images sanity test",
-                            wiki_file: "PLATdockertestTableWiki.txt" ]
-            ],
-            "SR": [
-                    "SRBridging": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Bridging",
-                            wiki_file: "SRBridgingWiki.txt" ],
-                    "SRRouting": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Routing",
-                            wiki_file: "SRRoutingWiki.txt" ],
-                    "SRDhcprelay": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Dhcp Relay",
-                            wiki_file: "SRDhcprelayWiki.txt" ],
-                    "SRDynamicConf": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Dynamic Config",
-                            wiki_file: "SRDynamicConfWiki.txt" ],
-                    "SRMulticast": [
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Multi Cast",
-                            wiki_file: "SRMulticastWiki.txt" ],
-                    "SRSanity": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Sanity",
-                            wiki_file: "SRSanityWiki.txt" ],
-                    "SRSwitchFailure": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Switch Failure",
-                            wiki_file: "SRSwitchFailureWiki.txt" ],
-                    "SRLinkFailure": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Link Failure",
-                            wiki_file: "SRLinkFailureWiki.txt" ],
-                    "SROnosFailure": [
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Onos node Failure",
-                            wiki_file: "SROnosFailureWiki.txt" ],
-                    "SRClusterRestart": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Cluster Restart",
-                            wiki_file: "SRClusterRestartWiki.txt" ],
-                    "SRDynamic": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR Dynamic",
-                            wiki_file: "SRDynamicWiki.txt" ],
-                    "SRHighAvailability": [
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR High Availability",
-                            wiki_file: "SRHighAvailabilityWiki.txt" ]
-            ],
-            "SRHA": [
-                    "SRHAsanity": [
-                            "test": "HAsanity --params-file HAsanity.params.fabric",
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Sanity",
-                            wiki_file: "HAsanityWiki.txt" ],
-                    "SRHAclusterRestart": [
-                            "test": "HAclusterRestart --params-file HAclusterRestart.params.fabric",
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Cluster Restart",
-                            wiki_file: "HAclusterRestartWiki.txt" ],
-                    "SRHAsingleInstanceRestart": [
-                            "test": "HAsingleInstanceRestart --params-file HAsingleInstanceRestart.params.fabric",
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Single Instance Restart",
-                            wiki_file: "HAsingleInstanceRestartWiki.txt" ],
-                    "SRHAstopNodes": [
-                            "test": "HAstopNodes --params-file HAstopNodes.params.fabric",
-                            "basic": true,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Stop Nodes",
-                            wiki_file: "HAstopNodes.txt" ],
-                    "SRHAfullNetPartition": [
-                            "test": "HAfullNetPartition --params-file HAfullNetPartition.params.fabric",
-                            "basic": false,
-                            "extra_A": true,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Full Network Partition",
-                            wiki_file: "HAfullNetPartitionWiki.txt" ],
-                    "SRHAswapNodes": [
-                            "test": "HAswapNodes --params-file HAswapNodes.params.fabric",
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Swap Nodes",
-                            wiki_file: "HAswapNodesWiki.txt" ],
-                    "SRHAscaling": [
-                            "test": "HAscaling --params-file HAscaling.params.fabric",
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": true,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Scaling",
-                            wiki_file: "HAscalingWiki.txt" ],
-                    "SRHAkillNodes": [
-                            "test": "HAkillNodes --params-file HAkillNodes.params.fabric",
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Kill Nodes",
-                            wiki_file: "HAkillNodes.txt" ],
-                    "SRHAbackupRecover": [
-                            "test": "HAbackupRecover --params-file HAbackupRecover.params.fabric",
-                            "basic": true,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Backup Recover",
-                            wiki_file: "HAbackupRecoverWiki.txt" ],
-                    "SRHAupgrade": [
-                            "test": "HAupgrade --params-file HAupgrade.params.fabric",
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Upgrade",
-                            wiki_file: "HAupgradeWiki.txt" ],
-                    "SRHAupgradeRollback": [
-                            "test": "HAupgradeRollback --params-file HAupgradeRollback.params.fabric",
-                            "basic": false,
-                            "extra_A": false,
-                            "extra_B": false,
-                            "new_Test": false,
-                            "day": "",
-                            wiki_link: wikiPrefix + "-" + "SR HA Upgrade Rollback",
-                            wiki_file: "HAupgradeRollbackWiki.txt" ]
-            ]
-    ]
+def getSchedules(){
+    return schedules
+}
+
+def getTestsFromCategory( category, tests=[:] ){
+    result = [:]
+    if ( tests == [:] ){
+        tests = allTests
+    }
+    for ( String key in tests.keySet() ){
+        if ( tests[ key ][ "category" ] == category ){
+            result.put( key, tests[ key ] )
+        }
+    }
+    return result
+}
+
+def getTestsFromDay( day, branch, tests=[:] ){
+    result = [:]
+    if ( tests == [:] ){
+        tests = allTests
+    }
+    validSchedules = []
+    for ( String key in schedules.keySet() ){
+        if ( schedules[ key ].contains( day ) ){
+            validSchedules += key
+        }
+    }
+    echo validSchedules.toString()
+    for ( String key in tests.keySet() ){
+        schedule = tests[ key ][ "schedule" ][ branch ]
+        if ( validSchedules.contains( schedule ) ){
+            result.put( key, tests[ key ] )
+        }
+    }
+    return result
+}
+
+def getTestsFromNodeLabel( nodeLabel, tests=[:] ){
+    if ( tests == [:] ){
+        tests = allTests
+    }
+    for ( String key in tests.keySet() ){
+        if ( tests[ key ][ "nodeLabel" ] == nodeLabel ){
+            result.put( key, tests[ key ] )
+        }
+    }
+}
+
+def getTestListAsString( tests ){
+    result = ""
+    for ( String key in tests.keySet() ){
+        result += test + ","
+    }
+    return result[ 0..-2 ]
+}
+
+def getTestSchedule( test ){
+    return allTests[ test ][ "schedule" ]
+}
+
+def convertScheduleKeyToDays( sch ){
+    return schedules[ sch ]
 }
 
 return this

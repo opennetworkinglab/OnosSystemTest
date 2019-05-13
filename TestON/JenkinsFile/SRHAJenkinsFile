@@ -22,11 +22,12 @@
 
 // read dependencies.
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-test_lists = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 // init configuration to be SR
 fileRelated.init()
+test_list.init()
 funcs.initialize( "SR" )
 
 // Allow to run with --params-file argument
@@ -39,7 +40,7 @@ jobName = env.JOB_NAME
 // ( currently master on Fabric4, 2.1 on Fabric3 and 1.15 on Fabric2 )
 def prop = null
 prop = funcs.getProperties()
-SRHA = test_lists.getAllTheTests( prop[ "WikiPrefix" ] )[ "SRHA" ]
+SRHA_tests = test_list.getTestsFromCategory( "SRHA" )
 
 // set the file paths and directory
 graph_generator_file = fileRelated.trendIndividual
@@ -53,12 +54,12 @@ funcs.printTestToRun( testsToRun )
 
 // save the functions to run test in the dictionary.
 def tests = [ : ]
-for ( String test : SRHA.keySet() ){
+for ( String test : SRHA_tests.keySet() ){
     toBeRun = testsToRun.contains( test )
     def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-    def pureTestName = ( SRHA[ test ].containsKey( "test" ) ? SRHA[ test ][ "test" ].split().head() : test )
+    def pureTestName = ( SRHA_tests[ test ].containsKey( "test" ) ? SRHA_tests[ test ][ "test" ].split().head() : test )
     tests[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
-                                       SRHA, graph_generator_file, graph_saved_directory )
+                                       SRHA_tests, graph_generator_file, graph_saved_directory )
 }
 
 // get start time

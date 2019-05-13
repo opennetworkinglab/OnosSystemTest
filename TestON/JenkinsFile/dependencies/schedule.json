@@ -1,0 +1,19 @@
+{
+    "everyday": [ "sun", "mon", "tue", "wed", "thu", "fri", "sat" ],
+    "weekdays": [ "mon", "tue", "wed", "thu", "fri" ],
+    "weekends": [ "sun", "sat" ],
+    "mon_wed_fri": [ "mon", "wed", "fri" ],
+    "tue_thu": [ "tue", "thu" ],
+    "wed_fri": [ "wed", "fri" ],
+    "mon_thu": [ "mon", "thu" ],
+    "sun": [ "sun" ],
+    "mon": [ "mon" ],
+    "tue": [ "tue" ],
+    "wed": [ "wed" ],
+    "thu": [ "thu" ],
+    "fri": [ "fri" ],
+    "sat": [ "sat" ],
+    "onos-1.x_schedule": [ "sat" ],
+    "onos-2.x_schedule": [ "sun" ],
+    "USECASE_master": [ "tue" ]
+}

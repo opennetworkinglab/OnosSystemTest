@@ -24,6 +24,7 @@
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
+
 // The way reading the parameters from the Jenkins.
 branches = params.ONOSbranch
 hours = params.hours
@@ -34,10 +35,11 @@ branchList = branches.tokenize( "\n;, " )
 // initialize the directory.
 
 // Script file is the R script path
-script_file = fileRelated.trendCHO
+script_file = fileRelated.rScriptPaths[ "scripts" ][ "trendCHO" ]
+
 // saving_directory is the directory that save the generate graphs.
-saving_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric5/"
-scriptDir = fileRelated.CHOScriptDir
+saving_directory = fileRelated.workspaces[ "Fabric5" ]
+scriptDir = fileRelated.rScriptPaths[ "directories" ][ "CHO" ]
 
 // create a bash script that will generate the graph
 graphScript = generateGraphScript( branchList )
@@ -54,7 +56,7 @@ stage( 'posting-result' ) {
     postJob()
 }
 
-saving_directory = fileRelated.jenkinsWorkspace + "postjob-Trellis-POD/"
+saving_directory = fileRelated.workspaces[ "Trellis" ]
 graphScript = generateGraphScript( branchList )
 stage( 'Generating-Graph-POD' ) {
     // This will run on TestStation-Trellis-POD node.

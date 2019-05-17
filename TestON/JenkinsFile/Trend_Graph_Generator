@@ -43,8 +43,8 @@ def Tests = params.Test
 prop[ "ONOSBranch" ] = params.ONOSbranch
 
 // set some of the paths of the file and directory
-graph_generator_file = fileRelated.trendIndividual
-graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-" + nodeCluster +
+graph_generator_file = fileRelated.rScriptPaths[ "scripts" ][ "trendIndividual" ]
+graph_saved_directory = fileRelated.workspaces[ "base" ] + "postjob-" + nodeCluster +
                         ( nodeCluster == "Fabric" ? funcs.fabricOn( prop[ "ONOSBranch" ] ) : "" ) + "/"
 
 def testsToRun = null

@@ -1,0 +1,27 @@
+{
+    "jenkinsFiles": "~/OnosSystemTest/TestON/JenkinsFile/",
+    "workspaces" : {
+        "base" : "/var/jenkins/workspace/",
+        "all-pipeline-trigger" : "/var/jenkins/workspace/all-pipeline-trigger/",
+        "BM" : "/var/jenkins/workspace/postjob-BM/",
+        "VM" : "/var/jenkins/workspace/postjob-VM/",
+        "Fabric" : "/var/jenkins/workspace/postjob-Fabric/",
+        "Fabric5" : "/var/jenkins/workspace/postjob-Fabric5/",
+        "Trellis" : "/var/jenkins/workspace/postjob-Trellis-POD/"
+    },
+    "rScript": {
+        "directories": {
+            "base": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/",
+            "SCPF": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/SCPFspecificGraphRScripts",
+            "CHO": "~/CHO_Jenkins_Scripts"
+        },
+        "scripts": {
+            "trendIndividual": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/trendIndividualTest.R",
+            "trendMultiple": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/trendMultipleTests.R",
+            "trendSCPF": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/trendSCPF.R",
+            "trendCHO": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/trendCHO.R",
+            "histogramMultiple": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/histogramMultipleTestGroups.R",
+            "pieMultiple": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/pieMultipleTests.R"
+        }
+    }
+}

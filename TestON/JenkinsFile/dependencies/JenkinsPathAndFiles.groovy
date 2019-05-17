@@ -22,30 +22,20 @@
 // This is the dependency Jenkins script.
 // This will initialize the paths of the jenkins file and paths.
 
-// init the paths for the directory
-def initLocation(){
-    jenkinsFolder = "~/OnosSystemTest/TestON/JenkinsFile/"
-    rScriptLocation = jenkinsFolder + "wikiGraphRScripts/"
-    jenkinsWorkspace = "/var/jenkins/workspace/"
-    SCPFSpecificLocation = rScriptLocation + "SCPFspecificGraphRScripts/"
-    CHOScriptDir = "~/CHO_Jenkins_Scripts/"
-}
+import groovy.json.*
 
-// init the paths for the files.
-def initFiles(){
-    trendIndividual = rScriptLocation + "trendIndividualTest.R"
-    trendMultiple = rScriptLocation + "trendMultipleTests.R"
-    trendSCPF = rScriptLocation + "trendSCPF.R"
-    trendCHO = rScriptLocation + "trendCHO.R"
-    histogramMultiple = rScriptLocation + "histogramMultipleTestGroups.R"
-    pieMultiple = rScriptLocation + "pieMultipleTests.R"
-}
+jenkinsFiles = ""
+rScriptPaths = [:]      // paths of r script files that generate wiki graphs
+workspaces = [:]        // postjob workspaces
 
 // init both directory and file paths.
 def init(){
-    initLocation()
-    initFiles()
+    def paths_buffer = readTrusted( "TestON/JenkinsFile/dependencies/paths.json" )
+    paths_json = readJSON text: paths_buffer
+
+    jenkinsFiles = paths_json[ "jenkinsFiles" ]
+    workspaces = paths_json[ "workspaces" ]
+    rScriptPaths = paths_json[ "rScript" ]
 }
 
 return this
-

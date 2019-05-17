@@ -242,7 +242,7 @@ def init(){
                                          dbWhere: 'AND scale=5',
                                          y_axis: 'Latency (ms)' ]
     ]
-    graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-BM/"
+    graph_saved_directory = fileRelated.workspaces[ "BM" ]
 }
 
 def getGraphCommand( rFileName, extras, host, port, user, pass, testName, branchName, isOldFlow ){
@@ -258,7 +258,7 @@ def getGraphCommand( rFileName, extras, host, port, user, pass, testName, branch
 def generateGraph( rFileName, batch, host, port, user, pass, testName, branchName, isOldFlow ){
     //  generate the Rscript command for individual graphs
 
-    return generalFuncs.basicGraphPart( fileRelated.SCPFSpecificLocation + rFileName,
+    return generalFuncs.basicGraphPart( fileRelated.rScriptPaths[ "directories" ][ "SCPF" ] + rFileName,
                                         host, port, user, pass, testName, branchName ) +
            " " + batch + " " + usingOldFlow( isOldFlow, testName ) + graph_saved_directory
 }
@@ -268,7 +268,7 @@ def generateCombinedResultGraph( host, port, user, pass, testName, branchName, i
     def result = ""
 
     for ( int i = 0; i < SCPF[ testName ][ 'graphTitle' ].size(); i++ ){
-        result += generalFuncs.basicGraphPart( fileRelated.trendSCPF,
+        result += generalFuncs.basicGraphPart( fileRelated.rScriptPaths[ "scripts" ][ "trendSCPF" ],
                                                host,
                                                port,
                                                user,

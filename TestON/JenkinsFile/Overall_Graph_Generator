@@ -27,9 +27,9 @@ fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPath
 fileRelated.init()
 
 // set the file and directory paths.
-stat_graph_generator_file = fileRelated.histogramMultiple
-pie_graph_generator_file = fileRelated.pieMultiple
-graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
+stat_graph_generator_file = fileRelated.rScriptPaths[ "scripts" ][ "histogramMultiple" ]
+pie_graph_generator_file = fileRelated.rScriptPaths[ "scripts" ][ "pieMultiple" ]
+graph_saved_directory = fileRelated.workspaces[ "VM" ]
 
 // init trend which will generate the pie and histogram graphs to be VM.
 funcs.initializeTrend( "VM" )

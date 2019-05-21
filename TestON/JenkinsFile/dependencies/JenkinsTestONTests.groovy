@@ -23,7 +23,6 @@ allTests = [:]
 schedules = [:]
 
 def init(){
-    def jsonSlurper = new JsonSlurper()
     def tests_buffer = readTrusted( "TestON/JenkinsFile/dependencies/tests.json" )
     def schedules_buffer = readTrusted( "TestON/JenkinsFile/dependencies/schedule.json" )
     allTests = readJSON text: tests_buffer

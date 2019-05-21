@@ -20,14 +20,17 @@
 //     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 import groovy.json.*
+fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
+
+fileRelated.init()
 
 allTests = [:]
 schedules = [:]
 
 def init(){
     def jsonSlurper = new JsonSlurper()
-    def tests_buffer = new BufferedReader( new InputStreamReader( new FileInputStream( "tests.json" ),"UTF-8" ) )
-    def schedules_buffer = new BufferedReader( new InputStreamReader( new FileInputStream( "schedule.json" ),"UTF-8" ) )
+    def tests_buffer = new BufferedReader( new InputStreamReader( new FileInputStream( fileRelated.jenkinsFolder + "dependencies/tests.json" ),"UTF-8" ) )
+    def schedules_buffer = new BufferedReader( new InputStreamReader( new FileInputStream( fileRelated.jenkinsFolder + "dependencies/schedule.json" ),"UTF-8" ) )
     allTests = jsonSlurper.parse( tests_buffer )
     schedules = jsonSlurper.parse( schedules_buffer )
 }

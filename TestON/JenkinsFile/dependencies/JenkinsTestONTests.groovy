@@ -26,8 +26,8 @@ schedules = [:]
 
 def init(){
     def jsonSlurper = new JsonSlurper()
-    def tests_buffer = new BufferedReader( new InputStreamReader( new FileInputStream( "TestON/JenkinsFile/dependencies/tests.json" ),"UTF-8" ) )
-    def schedules_buffer = new BufferedReader( new InputStreamReader( new FileInputStream( "TestON/JenkinsFile/dependencies/schedule.json" ),"UTF-8" ) )
+    def tests_buffer = readTrusted( "TestON/JenkinsFile/dependencies/tests.json" )
+    def schedules_buffer = readTrusted( "TestON/JenkinsFile/dependencies/schedule.json" )
     allTests = jsonSlurper.parse( tests_buffer )
     schedules = jsonSlurper.parse( schedules_buffer )
 }

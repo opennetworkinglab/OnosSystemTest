@@ -19,8 +19,6 @@
 //     You should have received a copy of the GNU General Public License
 //     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
-import groovy.json.*
-
 allTests = [:]
 schedules = [:]
 
@@ -28,8 +26,8 @@ def init(){
     def jsonSlurper = new JsonSlurper()
     def tests_buffer = readTrusted( "TestON/JenkinsFile/dependencies/tests.json" )
     def schedules_buffer = readTrusted( "TestON/JenkinsFile/dependencies/schedule.json" )
-    allTests = jsonSlurper.parse( tests_buffer )
-    schedules = jsonSlurper.parse( schedules_buffer )
+    allTests = readJSON text: tests_buffer
+    schedules = readJSON text: schedules_buffer
 }
 
 def getAllTests(){

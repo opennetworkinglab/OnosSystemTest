@@ -84,7 +84,7 @@ def getTestsFromNodeLabel( nodeLabel, tests=[:] ){
 
 def getTestListAsString( tests ){
     result = ""
-    for ( String key in tests.keySet() ){
+    for ( String test in tests.keySet() ){
         result += test + ","
     }
     return result[ 0..-2 ]

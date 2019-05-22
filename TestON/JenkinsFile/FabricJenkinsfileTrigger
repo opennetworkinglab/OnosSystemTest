@@ -98,22 +98,16 @@ if ( !manually_run ){
                         "Starting tests on : " + now.toString() +
                         "\n" + ":sparkles:" * 16 )
 
-    // Choices will get the list of the test with Segment Routing type tests.
-    SR_choices += adder( "SR", "basic", true )
-    SRHA_choices += adder( "SRHA", "basic", true )
-    if ( today == Calendar.FRIDAY ){
-        // if today is Friday, it will also test tests with extra_A category
-        SR_choices += adder( "SR", "extra_A", true )
-        SRHA_choices += adder( "SRHA", "extra_A", true )
-    }
-    else if ( today == Calendar.SATURDAY ){
-        // if today is Saturday, it will add the test with extra_B category
-        SR_choices += adder( "SR", "extra_B", true )
-        SRHA_choices += adder( "SRHA", "extra_B", true )
-    }
-    // removing last comma added at the end of the last test name.
-    SR_choices = triggerFuncs.lastCommaRemover( SR_choices )
-    SRHA_choices = triggerFuncs.lastCommaRemover( SRHA_choices )
+    dayMap = [ ( Calendar.MONDAY )    : "mon",
+               ( Calendar.TUESDAY )   : "tue",
+               ( Calendar.WEDNESDAY ) : "wed",
+               ( Calendar.THURSDAY )  : "thu",
+               ( Calendar.FRIDAY )    : "fri",
+               ( Calendar.SATURDAY )  : "sat",
+               ( Calendar.SUNDAY )    : "sun" ]
+
+    SR_choices += adder( "SR", dayMap[ today ], true )
+    SRHA_choices += adder( "SRHA", dayMap[ today ], true )
 
 }
 
@@ -220,11 +214,13 @@ if ( !manually_run ){
 }*/
 
 // Way to add list of the tests with specific category to the result
-def adder( category, day, branch, getResult ){
-    // category : test Category ( Eg. FUNC, HA, SR ... )
-    // if getResult == true, it will add the result.
-    result = ""
-    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, branch ) )
+def adder( category, day, getResult ){
+    // category : the category of the test which will be either FUNC,HA,SR...
+    // day : the day you are trying to add (m,t,w,th... )
+    // getResult : if want to get the list of the test to be run. False will return empty list.
+    //             And once the list is empty, it will not be run.
+    def result = ""
+    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, onos_b ) )
 
     for ( String test in selectedTests.keySet() ){
         if ( getResult ){

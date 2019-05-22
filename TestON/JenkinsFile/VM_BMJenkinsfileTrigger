@@ -26,6 +26,8 @@ triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/TriggerFun
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 
+test_list.init()
+
 // set the versions of the onos
 fileRelated.init()
 current_version = "master"
@@ -232,7 +234,7 @@ def adder( category, day, getResult ){
     // getResult : if want to get the list of the test to be run. False will return empty list.
     //             And once the list is empty, it will not be run.
     def result = ""
-    selectedTests = getTestsFromCategory( category, getTestsFromDay( day, onos_b ) )
+    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, onos_b ) )
 
     for ( String test in selectedTests.keySet() ){
         if ( getResult ){

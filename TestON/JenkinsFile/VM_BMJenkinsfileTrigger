@@ -30,9 +30,6 @@ test_list.init()
 
 // set the versions of the onos
 fileRelated.init()
-current_version = "master"
-previous_version = "1.15"
-before_previous_version = "2.1"
 
 // init trend graphs to be on VM.
 funcs.initializeTrend( "VM" );
@@ -42,23 +39,11 @@ triggerFuncs.init( funcs )
 // which will demonstrates the list of the scheduled tests on the days.
 wikiContents = ""
 
-// default FUNC,HA to be VM, SCPF,USECASE to be BM.
-// SR will not be used in here.
-testcases = [
-        "FUNC": [ tests: "", nodeName: "VM", wikiContent: "" ],
-        "HA": [ tests: "", nodeName: "VM", wikiContent: "" ],
-        "SCPF": [ tests: "", nodeName: "BM", wikiContent: "" ],
-        "SR": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
-        "SRHA": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
-        "USECASE": [ tests: "", nodeName: "BM", wikiContent: "" ]
-]
+all_testcases = [:]
 
 // read the parameters from the Jenkins
 manually_run = params.manual_run
 
-// set default onos_b to be current_version.
-onos_b = current_version
-test_branch = ""
 onos_tag = params.ONOSTag
 isOldFlow = true
 
@@ -67,29 +52,44 @@ def now = funcs.getCurrentTime()
 print now.toString()
 today = now[ Calendar.DAY_OF_WEEK ]
 
-// get branch from parameter if it is manually running
+dayMap = [ ( Calendar.MONDAY )    : "mon",
+           ( Calendar.TUESDAY )   : "tue",
+           ( Calendar.WEDNESDAY ) : "wed",
+           ( Calendar.THURSDAY )  : "thu",
+           ( Calendar.FRIDAY )    : "fri",
+           ( Calendar.SATURDAY )  : "sat",
+           ( Calendar.SUNDAY )    : "sun" ]
+fullDayMap = [ ( Calendar.MONDAY )    : "Monday",
+               ( Calendar.TUESDAY )   : "Tuesday",
+               ( Calendar.WEDNESDAY ) : "Wednesday",
+               ( Calendar.THURSDAY )  : "Thursday",
+               ( Calendar.FRIDAY )    : "Friday",
+               ( Calendar.SATURDAY )  : "Saturday",
+               ( Calendar.SUNDAY )    : "Sunday" ]
+
 if ( manually_run ){
-    onos_b = params.ONOSVersion
+    onos_branches = params.branches.tokenize( "\n;, " )
+} else {
+    onos_branches = getBranchesFromDay( dayMap[ today ] )
 }
-else {
-    // otherwise, the version would be different over the weekend.
-    // If today is weekdays, it will be default to current_version.
-    if ( today == Calendar.SATURDAY ){
-        onos_b = previous_version
-    }
-    else if ( today == Calendar.SUNDAY ){
-        onos_b = before_previous_version
-    }
+
+// default FUNC,HA to be VM, SCPF,USECASE to be BM.
+// SR will not be used in here.
+testcases_template = [
+        "FUNC": [ tests: "", nodeName: "VM", wikiContent: "" ],
+        "HA": [ tests: "", nodeName: "VM", wikiContent: "" ],
+        "SCPF": [ tests: "", nodeName: "BM", wikiContent: "" ],
+        "SR": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
+        "SRHA": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
+        "USECASE": [ tests: "", nodeName: "BM", wikiContent: "" ]
+]
+
+for ( String b in onos_branches ){
+    all_testcases.put( b, testcases_template )
 }
 
 // list of the tests to be run will be saved in each choices.
 day = ""
-SCPF_choices = ""
-USECASE_choices = ""
-FUNC_choices = ""
-HA_choices = ""
-SR_choices = ""
-SRHA_choices = ""
 
 // init some paths for the files and directories.
 stat_graph_generator_file = fileRelated.histogramMultiple
@@ -100,94 +100,75 @@ graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
 post_result = params.PostResult
 
 // if automatically run, it will remove the comma at the end after dividing the tests.
-if ( !manually_run ){
-    testDivider( today )
-    FUNC_choices = triggerFuncs.lastCommaRemover( FUNC_choices )
-    HA_choices = triggerFuncs.lastCommaRemover( HA_choices )
-    SCPF_choices = triggerFuncs.lastCommaRemover( SCPF_choices )
-    USECASE_choices = triggerFuncs.lastCommaRemover( USECASE_choices )
-    SR_choices = triggerFuncs.lastCommaRemover( SR_choices )
-    SRHA_choices = triggerFuncs.lastCommaRemover( SRHA_choices )
-}
-
-
 if ( manually_run ){
-    testcases = triggerFuncs.organize_tests( params.Tests, testcases )
-
+    for ( String b in onos_branches ){
+        all_testcases[ b ] = triggerFuncs.organize_tests( params.Tests, all_testcases[ b ] )
+    }
     isOldFlow = params.isOldFlow
-    println "Tests to be run manually : "
-}
-else {
-    testcases[ "SCPF" ][ "tests" ] = SCPF_choices
-    testcases[ "USECASE" ][ "tests" ] = USECASE_choices
-    testcases[ "FUNC" ][ "tests" ] = FUNC_choices
-    testcases[ "HA" ][ "tests" ] = HA_choices
-    testcases[ "SR" ][ "tests" ] = SR_choices
-    testcases[ "SRHA" ][ "tests" ] = SRHA_choices
+    println "Tests to be run manually:"
+} else {
+    testDivider( today )
     println "Defaulting to " + day + " tests:"
 }
 
-triggerFuncs.print_tests( testcases )
+
+for ( String b in onos_branches ){
+    triggerFuncs.print_tests( all_testcases[ b ] )
+}
 
 def runTest = [
         "VM": [ : ],
         "BM": [ : ]
 ]
 
-// set the test running function into the dictionary.
-for ( String test in testcases.keySet() ){
-    println test
-    if ( testcases[ test ][ "tests" ] != "" ){
-        runTest[ testcases[ test ][ "nodeName" ] ][ test ] = triggerFuncs.
-                trigger_pipeline( onos_b, testcases[ test ][ "tests" ], testcases[ test ][ "nodeName" ], test,
-                                  manually_run, onos_tag )
-    }
-}
 def finalList = [ : ]
+
+finalList[ "VM" ] = [ : ]
+finalList[ "BM" ] = [ : ]
 
 // get the name of the job.
 jobName = env.JOB_NAME
 
-// first set the list of the functions to be run.
-finalList[ "VM" ] = triggerFuncs.runTestSeq( runTest[ "VM" ] )
-finalList[ "BM" ] = triggerFuncs.runTestSeq( runTest[ "BM" ] )
+// set the test running function into the dictionary.
+for ( String b in onos_branches ){
+    for ( String test in all_testcases[ b ].keySet() ){
+        if ( all_testcases[ b ][ test ][ "tests" ] != "" ){
+            runTest[ all_testcases[ b ][ test ][ "nodeName" ] ][ test ] = triggerFuncs.
+                    trigger_pipeline( b, all_testcases[ b ][ test ][ "tests" ], all_testcases[ b ][ test ][ "nodeName" ], test,
+                                      manually_run, onos_tag )
+        }
+    }
+
+    // first set the list of the functions to be run.
+    finalList[ "VM" ][ b ] = triggerFuncs.runTestSeq( runTest[ "VM" ] )
+    finalList[ "BM" ][ b ] = triggerFuncs.runTestSeq( runTest[ "BM" ] )
+}
 
 // if first two character of the job name is vm, only call VM.
 // else, only on BM
+
 if ( jobName.take( 2 ) == "vm" ){
-    finalList[ "VM" ].call()
+    parallel finalList[ "VM" ]
 }
 else {
-    finalList[ "BM" ].call()
+    parallel finalList[ "BM" ]
 }
+
 
 // If it is automated running, it will generate the stats graph on VM.
 if ( !manually_run ){
-    funcs.generateStatGraph( "TestStation-VMs",
-                             funcs.branchWithPrefix( onos_b ),
-                             stat_graph_generator_file,
-                             pie_graph_generator_file,
-                             graph_saved_directory )
+    for ( String b in onos_branches ){
+        funcs.generateStatGraph( "TestStation-VMs",
+                                 funcs.branchWithPrefix( b ),
+                                 stat_graph_generator_file,
+                                 pie_graph_generator_file,
+                                 graph_saved_directory )
+    }
 }
 
 // function that will divide tests depends on which day it is.
 def testDivider( today ){
     todayStr = today.toString()
-
-    dayMap = [ ( Calendar.MONDAY )    : "mon",
-               ( Calendar.TUESDAY )   : "tue",
-               ( Calendar.WEDNESDAY ) : "wed",
-               ( Calendar.THURSDAY )  : "thu",
-               ( Calendar.FRIDAY )    : "fri",
-               ( Calendar.SATURDAY )  : "sat",
-               ( Calendar.SUNDAY )    : "sun" ]
-    fullDayMap = [ ( Calendar.MONDAY )    : "Monday",
-                   ( Calendar.TUESDAY )   : "Tuesday",
-                   ( Calendar.WEDNESDAY ) : "Wednesday",
-                   ( Calendar.THURSDAY )  : "Thursday",
-                   ( Calendar.FRIDAY )    : "Friday",
-                   ( Calendar.SATURDAY )  : "Saturday",
-                   ( Calendar.SUNDAY )    : "Sunday" ]
 
     if ( today == Calendar.MONDAY ){
         initHtmlForWiki()
@@ -207,41 +188,43 @@ def testDivider( today ){
 }
 
 def buildDay( dayStr, getResult ){
-    addingHeader( "FUNC" )
-    FUNC_choices += adder( "FUNC", dayStr, getResult )
-    closingHeader( "FUNC" )
-    addingHeader( "HA" )
-    HA_choices += adder( "HA", dayStr, getResult )
-    closingHeader( "HA" )
-    addingHeader( "SCPF" )
-    SCPF_choices += adder( "SCPF", dayStr, getResult )
-    closingHeader( "SCPF" )
-    addingHeader( "SR" )
-    SR_choices += adder( "SR", dayStr, false )
-    closingHeader( "SR" )
-    addingHeader( "SRHA" )
-    SRHA_choices += adder( "SRHA", dayStr, false )
-    closingHeader( "SRHA" )
-    addingHeader( "USECASE" )
-    USECASE_choices += adder( "USECASE", dayStr, getResult )
-    closingHeader( "USECASE" )
+    for ( String b in onos_branches ){
+        addingHeader( "FUNC", b )
+        all_testcases[ b ][ "FUNC" ][ "tests" ] += adder( "FUNC", dayStr, getResult, b )
+        closingHeader( "FUNC", b )
+        addingHeader( "HA", b )
+        all_testcases[ b ][ "HA" ][ "tests" ] += adder( "HA", dayStr, getResult, b )
+        closingHeader( "HA", b )
+        addingHeader( "SCPF", b )
+        all_testcases[ b ][ "SCPF" ][ "tests" ] += adder( "SCPF", dayStr, getResult, b )
+        closingHeader( "SCPF", b )
+        addingHeader( "SR", b )
+        all_testcases[ b ][ "SR" ][ "tests" ] += adder( "SR", dayStr, false, b )
+        closingHeader( "SR", b )
+        addingHeader( "SRHA", b )
+        all_testcases[ b ][ "SRHA" ][ "tests" ] += adder( "SRHA", dayStr, false, b )
+        closingHeader( "SRHA", b )
+        addingHeader( "USECASE", b )
+        all_testcases[ b ][ "USECASE" ][ "tests" ] += adder( "USECASE", dayStr, getResult, b )
+        closingHeader( "USECASE", b )
+    }
 }
 
 // adder that will return the list of the tests.
-def adder( category, day, getResult ){
+def adder( category, day, getResult, branch ){
     // category : the category of the test which will be either FUNC,HA,SR...
     // day : the day you are trying to add (m,t,w,th... )
     // getResult : if want to get the list of the test to be run. False will return empty list.
     //             And once the list is empty, it will not be run.
     def result = ""
-    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, onos_b ) )
+    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, branch ) )
 
     for ( String test in selectedTests.keySet() ){
         if ( getResult ){
             result += test + ","
         }
         // make HTML columns for wiki page on schedule.
-        makeHtmlColList( category, test )
+        makeHtmlColList( category, test, branch )
     }
     return result
 }
@@ -271,40 +254,44 @@ def initHtmlForWiki(){
                 <th class="confluenceTh"><p>Saturday</p></th>
                 <th class="confluenceTh"><p>Sunday</p></th>
             </tr>'''
-    for ( String test in testcases.keySet() ){
-        testcases[ test ][ 'wikiContent' ] = '''
-            <tr>
-                <th colspan="1" class="confluenceTh">''' + test + '''</th>'''
+    for ( String b in onos_branches ){
+        for ( String test in all_testcases[ b ].keySet() ){
+            all_testcases[ b ][ test ][ 'wikiContent' ] = '''
+                <tr>
+                    <th colspan="1" class="confluenceTh">''' + test + '''</th>'''
+        }
     }
 }
 
 // adding header functionality.
-def addingHeader( testCategory ){
-    testcases[ testCategory ][ 'wikiContent' ] += '''
+def addingHeader( testCategory, branch ){
+    all_testcases[ branch ][ testCategory ][ 'wikiContent' ] += '''
                 <td class="confluenceTd">
                     <ul>'''
 }
 
 // making column list for html
-def makeHtmlColList( testCategory, testName ){
-    testcases[ testCategory ][ 'wikiContent' ] += '''
+def makeHtmlColList( testCategory, testName, branch ){
+    all_testcases[ branch ][ testCategory ][ 'wikiContent' ] += '''
                         <li>''' + testName + '''</li>'''
 
 }
 
 // closing the header for html
-def closingHeader( testCategory ){
-    testcases[ testCategory ][ 'wikiContent' ] += '''
+def closingHeader( testCategory, branch ){
+    all_testcases[ branch ][ testCategory ][ 'wikiContent' ] += '''
                     </ul>
                 </td>'''
 }
 
 // close the html for the wiki page.
 def closeHtmlForWiki(){
-    for ( String test in testcases.keySet() ){
-        wikiContents += testcases[ test ][ 'wikiContent' ]
-        wikiContents += '''
-            </tr>'''
+    for ( String b in onos_branches ){
+        for ( String test in all_testcases[ b ].keySet() ){
+            wikiContents += all_testcases[ b ][ test ][ 'wikiContent' ]
+            wikiContents += '''
+                </tr>'''
+        }
     }
     wikiContents += '''
         </tbody>
@@ -312,9 +299,9 @@ def closeHtmlForWiki(){
     <p><strong>Everyday</strong>, all SegmentRouting tests are built and run on every supported branch.</p>
     <p>On <strong>Weekdays</strong>, all the other tests are built and run on the master branch.</p>
     <p>On <strong>Saturdays</strong>, all the other tests are built and run on the ''' +
-                    funcs.branchWithPrefix( previous_version ) + ''' branch.</p>
+                    test_list.convertBranchCodeToBranch( "onos-2.x" ) + ''' branch.</p>
     <p>On <strong>Sundays</strong>, all the other tests are built and run on the ''' +
-                    funcs.branchWithPrefix( before_previous_version ) + ''' branch.</p>'''
+                    test_list.convertBranchCodeToBranch( "onos-1.x" ) + ''' branch.</p>'''
 }
 
 // post the result to wiki page using publish to confluence.

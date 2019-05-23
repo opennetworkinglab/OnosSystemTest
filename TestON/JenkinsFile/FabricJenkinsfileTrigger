@@ -29,11 +29,6 @@ fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPath
 fileRelated.init()
 test_list.init()
 
-// set the versions of the onos.
-current_version = "master"
-previous_version = "1.15"
-before_previous_version = "2.1"
-
 // Function that will initialize the configuration of the Fabric.
 funcs.initializeTrend( "Fabric" )
 funcs.initialize( "Fabric" )
@@ -43,19 +38,10 @@ triggerFuncs.init( funcs )
 // It will only be used by the VM_BMJenkinsTrigger not in here.
 wikiContents = ""
 
-testcases = [
-        "FUNC": [ tests: "", nodeName: "VM", wikiContent: "" ],
-        "HA": [ tests: "", nodeName: "VM", wikiContent: "" ],
-        "SCPF": [ tests: "", nodeName: "BM", wikiContent: "" ],
-        "SR": [ tests: "", nodeName: [ "Fabric2", "Fabric3", "Fabric4" ], wikiContent: "" ],
-        "SRHA": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
-        "USECASE": [ tests: "", nodeName: "BM", wikiContent: "" ]
-]
+all_testcases = [:]
 
 // set some variables from the parameter
 manually_run = params.manual_run
-onos_b = current_version
-test_branch = ""
 onos_tag = params.ONOSTag
 isOldFlow = true
 
@@ -64,25 +50,44 @@ def now = funcs.getCurrentTime()
 print now.toString()
 today = now[ Calendar.DAY_OF_WEEK ]
 
+dayMap = [ ( Calendar.MONDAY )    : "mon",
+           ( Calendar.TUESDAY )   : "tue",
+           ( Calendar.WEDNESDAY ) : "wed",
+           ( Calendar.THURSDAY )  : "thu",
+           ( Calendar.FRIDAY )    : "fri",
+           ( Calendar.SATURDAY )  : "sat",
+           ( Calendar.SUNDAY )    : "sun" ]
+fullDayMap = [ ( Calendar.MONDAY )    : "Monday",
+               ( Calendar.TUESDAY )   : "Tuesday",
+               ( Calendar.WEDNESDAY ) : "Wednesday",
+               ( Calendar.THURSDAY )  : "Thursday",
+               ( Calendar.FRIDAY )    : "Friday",
+               ( Calendar.SATURDAY )  : "Saturday",
+               ( Calendar.SUNDAY )    : "Sunday" ]
+
+
 // if it is manually run, it will set the onos version to be what it was passed by.
 // Currently, SR-pipeline-manually is not supported due to the special way of it is executed.
 if ( manually_run ){
-    onos_b = params.ONOSVersion
+    onos_branches = params.branches.tokenize( "\n;, " )
+} else {
+    onos_branches = test_list.getBranchesFromDay( today )
 }
 
-// get the list of the tests from the JenkinsTestONTests.groovy
-// AllTheTests = test_list.getAllTests()
+testcases_template = [
+        "FUNC": [ tests: "", nodeName: "VM", wikiContent: "" ],
+        "HA": [ tests: "", nodeName: "VM", wikiContent: "" ],
+        "SCPF": [ tests: "", nodeName: "BM", wikiContent: "" ],
+        "SR": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
+        "SRHA": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
+        "USECASE": [ tests: "", nodeName: "BM", wikiContent: "" ]
+]
 
+for ( String b in onos_branches ){
+    all_testcases.put( b, testcases_template )
+}
 
 day = ""
-
-// list of the test on each test category will be run.
-SCPF_choices = ""
-USECASE_choices = ""
-FUNC_choices = ""
-HA_choices = ""
-SR_choices = ""
-SRHA_choices = ""
 
 // initialize the graph generating files.
 stat_graph_generator_file = fileRelated.histogramMultiple
@@ -91,42 +96,32 @@ graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-Fabric/"
 
 // get the post_result. This will be affected only for the manual runs.
 post_result = params.PostResult
-if ( !manually_run ){
+
+if ( manually_run ){
+    for ( String b in onos_branches ){
+        all_testcases[ b ] = triggerFuncs.organize_tests( params.Tests, all_testcases[ b ] )
+    }
+    isOldFlow = params.isOldFlow
+    println "Tests to be run manually : "
+} else {
     // If it is automated running, it will post the beginning message to the channel.
     slackSend( channel: 'sr-failures', color: '#03CD9F',
                message: ":sparkles:" * 16 + "\n" +
                         "Starting tests on : " + now.toString() +
                         "\n" + ":sparkles:" * 16 )
 
-    dayMap = [ ( Calendar.MONDAY )    : "mon",
-               ( Calendar.TUESDAY )   : "tue",
-               ( Calendar.WEDNESDAY ) : "wed",
-               ( Calendar.THURSDAY )  : "thu",
-               ( Calendar.FRIDAY )    : "fri",
-               ( Calendar.SATURDAY )  : "sat",
-               ( Calendar.SUNDAY )    : "sun" ]
-
-    SR_choices += adder( "SR", dayMap[ today ], true )
-    SRHA_choices += adder( "SRHA", dayMap[ today ], true )
-
-}
-
-
-if ( manually_run ){
-    testcases = triggerFuncs.organize_tests( params.Tests, testcases )
-
-    isOldFlow = params.isOldFlow
-    println "Tests to be run manually : "
-}
-else {
-    // set the list of the tests to run.
-    testcases[ "SR" ][ "tests" ] = SR_choices
-    testcases[ "SRHA" ][ "tests" ] = SRHA_choices
+    for ( String b in onos_branches ){
+        // set the list of the tests to run.
+        all_testcases[ b ][ "SR" ][ "tests" ] += adder( "SR", dayMap[ today ], true, b )
+        all_testcases[ b ][ "SRHA" ][ "tests" ] += adder( "SRHA", dayMap[ today ], true, b )
+    }
     println "Defaulting to " + day + " tests:"
 }
 
 // print out the list of the test to run on Jenkins
-triggerFuncs.print_tests( testcases )
+for ( String b in onos_branches ){
+    triggerFuncs.print_tests( all_testcases[ b ] )
+}
 
 // This will hold the block of code to be run.
 def runTest = [
@@ -135,44 +130,46 @@ def runTest = [
         "Fabric3": [ : ],
         "Fabric4": [ : ]
 ]
-if ( manually_run ){
-    // for manual run situation.
-    for ( String test in testcases.keySet() ){
-        println test
-        // Unless the list of the tests on the test category is empty, it will save the block of code to run in dictionary.
-        if ( testcases[ test ][ "tests" ] != "" ){
-            runTest[ testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ] ][ test ] = triggerFuncs.
-                    trigger_pipeline( onos_b,
-                                      testcases[ test ][ "tests" ],
-                                      testcases[ test ][ "nodeName" ][ nodeOn( onos_b ) ],
-                                      test,
-                                      manually_run,
-                                      onos_tag )
+for ( String b in onos_branches ){
+    if ( manually_run ){
+        // for manual run situation.
+        for ( String test in all_testcases[ b ].keySet() ){
+            println test
+            // Unless the list of the tests on the test category is empty, it will save the block of code to run in dictionary.
+            if ( all_testcases[ b ][ test ][ "tests" ] != "" ){
+                runTest[ all_testcases[ b ][ test ][ "nodeName" ][ nodeOn( b ) ] ][ test ] = triggerFuncs.
+                        trigger_pipeline( b,
+                                          all_testcases[ b ][ test ][ "tests" ],
+                                          all_testcases[ b ][ test ][ "nodeName" ][ nodeOn( b ) ],
+                                          test,
+                                          manually_run,
+                                          onos_tag )
+            }
         }
     }
-}
-else {
-    // for automated situation, it will save current version to Fabric4, previous version to Fabric2 and before_previous_version to Fabric3.
-    runTest[ "Fabric4" ][ "SR" ] = triggerFuncs.trigger_pipeline( current_version,
-                                                                  testcases[ "SR" ][ "tests" ],
-                                                                  testcases[ "SR" ][ "nodeName" ][ 2 ],
-                                                                  "SR",
-                                                                  manually_run, onos_tag )
-    runTest[ "Fabric2" ][ "SR" ] = triggerFuncs.trigger_pipeline( previous_version,
-                                                                  testcases[ "SR" ][ "tests" ],
-                                                                  testcases[ "SR" ][ "nodeName" ][ 0 ],
-                                                                  "SR",
-                                                                  manually_run, onos_tag )
-    runTest[ "Fabric3" ][ "SR" ] = triggerFuncs.trigger_pipeline( before_previous_version,
-                                                                  testcases[ "SR" ][ "tests" ],
-                                                                  testcases[ "SR" ][ "nodeName" ][ 1 ],
-                                                                  "SR",
-                                                                  manually_run, onos_tag )
-    runTest[ "Fabric" ][ "SRHA" ] = triggerFuncs.trigger_pipeline( current_version,
-                                                                   testcases[ "SRHA" ][ "tests" ],
-                                                                   testcases[ "SRHA" ][ "nodeName" ],
-                                                                   "SRHA",
-                                                                   manually_run, onos_tag )
+    else {
+        // for automated situation, it will save current version to Fabric4, previous version to Fabric2 and before_previous_version to Fabric3.
+        runTest[ "Fabric4" ][ "SR" ] = triggerFuncs.trigger_pipeline( "master",
+                                                                      all_testcases[ b ][ "SR" ][ "tests" ],
+                                                                      all_testcases[ b ][ "SR" ][ "nodeName" ][ 2 ],
+                                                                      "SR",
+                                                                      manually_run, onos_tag )
+        runTest[ "Fabric2" ][ "SR" ] = triggerFuncs.trigger_pipeline( test_list.convertBranchCodeToBranch( "onos-2.x" ),
+                                                                      all_testcases[ b ][ "SR" ][ "tests" ],
+                                                                      all_testcases[ b ][ "SR" ][ "nodeName" ][ 0 ],
+                                                                      "SR",
+                                                                      manually_run, onos_tag )
+        runTest[ "Fabric3" ][ "SR" ] = triggerFuncs.trigger_pipeline( test_list.convertBranchCodeToBranch( "onos-1.x" ),
+                                                                      all_testcases[ b ][ "SR" ][ "tests" ],
+                                                                      all_testcases[ b ][ "SR" ][ "nodeName" ][ 1 ],
+                                                                      "SR",
+                                                                      manually_run, onos_tag )
+        runTest[ "Fabric" ][ "SRHA" ] = triggerFuncs.trigger_pipeline( "master",
+                                                                       all_testcases[ b ][ "SRHA" ][ "tests" ],
+                                                                       all_testcases[ b ][ "SRHA" ][ "nodeName" ],
+                                                                       "SRHA",
+                                                                       manually_run, onos_tag )
+    }
 }
 
 def finalList = [ : ]
@@ -214,13 +211,13 @@ if ( !manually_run ){
 }*/
 
 // Way to add list of the tests with specific category to the result
-def adder( category, day, getResult ){
+def adder( category, day, getResult, branch ){
     // category : the category of the test which will be either FUNC,HA,SR...
     // day : the day you are trying to add (m,t,w,th... )
     // getResult : if want to get the list of the test to be run. False will return empty list.
     //             And once the list is empty, it will not be run.
     def result = ""
-    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, onos_b ) )
+    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, branch ) )
 
     for ( String test in selectedTests.keySet() ){
         if ( getResult ){
@@ -233,9 +230,9 @@ def adder( category, day, getResult ){
 // check which node is on.
 def nodeOn( branch ){
     switch ( branch ){
-        case current_version: return 2
-        case previous_version: return 0
-        case before_previous_version: return 1
-        default: return 2
+        case "master": return 2
+        case convertBranchCodeToBranch( "onos-2.x" ): return 0
+        case convertBranchCodeToBranch( "onos-1.x" ): return 1
+        default: return 3
     }
 }

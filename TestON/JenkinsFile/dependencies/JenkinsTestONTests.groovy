@@ -32,6 +32,10 @@ def init(){
     branches = readJSON text: branches_buffer
 }
 
+// ***************
+// General Methods
+// ***************
+
 // returns the entire set of TestON tests from the json file
 def getAllTests(){
     return allTests
@@ -42,23 +46,127 @@ def getSchedules(){
     return schedules
 }
 
+// returns a list of days corresponding to the given schedule code
+def convertScheduleKeyToDays( sch ){
+    return schedules[ sch ]
+}
+
+// given a test dictionary, returns a list of tests as a string
+def getTestListAsString( tests ){
+    str_result = ""
+    for ( String test in tests.keySet() ){
+        str_result += test + ","
+    }
+    return str_result[ 0..-2 ]
+}
+
+def getTestsFromStringList( list ){
+    testsResult = [:]
+    for ( item in list ){
+        if ( allTests.contains( item ) ){
+            testsResult.put( item, allTests[ item ] )
+        }
+    }
+    return testsResult
+}
+
+// Get a given test property from the schedules list for a given test
+// Example: getTestScheduleProperty( "FUNCflow", "nodeLabel" ) gets all node labels for each branch
+def getTestScheduleProperty( test_name, property, tests=[:] ){
+    schedulePropertyResult = [:]
+
+    if ( tests == [:] ){
+        tests = allTests
+    }
+    for ( subDict in tests[ test_name ][ "schedules" ] ){
+        schedulePropertyResult.put( subDict[ "branch" ], subDict[ property ] )
+    }
+
+    return schedulePropertyResult
+}
+
 def getAllBranches(){
     return branches
 }
 
-// given a test category ("FUNC", "HA", etc.), returns all tests associated with that category
-def getTestsFromCategory( category, tests=[:] ){
-    result = [:]
+// ********
+// Branches
+// ********
+
+// given a day, returns all branches that are run on that day
+def getBranchesFromDay( day, tests=[:] ){
+    branchesFromDayResult = []
     if ( tests == [:] ){
         tests = allTests
     }
+    validSchedules = getValidSchedules( day )
+
     for ( String key in tests.keySet() ){
-        if ( tests[ key ][ "category" ] == category ){
-            result.put( key, tests[ key ] )
+        for ( subDict in tests[ key ][ "schedules" ] ){
+            sch = subDict[ "day" ]
+            if ( validSchedules.contains( sch ) && !branchesFromDayResult.contains( sch ) ){
+                branchesFromDayResult += convertBranchCodeToBranch( subDict[ "branch" ] )
+            }
         }
     }
-    return result
+    return branchesFromDayResult
 }
+
+// Converts a branch code to an actual ONOS branch.
+// Example: converts onos-1.x to onos-1.15
+def convertBranchCodeToBranch( branch_code, withPrefix=true ){
+    for ( String branch_type in branches.keySet() ){
+        for ( String b in branches[ branch_type ].keySet() ){
+            if ( branch_code == b ){
+                return withPrefix ? ( "onos-" + branches[ branch_type ][ b ] ) : branches[ branch_type ][ b ]
+            }
+        }
+    }
+    return branch_code
+}
+
+// *************
+// Test Category
+// *************
+
+// given a test category ("FUNC", "HA", etc.), returns all tests associated with that category
+def getTestsFromCategory( category, tests=[:] ){
+    testsFromCategoryResult = [:]
+    if ( tests == [:] ){
+        tests = allTests
+    }
+    for ( String test_name in tests.keySet() ){
+        if ( getCategoryOfTest( test_name ) == category ){
+            testsFromCategoryResult.put( test_name, tests[ test_name ] )
+        }
+    }
+    return testsFromCategoryResult
+}
+
+def getCategoryOfTest( test_name, tests=[:] ){
+    if ( tests == [:] ){
+        tests = allTests
+    }
+    return tests[ test_name ][ "category" ]
+}
+
+def getAllTestCategories( tests=[:] ){
+    testCategoriesResult = []
+    if ( tests == [:] ){
+        tests = allTests
+    }
+    for ( String test_name in tests.keySet() ){
+        category = getCategoryOfTest( test_name, tests )
+        if ( !testCategoriesResult.contains( category ) ){
+            testCategoriesResult += category
+        }
+    }
+    return testCategoriesResult
+}
+
+// ********************
+// Test Schedule / Days
+// ********************
 
 // given a day, returns schedules that contain that day
 def getValidSchedules( day ){
@@ -72,80 +180,68 @@ def getValidSchedules( day ){
 }
 
 // given a day and branch, returns all tests that run on the given day on the given branch
-def getTestsFromDay( day, branch, tests=[:] ){
-    result = [:]
+def getTestsFromDay( day, tests=[:] ){
+    resultDict = [:]
     if ( tests == [:] ){
         tests = allTests
     }
     validSchedules = getValidSchedules( day )
     for ( String key in tests.keySet() ){
-        schedule = tests[ key ][ "schedule" ][ branch ]
-        if ( validSchedules.contains( schedule ) ){
-            result.put( key, tests[ key ] )
-        }
-    }
-    return result
-}
-
-// given a day, returns all branches that are run on that day
-def getBranchesFromDay( day, tests=[:] ){
-    result = []
-    if ( tests == [:] ){
-        tests = allTests
-    }
-    validSchedules = getValidSchedules( day )
-
-    for ( String key in tests.keySet() ){
-        for ( String branch in tests[ key ][ "schedule" ].keySet() ){
-            sch = tests[ key ][ "schedule" ][ branch ]
-            if ( validSchedules.contains( sch ) && !result.contains( sch ) ){
-                result += convertBranchCodeToBranch( branch )
+        scheduleProperty = getTestScheduleProperty( key, "day", tests )
+        for ( b in scheduleProperty.keySet() ){
+            if ( validSchedules.contains( scheduleProperty[ b ] ) ){
+                resultDict.put( key, tests[ key ] )
+                break
             }
         }
     }
-    return result
+    return resultDict
 }
 
-// given a nodeLabel ("vm", "bm", etc.), returns all tests that run on that node.
-def getTestsFromNodeLabel( nodeLabel, tests=[:] ){
+// **********
+// Node Label
+// **********
+
+// Given a node label and branch, return all tests that run on that node.
+def getTestsFromNodeLabel( nodeLabel, branch, tests=[:] ){
+    nodeLabelTestsResult = [:]
     if ( tests == [:] ){
         tests = allTests
     }
     for ( String key in tests.keySet() ){
-        if ( tests[ key ][ "nodeLabel" ] == nodeLabel ){
-            result.put( key, tests[ key ] )
+        branchNodeLabelMap = getTestScheduleProperty( key, "nodeLabel", tests )
+        if ( branchNodeLabelMap[ branch ] == nodeLabel ){
+            nodeLabelTestsResult.put( key, tests[ key ] )
         }
     }
+    return nodeLabelTestsResult
 }
 
-// returns the test list as a string
-def getTestListAsString( tests ){
-    result = ""
-    for ( String test in tests.keySet() ){
-        result += test + ","
+// Given a test name and branch, return the node label associated.
+def getNodeLabel( test_name, branch, tests ){
+    if ( tests == [:] ){
+        tests = allTests
     }
-    return result[ 0..-2 ]
+    result = getTestScheduleProperty( test_name, "nodeLabel", tests )
+    if ( result == [:] ){
+        return "UNKNOWN"
+    } else {
+        return result[ branch ]
+    }
 }
 
-// returns the schedule for a given test
-def getTestSchedule( test ){
-    return allTests[ test ][ "schedule" ]
-}
-
-// returns a list of days from the given schedule
-def convertScheduleKeyToDays( sch ){
-    return schedules[ sch ]
-}
-
-def convertBranchCodeToBranch( branch_code, withPrefix=true ){
-    for ( String branch_type in branches.keySet() ){
-        for ( String b in branches[ branch_type ].keySet() ){
-            if ( branch_code == b ){
-                return withPrefix ? ( "onos-" + branches[ branch_type ][ b ] ) : branches[ branch_type ][ b ]
-            }
+def getAllNodeLabels( branch, tests ){
+    nodeLabelResult = []
+    if ( tests == [:] ){
+        tests = allTests
+    }
+    for ( test_name in tests.keySet() ){
+        nodeLabel = getNodeLabel( test_name, branch, tests )
+        if ( !nodeLabelResult.contains( nodeLabel ) ){
+            nodeLabelResult += nodeLabel
         }
     }
-    return branch_code
+    return nodeLabelResult
 }
 
 return this

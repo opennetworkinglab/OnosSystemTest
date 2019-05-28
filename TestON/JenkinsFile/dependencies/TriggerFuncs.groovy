@@ -48,7 +48,7 @@ def printDaysForTest(){
         result += test + ": ["
         test_schedule = test_list.getTestSchedule( test )
         for ( String sch in test_schedule.keySet() ){
-            for ( String day in convertScheduleKeyToDays( sch ) ){
+            for ( String day in test_list.convertScheduleKeyToDays( sch ) ){
                 result += day + " "
             }
         }

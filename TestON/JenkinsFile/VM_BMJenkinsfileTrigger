@@ -26,292 +26,198 @@ triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/TriggerFun
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 
-test_list.init()
+onos_tag = null
+manually_run = null
+now = null
+today = null
+onos_branches = null
+day = null
+post_result = null
+branchesParam = null
+isFabric = null
+testsParam = null
 
-// set the versions of the onos
-fileRelated.init()
-
-// init trend graphs to be on VM.
-funcs.initializeTrend( "VM" );
-triggerFuncs.init( funcs )
-
-// contents for page https://wiki.onosproject.org/display/ONOS/Automated+Test+Schedule
-// which will demonstrates the list of the scheduled tests on the days.
-wikiContents = ""
-
+dayMap = [:]
+fullDayMap = [:]
 all_testcases = [:]
+runTest = [:]
+selectedTests = [:]
+graphPaths = [:]
 
-// read the parameters from the Jenkins
-manually_run = params.manual_run
+main()
 
-onos_tag = params.ONOSTag
-isOldFlow = true
+def main() {
+    init()
+    runTests()
+    generateGraphs()
+}
+
+// **************
+// Initialization
+// **************
+
+// initialize file scope vars
+def init(){
+    // get the name of the job.
+    jobName = env.JOB_NAME
+
+    // set the versions of the onos
+    fileRelated.init()
+    test_list.init()
+    readParams()
+
+    if ( isFabric ){
+        funcs.initializeTrend( "Fabric" )
+        funcs.initialize( "Fabric" )
+    } else {
+        funcs.initializeTrend( "VM" );
+    }
+    triggerFuncs.init( funcs )
+
+    // list of the tests to be run will be saved in each choices.
+    day = ""
+
+    initDates()
+    onos_branches = getONOSBranches()
+    selectedTests = getONOSTests()
+}
+
+def readParams(){
+    // get post result from the params for manually run.
+    post_result = params.PostResult
+    manually_run = params.manual_run
+    onos_tag = params.ONOSTag
+    branchesParam = params.branches
+    isOldFlow = params.isOldFlow
+    testsParam = params.Tests
+    isFabric = params.isFabric
+}
 
 // Set tests based on day of week
-def now = funcs.getCurrentTime()
-print now.toString()
-today = now[ Calendar.DAY_OF_WEEK ]
-
-dayMap = [ ( Calendar.MONDAY )    : "mon",
-           ( Calendar.TUESDAY )   : "tue",
-           ( Calendar.WEDNESDAY ) : "wed",
-           ( Calendar.THURSDAY )  : "thu",
-           ( Calendar.FRIDAY )    : "fri",
-           ( Calendar.SATURDAY )  : "sat",
-           ( Calendar.SUNDAY )    : "sun" ]
-fullDayMap = [ ( Calendar.MONDAY )    : "Monday",
-               ( Calendar.TUESDAY )   : "Tuesday",
-               ( Calendar.WEDNESDAY ) : "Wednesday",
-               ( Calendar.THURSDAY )  : "Thursday",
-               ( Calendar.FRIDAY )    : "Friday",
-               ( Calendar.SATURDAY )  : "Saturday",
-               ( Calendar.SUNDAY )    : "Sunday" ]
-
-if ( manually_run ){
-    onos_branches = params.branches.tokenize( "\n;, " )
-} else {
-    onos_branches = getBranchesFromDay( dayMap[ today ] )
+def initDates(){
+    echo "-> initDates()"
+    now = funcs.getCurrentTime()
+    today = now[ Calendar.DAY_OF_WEEK ]
+    dayMap = [ ( Calendar.MONDAY )    : "mon",
+               ( Calendar.TUESDAY )   : "tue",
+               ( Calendar.WEDNESDAY ) : "wed",
+               ( Calendar.THURSDAY )  : "thu",
+               ( Calendar.FRIDAY )    : "fri",
+               ( Calendar.SATURDAY )  : "sat",
+               ( Calendar.SUNDAY )    : "sun" ]
+    fullDayMap = [ ( Calendar.MONDAY )    : "Monday",
+                   ( Calendar.TUESDAY )   : "Tuesday",
+                   ( Calendar.WEDNESDAY ) : "Wednesday",
+                   ( Calendar.THURSDAY )  : "Thursday",
+                   ( Calendar.FRIDAY )    : "Friday",
+                   ( Calendar.SATURDAY )  : "Saturday",
+                   ( Calendar.SUNDAY )    : "Sunday" ]
+    print now.toString()
 }
 
-// default FUNC,HA to be VM, SCPF,USECASE to be BM.
-// SR will not be used in here.
-testcases_template = [
-        "FUNC": [ tests: "", nodeName: "VM", wikiContent: "" ],
-        "HA": [ tests: "", nodeName: "VM", wikiContent: "" ],
-        "SCPF": [ tests: "", nodeName: "BM", wikiContent: "" ],
-        "SR": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
-        "SRHA": [ tests: "", nodeName: "Fabric", wikiContent: "" ],
-        "USECASE": [ tests: "", nodeName: "BM", wikiContent: "" ]
-]
-
-for ( String b in onos_branches ){
-    all_testcases.put( b, testcases_template )
-}
-
-// list of the tests to be run will be saved in each choices.
-day = ""
-
-// init some paths for the files and directories.
-stat_graph_generator_file = fileRelated.histogramMultiple
-pie_graph_generator_file = fileRelated.pieMultiple
-graph_saved_directory = fileRelated.jenkinsWorkspace + "postjob-VM/"
-
-// get post result from the params for manually run.
-post_result = params.PostResult
-
-// if automatically run, it will remove the comma at the end after dividing the tests.
-if ( manually_run ){
-    for ( String b in onos_branches ){
-        all_testcases[ b ] = triggerFuncs.organize_tests( params.Tests, all_testcases[ b ] )
-    }
-    isOldFlow = params.isOldFlow
-    println "Tests to be run manually:"
-} else {
-    testDivider( today )
-    println "Defaulting to " + day + " tests:"
-}
-
-
-for ( String b in onos_branches ){
-    triggerFuncs.print_tests( all_testcases[ b ] )
-}
-
-def runTest = [
-        "VM": [ : ],
-        "BM": [ : ]
-]
-
-def finalList = [ : ]
-
-finalList[ "VM" ] = [ : ]
-finalList[ "BM" ] = [ : ]
-
-// get the name of the job.
-jobName = env.JOB_NAME
-
-// set the test running function into the dictionary.
-for ( String b in onos_branches ){
-    for ( String test in all_testcases[ b ].keySet() ){
-        if ( all_testcases[ b ][ test ][ "tests" ] != "" ){
-            runTest[ all_testcases[ b ][ test ][ "nodeName" ] ][ test ] = triggerFuncs.
-                    trigger_pipeline( b, all_testcases[ b ][ test ][ "tests" ], all_testcases[ b ][ test ][ "nodeName" ], test,
-                                      manually_run, onos_tag )
-        }
-    }
-
-    // first set the list of the functions to be run.
-    finalList[ "VM" ][ b ] = triggerFuncs.runTestSeq( runTest[ "VM" ] )
-    finalList[ "BM" ][ b ] = triggerFuncs.runTestSeq( runTest[ "BM" ] )
-}
-
-// if first two character of the job name is vm, only call VM.
-// else, only on BM
-
-if ( jobName.take( 2 ) == "vm" ){
-    parallel finalList[ "VM" ]
-}
-else {
-    parallel finalList[ "BM" ]
-}
-
-
-// If it is automated running, it will generate the stats graph on VM.
-if ( !manually_run ){
-    for ( String b in onos_branches ){
-        funcs.generateStatGraph( "TestStation-VMs",
-                                 funcs.branchWithPrefix( b ),
-                                 stat_graph_generator_file,
-                                 pie_graph_generator_file,
-                                 graph_saved_directory )
-    }
-}
-
-// function that will divide tests depends on which day it is.
-def testDivider( today ){
-    todayStr = today.toString()
-
-    if ( today == Calendar.MONDAY ){
-        initHtmlForWiki()
-        day = fullDayMap[ today ]
-        for ( key in dayMap.keySet() ){
-            buildDay( dayMap[ key ], false )
-        }
-        closeHtmlForWiki()
-        postToWiki( wikiContents )
-        slackSend( color: '#FFD988',
-                   message: "Tests to be run this weekdays : \n" +
-                            triggerFuncs.printDaysForTest() )
+// gets ONOS branches from params or string parameter
+def getONOSBranches(){
+    echo "-> getONOSBranches()"
+    if ( manually_run ){
+        return branchesParam.tokenize( "\n;, " )
     } else {
-        day = fullDayMap[ today ]
-        buildDay( dayMap[ today ], true )
+        return test_list.getBranchesFromDay( dayMap[ today ] )
     }
 }
 
-def buildDay( dayStr, getResult ){
-    for ( String b in onos_branches ){
-        addingHeader( "FUNC", b )
-        all_testcases[ b ][ "FUNC" ][ "tests" ] += adder( "FUNC", dayStr, getResult, b )
-        closingHeader( "FUNC", b )
-        addingHeader( "HA", b )
-        all_testcases[ b ][ "HA" ][ "tests" ] += adder( "HA", dayStr, getResult, b )
-        closingHeader( "HA", b )
-        addingHeader( "SCPF", b )
-        all_testcases[ b ][ "SCPF" ][ "tests" ] += adder( "SCPF", dayStr, getResult, b )
-        closingHeader( "SCPF", b )
-        addingHeader( "SR", b )
-        all_testcases[ b ][ "SR" ][ "tests" ] += adder( "SR", dayStr, false, b )
-        closingHeader( "SR", b )
-        addingHeader( "SRHA", b )
-        all_testcases[ b ][ "SRHA" ][ "tests" ] += adder( "SRHA", dayStr, false, b )
-        closingHeader( "SRHA", b )
-        addingHeader( "USECASE", b )
-        all_testcases[ b ][ "USECASE" ][ "tests" ] += adder( "USECASE", dayStr, getResult, b )
-        closingHeader( "USECASE", b )
+def getONOSTests(){
+    echo "-> getONOSTests()"
+    if ( manually_run ){
+        return test_list.getTestsFromStringList( testsParam.tokenize( "\n;, " ) )
+    } else {
+        day = dayMap[ today ]
+        return test_list.getTestsFromDay( day )
     }
 }
 
-// adder that will return the list of the tests.
-def adder( category, day, getResult, branch ){
-    // category : the category of the test which will be either FUNC,HA,SR...
-    // day : the day you are trying to add (m,t,w,th... )
-    // getResult : if want to get the list of the test to be run. False will return empty list.
-    //             And once the list is empty, it will not be run.
-    def result = ""
-    selectedTests = test_list.getTestsFromCategory( category, test_list.getTestsFromDay( day, branch ) )
+// init paths for the files and directories.
+def initGraphPaths(){
+    graphPaths[ "histogramMultiple" ] = fileRelated.histogramMultiple
+    graphPaths[ "pieMultiple" ] = fileRelated.pieMultiple
+    graphPaths[ "saveDirectory" ] = fileRelated.jenkinsWorkspace + "postjob-VM/"
+}
 
-    for ( String test in selectedTests.keySet() ){
-        if ( getResult ){
-            result += test + ","
+// **********************
+// Determine Tests to Run
+// **********************
+
+def printTestsToRun( runList ){
+    if ( manually_run ){
+        println "Tests to be run manually:"
+    } else {
+        if ( isFabric ){
+            postToSlackSR()
         }
-        // make HTML columns for wiki page on schedule.
-        makeHtmlColList( category, test, branch )
+        if ( today == Calendar.MONDAY ){
+            postToSlackTestsToRun()
+        }
+        println "Defaulting to " + day + " tests:"
     }
-    return result
+    for ( list in runList ){
+    //     triggerFuncs.print_tests( all_testcases[ b ] )
+        echo "" + list
+    }
 }
 
-// Initial part of the wiki page.
-def initHtmlForWiki(){
-    wikiContents = '''
-    <table class="wrapped confluenceTable">
-        <colgroup>
-              <col />
-              <col />
-              <col />
-              <col />
-              <col />
-              <col />
-        </colgroup>
-        <tbody>
-            <tr>
-                <th colspan="1" class="confluenceTh">
-                    <br />
-                </th>
-                <th class="confluenceTh"><p>Monday</p></th>
-                <th class="confluenceTh"><p>Tuesday</p></th>
-                <th class="confluenceTh"><p>Wednesday</p></th>
-                <th class="confluenceTh"><p>Thursday</p></th>
-                <th class="confluenceTh"><p>Friday</p></th>
-                <th class="confluenceTh"><p>Saturday</p></th>
-                <th class="confluenceTh"><p>Sunday</p></th>
-            </tr>'''
-    for ( String b in onos_branches ){
-        for ( String test in all_testcases[ b ].keySet() ){
-            all_testcases[ b ][ test ][ 'wikiContent' ] = '''
-                <tr>
-                    <th colspan="1" class="confluenceTh">''' + test + '''</th>'''
+def postToSlackSR(){
+    // If it is automated running, it will post the beginning message to the channel.
+    slackSend( channel: 'sr-failures', color: '#03CD9F',
+               message: ":sparkles:" * 16 + "\n" +
+                        "Starting tests on : " + now.toString() +
+                        "\n" + ":sparkles:" * 16 )
+}
+
+def postToSlackTestsToRun(){
+    slackSend( color: '#FFD988',
+               message: "Tests to be run this weekdays : \n" +
+                        triggerFuncs.printDaysForTest() )
+}
+
+// *********
+// Run Tests
+// *********
+
+def generateRunList(){
+    runList = [:]
+    for ( branch in onos_branches ){
+        nodeLabels = test_list.getAllNodeLabels( branch, selectedTests )
+        for ( nodeLabel in nodeLabels ){
+            selectedNodeLabelTests = test_list.getTestsFromNodeLabel( nodeLabel, branch, selectedTests )
+            selectedNodeLabelCategories = test_list.getAllTestCategories( selectedNodeLabelTests )
+            for ( category in selectedNodeLabelCategories ){
+                selectedNodeLabelCategoryTests = getTestsFromCategory( category, selectedNodeLabelTests )
+                exeTestList = test_list.getTestListAsString( selectedNodeLabelCategoryTests )
+                runList.put( nodeLabel, triggerFuncs.trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
+            }
         }
     }
+    return runList
 }
 
-// adding header functionality.
-def addingHeader( testCategory, branch ){
-    all_testcases[ branch ][ testCategory ][ 'wikiContent' ] += '''
-                <td class="confluenceTd">
-                    <ul>'''
+def runTests(){
+    runList = generateRunList()
+    printTestsToRun( runList )
+    parallel runList
 }
 
-// making column list for html
-def makeHtmlColList( testCategory, testName, branch ){
-    all_testcases[ branch ][ testCategory ][ 'wikiContent' ] += '''
-                        <li>''' + testName + '''</li>'''
+// ***************
+// Generate Graphs
+// ***************
 
-}
-
-// closing the header for html
-def closingHeader( testCategory, branch ){
-    all_testcases[ branch ][ testCategory ][ 'wikiContent' ] += '''
-                    </ul>
-                </td>'''
-}
-
-// close the html for the wiki page.
-def closeHtmlForWiki(){
-    for ( String b in onos_branches ){
-        for ( String test in all_testcases[ b ].keySet() ){
-            wikiContents += all_testcases[ b ][ test ][ 'wikiContent' ]
-            wikiContents += '''
-                </tr>'''
+def generateGraphs(){
+    // If it is automated running, it will generate the stats graph on VM.
+    if ( !manually_run ){
+        for ( String b in onos_branches ){
+            funcs.generateStatGraph( "TestStation-VMs",
+                                     funcs.branchWithPrefix( b ),
+                                     graphPaths[ "histogramMultiple" ],
+                                     graphPaths[ "pieMultiple" ],
+                                     graphPaths[ "saveDirectory" ] )
         }
-    }
-    wikiContents += '''
-        </tbody>
-    </table>
-    <p><strong>Everyday</strong>, all SegmentRouting tests are built and run on every supported branch.</p>
-    <p>On <strong>Weekdays</strong>, all the other tests are built and run on the master branch.</p>
-    <p>On <strong>Saturdays</strong>, all the other tests are built and run on the ''' +
-                    test_list.convertBranchCodeToBranch( "onos-2.x" ) + ''' branch.</p>
-    <p>On <strong>Sundays</strong>, all the other tests are built and run on the ''' +
-                    test_list.convertBranchCodeToBranch( "onos-1.x" ) + ''' branch.</p>'''
-}
-
-// post the result to wiki page using publish to confluence.
-def postToWiki( contents ){
-    node( testMachine ) {
-        workspace = fileRelated.jenkinsWorkspace + "all-pipeline-trigger/"
-        filename = "jenkinsSchedule.txt"
-        writeFile file: workspace + filename, text: contents
-        funcs.publishToConfluence( "false", "true",
-                                   "Automated Test Schedule",
-                                   workspace + filename )
     }
 }

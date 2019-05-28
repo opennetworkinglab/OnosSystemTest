@@ -104,12 +104,6 @@ if ( manually_run ){
     isOldFlow = params.isOldFlow
     println "Tests to be run manually : "
 } else {
-    // If it is automated running, it will post the beginning message to the channel.
-    slackSend( channel: 'sr-failures', color: '#03CD9F',
-               message: ":sparkles:" * 16 + "\n" +
-                        "Starting tests on : " + now.toString() +
-                        "\n" + ":sparkles:" * 16 )
-
     for ( String b in onos_branches ){
         // set the list of the tests to run.
         all_testcases[ b ][ "SR" ][ "tests" ] += adder( "SR", dayMap[ today ], true, b )
@@ -125,10 +119,7 @@ for ( String b in onos_branches ){
 
 // This will hold the block of code to be run.
 def runTest = [
-        "Fabric": [ : ],
-        "Fabric2": [ : ],
-        "Fabric3": [ : ],
-        "Fabric4": [ : ]
+
 ]
 for ( String b in onos_branches ){
     if ( manually_run ){

@@ -58,7 +58,6 @@ class OnosCliDriver( CLI ):
         self.handle = None
         self.karafUser = None
         self.karafPass = None
-        self.karafPrompt = "sdn@root >"  # FIXME:  make configurable
         self.graph = Graph()
         super( OnosCliDriver, self ).__init__()
 
@@ -74,6 +73,7 @@ class OnosCliDriver( CLI ):
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
+            self.karafPrompt = self.user_name + "@root >"
             self.home = "~/onos"
             for key in self.options:
                 if key == "home":
@@ -82,7 +82,6 @@ class OnosCliDriver( CLI ):
                     self.karafUser = self.options[ key ]
                 elif key == "karaf_password":
                     self.karafPass = self.options[ key ]
-
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
             self.karafPass = self.checkOptions( self.karafPass, self.pwd )

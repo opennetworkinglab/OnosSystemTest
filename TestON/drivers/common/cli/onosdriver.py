@@ -129,8 +129,8 @@ class OnosDriver( CLI ):
                 port=self.port,
                 pwd=self.pwd,
                 home=self.home )
-
             if self.handle:
+                self.handle.setwinsize( 24, 250 )
                 self.handle.sendline( "cd " + self.home )
                 self.handle.expect( self.prompt )
                 return self.handle

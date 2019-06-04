@@ -66,12 +66,11 @@ def init(){
     test_list.init()
     readParams()
 
-    if ( isFabric ){
-        funcs.initializeTrend( "Fabric" )
-        funcs.initialize( "Fabric" )
-    } else {
-        funcs.initializeTrend( "VM" );
-    }
+    funcs.initializeTrend( "Fabric" )
+    funcs.initialize( "Fabric" )
+
+    funcs.initializeTrend( "VM" )
+
     triggerFuncs.init( funcs )
 
     // list of the tests to be run will be saved in each choices.
@@ -80,6 +79,8 @@ def init(){
     initDates()
     onos_branches = getONOSBranches()
     selectedTests = getONOSTests()
+
+    echo "selectedTests: " + selectedTests
 }
 
 def readParams(){
@@ -185,14 +186,15 @@ def postToSlackTestsToRun(){
 def generateRunList(){
     runList = [:]
     for ( branch in onos_branches ){
+        runBranch = []
         nodeLabels = test_list.getAllNodeLabels( branch, selectedTests )
         for ( nodeLabel in nodeLabels ){
             selectedNodeLabelTests = test_list.getTestsFromNodeLabel( nodeLabel, branch, selectedTests )
             selectedNodeLabelCategories = test_list.getAllTestCategories( selectedNodeLabelTests )
             for ( category in selectedNodeLabelCategories ){
-                selectedNodeLabelCategoryTests = getTestsFromCategory( category, selectedNodeLabelTests )
+                selectedNodeLabelCategoryTests = test_list.getTestsFromCategory( category, selectedNodeLabelTests )
                 exeTestList = test_list.getTestListAsString( selectedNodeLabelCategoryTests )
-                runList.put( nodeLabel, triggerFuncs.trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
+                runList.put( branch + "-" + nodeLabel, triggerFuncs.trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
             }
         }
     }

@@ -63,7 +63,7 @@ def getTestListAsString( tests ){
 def getTestsFromStringList( list ){
     testsResult = [:]
     for ( item in list ){
-        if ( allTests.contains( item ) ){
+        if ( allTests.keySet().contains( item ) ){
             testsResult.put( item, allTests[ item ] )
         }
     }
@@ -123,6 +123,14 @@ def convertBranchCodeToBranch( branch_code, withPrefix=true ){
         }
     }
     return branch_code
+}
+
+def convertBranchToBranchCode( branch ){
+    if ( branch == "master" || branch.substring( 0, 1 ) == "o" ){
+        return branch
+    } else {
+        return "onos-" + branch.substring( 0, 1 ) + ".x"
+    }
 }
 
 // *************
@@ -210,7 +218,7 @@ def getTestsFromNodeLabel( nodeLabel, branch, tests=[:] ){
     }
     for ( String key in tests.keySet() ){
         branchNodeLabelMap = getTestScheduleProperty( key, "nodeLabel", tests )
-        if ( branchNodeLabelMap[ branch ] == nodeLabel ){
+        if ( branchNodeLabelMap[ convertBranchToBranchCode( branch ) ] == nodeLabel ){
             nodeLabelTestsResult.put( key, tests[ key ] )
         }
     }
@@ -226,7 +234,7 @@ def getNodeLabel( test_name, branch, tests ){
     if ( result == [:] ){
         return "UNKNOWN"
     } else {
-        return result[ branch ]
+        return result[ convertBranchToBranchCode( branch ) ]
     }
 }
 
@@ -237,7 +245,7 @@ def getAllNodeLabels( branch, tests ){
     }
     for ( test_name in tests.keySet() ){
         nodeLabel = getNodeLabel( test_name, branch, tests )
-        if ( !nodeLabelResult.contains( nodeLabel ) ){
+        if ( !nodeLabelResult.contains( nodeLabel ) && nodeLabel != null ){
             nodeLabelResult += nodeLabel
         }
     }

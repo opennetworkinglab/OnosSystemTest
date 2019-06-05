@@ -171,7 +171,6 @@ def printTestsToRun( runList ){
         println "Defaulting to " + day + " tests:"
     }
     for ( list in runList ){
-    //     triggerFuncs.print_tests( all_testcases[ b ] )
         echo "" + list
     }
 }
@@ -227,7 +226,7 @@ def generateGraphs(){
     if ( !manually_run ){
         for ( String b in onos_branches ){
             funcs.generateStatGraph( "TestStation-VMs",
-                                     funcs.branchWithPrefix( b ),
+                                     test_list.addPrefixToBranch( b ),
                                      graphPaths[ "histogramMultiple" ],
                                      graphPaths[ "pieMultiple" ],
                                      graphPaths[ "saveDirectory" ] )

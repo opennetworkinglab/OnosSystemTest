@@ -114,18 +114,13 @@ def fabricOn( branch ){
     }
 }
 
-def printType(){
-    // print the test type and test machine that was initialized.
-
-    echo testType
-    echo testMachine
-}
-
-def getProperties( category ){
+def getProperties( category, branchWithPrefix ){
     // get the properties of the test by reading the TestONOS.property
 
+    filePath = '''/var/jenkins/TestONOS-''' + category + '''-''' + branchWithPrefix + '''.property'''
+
     node( testMachine ) {
-        return readProperties( file: '/var/jenkins/TestONOS-' + category + '.property' )
+        return readProperties( file: filePath )
     }
 }
 
@@ -140,20 +135,6 @@ def getCurrentTime(){
 
     TimeZone.setDefault( TimeZone.getTimeZone( 'PST' ) )
     return new Date()
-}
-
-def getTotalTime( start, end ){
-    // get total time of the test using start and end time.
-
-    return TimeCategory.minus( end, start )
-}
-
-def printTestToRun( testList ){
-    // printout the list of the test in the list.
-
-    for ( String test : testList ){
-        println test
-    }
 }
 
 def sendResultToSlack( start, isManualRun, branch ){
@@ -334,7 +315,6 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
     node( testMachine ) {
         def alarmFile = workSpace + "/" + pureTestName + "Alarm.txt"
         if ( fileExists( alarmFile ) ) {
-            print "Abnormal test result logged"
             def alarmContents = readFile( alarmFile )
             slackSend( channel: getSlackChannel(),
                        color: "FF0000",
@@ -348,10 +328,10 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
                                 ( resultURL != "" ? ( "\n[Karaf log] : \n" +
                                                       resultURL + "artifact/" ) : "" ),
                        teamDomain: 'onosproject' )
-            Failed
+            throw new Exception( "Abnormal test result." )
         }
         else {
-            print "Test results are normal"
+            print "Test results are normal."
         }
     }
 }
@@ -571,29 +551,6 @@ def generateStatGraph( testMachineOn, onos_branch, stat_graph_generator_file, pi
 
     generateCategoryStatsGraph( testMachineOn, "false", "true", stat_graph_generator_file, pie_graph_generator_file,
                                 "ALL", onos_branch, testListParam, graph_saved_directory, pieTestListParam )
-}
-
-def branchWithPrefix( branch ){
-    // get the branch with the prefix ( "onos-" )
-    return ( ( branch != "master" ) ? "onos-" : "" ) + branch
-}
-
-def testBranchWithPrefix( branch ){
-    // get TestON branch with the prefix ( "onos-" )
-    if ( branch == "1.12" )
-        return "onos-1.13"
-    else if ( branch == "1.13" )
-        return "onos-1.13"
-    else if ( branch == "1.14" )
-        return "onos-1.15"
-    else if ( branch == "1.15" )
-        return "onos-1.15"
-    else if ( branch == "2.0" )
-        return "onos-2.0"
-    else if ( branch == "2.1" )
-        return "onos-2.1"
-    else
-        return "master"
 }
 
 return this

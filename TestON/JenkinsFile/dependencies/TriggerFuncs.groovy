@@ -113,7 +113,7 @@ def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     println "test_branch with prefix: " + test_branch
     node( "TestStation-" + nodeName + "s" ) {
         envSetup( onos_branch, test_branch, onosTag, jobOn, manuallyRun )
-        exportEnvProperty( onos_branch, test_branch, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
+        exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
     }
 
     jobToRun = jobOn + "-pipeline-" + ( manuallyRun ? "manually" : wiki )
@@ -131,20 +131,22 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 }
 
 // export Environment properties.
-def exportEnvProperty( onos_branch, test_branch, wiki, tests, postResult, manually_run, onosTag, isOldFlow ){
+def exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, postResult, manually_run, onosTag, isOldFlow ){
     // export environment properties to the machine.
+
+    filePath = "/var/jenkins/TestONOS-" + jobOn + ".property"
 
     stage( "export Property" ) {
         sh '''
-            echo "ONOSBranch=''' + onos_branch + '''" > /var/jenkins/TestONOS.property
-            echo "TestONBranch=''' + test_branch + '''" >> /var/jenkins/TestONOS.property
-            echo "ONOSTag=''' + onosTag + '''" >> /var/jenkins/TestONOS.property
-            echo "WikiPrefix=''' + wiki + '''" >> /var/jenkins/TestONOS.property
-            echo "ONOSJAVAOPTS=''' + env.ONOSJAVAOPTS + '''" >> /var/jenkins/TestONOS.property
-            echo "Tests=''' + tests + '''" >> /var/jenkins/TestONOS.property
-            echo "postResult=''' + postResult + '''" >> /var/jenkins/TestONOS.property
-            echo "manualRun=''' + manually_run + '''" >> /var/jenkins/TestONOS.property
-            echo "isOldFlow=''' + isOldFlow + '''" >> /var/jenkins/TestONOS.property
+            echo "ONOSBranch=''' + onos_branch + '''" > ''' + filePath + '''
+            echo "TestONBranch=''' + test_branch + '''" >> ''' + filePath + '''
+            echo "ONOSTag=''' + onosTag + '''" >> ''' + filePath + '''
+            echo "WikiPrefix=''' + wiki + '''" >> ''' + filePath + '''
+            echo "ONOSJAVAOPTS=''' + env.ONOSJAVAOPTS + '''" >> ''' + filePath + '''
+            echo "Tests=''' + tests + '''" >> ''' + filePath + '''
+            echo "postResult=''' + postResult + '''" >> ''' + filePath + '''
+            echo "manualRun=''' + manually_run + '''" >> ''' + filePath + '''
+            echo "isOldFlow=''' + isOldFlow + '''" >> ''' + filePath + '''
         '''
     }
 }

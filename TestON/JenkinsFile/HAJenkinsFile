@@ -35,7 +35,7 @@ funcs.initialize( "HA" );
 def prop = null
 
 // Read the TestONOS.property from the VM
-prop = funcs.getProperties()
+prop = funcs.getProperties( "HA" )
 
 // get the list of the test and init branch to it.
 HA_tests = test_list.getTestsFromCategory( "HA" )

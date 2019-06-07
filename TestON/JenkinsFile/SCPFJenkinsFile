@@ -30,7 +30,7 @@ funcs.initialize( "SCPF", SCPFfuncs )
 
 // read the information from TestON.property on BM
 def prop = null
-prop = funcs.getProperties()
+prop = funcs.getProperties( "SCPF" )
 
 // get the list of the test to run.
 echo( "Testcases:" )

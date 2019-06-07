@@ -27,7 +27,7 @@ funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFunc
 funcs.initialize( "SCPF", SCPFfuncs );
 
 def prop = null
-prop = funcs.getProperties()
+prop = funcs.getProperties( "SCPF" )
 
 // get the variables from the Jenkins parameters.
 def Tests = params.Test

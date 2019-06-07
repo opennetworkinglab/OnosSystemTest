@@ -39,7 +39,7 @@ funcs.additionalInitForSR( jobName )
 // read the TestON.property depends on which branch it is running.
 // ( currently master on Fabric4, 1.15 on Fabric2 and 2.1 on Fabric3 )
 def prop = null
-prop = funcs.getProperties()
+prop = funcs.getProperties( "SR" )
 SR_tests = test_list.getTestsFromCategory( "SR" )
 
 // set the file paths and directory

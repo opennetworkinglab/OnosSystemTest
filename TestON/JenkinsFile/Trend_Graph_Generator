@@ -36,7 +36,7 @@ if ( nodeCluster == "Fabric" ){
     funcs.additionalInitForSR( params.ONOSbranch )
 }
 def prop = null
-prop = funcs.getProperties()
+prop = funcs.getProperties( "FUNC" )
 
 // get the list of the tests from the parameters.
 def Tests = params.Test

@@ -32,7 +32,7 @@ funcs.initialize( "USECASE" );
 
 // read the TestON.property files and save it as a dictionary
 def prop = null
-prop = funcs.getProperties()
+prop = funcs.getProperties( "USECASE" )
 USECASE_tests = test_list.getTestsFromCategory( "USECASE" )
 
 // save directory and file.

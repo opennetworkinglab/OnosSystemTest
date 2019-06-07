@@ -121,11 +121,11 @@ def printType(){
     echo testMachine
 }
 
-def getProperties(){
+def getProperties( category ){
     // get the properties of the test by reading the TestONOS.property
 
     node( testMachine ) {
-        return readProperties( file: '/var/jenkins/TestONOS.property' )
+        return readProperties( file: '/var/jenkins/TestONOS-' + category + '.property' )
     }
 }
 

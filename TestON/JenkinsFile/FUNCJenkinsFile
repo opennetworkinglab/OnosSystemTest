@@ -35,7 +35,7 @@ funcs.initialize( "FUNC" );
 def prop = null
 
 // Read the TestONOS.property from the VM
-prop = funcs.getProperties()
+prop = funcs.getProperties( "FUNC" )
 
 // get the list of the test and init branch to it.
 FUNC_tests = test_list.getTestsFromCategory( "FUNC" )

@@ -80,6 +80,8 @@ def init(){
     onos_branches = getONOSBranches()
     selectedTests = getONOSTests()
 
+    initGraphPaths()
+
     echo "selectedTests: " + selectedTests
 }
 
@@ -138,9 +140,9 @@ def getONOSTests(){
 
 // init paths for the files and directories.
 def initGraphPaths(){
-    graphPaths[ "histogramMultiple" ] = fileRelated.histogramMultiple
-    graphPaths[ "pieMultiple" ] = fileRelated.pieMultiple
-    graphPaths[ "saveDirectory" ] = fileRelated.jenkinsWorkspace + "postjob-VM/"
+    graphPaths.put( "histogramMultiple", fileRelated.histogramMultiple )
+    graphPaths.put( "pieMultiple", fileRelated.pieMultiple )
+    graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-VM/" )
 }
 
 // **********************

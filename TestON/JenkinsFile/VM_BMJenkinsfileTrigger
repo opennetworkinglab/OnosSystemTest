@@ -194,7 +194,7 @@ def generateRunList(){
             for ( category in selectedNodeLabelCategories ){
                 selectedNodeLabelCategoryTests = test_list.getTestsFromCategory( category, selectedNodeLabelTests )
                 exeTestList = test_list.getTestListAsString( selectedNodeLabelCategoryTests )
-                runList.put( branch + "-" + nodeLabel, triggerFuncs.trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
+                runList.put( branch + "-" + nodeLabel + "-" + category, triggerFuncs.trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
             }
         }
     }

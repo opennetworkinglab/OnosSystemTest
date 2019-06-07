@@ -6,6 +6,7 @@
             <host>localhost</host>  # ONOS "bench" machine
             <user>sdn</user>
             <password>rocks</password>
+            <home></home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
             <type>OnosClusterDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
@@ -17,7 +18,7 @@
                 <web_pass></web_pass>
                 <rest_port></rest_port>
                 <prompt></prompt>  # TODO: we technically need a few of these, one per component
-                <onos_home></onos_home>  # defines where onos home is
+                <onos_home></onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.
                 <nodes> 7 </nodes>  # number of nodes in the cluster
             </COMPONENTS>
         </ONOScell>
@@ -40,4 +41,3 @@
     </COMPONENT>
 
 </TOPOLOGY>
- 

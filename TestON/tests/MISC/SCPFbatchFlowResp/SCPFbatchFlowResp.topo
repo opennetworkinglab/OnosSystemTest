@@ -6,6 +6,7 @@
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosClusterDriver</type>
+            <home></home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
             <connect_order>1</connect_order>
             <COMPONENTS>
                 <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
@@ -16,7 +17,7 @@
                 <web_pass></web_pass>
                 <rest_port></rest_port>
                 <prompt></prompt>  # TODO: we technically need a few of these, one per component
-                <onos_home></onos_home>  # defines where onos home is
+                <onos_home></onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.
                 <nodes> 1 </nodes>  # number of nodes in the cluster
             </COMPONENTS>
         </ONOScell>

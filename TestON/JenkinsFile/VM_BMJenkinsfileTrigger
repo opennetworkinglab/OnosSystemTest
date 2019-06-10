@@ -36,6 +36,8 @@ post_result = null
 branchesParam = null
 isFabric = null
 testsParam = null
+simulateDay = null
+day = null
 
 dayMap = [:]
 fullDayMap = [:]
@@ -83,6 +85,7 @@ def init(){
     initGraphPaths()
 
     echo "selectedTests: " + selectedTests
+    echo "onos_branches: " + onos_branches
 }
 
 def readParams(){
@@ -94,13 +97,13 @@ def readParams(){
     isOldFlow = params.isOldFlow
     testsParam = params.Tests
     isFabric = params.isFabric
+    simulateDay = params.simulate_day
 }
 
 // Set tests based on day of week
 def initDates(){
     echo "-> initDates()"
     now = funcs.getCurrentTime()
-    today = now[ Calendar.DAY_OF_WEEK ]
     dayMap = [ ( Calendar.MONDAY )    : "mon",
                ( Calendar.TUESDAY )   : "tue",
                ( Calendar.WEDNESDAY ) : "wed",
@@ -115,7 +118,13 @@ def initDates(){
                    ( Calendar.FRIDAY )    : "Friday",
                    ( Calendar.SATURDAY )  : "Saturday",
                    ( Calendar.SUNDAY )    : "Sunday" ]
-    print now.toString()
+    if ( simulateDay == "" ){
+        today = now[ Calendar.DAY_OF_WEEK ]
+        day = dayMap[ today ]
+        print now.toString()
+    } else {
+        day = simulateDay
+    }
 }
 
 // gets ONOS branches from params or string parameter
@@ -124,7 +133,7 @@ def getONOSBranches(){
     if ( manually_run ){
         return branchesParam.tokenize( "\n;, " )
     } else {
-        return test_list.getBranchesFromDay( dayMap[ today ] )
+        return test_list.getBranchesFromDay( day )
     }
 }
 
@@ -133,7 +142,7 @@ def getONOSTests(){
     if ( manually_run ){
         return test_list.getTestsFromStringList( testsParam.tokenize( "\n;, " ) )
     } else {
-        day = dayMap[ today ]
+
         return test_list.getTestsFromDay( day )
     }
 }

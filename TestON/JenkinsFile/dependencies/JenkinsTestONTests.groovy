@@ -126,8 +126,10 @@ def convertBranchCodeToBranch( branch_code, withPrefix=true ){
 }
 
 def convertBranchToBranchCode( branch ){
-    if ( branch == "master" || branch.substring( 0, 1 ) == "o" ){
+    if ( branch == "master" ){
         return branch
+    } else if ( branch.substring( 0, 1 ) == "o" ) {
+        return branch.substring( 0, 6 ) + ".x"
     } else {
         return "onos-" + branch.substring( 0, 1 ) + ".x"
     }

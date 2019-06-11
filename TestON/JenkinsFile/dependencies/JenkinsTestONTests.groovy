@@ -105,7 +105,7 @@ def getBranchesFromDay( day, tests=[:] ){
         for ( subDict in tests[ key ][ "schedules" ] ){
             sch = subDict[ "day" ]
             if ( validSchedules.contains( sch ) && !branchesFromDayResult.contains( sch ) ){
-                branchesFromDayResult += convertBranchCodeToBranch( subDict[ "branch" ] )
+                branchesFromDayResult += convertBranchCodeToBranch( subDict[ "branch" ], false )
             }
         }
     }
@@ -133,6 +133,10 @@ def convertBranchToBranchCode( branch ){
     } else {
         return "onos-" + branch.substring( 0, 1 ) + ".x"
     }
+}
+
+def removePrefixFromBranch( branchWithPrefix ){
+    return branchWithPrefix.minus( "onos-" )
 }
 
 // *************

@@ -132,6 +132,7 @@ class OnosDriver( CLI ):
 
             if self.handle:
                 self.handle.sendline( "cd " + self.home )
+                self.handle.expect( "cd " + self.home )
                 self.handle.expect( self.prompt )
                 return self.handle
             else:

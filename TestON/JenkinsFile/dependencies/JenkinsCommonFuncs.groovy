@@ -412,8 +412,8 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                                 sh fetchLogs( pureTestName )
                                 if ( !isSCPF ){
                                     publishToConfluence( prop[ "manualRun" ], prop[ "postResult" ],
-                                                         testCategory[ testName ][ 'wiki_link' ],
-                                                         workSpace + "/" + testCategory[ testName ][ 'wiki_file' ] )
+                                                         testCategory[ testName ][ 'wikiName' ],
+                                                         workSpace + "/" + testCategory[ testName ][ 'wikiFile' ] )
                                 }
                             }
                         }
@@ -422,7 +422,7 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                     if ( !graphOnly ){
                         def resultURL = postLogs( testName, prop[ "WikiPrefix" ] )
                         analyzeResult( prop, workSpace, pureTestName, testName, resultURL,
-                                       isSCPF ? "" : testCategory[ testName ][ 'wiki_link' ],
+                                       isSCPF ? "" : testCategory[ testName ][ 'wikiName' ],
                                        isSCPF )
                     }
                 }

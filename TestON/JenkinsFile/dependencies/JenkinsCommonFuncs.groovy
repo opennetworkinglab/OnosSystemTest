@@ -412,7 +412,7 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                                 sh fetchLogs( pureTestName )
                                 if ( !isSCPF ){
                                     publishToConfluence( prop[ "manualRun" ], prop[ "postResult" ],
-                                                         testCategory[ testName ][ 'wikiName' ],
+                                                         prop[ "WikiPrefix" ] + "-" + testCategory[ testName ][ 'wikiName' ],
                                                          workSpace + "/" + testCategory[ testName ][ 'wikiFile' ] )
                                 }
                             }

@@ -245,7 +245,17 @@ def postSetup( onos_branch, test_branch, onos_tag, isManual ){
 
     result = ""
     if ( !isManual ){
-        result = '''echo -e "\n##### build ONOS skip unit tests ######"
+        result = '''echo -e "Installing bazel"
+        cd ~
+        rm -rf ci-management
+        git clone https://gerrit.onosproject.org/ci-management
+        cd ci-management/jjb/onos/
+        export GERRIT_BRANCH="''' + onos_branch + '''"
+        chmod +x install-bazel.sh
+        ./install-bazel.sh
+        bazel --version
+
+        echo -e "\n##### build ONOS skip unit tests ######"
         cd ~/onos
         . tools/dev/bash_profile
         op

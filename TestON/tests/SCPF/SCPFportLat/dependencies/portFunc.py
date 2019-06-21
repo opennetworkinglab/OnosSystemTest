@@ -51,7 +51,7 @@ def capturePortStatusPack( main, deviceName, interface, portStatus, resultDict, 
     with open( main.tsharkResultPath, "r" ) as resultFile:
         resultText = resultFile.readline()
         main.log.info( "Capture result:" + resultText )
-        resultText = resultText.split( " " )
+        resultText = resultText.strip().split( " " )
         if len( resultText ) > 1:
             tsharkResultTime = int( float( resultText[ 1 ] ) * 1000.0 )
             resultFile.close()

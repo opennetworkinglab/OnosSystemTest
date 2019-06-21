@@ -59,7 +59,7 @@ def processPackage( package ):
         package: Package String
 
     """
-    pacakge = package.split( " " )
+    pacakge = package.strip().split( " " )
     dic = {}
     for s in pacakge:
         try:
@@ -101,7 +101,7 @@ def arrangeTsharkFile( switchStatus, keyTerm ):
         for term in keyTerm:
             if term in line:
                 # Exclude non-openflow FIN packets
-                if term == "[FIN, ACK]" and "openflow" not in line:
+                if term == "[FIN, ACK]" and "6653" not in line:
                     continue
                 path = '/tmp/Tshark_' + str( keyTerm[ term ] )
                 with open( path, 'a' ) as outputfile:

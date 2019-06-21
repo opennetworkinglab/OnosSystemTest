@@ -50,15 +50,15 @@
 
     <TSHARK>
         <up>
-            <TCP>openflow\ \[SYN\]</TCP>  #1
-            <RQ>OF 1.3 90 of_role_request</RQ> #2
-            <RR>OF 1.3 90 of_role_reply</RR> #3
-            <Feature>OF 1.3 98 of_features_reply</Feature>#4
+            <TCP>6653\ \[SYN\]</TCP> #1
+            <RQ>OpenFlow 90 Type: OFPT_ROLE_REQUEST</RQ> #2
+            <RR>OpenFlow 90 Type: OFPT_ROLE_REPLY</RR> #3
+            <Feature>OpenFlow 98 Type: OFPT_FEATURES_REPLY</Feature> #4
         </up>
 
         <down>
             <FA>\[FIN,\ ACK\]</FA>
-            <ACK>openflow\ \[ACK\]</ACK>
+            <ACK>6653\ \[ACK\]</ACK>
         </down>
     </TSHARK>
 

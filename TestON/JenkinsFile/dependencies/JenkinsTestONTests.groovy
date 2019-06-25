@@ -23,6 +23,7 @@ allTests = [:]
 schedules = [:]
 branches = [:]
 
+// read all json files and save as maps
 def init(){
     def tests_buffer = readTrusted( "TestON/JenkinsFile/dependencies/tests.json" )
     def schedules_buffer = readTrusted( "TestON/JenkinsFile/dependencies/schedule.json" )
@@ -60,6 +61,7 @@ def getTestListAsString( tests ){
     return str_result[ 0..-2 ]
 }
 
+// given a list of tests as a string, returns the list of tests as a map, similar formatted to tests.json
 def getTestsFromStringList( list ){
     testsResult = [:]
     for ( item in list ){
@@ -85,13 +87,14 @@ def getTestScheduleProperty( test_name, property, tests=[:] ){
     return schedulePropertyResult
 }
 
-def getAllBranches(){
-    return branches
-}
-
 // ********
 // Branches
 // ********
+
+// returns all branches from branches.json
+def getAllBranches(){
+    return branches
+}
 
 // given a day, returns all branches that are run on that day
 def getBranchesFromDay( day, tests=[:] ){
@@ -125,6 +128,8 @@ def convertBranchCodeToBranch( branch_code, withPrefix=true ){
     return branch_code
 }
 
+// given a branch, returns the corresponding branch code (hack)
+// Example: given "onos-1.15", returns "onos-1.x"
 def convertBranchToBranchCode( branch ){
     if ( branch == "master" ){
         return branch
@@ -135,6 +140,16 @@ def convertBranchToBranchCode( branch ){
     }
 }
 
+// given a branch without a prefix, returns the branch with the "onos-" prefix
+def addPrefixToBranch( branchNoPrefix ){
+    if ( branchNoPrefix == "master" ){
+        return "master"
+    } else {
+        return "onos-" + branchNoPrefix
+    }
+}
+
+// given a branch with the prefix "onos-", returns the branch without the prefix
 def removePrefixFromBranch( branchWithPrefix ){
     return branchWithPrefix.minus( "onos-" )
 }
@@ -157,6 +172,7 @@ def getTestsFromCategory( category, tests=[:] ){
     return testsFromCategoryResult
 }
 
+// given the test name, returns the category (FUNC, HA, etc.) of that test
 def getCategoryOfTest( test_name, tests=[:] ){
     if ( tests == [:] ){
         tests = allTests
@@ -164,6 +180,7 @@ def getCategoryOfTest( test_name, tests=[:] ){
     return tests[ test_name ][ "category" ]
 }
 
+// returns all categories of all tests, or the given test list
 def getAllTestCategories( tests=[:] ){
     testCategoriesResult = []
     if ( tests == [:] ){
@@ -232,7 +249,7 @@ def getTestsFromNodeLabel( nodeLabel, branch, tests=[:] ){
 }
 
 // Given a test name and branch, return the node label associated.
-def getNodeLabel( test_name, branch, tests ){
+def getNodeLabel( test_name, branch, tests=[:] ){
     if ( tests == [:] ){
         tests = allTests
     }
@@ -244,7 +261,8 @@ def getNodeLabel( test_name, branch, tests ){
     }
 }
 
-def getAllNodeLabels( branch, tests ){
+// given a branch, returns all nodeLabels from all tests, or a given test list
+def getAllNodeLabels( branch, tests=[:] ){
     nodeLabelResult = []
     if ( tests == [:] ){
         tests = allTests

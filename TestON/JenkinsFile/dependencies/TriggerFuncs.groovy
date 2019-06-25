@@ -30,15 +30,6 @@ def init( commonFuncs ){
     funcs = commonFuncs
 }
 
-def lastCommaRemover( str ){
-    // function that will remove the last comma from the string
-
-    if ( str.size() > 0 && str[ str.size() - 1 ] == ',' ){
-        str = str.substring( 0, str.size() - 1 )
-    }
-    return str
-}
-
 def printDaysForTest(){
     // Print the days for what test has.
     AllTheTests = test_list.getAllTests()
@@ -46,9 +37,9 @@ def printDaysForTest(){
     result = ""
     for ( String test in AllTheTests.keySet() ){
         result += test + ": ["
-        test_schedule = test_list.getTestSchedule( test )
-        for ( String sch in test_schedule.keySet() ){
-            for ( String day in test_list.convertScheduleKeyToDays( sch ) ){
+        test_schedule = AllTheTests[ test ][ "schedules" ]
+        for ( String sch_dict in test_schedule ){
+            for ( String day in test_list.convertScheduleKeyToDays( sch_dict[ "branch" ] ) ){
                 result += day + " "
             }
         }
@@ -57,58 +48,13 @@ def printDaysForTest(){
     return result
 }
 
-def runTestSeq( testList ){
-    // Running the test sequentially
-    return {
-        for ( test in testList.keySet() ){
-            testList[ test ].call()
-        }
-    }
-}
-
-def print_tests( tests ){
-    // print the list of the tsets to be run
-
-    for ( String test in tests.keySet() ){
-        if ( tests[ test ][ "tests" ] != "" ){
-            println test + ":"
-            println tests[ test ][ "tests" ]
-        }
-    }
-}
-
-def organize_tests( tests, testcases ){
-    // organize the test to its category using its name.
-    // most of the time it will use the first two character of the test name
-    // but there are some exceptions like FUNCbgpls or FUNCvirNetNB since they are now under USECASE
-
-    // depends on the first two letters of the test name, it will decide which category to put the test into.
-    def prefixes = [
-            "FU": "FUNC",
-            "HA": "HA",
-            "PL": "USECASE",
-            "SA": "USECASE",
-            "SC": "SCPF",
-            "SR": "SR",
-            "US": "USECASE",
-            "VP": "USECASE"
-    ]
-
-    def testList = tests.tokenize( "\n;, " )
-    for ( String test in testList ){
-        String prefix = ( test == "FUNCbgpls" || test == "FUNCvirNetNB" ) ? "US" : ( test[ 0..1 ] )
-        testcases[ prefixes[ prefix ] ][ "tests" ] += test + ","
-    }
-    return testcases
-}
-
 def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     // triggering function that will setup the environment and determine which pipeline to trigger
 
     println "Job name: " + jobOn + "-pipeline-" + ( manuallyRun ? "manually" : branch )
     def wiki = branch
-    def onos_branch = funcs.branchWithPrefix( branch )
-    def test_branch = funcs.testBranchWithPrefix( branch )
+    def onos_branch = test_list.addPrefixToBranch( branch )
+    def test_branch = test_list.addPrefixToBranch( branch )
     println "onos_branch with prefix: " + onos_branch
     println "test_branch with prefix: " + test_branch
     node( "TestStation-" + nodeName + "s" ) {
@@ -117,7 +63,7 @@ def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     }
 
     jobToRun = jobOn + "-pipeline-" + ( manuallyRun ? "manually" : wiki )
-    build job: jobToRun, propagate: false
+    build job: jobToRun, propagate: false, parameters: [ [ $class: 'StringParameterValue', name: 'Category', value: jobOn ], [ $class: 'StringParameterValue', name: 'Branch', value: branch ] ]
 }
 
 def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
@@ -134,7 +80,7 @@ def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
 def exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, postResult, manually_run, onosTag, isOldFlow ){
     // export environment properties to the machine.
 
-    filePath = "/var/jenkins/TestONOS-" + jobOn + ".property"
+    filePath = "/var/jenkins/TestONOS-" + jobOn + "-" + onos_branch + ".property"
 
     stage( "export Property" ) {
         sh '''

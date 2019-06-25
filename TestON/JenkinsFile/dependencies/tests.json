@@ -785,17 +785,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -808,17 +808,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -831,17 +831,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -854,17 +854,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -877,17 +877,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -905,12 +905,12 @@
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "fri",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "fri",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -928,12 +928,12 @@
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "fri",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "fri",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -951,12 +951,12 @@
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "fri",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "fri",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -974,12 +974,12 @@
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "fri",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "fri",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -997,12 +997,12 @@
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "sat",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "sat",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -1020,12 +1020,12 @@
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "sat",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "sat",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -1043,12 +1043,12 @@
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "sat",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "sat",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -1062,17 +1062,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -1084,17 +1084,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -1108,17 +1108,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -1132,17 +1132,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -1158,6 +1158,16 @@
                 "branch": "master",
                 "day": "fri",
                 "nodeLabel": "Fabric4"
+            },
+            {
+                "branch": "onos-1.x",
+                "day": "fri",
+                "nodeLabel": "Fabric2"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "fri",
+                "nodeLabel": "Fabric3"
             }
         ],
         "category": "SR",
@@ -1172,6 +1182,16 @@
                 "branch": "master",
                 "day": "sat",
                 "nodeLabel": "Fabric4"
+            },
+            {
+                "branch": "onos-1.x",
+                "day": "sat",
+                "nodeLabel": "Fabric2"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "sat",
+                "nodeLabel": "Fabric3"
             }
         ],
         "category": "SR",
@@ -1186,6 +1206,16 @@
                 "branch": "master",
                 "day": "sat",
                 "nodeLabel": "Fabric4"
+            },
+            {
+                "branch": "onos-1.x",
+                "day": "sat",
+                "nodeLabel": "Fabric2"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "sat",
+                "nodeLabel": "Fabric3"
             }
         ],
         "category": "SR",
@@ -1198,17 +1228,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],
@@ -1222,17 +1252,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "weekdays",
+                "day": "everyday",
                 "nodeLabel": "Fabric4"
             },
             {
                 "branch": "onos-1.x",
-                "day": "onos-1.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric2"
             },
             {
                 "branch": "onos-2.x",
-                "day": "onos-2.x_schedule",
+                "day": "everyday",
                 "nodeLabel": "Fabric3"
             }
         ],

@@ -27,7 +27,9 @@ SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/PerformanceFu
 category = null
 prop = null
 testsToRun = null
+testsToRunStrList = null
 branch = null
+start = null
 testsFromList = [:]
 graphPaths = [:]
 pipeline = [:]
@@ -44,29 +46,32 @@ def init(){
     test_list.init()
     readParams()
 
+    funcs.initialize( category );
+
     if ( category == "SCPF" ){
+        // SCPF needs to obtain properties earlier
+        prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
         SCPFfuncs.init()
         isOldFlow = prop[ "isOldFlow" ] == "true"
-        SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ]
+        SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
     } else if ( category == "SR" ){
         // get the name of the Jenkins job.
         jobName = env.JOB_NAME
 
         // additional setup for Segment routing because it is running multiple branch concurrently on different machines.
         funcs.additionalInitForSR( jobName )
+        prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
+    } else {
+        prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
     }
-
-    funcs.initialize( category );
-
-    // Read the TestONOS.property from the VM
-    prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
 
     // get the list of the test and init branch to it.
     testsFromList = test_list.getTestsFromCategory( category )
 
     initGraphPaths()
 
-    testsToRun = funcs.getTestsToRun( prop[ "Tests" ] )
+    testsToRunStrList = funcs.getTestsToRun( prop[ "Tests" ] )
+    testsToRun = test_list.getTestsFromStringList( testsToRunStrList )
 }
 
 def readParams(){
@@ -76,7 +81,7 @@ def readParams(){
 
 def initGraphPaths(){
     graphPaths.put( "trendIndividual", fileRelated.trendIndividual )
-    if ( catetgory == "SR" ){
+    if ( category == "SR" ){
         graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-Fabric" + funcs.fabricOn( prop[ "ONOSBranch" ] ) + "/" )
     } else if ( category == "SRHA" ) {
         graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-Fabric" + "/" )
@@ -88,7 +93,7 @@ def initGraphPaths(){
 def runTests(){
     // run the test sequentially and save the function into the dictionary.
     for ( String test : testsToRun.keySet() ){
-        def toBeRun = testsToRun.contains( test )
+        def toBeRun = test
         def stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
         def pureTestName = ( testsToRun[ test ].containsKey( "test" ) ? testsToRun[ test ][ "test" ].split().head() : test )
         pipeline[ stepName ] = funcs.runTest( test, toBeRun, prop, pureTestName, false,
@@ -106,7 +111,7 @@ def runTests(){
 
 def generateGraphs(){
     // generate the overall graph of the FUNC tests.
-    funcs.generateOverallGraph( prop, testsToRun, graphPaths[ "saveDirectory" ] )
+    funcs.generateOverallGraph( prop, testsToRunStrList, graphPaths[ "saveDirectory" ] )
 }
 
 def sendToSlack(){

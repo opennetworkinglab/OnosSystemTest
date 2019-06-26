@@ -37,7 +37,6 @@ branchesParam = null
 isFabric = null
 testsParam = null
 simulateDay = null
-day = null
 
 dayMap = [:]
 fullDayMap = [:]
@@ -195,6 +194,8 @@ def postToSlackTestsToRun(){
 
 def generateRunList(){
     runList = [:]
+    validSchedules = test_list.getValidSchedules( day )
+    echo "validSchedules: " + validSchedules
     for ( branch in onos_branches ){
         runBranch = []
         nodeLabels = test_list.getAllNodeLabels( branch, selectedTests )
@@ -203,8 +204,26 @@ def generateRunList(){
             selectedNodeLabelCategories = test_list.getAllTestCategories( selectedNodeLabelTests )
             for ( category in selectedNodeLabelCategories ){
                 selectedNodeLabelCategoryTests = test_list.getTestsFromCategory( category, selectedNodeLabelTests )
-                exeTestList = test_list.getTestListAsString( selectedNodeLabelCategoryTests )
-                runList.put( branch + "-" + nodeLabel + "-" + category, triggerFuncs.trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
+
+                filteredList = [:]
+                for ( key in selectedNodeLabelCategoryTests.keySet() ){
+                    for ( sch in selectedNodeLabelCategoryTests[ key ][ "schedules" ] ){
+                        if ( validSchedules.contains( sch[ "day" ] ) && sch[ "branch" ] == test_list.convertBranchToBranchCode( branch ) ){
+                            filteredList.put( key, selectedNodeLabelCategoryTests[ key ] )
+                            break
+                        }
+                    }
+                }
+
+                echo "=========================================="
+                echo "BRANCH: " + branch
+                echo "CATEGORY: " + category
+                echo "TESTS: " + filteredList
+                if ( filteredList != [:] ){
+                    exeTestList = test_list.getTestListAsString( filteredList )
+                    runList.put( branch + "-" + nodeLabel + "-" + category, triggerFuncs.trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
+                }
+
             }
         }
     }

@@ -107,8 +107,9 @@ def getBranchesFromDay( day, tests=[:] ){
     for ( String key in tests.keySet() ){
         for ( subDict in tests[ key ][ "schedules" ] ){
             sch = subDict[ "day" ]
-            if ( validSchedules.contains( sch ) && !branchesFromDayResult.contains( sch ) ){
-                branchesFromDayResult += convertBranchCodeToBranch( subDict[ "branch" ], false )
+            new_branch = convertBranchCodeToBranch( subDict[ "branch" ], false )
+            if ( validSchedules.contains( sch ) && !branchesFromDayResult.contains( new_branch ) ){
+                branchesFromDayResult += new_branch
             }
         }
     }
@@ -210,7 +211,7 @@ def getValidSchedules( day ){
     return validSchedules
 }
 
-// given a day and branch, returns all tests that run on the given day on the given branch
+// given a day, returns all tests that run on the given day on the given branch
 def getTestsFromDay( day, tests=[:] ){
     resultDict = [:]
     if ( tests == [:] ){

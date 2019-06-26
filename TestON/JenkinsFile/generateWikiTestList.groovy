@@ -164,6 +164,7 @@ def addBranchDescription(){
     branchDescription += '''
     <p>* test runs on the <b>''' + supportBranch1 + '''</b> branch.</p>
     <p>** test runs on the <b>''' + supportBranch2 + '''</b> branch.</p>
+    <p>*** test runs on the <b>''' + supportBranch1 + ''', ''' + supportBranch2 + ''', and master branches''' + '''</b>.</p>
     <p>Otherwise, test runs on the <b>''' + '''master''' + '''</b> branch.</p>'''
 
 

@@ -39,6 +39,8 @@ main()
 def main(){
     init()
     runTests()
+    generateGraphs()
+    sendToSlack()
 }
 
 def init(){
@@ -85,6 +87,8 @@ def initGraphPaths(){
         graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-Fabric" + funcs.fabricOn( prop[ "ONOSBranch" ] ) + "/" )
     } else if ( category == "SRHA" ) {
         graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-Fabric" + "/" )
+    } else if ( category == "SCPF" || category == "USECASE" ){
+        graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-BM/" )
     } else {
         graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-VM/" )
     }
@@ -110,8 +114,19 @@ def runTests(){
 }
 
 def generateGraphs(){
-    // generate the overall graph of the FUNC tests.
-    funcs.generateOverallGraph( prop, testsToRunStrList, graphPaths[ "saveDirectory" ] )
+    if ( category == "SCPF" ){
+        jobToRun = "manual-graph-generator-SCPF"
+        ONOSbranchParam = [ $class: 'StringParameterValue', name: 'ONOSbranch', value: test_list.addPrefixToBranch( branch ) ]
+        isOldFlowParam = [ $class: 'BooleanParameterValue', name: 'isOldFlow', value: true ]
+        // leaving Test param empty to use default values
+        build job: jobToRun, propagate: false, parameters: [ ONOSbranchParam, isOldFlowParam ]
+
+        isOldFlowParam = [ $class: 'BooleanParameterValue', name: 'isOldFlow', value: false ]
+        build job: jobToRun, propagate: false, parameters: [ ONOSbranchParam, isOldFlowParam ]
+    } else {
+        // generate the overall graph of the FUNC tests.
+        funcs.generateOverallGraph( prop, testsToRunStrList, graphPaths[ "saveDirectory" ] )
+    }
 }
 
 def sendToSlack(){

@@ -50,8 +50,8 @@ def init(){
 
     if ( category == "SCPF" ){
         // SCPF needs to obtain properties earlier
-        prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
         funcs.initialize( "SCPF", SCPFfuncs )
+        prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
 
         SCPFfuncs.init()
         isOldFlow = prop[ "isOldFlow" ] == "true"

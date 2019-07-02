@@ -40,34 +40,21 @@ def initializeTrend( machine ){
     testMachine = "TestStation-" + machine + "s"
     this.machine = machine
     isSCPF = false
-    hasArgs = false
     isTrend = true
 }
 
-def initialize( type, SCPFfuncs ){
-    // Initializing for SCPF tests
-    // type : type of the test ( SR,FUNC,SCPF... )
-    // Passing the SCPFfunction which will be PerformanceFuncs.groovy
-
-    init( type )
-    SCPFfunc = SCPFfuncs
-    isSCPF = true
-    hasArgs = true // Has TestON cli arguments to be added when running the test
-    machine = machineType[ type ]
-}
-
-def initialize( type ){
+def initialize( type, SCPFfuncs=null ){
     // initializing for FUNC,HA,SR, and USECASE
     // type : type of the test ( SR,FUNC,SCPF... )
 
     init( type )
-    SCPFfunc = null
+    isSCPF = ( category == "SCPF" )
+    SCPFfunc = SCPFfuncs
+
     table_name = "executed_test_tests"
     result_name = "executed_test_results"
     trend_generator_file = fileRelated.trendMultiple
     build_stats_generator_file = fileRelated.histogramMultiple
-    isSCPF = false
-    hasArgs = false
 }
 
 def init( type ){
@@ -184,7 +171,7 @@ def initAndRunTest( testName, testCategory ){
         git log | head
         ./cleanup.sh -f
         ''' + "./cli.py run " +
-           ( !hasArgs ? testName : testCategory[ testName ][ 'test' ] ) +
+          testName +
            " --params GRAPH/nodeCluster=" + machineType[ testType ] + '''
         ./cleanup.sh -f
         # cleanup config changes

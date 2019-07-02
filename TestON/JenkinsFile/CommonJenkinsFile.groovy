@@ -48,22 +48,24 @@ def init(){
     test_list.init()
     readParams()
 
-    funcs.initialize( category );
-
     if ( category == "SCPF" ){
         // SCPF needs to obtain properties earlier
         prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
+        funcs.initialize( "SCPF", SCPFfuncs )
+
         SCPFfuncs.init()
         isOldFlow = prop[ "isOldFlow" ] == "true"
         SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
     } else if ( category == "SR" ){
         // get the name of the Jenkins job.
         jobName = env.JOB_NAME
+        funcs.initialize( category );
 
         // additional setup for Segment routing because it is running multiple branch concurrently on different machines.
         funcs.additionalInitForSR( jobName )
         prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
     } else {
+        funcs.initialize( category );
         prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
     }
 

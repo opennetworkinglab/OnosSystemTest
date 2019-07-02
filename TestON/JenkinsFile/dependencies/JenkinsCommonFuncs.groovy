@@ -263,7 +263,7 @@ def postResult( prop, graphOnly ){
     // graphOnly : if it is graph generating job
 
     if ( graphOnly || isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
-        def post = build job: "postjob-" + ( graphOnly ? machine : machineType[ testType ] ), propagate: false
+        def post = build job: "postjob-" + machineType[ testType ], propagate: false
     }
 }
 

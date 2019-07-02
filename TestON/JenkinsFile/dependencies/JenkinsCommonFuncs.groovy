@@ -48,7 +48,7 @@ def initialize( type, SCPFfuncs=null ){
     // type : type of the test ( SR,FUNC,SCPF... )
 
     init( type )
-    isSCPF = ( category == "SCPF" )
+    isSCPF = ( type == "SCPF" )
     SCPFfunc = SCPFfuncs
 
     table_name = "executed_test_tests"

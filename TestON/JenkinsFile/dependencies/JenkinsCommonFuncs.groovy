@@ -261,8 +261,9 @@ def postResult( prop, graphOnly ){
     // post the result by triggering postjob.
     // prop : property dictionary that was read from the machine.
     // graphOnly : if it is graph generating job
-
-    if ( graphOnly || isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
+    if ( graphOnly ){
+        def post = build job: "postjob-" + machine, propagate: false
+    } else if ( isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
         def post = build job: "postjob-" + machineType[ testType ], propagate: false
     }
 }

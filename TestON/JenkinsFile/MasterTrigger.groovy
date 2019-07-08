@@ -208,7 +208,7 @@ def generateRunList(){
                 filteredList = [:]
                 for ( key in selectedNodeLabelCategoryTests.keySet() ){
                     for ( sch in selectedNodeLabelCategoryTests[ key ][ "schedules" ] ){
-                        if ( validSchedules.contains( sch[ "day" ] ) && sch[ "branch" ] == test_list.convertBranchToBranchCode( branch ) ){
+                        if ( validSchedules.contains( sch[ "day" ] ) && sch[ "branch" ] == test_list.convertBranchToBranchCode( branch ) || manually_run ){
                             filteredList.put( key, selectedNodeLabelCategoryTests[ key ] )
                             break
                         }

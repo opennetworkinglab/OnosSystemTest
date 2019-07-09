@@ -323,7 +323,7 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
             throw new Exception( "Abnormal test result." )
         }
         else {
-            print "Test results are normal."
+            print "Test results are OK."
         }
     }
 }
@@ -470,7 +470,7 @@ def generateCategoryStatsGraph( testMachineOn, manualRun, postresult, stat_file,
 }
 
 
-def generateOverallGraph( prop, testCategory, graph_saved_directory ){
+def generateOverallGraph( prop, tests, graph_saved_directory ){
     // generate the overall graph for the test
 
     if ( isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
@@ -481,7 +481,7 @@ def generateOverallGraph( prop, testCategory, graph_saved_directory ){
                     string( credentialsId: 'db_user', variable: 'user' ),
                     string( credentialsId: 'db_host', variable: 'host' ),
                     string( credentialsId: 'db_port', variable: 'port' ) ] ) {
-                testList = generalFuncs.getTestList( testCategory )
+                testList = test_list.getTestListAsString( tests )
                 sh '''#!/bin/bash
                    ''' +
                    generalFuncs.basicGraphPart( trend_generator_file, host, port,

@@ -115,22 +115,13 @@ def runTests(){
 }
 
 def generateGraphs(){
-    if ( category == "SCPF" ){
-        jobToRun = "manual-graph-generator-SCPF"
-        ONOSbranchParam = [ $class: 'StringParameterValue', name: 'ONOSbranch', value: test_list.addPrefixToBranch( branch ) ]
-        isOldFlowParam = [ $class: 'BooleanParameterValue', name: 'isOldFlow', value: true ]
-        // leaving Test param empty to use default values
-        build job: jobToRun, propagate: false, parameters: [ ONOSbranchParam, isOldFlowParam ]
-
-        isOldFlowParam = [ $class: 'BooleanParameterValue', name: 'isOldFlow', value: false ]
-        build job: jobToRun, propagate: false, parameters: [ ONOSbranchParam, isOldFlowParam ]
-    } else {
-        // generate the overall graph of the FUNC tests.
-        funcs.generateOverallGraph( prop, testsToRunStrList, graphPaths[ "saveDirectory" ] )
+    if ( category != "SCPF" ){
+        // generate the overall graph of the non SCPF tests.
+        funcs.generateOverallGraph( prop, testsToRun, graphPaths[ "saveDirectory" ] )
     }
 }
 
 def sendToSlack(){
-    // send the notification to Slack that running FUNC tests was ended.
+    // send the notification to Slack that running tests ended.
     funcs.sendResultToSlack( start, prop[ "manualRun" ], prop[ "WikiPrefix" ] )
 }

@@ -1,5 +1,5 @@
 #!groovy
-// Copyright 2017 Open Networking Foundation (ONF)
+// Copyright 2019 Open Networking Foundation (ONF)
 //
 // Please refer questions to either the onos test mailing list at <onos-test@onosproject.org>,
 // the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/x/voMg>,
@@ -18,7 +18,7 @@
 //     You should have received a copy of the GNU General Public License
 //     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
-// This is the Jenkins script for vm-pipeline-trigger or bm-pipeline-trigger
+// This is the Jenkins script for master-trigger
 
 // set the functions of the dependencies.
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
@@ -66,13 +66,6 @@ def init(){
     fileRelated.init()
     test_list.init()
     readParams()
-
-    funcs.initializeTrend( "Fabric" )
-    funcs.initialize( "Fabric" )
-
-    funcs.initializeTrend( "VM" )
-
-    triggerFuncs.init( funcs )
 
     // list of the tests to be run will be saved in each choices.
     day = ""

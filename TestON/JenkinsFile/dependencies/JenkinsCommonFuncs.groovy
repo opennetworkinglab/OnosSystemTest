@@ -31,23 +31,28 @@ test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestON
 fileRelated.init()
 test_list.init()
 
+nodeLabel = null
+testStation = null
+
 def initializeTrend( machine ){
     // For initializing any trend graph jobs
     // machine : Either VM,BM, or Fabric#
 
     table_name = "executed_test_tests"
     result_name = "executed_test_results"
-    testMachine = "TestStation-" + machine + "s"
+    testStation = "TestStation-" + machine + "s"
     this.machine = machine
     isSCPF = false
     isTrend = true
 }
 
-def initialize( type, SCPFfuncs=null ){
+def initialize( type, testS, nodeL, SCPFfuncs=null ){
     // initializing for FUNC,HA,SR, and USECASE
     // type : type of the test ( SR,FUNC,SCPF... )
 
-    init( type )
+    testStation = testS
+    testType = type
+    nodeLabel = nodeL
     isSCPF = ( type == "SCPF" )
     SCPFfunc = SCPFfuncs
 
@@ -55,50 +60,7 @@ def initialize( type, SCPFfuncs=null ){
     result_name = "executed_test_results"
     trend_generator_file = fileRelated.trendMultiple
     build_stats_generator_file = fileRelated.histogramMultiple
-}
-
-def init( type ){
-    // type : type of the test ( SR,FUNC,SCPF... )
-
-    machineType = [ "FUNC": "VM",
-                    "HA": "VM",
-                    "SR": "Fabric",
-                    "SCPF": "BM",
-                    "USECASE": "BM" ]
-    testType = type
-    testMachine = "TestStation-" + machineType[ type ] + "s"
     isTrend = false
-}
-
-def additionalInitForSR( branch ){
-    // additional setup for SegmentRouting tests to determine the machine depends on the branch it is running.
-    // branch : branch of the onos. ( master, 2.1, 1.15... )
-
-    testMachine = ( ( new StringBuilder( testMachine ) ).insert( testMachine.size() - 1, fabricOn( branch ) ) ).
-            toString()
-    if ( isTrend ){
-        machine += fabricOn( branch )
-    }
-    else {
-        machineType[ testType ] += fabricOn( branch )
-    }
-    print testMachine
-}
-
-def fabricOn( branch ){
-    // gets the fabric machines with the branch of onos.
-    // branch : master, 2.1, 1.15...
-    // branch.reverse().take(4).reverse() will get last 4 characters of the string.
-    switch ( branch.reverse().take( 3 ).reverse() ){
-        case "ter": return "4"
-        case "2.1": return "3"
-        case "2.0": return "3"
-        case ".15": return "2"
-        case ".14": return "3"
-        case ".13": return "2"
-        case ".12": return "3"
-        default: return "4"
-    }
 }
 
 def getProperties( category, branchWithPrefix ){
@@ -106,7 +68,7 @@ def getProperties( category, branchWithPrefix ){
 
     filePath = '''/var/jenkins/TestONOS-''' + category + '''-''' + branchWithPrefix + '''.property'''
 
-    node( testMachine ) {
+    node( testStation ) {
         return readProperties( file: filePath )
     }
 }
@@ -172,7 +134,7 @@ def initAndRunTest( testName, testCategory ){
         ./cleanup.sh -f
         ''' + "./cli.py run " +
           testName +
-           " --params GRAPH/nodeCluster=" + machineType[ testType ] + '''
+           " --params GRAPH/nodeCluster=" + nodeLabel + '''
         ./cleanup.sh -f
         # cleanup config changes
         cd ~/onos/tools/package/config
@@ -262,13 +224,8 @@ def postResult( prop, graphOnly ){
     // prop : property dictionary that was read from the machine.
     // graphOnly : if it is graph generating job
 
-    if ( graphOnly ){
-        if ( machine == null ){
-            machine = machineType[ testType ]
-        }
-        def post = build job: "postjob-" + machine, propagate: false
-    } else if ( isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
-        def post = build job: "postjob-" + machineType[ testType ], propagate: false
+    if ( graphOnly || isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
+        def post = build job: "postjob-" + nodeLabel, propagate: false
     }
 }
 
@@ -304,7 +261,7 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
     // wikiLink : link of the wiki page where the result was posted
     // isSCPF : Check if it is SCPF. If so, it won't post the wiki link.
 
-    node( testMachine ) {
+    node( testStation ) {
         def alarmFile = workSpace + "/" + pureTestName + "Alarm.txt"
         if ( fileExists( alarmFile ) ) {
             def alarmContents = readFile( alarmFile )
@@ -362,7 +319,7 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                 if ( toBeRun ){
                     def workSpace = "/var/jenkins/workspace/" + testName
                     def fileContents = ""
-                    node( testMachine ) {
+                    node( testStation ) {
                         withEnv( [ 'ONOSBranch=' + prop[ "ONOSBranch" ],
                                    'ONOSJAVAOPTS=' + prop[ "ONOSJAVAOPTS" ],
                                    'TestONBranch=' + prop[ "TestONBranch" ],
@@ -474,7 +431,7 @@ def generateOverallGraph( prop, tests, graph_saved_directory ){
     // generate the overall graph for the test
 
     if ( isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
-        node( testMachine ) {
+        node( testStation ) {
 
             withCredentials( [
                     string( credentialsId: 'db_pass', variable: 'pass' ),

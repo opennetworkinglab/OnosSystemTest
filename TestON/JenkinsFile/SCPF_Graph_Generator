@@ -24,7 +24,7 @@
 SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/PerformanceFuncs.groovy' )
 SCPFfuncs.init()
 funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-funcs.initialize( "SCPF", SCPFfuncs );
+funcs.initialize( "SCPF", "TestStation-BMs", "BM", SCPFfuncs );
 
 def prop = null
 prop = funcs.getProperties( "SCPF", params.ONOSbranch )

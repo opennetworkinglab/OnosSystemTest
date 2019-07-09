@@ -786,17 +786,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -809,17 +809,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -832,17 +832,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -855,17 +855,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -878,17 +878,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -901,17 +901,17 @@
             {
                 "branch": "master",
                 "day": "fri",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "fri",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "fri",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -924,17 +924,17 @@
             {
                 "branch": "master",
                 "day": "fri",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "fri",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "fri",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -947,17 +947,17 @@
             {
                 "branch": "master",
                 "day": "fri",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "fri",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "fri",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -970,17 +970,17 @@
             {
                 "branch": "master",
                 "day": "fri",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "fri",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "fri",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -993,17 +993,17 @@
             {
                 "branch": "master",
                 "day": "sat",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "sat",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "sat",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1016,17 +1016,17 @@
             {
                 "branch": "master",
                 "day": "sat",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "sat",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "sat",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1039,17 +1039,17 @@
             {
                 "branch": "master",
                 "day": "sat",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "sat",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "sat",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1063,17 +1063,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1085,17 +1085,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1109,17 +1109,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1133,17 +1133,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1157,17 +1157,17 @@
             {
                 "branch": "master",
                 "day": "fri",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "fri",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "fri",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1181,17 +1181,17 @@
             {
                 "branch": "master",
                 "day": "sat",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "sat",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "sat",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1205,17 +1205,17 @@
             {
                 "branch": "master",
                 "day": "sat",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "sat",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "sat",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1229,17 +1229,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",
@@ -1253,17 +1253,17 @@
             {
                 "branch": "master",
                 "day": "everyday",
-                "nodeLabel": "Fabric4"
+                "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric2"
+                "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
                 "day": "everyday",
-                "nodeLabel": "Fabric3"
+                "nodeLabel": "Fabric-2.x"
             }
         ],
         "category": "SR",

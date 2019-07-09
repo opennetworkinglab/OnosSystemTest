@@ -23,12 +23,11 @@
 // This will provide the portion that will set up the environment of the machine
 //      and trigger the corresponding jobs.
 
+import groovy.time.TimeCategory
+import groovy.time.TimeDuration
+
 test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 test_list.init()
-
-def init( commonFuncs ){
-    funcs = commonFuncs
-}
 
 def printDaysForTest(){
     // Print the days for what test has.
@@ -48,7 +47,7 @@ def printDaysForTest(){
     return result
 }
 
-def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
+def trigger( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag ){
     // triggering function that will setup the environment and determine which pipeline to trigger
 
     println "Job name: " + jobOn + "-pipeline-" + ( manuallyRun ? "manually" : branch )
@@ -57,27 +56,32 @@ def trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
     def test_branch = test_list.addPrefixToBranch( branch )
     println "onos_branch with prefix: " + onos_branch
     println "test_branch with prefix: " + test_branch
-    node( "TestStation-" + nodeName + "s" ) {
+    assignedNode = null
+    node( label: nodeLabel ) {
         envSetup( onos_branch, test_branch, onosTag, jobOn, manuallyRun )
-        exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow )
+        exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow, nodeLabel )
+        assignedNode = env.NODE_NAME
     }
 
     jobToRun = jobOn + "-pipeline-" + ( manuallyRun ? "manually" : wiki )
-    build job: jobToRun, propagate: false, parameters: [ [ $class: 'StringParameterValue', name: 'Category', value: jobOn ], [ $class: 'StringParameterValue', name: 'Branch', value: branch ] ]
+    build job: jobToRun, propagate: false, parameters: [ [ $class: 'StringParameterValue', name: 'Category', value: jobOn ],
+                                                         [ $class: 'StringParameterValue', name: 'Branch', value: branch ],
+                                                         [ $class: 'StringParameterValue', name: 'TestStation', value: assignedNode ],
+                                                         [ $class: 'StringParameterValue', name: 'NodeLabel', value: nodeLabel ] ]
 }
 
-def trigger_pipeline( branch, tests, nodeName, jobOn, manuallyRun, onosTag ){
-    // nodeName : "BM" or "VM"
+def trigger_pipeline( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag ){
+    // nodeLabel : nodeLabel from tests.json
     // jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
     // this will return the function by wrapping them up with return{} to prevent them to be
     // executed once this function is called to assign to specific variable.
     return {
-        trigger( branch, tests, nodeName, jobOn, manuallyRun, onosTag )
+        trigger( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag )
     }
 }
 
 // export Environment properties.
-def exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, postResult, manually_run, onosTag, isOldFlow ){
+def exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, postResult, manually_run, onosTag, isOldFlow, nodeLabel ){
     // export environment properties to the machine.
 
     filePath = "/var/jenkins/TestONOS-" + jobOn + "-" + onos_branch + ".property"

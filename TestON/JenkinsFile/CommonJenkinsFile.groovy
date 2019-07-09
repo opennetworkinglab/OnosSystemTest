@@ -30,6 +30,7 @@ testsToRun = null
 testsToRunStrList = null
 branch = null
 start = null
+testStation = null
 testsFromList = [:]
 graphPaths = [:]
 pipeline = [:]
@@ -50,21 +51,19 @@ def init(){
 
     if ( category == "SCPF" ){
         // SCPF needs to obtain properties earlier
-        funcs.initialize( category, SCPFfuncs );
+        funcs.initialize( category, testStation, nodeLabel, SCPFfuncs );
         prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
 
         SCPFfuncs.init()
         isOldFlow = prop[ "isOldFlow" ] == "true"
         SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )
     } else if ( category == "SR" ){
-        funcs.initialize( category );
+        funcs.initialize( category, testStation, nodeLabel );
         // get the name of the Jenkins job.
         jobName = env.JOB_NAME
-        // additional setup for Segment routing because it is running multiple branch concurrently on different machines.
-        funcs.additionalInitForSR( jobName )
         prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
     } else {
-        funcs.initialize( category );
+        funcs.initialize( category, testStation, nodeLabel );
         prop = funcs.getProperties( category, test_list.addPrefixToBranch( branch ) )
     }
 
@@ -78,8 +77,10 @@ def init(){
 }
 
 def readParams(){
-    category = params.Category // "FUNC", "HA", "USECASE", etc.
-    branch = params.Branch
+    category = params.Category       // "FUNC", "HA", "USECASE", etc.
+    branch = params.Branch           // "1.15", "2.1", "master", etc.
+    testStation = params.TestStation // "TestStation-BMs", etc.
+    nodeLabel = params.NodeLabel     // "BM", "VM", "Fabric-1.x", etc.
 }
 
 def initGraphPaths(){

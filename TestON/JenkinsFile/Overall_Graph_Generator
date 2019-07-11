@@ -21,7 +21,7 @@
 // This is the Jenkins script for manual-graph-generator-overall
 
 // read the dependency functions.
-funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
+graphs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsGraphs.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 
 fileRelated.init()
@@ -31,15 +31,12 @@ stat_graph_generator_file = fileRelated.rScriptPaths[ "scripts" ][ "histogramMul
 pie_graph_generator_file = fileRelated.rScriptPaths[ "scripts" ][ "pieMultiple" ]
 graph_saved_directory = fileRelated.workspaces[ "VM" ]
 
-// init trend which will generate the pie and histogram graphs to be VM.
-funcs.initializeTrend( "VM" )
-
 onos_branch = params.ONOSbranch
 
 // generate the graph and post the result on TestStation-VMs. Right now, all the pie and histograms are saved
 // on VM.
-funcs.generateStatGraph( "TestStation-VMs",
+graphs.generateStatGraph( "TestStation-VMs",
                          onos_branch,
                          stat_graph_generator_file,
                          pie_graph_generator_file,
-                         graph_saved_directory )
+                         graph_saved_directory, "VM" )

@@ -255,10 +255,15 @@ def getGraphCommand( rFileName, extras, host, port, user, pass, testName, branch
     return result
 }
 
+// make the basic graph part for the Rscript
+def basicGraphPart( rFileName, host, port, user, pass, subject, branchName ){
+    return " Rscript " + rFileName + " " + host + " " + port + " " + user + " " + pass + " " + subject + " " + branchName
+}
+
 def generateGraph( rFileName, batch, host, port, user, pass, testName, branchName, isOldFlow ){
     //  generate the Rscript command for individual graphs
 
-    return generalFuncs.basicGraphPart( fileRelated.rScriptPaths[ "directories" ][ "SCPF" ] + rFileName,
+    return basicGraphPart( fileRelated.rScriptPaths[ "directories" ][ "SCPF" ] + rFileName,
                                         host, port, user, pass, testName, branchName ) +
            " " + batch + " " + usingOldFlow( isOldFlow, testName ) + graph_saved_directory
 }
@@ -268,7 +273,7 @@ def generateCombinedResultGraph( host, port, user, pass, testName, branchName, i
     def result = ""
 
     for ( int i = 0; i < SCPF[ testName ][ 'graphTitle' ].size(); i++ ){
-        result += generalFuncs.basicGraphPart( fileRelated.rScriptPaths[ "scripts" ][ "trendSCPF" ],
+        result += basicGraphPart( fileRelated.rScriptPaths[ "scripts" ][ "trendSCPF" ],
                                                host,
                                                port,
                                                user,

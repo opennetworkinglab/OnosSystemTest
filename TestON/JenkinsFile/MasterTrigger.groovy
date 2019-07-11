@@ -20,9 +20,11 @@
 
 // This is the Jenkins script for master-trigger
 
+import groovy.time.TimeCategory
+import groovy.time.TimeDuration
+
 // set the functions of the dependencies.
-funcs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsCommonFuncs.groovy' )
-triggerFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/TriggerFuncs.groovy' )
+graphs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsGraphs.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 
@@ -86,7 +88,7 @@ def readParams(){
     manually_run = params.manual_run
     onos_tag = params.ONOSTag
     branchesParam = params.branches
-    isOldFlow = params.isOldFlow
+    isOldFlow = true // hardcoding to true since we are always using oldFlow.
     testsParam = params.Tests
     isFabric = params.isFabric
     simulateDay = params.simulate_day
@@ -95,7 +97,7 @@ def readParams(){
 // Set tests based on day of week
 def initDates(){
     echo "-> initDates()"
-    now = funcs.getCurrentTime()
+    now = getCurrentTime()
     dayMap = [ ( Calendar.MONDAY )    : "mon",
                ( Calendar.TUESDAY )   : "tue",
                ( Calendar.WEDNESDAY ) : "wed",
@@ -117,6 +119,13 @@ def initDates(){
     } else {
         day = simulateDay
     }
+}
+
+def getCurrentTime(){
+    // get time of the PST zone.
+
+    TimeZone.setDefault( TimeZone.getTimeZone( 'PST' ) )
+    return new Date()
 }
 
 // gets ONOS branches from params or string parameter
@@ -178,12 +187,203 @@ def postToSlackSR(){
 def postToSlackTestsToRun(){
     slackSend( color: '#FFD988',
                message: "Tests to be run this weekdays : \n" +
-                        triggerFuncs.printDaysForTest() )
+                        printDaysForTest() )
+}
+
+def printDaysForTest(){
+    // Print the days for what test has.
+    AllTheTests = test_list.getAllTests()
+
+    result = ""
+    for ( String test in AllTheTests.keySet() ){
+        result += test + ": ["
+        test_schedule = AllTheTests[ test ][ "schedules" ]
+        for ( String sch_dict in test_schedule ){
+            for ( String day in test_list.convertScheduleKeyToDays( sch_dict[ "branch" ] ) ){
+                result += day + " "
+            }
+        }
+        result += "]\n"
+    }
+    return result
 }
 
 // *********
 // Run Tests
 // *********
+
+def tagCheck( onos_tag, onos_branch ){
+    // check the tag for onos if it is not empty
+
+    result = "git checkout "
+    if ( onos_tag == "" ){
+        //create new local branch
+        result += onos_branch
+    }
+    else {
+        //checkout the tag
+        result += onos_tag
+    }
+    return result
+}
+
+def preSetup( onos_branch, test_branch, onos_tag, isManual ){
+    // pre setup part which will clean up and checkout to corresponding branch.
+
+    result = ""
+    if ( !isManual ){
+        result = '''echo -e "\n#####  Set TestON Branch #####"
+        echo "TestON Branch is set on: ''' + test_branch + '''"
+        cd ~/OnosSystemTest/
+        git checkout HEAD~1      # Make sure you aren't pn a branch
+        git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
+        git branch -D ''' + test_branch + ''' # just in case there are local changes. This will normally result in a branch not found error
+        git clean -df # clean any local files
+        git fetch --all # update all caches from remotes
+        git reset --hard origin/''' + test_branch + '''  # force local index to match remote branch
+        git clean -df # clean any local files
+        git checkout ''' + test_branch + ''' #create new local branch
+        git branch
+        git log -1 --decorate
+        echo -e "\n#####  Set ONOS Branch #####"
+        echo "ONOS Branch is set on: ''' + onos_branch + '''"
+        echo -e "\n #### check karaf version ######"
+        env |grep karaf
+        cd ~/onos
+        git checkout HEAD~1      # Make sure you aren't pn a branch
+        git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
+        git branch -D ''' + onos_branch + ''' # just incase there are local changes. This will normally result in a branch not found error
+        git clean -df # clean any local files
+        git fetch --all # update all caches from remotes
+        git reset --hard origin/''' + onos_branch + '''  # force local index to match remote branch
+        git clean -df # clean any local files
+        rm -rf buck-out
+        rm -rf bazel-*
+        ''' + tagCheck( onos_tag, onos_branch ) + '''
+        git branch
+        git log -1 --decorate
+        echo -e "\n##### set jvm heap size to 8G #####"
+        echo ${ONOSJAVAOPTS}
+        inserted_line="export JAVA_OPTS=\"\${ONOSJAVAOPTS}\""
+        sed -i "s/bash/bash\\n$inserted_line/" ~/onos/tools/package/bin/onos-service
+        echo "##### Check onos-service setting..... #####"
+        cat ~/onos/tools/package/bin/onos-service
+        export JAVA_HOME=/usr/lib/jvm/java-8-oracle'''
+    } else {
+        result = '''echo "Since this is a manual run, we'll use the current ONOS and TestON branch:"
+                    echo "ONOS branch:"
+                    cd ~/OnosSystemTest/
+                    git branch
+                    echo "TestON branch:"
+                    cd ~/TestON/
+                    git branch'''
+    }
+    return result
+}
+
+def postSetup( onos_branch, test_branch, onos_tag, isManual ){
+    // setup that will build ONOS
+
+    result = ""
+    if ( !isManual ){
+        result = '''echo -e "Installing bazel"
+        cd ~
+        rm -rf ci-management
+        git clone https://gerrit.onosproject.org/ci-management
+        cd ci-management/jjb/onos/
+        export GERRIT_BRANCH="''' + onos_branch + '''"
+        chmod +x install-bazel.sh
+        ./install-bazel.sh
+        '''
+    } else {
+        result = '''echo -e "Since this is a manual run, we will not install Bazel."'''
+    }
+    return result
+}
+
+def generateKey(){
+    // generate cluster-key of the onos
+
+    try {
+        sh script: '''
+        #!/bin/bash -l
+        set +e
+        . ~/.bashrc
+        env
+        onos-push-bits-through-proxy
+        onos-gen-cluster-key -f
+        ''', label: "Generate Cluster Key", returnStdout: false
+    } catch ( all ){
+    }
+}
+
+// Initialize the environment Setup for the onos and OnosSystemTest
+def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun, nodeLabel ){
+    // to setup the environment using the bash script
+    stage( "Environment Setup: " + onos_branch + "-" + nodeLabel + "-" + jobOn ) {
+        // after env: ''' + borrow_mn( jobOn ) + '''
+        sh script: '''#!/bin/bash -l
+        set +e
+        . ~/.bashrc
+        env
+        ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Repo Setup", returnStdout: false
+        sh script: postSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Install Bazel", returnStdout: false
+        generateKey()
+    }
+}
+
+// export Environment properties.
+def exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, postResult, manually_run, onosTag, isOldFlow, nodeLabel ){
+    // export environment properties to the machine.
+
+    filePath = "/var/jenkins/TestONOS-" + jobOn + "-" + onos_branch + ".property"
+
+    stage( "Property Export: " + onos_branch + "-" + nodeLabel + "-" + jobOn ) {
+        sh script: '''
+            echo "ONOSBranch=''' + onos_branch + '''" > ''' + filePath + '''
+            echo "TestONBranch=''' + test_branch + '''" >> ''' + filePath + '''
+            echo "ONOSTag=''' + onosTag + '''" >> ''' + filePath + '''
+            echo "WikiPrefix=''' + wiki + '''" >> ''' + filePath + '''
+            echo "ONOSJAVAOPTS=''' + env.ONOSJAVAOPTS + '''" >> ''' + filePath + '''
+            echo "Tests=''' + tests + '''" >> ''' + filePath + '''
+            echo "postResult=''' + postResult + '''" >> ''' + filePath + '''
+            echo "manualRun=''' + manually_run + '''" >> ''' + filePath + '''
+            echo "isOldFlow=''' + isOldFlow + '''" >> ''' + filePath + '''
+        ''', label: "Exporting Property File: " + filePath
+    }
+}
+
+def trigger( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag ){
+    // triggering function that will setup the environment and determine which pipeline to trigger
+
+    println "Job name: " + jobOn + "-pipeline-" + ( manuallyRun ? "manually" : branch )
+    def wiki = branch
+    def onos_branch = test_list.addPrefixToBranch( branch )
+    def test_branch = test_list.addPrefixToBranch( branch )
+    assignedNode = null
+    node( label: nodeLabel ) {
+
+        envSetup( onos_branch, test_branch, onosTag, jobOn, manuallyRun, nodeLabel )
+        exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow, nodeLabel )
+        assignedNode = env.NODE_NAME
+    }
+
+    jobToRun = jobOn + "-pipeline-" + ( manuallyRun ? "manually" : wiki )
+    build job: jobToRun, propagate: false, parameters: [ [ $class: 'StringParameterValue', name: 'Category', value: jobOn ],
+                                                         [ $class: 'StringParameterValue', name: 'Branch', value: branch ],
+                                                         [ $class: 'StringParameterValue', name: 'TestStation', value: assignedNode ],
+                                                         [ $class: 'StringParameterValue', name: 'NodeLabel', value: nodeLabel ] ]
+}
+
+def trigger_pipeline( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag ){
+    // nodeLabel : nodeLabel from tests.json
+    // jobOn : "SCPF" or "USECASE" or "FUNC" or "HA"
+    // this will return the function by wrapping them up with return{} to prevent them to be
+    // executed once this function is called to assign to specific variable.
+    return {
+        trigger( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag )
+    }
+}
 
 def generateRunList(){
     runList = [:]
@@ -214,7 +414,7 @@ def generateRunList(){
                 echo "TESTS: " + filteredList
                 if ( filteredList != [:] ){
                     exeTestList = test_list.getTestListAsString( filteredList )
-                    runList.put( branch + "-" + nodeLabel + "-" + category, triggerFuncs.trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
+                    runList.put( branch + "-" + nodeLabel + "-" + category, trigger_pipeline( branch, exeTestList, nodeLabel, category, manually_run, onos_tag ) )
                 }
 
             }
@@ -237,7 +437,7 @@ def generateGraphs(){
     // If it is automated running, it will generate the stats graph on VM.
     if ( !manually_run ){
         for ( String b in onos_branches ){
-            funcs.generateStatGraph( "TestStation-VMs",
+            graphs.generateStatGraph( "TestStation-VMs",
                                      test_list.addPrefixToBranch( b ),
                                      graphPaths[ "histogramMultiple" ],
                                      graphPaths[ "pieMultiple" ],

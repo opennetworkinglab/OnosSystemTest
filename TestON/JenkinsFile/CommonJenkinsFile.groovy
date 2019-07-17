@@ -86,7 +86,7 @@ def readParams(){
 def initGraphPaths(){
     graphPaths.put( "trendIndividual", fileRelated.trendIndividual )
     if ( category == "SR" ){
-        graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-Fabric" + funcs.fabricOn( prop[ "ONOSBranch" ] ) + "/" )
+        graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-" + ( testStation - "TestStation-" - "s" ) + "/" )
     } else if ( category == "SRHA" ) {
         graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-Fabric" + "/" )
     } else if ( category == "SCPF" || category == "USECASE" ){

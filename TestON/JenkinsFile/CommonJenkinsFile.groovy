@@ -84,15 +84,15 @@ def readParams(){
 }
 
 def initGraphPaths(){
-    graphPaths.put( "trendIndividual", fileRelated.trendIndividual )
+    graphPaths.put( "trendIndividual", fileRelated.rScriptPaths[ "scripts" ][ "trendIndividual" ] )
     if ( category == "SR" ){
-        graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-" + ( testStation - "TestStation-" - "s" ) + "/" )
+        graphPaths.put( "saveDirectory", fileRelated.workspaces[ "base" ] + "postjob-" + ( testStation - "TestStation-" - "s" ) + "/" )
     } else if ( category == "SRHA" ) {
-        graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-Fabric" + "/" )
+        graphPaths.put( "saveDirectory", fileRelated.workspaces[ "Fabric" ] )
     } else if ( category == "SCPF" || category == "USECASE" ){
-        graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-BM/" )
+        graphPaths.put( "saveDirectory", fileRelated.workspaces[ "BM" ] )
     } else {
-        graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-VM/" )
+        graphPaths.put( "saveDirectory", fileRelated.workspaces[ "VM" ] )
     }
 }
 

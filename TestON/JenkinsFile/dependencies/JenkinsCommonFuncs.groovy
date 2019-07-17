@@ -58,8 +58,8 @@ def initialize( type, testS, nodeL, SCPFfuncs=null ){
 
     table_name = "executed_test_tests"
     result_name = "executed_test_results"
-    trend_generator_file = fileRelated.trendMultiple
-    build_stats_generator_file = fileRelated.histogramMultiple
+    trend_generator_file = fileRelated.rScriptPaths[ "scripts" ][ "trendMultiple" ]
+    build_stats_generator_file = fileRelated.rScriptPaths[ "scripts" ][ "histogramMultiple" ]
     isTrend = false
 }
 

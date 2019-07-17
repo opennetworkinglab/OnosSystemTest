@@ -141,9 +141,9 @@ def getONOSTests(){
 
 // init paths for the files and directories.
 def initGraphPaths(){
-    graphPaths.put( "histogramMultiple", fileRelated.histogramMultiple )
-    graphPaths.put( "pieMultiple", fileRelated.pieMultiple )
-    graphPaths.put( "saveDirectory", fileRelated.jenkinsWorkspace + "postjob-VM/" )
+    graphPaths.put( "histogramMultiple", fileRelated.rScriptPaths[ "scripts" ][ "histogramMultiple" ] )
+    graphPaths.put( "pieMultiple", fileRelated.rScriptPaths[ "scripts" ][ "pieMultiple" ] )
+    graphPaths.put( "saveDirectory", fileRelated.workspaces[ "VM" ] )
 }
 
 // **********************

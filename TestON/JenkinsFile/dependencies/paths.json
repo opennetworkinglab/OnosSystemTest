@@ -12,8 +12,8 @@
     "rScript": {
         "directories": {
             "base": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/",
-            "SCPF": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/SCPFspecificGraphRScripts",
-            "CHO": "~/CHO_Jenkins_Scripts"
+            "SCPF": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/SCPFspecificGraphRScripts/",
+            "CHO": "~/CHO_Jenkins_Scripts/"
         },
         "scripts": {
             "trendIndividual": "~/OnosSystemTest/TestON/JenkinsFile/wikiGraphRScripts/trendIndividualTest.R",

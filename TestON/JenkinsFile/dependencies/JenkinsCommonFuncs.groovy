@@ -225,7 +225,23 @@ def postResult( prop, graphOnly ){
     // graphOnly : if it is graph generating job
 
     if ( graphOnly || isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
-        def post = build job: "postjob-" + nodeLabel, propagate: false
+        postjob_type = ""
+        switch ( nodeLabel ){
+            case "Fabric-1.x":
+                postjob_type = "Fabric2"
+                break
+            case "Fabric-2.x":
+                postjob_type = "Fabric3"
+                break
+            case "Fabric-master":
+                postjob_type = "Fabric4"
+                break
+            default:
+                postjob_type = nodeLabel
+                break
+        }
+
+        def post = build job: "postjob-" + postjob_type, propagate: false
     }
 }
 

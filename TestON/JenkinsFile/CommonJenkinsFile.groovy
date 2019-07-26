@@ -60,7 +60,7 @@ def init(){
     if ( category == "SCPF" ){
         isSCPF = true
         SCPFfuncs.init()
-        graphs.initialize( category, SCPFfuncs );
+        graphs.initialize( SCPFfuncs );
         prop = getProperties()
         isOldFlow = ( prop[ "isOldFlow" ] == "true" )
         SCPFfuncs.oldFlowRuleCheck( isOldFlow, prop[ "ONOSBranch" ] )

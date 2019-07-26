@@ -21,7 +21,6 @@
 // This is the dependency Jenkins script.
 // it has some common functions that runs test and generate graph.
 
-generalFuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/GeneralFuncs.groovy' )
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 

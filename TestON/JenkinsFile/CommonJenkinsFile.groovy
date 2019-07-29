@@ -261,6 +261,13 @@ def fetchLogs( testName ){
   cd'''
 }
 
+def isPostingResult( manual, postresult ){
+    // check if it is posting the result.
+    // posting when it is automatically running or has postResult condition from the manual run
+
+    return manual == "false" || postresult == "true"
+}
+
 def publishToConfluence( isManualRun, isPostResult, wikiLink, file ){
     // publish HTML script to wiki confluence
     // isManualRun : string "true" "false"
@@ -314,6 +321,7 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
                                 ( resultURL != "" ? ( "\n[Karaf log] : \n" +
                                                       resultURL + "artifact/" ) : "" ),
                        teamDomain: 'onosproject' )
+            print "Abnormal test result."
             throw new Exception( "Abnormal test result." )
         }
         else {

@@ -27,8 +27,6 @@ test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestON
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/PerformanceFuncs.groovy' )
 
-INITIALIZATION_TIMEOUT_MINUTES = 10 // timeout init() function if it takes too long.
-
 category = null
 prop = null
 testsToRun = null
@@ -50,10 +48,9 @@ pipeline = [:]
 main()
 
 def main(){
-    timeout( time: INITIALIZATION_TIMEOUT_MINUTES, unit: "MINUTES" ){
-        init()
-    }
+    pipelineTimeout = params.TimeOut.toInteger() // integer minutes until the entire pipeline times out. Usually passed from upstream master-trigger job.
     timeout( time: pipelineTimeout, unit: "MINUTES" ){
+        init()
         runTests()
         generateGraphs()
         sendToSlack()
@@ -100,7 +97,6 @@ def readParams(){
     nodeLabel = params.NodeLabel     // "BM", "VM", "Fabric-1.x", etc.
     testsOverride = params.TestsOverride // "FUNCflow, FUNCintent, [...]", overrides property file
     isGraphOnly = params.OnlyRefreshGraphs // true or false
-    pipelineTimeout = params.TimeOut.toInteger() // integer minutes until the entire pipeline times out. Usually passed from upstream master-trigger job.
 }
 
 def getProperties(){

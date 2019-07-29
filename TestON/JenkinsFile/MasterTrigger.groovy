@@ -28,6 +28,8 @@ graphs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsGraphs.gr
 fileRelated = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsPathAndFiles.groovy' )
 test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
 
+INITIALIZATION_TIMEOUT_MINUTES = 10 // timeout init() function if it takes too long.
+
 onos_tag = null
 manually_run = null
 now = null
@@ -39,6 +41,7 @@ branchesParam = null
 isFabric = null
 testsParam = null
 simulateDay = null
+pipelineTimeOut = null
 
 dayMap = [:]
 fullDayMap = [:]
@@ -50,9 +53,13 @@ graphPaths = [:]
 main()
 
 def main() {
-    init()
-    runTests()
-    generateGraphs()
+    timeout( time: INITIALIZATION_TIMEOUT_MINUTES, unit: "MINUTES" ){
+        init()
+    }
+    timeout( time: pipelineTimeOut, unit: "MINUTES" ){
+        runTests()
+        generateGraphs()
+    }
 }
 
 // **************
@@ -92,6 +99,7 @@ def readParams(){
     testsParam = params.Tests
     isFabric = params.isFabric
     simulateDay = params.simulate_day
+    pipelineTimeOut = params.TimeOut.toInteger()
 }
 
 // Set tests based on day of week
@@ -362,7 +370,6 @@ def trigger( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag ){
     def test_branch = test_list.addPrefixToBranch( branch )
     assignedNode = null
     node( label: nodeLabel ) {
-
         envSetup( onos_branch, test_branch, onosTag, jobOn, manuallyRun, nodeLabel )
         exportEnvProperty( onos_branch, test_branch, jobOn, wiki, tests, post_result, manuallyRun, onosTag, isOldFlow, nodeLabel )
         assignedNode = env.NODE_NAME
@@ -372,7 +379,8 @@ def trigger( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag ){
     build job: jobToRun, propagate: false, parameters: [ [ $class: 'StringParameterValue', name: 'Category', value: jobOn ],
                                                          [ $class: 'StringParameterValue', name: 'Branch', value: branch ],
                                                          [ $class: 'StringParameterValue', name: 'TestStation', value: assignedNode ],
-                                                         [ $class: 'StringParameterValue', name: 'NodeLabel', value: nodeLabel ] ]
+                                                         [ $class: 'StringParameterValue', name: 'NodeLabel', value: nodeLabel ],
+                                                         [ $class: 'StringParameterValue', name: 'TimeOut', value: pipelineTimeOut.toString() ] ]
 }
 
 def trigger_pipeline( branch, tests, nodeLabel, jobOn, manuallyRun, onosTag ){

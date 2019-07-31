@@ -37,28 +37,30 @@ def initialize( SCPFf=null ){
     build_stats_generator_file = fileRelated.rScriptPaths[ "scripts" ][ "histogramMultiple" ]
 }
 
+def getPostjobType( nodeL ){
+    switch ( nodeL ){
+        case "Fabric-1.x":
+            return "Fabric2"
+            break
+        case "Fabric-2.x":
+            return "Fabric3"
+            break
+        case "Fabric-master":
+            return "Fabric4"
+            break
+        default:
+            return nodeL
+            break
+    }
+}
+
 def postResult( prop, graphOnly, nodeLabel ){
     // post the result by triggering postjob.
     // prop : property dictionary that was read from the machine.
     // graphOnly : if it is graph generating job
 
     if ( graphOnly || isPostingResult( prop[ "manualRun" ], prop[ "postResult" ] ) ){
-        postjob_type = ""
-        switch ( nodeLabel ){
-            case "Fabric-1.x":
-                postjob_type = "Fabric2"
-                break
-            case "Fabric-2.x":
-                postjob_type = "Fabric3"
-                break
-            case "Fabric-master":
-                postjob_type = "Fabric4"
-                break
-            default:
-                postjob_type = nodeLabel
-                break
-        }
-
+        postjob_type = getPostjobType( nodeLabel )
         def post = build job: "postjob-" + postjob_type, propagate: false
     }
 }

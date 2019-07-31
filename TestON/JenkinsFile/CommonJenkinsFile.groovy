@@ -190,7 +190,7 @@ def runTestCli_py( testName, testCategory ){
     return '''cd ~/OnosSystemTest/TestON/bin
            ./cli.py run ''' +
            testName +
-           ''' --params GRAPH/nodeCluster=''' + nodeLabel
+           ''' --params GRAPH/nodeCluster=''' + graphs.getPostjobType( nodeLabel )
 }
 
 def concludeRunTest(){

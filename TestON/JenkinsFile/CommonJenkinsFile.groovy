@@ -62,6 +62,12 @@ def init(){
     test_list.init()
     readParams()
 
+    if ( branch == "manually" ){
+        echo '''Warning: entered branch was: "manually". Defaulting to master branch.'''
+        branch = "master"
+        branchWithPrefix = test_list.addPrefixToBranch( branch )
+    }
+
     if ( category == "SCPF" ){
         isSCPF = true
         SCPFfuncs.init()
@@ -75,7 +81,7 @@ def init(){
         prop = getProperties()
     }
 
-    // get the list of the test and init branch to it.
+    // get the list of the tests from category
     testsFromList = test_list.getTestsFromCategory( category )
 
     initGraphPaths()
@@ -131,10 +137,10 @@ def initGraphPaths(){
 
 def runTests(){
     // run the test sequentially and save the function into the dictionary.
-    for ( String test : testsToRun.keySet() ){
-        toBeRun = test
+    for ( String test : testsFromList.keySet() ){
+        toBeRun = testsToRun.keySet().contains( test )
         stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-        pureTestName = ( testsToRun[ test ].containsKey( "test" ) ? testsToRun[ test ][ "test" ].split().head() : test )
+        pureTestName = ( testsFromList[ test ].containsKey( "test" ) ? testsFromList[ test ][ "test" ].split().head() : test )
         pipeline[ stepName ] = runTest( test,
                                         toBeRun,
                                         prop,
@@ -397,6 +403,8 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                                        isSCPF ? "" : testCategory[ testName ][ 'wikiName' ],
                                        isSCPF )
                     }
+                } else {
+                    echo testName + " is not being run today. Leaving the rest of stage contents blank."
                 }
             }
         }

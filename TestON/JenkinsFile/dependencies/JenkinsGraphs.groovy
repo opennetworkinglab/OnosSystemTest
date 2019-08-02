@@ -159,7 +159,8 @@ def generateOverallGraph( prop, tests, graph_saved_directory, nodeLabel, testTyp
                     string( credentialsId: 'db_host', variable: 'host' ),
                     string( credentialsId: 'db_port', variable: 'port' ) ] ) {
                 testList = test_list.getTestListAsString( tests )
-                sh script: ( '''#!/bin/bash''' +
+                sh script: ( '''#!/bin/bash
+                             ''' +
                    basicGraphPart( trend_generator_file, host, port,
                                                 user, pass, testType,
                                                 prop[ "ONOSBranch" ] ) + " " + testList + " 20 " + graph_saved_directory ), label: "Generate Overall Graph"

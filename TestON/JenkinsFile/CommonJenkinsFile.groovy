@@ -140,7 +140,7 @@ def runTests(){
     for ( String test : testsFromList.keySet() ){
         toBeRun = testsToRun.keySet().contains( test )
         stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-        pureTestName = ( testsFromList[ test ].containsKey( "test" ) ? testsFromList[ test ][ "test" ].split().head() : test )
+        pureTestName = test.contains( "WithFlowObj" ) ? test - "WithFlowObj" : test
         pipeline[ stepName ] = runTest( test,
                                         toBeRun,
                                         prop,
@@ -182,15 +182,23 @@ def initTest(){
         '''
 }
 
-def runTestCli_py( testName, testCategory ){
+def runTestCli_py( testName, pureTestName, testCategory ){
     // Bash script that will run the test.
     // testName : name of the test
     // testCategory : (SR,FUNC ... )
+    flowObjFlag = false
 
-    return '''cd ~/OnosSystemTest/TestON/bin
-           ./cli.py run ''' +
-           testName +
-           ''' --params GRAPH/nodeCluster=''' + graphs.getPostjobType( nodeLabel )
+    if ( isSCPF && testName.contains( "WithFlowObj" ) ){
+        flowObjFlag = true
+    }
+
+    command = '''cd ~/OnosSystemTest/TestON/bin
+                 ./cli.py run ''' + pureTestName + ''' --params''' + ( flowObjFlag ? '''TEST/flowObj=True ''' : ''' ''' ) + '''GRAPH/nodeCluster=''' + graphs.getPostjobType( nodeLabel ) + ''' '''
+    echo command
+
+    return command
+
+
 }
 
 def concludeRunTest(){
@@ -272,13 +280,6 @@ def fetchLogs( testName ){
   cd'''
 }
 
-def isPostingResult( manual, postresult ){
-    // check if it is posting the result.
-    // posting when it is automatically running or has postResult condition from the manual run
-
-    return manual == "false" || postresult == "true"
-}
-
 def publishToConfluence( isManualRun, isPostResult, wikiLink, file ){
     // publish HTML script to wiki confluence
     // isManualRun : string "true" "false"
@@ -286,7 +287,7 @@ def publishToConfluence( isManualRun, isPostResult, wikiLink, file ){
     // wikiLink : link of the wiki page to publish
     // file : name of the file to be published
 
-    if ( isPostingResult( isManualRun, isPostResult ) ){
+    if ( graphs.isPostingResult( isManualRun, isPostResult ) ){
         publishConfluence siteName: 'wiki.onosproject.org', pageName: wikiLink, spaceName: 'ONOS',
                           attachArchivedArtifacts: true, buildIfUnstable: true,
                           editorList: [ confluenceWritePage( confluenceFile( file ) ) ]
@@ -374,7 +375,7 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                                 }
                                 sh script: initTest(), label: "Test Initialization: stc shutdown; stc teardown; ./cleanup.sh"
                                 catchError{
-                                    sh script: runTestCli_py( testName, testCategory ), label: ( "Run Test: ./cli.py run " + testName )
+                                    sh script: runTestCli_py( testName, pureTestName, testCategory ), label: ( "Run Test: ./cli.py run " + testName )
                                 }
                                 catchError{
                                     sh script: concludeRunTest(), label: "Conclude Running Test: ./cleanup.sh; git clean -df"

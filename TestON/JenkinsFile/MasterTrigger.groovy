@@ -449,7 +449,8 @@ def generateGraphs(){
                                      test_list.addPrefixToBranch( b ),
                                      graphPaths[ "histogramMultiple" ],
                                      graphPaths[ "pieMultiple" ],
-                                     graphPaths[ "saveDirectory" ] )
+                                     graphPaths[ "saveDirectory" ],
+                                     "VM" )
         }
     }
 }

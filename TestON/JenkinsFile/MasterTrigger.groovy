@@ -56,6 +56,10 @@ def main() {
     timeout( time: INITIALIZATION_TIMEOUT_MINUTES, unit: "MINUTES" ){
         init()
     }
+    if ( selectedTests == [:] && manually_run ){
+        echo "No valid tests provided. Check if the provided test(s) is/are in test.json, and try again.\n\nProvided Tests:\n" + testsParam
+        throw new Exception( "No valid tests provided. Check if the provided test(s) is/are in test.json, and try again." )
+    }
     timeout( time: pipelineTimeOut, unit: "MINUTES" ){
         runTests()
         generateGraphs()

@@ -182,6 +182,21 @@ def initTest(){
         '''
 }
 
+def configureJavaVersion(){
+    java_1_8_branches = [ "1.15" ]
+    return '''#!/bin/bash -l
+        ''' + ( java_1_8_branches.contains( branch ) ? '''SET_JAVA_VER=java-8-oracle''' : '''SET_JAVA_VER=java-1.11.0-openjdk-amd64''' ) +
+        '''
+           CELL_COUNT=$( env | egrep "OC[1-9]+" | wc -l )
+           for i in $(seq 1 $CELL_COUNT)
+           do
+               CELL_TO_SET=$( env | egrep "OC$i" | cut -c5- )
+               echo "Setting java to $SET_JAVA_VER on $CELL_TO_SET"
+               eval ssh $CELL_TO_SET 'sudo update-java-alternatives -s $SET_JAVA_VER'
+           done
+        '''
+}
+
 def runTestCli_py( testName, pureTestName, testCategory ){
     // Bash script that will run the test.
     // testName : name of the test
@@ -373,6 +388,7 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                                     // Remove the old database file
                                     sh SCPFfuncs.cleanupDatabaseFile( testName )
                                 }
+                                sh script: configureJavaVersion(), label: "Configure Java Version"
                                 sh script: initTest(), label: "Test Initialization: stc shutdown; stc teardown; ./cleanup.sh"
                                 catchError{
                                     sh script: runTestCli_py( testName, pureTestName, testCategory ), label: ( "Run Test: ./cli.py run " + testName )

@@ -15,5 +15,6 @@
     "sat": [ "sat" ],
     "onos-1.x_schedule": [ "sat" ],
     "onos-2.x_schedule": [ "sun" ],
-    "USECASE_master": [ "tue" ]
+    "USECASE_master": [ "tue" ],
+    "SR_schedule": [ "sun", "mon", "tue", "wed", "thu", "sat" ]
 }

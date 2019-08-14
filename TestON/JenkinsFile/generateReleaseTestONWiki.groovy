@@ -26,8 +26,9 @@
 //         of the top level branch results.
 
 test_list = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/JenkinsTestONTests.groovy' )
+test_list.init()
 
-runningNode = "TestStation-BMs"
+runningNode = "QA"
 
 // set default onos_v to be current_version.
 // onos_v needs to be in the format #.##, do not include "ONOS" or "onos"
@@ -117,7 +118,7 @@ if ( USECASE_page_id > -1 ){
 }
 
 echoForDebug(pageNames, pagesToPublish)
-node ( runningNode ) {
+node ( label: runningNode ) {
     for ( i in 0..pagesToPublish.length - 1 ){
         publishToConfluence( pageNames[ i ], pagesToPublish[ i ], parentID )
     }

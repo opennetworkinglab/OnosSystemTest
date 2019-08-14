@@ -1081,6 +1081,7 @@
     },
     "SRHAclusterRestart": {
         "test": "HAclusterRestart --params-file HAclusterRestart.params.fabric",
+        "wikiName": "SR HA Cluster Restart",
         "schedules": [
             {
                 "branch": "master",

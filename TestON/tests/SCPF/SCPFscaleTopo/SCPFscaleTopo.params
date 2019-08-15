@@ -38,7 +38,7 @@
         <start>New switch connection</start>
         <end>Topology DefaultTopology</end>
         <Disconnect>Switch disconnected callback</Disconnect>
-        <roleRequest>of_role_request</roleRequest>
+        <roleRequest>OpenFlow 90 Type: OFPT_ROLE_REQUEST</roleRequest>
     </SearchTerm>
 
     <GIT>

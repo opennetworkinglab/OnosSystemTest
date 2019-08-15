@@ -36,9 +36,11 @@ wikiTestResultsPageID = 1048618
 onos_v = params.version
 onos_bird = params.bird
 top_level_page_id = params.top_level_page_id.toInteger()
+FUNC_page_id = params.FUNC_page_id.toInteger()
+HA_page_id = params.HA_page_id.toInteger()
 SCPF_page_id = params.SCPF_page_id.toInteger()
 USECASE_page_id = params.USECASE_page_id.toInteger()
-SR_page_id = params.USECASE_page_id.toInteger()
+SR_page_id = params.SR_page_id.toInteger()
 onos_branch = "ONOS-" + onos_v
 
 SCPF_system_environment = [  "Server: Dual XeonE5-2670 v2 2.5GHz; 64GB DDR3; 512GB SSD",
@@ -52,6 +54,7 @@ jobName = env.JOB_NAME
 String[] pagesToPublish = []
 String[] pageNames = []
 parentID = -1
+pageIDProvided = false
 
 if ( top_level_page_id > -1 ){
     pageNames += onos_v + "-CHO"
@@ -72,11 +75,22 @@ if ( top_level_page_id > -1 ){
     // pagesToPublish += createGeneralPageContents( "SRHA" )
 
     parentID = top_level_page_id
-} else {
-    pageNames += "ONOS-" + onos_v + " (" + onos_bird + ")"
-    pagesToPublish += createTopLevelPageContents()
 
-    parentID = wikiTestResultsPageID
+    pageIDProvided = true
+}
+
+if ( FUNC_page_id > -1 ){
+    pageNames += createIndividualPagesNames( "FUNC" )
+    pagesToPublish += createIndividualPagesContents( "FUNC" )
+    parentID = FUNC_page_id
+    pageIDProvided = true
+}
+
+if ( HA_page_id > -1 ){
+    pageNames += createIndividualPagesNames( "HA" )
+    pagesToPublish += createIndividualPagesContents( "HA" )
+    parentID = HA_page_id
+    pageIDProvided = true
 }
 
 if ( SCPF_page_id > -1 ){
@@ -108,20 +122,60 @@ if ( SCPF_page_id > -1 ){
     pagesToPublish += createMastershipFailoverLatPage()
 
     parentID = SCPF_page_id
+
+    pageIDProvided = true
 }
 
 if ( USECASE_page_id > -1 ){
     pageNames += onos_v + "-Segment Routing"
     pagesToPublish += createGeneralPageContents( "SR" )
+    pageNames += createIndividualPagesNames( "USECASE" )
+    pagesToPublish += createIndividualPagesContents( "USECASE" )
 
     parentID = USECASE_page_id
+
+    pageIDProvided = true
 }
 
-echoForDebug(pageNames, pagesToPublish)
+if ( SR_page_id > -1 ){
+    pageNames += createIndividualPagesNames( "SR" )
+    pagesToPublish += createIndividualPagesContents( "SR" )
+    parentID = SR_page_id
+    pageIDProvided = true
+}
+
+if ( !pageIDProvided ){
+    pageNames += "ONOS-" + onos_v + " (" + onos_bird + ")"
+    pagesToPublish += createTopLevelPageContents()
+
+    parentID = wikiTestResultsPageID
+}
+
+echoForDebug( pageNames, pagesToPublish )
 node ( label: runningNode ) {
     for ( i in 0..pagesToPublish.length - 1 ){
         publishToConfluence( pageNames[ i ], pagesToPublish[ i ], parentID )
     }
+}
+
+def createIndividualPagesNames( category ){
+    result = []
+    testsFromCategory = test_list.getTestsFromCategory( category )
+
+    for ( String test in testsFromCategory.keySet() ){
+        result += onos_v + "-" + testsFromCategory[ test ][ "wikiName" ]
+    }
+    return result
+}
+
+def createIndividualPagesContents( category ){
+    result = []
+    testsFromCategory = test_list.getTestsFromCategory( category )
+
+    for ( String test in testsFromCategory.keySet() ){
+        result += "<p>This test has not run on ONOS-" + onos_v + " yet. Please check again on a later date.</p>"
+    }
+    return result
 }
 
 def publishToConfluence( pageName, contents, parentID ){
@@ -158,11 +212,16 @@ def makeImage( imageClass, imageLink, width=-1 ){
 
 def pageTree( category, testsFromCategory ){
     pTree = "<ul>"
+    if ( category == "USECASE" ){
+        pTree += "<li><h3><a href=\"https://wiki.onosproject.org/display/ONOS/" onos_v + "-Segment+Routing" + "\">"
+        pTree += "2.2-Segment Routing" + "</a></h3></li>"
+    }
     for ( String test in testsFromCategory.keySet() ){
         testTitle = onos_v + "-" + testsFromCategory[ test ][ "wikiName" ]
         pTree += "<li><h3><a href=\"https://wiki.onosproject.org/display/ONOS/" + testTitle + "\">"
         pTree += testTitle + "</a></h3></li>"
     }
+
     pTree += "</ul>"
     return pTree
 }

@@ -36,7 +36,7 @@
 
     <TSHARK>
         <tsharkPath>/tmp/hostLatTshark</tsharkPath>
-        <tsharkPacketIn>OF 1.3 150 of_packet_in</tsharkPacketIn>
+        <tsharkPacketIn>OpenFlow 150 Type: OFPT_PACKET_IN</tsharkPacketIn>
     </TSHARK>
 
     <TEST>

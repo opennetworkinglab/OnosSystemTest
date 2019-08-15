@@ -206,7 +206,7 @@ class SCPFhostLat:
             with open( main.tsharkResultPath, "r" ) as resultFile:
                 resultText = resultFile.readline()
                 main.log.info( 'Capture result:' + resultText )
-                resultText = resultText.split( ' ' )
+                resultText = resultText.strip().split( ' ' )
                 if len( resultText ) > 1:
                     tsharkResultTime = float( resultText[ 1 ] ) * 1000.0
                 else:

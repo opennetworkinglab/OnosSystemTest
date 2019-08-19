@@ -1452,6 +1452,11 @@
     "MOmakeIntegration":  {
         "wikiName": "Micro ONOS Integration Tests",
         "schedules" : [
+            {
+                "branch": "master",
+                "day": "none",
+                "nodeLabel": "micro-onos"
+            }
         ],
         "category": "MO",
         "supportedBranches": [ "all" ]

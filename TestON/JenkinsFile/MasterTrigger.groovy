@@ -239,56 +239,82 @@ def tagCheck( onos_tag, onos_branch ){
     return result
 }
 
-def preSetup( onos_branch, test_branch, onos_tag, isManual ){
+def preSetup( onos_branch, test_branch, onos_tag, isManual, category ){
     // pre setup part which will clean up and checkout to corresponding branch.
 
     result = ""
     if ( !isManual ){
-        result = '''echo -e "\n#####  Set TestON Branch #####"
-        echo "TestON Branch is set on: ''' + test_branch + '''"
-        cd ~/OnosSystemTest/
-        git checkout HEAD~1      # Make sure you aren't pn a branch
-        git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
-        git branch -D ''' + test_branch + ''' # just in case there are local changes. This will normally result in a branch not found error
-        git clean -df # clean any local files
-        git fetch --all # update all caches from remotes
-        git reset --hard origin/''' + test_branch + '''  # force local index to match remote branch
-        git clean -df # clean any local files
-        git checkout ''' + test_branch + ''' #create new local branch
-        git branch
-        git log -1 --decorate
-        echo -e "\n#####  Set ONOS Branch #####"
-        echo "ONOS Branch is set on: ''' + onos_branch + '''"
-        echo -e "\n #### check karaf version ######"
-        env |grep karaf
-        cd ~/onos
-        git checkout HEAD~1      # Make sure you aren't pn a branch
-        git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
-        git branch -D ''' + onos_branch + ''' # just incase there are local changes. This will normally result in a branch not found error
-        git clean -df # clean any local files
-        git fetch --all # update all caches from remotes
-        git reset --hard origin/''' + onos_branch + '''  # force local index to match remote branch
-        git clean -df # clean any local files
-        rm -rf buck-out
-        rm -rf bazel-*
-        ''' + tagCheck( onos_tag, onos_branch ) + '''
-        git branch
-        git log -1 --decorate
-        echo -e "\n##### set jvm heap size to 8G #####"
-        echo ${ONOSJAVAOPTS}
-        inserted_line="export JAVA_OPTS=\"\${ONOSJAVAOPTS}\""
-        sed -i "s/bash/bash\\n$inserted_line/" ~/onos/tools/package/bin/onos-service
-        echo "##### Check onos-service setting..... #####"
-        cat ~/onos/tools/package/bin/onos-service
-        export JAVA_HOME=/usr/lib/jvm/java-8-oracle'''
+        if ( category == "MO" ){
+            result = '''echo -e "\n#####  Set onos-config branch"
+            cd ~/onos-test/
+            git checkout HEAD~1      # Make sure you aren't on a branch
+            git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
+            git branch -D ''' + test_branch + ''' # just in case there are local changes. This will normally result in a branch not found error
+            git reset --hard origin/''' + test_branch + '''  # force local index to match remote branch
+            git clean -df # clean any local files
+            git fetch --all # update all caches from remotes
+            git reset --hard origin/''' + onos_branch + '''  # force local index to match remote branch
+            git clean -df
+            git branch
+            git log -1 --decorate
+            '''
+        } else {
+            result = '''echo -e "\n#####  Set TestON Branch #####"
+            echo "TestON Branch is set on: ''' + test_branch + '''"
+            cd ~/OnosSystemTest/
+            git checkout HEAD~1      # Make sure you aren't pn a branch
+            git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
+            git branch -D ''' + test_branch + ''' # just in case there are local changes. This will normally result in a branch not found error
+            git clean -df # clean any local files
+            git fetch --all # update all caches from remotes
+            git reset --hard origin/''' + test_branch + '''  # force local index to match remote branch
+            git clean -df # clean any local files
+            git checkout ''' + test_branch + ''' #create new local branch
+            git branch
+            git log -1 --decorate
+            echo -e "\n#####  Set ONOS Branch #####"
+            echo "ONOS Branch is set on: ''' + onos_branch + '''"
+            echo -e "\n #### check karaf version ######"
+            env |grep karaf
+            cd ~/onos
+            git checkout HEAD~1      # Make sure you aren't pn a branch
+            git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
+            git branch -D ''' + onos_branch + ''' # just incase there are local changes. This will normally result in a branch not found error
+            git clean -df # clean any local files
+            git fetch --all # update all caches from remotes
+            git reset --hard origin/''' + onos_branch + '''  # force local index to match remote branch
+            git clean -df # clean any local files
+            rm -rf buck-out
+            rm -rf bazel-*
+            ''' + tagCheck( onos_tag, onos_branch ) + '''
+            git branch
+            git log -1 --decorate
+            echo -e "\n##### set jvm heap size to 8G #####"
+            echo ${ONOSJAVAOPTS}
+            inserted_line="export JAVA_OPTS=\"\${ONOSJAVAOPTS}\""
+            sed -i "s/bash/bash\\n$inserted_line/" ~/onos/tools/package/bin/onos-service
+            echo "##### Check onos-service setting..... #####"
+            cat ~/onos/tools/package/bin/onos-service
+            export JAVA_HOME=/usr/lib/jvm/java-8-oracle'''
+        }
+
     } else {
-        result = '''echo "Since this is a manual run, we'll use the current ONOS and TestON branch:"
-                    echo "ONOS branch:"
-                    cd ~/OnosSystemTest/
-                    git branch
-                    echo "TestON branch:"
-                    cd ~/TestON/
-                    git branch'''
+        if ( category == "MO" ) {
+            result = '''echo "Since this is a manual run, we'll use the current onos-test branch:"
+                        echo "onos-test branch:"
+                        cd ~/onos-test
+                        git branch
+            '''
+        } else {
+            result = '''echo "Since this is a manual run, we'll use the current ONOS and TestON branch:"
+                        echo "ONOS branch:"
+                        cd ~/OnosSystemTest/
+                        git branch
+                        echo "TestON branch:"
+                        cd ~/TestON/
+                        git branch'''
+        }
+
     }
     return result
 }
@@ -338,9 +364,11 @@ def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun, nodeLabel 
         set +e
         . ~/.bashrc
         env
-        ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Repo Setup", returnStdout: false
-        sh script: postSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Install Bazel", returnStdout: false
-        generateKey()
+        ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun, category ), label: "Repo Setup", returnStdout: false
+        if ( category != "MO" ){
+            sh script: postSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Install Bazel", returnStdout: false
+            generateKey()
+        }
     }
 }
 
@@ -420,7 +448,7 @@ def generateRunList(){
                     }
                 }
 
-                echo "=========================================="
+                echo "========================================="
                 echo "BRANCH: " + branch
                 echo "CATEGORY: " + category
                 echo "TESTS: " + filteredList

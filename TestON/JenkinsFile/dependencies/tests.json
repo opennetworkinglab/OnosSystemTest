@@ -1450,7 +1450,7 @@
         "supportedBranches": [ "all" ]
     },
     "MOmakeIntegration":  {
-        "wikiName": "Micro ONOS Integration Tests"
+        "wikiName": "Micro ONOS Integration Tests",
         "schedules" : [
         ],
         "category": "MO",

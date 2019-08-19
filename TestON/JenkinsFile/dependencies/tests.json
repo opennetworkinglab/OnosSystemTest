@@ -1448,5 +1448,12 @@
         ],
         "category": "USECASE",
         "supportedBranches": [ "all" ]
+    },
+    "MOmakeIntegration":  {
+        "wikiName": "Micro ONOS Integration Tests"
+        "schedules" : [
+        ],
+        "category": "MO",
+        "supportedBranches": [ "all" ]
     }
 }

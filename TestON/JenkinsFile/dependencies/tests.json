@@ -1454,7 +1454,7 @@
         "schedules" : [
             {
                 "branch": "master",
-                "day": "none",
+                "day": "everyday",
                 "nodeLabel": "micro-onos"
             }
         ],

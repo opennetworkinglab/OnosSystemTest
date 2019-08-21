@@ -364,7 +364,7 @@ def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun, nodeLabel 
         set +e
         . ~/.bashrc
         env
-        ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun, category ), label: "Repo Setup", returnStdout: false
+        ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun, jobOn ), label: "Repo Setup", returnStdout: false
         if ( category != "MO" ){
             sh script: postSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Install Bazel", returnStdout: false
             generateKey()

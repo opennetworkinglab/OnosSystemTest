@@ -356,15 +356,15 @@ def generateKey(){
 }
 
 // Initialize the environment Setup for the onos and OnosSystemTest
-def envSetup( onos_branch, test_branch, onos_tag, jobOn, manuallyRun, nodeLabel ){
+def envSetup( onos_branch, test_branch, onos_tag, category, manuallyRun, nodeLabel ){
     // to setup the environment using the bash script
-    stage( "Environment Setup: " + onos_branch + "-" + nodeLabel + "-" + jobOn ) {
-        // after env: ''' + borrow_mn( jobOn ) + '''
+    stage( "Environment Setup: " + onos_branch + "-" + nodeLabel + "-" + category ) {
+        // after env: ''' + borrow_mn( category ) + '''
         sh script: '''#!/bin/bash -l
         set +e
         . ~/.bashrc
         env
-        ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun, jobOn ), label: "Repo Setup", returnStdout: false
+        ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun, category ), label: "Repo Setup", returnStdout: false
         if ( category != "MO" ){
             sh script: postSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Install Bazel", returnStdout: false
             generateKey()

@@ -213,7 +213,7 @@ def makeImage( imageClass, imageLink, width=-1 ){
 def pageTree( category, testsFromCategory ){
     pTree = "<ul>"
     if ( category == "USECASE" ){
-        pTree += "<li><h3><a href=\"https://wiki.onosproject.org/display/ONOS/" onos_v + "-Segment+Routing" + "\">"
+        pTree += "<li><h3><a href=\"https://wiki.onosproject.org/display/ONOS/" + onos_v + "-Segment+Routing" + "\">"
         pTree += "2.2-Segment Routing" + "</a></h3></li>"
     }
     for ( String test in testsFromCategory.keySet() ){

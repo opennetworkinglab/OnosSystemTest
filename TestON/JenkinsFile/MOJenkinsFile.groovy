@@ -104,18 +104,61 @@ def runTests(){
     }
 }
 
+// Set of setps to execute before the micro-onos test is run
+def prepareRunningTest(){
+    return '''. ~/.profile
+              cd ~/onos-test
+              make clean
+           '''
+}
+
+// TODO: currently this step is hardcoded to run `make` commands.
+def runMicroOnosTest( run ){
+    return '''make ''' + run + '''
+           '''
+}
+
+def cleanupTest(){
+    return '''. ~/.profile
+              cd ~/onos-test
+              make clean
+           '''
+}
+
+def analyzeResult( didTestFail, didCleanupFail ){
+    if ( didTestFail ){
+        echo "Abnormal Test Result."
+        throw new Exception( "Abnormal Test Result." )
+    } else if ( didCleanupFail ){
+        echo "Cleanup Failure."
+        throw new Exception( "Cleanup Failure." )
+    } else {
+        echo "Test results are OK."
+    }
+}
+
 def runMOtest( test, toBeRun ){
     return {
         catchError {
             stage( test ){
                 if ( toBeRun ){
+                    didTestFail = true
+                    didCleanupFail = true
                     node( testStation ) {
-                        sh script: '''. ~/.profile
-                                      cd ~/onos-test
-                                      make clean
-                                      make integration
-                                   ''', label: "make integration"
+                        catchError{
+                            run = test.toLowerCase() - "momake"
+                            sh script: prepareRunningTest() +
+                                       runMicroOnosTest( test ), label: "Prepare and Run: make " + run
+                            didTestFail = false
+                        }
+                        catchError{
+                            sh script: cleanupTest(), label: "Clean Up Test"
+                            didCleanupFail = false
+                        }
                     }
+                    analyzeResult( didTestFail, didCleanupFail )
+                } else {
+                    echo test + " is not being run today. Leaving the rest of stage contents blank."
                 }
             }
         }

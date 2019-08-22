@@ -148,7 +148,7 @@ def runMOtest( test, toBeRun ){
                         catchError{
                             run = test.toLowerCase() - "momake"
                             sh script: prepareRunningTest() +
-                                       runMicroOnosTest( test ), label: "Prepare and Run: make " + run
+                                       runMicroOnosTest( run ), label: "Prepare and Run: make " + run
                             didTestFail = false
                         }
                         catchError{

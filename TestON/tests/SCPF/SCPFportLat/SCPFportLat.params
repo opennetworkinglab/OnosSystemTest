@@ -33,7 +33,7 @@
     </CFG>
     <TSHARK>
         <tsharkReusltPath>/tmp/tshark_portStatus</tsharkReusltPath>
-        <ofpPortStatus>OpenFlow 146</ofpPortStatus>
+        <ofpPortStatus>OpenFlow 146 Type: OFPT_PORT_STATUS</ofpPortStatus>
     </TSHARK>
     <SLEEP>
         <startup>5</startup>

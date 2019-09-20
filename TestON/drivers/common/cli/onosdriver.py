@@ -1122,6 +1122,7 @@ class OnosDriver( CLI ):
                                       "onos\sstart/running,\sprocess",
                                       "ONOS\sis\salready\sinstalled",
                                       "does not exist",
+                                      "Failed to start onos.service",
                                       self.prompt,
                                       pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
@@ -1148,11 +1149,18 @@ class OnosDriver( CLI ):
                 self.handle.expect( self.prompt )
                 return main.FALSE
             elif i == 4:
+                # failed to start onos service
+                main.log.warn( "Failed to start ONOS service on " + node + ", retrying..." )
+                # FIXME: this does not ensure that onos service starts correctly
+                self.handle.sendline( "onos-service " + node + " start" )
+                self.handle.expect( self.prompt )
+                return main.TRUE
+            elif i == 5:
                 # prompt
                 main.log.info( "ONOS was installed on {} {}.".format(  node,
                                "but not started" if 'n' in options else "and started" ) )
                 return main.TRUE
-            elif i == 5:
+            elif i == 6:
                 # timeout
                 main.log.info(
                     "Installation of ONOS on " +

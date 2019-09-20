@@ -1449,8 +1449,8 @@
         "category": "USECASE",
         "supportedBranches": [ "all" ]
     },
-    "MOmakeBuild":  {
-        "wikiName": "Micro ONOS Integration Tests",
+    "MOatomix":  {
+        "wikiName": "onit run suite atomix",
         "schedules" : [
             {
                 "branch": "master",
@@ -1461,8 +1461,8 @@
         "category": "MO",
         "supportedBranches": [ "all" ]
     },
-    "MOmakeIntegration":  {
-        "wikiName": "Micro ONOS Integration Tests",
+    "MOalltests":  {
+        "wikiName": "onit run suite alltests",
         "schedules" : [
             {
                 "branch": "master",
@@ -1473,92 +1473,8 @@
         "category": "MO",
         "supportedBranches": [ "all" ]
     },
-    "MOmakeCoverage":  {
-        "wikiName": "Micro ONOS Integration Tests",
-        "schedules" : [
-            {
-                "branch": "master",
-                "day": "everyday",
-                "nodeLabel": "micro-onos"
-            }
-        ],
-        "category": "MO",
-        "supportedBranches": [ "all" ]
-    },
-    "MOmakeDeps":  {
-        "wikiName": "Micro ONOS Integration Tests",
-        "schedules" : [
-            {
-                "branch": "master",
-                "day": "everyday",
-                "nodeLabel": "micro-onos"
-            }
-        ],
-        "category": "MO",
-        "supportedBranches": [ "all" ]
-    },
-    "MOmakeImages":  {
-        "wikiName": "Micro ONOS Integration Tests",
-        "schedules" : [
-            {
-                "branch": "master",
-                "day": "everyday",
-                "nodeLabel": "micro-onos"
-            }
-        ],
-        "category": "MO",
-        "supportedBranches": [ "all" ]
-    },
-    "MOmakeKind":  {
-        "wikiName": "Micro ONOS Integration Tests",
-        "schedules" : [
-            {
-                "branch": "master",
-                "day": "everyday",
-                "nodeLabel": "micro-onos"
-            }
-        ],
-        "category": "MO",
-        "supportedBranches": [ "all" ]
-    },
-    "MOmakeLicense_check":  {
-        "wikiName": "Micro ONOS Integration Tests",
-        "schedules" : [
-            {
-                "branch": "master",
-                "day": "everyday",
-                "nodeLabel": "micro-onos"
-            }
-        ],
-        "category": "MO",
-        "supportedBranches": [ "all" ]
-    },
-    "MOmakeLinters":  {
-        "wikiName": "Micro ONOS Integration Tests",
-        "schedules" : [
-            {
-                "branch": "master",
-                "day": "everyday",
-                "nodeLabel": "micro-onos"
-            }
-        ],
-        "category": "MO",
-        "supportedBranches": [ "all" ]
-    },
-    "MOmakeONOS-Test-Runner-Docker":  {
-        "wikiName": "Micro ONOS Integration Tests",
-        "schedules" : [
-            {
-                "branch": "master",
-                "day": "everyday",
-                "nodeLabel": "micro-onos"
-            }
-        ],
-        "category": "MO",
-        "supportedBranches": [ "all" ]
-    },
-    "MOmakeTest":  {
-        "wikiName": "Micro ONOS Integration Tests",
+    "MOintegration-tests":  {
+        "wikiName": "onit run suite integration-tests",
         "schedules" : [
             {
                 "branch": "master",

@@ -64,7 +64,7 @@ def getRoleRequestTimeFromTshark( main ):
             roleRequestString = resultText[ len( resultText ) - 1 ]
             main.log.info( roleRequestString )
             # get timestamp from role request string
-            roleRequestTime = roleRequestString.split( " " )
+            roleRequestTime = roleRequestString.strip().split( " " )
             resultFile.close()
             return float( roleRequestTime[ 1 ] )
     except IndexError:

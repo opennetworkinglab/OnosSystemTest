@@ -140,7 +140,7 @@
     </JSON>
 
     <ALARM>
-        <maxSwitchUpAvg>60,60,68</maxSwitchUpAvg>
+        <maxSwitchUpAvg>75,75,75</maxSwitchUpAvg>
         <maxSwitchUpStd>10,10,10</maxSwitchUpStd>
         <maxSwitchDownAvg>5,5,8</maxSwitchDownAvg>
         <maxSwitchDownStd>2,2,2</maxSwitchDownStd>

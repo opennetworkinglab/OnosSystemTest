@@ -143,6 +143,8 @@ tryCatch( categories <- c( fileData[ requiredColumns] ),
 
 print( "Constructing data frame from combined data." )
 
+latestBuildDate <- fileData$date[1]
+
 dataFrame <- melt( categories )
 
 # Rename column names in dataFrame
@@ -238,7 +240,7 @@ legendLabels <- scale_colour_discrete( labels = c( "Failed Cases",
                                                    "Passed Cases",
                                                    "Planned Cases" ) )
 
-title <- labs( title = title, subtitle = lastUpdatedLabel() )
+title <- labs( title = title, subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot +

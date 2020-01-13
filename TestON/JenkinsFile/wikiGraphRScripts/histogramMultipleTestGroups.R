@@ -269,7 +269,7 @@ yLabel <- ylab( "Total Test Cases (%)" )
 
 theme <- graphTheme() + theme( axis.text.x = element_text( angle = 0, size = 25 - 1.25 * length( dbResults ) ) )
 
-title <- labs( title = title, subtitle = lastUpdatedLabel() )
+title <- labs( title = title, subtitle = lastUpdatedLabel( Sys.time() ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot +

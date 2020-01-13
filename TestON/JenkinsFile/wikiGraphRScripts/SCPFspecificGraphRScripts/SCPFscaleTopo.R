@@ -108,6 +108,8 @@ print( "**********************************************************" )
 print( "STEP 2: Organize Data." )
 print( "**********************************************************" )
 
+latestBuildDate <- fileData$date[1]
+
 # ------------
 # Data Sorting
 # ------------
@@ -205,7 +207,7 @@ values <- geom_text( aes( x = dataFrame$iterative,
 
 wrapLegend <- guides( fill = guide_legend( nrow=2, byrow=TRUE ) )
 
-title <- labs( title = chartTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = chartTitle, subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot +

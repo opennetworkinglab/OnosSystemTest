@@ -51,8 +51,8 @@ wrapLegend <- function( byrow=TRUE ){
     guides( color = guide_legend( nrow = 2, byrow = byrow ) )
 }
 
-lastUpdatedLabel <- function(){
-    paste( "Last Updated: ", format( Sys.time(), format = "%b %d, %Y at %I:%M %p %Z" ), sep="" )
+lastUpdatedLabel <- function( latestBuildDate ){
+    paste( "Last Updated: ", format( latestBuildDate, "%b %d, %Y at %I:%M %p %Z" ), sep="" )
 }
 
 defaultTextSize <- function(){

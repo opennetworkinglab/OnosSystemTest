@@ -115,6 +115,8 @@ print( "**********************************************************" )
 print( "STEP 2: Organize Data." )
 print( "**********************************************************" )
 
+latestBuildDate <- fileData$date[1]
+
 # ------------
 # Data Sorting
 # ------------
@@ -209,7 +211,7 @@ mainPlot <- ggplot( data = dataFrame, aes( x = scale,
 
 print( "Generating fundamental graph data for the error bar graph." )
 
-title <- labs( title = chartTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = chartTitle, subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +
@@ -262,7 +264,7 @@ saveGraph( errBarOutputFile )
 
 print( "Generating fundamental graph data for the stacked bar graph." )
 
-title <- labs( title = chartTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = chartTitle, subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

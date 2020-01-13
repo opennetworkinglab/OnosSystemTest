@@ -106,6 +106,8 @@ print( "**********************************************************" )
 print( "STEP 2: Organize Data." )
 print( "**********************************************************" )
 
+latestBuildDate <- fileData$date[1]
+
 # ------------
 # Data Sorting
 # ------------
@@ -187,7 +189,7 @@ fillLabel <- labs( fill = "Type" )
 
 theme <- graphTheme()
 
-title <- labs( title = chartTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = chartTitle, subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

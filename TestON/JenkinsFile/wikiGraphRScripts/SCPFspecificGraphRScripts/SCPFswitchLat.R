@@ -110,6 +110,8 @@ print( "**********************************************************" )
 print( "STEP 2: Organize Data." )
 print( "**********************************************************" )
 
+latestBuildDate <- fileData$date[1]
+
 # -------------------------------
 # Switch Up Averages Data Sorting
 # -------------------------------
@@ -234,7 +236,7 @@ barWidth <- 1
 
 theme <- graphTheme()
 
-subtitle <- lastUpdatedLabel()
+subtitle <- lastUpdatedLabel( latestBuildDate )
 
 colors <- scale_fill_manual( values=c( webColor( "redv2" ),
                                        webColor( "light_blue" ),

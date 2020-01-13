@@ -110,6 +110,8 @@ print( "**********************************************************" )
 print( "STEP 2: Organize Data." )
 print( "**********************************************************" )
 
+latestBuildDate <- fileData$date[1]
+
 # -----------------------------
 # Port Up Averages Data Sorting
 # -----------------------------
@@ -233,7 +235,7 @@ wrapLegend <- guides( fill=guide_legend( nrow=1, byrow=TRUE ) )
 
 theme <- graphTheme()
 
-subtitle <- lastUpdatedLabel()
+subtitle <- lastUpdatedLabel( latestBuildDate )
 
 colors <- scale_fill_manual( values=c( webColor( "redv2" ),
                                        webColor( "light_blue" ),
@@ -259,7 +261,7 @@ mainPlot <- ggplot( data = upAvgsDataFrame, aes( x = scale,
 
 print( "Generating fundamental graph data (Port Up Latency)." )
 
-title <- labs( title = "Port Up Latency", subtitle = lastUpdatedLabel() )
+title <- labs( title = "Port Up Latency", subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +
@@ -321,7 +323,7 @@ mainPlot <- ggplot( data = downAvgsDataFrame, aes( x = scale,
 
 print( "Generating fundamental graph data (Port Down Latency)." )
 
-title <- labs( title = "Port Down Latency", subtitle = lastUpdatedLabel() )
+title <- labs( title = "Port Down Latency", subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

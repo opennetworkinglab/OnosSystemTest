@@ -243,7 +243,7 @@ theme <- graphTheme() +
                 panel.grid=element_blank(),
                 legend.position = "bottom" )
 
-title <- labs( title = title, subtitle = lastUpdatedLabel() )
+title <- labs( title = title, subtitle = lastUpdatedLabel( Sys.time() ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot +

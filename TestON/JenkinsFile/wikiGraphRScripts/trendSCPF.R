@@ -112,6 +112,8 @@ print( "**********************************************************" )
 print( "STEP 2: Organize Data." )
 print( "**********************************************************" )
 
+latestBuildDate <- fileData$date[1]
+
 # Create lists c() and organize data into their corresponding list.
 print( "Combine data retrieved from databases into a list." )
 
@@ -206,7 +208,7 @@ yLabel <- ylab( args[ y_axis ] )
 # Set other graph configurations here.
 theme <- graphTheme()
 
-title <- labs( title = title, subtitle = lastUpdatedLabel() )
+title <- labs( title = title, subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 # Colors used for the lines.
 # Note: graphs that have X lines will use the first X colors in this list.

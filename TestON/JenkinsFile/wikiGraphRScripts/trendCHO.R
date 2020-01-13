@@ -453,7 +453,7 @@ lineColorsAndLabels <- scale_color_manual( values=c( webColor( "light_blue" ),
                                               "ONOS Up" )
                                 )
 
-title <- labs( title = eventsTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = eventsTitle, subtitle = lastUpdatedLabel( Sys.time() ) )
 
 result <- eventsPlot +
           xScaleConfig +
@@ -496,7 +496,7 @@ lineColorsAndLabels <- scale_color_manual( values=c( webColor( "red" ),
                                               "ONOS Check Failure" )
                                 )
 
-title <- labs( title = failedChecksTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = failedChecksTitle, subtitle = lastUpdatedLabel( Sys.time() ) )
 
 result <- failuresPlot +
           xScaleConfig +
@@ -538,7 +538,7 @@ lineColorsAndLabels <- scale_color_manual( values=c( webColor( "magenta" ),
                                               "Exceptions" )
                                 )
 
-title <- labs( title = errorsTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = errorsTitle, subtitle = lastUpdatedLabel( Sys.time() ) )
 
 result <- errorsPlot +
           xScaleConfig +

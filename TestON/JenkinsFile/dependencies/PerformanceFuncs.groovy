@@ -282,7 +282,7 @@ def generateCombinedResultGraph( host, port, user, pass, testName, branchName, i
                                                branchName ) +
                   " " + 50 + " \"SELECT " +
                   checkIfList( testName, 'dbCols', i ) +
-                  ", build FROM " + SCPF[ testName ][ 'table' ] + " WHERE  branch=\'" + branchName + "\' " +
+                  ", date, build FROM " + SCPF[ testName ][ 'table' ] + " WHERE  branch=\'" + branchName + "\' " +
                   sqlOldFlow( isOldFlow, testName ) +
                   checkIfList( testName, 'dbWhere', i ) +
                   " ORDER BY date DESC LIMIT 50\" \"" +

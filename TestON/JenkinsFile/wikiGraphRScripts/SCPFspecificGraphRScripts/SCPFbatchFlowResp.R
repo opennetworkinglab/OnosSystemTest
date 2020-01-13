@@ -129,6 +129,8 @@ print( "**********************************************************" )
 print( "STEP 2: Organize Data." )
 print( "**********************************************************" )
 
+latestBuildDate <- fileData$date[1]
+
 # -----------------
 # Post Data Sorting
 # -----------------
@@ -270,7 +272,7 @@ print( "Generating fundamental graph data for Post graph." )
 xScaleConfig <- scale_x_continuous( breaks = postDataFrame$iterative,
                                     label = postDataFrame$date )
 
-title <- labs( title = postChartTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = postChartTitle, subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +
@@ -329,7 +331,7 @@ print( "Generating fundamental graph data for Del graph." )
 xScaleConfig <- scale_x_continuous( breaks = delDataFrame$iterative,
                                     label = delDataFrame$date )
 
-title <- labs( title = delChartTitle, subtitle = lastUpdatedLabel() )
+title <- labs( title = delChartTitle, subtitle = lastUpdatedLabel( latestBuildDate ) )
 
 fundamentalGraphData <- mainPlot +
                         xScaleConfig +

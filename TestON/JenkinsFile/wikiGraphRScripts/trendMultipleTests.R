@@ -222,7 +222,7 @@ yLabel <- ylab( "Tests" )
 
 theme <- graphTheme()
 
-title <- labs( title = title, subtitle = lastUpdatedLabel() )
+title <- labs( title = title, subtitle = lastUpdatedLabel( Sys.time() ) )
 
 # Store plot configurations as 1 variable
 fundamentalGraphData <- mainPlot +

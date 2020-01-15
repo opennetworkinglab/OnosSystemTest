@@ -119,6 +119,7 @@ print( "Combine data retrieved from databases into a list." )
 
 buildNums <- fileData$build
 fileData$build <- c()
+fileData <- subset( fileData, select=-c( date ) )
 print( fileData )
 
 if ( ncol( fileData ) > 1 ){

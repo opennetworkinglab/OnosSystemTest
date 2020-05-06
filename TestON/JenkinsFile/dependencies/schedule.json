@@ -17,5 +17,8 @@
     "onos-2.x_schedule": [ "sun" ],
     "USECASE_master": [ "tue" ],
     "SR_schedule": [ "sun", "mon", "tue", "wed", "thu", "sat" ],
+    "SR_1.x_schedule": [ "mon", "thu" ],
+    "SR_2.x_schedule": [ "tue", "sat" ],
+    "SR_master_schedule": [ "wed", "sun" ],
     "none": []
 }

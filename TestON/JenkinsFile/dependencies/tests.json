@@ -785,17 +785,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -808,17 +808,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -831,17 +831,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -854,17 +854,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -877,17 +877,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -1062,17 +1062,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -1085,17 +1085,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -1109,17 +1109,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -1133,17 +1133,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -1229,17 +1229,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],
@@ -1253,17 +1253,17 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "SR_schedule",
+                "day": "SR_master_schedule",
                 "nodeLabel": "Fabric-master"
             },
             {
                 "branch": "onos-1.x",
-                "day": "SR_schedule",
+                "day": "SR_-1.x_schedule",
                 "nodeLabel": "Fabric-1.x"
             },
             {
                 "branch": "onos-2.x",
-                "day": "SR_schedule",
+                "day": "SR_-2.x_schedule",
                 "nodeLabel": "Fabric-2.x"
             }
         ],

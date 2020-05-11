@@ -366,7 +366,7 @@ def envSetup( onos_branch, test_branch, onos_tag, category, manuallyRun, nodeLab
         env
         ''' + preSetup( onos_branch, test_branch, onos_tag, manuallyRun, category ), label: "Repo Setup", returnStdout: false
         if ( category != "MO" ){
-            sh script: postSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Install Bazel", returnStdout: false
+            //sh script: postSetup( onos_branch, test_branch, onos_tag, manuallyRun ), label: "Install Bazel", returnStdout: false
             generateKey()
         }
     }

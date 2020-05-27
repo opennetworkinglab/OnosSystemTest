@@ -64,7 +64,7 @@ class Testcaselib:
             else:
                 main.useBmv2 = False
             main.configPath = main.path + ( "/.." if main.useCommonConf else "" ) + "/dependencies/"
-            main.bmv2Path = main.path + "/../dependencies/"
+            main.bmv2Path = "/tools/dev/mininet/"
             main.forJson = "json/"
             main.forChart = "chart/"
             main.forConfig = "conf/"
@@ -207,7 +207,7 @@ class Testcaselib:
                                                                 "~/",
                                                                 direction="to" )
         copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
-                                                        main.bmv2Path + main.bmv2,
+                                                        main.ONOSbench.home + main.bmv2Path + main.bmv2,
                                                         main.Mininet1.home + "custom",
                                                         direction="to" )
         stepResult = copyResult

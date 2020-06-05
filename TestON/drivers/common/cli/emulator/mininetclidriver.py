@@ -62,6 +62,7 @@ class MininetCliDriver( Emulator ):
         self.bashPrompt = "\$"
         self.scapyPrompt = ">>>"
         self.graph = Graph()
+        self.sudoRequired = True
 
     def connect( self, **connectargs ):
         """
@@ -75,7 +76,8 @@ class MininetCliDriver( Emulator ):
             for key in self.options:
                 if key == "home":
                     self.home = self.options[ 'home' ]
-                    break
+                elif key == "sudo_required":
+                    self.sudoRequired = False if self.options[ key ] == "false" else True
             if self.home is None or self.home == "":
                 self.home = "~/mininet"
 
@@ -143,7 +145,10 @@ class MininetCliDriver( Emulator ):
                 # make sure old networks are cleaned up
                 main.log.info( self.name +
                                ": Clearing any residual state or processes" )
-                self.handle.sendline( "sudo mn -c" )
+                cmd = "mn -c"
+                if self.sudoRequired:
+                    cmd = "sudo " + cmd
+                self.handle.sendline( cmd )
                 i = self.handle.expect( [ 'password\sfor\s',
                                           'Cleanup\scomplete',
                                           pexpect.EOF,
@@ -166,7 +171,10 @@ class MininetCliDriver( Emulator ):
                     main.log.error( self.name + ": Something while cleaning " +
                                     "Mininet took too long... " )
                 # Craft the string to start mininet
-                cmdString = "sudo "
+                if self.sudoRequired:
+                    cmdString = "sudo "
+                else:
+                    cmdString = ""
                 if not mnCmd:
                     if topoFile is None or topoFile == '':  # If no file is given
                         main.log.info( self.name + ": building fresh Mininet" )
@@ -185,7 +193,9 @@ class MininetCliDriver( Emulator ):
                         main.log.info(
                             "Starting Mininet from topo file " +
                             topoFile )
-                        cmdString += "-E python " + topoFile + " "
+                        if self.sudoRequired:
+                            cmdString += "-E "
+                        cmdString += "python " + topoFile + " "
                         if args is None:
                             args = ''
                             # TODO: allow use of args from .topo file?
@@ -2281,7 +2291,10 @@ class MininetCliDriver( Emulator ):
                                              prompt=self.prompt,
                                              timeout=exitTimeout )
                     main.log.info( self.name + ": Stopped\nTime Took : " + str( time.time() - startTime ) )
-                    self.handle.sendline( "sudo mn -c" )
+                    cmd = "mn -c"
+                    if self.sudoRequired:
+                        cmd = "sudo " + cmd
+                    self.handle.sendline( cmd )
                     response = main.TRUE
 
                 elif i == 1:
@@ -2296,15 +2309,20 @@ class MininetCliDriver( Emulator ):
 
                 self.handle.sendline( "" )
                 self.handle.expect( self.prompt )
-                self.handle.sendline( "sudo killall -9 dhclient dhcpd zebra bgpd" )
+                cmd = "killall -9 dhclient dhcpd zebra bgpd"
+                if self.sudoRequired:
+                    cmd = "sudo " + cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( self.prompt )
 
                 if fileName:
                     self.handle.sendline( "" )
                     self.handle.expect( self.prompt )
-                    self.handle.sendline(
-                        "sudo kill -9 \`ps -ef | grep \"" +
-                        fileName +
-                        "\" | grep -v grep | awk '{print $2}'\`" )
+                    cmd = "kill -9 \`ps -ef | grep \"" + fileName + "\" | grep -v grep | awk '{print $2}'\`"
+                    if self.sudoRequired:
+                        cmd = "sudo " + cmd
+                    self.handle.sendline( cmd )
+                    self.handle.expect( self.prompt )
             except pexpect.TIMEOUT:
                 main.log.error( self.name + ": TIMEOUT exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -2660,14 +2678,14 @@ class MininetCliDriver( Emulator ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
+            if self.sudoRequired:
+                sudoStr = "sudo "
+            else:
+                sudoStr = ""
             self.handle.sendline(
-                "sh sudo tcpdump -n -i " +
-                intf +
-                " " +
-                port +
-                " -w " +
-                filename.strip() +
-                "  &" )
+                "sh " + sudoStr + "tcpdump -n -i " +
+                intf + " " + port + " -w " +
+                filename.strip() + "  &" )
             self.handle.sendline( "" )
             i = self.handle.expect( [ 'No\ssuch\device',
                                       'listening\son',
@@ -2712,7 +2730,11 @@ class MininetCliDriver( Emulator ):
         """
             pkills tcpdump"""
         try:
-            self.handle.sendline( "sh sudo pkill tcpdump" )
+            if self.sudoRequired:
+                sudoStr = "sudo "
+            else:
+                sudoStr = ""
+            self.handle.sendline( "sh " + sudoStr + " pkill tcpdump" )
             self.handle.expect( "mininet>" )
             self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
@@ -2822,7 +2844,7 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getSwitches( self, verbose=False, updateTimeout=1000, excludeNodes=[] ):
+    def getSwitches( self, verbose=False, updateTimeout=1000, excludeNodes=[], switchRegex=[] ):
         """
         Read switches from Mininet.
 
@@ -2841,7 +2863,10 @@ class MininetCliDriver( Emulator ):
         # <OVSSwitchNS s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None,s1-eth3:None pid=22550>
         # <OVSBridge s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=26830>
         # <UserSwitch s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=14737>
-        switchClasses = r"(OVSSwitch)|(OVSBridge)|(OVSSwitchNS)|(IVSSwitch)|(LinuxBridge)|(UserSwitch)"
+        if not switchRegex:
+            switchClasses = r"(OVSSwitch)|(OVSBridge)|(OVSSwitchNS)|(IVSSwitch)|(LinuxBridge)|(UserSwitch)"
+        else:
+            switchClasses = switchRegex
         try:
             swRE = r"<(?P<class>" + switchClasses + r")" +\
                    r"(?P<options>\{.*\})?\s" +\

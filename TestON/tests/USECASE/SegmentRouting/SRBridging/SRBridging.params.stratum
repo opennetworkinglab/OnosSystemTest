@@ -15,17 +15,21 @@
     <DEPENDENCY>
         <useCommonConf>False</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
-        <useBmv2>False</useBmv2>
-        <bmv2SwitchType>bmv2</bmv2SwitchType>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
         <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
-        <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
     </DEPENDENCY>
+
+    <MN_DOCKER>
+        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom:/root/mininet/custom -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum:/tmp --hostname mn-stratum -v /etc/network/interfaces:/etc/network/interfaces -it -d</args>
+        <name>trellis_mininet</name>
+    </MN_DOCKER>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric</cellApps>
+        <cellApps>drivers,segmentrouting,openflow,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric</cellApps>
     </ENV>
 
     <GIT>

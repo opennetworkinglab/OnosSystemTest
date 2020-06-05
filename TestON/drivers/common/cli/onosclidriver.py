@@ -437,6 +437,7 @@ class OnosCliDriver( CLI ):
 
             response = self.handle.before
             if re.search( "Error", response ):
+                main.log.debug( response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:

@@ -17,6 +17,7 @@ from trellislib import TrellisHost, DhcpRelay
 from functools import partial
 
 from bmv2 import ONOSBmv2Switch
+from stratum import StratumBmv2Switch
 
 # Parse command line options and dump results
 def parseOptions():
@@ -46,7 +47,7 @@ def parseOptions():
     parser.add_option( '--remote-dhcp-server', action="store_true", dest='remoteServer', default=False,
                        help='Connect DHCP server indirectly (via gateway) if True' )
     parser.add_option( '--switch', dest='switch', type='str', default='ovs',
-                       help='Switch type: ovs, bmv2 (with fabric.p4)' )
+                       help='Switch type: ovs, bmv2 (with fabric.p4), stratum' )
     ( options, args ) = parser.parse_args()
     return options, args
 
@@ -58,7 +59,8 @@ FABRIC_PIPECONF = "org.onosproject.pipelines.fabric"
 
 SWITCH_TO_PARAMS_DICT = {
     "ovs": dict(cls=OVSSwitch),
-    "bmv2": dict(cls=ONOSBmv2Switch, pipeconf=FABRIC_PIPECONF)
+    "bmv2": dict(cls=ONOSBmv2Switch, pipeconf=FABRIC_PIPECONF),
+    "stratum": dict(cls=StratumBmv2Switch, pipeconf=FABRIC_PIPECONF, loglevel='debug')
 }
 if opts.switch not in SWITCH_TO_PARAMS_DICT:
     raise Exception("Unknown switch type '%s'" % opts.switch)

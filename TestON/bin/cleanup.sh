@@ -58,4 +58,6 @@ if [ "$1" = "-f" ]; then
         ssh sdn@$i "sudo ip6tables -F"
         ssh sdn@$i "sudo ip6tables-restore < /etc/iptables/rules.v6"
     done
+elif [ "$1" = "-d" ]; then
+    docker stop $(docker ps -aq)
 fi

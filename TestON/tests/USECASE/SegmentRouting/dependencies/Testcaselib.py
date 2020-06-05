@@ -76,6 +76,7 @@ class Testcaselib:
             main.topologyLib = main.params[ 'DEPENDENCY' ][ 'lib' ] if 'lib' in main.params[ 'DEPENDENCY' ] else None
             main.topologyConf = main.params[ 'DEPENDENCY' ][ 'conf' ] if 'conf' in main.params[ 'DEPENDENCY' ] else None
             main.bmv2 = "bmv2.py"
+            main.stratumRoot = main.params[ 'DEPENDENCY'][ 'stratumRoot'] if 'stratumRoot' in main.params[ 'DEPENDENCY' ] else None
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
 
@@ -129,8 +130,20 @@ class Testcaselib:
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.routeservice.impl" )
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.routeservice.store" )
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.routing.fpm" )
+            ctrl.CLI.logSet( "DEBUG", "org.onosproject.fpm" )
             ctrl.CLI.logSet( "TRACE", "org.onosproject.events" )
             ctrl.CLI.logSet( "DEBUG", "org.onosproject.mcast" )
+
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.p4runtime" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.protocols.p4runtime" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.drivers.p4runtime" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.protocols.grpc" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.protocols.gnmi" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.protocols.gnoi" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.drivers.gnoi" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.drivers.gmni" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.drivers.stratum" )
+            ctrl.CLI.logSet( "TRACE", "org.onosproject.bmv2" )
 
     @staticmethod
     def loadCount( main ):
@@ -215,9 +228,14 @@ class Testcaselib:
                                  actual=stepResult,
                                  onpass="Successfully copied topo files",
                                  onfail="Failed to copy topo files" )
+        if main.stratumRoot:
+            main.Mininet1.handle.sendline( "export STRATUM_ROOT=" + str( main.stratumRoot ) )
+            main.Mininet1.handle.expect( main.Mininet1.prompt )
         main.step( "Starting Mininet Topology" )
         arg = "--onos-ip=%s %s" % (",".join([ctrl.ipAddress for ctrl in main.Cluster.runningNodes]), args)
         main.topology = topology
+        #switchType = " --switch=stratum"
+        #arg += switchType
         topoResult = main.Mininet1.startNet(
                 topoFile=main.Mininet1.home + "custom/" + main.topology, args=arg )
         stepResult = topoResult
@@ -853,6 +871,8 @@ class Testcaselib:
         """
         from tests.dependencies.utils import Utils
         main.utils = Utils()
+        for ctrl in main.Cluster.active():
+            ctrl.CLI.log( "\"Ending Test - Shutting down ONOS and Network\"", level="INFO" )
         # Clean up scapy hosts
         if hasattr( main, "scapyHosts" ):
             scapyResult = main.TRUE

@@ -10,6 +10,12 @@ It consists of
  - Trellis leaf-spine fabric: please visit following URL to set up Trellis leaf-spine fabric
  https://github.com/opennetworkinglab/routing/tree/master/trellis
  - ONOS_APPS=drivers,openflow,segmentrouting,fpm,netcfghostprovider
+ - For the stratum bmv2 switch testing, the minient node requires docker. The docker image
+ can be built using dependencies/Dockerfile.
+ - The treliis mininet topology file requires the stratum.py file which can be found in the
+ stratum repo (github.com/stratum/stratum) at stratum/tools/mininet/stratum.py.
+ The stratum docker has this file already installed, but you may want to add this
+ to the mininet/custom folder as well.
 
 <h3>Topologies</h3>
 - 0x1 single ToR

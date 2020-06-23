@@ -29,6 +29,22 @@
         <branch>master</branch>
     </GIT>
 
+    <ONOS_Configuration>
+    </ONOS_Configuration>
+
+    <ONOS_Logging>
+        <org.onosproject.events>TRACE</org.onosproject.events>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.driver>DEBUG</org.onosproject.driver>
+        <org.onosproject.net.flowobjective.impl>DEBUG</org.onosproject.net.flowobjective.impl>
+        <org.onosproject.routeservice.impl>DEBUG</org.onosproject.routeservice.impl>
+        <org.onosproject.routeservice.store>DEBUG</org.onosproject.routeservice.store>
+        <org.onosproject.routing.fpm>DEBUG</org.onosproject.routing.fpm>
+        <org.onosproject.fpm>DEBUG</org.onosproject.fpm>
+        <org.onosproject.mcast>DEBUG</org.onosproject.mcast>
+    </ONOS_Logging>
+
+
     <CTRL>
         <port>6653</port>
     </CTRL>

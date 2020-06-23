@@ -64,10 +64,13 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
         main.cfgName = main.params[ "DEPENDENCY" ][ "confName" ]
     if main.useBmv2:
         # Translate configuration file from OVS-OFDPA to BMv2 driver
-        translator.ofdpaToBmv2( main )
+        translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+        switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+        translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
     else:
         translator.bmv2ToOfdpa( main )
     lib.loadJson( main )
+    main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
     time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
     lib.loadHost( main )
 
@@ -84,19 +87,22 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
         lib.loadCount( main )
 
     if hasattr( main, 'Mininet1' ):
+        lib.mnDockerSetup( main )
         # Run the test with Mininet
         mininet_args = ' --dhcp=1 --routers=1 --ipv6={} --ipv4={}'.format( 1 if ipv6 else 0,
                                                                            1 if ipv4 else 0 )
         if main.useBmv2:
-            mininet_args += ' --switch bmv2'
-            main.log.info( "Using BMv2 switch" )
+            mininet_args += ' --switch %s' % main.switchType
+            main.log.info( "Using %s switch"  % main.switchType )
         lib.startMininet( main, main.params[ 'DEPENDENCY' ][ 'topology' ], args=mininet_args )
+        main.log.debug( "Waiting %i seconds for ONOS to discover dataplane" % float( main.params[ "timers" ][ "startMininetSleep" ] ))
         time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
     else:
         # Run the test with physical devices
         lib.connectToPhysicalNetwork( main )
 
     # wait some time for onos to install the rules!
+    main.log.info( "Waiting %i seconds for ONOS to program the dataplane" % float( main.params[ "timers" ][ "dhcpSleep" ] ))
     time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )
 
 def verifyPingInternal( main, ipv4=True, ipv6=True, disconnected=True ):
@@ -240,11 +246,13 @@ def verifyOnosFailure( main, ipv4=True, ipv6=True, disconnected=False,
         # Kill node
         lib.killOnos( main, [ ctrl ], switches, links, ( numCtrls - 1 ) )
         main.Cluster.active(0).CLI.balanceMasters()
+        main.log.debug( "sleeping %i seconds" % mastershipSleep )
         time.sleep( mastershipSleep )
         verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
         # Recover node
         lib.recoverOnos( main, [ ctrl ], switches, links, numCtrls )
         main.Cluster.active(0).CLI.balanceMasters()
+        main.log.debug( "sleeping %i seconds" % mastershipSleep )
         time.sleep( mastershipSleep )
         verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
 

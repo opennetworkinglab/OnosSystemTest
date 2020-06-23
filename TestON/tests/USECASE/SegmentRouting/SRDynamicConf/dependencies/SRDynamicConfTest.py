@@ -73,7 +73,9 @@ class SRDynamicConfTest:
         # TODO: Generate json and chart dynamically, according to topologies and scenarios
         if main.useBmv2:
             # Translate configuration file from OVS-OFDPA to BMv2 driver
-            translator.ofdpaToBmv2( main )
+            translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+            translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
         else:
             translator.bmv2ToOfdpa( main )
         run.loadJson( main )
@@ -85,7 +87,9 @@ class SRDynamicConfTest:
             intfCfg = "%s%s%s.json" % ( main.configPath, main.forJson, TAG )
             if main.useBmv2:
                 # Translate configuration file from OVS-OFDPA to BMv2 driver
-                translator.ofdpaToBmv2( main, intfCfg )
+                translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                translator.ofdpaToBmv2( main, switchPrefix=switchPrefix, cfgFile=intfCfg )
             else:
                 translator.bmv2ToOfdpa( main, intfCfg )
             with open( intfCfg ) as cfg:
@@ -95,7 +99,9 @@ class SRDynamicConfTest:
             defaultIntfCfg = "%s%s%s_ports.json" % ( main.configPath, main.forJson, topology )
             if main.useBmv2:
                 # Translate configuration file from OVS-OFDPA to BMv2 driver
-                translator.ofdpaToBmv2( main, defaultIntfCfg )
+                translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                translator.ofdpaToBmv2( main, switchPrefix=switchPrefix, cfgFile=defaultIntfCfg )
             else:
                 translator.bmv2ToOfdpa( main, defaultIntfCfg )
             with open( defaultIntfCfg ) as cfg:

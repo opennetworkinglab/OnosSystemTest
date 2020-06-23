@@ -36,7 +36,9 @@ class SRBridgingTest ():
         # topo[ '2x3' ] = ( 2, 3, True, '2x3 leaf-spine topology with dual ToR and single ToR', 28 )
         self.topo[ '2x4' ] = ( 2, 4, True, '2x4 dual-homed leaf-spine topology', 53, 53 )
         self.switchNames = {}
+        self.switchNames[ '0x1' ] = [ "leaf1" ]
         self.switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
+        main.switchType = "ovs"
 
     def runTest( self, main, test_idx, topology, onosNodes, description, vlan = [] ):
         skipPackage = False
@@ -48,44 +50,27 @@ class SRBridgingTest ():
         if not init and onosNodes == main.Cluster.numCtrls:
             skipPackage = True
 
-        main.case( '%s, with %s and %d ONOS instance%s' %
-                   ( description, self.topo[ topology ][ 3 ], onosNodes, 's' if onosNodes > 1 else '' ) )
+        main.case( '%s, with %s, %s switches and %d ONOS instance%s' %
+                   ( description, self.topo[ topology ][ 3 ], main.switchType, onosNodes, 's' if onosNodes > 1 else '' ) )
 
         main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
         main.Cluster.setRunningNode( onosNodes )
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
         if main.useBmv2:
+            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
             # Translate configuration file from OVS-OFDPA to BMv2 driver
-            translator.ofdpaToBmv2( main )
+            translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+            translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
         else:
             translator.bmv2ToOfdpa( main )
-        run.loadJson( main )
+        suf = main.params.get( 'jsonFileSuffix', None)
+        if suf:
+            run.loadJson( main, suffix=suf )
+        else:
+            run.loadJson( main )
         run.loadChart( main )
         if hasattr( main, 'Mininet1' ):
-            if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
-                main.log.info( "Creating Mininet Docker" )
-                main.Mininet1.dockerPrompt = '#'
-                # Start docker container
-                handle = main.Mininet1.handle
-                handle.sendline( "docker run %s %s" % ( main.params[ 'MN_DOCKER' ][ 'args' ], main.params[ 'MN_DOCKER' ][ 'name' ] ) )
-                handle.expect( main.Mininet1.bashPrompt )
-                output = handle.before + handle.after
-                main.log.debug( repr(output) )
-                startStr = main.params[ 'MN_DOCKER' ][ 'name' ]
-                endStr = main.Mininet1.user_name
-                start = output.find( startStr ) + len( startStr )
-                end = output.find( endStr )
-                containerId = output[start:end].strip()
-                main.log.debug( repr( containerId ) )
-
-                handle = main.Mininet1.handle
-                handle.sendline( "docker attach %s " % containerId )  # Strip?
-                handle.expect( main.Mininet1.dockerPrompt )
-                main.log.debug( handle.before + handle.after )
-                # We should be good to go
-                main.Mininet1.prompt = main.Mininet1.dockerPrompt
-                main.Mininet1.sudoRequired = False
-
+            run.mnDockerSetup( main )  # optionally create and setup docker image
 
             # Run the test with Mininet
             mininet_args = ' --spine=%d --leaf=%d' % ( self.topo[ topology ][ 0 ], self.topo[ topology ][ 1 ] )
@@ -94,27 +79,14 @@ class SRBridgingTest ():
             if len( vlan ) > 0 :
                 mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
             if main.useBmv2:
-                switchType = main.params[ 'DEPENDENCY' ].get( 'bmv2SwitchType', 'stratum' )
-                mininet_args += ' --switch %s' % switchType
-                main.log.info( "Using %s switch" % switchType )
+                mininet_args += ' --switch %s' % main.switchType
+                main.log.info( "Using %s switch" % main.switchType )
 
             run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
 
-            if main.useBmv2:
-                filename = "onos-netcfg.json"
-                for switch in main.Mininet1.getSwitches(switchRegex=r"(StratumBmv2Switch)|(Bmv2Switch)").keys():
-                    path = "/tmp/mn-stratum/%s/" % switch
-                    main.ONOSbench1.handle.sendline( "sudo sed -i 's/localhost/%s/g' %s%s" % ( main.Mininet1.ip_address, path, filename ) )
-                    main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
-                    main.log.debug( main.ONOSbench1.handle.before + main.ONOSbench1.handle.after )
-                    main.ONOSbench1.handle.sendline( "sudo sed -i 's/device:%s/device:bmv2:%s/g' %s%s" % ( switch, switch, path, filename ) )
-                    main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
-                    main.log.debug( main.ONOSbench1.handle.before + main.ONOSbench1.handle.after )
-                    main.ONOSbench1.onosNetCfg( main.ONOSserver1.ip_address, path, filename )
-
         else:
             # Run the test with physical devices
-            run.connectToPhysicalNetwork( main, self.switchNames[ topology ] )
+            run.connectToPhysicalNetwork( main )
 
         run.checkFlows( main, minFlowCount=self.topo[ topology ][ 5 if main.useBmv2 else 4 ] * self.topo[ topology ][ 1 ], sleep=5 )
         if main.useBmv2:
@@ -126,22 +98,3 @@ class SRBridgingTest ():
         run.pingAll( main )
 
         run.cleanup( main )
-        if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
-                main.log.info( "Deleting Mininet Docker" )
-
-                # Detach from container
-                handle = main.Mininet1.handle
-                try:
-                    handle.sendline( "exit" )  # ctrl-p ctrk-q  to detach from container
-                    import time
-                    time.sleep(5)
-                    handle.expect( main.Mininet1.dockerPrompt )
-                    main.log.debug( handle.before + handle.after )
-                    main.Mininet1.prompt = main.Mininet1.bashPrompt
-                    handle.expect( main.Mininet1.prompt )
-                    main.log.debug( handle.before + handle.after )
-                    main.Mininet1.sudoRequired = True
-                except Exception as e:
-                    main.log.error( e )
-
-                # We should be good to go

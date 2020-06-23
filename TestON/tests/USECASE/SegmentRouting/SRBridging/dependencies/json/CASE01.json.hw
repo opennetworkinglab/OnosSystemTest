@@ -1,0 +1,35 @@
+{
+    "ports":{
+        "device:tofino:leaf1/168":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.0.2.254/24"
+                    ],
+                    "vlan-untagged":10
+                }
+            ]
+        },
+        "device:tofino:leaf1/160":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.0.2.254/24"
+                    ],
+                    "vlan-untagged":10
+                }
+            ]
+        }
+    },
+    "devices":{
+        "device:tofino:leaf1":{
+            "segmentrouting":{
+                "isEdgeRouter":true,
+                "routerMac":"00:90:fb:64:cc:9e",
+                "ipv4NodeSid":1,
+                "ipv4Loopback":"10.128.13.232",
+                "adjacencySids":[]
+            }
+        }
+    }
+}

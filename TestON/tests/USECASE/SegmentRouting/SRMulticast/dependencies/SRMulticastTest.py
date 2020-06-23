@@ -42,7 +42,9 @@ def setupTest( main, test_idx, onosNodes ):
     main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
     if main.useBmv2:
         # Translate configuration file from OVS-OFDPA to BMv2 driver
-        translator.ofdpaToBmv2( main )
+        translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+        switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+        translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
     else:
         translator.bmv2ToOfdpa( main )
     lib.loadJson( main )

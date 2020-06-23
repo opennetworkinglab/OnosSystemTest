@@ -20,12 +20,28 @@
         <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
+        <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
         <cellApps>drivers,segmentrouting,openflow,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric</cellApps>
     </ENV>
+
+    <ONOS_Configuration>
+    </ONOS_Configuration>
+
+    <ONOS_Logging>
+        <org.onosproject.events>TRACE</org.onosproject.events>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.driver>DEBUG</org.onosproject.driver>
+        <org.onosproject.net.flowobjective.impl>DEBUG</org.onosproject.net.flowobjective.impl>
+        <org.onosproject.routeservice.impl>DEBUG</org.onosproject.routeservice.impl>
+        <org.onosproject.routeservice.store>DEBUG</org.onosproject.routeservice.store>
+        <org.onosproject.routing.fpm>DEBUG</org.onosproject.routing.fpm>
+        <org.onosproject.fpm>DEBUG</org.onosproject.fpm>
+        <org.onosproject.mcast>DEBUG</org.onosproject.mcast>
+    </ONOS_Logging>
 
     <GIT>
         <pull>False</pull>

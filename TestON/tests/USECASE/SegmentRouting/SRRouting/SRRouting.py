@@ -508,6 +508,7 @@ class SRRouting:
         main.case( "Bring down all switches then recover" )
         setupTest( main, test_idx=601, external=False )
         main.Cluster.next().CLI.balanceMasters()
+        main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
         totalSwitches = int( main.params[ 'TOPO' ][ 'switchNum' ] )
@@ -527,6 +528,7 @@ class SRRouting:
                                      onpass="All switches stopped",
                                      onfail="Failed to stop all switches" )
 
+            main.log.debug( "sleeping %i seconds" % float( 60 ) )
             time.sleep( 60 )
             lib.verifyTopology( main, 0, 0, main.Cluster.numCtrls )
             # Bring up all switches
@@ -542,8 +544,10 @@ class SRRouting:
             main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
             lib.verifyTopology( main, totalSwitches, totalLinks, main.Cluster.numCtrls )
             main.log.debug( main.Cluster.next().summary() )
+            main.log.debug( "sleeping %i seconds" % float( 60 ) )
             time.sleep( 60 )
             main.log.debug( main.Cluster.next().summary() )
+            main.log.debug( "sleeping %i seconds" % float( 60 ) )
             time.sleep( 60 )
             main.log.debug( main.Cluster.next().summary() )
             verifyPing( main )
@@ -935,6 +939,7 @@ class SRRouting:
             lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
             lib.enablePortBatch( main, portsToDisable, 10, 48 )
             main.Network.discoverHosts( hostList=main.disconnectedIpv4Hosts + main.disconnectedIpv6Hosts )
+            main.log.debug( "sleeping %i seconds" % float( 10 ) )
             time.sleep( 10 )
             main.disconnectedIpv4Hosts = []
             main.disconnectedIpv6Hosts = []
@@ -1054,6 +1059,7 @@ class SRRouting:
                                                                                          switches ) )
             setupTest( main, test_idx=640 )
             main.Cluster.next().CLI.balanceMasters()
+            main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
             time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
             main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
             instance = main.Cluster.controllers[ nodeIndex ]
@@ -1154,6 +1160,7 @@ class SRRouting:
                                                                                                  switches ) )
             setupTest( main, test_idx=641 )
             main.Cluster.next().CLI.balanceMasters()
+            main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
             time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
             main.Network.discoverHosts( hostList=main.internalIpv4Hosts + main.internalIpv6Hosts )
             instance = main.Cluster.controllers[ nodeIndex ]
@@ -1208,6 +1215,7 @@ class SRRouting:
         main.case( "Drop ONOS instance and links at the same time" )
         setupTest( main, test_idx=642, onosNodes=3 )
         main.Cluster.active( 0 ).CLI.balanceMasters()
+        main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
         portsToDisable = [ [ "of:0000000000000001", 1 ], [ "of:0000000000000103", 1 ],
@@ -1255,6 +1263,7 @@ class SRRouting:
         main.case( "Drop ONOS instances and bring up links at the same time" )
         setupTest( main, test_idx=643, onosNodes=3 )
         main.Cluster.active( 0 ).CLI.balanceMasters()
+        main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
         portsToDisable = [ [ "of:0000000000000001", 1 ], [ "of:0000000000000103", 1 ],
@@ -1296,6 +1305,7 @@ class SRRouting:
         main.case( "Move a single-homed host to another port in the same DAAS" )
         setupTest( main, test_idx=651, onosNodes=3 )
         main.Cluster.active( 0 ).CLI.balanceMasters()
+        main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
         # Move an untagged IPv4 host on DAAS-1
@@ -1353,6 +1363,7 @@ class SRRouting:
         main.case( "Move a dual-homed host from porst 1A and 1B to ports 2A and 2B with the same MAC and IP" )
         setupTest( main, test_idx=652, onosNodes=3 )
         main.Cluster.active( 0 ).CLI.balanceMasters()
+        main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
 
@@ -1406,6 +1417,7 @@ class SRRouting:
         main.case( "Move a dual-homed host from porst 1A and 1B to ports 2A and 2B with the same IP and different MAC" )
         setupTest( main, test_idx=653, onosNodes=3 )
         main.Cluster.active( 0 ).CLI.balanceMasters()
+        main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         time.sleep( float( main.params[ 'timers' ][ 'balanceMasterSleep' ] ) )
         verify( main )
 

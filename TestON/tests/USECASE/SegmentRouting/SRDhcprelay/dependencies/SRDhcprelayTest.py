@@ -47,12 +47,15 @@ class SRDhcprelayTest ():
         run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
         if main.useBmv2:
             # Translate configuration file from OVS-OFDPA to BMv2 driver
-            translator.ofdpaToBmv2( main )
+            translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+            translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
         else:
             translator.bmv2ToOfdpa( main )
         run.loadJson( main )
         run.loadHost( main )
         if hasattr( main, 'Mininet1' ):
+            run.mnDockerSetup( main )
             # Run the test with Mininet
             if dualHomed:
                 mininet_args = ' --spine=2 --leaf=4 --dual-homed'
@@ -70,8 +73,8 @@ class SRDhcprelayTest ():
             if len( vlan ) > 0 :
                 mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
             if main.useBmv2:
-                mininet_args += ' --switch bmv2'
-                main.log.info( "Using BMv2 switch" )
+                mininet_args += ' --switch %s' % main.switchType
+                main.log.info( "Using %s switch" % main.switchType )
 
             run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
         else:

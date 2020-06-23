@@ -15,6 +15,7 @@ from routinglib import BgpRouter, RoutedHost
 from trellislib import DhcpServer, TaggedRoutedHost, DualHomedRoutedHost, DualHomedTaggedRoutedHost, DhcpClient, Dhcp6Client, DhcpServer, Dhcp6Server, TrellisHost
 
 from bmv2 import ONOSBmv2Switch
+from stratum import StratumBmv2Switch
 
 # Parse command line options and dump results
 def parseOptions():
@@ -31,7 +32,7 @@ def parseOptions():
     parser.add_option( '--onos-ip', dest='onosIp', type='str', default='',
                        help='IP address list of ONOS instances, separated by comma(,). Overrides --onos option' )
     parser.add_option( '--switch', dest='switch', type='str', default='ovs',
-                       help='Switch type: ovs, bmv2 (with fabric.p4)' )
+                       help='Switch type: ovs, bmv2 (with fabric.p4), stratum' )
 
     ( options, args ) = parser.parse_args()
     return options, args
@@ -42,7 +43,8 @@ FABRIC_PIPECONF = "org.onosproject.pipelines.fabric"
 
 SWITCH_TO_PARAMS_DICT = {
     "ovs": dict(cls=OVSSwitch),
-    "bmv2": dict(cls=ONOSBmv2Switch, pipeconf=FABRIC_PIPECONF)
+    "bmv2": dict(cls=ONOSBmv2Switch, pipeconf=FABRIC_PIPECONF),
+    "stratum": dict(cls=StratumBmv2Switch, pipeconf=FABRIC_PIPECONF, loglevel='debug')
 }
 if opts.switch not in SWITCH_TO_PARAMS_DICT:
     raise Exception("Unknown switch type '%s'" % opts.switch)
@@ -261,7 +263,7 @@ class ComcastLeafSpineFabric(Topo):
                                              dpid = "00000000000%s" % (ls + 1),
                                              **SWITCH_PARAMS )
 
-        # connecting leaf and spines, leafs 1-5 have double links
+        # connecting leafs 2-5 and spines 101 and 102 with double links
         for s in range(2):
             spine_switch = self.spines[s]
 
@@ -275,7 +277,7 @@ class ComcastLeafSpineFabric(Topo):
         self.addLink(self.leafs[1], self.leafs[2], **linkopts)
         self.addLink(self.leafs[3], self.leafs[4], **linkopts)
 
-        # build second fabric with single links
+        # build second fabric with single links, spines 103 and 104 and leafs 1 and 6
         for s in range(2, 4):
             spine_switch = self.spines[s]
 

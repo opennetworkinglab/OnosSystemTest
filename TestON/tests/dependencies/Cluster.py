@@ -676,10 +676,14 @@ class Cluster():
         # multiplier is somewhat arbitrary, but the idea is the logs would have
         # been compacted before this many segments are written
 
-        maxSize = float( segmentSize ) * float( multiplier )
-        ret = True
-        for n in self.runningNodes:
-            # Partition logs
-            ret = ret and n.server.folderSize( "/opt/atomix/data/raft/partitions/*/*.log",
-                                               size=maxSize, unit=units, ignoreRoot=False )
-        return ret
+        try:
+            maxSize = float( segmentSize ) * float( multiplier )
+            ret = True
+            for n in self.runningNodes:
+                # Partition logs
+                ret = ret and n.server.folderSize( "/opt/atomix/data/raft/partitions/*/*.log",
+                                                   size=maxSize, unit=units, ignoreRoot=False )
+            return ret
+        except Exception as e:
+            main.log.error( e )
+            main.log.error( repr( e ) )

@@ -27,7 +27,6 @@ TODO: Add Explanation on how to install scapy
 import pexpect
 import re
 import sys
-import types
 import os
 from drivers.common.cli.emulatordriver import Emulator
 
@@ -58,6 +57,20 @@ class ScapyCliDriver( Emulator ):
             self.home = self.options[ 'home' ] if 'home' in self.options.keys() else "~/"
             self.name = self.options[ 'name' ]
             self.ifaceName = self.options[ 'ifaceName' ] if 'ifaceName' in self.options.keys() else self.name + "-eth0"
+
+            # Parse route config
+            self.routes = []
+            routes = self.options.get( 'routes' )
+            if routes:
+                for route in routes:
+                    route = routes[ route ]
+                    iface = route.get( 'interface' )
+                    if not iface:
+                        iface = None
+                    self.routes.append( { 'network': route[ 'network' ],
+                                          'netmask': route[ 'netmask' ],
+                                          'gw': route.get( 'gw' ),
+                                          'interface': iface } )
             try:
                 if os.getenv( str( self.ip_address ) ) is not None:
                     self.ip_address = os.getenv( str( self.ip_address ) )
@@ -67,11 +80,11 @@ class ScapyCliDriver( Emulator ):
                                    self.ip_address )
 
             except KeyError:
-                main.log.info( "Invalid host name," +
+                main.log.info( self.name + ": Invalid host name," +
                                " connecting to local host instead" )
                 self.ip_address = 'localhost'
             except Exception as inst:
-                main.log.error( "Uncaught exception: " + str( inst ) )
+                main.log.error( self.name + ": Uncaught exception: " + str( inst ) )
 
             self.handle = super(
                 ScapyCliDriver,
@@ -82,7 +95,7 @@ class ScapyCliDriver( Emulator ):
                 pwd=self.pwd )
 
             if self.handle:
-                main.log.info( "Connection successful to the host " +
+                main.log.info( self.name + ": Connection successful to the host " +
                                self.user_name +
                                "@" +
                                self.ip_address )
@@ -107,6 +120,7 @@ class ScapyCliDriver( Emulator ):
         Called at the end of the test to stop the scapy component and
         disconnect the handle.
         """
+        main.log.debug( self.name + ": Disconnecting" )
         response = main.TRUE
         try:
             if self.handle:
@@ -120,12 +134,13 @@ class ScapyCliDriver( Emulator ):
             response = main.FALSE
         return response
 
-    def startScapy( self, mplsPath="" ):
+    def startScapy( self, mplsPath="", ifaceName=None ):
         """
         Start the Scapy cli
         optional:
             mplsPath - The path where the MPLS class is located
             NOTE: This can be a relative path from the user's home dir
+            ifaceName - the name of the default interface to use.
         """
         mplsLines = [ 'import imp',
                       'imp.load_source( "mplsClass", "{}mplsClass.py" )'.format( mplsPath ),
@@ -135,17 +150,35 @@ class ScapyCliDriver( Emulator ):
                       'bind_layers(MPLS, IP)' ]
 
         try:
+            main.log.debug( self.name + ": Starting scapy" )
             self.handle.sendline( "sudo scapy" )
             self.handle.expect( self.scapyPrompt )
             self.handle.sendline( "conf.color_theme = NoTheme()" )
             self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
+            self.handle.sendline( "conf.fancy_prompt = False" )
+            self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
+            self.handle.sendline( "conf.interactive = False" )
+            self.handle.expect( "interactive" )
+            self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
+            self.handle.sendline( "" )
+            self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
             if mplsPath:
-                main.log.info( "Adding MPLS class" )
-                main.log.info( "MPLS class path: " + mplsPath )
+                main.log.debug( self.name + ": Adding MPLS class" )
+                main.log.debug( self.name + ": MPLS class path: " + mplsPath )
                 for line in mplsLines:
-                    main.log.info( "sending line: " + line )
+                    main.log.debug( self.name + ": sending line: " + line )
                     self.handle.sendline( line )
                     self.handle.expect( self.scapyPrompt )
+                    response = self.cleanOutput( self.handle.before )
+
+            # Set interface
+            if ifaceName:
+                self.handle.sendline( 'conf.iface = "' + ifaceName + '"' )
+            self.clearBuffer()
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
@@ -162,6 +195,7 @@ class ScapyCliDriver( Emulator ):
         Exit the Scapy cli
         """
         try:
+            main.log.debug( self.name + ": Stopping scapy" )
             self.handle.sendline( "exit()" )
             self.handle.expect( self.hostPrompt )
             return main.TRUE
@@ -191,6 +225,7 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Building Ethernet Frame" )
             # Set the Ethernet frame
             cmd = 'ether = Ether( '
             options = []
@@ -202,15 +237,17 @@ class ScapyCliDriver( Emulator ):
             cmd += ' )'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             self.handle.sendline( "packet = ether" )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -249,6 +286,7 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Building IP Frame" )
             # Set the IP frame
             cmd = 'ip = IP( '
             options = []
@@ -260,15 +298,17 @@ class ScapyCliDriver( Emulator ):
             cmd += ' )'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             self.handle.sendline( "packet = ether/ip" )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -302,6 +342,7 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Building IPv6 Frame" )
             # Set the IPv6 frame
             cmd = 'ipv6 = IPv6( '
             options = []
@@ -313,15 +354,17 @@ class ScapyCliDriver( Emulator ):
             cmd += ' )'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             self.handle.sendline( "packet = ether/ipv6" )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -366,6 +409,7 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Building TCP" )
             # Set the TCP frame
             cmd = 'tcp = TCP( '
             options = []
@@ -375,9 +419,10 @@ class ScapyCliDriver( Emulator ):
             cmd += ' )'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             if str( ipVersion ) is '4':
                 self.handle.sendline( "packet = ether/ip/tcp" )
@@ -388,9 +433,10 @@ class ScapyCliDriver( Emulator ):
                                 repr( ipVersion ) )
                 return main.FALSE
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -428,6 +474,7 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Building UDP Frame" )
             # Set the UDP frame
             cmd = 'udp = UDP( '
             options = []
@@ -437,9 +484,10 @@ class ScapyCliDriver( Emulator ):
             cmd += ' )'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             if str( ipVersion ) is '4':
                 self.handle.sendline( "packet = ether/ip/udp" )
@@ -450,9 +498,10 @@ class ScapyCliDriver( Emulator ):
                                 repr( ipVersion ) )
                 return main.FALSE
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -490,6 +539,7 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Building SCTP Frame" )
             # Set the SCTP frame
             cmd = 'sctp = SCTP( '
             options = [ ]
@@ -499,9 +549,10 @@ class ScapyCliDriver( Emulator ):
             cmd += ' )'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             if str( ipVersion ) is '4':
                 self.handle.sendline( "packet = ether/ip/sctp" )
@@ -512,9 +563,10 @@ class ScapyCliDriver( Emulator ):
                                 repr( ipVersion ) )
                 return main.FALSE
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -554,6 +606,7 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Building ARP Frame" )
             # Set the ARP frame
             cmd = 'arp = ARP( '
             options = []
@@ -565,15 +618,17 @@ class ScapyCliDriver( Emulator ):
             cmd += ' )'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             self.handle.sendline( "packet = ether/arp" )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -608,6 +663,7 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Building ICMP Frame" )
             # Set the ICMP frame
             if str( ipVersion ) is '4':
                 cmd = 'icmp = ICMP( '
@@ -626,9 +682,10 @@ class ScapyCliDriver( Emulator ):
             cmd += ' )'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
 
             if str( ipVersion ) is '4':
@@ -640,9 +697,10 @@ class ScapyCliDriver( Emulator ):
                                 repr( ipVersion ) )
                 return main.FALSE
             self.handle.expect( self.scapyPrompt )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -655,7 +713,26 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def sendPacket( self, iface=None, packet=None, timeout=1 ):
+    def clearBuffer( self, debug=False ):
+        """
+        Keep reading from buffer until its empty
+        Everything seems to be printed twice in newer versions of
+        scapy, even when turning off fancy output
+        """
+        i = 0
+        response = ''
+        while True:
+            try:
+                i += 1
+                # clear buffer
+                if debug:
+                    main.log.warn( "%s expect loop iteration" % i )
+                self.handle.expect( self.scapyPrompt, timeout=1 )
+                response += self.cleanOutput( self.handle.before, debug )
+            except pexpect.TIMEOUT:
+                return response
+
+    def sendPacket( self, iface=None, packet=None, timeout=1, debug=True ):
         """
         Send a packet with either the given scapy packet command, or use the
         packet saved in the variable 'packet'.
@@ -672,8 +749,13 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.debug( self.name + ": Sending Packet" )
+            if debug:
+                self.handle.sendline( "packet.summary()" )
+                self.handle.expect( self.scapyPrompt )
+            self.clearBuffer()
             # TODO: add all params, or use kwargs
-            sendCmd = 'srp( '
+            sendCmd = 'sendp( '
             if packet:
                 sendCmd += packet
             else:
@@ -681,13 +763,15 @@ class ScapyCliDriver( Emulator ):
             if iface:
                 sendCmd += ", iface='{}'".format( iface )
 
-            sendCmd += ', timeout=' + str( timeout ) + ')'
+            if debug:
+                sendCmd += ', return_packets=True).summary()'  # show packet(s) sent
             self.handle.sendline( sendCmd )
             self.handle.expect( self.scapyPrompt )
-            # main.log.warn( "Send packet response: {}".format( self.handle.before ) )
-            if "Traceback" in self.handle.before:
+            response = self.cleanOutput( self.handle.before )
+            main.log.debug( self.name + ": Send packet response: {}".format( response ) )
+            if "Traceback" in response:
                 # KeyError, SyntaxError, ...
-                main.log.error( "Error in sending command: " + self.handle.before )
+                main.log.error( self.name + ": Error in sending command: " + response )
                 return main.FALSE
             # TODO: Check # of packets sent?
             return main.TRUE
@@ -715,24 +799,30 @@ class ScapyCliDriver( Emulator ):
         Returns main.TRUE or main.FALSE on error
         """
         try:
+            main.log.info( self.name + ": Starting filter on interface %s" % ifaceName )
             # TODO: add all params, or use kwargs
             ifaceName = str( ifaceName ) if ifaceName else self.ifaceName
             # Set interface
             self.handle.sendline( 'conf.iface = "' + ifaceName + '"' )
+            self.handle.expect( ifaceName )
+            self.cleanOutput( self.handle.before + self.handle.after )
+            self.cleanOutput( self.handle.before )
             self.handle.expect( self.scapyPrompt )
-            cmd = 'pkt = sniff(count = ' + str( sniffCount ) +\
-                  ', filter = "' + str( pktFilter ) + '")'
-            main.log.info( "Filter on " + self.name + ' > ' + cmd )
+            response = self.handle.before + self.handle.after
+            self.cleanOutput( response )
+            cmd = 'pkts = sniff(count = %s, filter = "%s", prn=lambda p: p.summary() )' % ( sniffCount, pktFilter )
+            main.log.info( self.name + ": Starting filter on " + self.name + ' > ' + cmd )
             self.handle.sendline( cmd )
-            self.handle.expect( '"\)\r\n' )
+            response = self.clearBuffer()
+
             # Make sure the sniff function didn't exit due to failures
             i = self.handle.expect( [ self.scapyPrompt, pexpect.TIMEOUT ], timeout=3 )
+            response = self.cleanOutput( self.handle.before + str( self.handle.after ) )
             if i == 0:
                 # sniff exited
                 main.log.error( self.name + ": sniff function exited" )
-                main.log.error( self.name + ":     " + self.handle.before )
+                main.log.error( self.name + ":     " + response )
                 return main.FALSE
-            # TODO: parse this?
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
@@ -746,10 +836,16 @@ class ScapyCliDriver( Emulator ):
 
     def checkFilter( self, timeout=10 ):
         """
-        Check that a filter returned and returns the reponse
+        Check if a filter is still running.
+        Returns:
+            main.TRUE if the filter stopped
+            main.FALSE if the filter is still running
         """
         try:
+            main.log.debug( self.name + ": Checking Filter" )
+            self.handle.sendline( "" )
             i = self.handle.expect( [ self.scapyPrompt, pexpect.TIMEOUT ], timeout=timeout )
+            response = self.cleanOutput( self.handle.before + str( self.handle.after ), debug=True )
             if i == 0:
                 return main.TRUE
             else:
@@ -766,9 +862,11 @@ class ScapyCliDriver( Emulator ):
         Kill a scapy filter
         """
         try:
+            main.log.debug( self.name + ": Killing scapy filter" )
             self.handle.send( "\x03" )  # Send a ctrl-c to kill the filter
             self.handle.expect( self.scapyPrompt )
-            return self.handle.before
+            output = self.cleanOutput( self.handle.before, debug=True )
+            return output
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
             return None
@@ -784,9 +882,13 @@ class ScapyCliDriver( Emulator ):
         Read all the packets captured by the previous filter
         """
         try:
-            self.handle.sendline( "for p in pkt: p \n")
-            self.handle.expect( "for p in pkt: p \r\n... \r\n" )
-            self.handle.expect( self.scapyPrompt )
+            main.log.debug( self.name + ": Reading Packets" )
+            main.log.debug( self.name + ": Begin clear buffer" )
+            self.clearBuffer()
+            main.log.debug( self.name + ": end clear buffer" )
+
+            self.handle.sendline( "pkts.summary()")
+            output = self.clearBuffer()
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
             return None
@@ -796,7 +898,7 @@ class ScapyCliDriver( Emulator ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
-        return self.handle.before
+        return output
 
     def updateSelf( self, IPv6=False ):
         """
@@ -817,8 +919,9 @@ class ScapyCliDriver( Emulator ):
             cmd = 'get_if_hwaddr("' + str( ifaceName ) + '")'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
             pattern = r'(([0-9a-f]{2}[:-]){5}([0-9a-f]{2}))'
-            match = re.search( pattern, self.handle.before )
+            match = re.search( pattern, response )
             if match:
                 return match.group()
             else:
@@ -851,11 +954,12 @@ class ScapyCliDriver( Emulator ):
                 cmd = 'get_if_raw_addr6("' + str( ifaceName ) + '")'
             self.handle.sendline( cmd )
             self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
 
             pattern = r'(((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9]))'
             if IPv6:
                 pattern = r'(\\x([0-9]|[a-f]|[A-F])([0-9]|[a-f]|[A-F])){16}'
-            match = re.search( pattern, self.handle.before )
+            match = re.search( pattern, response )
             if match:
                 # NOTE: The command will return 0.0.0.0 if the iface doesn't exist
                 if IPv6 is not True:
@@ -908,6 +1012,50 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def addRoute( self, network, gateway, interface=None ):
+        """
+        Add a route to the current scapy session
+        """
+        main.log.info( self.name + ": Adding route to scapy session; %s via %s out of interface %s" % ( network, gateway, interface ) )
+        if gateway is None:
+            main.log.error( self.name + ": Gateway is None, cannot set route" )
+            return main.FALSE
+        try:
+            cmdStr = 'conf.route.add( net="%s", gw="%s"' % ( network, gateway )
+            if interface:
+                cmdStr += ', dev="%s"' % interface
+            cmdStr += ')'
+            self.handle.sendline( cmdStr )
+            self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
+                main.log.error( self.name + ": Error in adding route to scappy session" )
+                main.log.debug( response )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return None
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def addRoutes( self ):
+        """
+        Add any routes configured for the host
+        """
+        returnValues = []
+        for route in self.routes:
+            gw = route.get( 'gw' )
+            iface = route.get( 'interface' )
+            returnValues .append( self.addRoute( "%s/%s" % ( route.get( 'network' ), route.get( 'netmask' ) ),
+                                                 gw if gw else main.Cluster.active(0).ipAddress,
+                                                 interface=iface if iface else self.interfaces[ 0 ].get( 'name' ) ) )
+        return returnValues
+
     def getIfList( self ):
         """
         Return List of Interfaces
@@ -915,7 +1063,8 @@ class ScapyCliDriver( Emulator ):
         try:
             self.handle.sendline( 'get_if_list()' )
             self.handle.expect( self.scapyPrompt )
-            ifList = self.handle.before.split( '\r\n' )
+            response = self.cleanOutput( self.handle.before )
+            ifList = response.split( '\r\n' )
             ifList = ifList[ 1 ].replace( "'", "" )[ 1:-1 ].split( ', ' )
             return ifList
 

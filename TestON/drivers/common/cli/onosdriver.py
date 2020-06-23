@@ -2679,7 +2679,7 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def onosDiagnostics( self, onosIPs, dstDir, suffix, timeout=300 ):
+    def onosDiagnostics( self, onosIPs, dstDir, suffix, timeout=300, profile="TRELLIS_PROFILE" ):
         """
             Run onos-diagnostics with given ONOS instance IPs and save output to dstDir
             with suffix specified E.g. onos-diags-suffix.tar.gz
@@ -2691,6 +2691,8 @@ class OnosDriver( CLI ):
                 main.FALSE if there's an error executing the command, and main.TRUE otherwise
         """
         try:
+            self.handle.sendline( "export DIAGS_PROFILE=%s" % profile )
+            self.handle.expect( self.prompt )
             cmd = "onos-diagnostics"
             assert isinstance( onosIPs, list )
             for ip in onosIPs:
@@ -2890,6 +2892,74 @@ class OnosDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ": " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def onosFetchApp( self, url, dstPath=None ):
+        """
+        Fetch an external onos app
+
+        Required:
+        url - url for where to download the app
+        dstPath - where the file will be saved
+
+        Returns main.TRUE on successfully fetching file, and main.FALSE if
+        there is an error.
+        """
+        try:
+            cmd = "wget -q --backups=1 "
+            if dstPath:
+                cmd += "-P %s " % ( dstPath )
+            cmd += str( url )
+            main.log.info( "Sending: " + cmd )
+            main.ONOSbench.handle.sendline( cmd )
+            main.ONOSbench.handle.expect( self.prompt )
+            output = self.handle.before
+            main.log.debug( output )
+            if "Error" in output or "No such file or directory" in output:
+                main.log.error( self.name + ":    " + output + self.handle.after )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def onosApp( self, onosIP, option, fileName, filePath='~/onos/'):
+        """
+        Wrapper for onos-app script
+
+        Required:
+        - onosIP - The ip address of the onos instance
+        - option - What command are we doing?
+            [ list|install|install!|reinstall|reinstall!|activate|deactivate|uninstall ]
+        - fileName - The name of the app file
+        Optional Arguments:
+        - filePath - The location of the file
+
+        Returns main.TRUE on successfully executing the command, and main.FALSE if
+        there is an error.
+        """
+        # FIXME: Not all options may work, more testing is required, only tested with install(!)
+        try:
+            cmd = "onos-app %s %s %s/%s" % ( onosIP, option, filePath, fileName )
+            main.log.info( "Sending: " + cmd )
+            main.ONOSbench.handle.sendline( cmd )
+            main.ONOSbench.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( handle )
+            if "Error" in handle or "usage: " in handle or "curl: " in handle:
+                main.log.error( self.name + ":    " + handle + self.handle.after )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )

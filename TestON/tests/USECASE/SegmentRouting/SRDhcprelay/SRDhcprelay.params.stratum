@@ -14,16 +14,23 @@
     <DEPENDENCY>
         <useCommonConf>False</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
-        <useBmv2>False</useBmv2>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
+        <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
         <conf>dhcpd.conf,dhcpd6.conf,bgpdr1.conf,bgpdr2.conf,bgpdbgp1.conf,zebradbgp1.conf,bgpdbgp2.conf,zebradbgp2.conf</conf>
-        <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
     </DEPENDENCY>
+
+    <MN_DOCKER>
+        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom:/home/root/mininet/custom -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum:/tmp -v /tmp/mn_conf/:/home/root --hostname mn-stratum -v /etc/network/interfaces:/etc/network/interfaces -v /lib/modules:/lib/modules -it -d</args>
+        <name>trellis_mininet</name>
+        <home>/home/root/</home>
+    </MN_DOCKER>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,fpm,dhcprelay,netcfghostprovider,routeradvertisement,drivers.bmv2,pipelines.fabric</cellApps>
+        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement,drivers.bmv2,pipelines.fabric</cellApps>
     </ENV>
 
     <GIT>
@@ -32,6 +39,9 @@
     </GIT>
 
     <ONOS_Configuration>
+        <org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
+            <enableMessageLog>true</enableMessageLog>
+        </org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
     </ONOS_Configuration>
 
     <ONOS_Logging>
@@ -44,6 +54,16 @@
         <org.onosproject.routing.fpm>DEBUG</org.onosproject.routing.fpm>
         <org.onosproject.fpm>DEBUG</org.onosproject.fpm>
         <org.onosproject.mcast>DEBUG</org.onosproject.mcast>
+        <org.onosproject.p4runtime>DEBUG</org.onosproject.p4runtime>
+        <org.onosproject.protocols.p4runtime>DEBUG</org.onosproject.protocols.p4runtime>
+        <org.onosproject.drivers.p4runtime>DEBUG</org.onosproject.drivers.p4runtime>
+        <org.onosproject.protocols.grpc>DEBUG</org.onosproject.protocols.grpc>
+        <org.onosproject.protocols.gnmi>DEBUG</org.onosproject.protocols.gnmi>
+        <org.onosproject.protocols.gnoi>DEBUG</org.onosproject.protocols.gnoi>
+        <org.onosproject.drivers.gnoi>DEBUG</org.onosproject.drivers.gnoi>
+        <org.onosproject.drivers.gmni>DEBUG</org.onosproject.drivers.gmni>
+        <org.onosproject.drivers.stratum>DEBUG</org.onosproject.drivers.stratum>
+        <org.onosproject.bmv2>DEBUG</org.onosproject.bmv2>
     </ONOS_Logging>
 
 

@@ -63,6 +63,8 @@ class MininetCliDriver( Emulator ):
         self.scapyPrompt = ">>>"
         self.graph = Graph()
         self.sudoRequired = True
+        self.mExecDir = None
+        self.hostHome = None
 
     def connect( self, **connectargs ):
         """
@@ -109,6 +111,8 @@ class MininetCliDriver( Emulator ):
                                self.user_name +
                                "@" +
                                self.ip_address )
+                self.handle.sendline( "bash -i" )
+                self.handle.expect( self.bashPrompt )
                 return main.TRUE
             else:
                 main.log.error( "Connection failed to the host " +
@@ -608,7 +612,10 @@ class MininetCliDriver( Emulator ):
                 cmds = []
                 if self.getIPAddress( host ):
                     flushCmd = "{} ip neigh flush all".format( host )
-                    cmds.append( "{} arping -c 1 -w {} {}".format( host, wait, dstIp ) )
+                    intf = hosts[ host ][ 'interfaces' ][ 0 ].get( 'name' )
+                    intfStr = "-i {}".format( intf ) if intf else ""
+                    cmds.append( "{} arping -c 1 -w {} {} {}".format(
+                        host, wait, intfStr, dstIp ) )
                     main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
                     flushCmd = "{} ip -6 neigh flush all".format( host )
@@ -827,10 +834,11 @@ class MininetCliDriver( Emulator ):
                                         timeout=wait + 5 )
                 # For some reason we need to send something
                 # Otherwise ping results won't be read by handle
+                response = self.handle.before
                 self.handle.sendline( "" )
                 self.handle.expect( self.hostPrompt )
                 if i == 0:
-                    response = self.handle.before
+                    response += self.handle.before
                     if not re.search( ',\s0\%\spacket\sloss', response ):
                         main.log.debug( "Ping failed between %s and %s" % ( self.name, dstIP ) )
                         isReachable = main.FALSE
@@ -1145,19 +1153,23 @@ class MininetCliDriver( Emulator ):
 
             pattern = ''
             if proto == 'IPV4':
-                pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)\s\sBcast"
+                ip4Pat = r"(\d+\.\d+\.\d+\.\d+)"
+                pattern = r"inet\s(addr:)?(?P<ip>" + ip4Pat + ")\s\s((Bcast:" + ip4Pat + "\s\s|netmask\s" + ip4Pat + "\s\sbroadcast\s" + ip4Pat + "))"
             else:
-                pattern = "inet6\saddr:\s([\w,:]*)/\d+\sScope:Global"
+                inet6Pat = r'(?P<ip>((?:[0-9a-fA-F]{1,4})?(?:[:0-9a-fA-F]{1,4}){1,7}(?:::)?(?:[:0-9a-fA-F]{1,4}){1,7}))'
+                pattern = r"inet6\s(addr:\s)?" + inet6Pat + r"(/\d+)?\s(Scope:(Global|Link)|\sprefixlen\s(\d)+\s\sscopeid 0x(\d+)\<(link|global>))"
             ipAddressSearch = re.search( pattern, response )
             if not ipAddressSearch:
+                main.log.debug( response )
+                main.log.warn( "Could not find %s address" % proto )
                 return None
             main.log.info(
                 self.name +
                 ": IP-Address of Host " +
                 host +
                 " is " +
-                ipAddressSearch.group( 1 ) )
-            return ipAddressSearch.group( 1 )
+                ipAddressSearch.group( 'ip' ) )
+            return ipAddressSearch.group( 'ip' )
         else:
             main.log.error( self.name + ": Connection failed to the host" )
 
@@ -3613,14 +3625,23 @@ class MininetCliDriver( Emulator ):
         """
            updates the port address and status information for
            each port in mn"""
-        # TODO: Add error checking. currently the mininet command has no output
         main.log.info( "Updating MN port information" )
         try:
             self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
 
+            # If update command isn't available, do it manually
             self.handle.sendline( "update" )
-            self.handle.expect( "mininet>", timeout )
+            self.handle.expect( "update" )
+            i = self.handle.expect( [ "Unknown command: update", "mininet>" ], timeout )
+            if i == 0:
+                main.log.debug( self.handle.before + self.handle.after )
+                main.log.warn( "Mininet cli does not have update command, attempting to update interfaces without it" )
+                self.handle.expect( "mininet>" )
+                self.handle.sendline( "px [i.updateAddr() for h in net.hosts for i in h.intfs.values() ] " )
+                self.handle.expect( "mininet>", timeout )
+                self.handle.sendline( "px [i.updateAddr() for s in net.switches for i in h.intfs.values() ] " )
+                self.handle.expect( "mininet>", timeout )
 
             self.handle.sendline( "" )
             self.handle.expect( "mininet>" )
@@ -3777,7 +3798,7 @@ class MininetCliDriver( Emulator ):
                 main.log.exception( self.name + ": Uncaught exception!" )
                 return main.FALSE
 
-    def createHostComponent( self, name ):
+    def createHostComponent( self, name, execDir=None, hostHome=None ):
         """
         Creates a new mininet cli component with the same parameters as self.
         This new component is intended to be used to login to the hosts created
@@ -3795,7 +3816,17 @@ class MininetCliDriver( Emulator ):
             # namespace is clear, creating component
             main.componentDictionary[ name ] = main.componentDictionary[ self.name ].copy()
             main.componentDictionary[ name ][ 'connect_order' ] = str( int( main.componentDictionary[ name ][ 'connect_order' ] ) + 1 )
-            main.componentInit( name )
+            component = main.componentInit( name )
+            if execDir is not None:
+                component.mExecDir = execDir
+            else:
+                component.mExecDir = self.mExecDir
+
+            if hostHome is not None:
+                component.hostHome = hostHome
+            else:
+                component.hostHome = self.hostHome
+            component.hostPrompt = self.hostPrompt
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -3840,17 +3871,31 @@ class MininetCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def startHostCli( self, host=None ):
+    def startHostCli( self, host=None, execDir=None, hostHome=None ):
         """
         Use the mininet m utility to connect to the host's cli
+        mnexec tries to cd to cwd after it connects to the host. If execDir
+        is set, this will change cwd to execDir before executing m.
+        If hostHome is set, the function will export the value to the HOME
+        environment variable.
         """
         # These are fields that can be used by scapy packets. Initialized to None
         self.hostIp = None
         self.hostMac = None
+        if execDir is not None:
+            self.mExecDir = execDir
+        if hostHome is not None:
+            self.hostHome = hostHome
         try:
             if not host:
                 host = self.name
+            if self.mExecDir:
+                self.handle.sendline( "cd %s" % self.mExecDir )
+                self.handle.expect( self.prompt )
+
             self.handle.sendline( self.home + "/util/m " + host )
+            if self.hostHome:
+                self.handle.sendline( "export HOME=%s" % self.hostHome )
             self.handle.sendline( "cd" )
             self.handle.expect( self.hostPrompt )
             self.handle.sendline( "" )
@@ -3858,6 +3903,7 @@ class MininetCliDriver( Emulator ):
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
+            main.log.debug( self.handle.before )
             return main.FALSE
         except pexpect.EOF:
             main.log.exception( self.name + ": connection closed." )

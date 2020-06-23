@@ -22,13 +22,8 @@ along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 import pexpect
 import re
-import sys
-import types
 import os
-import time
-from math import pow
 from drivers.common.cli.emulatordriver import Emulator
-from core.graph import Graph
 
 
 class MininetHostDriver( Emulator ):
@@ -82,10 +77,11 @@ class MininetHostDriver( Emulator ):
                 pwd=self.pwd )
 
             if self.handle:
-                main.log.info( "Connection successful to the " +
+                main.log.info( "Connection successful to " +
                                self.user_name +
                                "@" +
                                self.ip_address )
+                self.handle.sendline( "bash -i" )
                 self.handle.sendline( "~/mininet/util/m " + self.shortName )
                 self.handle.sendline( "cd" )
                 self.handle.expect( self.hostPrompt )

@@ -442,6 +442,7 @@ class OnosCliDriver( CLI ):
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
             if noExit:
                 main.cleanup()
                 return None
@@ -564,11 +565,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": karafEscape output" )
                 main.log.debug( self.name + ": " + repr( response ) )
             # Remove ANSI color control strings from output
-            ansiEscape = re.compile( r'((\x9b|\x1b\[)[0-?]*[ -/]*[@-~])' )
-            response = ansiEscape.sub( '', response )
-            if debug:
-                main.log.debug( self.name + ": ansiEscape output" )
-                main.log.debug( self.name + ": " + repr( response ) )
+            response = self.cleanOutput( response, debug )
 
             # Remove ANSI color control strings from output
             # NOTE: karaf is sometimes adding a single character then two
@@ -1290,7 +1287,6 @@ class OnosCliDriver( CLI ):
             main.TRUE if host is discovered on all locations provided
             main.FALSE otherwise
         """
-        import json
         locations = [ location ] if isinstance( location, str ) else location
         assert isinstance( locations, list ), "Wrong type of location: {}".format( type( location ) )
         try:
@@ -1344,7 +1340,6 @@ class OnosCliDriver( CLI ):
             main.TRUE if all hosts have specific IP address assigned;
             main.FALSE otherwise
         """
-        import json
         try:
             hosts = self.hosts()
             hosts = json.loads( hosts )
@@ -1366,6 +1361,8 @@ class OnosCliDriver( CLI ):
                         hostList.remove( hostId )
             if hostList:
                 main.log.warn( self.name + ": failed to verify IP on following hosts: " + str( hostList) )
+                # Print info for debugging
+                main.log.debug( self.name + ": hosts output: " + str( hosts ) )
                 return main.FALSE
             else:
                 return main.TRUE
@@ -3232,7 +3229,6 @@ class OnosCliDriver( CLI ):
         Return:
             topology = current ONOS topology
         """
-        import json
         try:
             # either onos:topology or 'topology' will work in CLI
             topology = json.loads( topologyOutput )
@@ -3265,7 +3261,6 @@ class OnosCliDriver( CLI ):
                  main.FALSE if the number of switches and links is incorrect,
                  and main.ERROR otherwise
         """
-        import json
         try:
             summary = self.summary()
             summary = json.loads( summary )

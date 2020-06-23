@@ -19,6 +19,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
+import os
 
 
 class ONOSSetup:
@@ -604,6 +605,12 @@ class ONOSSetup:
                 onosAppsResult = self.checkOnosApps( cluster, apps )
             else:
                 main.log.warn( "No apps were specified to be checked after startup" )
+
+        externalAppsResult = main.TRUE
+        if main.params.get( 'EXTERNAL_APPS' ):
+            for app, url in main.params[ 'EXTERNAL_APPS' ].iteritems():
+                path, fileName = os.path.split( url )
+                main.ONOSbench.onosApp( main.Cluster.controllers[0].ipAddress, "install!", fileName )
 
         return killResult and cellResult and packageResult and uninstallResult and \
                installResult and secureSshResult and onosServiceResult and onosCliResult and \

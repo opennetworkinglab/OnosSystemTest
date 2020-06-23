@@ -27,6 +27,7 @@ import logging
 import datetime
 import re
 import os
+import json
 class Logger:
     '''
         Add continuous logs and reports of the test.
@@ -47,11 +48,7 @@ class Logger:
         logmsg = logmsg + "\n\tTest Params : " + main.testDir + "/" +  main.paramsFile + ""
         logmsg = logmsg + "\n\tTopology : " + main.testDir + "/" + main.topoFile + ""
         logmsg = logmsg + "\n" + " " * 30 + "+" + "-" * 18 + "+" + "\n" + "-" * 27 + "  { Script Exec Params }  " + "-" * 27 + "\n" + " " * 30 + "+" + "-" * 18 + "+\n"
-        values = "\n\t" + str( main.params )
-        values = re.sub( ",", "\n\t", values )
-        values = re.sub( "{", "\n\t", values )
-        values = re.sub( "}", "\n\t", values )
-        logmsg = logmsg + values
+        logmsg += "\n" + json.dumps( main.params, sort_keys=True, indent=4 )
         logmsg = logmsg + "\n\n" + " " * 31 + "+---------------+\n" + "-" * 29 + " { Components Used }  " + "-" * 29 + "\n" + " " * 31 + "+---------------+\n"
         component_list = []
         component_list.append( None )
@@ -72,11 +69,8 @@ class Logger:
                 logmsg += "\t" + str( component_list[ index ] ) + "\n"
 
         logmsg = logmsg + "\n\n" + " " * 30 + "+--------+\n" + "-" * 28 + " { Topology }  " + "-" * 28 + "\n" + " " * 30 + "+--------+\n"
-        values = "\n\t" + str( main.topology[ 'COMPONENT' ] )
-        values = re.sub( ",", "\n\t", values )
-        values = re.sub( "{", "\n\t", values )
-        values = re.sub( "}", "\n\t", values )
-        logmsg = logmsg + values
+        sortedComponents = sorted( main.topology['COMPONENT'].items(), key=lambda (k, v): v[ 'connect_order' ] )
+        logmsg += "\n" + json.dumps( sortedComponents, indent=4 )
         logmsg = logmsg + "\n" + "-" * 60 + "\n"
 
         # enter into log file all headers

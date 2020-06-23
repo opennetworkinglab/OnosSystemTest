@@ -9,6 +9,7 @@ import sys
 sys.path.append('..')
 from mininet.node import Host
 from routinglib import RoutedHost, RoutedHost6, Router
+from stratum import NoOffloadHost
 
 class TaggedRoutedHost(RoutedHost):
     """Host that can be configured with multiple IP addresses."""
@@ -24,6 +25,7 @@ class TaggedRoutedHost(RoutedHost):
         intf = self.defaultIntf()
         self.vlanIntf = "%s.%s" % (intf, self.vlan)
         self.cmd('ip -4 addr flush dev %s' % intf)
+        self.cmd('sysctl -w net.ipv4.ip_forward=0')
         self.cmd('ip link add link %s name %s type vlan id %s' % (intf, self.vlanIntf, self.vlan))
         self.cmd('ip link set up %s' % self.vlanIntf)
 
@@ -38,7 +40,7 @@ class TaggedRoutedHost(RoutedHost):
         self.cmd('ip link remove link %s' % self.vlanIntf)
         super(TaggedRoutedHost, self).terminate()
 
-class DualHomedRoutedHost(Host):
+class DualHomedRoutedHost(NoOffloadHost):
     def __init__(self, name, ips, gateway, *args, **kwargs):
         super(DualHomedRoutedHost, self).__init__(name, **kwargs)
         self.bond0 = None
@@ -72,6 +74,7 @@ class DualHomedRoutedHost(Host):
         self.cmd('ip link set %s master %s' % (intf2.name, self.bond0))
         self.cmd('ip addr flush dev %s' % intf1.name)
         self.cmd('ip addr flush dev %s' % intf2.name)
+        self.cmd('sysctl -w net.ipv4.ip_forward=0')
         self.cmd('ip link set %s up' % self.bond0)
         # NOTE: Issues with bonded intfs in mn data structures. Either only show bonded intf
         #       or create a custom class to handle bonded infs??
@@ -100,6 +103,7 @@ class DualHomedTaggedRoutedHost(DualHomedRoutedHost):
         default_intf = self.defaultIntf()
         self.vlanIntf = "%s.%s" % (default_intf, self.vlan)
         self.cmd('ip -4 addr flush dev %s' % default_intf)
+        self.cmd('sysctl -w net.ipv4.ip_forward=0')
         self.cmd('ip link add link %s name %s type vlan id %s' % (default_intf, self.vlanIntf, self.vlan))
         self.cmd('ip link set up %s' % self.vlanIntf)
 
@@ -123,6 +127,7 @@ class DhcpClient(Host):
     def config(self, **kwargs):
         super(DhcpClient, self).config(**kwargs)
         self.cmd('ip addr flush dev %s' % self.defaultIntf())
+        self.cmd('sysctl -w net.ipv4.ip_forward=0')
         self.cmd('dhclient -q -4 -nw -pf %s -lf %s %s' % (self.pidFile, self.leaseFile, self.defaultIntf()))
 
     def terminate(self, **kwargs):
@@ -139,6 +144,7 @@ class Dhcp6Client(Host):
     def config(self, **kwargs):
         super(Dhcp6Client, self).config(**kwargs)
         self.cmd('ip -4 addr flush dev %s' % self.defaultIntf())
+        self.cmd('sysctl -w net.ipv4.ip_forward=0')
         self.cmd('dhclient -q -6 -nw -pf %s -lf %s %s' % (self.pidFile, self.leaseFile, self.defaultIntf()))
 
     def terminate(self, **kwargs):
@@ -214,6 +220,7 @@ class TaggedDhcpClient(Host):
         super(TaggedDhcpClient, self).config(**kwargs)
         self.vlanIntf = "%s.%s" % (self.defaultIntf(), self.vlan)
         self.cmd('ip addr flush dev %s' % self.defaultIntf())
+        self.cmd('sysctl -w net.ipv4.ip_forward=0')
         self.cmd('ip link add link %s name %s type vlan id %s' % (self.defaultIntf(), self.vlanIntf, self.vlan))
         self.cmd('ip link set up %s' % self.vlanIntf)
         self.cmd('dhclient -q -4 -nw -pf %s %s' % (self.pidFile, self.vlanIntf))
@@ -267,6 +274,7 @@ class DualHomedDhcpClient(Host):
         self.cmd('ip link set %s master %s' % (intf2.name, self.bond0))
         self.cmd('ip addr flush dev %s' % intf1.name)
         self.cmd('ip addr flush dev %s' % intf2.name)
+        self.cmd('sysctl -w net.ipv4.ip_forward=0')
         self.cmd('ip link set %s up' % self.bond0)
         # NOTE: Issues with bonded intfs in mn data structures. Either only show bonded intf
         #       or create a custom class to handle bonded infs??
@@ -284,7 +292,7 @@ class DualHomedDhcpClient(Host):
         self.cmd('rm -rf %s' % self.pidFile)
         super(DualHomedDhcpClient, self).terminate()
 
-class TrellisHost(Host):
+class TrellisHost(NoOffloadHost):
     def __init__(self, name, ips=[], gateway="", dualHomed=False, vlan=None, dhcpClient=False, dhcpServer=False, ipv6=False, *args, **kwargs):
         super(TrellisHost, self).__init__(name, *args, **kwargs)
         self.dualHomed = dualHomed
@@ -313,6 +321,10 @@ class TrellisHost(Host):
             self.bondIntfs( self.intfs[0], self.intfs[1] )
 
         self.cmd('ip %s addr flush dev %s' % ("-4" if self.ipv6 else "", self.defaultIntf()))
+        self.cmd('sysctl -w net.ipv4.ip_forward=0')
+
+        if not self.ipv6:
+            self.cmd('sysctl -w net.ipv6.conf.all.disable_ipv6=1')
 
         if self.vlan:
             # Setup vlan interface

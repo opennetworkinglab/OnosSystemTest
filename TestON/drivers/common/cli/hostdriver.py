@@ -22,11 +22,7 @@ along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 import pexpect
 import re
-import sys
-import types
 import os
-import time
-from math import pow
 from drivers.common.cli.emulator.scapyclidriver import ScapyCliDriver
 
 class HostDriver( ScapyCliDriver ):
@@ -60,7 +56,7 @@ class HostDriver( ScapyCliDriver ):
             self.interfaces.append( { 'ips': [ self.options[ 'ip' ] ],
                                       'isUp': True,
                                       'mac': self.options[ 'mac' ],
-                                      'name': None } )
+                                      'name': self.options.get( 'interfaceName', None ) } )
 
             try:
                 if os.getenv( str( self.ip_address ) ) is not None:
@@ -121,18 +117,18 @@ class HostDriver( ScapyCliDriver ):
                     i = self.handle.expect( [ "closed", pexpect.TIMEOUT ] )
                     if i == 1:
                         main.log.error( self.name + ": timeout when waiting for response" )
-                        main.log.error( "response: " + str( self.handle.before ) )
+                        main.log.error( self.name + ": response: " + str( self.handle.before ) )
                 else:
                     self.handle.sendline( "" )
                     i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=2 )
                     if i == 1:
                         main.log.warn( self.name + ": timeout when waiting for response" )
-                        main.log.warn( "response: " + str( self.handle.before ) )
+                        main.log.warn( self.name + ": response: " + str( self.handle.before ) )
                     self.handle.sendline( "exit" )
                     i = self.handle.expect( [ "closed", pexpect.TIMEOUT ], timeout=2 )
                     if i == 1:
                         main.log.warn( self.name + ": timeout when waiting for response" )
-                        main.log.warn( "response: " + str( self.handle.before ) )
+                        main.log.warn( self.name + ": response: " + str( self.handle.before ) )
                 return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -201,7 +197,7 @@ class HostDriver( ScapyCliDriver ):
             i = self.handle.expect( [ "closed", pexpect.TIMEOUT ], timeout=2 )
             if i == 1:
                 main.log.error( self.name + ": timeout when waiting for response" )
-                main.log.error( "response: " + str( self.handle.before ) )
+                main.log.error( self.name + ": response: " + str( self.handle.before ) )
             return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -212,7 +208,7 @@ class HostDriver( ScapyCliDriver ):
             main.log.error( self.name + ":     " + self.handle.before )
             return main.FALSE
 
-    def ping( self, dst, ipv6=False, wait=3 ):
+    def ping( self, dst, ipv6=False, interface=None, wait=3 ):
         """
         Description:
             Ping from this host to another
@@ -220,10 +216,13 @@ class HostDriver( ScapyCliDriver ):
             dst: IP address of destination host
         Optional:
             ipv6: will use ping6 command if True; otherwise use ping command
+            interface: Specify which interface to use for the ping
             wait: timeout for ping command
         """
         try:
             command = "ping6" if ipv6 else "ping"
+            if interface:
+                command += " -I %s " % interface
             command += " -c 1 -i 1 -W " + str( wait ) + " " + str( dst )
             main.log.info( self.name + ": Sending: " + command )
             self.handle.sendline( command )
@@ -233,7 +232,7 @@ class HostDriver( ScapyCliDriver ):
                 main.log.error(
                     self.name +
                     ": timeout when waiting for response" )
-                main.log.error( "response: " + str( self.handle.before ) )
+                main.log.error( self.name + ": response: " + str( self.handle.before ) )
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
             response = self.handle.before
@@ -314,7 +313,7 @@ class HostDriver( ScapyCliDriver ):
                 main.log.error(
                     self.name +
                     ": timeout when waiting for response" )
-                main.log.error( "response: " + str( self.handle.before ) )
+                main.log.error( self.name + ": response: " + str( self.handle.before ) )
             response = self.handle.before
             return response
         except pexpect.EOF:
@@ -337,7 +336,7 @@ class HostDriver( ScapyCliDriver ):
                                     timeout=wait + 5 )
             if i == 1:
                 main.log.error( self.name + ": timeout when waiting for response" )
-                main.log.error( "response: " + str( self.handle.before ) )
+                main.log.error( self.name + ": response: " + str( self.handle.before ) )
             response = self.handle.before
             return response
         except pexpect.EOF:
@@ -348,7 +347,7 @@ class HostDriver( ScapyCliDriver ):
             main.log.exception( self.name + ": uncaught exception!" )
             main.cleanAndExit()
 
-    def command( self, cmd, wait=3 ):
+    def command( self, cmd, wait=3, debug=False):
         """
         Run shell command on host and return output
         Required:
@@ -359,10 +358,12 @@ class HostDriver( ScapyCliDriver ):
             self.handle.sendline( cmd )
             i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ],
                                     timeout=wait + 5 )
+            response = self.handle.before
+            if debug:
+                main.log.debug( response )
             if i == 1:
                 main.log.error( self.name + ": timeout when waiting for response" )
-                main.log.error( "response: " + str( self.handle.before ) )
-            response = self.handle.before
+                main.log.error( self.name + ": response: " + str( response ) )
             return response
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

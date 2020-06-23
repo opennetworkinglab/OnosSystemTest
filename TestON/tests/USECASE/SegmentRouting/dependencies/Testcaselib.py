@@ -49,6 +49,7 @@ class Testcaselib:
             main.cleanAndExit()
         from tests.dependencies.Network import Network
         main.Network = Network()
+        main.physicalNet = False
         main.testSetUp.envSetupDescription( False )
         stepResult = main.FALSE
         try:
@@ -63,6 +64,11 @@ class Testcaselib:
                 main.useBmv2 = main.params[ 'DEPENDENCY' ][ 'useBmv2' ] == 'True'
             else:
                 main.useBmv2 = False
+            if main.useBmv2:
+                main.switchType = main.params[ 'DEPENDENCY' ].get( 'bmv2SwitchType', 'stratum' )
+            else:
+                main.switchType = "ovs"
+
             main.configPath = main.path + ( "/.." if main.useCommonConf else "" ) + "/dependencies/"
             main.bmv2Path = "/tools/dev/mininet/"
             main.forJson = "json/"
@@ -101,8 +107,16 @@ class Testcaselib:
         - Connect to cli
         """
         # main.scale[ 0 ] determines the current number of ONOS controller
-        if not main.apps:
-            main.log.error( "App list is empty" )
+        try:
+            if main.params.get( 'EXTERNAL_APPS' ):
+                for app, url in main.params[ 'EXTERNAL_APPS' ].iteritems():
+                    main.log.info( "Downloading %s app from %s" )
+                    main.ONOSbench.onosFetchApp( url )
+            if not main.apps:
+                main.log.error( "App list is empty" )
+        except Exception as e:
+            main.log.debug( e )
+            main.cleanAndExit()
         main.log.info( "Cluster size: " + str( main.Cluster.numCtrls ) )
         main.log.info( "Cluster ips: " + ', '.join( main.Cluster.getIps() ) )
         main.dynamicHosts = [ 'in1', 'out1' ]
@@ -123,37 +137,35 @@ class Testcaselib:
             main.log.error( "ONOS startup failed!" )
             main.cleanAndExit()
 
-        for ctrl in main.Cluster.active():
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.segmentrouting" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.driver" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.net.flowobjective.impl" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.routeservice.impl" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.routeservice.store" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.routing.fpm" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.fpm" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.events" )
-            ctrl.CLI.logSet( "DEBUG", "org.onosproject.mcast" )
+        # FIXME: move to somewhere else?
+        switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix' )
+        # TODO: Support other pipeconfs/making this configurable
+        if switchPrefix == "tofino":
+            # It seems to take some time for the pipeconfs to be loaded
+            ctrl = main.Cluster.next()
+            for i in range( 120 ):
+                try:
+                    main.log.debug( "Checking to see if pipeconfs are loaded" )
+                    output = ctrl.CLI.sendline( "pipeconfs" )
+                    if "tofino" in output:
+                        main.log.debug( "Took around %s seconds for the pipeconf to be loaded" % i )
+                        break
+                    time.sleep( 1 )
+                except Exception as e:
+                    main.log.error( e )
 
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.p4runtime" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.protocols.p4runtime" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.drivers.p4runtime" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.protocols.grpc" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.protocols.gnmi" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.protocols.gnoi" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.drivers.gnoi" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.drivers.gmni" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.drivers.stratum" )
-            ctrl.CLI.logSet( "TRACE", "org.onosproject.bmv2" )
+        Testcaselib.setOnosLogLevels( main )
+        Testcaselib.setOnosConfig( main )
 
     @staticmethod
     def loadCount( main ):
-        with open("%s/count/%s.count" % (main.configPath, main.cfgName)) as count:
-                main.count = json.load(count)
+        with open( "%s/count/%s.count" % ( main.configPath, main.cfgName ) ) as count:
+                main.count = json.load( count )
 
     @staticmethod
-    def loadJson( main ):
-        with open( "%s%s.json" % ( main.configPath + main.forJson,
-                                   main.cfgName ) ) as cfg:
+    def loadJson( main, suffix='' ):
+        with open( "%s%s.json%s" % ( main.configPath + main.forJson,
+                                     main.cfgName, suffix ) ) as cfg:
             main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
 
     @staticmethod
@@ -161,7 +173,7 @@ class Testcaselib:
         try:
             with open( "%s%s.chart" % ( main.configPath + main.forChart,
                                         main.cfgName ) ) as chart:
-                main.pingChart = json.load(chart)
+                main.pingChart = json.load( chart )
         except IOError:
             main.log.warn( "No chart file found." )
 
@@ -191,6 +203,7 @@ class Testcaselib:
 
     @staticmethod
     def startMininet( main, topology, args="" ):
+        main.log.info( "Copying mininet topology file to mininet machine" )
         copyResult = main.ONOSbench.scp( main.Mininet1,
                                          main.topoPath + main.topology,
                                          main.Mininet1.home + "custom",
@@ -205,6 +218,22 @@ class Testcaselib:
             import re
             controllerIPs = [ ctrl.ipAddress for ctrl in main.Cluster.runningNodes ]
             index = 0
+            destDir = "~/"
+            if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
+                destDir = "/tmp/mn_conf/"
+                # Try to ensure the destination exists
+                main.log.info( "Create folder for network config files" )
+                handle = main.Mininet1.handle
+                handle.sendline( "mkdir -p %s" % destDir )
+                handle.expect( [ main.Mininet1.prompt, main.Mininet1.dockerPrompt ] )
+                main.log.debug( handle.before + handle.after )
+                # Make sure permissions are correct
+                handle.sendline( "sudo chown %s:%s %s" % ( main.Mininet1.user_name, main.Mininet1.user_name, destDir ) )
+                handle.expect( [ main.Mininet1.prompt, main.Mininet1.dockerPrompt ] )
+                main.log.debug( handle.before + handle.after )
+                handle.sendline( "sudo chmod -R a+rwx %s" % ( destDir ) )
+                handle.expect( [ main.Mininet1.prompt, main.Mininet1.dockerPrompt ] )
+                main.log.debug( handle.before + handle.after )
             for conf in main.topologyConf.split(","):
                 # Update zebra configurations with correct ONOS instance IP
                 if conf in [ "zebradbgp1.conf", "zebradbgp2.conf" ]:
@@ -217,7 +246,7 @@ class Testcaselib:
                         f.write( s )
                 copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
                                                                 main.configPath + main.forConfig + conf,
-                                                                "~/",
+                                                                destDir,
                                                                 direction="to" )
         copyResult = copyResult and main.ONOSbench.scp( main.Mininet1,
                                                         main.ONOSbench.home + main.bmv2Path + main.bmv2,
@@ -234,8 +263,6 @@ class Testcaselib:
         main.step( "Starting Mininet Topology" )
         arg = "--onos-ip=%s %s" % (",".join([ctrl.ipAddress for ctrl in main.Cluster.runningNodes]), args)
         main.topology = topology
-        #switchType = " --switch=stratum"
-        #arg += switchType
         topoResult = main.Mininet1.startNet(
                 topoFile=main.Mininet1.home + "custom/" + main.topology, args=arg )
         stepResult = topoResult
@@ -246,25 +273,73 @@ class Testcaselib:
         # Exit if topology did not load properly
         if not topoResult:
             main.cleanAndExit()
+        if main.useBmv2:
+            # Upload the net-cfg file created for each switch
+            filename = "onos-netcfg.json"
+            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+            for switch in main.Mininet1.getSwitches( switchRegex=r"(StratumBmv2Switch)|(Bmv2Switch)" ).keys():
+                path = "/tmp/mn-stratum/%s/" % switch
+                dstPath = "/tmp/"
+                dstFileName = "%s-onos-netcfg.json" % switch
+                main.ONOSbench1.scp( main.Mininet1,
+                                     "%s%s" % ( path, filename ),
+                                     "%s%s" % ( dstPath, dstFileName ),
+                                     "from" )
+                main.ONOSbench1.handle.sendline( "sudo sed -i 's/localhost/%s/g' %s%s" % ( main.Mininet1.ip_address, dstPath, dstFileName ) )
+                # Configure managementAddress
+                main.ONOSbench1.handle.sendline( "sudo sed -i 's/localhost/%s/g' %s%s" % ( main.Mininet1.ip_address, dstPath, dstFileName ) )
+                main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
+                main.log.debug( main.ONOSbench1.handle.before + main.ONOSbench1.handle.after )
+                # Configure device id
+                main.ONOSbench1.handle.sendline( "sudo sed -i 's/device:%s/device:%s:%s/g' %s%s" % ( switch, switchPrefix, switch, dstPath, dstFileName ) )
+                main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
+                main.log.debug( main.ONOSbench1.handle.before + main.ONOSbench1.handle.after )
+                # Configure device name
+                main.ONOSbench1.handle.sendline( "sudo sed -i '/\"basic\"/a\        \"name\": \"%s\",' %s%s" % ( switch, dstPath, dstFileName ) )
+                main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
+                main.log.debug( main.ONOSbench1.handle.before + main.ONOSbench1.handle.after )
+                main.ONOSbench1.onosNetCfg( main.ONOSserver1.ip_address, dstPath, dstFileName )
+        # Make sure hosts make some noise
+        Testcaselib.discoverHosts( main )
+
+    @staticmethod
+    def discoverHosts( main ):
+        # TODO add option to only select specific hosts
+        if hasattr( main, "Mininet1" ):
+            network = main.Mininet1
+        elif hasattr( main, "NetworkBench" ):
+            network = main.NetworkBench
+        else:
+            main.log.warn( "Could not find component for test network, skipping host discovery" )
+            return
+        network.discoverHosts()
 
     @staticmethod
     def connectToPhysicalNetwork( main ):
         main.step( "Connecting to physical netowrk" )
+        main.physicalNet = True
         topoResult = main.NetworkBench.connectToNet()
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully loaded topology",
-                                 onfail="Failed to load topology" )
+                                 onpass="Successfully connected to topology",
+                                 onfail="Failed to connect to topology" )
         # Exit if topology did not load properly
         if not topoResult:
             main.cleanAndExit()
 
+        # Perform any optional setup
+        for switch in main.NetworkBench.switches:
+            if hasattr( switch, "setup" ):
+                switch.setup()  # We might not need this
+
         main.step( "Assign switches to controllers." )
-        assignResult = main.TRUE
+        stepResult = main.TRUE
         switches = main.NetworkBench.getSwitches()
         pool = []
         for name in switches.keys():
+            # NOTE: although this terminology is ovsdb centric, we can use this function for other switches too
+            #       e.g. push onos net-cfg for stratum switches
             thread = main.Thread( target=main.NetworkBench.assignSwController,
                                   name="assignSwitchToController",
                                   args=[ name, main.Cluster.getIps(), '6653' ] )
@@ -281,7 +356,6 @@ class Testcaselib:
 
         # Check devices
         Testcaselib.checkDevices( main, switches=int( main.params[ 'TOPO' ][ 'switchNum' ] ) )
-        time.sleep( float( main.params[ "timers" ][ "connectToNetSleep" ] ) )
         # Connecting to hosts that only have data plane connectivity
         main.step( "Connecting inband hosts" )
         stepResult = main.Network.connectInbandHosts()
@@ -289,6 +363,7 @@ class Testcaselib:
                                  actual=stepResult,
                                  onpass="Successfully connected inband hosts",
                                  onfail="Failed to connect inband hosts" )
+        Testcaselib.discoverHosts( main )
 
     @staticmethod
     def saveOnosDiagnostics( main ):
@@ -396,8 +471,8 @@ class Testcaselib:
         utilities.assertEquals(
                 expect=True,
                 actual=( count > minFlowCount ),
-                onpass="Flow count looks correct: " + str( count ),
-                onfail="Flow count looks wrong: " + str( count ) )
+                onpass="Flow count looks correct; found %s, expecting at least %s" % ( count, minFlowCount ),
+                onfail="Flow count looks wrong; found %s, expecting at least %s" % ( count, minFlowCount ) )
 
         main.step( "Check whether all flow status are ADDED" )
         flowCheck = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowsState,
@@ -438,7 +513,7 @@ class Testcaselib:
     @staticmethod
     def checkFlowsByDpid( main, dpid, minFlowCount, sleep=10 ):
         main.step(
-            " Check whether the flow count of device %s is bigger than %s" % ( dpid, minFlowCount ) )
+            "Check whether the flow count of device %s is bigger than %s" % ( dpid, minFlowCount ) )
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowAddedCount,
                                  main.FALSE,
                                  args=( dpid, minFlowCount ),
@@ -455,7 +530,7 @@ class Testcaselib:
     @staticmethod
     def checkFlowEqualityByDpid( main, dpid, flowCount, sleep=10 ):
         main.step(
-                " Check whether the flow count of device %s is equal to %s" % ( dpid, flowCount ) )
+                "Check whether the flow count of device %s is equal to %s" % ( dpid, flowCount ) )
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowAddedCount,
                                  main.FALSE,
                                  args=( dpid, flowCount, False, 1 ),
@@ -472,7 +547,7 @@ class Testcaselib:
     @staticmethod
     def checkGroupEqualityByDpid( main, dpid, groupCount, sleep=10):
         main.step(
-                " Check whether the group count of device %s is equal to %s" % ( dpid, groupCount ) )
+                "Check whether the group count of device %s is equal to %s" % ( dpid, groupCount ) )
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkGroupAddedCount,
                                  main.FALSE,
                                  args=( dpid, groupCount, False, 1),
@@ -535,6 +610,12 @@ class Testcaselib:
                         utilities.assert_equals( expect=expect, actual=pa,
                                                  onpass="IPv6 connectivity successfully tested",
                                                  onfail="IPv6 connectivity failed" )
+                elif main.physicalNet:
+                    pa = main.NetworkBench.pingallHostsUnidirectional( src, dst, acceptableFailed=acceptableFailed, useScapy=True )
+                    utilities.assert_equals( expect=expect, actual=pa,
+                                             onpass="IP connectivity successfully tested",
+                                             onfail="IP connectivity failed" )
+
                 else:
                     pa = main.Network.pingallHostsUnidirectional( src, dst, acceptableFailed=acceptableFailed )
                     utilities.assert_equals( expect=expect, actual=pa,
@@ -552,7 +633,8 @@ class Testcaselib:
                     if ("v4" in hosts[0]):
                         pa = utilities.retry( main.Network.pingallHosts,
                                               main.FALSE if expect else main.TRUE,
-                                              args=(hosts,),
+                                              args=(hosts, ),
+                                              kwargs={ 'ipv6': False },
                                               attempts=retryAttempts,
                                               sleep=sleep )
                         utilities.assert_equals( expect=expect, actual=pa,
@@ -563,13 +645,19 @@ class Testcaselib:
                         utilities.assert_equals( expect=expect, actual=pa,
                                                  onpass="IPv6 connectivity successfully tested",
                                                  onfail="IPv6 connectivity failed" )
+                elif main.physicalNet:
+                    pa = main.Network.pingallHosts( hosts, ipv6=True, useScapy=True )
+                    utilities.assert_equals( expect=expect, actual=pa,
+                                             onpass="IP connectivity successfully tested",
+                                             onfail="IP connectivity failed" )
                 else:
                     pa = main.Network.pingallHosts( hosts )
                     utilities.assert_equals( expect=expect, actual=pa,
                                              onpass="IP connectivity successfully tested",
                                              onfail="IP connectivity failed" )
-            if skipOnFail and pa != expect:
+            if pa != expect:
                 Testcaselib.saveOnosDiagnostics( main )
+            if skipOnFail and pa != expect:
                 Testcaselib.cleanup( main, copyKarafLog=False )
                 main.skipCase()
 
@@ -752,6 +840,8 @@ class Testcaselib:
             if portUp:
                 ctrl.CLI.portstate( dpid=dpid1, port=port1, state='Enable' )
                 ctrl.CLI.portstate( dpid=dpid2, port=port2, state='Enable' )
+                main.log.info(
+                        "Waiting %s seconds for link up to be discovered" % sleep )
                 time.sleep( sleep )
 
             result = ctrl.CLI.checkStatus( numoswitch=switches,
@@ -907,6 +997,7 @@ class Testcaselib:
 
         for ctrl in main.Cluster.active():
             main.ONOSbench.onosStop( ctrl.ipAddress )
+        Testcaselib.mnDockerTeardown( main )
 
     @staticmethod
     def verifyNodes( main ):
@@ -973,6 +1064,7 @@ class Testcaselib:
                                      onfail="Error killing ONOS instance" )
             main.Cluster.runningNodes[ i ].active = False
         main.Cluster.reset()
+        main.log.debug( "sleeping %i seconds" % ( sleep ) )
         time.sleep( sleep )
 
         if len( nodes ) < main.Cluster.numCtrls:
@@ -992,6 +1084,7 @@ class Testcaselib:
         else:
             sleep = float( sleep )
         [ main.ONOSbench.onosStart( main.Cluster.runningNodes[ i ].ipAddress ) for i in nodes ]
+        main.log.debug( "sleeping %i seconds" % ( sleep ) )
         time.sleep( sleep )
         for i in nodes:
             isUp = main.ONOSbench.isup( main.Cluster.runningNodes[ i ].ipAddress )
@@ -1123,7 +1216,7 @@ class Testcaselib:
                                                      main.FALSE,
                                                      kwargs={ 'hostList': [ hostName ],
                                                               'prefix': ip,
-                                                              'update': False },
+                                                              'update': True },
                                                      attempts=attempts,
                                                      sleep=sleep )
         utilities.assert_equals( expect=main.TRUE, actual=ipResult,
@@ -1212,7 +1305,16 @@ class Testcaselib:
                     mininetName = mininetNames[ scapyNames.index( scapyName ) ]
                 else:
                     mininetName = None
-                scapyHandle.startHostCli( mininetName )
+                if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
+                    scapyHandle.mExecDir = "/tmp"
+                    scapyHandle.hostHome = main.params[ "MN_DOCKER" ][ "home" ]
+                    main.log.debug( "start mn host component in docker" )
+                    scapyHandle.startHostCli( mininetName,
+                                              execDir="/tmp",
+                                              hostHome=main.params[ "MN_DOCKER" ][ "home" ] )
+                else:
+                    main.log.debug( "start mn host component" )
+                    scapyHandle.startHostCli( mininetName )
             else:
                 main.Network.createHostComponent( scapyName )
                 scapyHandle = getattr( main, scapyName )
@@ -1404,6 +1506,7 @@ class Testcaselib:
             main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
                                                      subjectClass="ports" )
             # Wait for the host to get RA for setting up default gateway
+            main.log.debug( "sleeping %i seconds" % ( 5 ) )
             time.sleep( 5 )
 
         main.Mininet1.discoverHosts( [ hostName, ] )
@@ -1454,6 +1557,7 @@ class Testcaselib:
             main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
                                                      subjectClass="ports" )
             # Wait for the host to get RA for setting up default gateway
+            main.log.debug( "sleeping %i seconds" % ( 5 ) )
             time.sleep( 5 )
 
         main.Mininet1.discoverHosts( [ hostName, ] )
@@ -1467,3 +1571,114 @@ class Testcaselib:
                         vlan = hostName.split( "/" )[ -1 ]
                         del main.expectedHosts[ "onos" ][ hostName ]
                         main.expectedHosts[ "onos" ][ "{}/{}".format( macAddr.upper(), vlan ) ] = ip
+
+    @staticmethod
+    def mnDockerSetup( main ):
+        """
+        Optionally start and setup docker image for mininet
+        """
+        if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
+
+            main.log.info( "Creating Mininet Docker" )
+            handle = main.Mininet1.handle
+            main.Mininet1.dockerPrompt = '#'
+
+            confDir = "/tmp/mn_conf/"
+            # Try to ensure the destination exists
+            main.log.info( "Create folder for network config files" )
+            handle.sendline( "mkdir -p %s" % confDir )
+            handle.expect( main.Mininet1.prompt )
+            main.log.debug( handle.before + handle.after )
+            # Make sure permissions are correct
+            handle.sendline( "sudo chown %s:%s %s" % ( main.Mininet1.user_name, main.Mininet1.user_name, confDir ) )
+            handle.sendline( "sudo chmod -R a+rwx %s" % ( confDir ) )
+            handle.expect( main.Mininet1.prompt )
+            main.log.debug( handle.before + handle.after )
+            # Start docker container
+            handle.sendline( "docker run --name trellis_mininet %s %s" % ( main.params[ 'MN_DOCKER' ][ 'args' ], main.params[ 'MN_DOCKER' ][ 'name' ] ) )
+            handle.expect( main.Mininet1.bashPrompt )
+            output = handle.before + handle.after
+            main.log.debug( repr(output) )
+
+            handle.sendline( "docker attach trellis_mininet" )
+            handle.expect( main.Mininet1.dockerPrompt )
+            main.log.debug( handle.before + handle.after )
+            handle.sendline( "sysctl -w net.ipv4.ip_forward=0" )
+            handle.sendline( "sysctl -w net.ipv4.conf.all.forwarding=0" )
+            handle.expect( main.Mininet1.dockerPrompt )
+            main.log.debug( handle.before + handle.after )
+            # We should be good to go
+            main.Mininet1.prompt = main.Mininet1.dockerPrompt
+            main.Mininet1.sudoRequired = False
+
+            # Fow when we create component handles
+            main.Mininet1.mExecDir = "/tmp"
+            main.Mininet1.hostHome = main.params[ "MN_DOCKER" ][ "home" ]
+            main.Mininet1.hostPrompt = "/home/root#"
+
+    @staticmethod
+    def mnDockerTeardown( main ):
+        """
+        Optionally stop and cleanup docker image for mininet
+        """
+
+        if hasattr( main, 'Mininet1' ):
+            if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
+                main.log.info( "Deleting Mininet Docker" )
+
+                # Detach from container
+                handle = main.Mininet1.handle
+                try:
+                    handle.sendline( "exit" )  # ctrl-p ctrk-q  to detach from container
+                    main.log.debug( "sleeping %i seconds" % ( 5 ) )
+                    time.sleep(5)
+                    handle.expect( main.Mininet1.dockerPrompt )
+                    main.log.debug( handle.before + handle.after )
+                    main.Mininet1.prompt = main.Mininet1.bashPrompt
+                    handle.expect( main.Mininet1.prompt )
+                    main.log.debug( handle.before + handle.after )
+                    main.Mininet1.sudoRequired = True
+                except Exception as e:
+                    main.log.error( e )
+
+    @staticmethod
+    def setOnosConfig( main ):
+        """
+        Read and Set onos configurations from the params file
+        """
+        main.step( "Set ONOS configurations" )
+        config = main.params.get( 'ONOS_Configuration' )
+        if config:
+            main.log.debug( config )
+            checkResult = main.TRUE
+            for component in config:
+                for setting in config[ component ]:
+                    value = config[ component ][ setting ]
+                    check = main.Cluster.next().setCfg( component, setting, value )
+                    main.log.info( "Value was changed? {}".format( main.TRUE == check ) )
+                    checkResult = check and checkResult
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=checkResult,
+                                     onpass="Successfully set config",
+                                     onfail="Failed to set config" )
+        else:
+            main.log.warn( "No configurations were specified to be changed after startup" )
+
+    @staticmethod
+    def setOnosLogLevels( main ):
+        """
+        Read and Set onos log levels from the params file
+        """
+        main.step( 'Set logging levels' )
+        logging = True
+        try:
+            logs = main.params.get( 'ONOS_Logging', False )
+            if logs:
+                for namespace, level in logs.items():
+                    for ctrl in main.Cluster.active():
+                        ctrl.CLI.logSet( level, namespace )
+        except AttributeError:
+            logging = False
+        utilities.assert_equals( expect=True, actual=logging,
+                                 onpass="Set log levels",
+                                 onfail="Failed to set log levels" )

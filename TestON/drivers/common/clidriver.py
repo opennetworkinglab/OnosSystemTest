@@ -515,6 +515,10 @@ class CLI( Component ):
         except AssertionError:
             main.log.error( self.name + ": Could not execute command: " + output )
             return False
+        except ValueError as e:
+            main.log.error( self.name + ": Error parsing output: " + output )
+            main.log.error( e )
+            return False
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -589,3 +593,14 @@ class CLI( Component ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
+
+    def cleanOutput( self, output, debug=False ):
+        """
+        Clean ANSI characters from output
+        """
+        ansiEscape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        cleaned = ansiEscape.sub( '', output )
+        if debug:
+            main.log.debug( self.name + ": cleanOutput:" )
+            main.log.debug( self.name + ": " + repr( cleaned ) )
+        return cleaned

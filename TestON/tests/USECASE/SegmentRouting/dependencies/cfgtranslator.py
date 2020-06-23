@@ -28,6 +28,7 @@ DHCP_APP_ID = ONOS_GROUP_ID + '.' + DHCP_APP
 
 # Translate configuration JSON file from BMv2 driver to OFDPA-OVS driver.
 def bmv2ToOfdpa( main, cfgFile="" ):
+    didRE = r"device:(?P<swType>bmv2|tofino):(?P<swRole>leaf|spine)(?P<swNum>[1-9][0-9]*)(/(?P<portNum>[0-9]+))?"
     if not cfgFile:
         cfgFile = "%s%s.json" % ( main.configPath + main.forJson,
                                   main.cfgName )
@@ -36,9 +37,9 @@ def bmv2ToOfdpa( main, cfgFile="" ):
 
     if 'ports' in netcfg.keys():
         for port in netcfg[ 'ports' ].keys():
-            searchObj = re.search( "device:bmv2:leaf([1-9][0-9]*)/([0-9]+)", port )
+            searchObj = re.search( didRE, port )
             if searchObj:
-                new_port = 'of:' + searchObj.group( 1 ).zfill( 16 ) + '/' + searchObj.group( 2 )
+                new_port = 'of:' + searchObj.group( 'swNum' ).zfill( 16 ) + '/' + searchObj.group( 'portNum' )
                 netcfg[ 'ports' ][ new_port ] = netcfg[ 'ports' ].pop( port )
 
     if 'hosts' in netcfg.keys():
@@ -46,32 +47,31 @@ def bmv2ToOfdpa( main, cfgFile="" ):
             if type( hostCfg[ 'basic' ][ 'locations' ] ) is list:
                 new_locations = []
                 for location in hostCfg[ 'basic' ][ 'locations' ]:
-                    searchObj = re.search( "device:bmv2:leaf([1-9][0-9]*)/([0-9]+)", location )
+                    searchObj = re.search( didRE, location )
                     if searchObj:
-                        new_locations.append( 'of:' + searchObj.group( 1 ).zfill( 16 ) + '/' + searchObj.group( 2 ) )
+                        new_locations.append( 'of:' + searchObj.group( 'swNum' ).zfill( 16 ) + '/' + searchObj.group( 'portNum' ) )
                     else:
                         new_locations.append( location )
                 netcfg[ 'hosts' ][ host ][ 'basic' ][ 'locations' ] = new_locations
             else:
                 location = hostCfg[ 'basic' ][ 'locations' ]
-                searchObj = re.search( "device:bmv2:leaf([1-9][0-9]*)/([0-9]+)", location )
+                searchObj = re.search( didRE, location )
                 if searchObj:
-                    new_location = 'of:' + searchObj.group( 1 ).zfill( 16 ) + '/' + searchObj.group( 2 )
+                    new_location = 'of:' + searchObj.group( 'swNum' ).zfill( 16 ) + '/' + searchObj.group( 'portNum' )
                     netcfg[ 'hosts' ][ host ][ 'basic' ][ 'locations' ] = new_location
 
     if 'devices' in netcfg.keys():
         for device in netcfg[ 'devices' ].keys():
-            searchObj = re.search( "device:bmv2:(leaf|spine)([1-9][0-9]*)", device )
+            searchObj = re.search( didRE, device )
             new_device = device
             if searchObj:
-                new_device = 'of:' + searchObj.group( 2 ).zfill( 16 )
+                new_device = 'of:' + searchObj.group( 'swNum' ).zfill( 16 )
                 netcfg[ 'devices' ][ new_device ] = netcfg[ 'devices' ].pop( device )
             if 'pairDeviceId' in netcfg[ 'devices' ][ new_device ][ SR_APP ].keys():
-                searchObj = re.search( "device:bmv2:leaf([1-9][0-9]*)",
-                                       netcfg[ 'devices' ][ new_device ][ SR_APP ][ 'pairDeviceId' ])
+                searchObj = re.search( didRE, netcfg[ 'devices' ][ new_device ][ SR_APP ][ 'pairDeviceId' ])
                 if searchObj:
                     netcfg[ 'devices' ][ new_device ][ SR_APP ][ 'pairDeviceId' ] = 'of:' + \
-                                                                                    searchObj.group( 1 ).zfill( 16 )
+                                                                                    searchObj.group( 'swNum' ).zfill( 16 )
             if 'basic' in netcfg[ 'devices' ][ new_device ].keys():
                 netcfg[ 'devices' ][ new_device ][ 'basic' ].update( { 'driver': 'ofdpa-ovs' } )
 
@@ -79,17 +79,18 @@ def bmv2ToOfdpa( main, cfgFile="" ):
         if DHCP_APP_ID in netcfg[ 'apps' ].keys():
             for i, dhcpcfg in enumerate( netcfg[ 'apps' ][ DHCP_APP_ID ][ 'default' ] ):
                 if 'dhcpServerConnectPoint' in dhcpcfg.keys():
-                    searchObj = re.search( "device:bmv2:leaf([1-9][0-9]*)/([0-9]+)",
-                                           dhcpcfg[ 'dhcpServerConnectPoint' ] )
+                    searchObj = re.search( didRE, dhcpcfg[ 'dhcpServerConnectPoint' ] )
                     if searchObj:
                         netcfg[ 'apps' ][ DHCP_APP_ID ][ 'default' ][ i ][ 'dhcpServerConnectPoint' ] = \
-                            'of:' + searchObj.group( 1 ).zfill(16) + '/' + searchObj.group( 2 )
+                            'of:' + searchObj.group( 'swNum' ).zfill(16) + '/' + searchObj.group( 'portNum' )
 
     with open( cfgFile, 'w' ) as cfg:
-        cfg.write( json.dumps( netcfg, indent=4, separators=( ',', ':' ) ) )
+        cfg.write( json.dumps( netcfg, indent=4, separators=( ',', ':' ), sort_keys=True ) )
 
 # Translate configuration JSON file from OFDPA-OVS driver to BMv2 driver.
-def ofdpaToBmv2( main, cfgFile="" ):
+def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="" ):
+    didRE= r"device:(?P<swType>bmv2|tofino):(?P<swRole>leaf|spine)(?P<swNum>[1-9][0-9]*)(/(?P<portNum>[0-9]+))?"
+    didRE = r"of:0*(?P<swNum>[1-9][0-9]*)(/(?P<portNum>[0-9]+))?"
     if not cfgFile:
         cfgFile = "%s%s.json" % ( main.configPath + main.forJson,
                                   main.cfgName )
@@ -98,9 +99,9 @@ def ofdpaToBmv2( main, cfgFile="" ):
 
     if 'ports' in netcfg.keys():
         for port in netcfg[ 'ports' ].keys():
-            searchObj = re.search( "of:0*([1-9][0-9]*)/([0-9]+)", port )
+            searchObj = re.search( didRE, port )
             if searchObj:
-                new_port = 'device:bmv2:leaf' + searchObj.group( 1 ) + '/' + searchObj.group( 2 )
+                new_port = 'device:' + switchPrefix + ':leaf' + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
                 netcfg[ 'ports' ][ new_port ] = netcfg[ 'ports' ].pop( port )
 
     if 'hosts' in netcfg.keys():
@@ -108,36 +109,36 @@ def ofdpaToBmv2( main, cfgFile="" ):
             if type( hostCfg[ 'basic' ][ 'locations' ] ) is list:
                 new_locations = []
                 for location in hostCfg[ 'basic' ][ 'locations' ]:
-                    searchObj = re.search( "of:0*([1-9][0-9]*)/([0-9]+)", location )
+                    searchObj = re.search( didRE, location )
                     if searchObj:
-                        new_locations.append( 'device:bmv2:leaf' + searchObj.group( 1 ) + '/' + searchObj.group( 2 ) )
+                        new_locations.append( 'device:' + switchPrefix + ':leaf' + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' ) )
                     else:
                         new_locations.append( location )
                 netcfg[ 'hosts' ][ host ][ 'basic' ][ 'locations' ] = new_locations
             else:
                 location = hostCfg[ 'basic' ][ 'locations' ]
-                searchObj = re.search( "of:0*([1-9][0-9]*)/([0-9]+)", location )
+                searchObj = re.search( didRE, location )
                 if searchObj:
-                    new_location = 'device:bmv2:leaf' + searchObj.group( 1 ) + '/' + searchObj.group( 2 )
+                    new_location = 'device:' + switchPrefix + ':leaf' + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
                     netcfg[ 'hosts' ][ host ][ 'basic' ][ 'locations' ] = new_location
 
     if 'devices' in netcfg.keys():
         for device in netcfg[ 'devices' ].keys():
-            searchObj = re.search( "of:0*([1-9][0-9]*)", device )
+            searchObj = re.search( didRE, device )
             new_device = device
             if searchObj:
                 isLeaf = netcfg[ 'devices' ][ device ][ SR_APP ][ 'isEdgeRouter' ]
                 if isLeaf is True:
-                    new_device = 'device:bmv2:leaf' + searchObj.group( 1 )
+                    new_device = 'device:' + switchPrefix + ':leaf' + searchObj.group( 'swNum' )
                 else:
-                    new_device = 'device:bmv2:spine' + searchObj.group( 1 )
+                    new_device = 'device:' + switchPrefix + ':spine' + searchObj.group( 'swNum' )
                 netcfg[ 'devices' ][ new_device ] = netcfg[ 'devices' ].pop( device )
             if 'pairDeviceId' in netcfg[ 'devices' ][ new_device ][ SR_APP ].keys():
-                searchObj = re.search( "of:0*([1-9][0-9]*)",
+                searchObj = re.search( didRE,
                                        netcfg[ 'devices' ][ new_device ][ SR_APP ][ 'pairDeviceId' ])
                 if searchObj:
-                    netcfg[ 'devices' ][ new_device ][ SR_APP ][ 'pairDeviceId' ] = 'device:bmv2:leaf' + \
-                                                                                    searchObj.group( 1 )
+                    netcfg[ 'devices' ][ new_device ][ SR_APP ][ 'pairDeviceId' ] = 'device:' + switchPrefix + ':leaf' + \
+                                                                                    searchObj.group( 'swNum' )
             if 'basic' in netcfg[ 'devices' ][ new_device ].keys():
                 if 'driver' in netcfg[ 'devices' ][ new_device ][ 'basic' ].keys():
                     del netcfg[ 'devices' ][ new_device ][ 'basic' ][ 'driver' ]
@@ -146,11 +147,11 @@ def ofdpaToBmv2( main, cfgFile="" ):
         if DHCP_APP_ID in netcfg[ 'apps' ].keys():
             for i, dhcpcfg in enumerate( netcfg[ 'apps' ][ DHCP_APP_ID ][ 'default' ] ):
                 if 'dhcpServerConnectPoint' in dhcpcfg.keys():
-                    searchObj = re.search( "of:0*([1-9][0-9]*)/([0-9]+)",
+                    searchObj = re.search( didRE,
                                            dhcpcfg[ 'dhcpServerConnectPoint' ] )
                     if searchObj:
                         netcfg[ 'apps' ][ DHCP_APP_ID ][ 'default' ][ i ][ 'dhcpServerConnectPoint' ] = \
-                            'device:bmv2:leaf' + searchObj.group( 1 ) + '/' + searchObj.group( 2 )
+                            'device:' + switchPrefix + ':leaf' + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
 
     with open( cfgFile, 'w' ) as cfg:
-        cfg.write( json.dumps( netcfg, indent=4, separators=( ',', ':' ) ) )
+        cfg.write( json.dumps( netcfg, indent=4, separators=( ',', ':' ), sort_keys=True ) )

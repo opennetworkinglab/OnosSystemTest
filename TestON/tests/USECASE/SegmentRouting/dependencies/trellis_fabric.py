@@ -365,7 +365,7 @@ class LeafSpineFabric (Topo) :
         self.addLink(r1, rh1)
 
         # External IPv6 Host behind r1
-        rh1v6 = self.addHost('rh1v6', cls=TrellisHost, ips=['2000::9902/120'], gateway='2000::9901')
+        rh1v6 = self.addHost('rh1v6', cls=TrellisHost, ips=['2000::9902/120'], gateway='2000::9901', ipv6=True )
         self.addLink(r1, rh1v6)
 
         # DHCP server

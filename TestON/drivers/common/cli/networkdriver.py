@@ -31,6 +31,9 @@ import pexpect
 import os
 import re
 import types
+import time
+import itertools
+import random
 from drivers.common.clidriver import CLI
 from core.graph import Graph
 
@@ -126,7 +129,7 @@ class NetworkDriver( CLI ):
         try:
             for key, value in main.componentDictionary.items():
                 if hasattr( main, key ):
-                    if value[ 'type' ] in [ 'MininetSwitchDriver', 'OFDPASwitchDriver' ]:
+                    if value[ 'type' ] in [ 'MininetSwitchDriver', 'OFDPASwitchDriver', 'StratumOSSwitchDriver' ]:
                         component = getattr( main, key )
                         shortName = component.options[ 'shortName' ]
                         localName = self.name + "-" + shortName
@@ -275,7 +278,12 @@ class NetworkDriver( CLI ):
                 continue
             if not includeStopped and not switchComponent.isup:
                 continue
-            dpid = switchComponent.dpid.replace( '0x', '' ).zfill( 16 )
+            try:
+                dpid = switchComponent.dpid
+            except AttributeError:
+                main.log.warn( "Switch has no dpid, ignore this if not an OpenFlow switch" )
+                dpid = "0x0"
+            dpid = dpid.replace( '0x', '' ).zfill( 16 )
             ports = switchComponent.ports
             swClass = 'Unknown'
             pid = None
@@ -344,7 +352,6 @@ class NetworkDriver( CLI ):
         """
         Return MAC address of a host
         """
-        import re
         try:
             hostComponent = self.hosts[ host ]
             response = hostComponent.ifconfig()
@@ -460,8 +467,6 @@ class NetworkDriver( CLI ):
             main.TRUE if pingall completes with no pings dropped
             otherwise main.FALSE
         """
-        import time
-        import itertools
         try:
             timeout = int( timeout )
             main.log.info( self.name + ": Checking reachabilty to the hosts using ping" )
@@ -495,7 +500,7 @@ class NetworkDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def pingallHosts( self, hostList, wait=1 ):
+    def pingallHosts( self, hostList, ipv6=False, wait=1, useScapy=False ):
         """
             Ping all specified IPv4 hosts
 
@@ -507,8 +512,6 @@ class NetworkDriver( CLI ):
 
             Returns main.FALSE if one or more of hosts specified
             cannot reach each other"""
-        import time
-        import itertools
         hostComponentList = []
         for hostName in hostList:
             hostComponent = self.hosts[ hostName ]
@@ -522,8 +525,49 @@ class NetworkDriver( CLI ):
             hostPairs = itertools.permutations( list( hostComponentList ), 2 )
             for hostPair in list( hostPairs ):
                 pingResponse += hostPair[ 0 ].options[ 'shortName' ] + " -> "
-                ipDst = hostPair[ 1 ].options[ 'ip6' ] if ipv6 else hostPair[ 1 ].options[ 'ip' ]
-                pingResult = hostPair[ 0 ].ping( ipDst, wait=int( wait ) )
+                ipDst = hostPair[ 1 ].options.get( 'ip6', hostPair[ 1 ].options[ 'ip' ] ) if ipv6 else hostPair[ 1 ].options[ 'ip' ]
+                srcIface = hostPair[ 0 ].interfaces[0].get( 'name' )
+                dstIface = hostPair[ 1 ].interfaces[0].get( 'name' )
+                srcMac = hostPair[0].interfaces[0].get( 'mac' )
+                dstMac = hostPair[1].interfaces[0].get( 'mac' )
+                if useScapy:
+                    main.log.debug( "Pinging from " + str( hostPair[ 0 ].shortName ) + " to " + str( hostPair[ 1 ].shortName ) )
+                    srcIPs = hostPair[ 0 ].interfaces[0].get( 'ips' )
+                    dstIPs = hostPair[ 1 ].interfaces[0].get( 'ips' )
+                    # Use scapy to send and recieve packets
+                    hostPair[ 1 ].startScapy( ifaceName=dstIface )
+                    hostPair[ 1 ].addRoutes()
+                    hostPair[ 1 ].startFilter( ifaceName=dstIface, pktFilter="ether host %s and ip host %s" % ( srcMac, srcIPs[0] ) )
+
+                    hostPair[ 0 ].startScapy( ifaceName=srcIface )
+                    hostPair[ 0 ].addRoutes()
+                    hostPair[ 0 ].buildEther( dst=dstMac )
+                    hostPair[ 0 ].buildIP( src=srcIPs, dst=dstIPs )
+                    hostPair[ 0 ].buildICMP( )
+                    hostPair[ 0 ].sendPacket( iface=srcIface )
+
+                    waiting = not hostPair[ 1 ].checkFilter()
+                    if not waiting:
+                        pingResult = main.FALSE
+                        packets = hostPair[ 1 ].readPackets()
+                        main.log.warn( packets )
+                        for packet in packets.splitlines():
+                            main.log.debug( packet )
+                            if srcIPs[0] in packet:
+                                pingResult = main.TRUE
+                    else:
+                        main.log.warn( "Did not receive packets, killing filter" )
+                        kill = hostPair[ 1 ].killFilter()
+                        main.log.debug( kill )
+                        hostPair[ 1 ].handle.sendline( "" )
+                        hostPair[ 1 ].handle.expect( hostPair[ 1 ].scapyPrompt )
+                        main.log.debug( hostPair[ 1 ].handle.before )
+                        # One of the host to host pair is unreachable
+                        pingResult = main.FALSE
+                    hostPair[ 0 ].stopScapy()
+                    hostPair[ 1 ].stopScapy()
+                else:
+                    pingResult = hostPair[ 0 ].ping( ipDst, interface=srcIface, wait=int( wait ) )
                 if pingResult:
                     pingResponse += hostPair[ 1 ].options[ 'shortName' ]
                 else:
@@ -534,6 +578,122 @@ class NetworkDriver( CLI ):
                 pingResponse += "\n"
             main.log.info( pingResponse + "Failed pings: " + str( failedPings ) )
             return isReachable
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def pingallHostsUnidirectional( self, srcList, dstList, ipv6=False, wait=1, acceptableFailed=0, useScapy=False ):
+        """
+        Verify ping from each host in srcList to each host in dstList
+
+        acceptableFailed: max number of acceptable failed pings
+
+        Returns main.TRUE if all src hosts can reach all dst hosts
+        Returns main.FALSE if one or more of src hosts cannot reach one or more of dst hosts
+        """
+        try:
+            main.log.info( "Verifying ping from each src host to each dst host" )
+
+            srcComponentList = []
+            for hostName in srcList:
+                hostComponent = self.hosts[ hostName ]
+                if hostComponent:
+                    main.log.debug( repr( hostComponent ) )
+                    srcComponentList.append( hostComponent )
+            dstComponentList = []
+            for hostName in dstList:
+                hostComponent = self.hosts[ hostName ]
+                if hostComponent:
+                    main.log.debug( repr( hostComponent ) )
+                    dstComponentList.append( hostComponent )
+
+            isReachable = main.TRUE
+            wait = int( wait )
+            cmd = " ping" + ("6" if ipv6 else "") + " -c 1 -i 1 -W " + str( wait ) + " "
+            pingResponse = "Ping output:\n"
+            failedPingsTotal = 0
+            for srcHost in srcComponentList:
+                pingResponse += str( str( srcHost.shortName ) + " -> " )
+                for dstHost in dstComponentList:
+                    failedPings = 0
+                    dstIP = dstHost.ip
+                    assert dstIP, "Not able to get IP address of host {}".format( dstHost )
+                    for iface in srcHost.interfaces:
+                        # FIXME This only works if one iface name is configured
+                        # NOTE: We can use an IP with -I instead of an interface name as well
+                        name = iface.get( 'name' )
+                        if name:
+                            cmd += " -I %s " % name
+
+                    if useScapy:
+                        while failedPings <= acceptableFailed:
+                            main.log.debug( "Pinging from " + str( srcHost.shortName ) + " to " + str( dstHost.shortName ) )
+                            # Use scapy to send and recieve packets
+                            dstHost.startFilter()
+                            srcHost.buildEther( dst=srcHost.interfaces[0].get( 'mac') )
+                            srcHost.sendPacket()
+                            output = dstHost.checkFilter()
+                            main.log.debug( output )
+                            if output:
+                                #TODO: parse output?
+                                packets = dstHost.readPackets()
+                                for packet in packets.splitlines():
+                                    main.log.debug( packet )
+                                pingResponse += " " + str( dstHost.shortName )
+                                break
+                            else:
+                                kill = dstHost.killFilter()
+                                main.log.debug( kill )
+                                dstHost.handle.sendline( "" )
+                                dstHost.handle.expect( dstHost.scapyPrompt )
+                                main.log.debug( dstHost.handle.before )
+                                failedPings += 1
+                                time.sleep(1)
+                        if failedPings > acceptableFailed:
+                            # One of the host to host pair is unreachable
+                            pingResponse += " X"
+                            isReachable = main.FALSE
+                            failedPingsTotal += 1
+
+                    else:
+                        pingCmd = cmd + str( dstIP )
+                        while failedPings <= acceptableFailed:
+                            main.log.debug( "Pinging from " + str( srcHost.shortName ) + " to " + str( dstHost.shortName ) )
+                            self.handle.sendline( pingCmd )
+                            self.handle.expect( self.prompt, timeout=wait + 5 )
+                            response = self.handle.before
+                            if re.search( ',\s0\%\spacket\sloss', response ):
+                                pingResponse += " " + str( dstHost.shortName )
+                                break
+                            else:
+                                failedPings += 1
+                                time.sleep(1)
+                        if failedPings > acceptableFailed:
+                            # One of the host to host pair is unreachable
+                            pingResponse += " X"
+                            isReachable = main.FALSE
+                            failedPingsTotal += 1
+                pingResponse += "\n"
+            main.log.info( pingResponse + "Failed pings: " + str( failedPingsTotal ) )
+            return isReachable
+        except AssertionError:
+            main.log.exception( "" )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception" )
+            response = self.handle.before
+            # NOTE: Send ctrl-c to make sure command is stopped
+            self.exitFromCmd( [ "Interrupt", self.prompt ] )
+            response += self.handle.before + self.handle.after
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            response += self.handle.before + self.handle.after
+            main.log.debug( response )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
@@ -658,7 +818,6 @@ class NetworkDriver( CLI ):
         Any link that has either end included in skipLinks will be excluded.
         Returns the link as a list, e.g. [ 's1', 's2' ].
         """
-        import random
         candidateLinks = []
         try:
             if not nonCut:
@@ -708,7 +867,6 @@ class NetworkDriver( CLI ):
         Switches specified in skipSwitches will be excluded.
         Returns the name of the chosen switch.
         """
-        import random
         candidateSwitches = []
         try:
             if not nonCut:
@@ -896,9 +1054,11 @@ class NetworkDriver( CLI ):
             for host in hostList:
                 flushCmd = ""
                 cmd = ""
-                if self.getIPAddress( host ):
+                if self.getIPAddress( host ) or hosts[host]['interfaces'][0].get( 'ips', False ) :
                     flushCmd = "sudo ip neigh flush all"
-                    cmd = "arping -c 1 -w {} {}".format( wait, dstIp )
+                    intf = hosts[host]['interfaces'][0].get( 'name' )
+                    intfStr = "-i {}".format( intf ) if intf else ""
+                    cmd = "sudo arping -c 1 -w {} {} {}".format( wait, intfStr, dstIp )
                     main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
                     flushCmd = "sudo ip -6 neigh flush all"

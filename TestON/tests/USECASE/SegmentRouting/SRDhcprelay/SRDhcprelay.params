@@ -18,11 +18,12 @@
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
         <conf>dhcpd.conf,dhcpd6.conf,bgpdr1.conf,bgpdr2.conf,bgpdbgp1.conf,zebradbgp1.conf,bgpdbgp2.conf,zebradbgp2.conf</conf>
+        <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement,drivers.bmv2,pipelines.fabric</cellApps>
+        <cellApps>drivers,openflow,fpm,dhcprelay,netcfghostprovider,routeradvertisement,drivers.bmv2,pipelines.fabric</cellApps>
     </ENV>
 
     <GIT>

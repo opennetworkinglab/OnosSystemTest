@@ -1357,6 +1357,38 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def onosAppInstall( self, nodeIp, oarFile ):
+        """
+        Calls the command: 'onos-app nodeIp install! oarFile'
+        Installs an ONOS application from an oar file
+        """
+        try:
+            cmd = "onos-app " + str( nodeIp ) +" install! " + str(oarFile)
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( handle )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "error" not in handle, handle
+            assert "usage:" not in handle, handle
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "Error in onos-app output" )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout in onosAppInstall" )
+            self.handle.send( "\x03" )  # Control-C
+            self.handle.expect( self.prompt )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def onosRemoveRaftLogs( self ):
         """
         Removes Raft / Copy cat files from ONOS to ensure

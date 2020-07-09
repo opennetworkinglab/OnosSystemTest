@@ -85,6 +85,8 @@ class Testcaselib:
             main.stratumRoot = main.params[ 'DEPENDENCY'][ 'stratumRoot'] if 'stratumRoot' in main.params[ 'DEPENDENCY' ] else None
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
+            main.trellisOar = main.params[ 'DEPENDENCY' ][ 'trellisOar' ]
+            main.t3Oar = main.params[ 'DEPENDENCY' ][ 't3Oar' ] if 't3Oar' in main.params[ 'DEPENDENCY' ] else None
 
             stepResult = main.testSetUp.envSetup( False )
         except Exception as e:
@@ -125,7 +127,7 @@ class Testcaselib:
                                   useSSH=Testcaselib.useSSH,
                                   installParallel=parallel, includeCaseDesc=False )
         ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
-                                 main.FALSE,
+                                 [ None, main.FALSE ],
                                  sleep=cliSleep,
                                  attempts=10 )
         if ready:
@@ -153,6 +155,16 @@ class Testcaselib:
                     time.sleep( 1 )
                 except Exception as e:
                     main.log.error( e )
+
+        # Install segmentrouting and t3 app
+        appInstallResult = main.ONOSbench.onosAppInstall( main.Cluster.runningNodes[0].ipAddress, main.trellisOar)
+        if main.t3Oar:
+            appInstallResult = appInstallResult and main.ONOSbench.onosAppInstall( main.Cluster.runningNodes[0].ipAddress, main.t3Oar)
+        utilities.assert_equals( expect=main.TRUE, actual=appInstallResult,
+                                 onpass="SR app installation succeded",
+                                 onfail="SR app installation failed" )
+        if not appInstallResult:
+            main.cleanAndExit()
 
         Testcaselib.setOnosLogLevels( main )
         Testcaselib.setOnosConfig( main )
@@ -1110,7 +1122,7 @@ class Testcaselib:
         Testcaselib.verifyTopology( main, switches, links, expNodes )
 
         ready = utilities.retry( main.Cluster.active( 0 ).CLI.summary,
-                                 main.FALSE,
+                                 [ None, main.FALSE ],
                                  attempts=10,
                                  sleep=12 )
         if ready:

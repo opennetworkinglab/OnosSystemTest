@@ -1288,6 +1288,70 @@
         "category": "SR",
         "supportedBranches": [ "all" ]
     },
+    "SRDhcprelay-stratum": {
+        "test": "SRDhcprelay --params-file SRDhcprelay.params.stratum",
+        "wikiName": "SR Dhcp Relay with Stratum BMv2 switches",
+        "wikiFile": "SRDhcprelayWiki.txt",
+        "schedules": [
+            {
+                "branch": "master",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-master"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-2.x"
+            }
+        ],
+        "category": "SR-StratumBMv2",
+        "supportedBranches": [ "onos-2.x", "master" ]
+    },
+    "SRRouting-stratum": {
+        "test": "SRRouting --params-file SRRouting.params.stratum",
+        "wikiName": "SR Routing with Stratum BMv2 switches",
+        "wikiFile": "SRRoutingWiki.txt",
+        "schedules": [
+            {
+                "branch": "master",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-master"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-2.x"
+            }
+        ],
+        "category": "SR-StratumBMv2",
+        "supportedBranches": [ "onos-2.x", "master" ]
+    },
+    "SRBridging-stratum": {
+        "test": "SRBridging --params-file SRBridging.params.stratum",
+        "wikiName": "SR Bridging with Stratum BMv2 switches",
+        "wikiFile": "SRBridgingWiki.txt",
+        "schedules": [
+            {
+                "branch": "master",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-master"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-2.x"
+            }
+        ],
+        "category": "SR-StratumBMv2",
+        "supportedBranches": [ "onos-2.x", "master" ]
+    },
+    "SRBridging-tofino": {
+        "test": "SRBridging --params-file SRBridging.params.tofino --topo-file SRBridging.topo.0x1.physical",
+        "wikiName": "SR Bridging with Tofino switches",
+        "wikiFile": "SRBridgingWiki.txt",
+        "category": "SR-Tofino",
+        "supportedBranches": [ "onos-2.x", "master" ]
+    },
     "FUNCvirNetNB": {
         "wikiName": "FUNCvirNetNB",
         "wikiFile": "FUNCvirNetNBWiki.txt",

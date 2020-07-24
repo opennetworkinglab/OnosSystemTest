@@ -140,7 +140,14 @@ def runTests(){
     for ( String test : testsFromList.keySet() ){
         toBeRun = testsToRun.keySet().contains( test )
         stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-        pureTestName = test.contains( "WithFlowObj" ) ? test - "WithFlowObj" : test
+        // pureTestName is what is passed to the cli, here we check to  see if there are any params to pass as well
+        if ( test.contains( "WithFlowObj" ) ){
+            pureTestName = test - "WithFlowObj"
+        } else if ( testsToRun[ test ].keySet().contains( "test" )  ){
+            pureTestName = testsToRun[ test ][ "test" ]
+        } else {
+            pureTestName = test
+        }
         pipeline[ stepName ] = runTest( test,
                                         toBeRun,
                                         prop,

@@ -18,11 +18,13 @@
         <topology>hagg_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
         <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
+        <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
+        <t3Oar>/home/sdn/t3-app-3.0.0-SNAPSHOT.oar</t3Oar>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting,openflow,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3,mcast,hostprobingprovider</cellApps>
+        <cellApps>drivers,openflow,fpm,dhcprelay,netcfghostprovider,routeradvertisement,mcast,hostprobingprovider</cellApps>
     </ENV>
 
     <GIT>

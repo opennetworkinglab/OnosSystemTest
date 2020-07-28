@@ -23,6 +23,7 @@ import time
 import json
 import urllib
 import re
+import pexpect
 from core import utilities
 
 
@@ -1594,6 +1595,20 @@ class Testcaselib:
             main.log.info( "Creating Mininet Docker" )
             handle = main.Mininet1.handle
             main.Mininet1.dockerPrompt = '#'
+            # build docker image
+            buildOutput = ""
+            try:
+                handle.sendline( " docker build -t trellis_mininet %s/../dependencies/" % main.testDir )
+                handle.expect( "Successfully built", timeout=600 )
+                buildOutput = handle.before + str( handle.after )
+                handle.expect( main.Mininet1.prompt )
+                buildOutput += handle.before
+                main.log.debug( buildOutput )
+            except pexpect.TIMEOUT as e:
+                main.log.error( e )
+                buildOutput += handle.before
+                main.log.debug( buildOutput )
+
 
             confDir = "/tmp/mn_conf/"
             # Try to ensure the destination exists
@@ -1603,14 +1618,19 @@ class Testcaselib:
             main.log.debug( handle.before + handle.after )
             # Make sure permissions are correct
             handle.sendline( "sudo chown %s:%s %s" % ( main.Mininet1.user_name, main.Mininet1.user_name, confDir ) )
+            handle.expect( main.Mininet1.prompt )
             handle.sendline( "sudo chmod -R a+rwx %s" % ( confDir ) )
             handle.expect( main.Mininet1.prompt )
             main.log.debug( handle.before + handle.after )
             # Start docker container
             handle.sendline( "docker run --name trellis_mininet %s %s" % ( main.params[ 'MN_DOCKER' ][ 'args' ], main.params[ 'MN_DOCKER' ][ 'name' ] ) )
-            handle.expect( main.Mininet1.bashPrompt )
+            i = handle.expect( [ main.Mininet1.bashPrompt, "Error response from daemon: Conflict. The container name" ] )
             output = handle.before + handle.after
             main.log.debug( repr(output) )
+            if i == 1:
+                main.log.error( "Docker container already running, aborting test" )
+                main.cleanup()
+                main.exit()
 
             handle.sendline( "docker attach trellis_mininet" )
             handle.expect( main.Mininet1.dockerPrompt )

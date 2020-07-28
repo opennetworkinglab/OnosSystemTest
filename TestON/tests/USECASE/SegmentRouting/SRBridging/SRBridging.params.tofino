@@ -20,6 +20,8 @@
         <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py</lib>
+        <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
+        <t3Oar>/home/sdn/t3-app-3.0.0-SNAPSHOT.oar</t3Oar>
     </DEPENDENCY>
 
     <jsonFileSuffix>.hw</jsonFileSuffix>
@@ -32,7 +34,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting,openflow,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric,drivers.barefoot</cellApps>
+        <cellApps>drivers,openflow,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric,drivers.barefoot</cellApps>
     </ENV>
 
     <EXTERNAL_APPS>

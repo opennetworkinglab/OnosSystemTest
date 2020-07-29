@@ -516,6 +516,8 @@
         "supportedBranches": [ "all" ]
     },
     "SCPFintentInstallWithdrawLatWithFlowObj": {
+        "test": "SCPFintentInstallWithdrawLat",
+        "arguments": "--params TEST/flowObj=True",
         "schedules": [
             {
                 "branch": "master",
@@ -558,6 +560,8 @@
         "supportedBranches": [ "all" ]
     },
     "SCPFintentRerouteLatWithFlowObj": {
+        "test": "SCPFintentRerouteLat",
+        "arguments": "--params TEST/flowObj=True",
         "schedules": [
             {
                 "branch": "master",
@@ -600,6 +604,8 @@
         "supportedBranches": [ "all" ]
     },
     "SCPFintentEventTpWithFlowObj": {
+        "test": "SCPFintentEventTp",
+        "arguments": "--params TEST/flowObj=True",
         "schedules": [
             {
                 "branch": "master",
@@ -663,6 +669,8 @@
         "supportedBranches": [ "all" ]
     },
     "SCPFflowTp1gWithFlowObj": {
+        "test": "SCPFflowTp1g",
+        "arguments": "--params TEST/flowObj=True",
         "schedules": [
             {
                 "branch": "master",
@@ -711,6 +719,8 @@
         "supportedBranches": [ "all" ]
     },
     "SCPFscalingMaxIntentsWithFlowObj": {
+        "test": "SCPFscalingMaxIntents",
+        "arguments": "--params TEST/flowObj=True",
         "schedules": [
         ],
         "category": "SCPF",
@@ -1056,7 +1066,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAsanity": {
-        "test": "HAsanity --params-file HAsanity.params.fabric",
+        "test": "HAsanity",
+        "arguments": "--params-file HAsanity.params.fabric",
         "wikiName": "SR HA Sanity",
         "wikiFile": "HAsanityWiki.txt",
         "schedules": [
@@ -1080,7 +1091,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAclusterRestart": {
-        "test": "HAclusterRestart --params-file HAclusterRestart.params.fabric",
+        "test": "HAclusterRestart",
+        "arguments": "--params-file HAclusterRestart.params.fabric",
         "wikiName": "SR HA Cluster Restart",
         "schedules": [
             {
@@ -1103,7 +1115,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAsingleInstanceRestart": {
-        "test": "HAsingleInstanceRestart --params-file HAsingleInstanceRestart.params.fabric",
+        "test": "HAsingleInstanceRestart",
+        "arguments": "--params-file HAsingleInstanceRestart.params.fabric",
         "wikiName": "SR HA Single Instance Restart",
         "wikiFile": "HAsingleInstanceRestartWiki.txt",
         "schedules": [
@@ -1127,7 +1140,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAstopNodes": {
-        "test": "HAstopNodes --params-file HAstopNodes.params.fabric",
+        "test": "HAstopNodes",
+        "arguments": "--params-file HAstopNodes.params.fabric",
         "wikiName": "SR HA Stop Nodes",
         "wikiFile": "HAstopNodes.txt",
         "schedules": [
@@ -1151,7 +1165,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAfullNetPartition": {
-        "test": "HAfullNetPartition --params-file HAfullNetPartition.params.fabric",
+        "test": "HAfullNetPartition",
+        "arguments": "--params-file HAfullNetPartition.params.fabric",
         "wikiName": "SR HA Full Network Partition",
         "wikiFile": "HAfullNetPartitionWiki.txt",
         "schedules": [
@@ -1175,7 +1190,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAswapNodes": {
-        "test": "HAswapNodes --params-file HAswapNodes.params.fabric",
+        "test": "HAswapNodes",
+        "arguments": "--params-file HAswapNodes.params.fabric",
         "wikiName": "SR HA Swap Nodes",
         "wikiFile": "HAswapNodesWiki.txt",
         "schedules": [
@@ -1199,7 +1215,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAscaling": {
-        "test": "HAscaling --params-file HAscaling.params.fabric",
+        "test": "HAscaling",
+        "arguments": "--params-file HAscaling.params.fabric",
         "wikiName": "SR HA Scaling",
         "wikiFile": "HAscalingWiki.txt",
         "schedules": [
@@ -1223,7 +1240,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAkillNodes": {
-        "test": "HAkillNodes --params-file HAkillNodes.params.fabric",
+        "test": "HAkillNodes",
+        "arguments": "--params-file HAkillNodes.params.fabric",
         "wikiName": "SR HA Kill Nodes",
         "wikiFile": "HAkillNodes.txt",
         "schedules": [
@@ -1247,7 +1265,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAbackupRecover": {
-        "test": "HAbackupRecover --params-file HAbackupRecover.params.fabric",
+        "test": "HAbackupRecover",
+        "arguments": "--params-file HAbackupRecover.params.fabric",
         "wikiName": "SR HA Backup Recover",
         "wikiFile": "HAbackupRecoverWiki.txt",
         "schedules": [
@@ -1271,7 +1290,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAupgrade": {
-        "test": "HAupgrade --params-file HAupgrade.params.fabric",
+        "test": "HAupgrade",
+        "arguments": "--params-file HAupgrade.params.fabric",
         "wikiName": "SR HA Upgrade",
         "wikiFile": "HAupgradeWiki.txt",
         "schedules": [
@@ -1280,7 +1300,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRHAupgradeRollback": {
-        "test": "HAupgradeRollback --params-file HAupgradeRollback.params.fabric",
+        "test": "HAupgradeRollback",
+        "arguments": "--params-file HAupgradeRollback.params.fabric",
         "wikiName": "SR HA Upgrade Rollback",
         "wikiFile": "HAupgradeRollbackWiki.txt",
         "schedule": [
@@ -1289,7 +1310,8 @@
         "supportedBranches": [ "all" ]
     },
     "SRDhcprelay-stratum": {
-        "test": "SRDhcprelay --params-file SRDhcprelay.params.stratum",
+        "test": "SRDhcprelay",
+        "arguments": "--params-file SRDhcprelay.params.stratum",
         "wikiName": "SR Dhcp Relay with Stratum BMv2 switches",
         "wikiFile": "SRDhcprelayWiki.txt",
         "schedules": [
@@ -1308,7 +1330,8 @@
         "supportedBranches": [ "onos-2.x", "master" ]
     },
     "SRRouting-stratum": {
-        "test": "SRRouting --params-file SRRouting.params.stratum",
+        "test": "SRRouting",
+        "arguments": "--params-file SRRouting.params.stratum",
         "wikiName": "SR Routing with Stratum BMv2 switches",
         "wikiFile": "SRRoutingWiki.txt",
         "schedules": [
@@ -1327,7 +1350,8 @@
         "supportedBranches": [ "onos-2.x", "master" ]
     },
     "SRBridging-stratum": {
-        "test": "SRBridging --params-file SRBridging.params.stratum",
+        "test": "SRBridging",
+        "arguments": "--params-file SRBridging.params.stratum",
         "wikiName": "SR Bridging with Stratum BMv2 switches",
         "wikiFile": "SRBridgingWiki.txt",
         "schedules": [
@@ -1346,7 +1370,8 @@
         "supportedBranches": [ "onos-2.x", "master" ]
     },
     "SRBridging-tofino": {
-        "test": "SRBridging --params-file SRBridging.params.tofino --topo-file SRBridging.topo.0x1.physical",
+        "test": "SRBridging",
+        "arguments": "--params-file SRBridging.params.tofino --topo-file SRBridging.topo.0x1.physical",
         "wikiName": "SR Bridging with Tofino switches",
         "wikiFile": "SRBridgingWiki.txt",
         "schedules": [

@@ -137,21 +137,16 @@ def initGraphPaths(){
 
 def runTests(){
     // run the test sequentially and save the function into the dictionary.
-    for ( String test : testsFromList.keySet() ){
-        toBeRun = testsToRun.keySet().contains( test )
-        stepName = ( toBeRun ? "" : "Not " ) + "Running $test"
-        // pureTestName is what is passed to the cli, here we check to  see if there are any params to pass as well
-        if ( test.contains( "WithFlowObj" ) ){
-            pureTestName = test - "WithFlowObj"
-        } else if ( toBeRun && testsToRun[ test ].keySet().contains( "test" )  ){
-            pureTestName = testsToRun[ test ][ "test" ]
-        } else {
-            pureTestName = test
-        }
-        pipeline[ stepName ] = runTest( test,
+    for ( String JenkinsLabel : testsFromList.keySet() ){
+        toBeRun = testsToRun.keySet().contains( JenkinsLabel )
+        stepName = ( toBeRun ? "" : "Not " ) + "Running $JenkinsLabel"
+
+        TestONTest = testsToRun[ JenkinsLabel ].keySet().contains( "test" ) ? testsToRun[ JenkinsLabel ][ "test" ] : JenkinsLabel
+
+        pipeline[ stepName ] = runTest( JenkinsLabel,
                                         toBeRun,
                                         prop,
-                                        pureTestName,
+                                        TestONTest,
                                         isGraphOnly,
                                         testsToRun,
                                         graphPaths[ "trendIndividual" ],
@@ -162,8 +157,8 @@ def runTests(){
     start = getCurrentTime()
 
     // run the tests sequentially.
-    for ( test in pipeline.keySet() ){
-        pipeline[ test ].call()
+    for ( JenkinsLabel in pipeline.keySet() ){
+        pipeline[ JenkinsLabel ].call()
     }
 }
 
@@ -204,18 +199,13 @@ def configureJavaVersion(){
         '''
 }
 
-def runTestCli_py( testName, pureTestName, testCategory ){
+def runTestCli_py( testName, testArguments ){
     // Bash script that will run the test.
-    // testName : name of the test
-    // testCategory : (SR,FUNC ... )
-    flowObjFlag = false
-
-    if ( isSCPF && testName.contains( "WithFlowObj" ) ){
-        flowObjFlag = true
-    }
+    // testName : name of the test in TestON
+    // testArguments : Arguments to be passed to the test framework
 
     command = '''cd ~/OnosSystemTest/TestON/bin
-                 ./cli.py run ''' + pureTestName + ''' --params''' + ( flowObjFlag ? '''TEST/flowObj=True ''' : ''' ''' ) + '''GRAPH/nodeCluster=''' + graphs.getPostjobType( nodeLabel ) + ''' '''
+                 ./cli.py run ''' + testName + ''' --params GRAPH/nodeCluster=''' + graphs.getPostjobType( nodeLabel ) + ''' ''' + testArguments
     echo command
 
     return command
@@ -224,6 +214,7 @@ def runTestCli_py( testName, pureTestName, testCategory ){
 }
 
 def concludeRunTest(){
+    // TODO: Add cleanup for if we use docker containers
     return '''cd ~/OnosSystemTest/TestON/bin
               ./cleanup.sh -f || true
               # cleanup config changes
@@ -248,15 +239,15 @@ def copyLogs(){
     return result
 }
 
-def cleanAndCopyFiles( testName ){
+def cleanAndCopyFiles( JenkinsLabel ){
     // clean up some files that were in the folder and copy the new files from the log
-    // testName : name of the test
+    // JenkinsLabel : name of the test in Jenkins
 
     return '''#!/bin/bash -i
         set +e
         echo "ONOS Branch is: ${ONOSBranch}"
         echo "TestON Branch is: ${TestONBranch}"
-        echo "Job name is: "''' + testName + '''
+        echo "Job name is: "''' + JenkinsLabel + '''
         echo "Workspace is: ${WORKSPACE}/"
         echo "Wiki page to post is: ${WikiPrefix}-"
         # remove any leftover files from previous tests
@@ -278,14 +269,14 @@ def cleanAndCopyFiles( testName ){
         cd '''
 }
 
-def fetchLogs( testName ){
+def fetchLogs( JenkinsLabel ){
     // fetch the logs of onos from onos nodes to onos System Test logs
-    // testName: name of the test
+    // JenkinsLabel : name of the test in Jenkins
 
     return '''#!/bin/bash
   set +e
   cd ~/OnosSystemTest/TestON/logs
-  echo "TestON test name is: "''' + testName + '''
+  echo "TestON test name is: "''' + JenkinsLabel + '''
   TestONlogDir=$(ls -t | grep ${TEST_NAME}_  |head -1)
   echo "########################################################################################"
   echo "#####  copying ONOS logs from all nodes to TestON/logs directory: ${TestONlogDir}"
@@ -316,9 +307,8 @@ def publishToConfluence( isManualRun, isPostResult, wikiLink, file ){
     }
 }
 
-def postLogs( testName, prefix ){
+def postLogs( prefix ){
     // posting logs of the onos jobs specifically SR tests
-    // testName : name of the test
     // prefix : branch prefix ( master, 2.1, 1.15 ... )
 
     resultURL = ""
@@ -329,23 +319,23 @@ def postLogs( testName, prefix ){
     return resultURL
 }
 
-def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink, isSCPF ){
+def analyzeResult( prop, workSpace, TestONTest, JenkinsLabel, resultURL, wikiLink, isSCPF ){
     // analyzing the result of the test and send to slack if any abnormal result is logged.
     // prop : property dictionary
     // workSpace : workSpace where the result file is saved
-    // pureTestName : TestON name of the test
-    // testName : Jenkins name of the test. Example: SCPFflowTPFobj
+    // TestONTest : TestON name of the test
+    // JenkinsLabel : Jenkins name of the test. Example: SCPFflowTPFobj
     // resultURL : url for the logs for SR tests. Will not be posted if it is empty
     // wikiLink : link of the wiki page where the result was posted
     // isSCPF : Check if it is SCPF. If so, it won't post the wiki link.
 
     node( testStation ) {
-        def alarmFile = workSpace + "/" + pureTestName + "Alarm.txt"
+        def alarmFile = workSpace + "/" + TestONTest + "Alarm.txt"
         if ( fileExists( alarmFile ) ) {
             def alarmContents = readFile( alarmFile )
             slackSend( channel: "#jenkins-related",
                        color: "FF0000",
-                       message: "[" + prop[ "ONOSBranch" ] + "]" + testName + " : triggered alarms:\n" +
+                       message: "[" + prop[ "ONOSBranch" ] + "] " + JenkinsLabel + " : triggered alarms:\n" +
                                 alarmContents + "\n" +
                                 "[TestON log] : \n" +
                                 "https://jenkins.onosproject.org/blue/organizations/jenkins/${ env.JOB_NAME }/detail/${ env.JOB_NAME }/${ env.BUILD_NUMBER }/pipeline" +
@@ -364,14 +354,14 @@ def analyzeResult( prop, workSpace, pureTestName, testName, resultURL, wikiLink,
     }
 }
 
-def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, graph_generator_file,
-             graph_saved_directory ){
+def runTest( JenkinsLabel, toBeRun, prop, TestONTest, graphOnly, testCategory,
+             graph_generator_file, graph_saved_directory ){
     // run the test on the machine that contains all the steps : init and run test, copy files, publish result ...
-    // testName : name of the test in Jenkins
+    // JenkinsLabel : name of the test in Jenkins
     // toBeRun : boolean value whether the test will be run or not. If not, it won't be run but shows up with empty
     //           result on pipeline view
     // prop : dictionary property on the machine
-    // pureTestName : Pure name of the test. ( ex. pureTestName of SCPFflowTpFobj will be SCPFflowTp )
+    // TestONTest : Pure name of the test. ( ex. TestONTest of SCPFflowTpFobj will be SCPFflowTp )
     // graphOnly : check if it is generating graph job. If so, it will only generate the generating graph part
     // testCategory : Map for the test suit ( SCPF, SR, FUNC, ... ) which contains information about the tests
     // graph_generator_file : Rscript file with the full path.
@@ -379,10 +369,11 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
 
     return {
         catchError {
-            stage( testName ) {
+            stage( JenkinsLabel ) {
                 if ( toBeRun ){
-                    def workSpace = "/var/jenkins/workspace/" + testName
+                    def workSpace = "/var/jenkins/workspace/" + JenkinsLabel
                     def fileContents = ""
+                    testArguments = testsToRun[ JenkinsLabel ].keySet().contains( "arguments" ) ? testsToRun[ JenkinsLabel ][ "arguments" ] : ""
                     node( testStation ) {
                         withEnv( [ 'ONOSBranch=' + prop[ "ONOSBranch" ],
                                    'ONOSJAVAOPTS=' + prop[ "ONOSJAVAOPTS" ],
@@ -393,42 +384,42 @@ def runTest( testName, toBeRun, prop, pureTestName, graphOnly, testCategory, gra
                             if ( !graphOnly ){
                                 if ( isSCPF ){
                                     // Remove the old database file
-                                    sh SCPFfuncs.cleanupDatabaseFile( testName )
+                                    sh SCPFfuncs.cleanupDatabaseFile( JenkinsLabel )
                                 }
                                 sh script: configureJavaVersion(), label: "Configure Java Version"
                                 sh script: initTest(), label: "Test Initialization: stc shutdown; stc teardown; ./cleanup.sh"
                                 catchError{
-                                    sh script: runTestCli_py( testName, pureTestName, testCategory ), label: ( "Run Test: ./cli.py run " + testName )
+                                    sh script: runTestCli_py( TestONTest, testArguments ), label: ( "Run Test: ./cli.py run " + TestONTest + " " + testArguments )
                                 }
                                 catchError{
                                     sh script: concludeRunTest(), label: "Conclude Running Test: ./cleanup.sh; git clean -df"
                                 }
                                 catchError{
                                     // For the Wiki page
-                                    sh script: cleanAndCopyFiles( pureTestName ), label: "Clean and Copy Files"
+                                    sh script: cleanAndCopyFiles( TestONTest ), label: "Clean and Copy Files"
                                 }
                             }
-                            graphs.databaseAndGraph( prop, testName, pureTestName, graphOnly,
-                                                    graph_generator_file, graph_saved_directory )
+                            graphs.databaseAndGraph( prop, JenkinsLabel, TestONTest, graphOnly,
+                                                     graph_generator_file, graph_saved_directory )
                             if ( !graphOnly ){
-                                sh script: fetchLogs( pureTestName ), label: "Fetch Logs"
+                                sh script: fetchLogs( TestONTest ), label: "Fetch Logs"
                                 if ( !isSCPF ){
                                     publishToConfluence( prop[ "manualRun" ], prop[ "postResult" ],
-                                                         prop[ "WikiPrefix" ] + "-" + testCategory[ testName ][ 'wikiName' ],
-                                                         workSpace + "/" + testCategory[ testName ][ 'wikiFile' ] )
+                                                         prop[ "WikiPrefix" ] + "-" + testCategory[ JenkinsLabel ][ 'wikiName' ],
+                                                         workSpace + "/" + testCategory[ JenkinsLabel ][ 'wikiFile' ] )
                                 }
                             }
                         }
                     }
                     graphs.postResult( prop, graphOnly, nodeLabel )
                     if ( !graphOnly ){
-                        def resultURL = postLogs( testName, prop[ "WikiPrefix" ] )
-                        analyzeResult( prop, workSpace, pureTestName, testName, resultURL,
-                                       isSCPF ? "" : testCategory[ testName ][ 'wikiName' ],
+                        def resultURL = postLogs( prop[ "WikiPrefix" ] )
+                        analyzeResult( prop, workSpace, TestONTest, JenkinsLabel, resultURL,
+                                       isSCPF ? "" : testCategory[ JenkinsLabel ][ 'wikiName' ],
                                        isSCPF )
                     }
                 } else {
-                    echo testName + " is not being run today. Leaving the rest of stage contents blank."
+                    echo JenkinsLabel + " is not being run today. Leaving the rest of stage contents blank."
                 }
             }
         }

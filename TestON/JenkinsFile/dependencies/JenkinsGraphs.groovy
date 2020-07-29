@@ -76,12 +76,12 @@ def database_command_create( pass, host, port, user ){
     return pass + "|psql --host=" + host + " --port=" + port + " --username=" + user + " --password --dbname onostest -c "
 }
 
-def databaseAndGraph( prop, testName, pureTestName, graphOnly, graph_generator_file, graph_saved_directory ){
+def databaseAndGraph( prop, JenkinsLabel, TestONTest, graphOnly, graph_generator_file, graph_saved_directory ){
     // part where it insert the data into the database.
     // It will use the predefined encrypted variables from the Jenkins.
     // prop : property dictionary that was read from the machine
-    // testName : Jenkins name for the test
-    // pureTestName : TestON name for the test
+    // JenkinsLabel : Jenkins name for the test
+    // TestONTest : TestON name for the test
     // graphOnly : boolean whether it is graph only or not
     // graph_generator_file : Rscript file with the full path.
     // graph_saved_directory : where the generated graph will be saved to.
@@ -93,16 +93,16 @@ def databaseAndGraph( prop, testName, pureTestName, graphOnly, graph_generator_f
                 string( credentialsId: 'db_host', variable: 'host' ),
                 string( credentialsId: 'db_port', variable: 'port' ) ] ) {
             def database_command = database_command_create( pass, host, port, user ) +
-                                   ( !isSCPF ? sqlCommand( testName ) : SCPFfunc.sqlCommand( testName ) )
+                                   ( !isSCPF ? sqlCommand( JenkinsLabel ) : SCPFfunc.sqlCommand( JenkinsLabel ) )
             sh script: '''#!/bin/bash
               export DATE=\$(date +%F_%T)
               cd ~
               pwd ''' + ( graphOnly ? "" :
-                          ( !isSCPF ? databasePart( prop[ "WikiPrefix" ], pureTestName, database_command ) :
-                            SCPFfunc.databasePart( testName, database_command ) ) ), label: "Database"
-            sh script: ( !isSCPF ? graphGenerating( host, port, user, pass, testName, prop, graph_saved_directory,
+                          ( !isSCPF ? databasePart( prop[ "WikiPrefix" ], TestONTest, database_command ) :
+                            SCPFfunc.databasePart( JenkinsLabel, database_command ) ) ), label: "Database"
+            sh script: ( !isSCPF ? graphGenerating( host, port, user, pass, JenkinsLabel, prop, graph_saved_directory,
                                                  graph_generator_file ) :
-                      SCPFfunc.getGraphGeneratingCommand( host, port, user, pass, testName, prop ) ), label: "Generate Test Graph"
+                      SCPFfunc.getGraphGeneratingCommand( host, port, user, pass, JenkinsLabel, prop ) ), label: "Generate Test Graph"
         }
     }
 }
@@ -179,6 +179,8 @@ def getOverallPieGraph( file, host, port, user, pass, branch, type, testList, yO
 
 def sqlCommand( testName ){
     // get the inserting sqlCommand for non-SCPF tests.
+    // testName : the name the the test results are stored under in the db.
+    //            This is usually the same as the Jenkins Test name
     table_name = "executed_test_tests"
     result_name = "executed_test_results"
 
@@ -193,19 +195,19 @@ def graphGenerating( host, port, user, pass, testName, prop, graph_saved_directo
                                         prop[ "ONOSBranch" ] ) + " 20 " + graph_saved_directory
 }
 
-def databasePart( wikiPrefix, testName, database_command ){
+def databasePart( wikiPrefix, TestONTest, database_command ){
     // to read and insert the data from .csv to the database
 
     return '''
-    sed 1d ''' + workSpace + "/" + wikiPrefix + "-" + testName + '''.csv | while read line
+    sed 1d ''' + workSpace + "/" + wikiPrefix + "-" + TestONTest + '''.csv | while read line
     do
     echo \$line
     echo ''' + database_command + '''
     done '''
 }
 
-def generateStatGraph( testMachineOn, onos_branch, stat_graph_generator_file, pie_graph_generator_file,
-                       graph_saved_directory, nodeLabel ){
+def generateStatGraph( testMachineOn, onos_branch, stat_graph_generator_file,
+                       pie_graph_generator_file, graph_saved_directory, nodeLabel ){
 
     table_name = "executed_test_tests"
     result_name = "executed_test_results"

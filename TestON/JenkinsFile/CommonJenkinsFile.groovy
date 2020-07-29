@@ -373,7 +373,7 @@ def runTest( JenkinsLabel, toBeRun, prop, TestONTest, graphOnly, testCategory,
                 if ( toBeRun ){
                     def workSpace = "/var/jenkins/workspace/" + JenkinsLabel
                     def fileContents = ""
-                    testArguments = testsToRun[ JenkinsLabel ].keySet().contains( "arguments" ) ? testsToRun[ JenkinsLabel ][ "arguments" ] : ""
+                    testArguments = testCategory[ JenkinsLabel ].keySet().contains( "arguments" ) ? testCategory[ JenkinsLabel ][ "arguments" ] : ""
                     node( testStation ) {
                         withEnv( [ 'ONOSBranch=' + prop[ "ONOSBranch" ],
                                    'ONOSJAVAOPTS=' + prop[ "ONOSJAVAOPTS" ],

@@ -124,7 +124,7 @@ def getCurrentTime(){
 
 def initGraphPaths(){
     graphPaths.put( "trendIndividual", fileRelated.rScriptPaths[ "scripts" ][ "trendIndividual" ] )
-    if ( category == "SR" || category == "SR-StratumBMv2" ){
+    if ( category == "SR" || category == "SR-StratumBMv2" || category == "SR-Tofino" ){
         graphPaths.put( "saveDirectory", fileRelated.workspaces[ "base" ] + "postjob-" + ( testStation - "TestStation-" - "s" ) + "/" )
     } else if ( category == "SRHA" ) {
         graphPaths.put( "saveDirectory", fileRelated.workspaces[ "Fabric" ] )
@@ -235,7 +235,7 @@ def copyLogs(){
     // bash script to copy the logs and other necessary element for SR tests.
 
     result = ""
-    if ( category == "SR" || category == "SR-StratumBMv2" ){
+    if ( category == "SR" || category == "SR-StratumBMv2" || category == "SR-Tofino" ){
         result = '''
       sudo rm /var/jenkins/workspace/SR-log-${WikiPrefix}/*
       sudo cp *karaf.log.* /var/jenkins/workspace/SR-log-${WikiPrefix}/
@@ -322,7 +322,7 @@ def postLogs( testName, prefix ){
     // prefix : branch prefix ( master, 2.1, 1.15 ... )
 
     resultURL = ""
-    if ( category == "SR" || category == "SR-StratumBMv2" ){
+    if ( category == "SR" || category == "SR-StratumBMv2" || category == "SR-Tofino" ){
         def post = build job: "SR-log-" + prefix, propagate: false
         resultURL = post.getAbsoluteUrl()
     }

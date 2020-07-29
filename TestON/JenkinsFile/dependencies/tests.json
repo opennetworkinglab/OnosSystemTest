@@ -1349,6 +1349,18 @@
         "test": "SRBridging --params-file SRBridging.params.tofino --topo-file SRBridging.topo.0x1.physical",
         "wikiName": "SR Bridging with Tofino switches",
         "wikiFile": "SRBridgingWiki.txt",
+        "schedules": [
+            {
+                "branch": "master",
+                "day": "none",
+                "nodeLabel": "Fabric-master"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "none",
+                "nodeLabel": "Fabric-2.x"
+            }
+        ],
         "category": "SR-Tofino",
         "supportedBranches": [ "onos-2.x", "master" ]
     },

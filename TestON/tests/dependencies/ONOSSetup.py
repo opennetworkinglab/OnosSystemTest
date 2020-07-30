@@ -130,19 +130,21 @@ class ONOSSetup:
                                         "test variables ",
                                  onfail="Failed to construct test variables" )
 
-        url = self.generateGraphURL()
+        if main.params[ 'GRAPH' ].get('jobName'):
+            url = self.generateGraphURL( testname=main.params[ 'GRAPH' ][ 'jobName' ] )
+        else:
+            url = self.generateGraphURL()
         main.log.wiki( url )
 
         main.commit = main.ONOSbench.getVersion( report=True )
 
-    def generateGraphURL( self, width=525, height=350 ):
+    def generateGraphURL( self, testname=main.TEST, width=525, height=350 ):
         """
         Description:
             Obtain the URL for the graph that corresponds to the test being run.
         """
 
         nodeCluster = main.params[ 'GRAPH' ][ 'nodeCluster' ]
-        testname = main.TEST
         branch = main.ONOSbench.getBranchName()
         maxBuildsToShow = main.params[ 'GRAPH' ][ 'builds' ]
 

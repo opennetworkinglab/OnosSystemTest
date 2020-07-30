@@ -1594,6 +1594,10 @@ class Testcaselib:
             handle.sendline( "sudo chmod -R a+rwx %s" % ( confDir ) )
             handle.expect( main.Mininet1.prompt )
             main.log.debug( handle.before + handle.after )
+            # Stop any leftover container
+            handle.sendline( "docker stop trellis_mininet" )
+            handle.expect( main.Mininet1.bashPrompt )
+            main.log.debug( handle.before )
             # Start docker container
             handle.sendline( "docker run --name trellis_mininet %s %s" % ( main.params[ 'MN_DOCKER' ][ 'args' ], main.params[ 'MN_DOCKER' ][ 'name' ] ) )
             handle.expect( main.Mininet1.bashPrompt )

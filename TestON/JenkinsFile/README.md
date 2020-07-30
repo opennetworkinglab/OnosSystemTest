@@ -35,7 +35,9 @@ The list of schedules is located in `dependencies/schedule.json`. The file is co
 ### Adding a Test
 The list of tests is located in `dependencies/tests.json`. The file is constructed in the following format:
 
-- `<test name>` - Name of the TestON test.
+- `<test name>` - Name of the test in Jenkins.
+    - `test` - Name of the test in TestON. Key can be omitted if same as `test name`
+    - `arguments` - Any cli arguments to be passed to TestON
     - `"wikiName"` - Name of the TestON test as it would appear on the ONOS wiki (this is usually identical to the `<test name>`).
     - `"wikiFile"` - Filename of the text file that the ONOS wiki uses to display the test result summary.
     - `"schedules"` - List of `dict` containing the following:

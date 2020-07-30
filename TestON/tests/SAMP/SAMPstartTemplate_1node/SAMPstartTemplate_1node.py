@@ -55,7 +55,7 @@ class SAMPstartTemplate_1node:
             stepResult = main.testSetUp.envSetup( includeGitPull=False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
     def CASE2( self, main ):
         """

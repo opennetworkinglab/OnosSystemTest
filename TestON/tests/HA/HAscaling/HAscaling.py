@@ -89,7 +89,7 @@ class HAscaling:
             stepResult = main.testSetUp.envSetup( includeCaseDesc=False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
         main.scaling = main.params[ 'scaling' ].split( "," )
         main.log.debug( main.scaling )

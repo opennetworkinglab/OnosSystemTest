@@ -61,7 +61,7 @@ class FUNCformCluster:
             main.log.error( "The number of the nodes needs to be " + str( main.numNodes ) +
                             "\nExiting Test..." )
             main.cleanAndExit()
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
     def CASE1( self, main ):
         """

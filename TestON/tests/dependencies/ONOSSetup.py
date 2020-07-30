@@ -23,7 +23,6 @@ import os
 
 
 class ONOSSetup:
-    main = None
 
     def __init__( self ):
         self.default = ''
@@ -117,7 +116,7 @@ class ONOSSetup:
         main.log.exception( e )
         main.cleanAndExit()
 
-    def evnSetupConclusion( self, stepResult ):
+    def envSetupConclusion( self, stepResult ):
         """
         Description:
             compare the result of the envSetup of the test.

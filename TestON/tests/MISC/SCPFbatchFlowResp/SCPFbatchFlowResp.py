@@ -71,7 +71,7 @@ class SCPFbatchFlowResp:
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
 
     def CASE2( self, main ):

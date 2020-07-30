@@ -101,7 +101,7 @@ class SCPFintentInstallWithdrawLat:
             main.intentFuncs = imp.load_source( file1, main.dependencyPath + file1 + ".py" )
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
         main.commit = main.commit.split( " " )[ 1 ]
 
     def CASE1( self, main ):

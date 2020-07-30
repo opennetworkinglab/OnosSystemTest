@@ -77,7 +77,7 @@ class SCPFmastershipFailoverLat:
 
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
     def CASE1( self, main ):
         # Clean up test environment and set up

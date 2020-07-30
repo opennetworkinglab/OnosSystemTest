@@ -68,7 +68,7 @@ class FUNCoptical:
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
     def CASE2( self, main ):
         """

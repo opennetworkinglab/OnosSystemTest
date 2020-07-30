@@ -93,7 +93,7 @@ class Testcaselib:
         except Exception as e:
             main.testSetUp.envSetupException( e )
 
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
     @staticmethod
     def installOnos( main, vlanCfg=True, skipPackage=False, cliSleep=10,

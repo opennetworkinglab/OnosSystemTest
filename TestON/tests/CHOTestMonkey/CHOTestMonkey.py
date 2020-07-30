@@ -103,7 +103,7 @@ class CHOTestMonkey:
         except Exception as e:
             main.testSetUp.envSetupException( e )
 
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
         setupResult = main.testSetUp.ONOSSetUp( main.Cluster,
                                                 cellName=main.onosCell,

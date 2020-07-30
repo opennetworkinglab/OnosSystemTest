@@ -68,7 +68,7 @@ class VPLSBasic:
             stepResult = main.testSetUp.envSetup()
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
         main.testSetUp.ONOSSetUp( main.Cluster,
                                   cellName=main.cellName )

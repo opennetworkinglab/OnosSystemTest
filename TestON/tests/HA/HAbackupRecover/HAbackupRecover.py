@@ -86,7 +86,7 @@ class HAbackupRecover:
             stepResult = main.testSetUp.envSetup( includeCaseDesc=False )
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
         applyFuncs = [ main.HA.removeKarafConsoleLogging ]
 

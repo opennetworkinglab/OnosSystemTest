@@ -76,7 +76,7 @@ class FUNCovsdbtest:
 
         except Exception as e:
             main.testSetUp.envSetupException( e )
-        main.testSetUp.evnSetupConclusion( stepResult )
+        main.testSetUp.envSetupConclusion( stepResult )
 
         cliResults = main.testSetUp.ONOSSetUp( main.Cluster, cellName=cellName,
                                                mininetIp=main.OVSDB1 )

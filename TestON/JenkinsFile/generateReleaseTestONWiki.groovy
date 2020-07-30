@@ -316,6 +316,12 @@ def createGeneralPageContents( category ){
             testTrendPrefix = "https://jenkins.onosproject.org/view/QA/job/postjob-Fabric3/lastSuccessfulBuild/artifact/"
             overallTrendHTML = ""
             break
+        case "SR-StratumBmv2":
+            title = "Segment Routing (SR) with Stratum BMv2 switches"
+            testPlanLink = "https://wiki.opencord.org/display/CORD/Test+Plan+-+Fabric+Control"
+            testTrendPrefix = "https://jenkins.onosproject.org/view/QA/job/postjob-Fabric3/lastSuccessfulBuild/artifact/"
+            overallTrendHTML = ""
+            break
         case "USECASE":
             title = "USECASE"
             testPlanLink = "https://wiki.onosproject.org/pages/viewpage.action?pageId=4163047"

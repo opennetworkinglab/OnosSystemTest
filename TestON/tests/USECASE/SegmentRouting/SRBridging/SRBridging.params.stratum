@@ -5,6 +5,7 @@
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
         <builds>20</builds>
+        <jobName>SRBridging-stratum</jobName>
     </GRAPH>
 
     <SCALE>

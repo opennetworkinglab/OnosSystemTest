@@ -4,6 +4,7 @@
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
         <builds>20</builds>
+        <jobName>SRRouting-stratum</jobName>
     </GRAPH>
 
     <SCALE>

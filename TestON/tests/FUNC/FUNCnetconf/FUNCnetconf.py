@@ -113,7 +113,6 @@ class FUNCnetconf:
                                 onpass="Nodes check successful.",
                                 onfail="Nodes check failed.")
 
-
     def CASE19( self, main ):
         """
             Copy the karaf.log files after each testcase cycle

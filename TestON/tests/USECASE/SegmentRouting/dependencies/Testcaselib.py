@@ -1609,7 +1609,6 @@ class Testcaselib:
                 buildOutput += handle.before
                 main.log.debug( buildOutput )
 
-
             confDir = "/tmp/mn_conf/"
             # Try to ensure the destination exists
             main.log.info( "Create folder for network config files" )

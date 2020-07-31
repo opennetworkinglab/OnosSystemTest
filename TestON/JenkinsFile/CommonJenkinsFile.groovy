@@ -29,7 +29,6 @@ SCPFfuncs = evaluate readTrusted( 'TestON/JenkinsFile/dependencies/PerformanceFu
 
 category = null
 prop = null
-testsToRun = null
 testsToRunStrList = null
 branch = null
 branchWithPrefix = null
@@ -41,6 +40,7 @@ isGraphOnly = false
 isSCPF = false
 pipelineTimeout = null
 
+testsToRun = [:]
 testsFromList = [:]
 graphPaths = [:]
 pipeline = [:]
@@ -141,7 +141,7 @@ def runTests(){
         toBeRun = testsToRun.keySet().contains( JenkinsLabel )
         stepName = ( toBeRun ? "" : "Not " ) + "Running $JenkinsLabel"
 
-        TestONTest = testsToRun[ JenkinsLabel ].keySet().contains( "test" ) ? testsToRun[ JenkinsLabel ][ "test" ] : JenkinsLabel
+        TestONTest = ( toBeRun && testsToRun[ JenkinsLabel ].keySet().contains( "test" ) ) ? testsToRun[ JenkinsLabel ][ "test" ] : JenkinsLabel
 
         pipeline[ stepName ] = runTest( JenkinsLabel,
                                         toBeRun,

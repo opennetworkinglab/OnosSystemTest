@@ -344,7 +344,7 @@ def analyzeResult( prop, workSpace, TestONTest, JenkinsLabel, resultURL, wikiLin
                                                   wikiLink.replaceAll( "\\s", "+" ) ) ) +
                                 ( resultURL != "" ? ( "\n[Karaf log] : \n" +
                                                       resultURL + "artifact/" ) : "" ),
-                       teamDomain: 'onosproject' )
+                       teamDomain: 'onf-community' )
             print "Abnormal test result."
             throw new Exception( "Abnormal test result." )
         }

@@ -16,7 +16,7 @@
         <useCommonTopo>True</useCommonTopo>
         <useBmv2>False</useBmv2>
         <topology>trellis_fabric.py</topology>
-        <lib>routinglib.py,trellislib.py</lib>
+        <lib>routinglib.py,trellislib.py,stratum.py</lib>
         <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
     </DEPENDENCY>
 

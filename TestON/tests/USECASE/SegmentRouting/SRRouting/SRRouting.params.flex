@@ -16,7 +16,7 @@
         <useCommonTopo>True</useCommonTopo>
         <confName>flex</confName>
         <topology>hagg_fabric.py</topology>
-        <lib>routinglib.py,trellislib.py,trellis_fabric.py</lib>
+        <lib>routinglib.py,trellislib.py,trellis_fabric.py,stratum.py</lib>
         <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
     </DEPENDENCY>
 

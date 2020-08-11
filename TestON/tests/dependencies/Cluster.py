@@ -37,7 +37,7 @@ class Cluster():
             atomixNodes.append( "{%s:%s}" % ( node.name, node.ipAddress ) )
         return "%s[%s; Atomix Nodes:%s]" % ( self.name, ", ".join( controllers ), ", ".join( atomixNodes ) )
 
-    def __init__( self, ctrlList=[], name="Cluster" ):
+    def __init__( self, ctrlList=[], name="Cluster", useDocker=False ):
         """
             controllers : All the nodes
             runningNodes : Node that are specifically running from the test.
@@ -53,6 +53,16 @@ class Cluster():
         self.name = str( name )
         self.atomixNodes = ctrlList
         self.iterator = iter( self.active() )
+        self.useDocker = useDocker
+        clusterParams = main.params.get( "CLUSTER", {} )
+        self.dockerSkipBuild = clusterParams.get( "dockerSkipBuild", False )
+        self.dockerBuildCmd = clusterParams.get( "dockerBuildCmd", None )
+        self.dockerBuildTimeout = int( clusterParams.get( "dockerBuildTimeout", 600 ) )
+        self.dockerFilePath = clusterParams.get( "dockerFilePath", None )
+        self.dockerImageTag = clusterParams.get( "dockerImageTag", None )
+        self.dockerOptions = clusterParams.get( "dockerOptions", "" )
+        self.atomixImageTag = clusterParams.get( "atomixImageTag", None )
+        self.atomixOptions = clusterParams.get( "atomixOptions", "" )
 
     def fromNode( self, ctrlList ):
         """
@@ -389,6 +399,88 @@ class Cluster():
             ctrlList[ i ].active = False
         return result
 
+    def dockerStop( self, killMax, atomix=True ):
+        """
+        Description:
+            killing the onos docker containers. It will either kill the
+            current runningnodes or max number of the nodes.
+        Required:
+            * killRemoveMax - The boolean that will decide either to kill
+            only running nodes ( False ) or max number of nodes ( True ).
+        Returns:
+            Returns main.TRUE if successfully killing it.
+        """
+        getFrom = "all" if killMax else "running"
+        result = main.TRUE
+        stopResult = self.command( "dockerStop",
+                                   args=[ "name" ],
+                                   specificDriver=4,
+                                   getFrom=getFrom,
+                                   funcFromCtrl=True )
+        ctrlList = self.fromNode( getFrom )
+        for i in range( len( stopResult ) ):
+            result = result and stopResult[ i ]
+            ctrlList[ i ].active = False
+        atomixResult = main.TRUE
+        if atomix:
+            atomixResult = self.stopAtomixDocker( killMax )
+        return result and atomixResult
+
+    def dockerBuild( self, pull=True ):
+        """
+        Description:
+        Build ONOS docker image
+        Optional:
+            * pull - Try to pull latest image before building
+        Returns:
+            Returns main.TRUE if successfully killing it.
+        """
+        getFrom = "all"
+        result = main.TRUE
+        atomixResult = []
+        buildResult = []
+        if self.atomixImageTag:
+            atomixResult = self.command( "dockerPull",
+                                         args=[ self.atomixImageTag ],
+                                         specificDriver=4,
+                                         getFrom=getFrom,
+                                         funcFromCtrl=False )
+        if not self.dockerImageTag:
+            main.log.error( "No image given, exiting test" )
+            return main.FALSE
+        if pull and self.dockerImageTag:
+            buildResult = self.command( "dockerPull",
+                                        args=[ self.dockerImageTag ],
+                                        specificDriver=4,
+                                        getFrom=getFrom,
+                                        funcFromCtrl=False )
+            for i in range( len( buildResult ) ):
+                result = result and buildResult[ i ]
+        if self.dockerSkipBuild:
+            return main.TRUE
+        if not result and self.dockerBuildCmd:
+            buildResult = self.command( "makeDocker",
+                                        args=[ self.dockerFilePath, self.dockerBuildCmd ],
+                                        kwargs={ "timeout": self.dockerBuildTimeout,
+                                                 "prompt": "Successfully tagged %s" % self.dockerImageTag },
+                                        specificDriver=4,
+                                        getFrom=getFrom,
+                                        funcFromCtrl=False )
+
+        elif not result:
+            buildResult = self.command( "dockerBuild",
+                                        args=[ self.dockerFilePath, self.dockerImageTag ],
+                                        kwargs={ "timeout": self.dockerBuildTimeout,
+                                                 "pull": pull },
+                                        specificDriver=4,
+                                        getFrom=getFrom,
+                                        funcFromCtrl=False )
+        for i in range( len( atomixResult ) ):
+            result = result and atomixResult[ i ]
+        for i in range( len( buildResult ) ):
+            result = result and buildResult[ i ]
+        return result
+
     def ssh( self ):
         """
         Description:
@@ -399,9 +491,16 @@ class Cluster():
             the onos.
         """
         result = main.TRUE
+        if self.useDocker:
+            driver = 2
+            kwargs = { "userName": "karafUser",
+                       "userPWD": "karafPass" }
+        else:
+            driver = 1
+            kwargs = { "node": "ipAddress" }
         sshResult = self.command( "onosSecureSSH",
-                                   kwargs={ "node": "ipAddress" },
-                                   specificDriver=1,
+                                   kwargs=kwargs,
+                                   specificDriver=driver,
                                    getFrom="running",
                                    funcFromCtrl=True )
         for sshR in sshResult:
@@ -417,6 +516,9 @@ class Cluster():
             Returns main.TRUE if it successfully installed
         """
         result = main.TRUE
+        if self.useDocker:
+            # We will do this as part of startDocker
+            return result
         threads = []
         i = 0
         for ctrl in self.atomixNodes:
@@ -472,6 +574,124 @@ class Cluster():
                 result = result and t.result
         return result
 
+    def startONOSDocker( self, installMax=True, installParallel=True ):
+        """
+        Description:
+            Installing onos via docker containers.
+        Required:
+            * installMax - True for installing max number of nodes
+            False for installing current running nodes only.
+        Returns:
+            Returns main.TRUE if it successfully installed
+        """
+        result = main.TRUE
+        threads = []
+        for ctrl in self.controllers if installMax else self.runningNodes:
+            if installParallel:
+                t = main.Thread( target=ctrl.server.dockerRun,
+                                 name="onos-run-docker-" + ctrl.name,
+                                 args=[ self.dockerImageTag, ctrl.name ],
+                                 kwargs={ "options" : self.dockerOptions } )
+                threads.append( t )
+                t.start()
+            else:
+                result = result and \
+                            ctrl.server.dockerRun( self.dockerImageTag,
+                                                   ctrl.name,
+                                                   options=self.dockerOptions )
+        if installParallel:
+            for t in threads:
+                t.join()
+                result = result and t.result
+        return result
+
+    def startAtomixDocker( self, installParallel=True ):
+        """
+        Description:
+            Installing atomix via docker containers.
+        Required:
+            * installParallel - True for installing atomix in parallel.
+        Returns:
+            Returns main.TRUE if it successfully installed
+        """
+        result = main.TRUE
+        threads = []
+        for ctrl in self.atomixNodes:
+            if installParallel:
+                t = main.Thread( target=ctrl.server.dockerRun,
+                                 name="atomix-run-docker-" + ctrl.name,
+                                 args=[ self.atomixImageTag, "atomix-" + ctrl.name ],
+                                 kwargs={ "options" : main.params['CLUSTER']['atomixOptions'],
+                                          "imageArgs": " --config /opt/atomix/conf/atomix.json --ignore-resources"} )
+                threads.append( t )
+                t.start()
+            else:
+                result = result and \
+                            ctrl.server.dockerRun( self.atomixImageTag,
+                                                   "atomix-" + ctrl.name,
+                                                   options=main.params['CLUSTER']['atomixOptions'] )
+        if installParallel:
+            for t in threads:
+                t.join()
+                result = result and t.result
+        return result
+
+    def stopAtomixDocker( self, killMax=True, installParallel=True ):
+        """
+        Description:
+            Stoping all atomix containers
+        Required:
+            * killMax - True for stoping max number of nodes
+            False for stoping current running nodes only.
+        Returns:
+            Returns main.TRUE if it successfully stoped
+        """
+        result = main.TRUE
+        threads = []
+        for ctrl in self.controllers if killMax else self.atomixNodes:
+            if installParallel:
+                t = main.Thread( target=ctrl.server.dockerStop,
+                                 name="atomix-stop-docker-" + ctrl.name,
+                                 args=[ "atomix-" + ctrl.name ] )
+                threads.append( t )
+                t.start()
+            else:
+                result = result and \
+                            ctrl.server.dockerStop( "atomix-" + ctrl.name )
+        if installParallel:
+            for t in threads:
+                t.join()
+                result = result and t.result
+        return result
+
+    def genPartitions( self, path="/tmp/cluster.json" ):
+        """
+        Description:
+           Create cluster config and move to each onos server
+        Required:
+            * installMax - True for installing max number of nodes
+            False for installing current running nodes only.
+        Returns:
+            Returns main.TRUE if it successfully installed
+        """
+        result = main.TRUE
+        # move files to onos servers
+        for ctrl in self.atomixNodes:
+            localAtomixFile = ctrl.ip_address + "-atomix.json"
+            result = result and main.ONOSbench.generateAtomixConfig( ctrl.server.ip_address, path=localAtomixFile )
+            result = result and main.ONOSbench.scp( ctrl.server,
+                                                    localAtomixFile,
+                                                    "/tmp/atomix.json",
+                                                    direction="to" )
+        for ctrl in self.controllers:
+            localOnosFile = ctrl.ip_address + "-cluster.json"
+            result = result and main.ONOSbench.generateOnosConfig( ctrl.server.ip_address, path=localOnosFile )
+            result = result and main.ONOSbench.scp( ctrl.server,
+                                                    localOnosFile,
+                                                    path,
+                                                    direction="to" )
+        return result
+
     def startCLIs( self ):
         """
         Description:
@@ -522,6 +742,16 @@ class Cluster():
                 main.log.warn( repr( i ) )
                 currentResult = False
             results = results and currentResult
+        # Check to make sure all bundles are started
+        bundleOutput = self.command( "sendline", args=[ "bundle:list" ] )
+        for i in bundleOutput:
+            if "START LEVEL 100" in i:
+                currentResult = True
+            else:
+                currentResult = False
+                main.log.warn( "Node's bundles not fully started" )
+                main.log.debug( i )
+            results = results and currentResult
         return results
 
     def appsCheck( self, apps ):
@@ -547,6 +777,50 @@ class Cluster():
                     results = False
                     main.log.warn( "{}: {} is in {} state".format( ctrl.name, app, states[ i ] ) )
         return results
+
+    def attachToONOSDocker( self ):
+        """
+        Description:
+            connect to onos docker using onosCli driver
+        Required:
+        Returns:
+            Returns main.TRUE if it successfully started.
+        """
+        getFrom = "running"
+        result = main.TRUE
+        execResults = self.command( "dockerExec",
+                                    args=[ "name" ],
+                                    kwargs={ "dockerPrompt": "dockerPrompt" },
+                                    specificDriver=2,
+                                    getFrom=getFrom,
+                                    funcFromCtrl=True )
+        ctrlList = self.fromNode( getFrom )
+        for i in range( len( execResults ) ):
+            result = result and execResults[ i ]
+            ctrlList[ i ].active = True
+        return result
+
+    def prepareForCLI( self ):
+        """
+        Description:
+            prepare docker to connect to the onos cli
+        Required:
+        Returns:
+            Returns main.TRUE if it successfully started.
+        """
+        getFrom = "running"
+        for ctrl in self.getRunningNodes():
+            ctrl.CLI.inDocker = True
+        result = main.TRUE
+        execResults = self.command( "prepareForCLI",
+                                    specificDriver=2,
+                                    getFrom=getFrom,
+                                    funcFromCtrl=True )
+        ctrlList = self.fromNode( getFrom )
+        for i in range( len( execResults ) ):
+            result = result and execResults[ i ]
+            ctrlList[ i ].active = True
+        return result
 
     def printResult( self, results, activeList, logLevel="debug" ):
         """
@@ -623,6 +897,7 @@ class Cluster():
                 1 - from bench
                 2 - from cli
                 3 - from rest
+                4 - from server
             * contentCheck - If this is True, it will check if the result has some
             contents.
             * getFrom - from which nodes
@@ -637,24 +912,34 @@ class Cluster():
             Returns resultContent of the result if contentCheck
         """
         threads = []
-        drivers = [ None, "Bench", "CLI", "REST" ]
+        drivers = [ None, "Bench", "CLI", "REST", "server" ]
         results = []
         for ctrl in self.fromNode( getFrom ):
+            funcArgs = []
+            funcKwargs = {}
             try:
-                funcArgs = []
-                funcKwargs = {}
                 f = getattr( ( ctrl if not specificDriver else
                                getattr( ctrl, drivers[ specificDriver ] ) ), function )
-                if funcFromCtrl:
-                    if args:
-                        for i in range( len( args ) ):
-                            funcArgs.append( getattr( ctrl, args[ i ] ) )
-                    if kwargs:
-                        for k in kwargs:
-                            funcKwargs.update( { k: getattr( ctrl, kwargs[ k ] ) } )
             except AttributeError:
                 main.log.error( "Function " + function + " not found. Exiting the Test." )
                 main.cleanAndExit()
+            if funcFromCtrl:
+                if args:
+                    try:
+                        for i in range( len( args ) ):
+                            funcArgs.append( getattr( ctrl, args[ i ] ) )
+                    except AttributeError:
+                        main.log.error( "Argument " + str( args[ i ] ) + " for " + str( f ) + " not found. Exiting the Test." )
+                        main.cleanAndExit()
+                if kwargs:
+                    try:
+                        for k in kwargs:
+                            funcKwargs.update( { k: getattr( ctrl, kwargs[ k ] ) } )
+                    except AttributeError as e:
+                        main.log.exception("")
+                        main.log.error( "Keyword Argument " + str( k ) + " for " + str( f ) + " not found. Exiting the Test." )
+                        main.log.debug( "Passed kwargs: %s; dir(ctrl): %s" % ( repr( kwargs ), dir( ctrl ) ) )
+                        main.cleanAndExit()
             t = main.Thread( target=f,
                              name=function + "-" + ctrl.name,
                              args=funcArgs if funcFromCtrl else args,

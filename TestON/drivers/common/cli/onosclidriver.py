@@ -58,6 +58,7 @@ class OnosCliDriver( CLI ):
         self.handle = None
         self.karafUser = None
         self.karafPass = None
+        self.dockerPrompt = None
         self.graph = Graph()
         super( OnosCliDriver, self ).__init__()
 
@@ -82,9 +83,12 @@ class OnosCliDriver( CLI ):
                     self.karafUser = self.options[ key ]
                 elif key == "karaf_password":
                     self.karafPass = self.options[ key ]
+                elif key == "docker_prompt":
+                    self.dockerPrompt = self.options[ key ]
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
             self.karafPass = self.checkOptions( self.karafPass, self.pwd )
+            self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
 
             for key in self.options:
                 if key == 'onosIp':
@@ -143,9 +147,15 @@ class OnosCliDriver( CLI ):
                 i = self.logout()
                 if i == main.TRUE:
                     self.handle.sendline( "" )
-                    self.handle.expect( self.prompt )
-                    self.handle.sendline( "exit" )
-                    self.handle.expect( "closed" )
+                    for l in range( 3 ):
+                        p = self.handle.expect( [ self.prompt, self.dockerPrompt ] )
+                        if p == 1:
+                            self.inDocker = False
+                        self.handle.sendline( "exit" )
+                        j = self.handle.expect( [ "closed", pexpect.TIMEOUT ], timeout=3 )
+                        if j == 0:
+                            return response
+                    response = main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             response = main.FALSE
@@ -156,7 +166,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( "Exception in disconnect of " + self.name )
             response = main.TRUE
         except Exception:
-            main.log.exception( self.name + ": Connection failed to the host" )
+            main.log.exception( self.name + ": disconnection failed from the host" )
             response = main.FALSE
         return response
 
@@ -171,11 +181,14 @@ class OnosCliDriver( CLI ):
         try:
             if self.handle:
                 self.handle.sendline( "" )
-                i = self.handle.expect( [ self.karafPrompt, self.prompt, pexpect.TIMEOUT ],
+                i = self.handle.expect( [ self.karafPrompt,
+                                          self.Prompt(),
+                                          pexpect.TIMEOUT ],
+
                                         timeout=10 )
                 if i == 0:  # In ONOS CLI
                     self.handle.sendline( "logout" )
-                    j = self.handle.expect( [ self.prompt,
+                    j = self.handle.expect( [ self.Prompt(),
                                               "Command not found:",
                                               pexpect.TIMEOUT ] )
                     if j == 0:  # Successfully logged out
@@ -185,7 +198,7 @@ class OnosCliDriver( CLI ):
                         # or the command timed out
                         self.handle.send( "\x04" )  # send ctrl-d
                         try:
-                            self.handle.expect( self.prompt )
+                            self.handle.expect( self.Prompt() )
                         except pexpect.TIMEOUT:
                             main.log.error( "ONOS did not respond to 'logout' or CTRL-d" )
                         return main.TRUE
@@ -272,59 +285,49 @@ class OnosCliDriver( CLI ):
         try:
             # Check if we are already in the cli
             self.handle.sendline( "" )
-            x = self.handle.expect( [
-                self.prompt, self.karafPrompt ], commandlineTimeout )
+            x = self.handle.expect( [ self.Prompt(), self.karafPrompt ], commandlineTimeout )
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
                 return main.TRUE
 
             # Not in CLI so login
-            if waitForStart:
+            if self.inDocker:
+                # The Docker does not have all the wrapper scripts
+                startCliCommand = "ssh -p 8101 -o StrictHostKeyChecking=no %s@localhost" % self.karafUser
+            elif waitForStart:
                 # Wait for onos start ( onos-wait-for-start ) and enter onos cli
-                startCliCommand = "onos-wait-for-start "
+                startCliCommand = "onos-wait-for-start " + str( ONOSIp )
             else:
-                startCliCommand = "onos "
-            self.handle.sendline( startCliCommand + str( ONOSIp ) )
-            i = self.handle.expect( [
-                self.karafPrompt,
-                pexpect.TIMEOUT ], onosStartTimeout )
+                startCliCommand = "onos " + str( ONOSIp )
+            self.handle.sendline( startCliCommand )
+            tries = 0
+            while tries < 5:
+                i = self.handle.expect( [
+                    self.karafPrompt,
+                    "Password:",
+                    pexpect.TIMEOUT ], onosStartTimeout )
 
-            if i == 0:
-                main.log.info( str( ONOSIp ) + " CLI Started successfully" )
-                if karafTimeout:  # FIXME: This doesn't look right
-                    self.handle.sendline(
-                        "config:property-set -p org.apache.karaf.shell\
-                                 sshIdleTimeout " +
-                        karafTimeout )
-                    self.handle.expect( self.prompt )
-                    self.handle.sendline( startCliCommand + str( ONOSIp ) )
-                    self.handle.expect( self.karafPrompt )
-                main.log.debug( self.handle.before )
-                return main.TRUE
-            else:
-                # If failed, send ctrl+c to process and try again
-                main.log.info( "Starting CLI failed. Retrying..." )
-                self.handle.send( "\x03" )
-                self.handle.sendline( startCliCommand + str( ONOSIp ) )
-                i = self.handle.expect( [ self.karafPrompt, pexpect.TIMEOUT ],
-                                        timeout=30 )
                 if i == 0:
-                    main.log.info( str( ONOSIp ) + " CLI Started " +
-                                   "successfully after retry attempt" )
+                    main.log.info( str( ONOSIp ) + " CLI Started successfully" )
                     if karafTimeout:
                         self.handle.sendline(
                             "config:property-set -p org.apache.karaf.shell\
-                                    sshIdleTimeout " +
+                                     sshIdleTimeout " +
                             karafTimeout )
-                        self.handle.expect( self.prompt )
-                        self.handle.sendline( startCliCommand + str( ONOSIp ) )
                         self.handle.expect( self.karafPrompt )
                     return main.TRUE
+                elif i == 1:
+                    main.log.info( str( ONOSIp ) + " CLI asking for password" )
+                    main.log.debug( "Sending %s" % self.karafPass )
+                    self.handle.sendline( self.karafPass )
                 else:
-                    main.log.error( "Connection to CLI " +
-                                    str( ONOSIp ) + " timeout" )
-                    return main.FALSE
-
+                    # If failed, send ctrl+c to process and try again
+                    main.log.info( "Starting CLI failed. Retrying..." )
+                    self.handle.send( "\x03" )
+                    self.handle.sendline( startCliCommand )
+                tries += 1
+            main.log.error( "Connection to CLI " + str( ONOSIp ) + " timeout" )
+            return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -339,7 +342,7 @@ class OnosCliDriver( CLI ):
     def startCellCli( self, karafTimeout="",
                       commandlineTimeout=10, onosStartTimeout=60 ):
         """
-        Start CLI on onos ecll handle.
+        Start CLI on onos cell handle.
 
         karafTimeout is an optional argument. karafTimeout value passed
         by user would be used to set the current karaf shell idle timeout.
@@ -357,7 +360,7 @@ class OnosCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             x = self.handle.expect( [
-                self.prompt, self.karafPrompt ], commandlineTimeout )
+                self.Prompt(), self.karafPrompt ], commandlineTimeout )
 
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
@@ -376,10 +379,9 @@ class OnosCliDriver( CLI ):
                         "config:property-set -p org.apache.karaf.shell\
                                  sshIdleTimeout " +
                         karafTimeout )
-                    self.handle.expect( self.prompt )
+                    self.handle.expect( self.Prompt() )
                     self.handle.sendline( "/opt/onos/bin/onos" )
                     self.handle.expect( self.karafPrompt )
-                main.log.debug( self.handle.before )
                 return main.TRUE
             else:
                 # If failed, send ctrl+c to process and try again
@@ -396,7 +398,7 @@ class OnosCliDriver( CLI ):
                             "config:property-set -p org.apache.karaf.shell\
                                     sshIdleTimeout " +
                             karafTimeout )
-                        self.handle.expect( self.prompt )
+                        self.handle.expect( self.Prompt() )
                         self.handle.sendline( "/opt/onos/bin/onos" )
                         self.handle.expect( self.karafPrompt )
                     return main.TRUE
@@ -476,7 +478,9 @@ class OnosCliDriver( CLI ):
         try:
             # Try to reconnect if disconnected from cli
             self.handle.sendline( "" )
-            i = self.handle.expect( [ self.karafPrompt, self.prompt, pexpect.TIMEOUT ] )
+            i = self.handle.expect( [ self.karafPrompt,
+                                      self.Prompt(),
+                                      pexpect.TIMEOUT ] )
             response = self.handle.before
             if i == 1:
                 main.log.error( self.name + ": onos cli session closed. " )
@@ -495,7 +499,7 @@ class OnosCliDriver( CLI ):
                     main.cleanAndExit()
             if i == 2:
                 main.log.warn( "Timeout when testing cli responsiveness" )
-                main.log.debug( self.handle.before )
+                main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
                 self.handle.send( "\x03" )  # Send ctrl-c to clear previous output
                 self.handle.expect( self.karafPrompt )
 
@@ -505,7 +509,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": " + repr( response ) )
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": ONOS timeout" )
-            main.log.debug( self.handle.before )
+            main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
             self.handle.send( "\x03" )
             self.handle.expect( self.karafPrompt )
             return None
@@ -558,8 +562,9 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": Raw output" )
                 main.log.debug( self.name + ": " + repr( response ) )
 
+            response = self.cleanOutput( response, debug=debug )
             # Remove control codes from karaf 4.2.1
-            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79C(x|\s)?|\x1b(>|=)|\x1b\[90m~)" )
+            karafEscape = re.compile( r"('(0|1)~\'|\r\r\r\n\x1b\[A\x1b\[79C(x|\s)?|\x1b(>|=~?)|\x1b\[90m~)" )
             response = karafEscape.sub( '', response )
             if debug:
                 main.log.debug( self.name + ": karafEscape output" )
@@ -570,11 +575,15 @@ class OnosCliDriver( CLI ):
             # Remove ANSI color control strings from output
             # NOTE: karaf is sometimes adding a single character then two
             #       backspaces and sometimes adding 2 characters with 2 backspaces??
-            backspaceEscape = re.compile( r'((..\x08\x08)|(.|\s)\x08)' )
-            response = backspaceEscape.sub( '', response )
-            if debug:
-                main.log.debug( self.name + ": backspaceEscape output" )
-                main.log.debug( self.name + ": " + repr( response ) )
+            backspaceEscape = re.compile( r'((.|\s)\x08)' )
+            unchanged = False
+            while not unchanged:
+                old = response
+                response = backspaceEscape.sub( '', response, count=1 )
+                if debug:
+                    main.log.debug( self.name + ": backspaceEscape output" )
+                    main.log.debug( self.name + ": " + repr( response ) )
+                unchanged = old == response
 
             # Remove extra return chars that get added
             response = re.sub(  r"\s\r", "", response )
@@ -632,7 +641,7 @@ class OnosCliDriver( CLI ):
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": ONOS timeout" )
             if debug:
-                main.log.debug( self.handle.before )
+                main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
             self.exitFromCmd( self.karafPrompt, 100 )
             return None
         except IndexError:
@@ -6706,6 +6715,103 @@ class OnosCliDriver( CLI ):
         except AssertionError:
             main.log.exception( "" )
             return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def prepareForCLI( self, debug=True, maxRetries=120 ):
+        """
+        Prepare docker container to connect to onos cli
+        """
+        try:
+            # Wait for log files to be created
+            ready = 0
+            retries = 0
+            while not ready and retries < maxRetries:
+                retries += 1
+                self.handle.sendline( "ls -al /root/onos/apache-karaf-*/data/log" )
+                ready = self.handle.expect( [ "No such file or directory", self.dockerPrompt ] )
+                main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
+                if not ready:
+                    self.handle.expect( self.dockerPrompt )
+                time.sleep( 1 )
+            #main.log.debug( "%s: It took %s tries for onos log folder to %sbe created" %
+            #                    ( self.name, retries, "" if ready else "NOT " ) )
+
+            cmdList = []
+            cmdList.append( "apt-get update" )
+            cmdList.append( "apt-get install -y openssh-server" )
+            # Some built in scripts are hardcoded
+            cmdList.append( "ln -s /root/onos /opt/onos" )
+            cmdList.append( "ln -s /root/onos/apache-karaf-*/data/log /opt/onos/log" )
+            cmdList.append( "ls -al /opt/onos" )
+            output = ""
+            for cmdStr in cmdList:
+                self.handle.sendline( cmdStr )
+                self.handle.expect( self.dockerPrompt )
+                self.handle.sendline( "" )
+                self.handle.expect( self.dockerPrompt )
+                handle = self.handle.before
+                assert "command not found" not in handle, handle
+                assert "No such file or directory" not in handle, handle
+                output += handle
+            if debug:
+                main.log.debug( "%s: %s" % ( self.name, output ) )
+            return output
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def onosSecureSSH( self, userName="onos", userPWD="rocks" ):
+        """
+        Enables secure access to ONOS console
+        by removing default users & keys.
+
+        bin/onos-user-password onos rocks
+
+        Returns: main.TRUE on success and main.FALSE on failure
+        """
+
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.dockerPrompt )
+
+            self.handle.sendline( "[ ! -f ~/.ssh/id_rsa.pub ] && ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' -q" )
+            self.handle.expect( self.dockerPrompt )
+            main.log.debug( "%s: %s%s" % ( self.name, self.handle.before, self.handle.after ) )
+
+            self.handle.sendline( "bin/onos-user-key $(id -un) $(cut -d\\\\ -f2 ~/.ssh/id_rsa.pub)" )
+            self.handle.expect( pexpect.TIMEOUT, timeout=10 )
+            main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
+
+            self.handle.sendline( "bin/onos-user-password %s %s" % ( userName, userPWD ) )
+            i = self.handle.expect( [ "usage",
+                                      self.dockerPrompt,
+                                      pexpect.TIMEOUT ] )
+            if i == 0:
+                # malformed command
+                main.log.warn( self.name + ": Could not parse onos-user-password command" )
+                self.handle.expect( self.dockerPrompt )
+                return main.FALSE
+            elif i == 1:
+                # Process started
+                main.log.info( self.name + ": SSH password added for user " + userName )
+                return main.TRUE
+            elif i == 2:
+                # timeout
+                main.log.error( self.name + ": Failed to secure onos ssh " )
+                main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

@@ -17,6 +17,7 @@
         <useCommonTopo>True</useCommonTopo>
         <useBmv2>True</useBmv2>
         <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix>bmv2</switchPrefix>
         <stratumRoot>~/stratum</stratumRoot>
         <topology>hagg_fabric.py</topology>
         <lib>routinglib.py,trellislib.py,trellis_fabric.py,stratum.py</lib>
@@ -29,9 +30,21 @@
         <home>/home/root/</home>
     </MN_DOCKER>
 
+    <CLUSTER>
+        # Params for onos docker
+        <dockerSkipBuild>True</dockerSkipBuild>
+        <dockerBuildCmd>make ONOS_BRANCH=master DOCKER_TAG=TestON-master onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
+        <dockerBuildTimeout>1200</dockerBuildTimeout>
+        <dockerFilePath>~/tost-onos</dockerFilePath>
+        <dockerImageTag>tost:TestON-master</dockerImageTag>
+        <dockerOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/cluster.json:/root/onos/config/cluster.json </dockerOptions> # We start the container detached, so the docker component can connect to cli instead of logs
+        <atomixImageTag>atomix/atomix:3.1.5</atomixImageTag>
+        <atomixOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/atomix.json:/opt/atomix/conf/atomix.json </atomixOptions>
+    </CLUSTER>
+
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,segmentrouting,fpm,dhcprelay,netcfghostprovider,routeradvertisement,t3,hostprobingprovider,drivers.bmv2,pipelines.fabric</cellApps>
+        <cellApps>drivers,fpm,dhcprelay,hostprovider,netcfghostprovider,lldpprovider,routeradvertisement,hostprobingprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3</cellApps>
     </ENV>
 
     <GIT>

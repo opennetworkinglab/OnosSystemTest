@@ -56,27 +56,19 @@ class Controller():
 
         We will look into each of the node's component handles to try to find the attreibute, looking at REST first
         """
-        usedDriver = False
         if hasattr( self.REST, name ):
-            if not usedDriver:
-                usedDriver = True
-                main.log.debug( "%s: Using Rest driver's attribute for '%s'" % ( self.name, name ) )
-                f = getattr( self.REST, name )
+            main.log.debug( "%s: Using Rest driver's attribute for '%s'" % ( self.name, name ) )
+            return getattr( self.REST, name )
         if hasattr( self.CLI, name ):
-            if not usedDriver:
-                usedDriver = True
-                main.log.debug( "%s: Using CLI driver's attribute for '%s'" % ( self.name, name ) )
-                f = getattr( self.CLI, name )
+            main.log.debug( "%s: Using CLI driver's attribute for '%s'" % ( self.name, name ) )
+            return getattr( self.CLI, name )
         if hasattr( self.Bench, name ):
-            if not usedDriver:
-                usedDriver = True
-                main.log.debug( "%s: Using Bench driver's attribute for '%s'" % ( self.name, name ) )
-                f = getattr( self.Bench, name )
-        if usedDriver:
-            return f
+            main.log.debug( "%s: Using Bench driver's attribute for '%s'" % ( self.name, name ) )
+            return getattr( self.Bench, name )
         raise AttributeError( "Could not find the attribute %s in %r or it's component handles" % ( name, self ) )
 
-    def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None, userName=None, server=None ):
+    def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None,
+                  userName=None, server=None, dockerPrompt=None ):
         # TODO: validate these arguments
         self.name = str( name )
         self.ipAddress = ipAddress
@@ -88,6 +80,7 @@ class Controller():
         self.ip_address = ipAddress
         self.user_name = userName
         self.server = server
+        self.dockerPrompt = dockerPrompt
 
 class OnosClusterDriver( CLI ):
 
@@ -98,6 +91,8 @@ class OnosClusterDriver( CLI ):
         self.name = None
         self.home = None
         self.handle = None
+        self.useDocker = False
+        self.dockerPrompt = None
         self.nodes = []
         super( OnosClusterDriver, self ).__init__()
 
@@ -127,11 +122,17 @@ class OnosClusterDriver( CLI ):
                     self.karafPass = self.options[ key ]
                 elif key == "cluster_name":
                     prefix = self.options[ key ]
+                elif key == "useDocker":
+                    self.useDocker = "True" == self.options[ key ]
+                elif key == "docker_prompt":
+                    self.dockerPrompt = self.options[ key ]
 
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
             self.karafPass = self.checkOptions( self.karafPass, self.pwd )
             prefix = self.checkOptions( prefix, "ONOS" )
+            self.useDocker = self.checkOptions( self.useDocker, False )
+            self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
 
             self.name = self.options[ 'name' ]
 
@@ -435,4 +436,6 @@ class OnosClusterDriver( CLI ):
             rest = self.createRestComponent( restName, ip )
             bench = self.createBenchComponent( benchName )
             server = self.createServerComponent( serverName, ip ) if createServer else None
-            self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1, self.user_name, server=server ) )
+            self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1,
+                                           self.user_name, server=server,
+                                           dockerPrompt=self.dockerPrompt ) )

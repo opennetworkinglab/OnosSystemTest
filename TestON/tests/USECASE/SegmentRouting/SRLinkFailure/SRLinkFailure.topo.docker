@@ -8,14 +8,14 @@
             <connect_order>1</connect_order>
             <home></home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
             <COMPONENTS>
-                <useDocker></useDocker>  # Whether to use docker for ONOS nodes
+                <useDocker>True</useDocker>  # Whether to use docker for ONOS nodes
                 <docker_prompt>~/onos#</docker_prompt>
                 <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
-                <diff_clihost></diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
+                <diff_clihost>True</diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
                 <karaf_username></karaf_username>
                 <karaf_password></karaf_password>
-                <web_user></web_user>
-                <web_pass></web_pass>
+                <web_user>sdn</web_user>
+                <web_pass>rocks</web_pass>
                 <rest_port></rest_port>
                 <prompt></prompt>  # TODO: we technically need a few of these, one per component
                 <onos_home></onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.

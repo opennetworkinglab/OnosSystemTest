@@ -74,10 +74,20 @@ class Utils:
         scpResult = main.TRUE
         copyResult = main.TRUE
         for ctrl in main.Cluster.runningNodes:
-            scpResult = scpResult and main.ONOSbench.scp( ctrl,
-                                                          "/opt/onos/log/karaf.log",
-                                                          "/tmp/karaf.log",
-                                                          direction="from" )
+            if ctrl.inDocker:
+                scpResult = scpResult and ctrl.server.dockerCp( ctrl.name,
+                                                                "/opt/onos/log/karaf.log",
+                                                                "/tmp/karaf.log",
+                                                                direction="from" )
+                scpResult = scpResult and main.ONOSbench.scp( ctrl.server,
+                                                              "/tmp/karaf.log",
+                                                              "/tmp/karaf.log",
+                                                              direction="from" )
+            else:
+                scpResult = scpResult and main.ONOSbench.scp( ctrl,
+                                                              "/opt/onos/log/karaf.log",
+                                                              "/tmp/karaf.log",
+                                                              direction="from" )
             copyResult = copyResult and main.ONOSbench.cpLogsToDir( "/tmp/karaf.log", main.logdir,
                                                                     copyFileName=( copyFileName + "_karaf.log." +
                                                                                    ctrl.name + "_" ) if before else

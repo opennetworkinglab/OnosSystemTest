@@ -1311,7 +1311,7 @@
     },
     "SRDhcprelay-stratum": {
         "test": "SRDhcprelay",
-        "arguments": "--params-file SRDhcprelay.params.stratum",
+        "arguments": "--params-file SRDhcprelay.params.stratum --topo-file SRDhcprelay.topo.docker",
         "wikiName": "SR Dhcp Relay with Stratum BMv2 switches",
         "wikiFile": "SRDhcprelayWiki.txt",
         "schedules": [
@@ -1331,7 +1331,7 @@
     },
     "SRRouting-stratum": {
         "test": "SRRouting",
-        "arguments": "--params-file SRRouting.params.stratum",
+        "arguments": "--params-file SRRouting.params.stratum --topo-file SRRouting.topo.docker",
         "wikiName": "SR Routing with Stratum BMv2 switches",
         "wikiFile": "SRRoutingWiki.txt",
         "schedules": [
@@ -1351,7 +1351,7 @@
     },
     "SRBridging-stratum": {
         "test": "SRBridging",
-        "arguments": "--params-file SRBridging.params.stratum",
+        "arguments": "--params-file SRBridging.params.stratum --topo-file SRBridging.topo.docker",
         "wikiName": "SR Bridging with Stratum BMv2 switches",
         "wikiFile": "SRBridgingWiki.txt",
         "schedules": [

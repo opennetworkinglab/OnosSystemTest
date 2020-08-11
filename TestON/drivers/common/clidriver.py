@@ -33,6 +33,7 @@ class CLI( Component ):
     """
     def __init__( self ):
         super( CLI, self ).__init__()
+        self.inDocker = False
 
     def checkPrompt( self ):
         for key in self.options:
@@ -92,7 +93,7 @@ class CLI( Component ):
                                       self.prompt ],
                                     120 )
             if i == 0:  # Accept key, then expect either a password prompt or access
-                main.log.info( "ssh key confirmation received, send yes" )
+                main.log.info( self.name + ": ssh key confirmation received, send yes" )
                 self.handle.sendline( 'yes' )
                 i = 5  # Run the loop again
                 continue
@@ -101,7 +102,7 @@ class CLI( Component ):
                     main.log.info(
                             "ssh connection asked for password, gave password" )
                 else:
-                    main.log.info( "Server asked for password, but none was "
+                    main.log.info( self.name + ": Server asked for password, but none was "
                                     "given in the .topo file. Trying "
                                     "no password." )
                     self.pwd = ""
@@ -114,10 +115,10 @@ class CLI( Component ):
                                         pexpect.TIMEOUT ],
                                         120 )
                 if j != 2:
-                    main.log.error( "Incorrect Password" )
+                    main.log.error( self.name + ": Incorrect Password" )
                     return main.FALSE
             elif i == 2:
-                main.log.error( "Connection timeout" )
+                main.log.error( self.name + ": Connection timeout" )
                 return main.FALSE
             elif i == 3:  # timeout
                 main.log.error(
@@ -133,10 +134,10 @@ class CLI( Component ):
                     " port 22: Connection refused" )
                 return main.FALSE
             elif i == 6:  # Incorrect Password
-                main.log.error( "Incorrect Password" )
+                main.log.error( self.name + ": Incorrect Password" )
                 return main.FALSE
             elif i == 7:  # Prompt
-                main.log.info( "Password not required logged in" )
+                main.log.info( self.name + ": Password not required logged in" )
 
         self.handle.sendline( "" )
         self.handle.expect( self.prompt )
@@ -147,7 +148,12 @@ class CLI( Component ):
     def disconnect( self ):
         result = super( CLI, self ).disconnect( self )
         result = main.TRUE
-        # self.execute( cmd="exit",timeout=120,prompt="(.*)" )
+
+    def Prompt( self ):
+        """
+        Returns the prompt to expect depending on what program we are in
+        """
+        return self.prompt if not self.inDocker else self.dockerPrompt
 
     def execute( self, **execparams ):
         """
@@ -191,7 +197,7 @@ class CLI( Component ):
             self.LASTRSP = self.LASTRSP + \
                 self.handle.before + self.handle.after
             if not args[ "LOGCMD" ] is False:
-                main.log.info( "Executed :" + str( cmd ) +
+                main.log.info( self.name + ": Executed :" + str( cmd ) +
                                " \t\t Expected Prompt '" + str( expectPrompt ) +
                                "' Found" )
         elif index == 1:
@@ -209,10 +215,10 @@ class CLI( Component ):
                     [ "--More--", expectPrompt ], timeout=timeoutVar )
                 self.LASTRSP = self.LASTRSP + self.handle.before
         elif index == 2:
-            main.log.error( "Command not found" )
+            main.log.error( self.name + ": Command not found" )
             self.LASTRSP = self.LASTRSP + self.handle.before
         elif index == 3:
-            main.log.error( "Expected Prompt not found, Time Out!!" )
+            main.log.error( self.name + ": Expected Prompt not found, Time Out!!" )
             main.log.error( expectPrompt )
             self.LASTRSP = self.LASTRSP + self.handle.before
             return self.LASTRSP
@@ -253,7 +259,7 @@ class CLI( Component ):
             handle.expect( default )
 
         if i == 2:
-            main.log.error( "Unable to run as Sudo user" )
+            main.log.error( self.name + ": Unable to run as Sudo user" )
 
         return handle
 
@@ -299,7 +305,7 @@ class CLI( Component ):
             main.log.debug( "Wrong direction using secure copy command!" )
             return main.FALSE
 
-        main.log.info( "Sending: " + cmd )
+        main.log.info( self.name + ": Sending: " + cmd )
         self.handle.sendline( cmd )
         i = 0
         while i < 2:
@@ -315,13 +321,13 @@ class CLI( Component ):
                                 pexpect.TIMEOUT ],
                                 120 )
             if i == 0:  # ask for ssh key confirmation
-                main.log.info( "ssh key confirmation received, sending yes" )
+                main.log.info( self.name + ": ssh key confirmation received, sending yes" )
                 self.handle.sendline( 'yes' )
             elif i == 1:  # Asked for ssh password
-                main.log.info( "ssh connection asked for password, gave password" )
+                main.log.info( self.name + ": ssh connection asked for password, gave password" )
                 self.handle.sendline( pwd )
             elif i == 2:  # File finished transfering
-                main.log.info( "Secure copy successful" )
+                main.log.info( self.name + ": Secure copy successful" )
                 returnVal = main.TRUE
             elif i == 3:  # Connection refused
                 main.log.error(
@@ -330,15 +336,15 @@ class CLI( Component ):
                     " port 22: Connection refused" )
                 returnVal = main.FALSE
             elif i == 4:  # File Not found
-                main.log.error( "No such file found" )
+                main.log.error( self.name + ": No such file found" )
                 returnVal = main.FALSE
             elif i == 5:  # Permission denied
-                main.log.error( "Permission denied. Check folder permissions" )
+                main.log.error( self.name + ": Permission denied. Check folder permissions" )
                 returnVal = main.FALSE
             elif i == 6:  # prompt returned
                 return returnVal
             elif i == 7:  # EOF
-                main.log.error( "Pexpect.EOF found!!!" )
+                main.log.error( self.name + ": Pexpect.EOF found!!!" )
                 main.cleanAndExit()
             elif i == 8:  # timeout
                 main.log.error(
@@ -396,7 +402,7 @@ class CLI( Component ):
                                  self.prompt ],
                                120 )
             if i == 0:  # Accept key, then expect either a password prompt or access
-                main.log.info( "ssh key confirmation received, send yes" )
+                main.log.info( self.name + ": ssh key confirmation received, send yes" )
                 handle.sendline( 'yes' )
                 i = 5  # Run the loop again
                 continue
@@ -405,7 +411,7 @@ class CLI( Component ):
                     main.log.info(
                             "ssh connection asked for password, gave password" )
                 else:
-                    main.log.info( "Server asked for password, but none was "
+                    main.log.info( self.name + ": Server asked for password, but none was "
                                     "given in the .topo file. Trying "
                                     "no password." )
                     pwd = ""
@@ -416,10 +422,10 @@ class CLI( Component ):
                                      pexpect.TIMEOUT ],
                                      120 )
                 if j != 0:
-                    main.log.error( "Incorrect Password" )
+                    main.log.error( self.name + ": Incorrect Password" )
                     main.cleanAndExit()
             elif i == 2:
-                main.log.error( "Connection timeout" )
+                main.log.error( self.name + ": Connection timeout" )
                 main.cleanAndExit()
             elif i == 3:  # timeout
                 main.log.error(
@@ -435,30 +441,30 @@ class CLI( Component ):
                     " port 22: Connection refused" )
                 main.cleanAndExit()
             elif i == 6:
-                main.log.info( "Password not required logged in" )
+                main.log.info( self.name + ": Password not required logged in" )
 
         handle.sendline( "" )
         handle.expect( self.prompt )
         handle.sendline( "cd" )
         handle.expect( self.prompt )
 
-        main.log.info( "Successfully ssh to " + ipAddress + "." )
+        main.log.info( self.name + ": Successfully ssh to " + ipAddress + "." )
         return handle
 
     def exitFromSsh( self, handle, ipAddress ):
         try:
             handle.sendline( "logout" )
             handle.expect( "closed." )
-            main.log.info( "Successfully closed ssh connection from " + ipAddress )
+            main.log.info( self.name + ": Successfully closed ssh connection from " + ipAddress )
         except pexpect.EOF:
-            main.log.error( "Failed to close the connection from " + ipAddress )
+            main.log.error( self.name + ": Failed to close the connection from " + ipAddress )
         try:
             # check that this component handle still works
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
         except pexpect.EOF:
             main.log.error( self.handle.before )
-            main.log.error( "EOF after closing ssh connection" )
+            main.log.error( self.name + ": EOF after closing ssh connection" )
 
     def folderSize( self, path, size='10', unit='M', ignoreRoot=True ):
         """
@@ -548,7 +554,8 @@ class CLI( Component ):
                 cmd = "unset {}".format( variable )
             self.handle.sendline( cmd )
             self.handle.expect( self.prompt )
-            main.log.debug( self.handle.before )
+            output = self.handle.before
+            main.log.debug( output )
             return True
         except AssertionError:
             main.log.error( self.name + ": Could not execute command: " + output )
@@ -604,3 +611,315 @@ class CLI( Component ):
             main.log.debug( self.name + ": cleanOutput:" )
             main.log.debug( self.name + ": " + repr( cleaned ) )
         return cleaned
+
+    def dockerPull( self, image, tag=None ):
+        """
+        Pull a docker image from a registry
+        """
+        try:
+            imgStr = "%s%s" % ( image, ":%s" % tag if tag else "" )
+            cmdStr = "docker pull %s" % imgStr
+            main.log.info( self.name + ": sending: " + cmdStr )
+            self.handle.sendline( cmdStr)
+            i = self.handle.expect( [ self.prompt,
+                                      "Error response from daemon",
+                                      pexpect.TIMEOUT ], 120 )
+            if i == 0:
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error pulling docker image " + imgStr  )
+                output = self.handle.before + str( self.handle.after )
+                if i == 1:
+                    self.handle.expect( self.prompt )
+                    output += self.handle.before + str( self.handle.after )
+                main.log.debug( self.name + ": " + output )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def dockerBuild( self, path, imageTag, pull=False, options="", timeout=600 ):
+        """
+        Build a docker image
+        Required Arguments:
+         - path: Path to the dockerfile, it is recommended to avoid relative paths
+         - imageTag: Give a tag to the built docker image
+        Optional Arguments:
+         - pull: Whether to attempt to pull latest images before building
+         - options: A string containing any addition optional arguments
+                    for the docker build command
+         - timeout: How many seconds to wait for the build to complete
+        """
+        try:
+            response = main.TRUE
+            if pull:
+                options = "--pull " + options
+            cmdStr = "docker build -t %s %s %s" % ( imageTag, options, path )
+            main.log.info( self.name + ": sending: " + cmdStr )
+            self.handle.sendline( cmdStr)
+            i = self.handle.expect( [ "Successfully built",
+                                      "Error response from daemon",
+                                      pexpect.TIMEOUT ], timeout=timeout )
+            output = self.handle.before
+            if i == 0:
+                output += self.handle.after
+                self.handle.expect( self.prompt )
+                output += self.handle.before + self.handle.after
+                return response
+            elif i == 1:
+                response = main.FALSE
+                output += self.handle.after
+                self.handle.expect( self.prompt )
+                output += self.handle.before + self.handle.after
+            elif i == 2:
+                response = main.FALSE
+            main.log.error( self.name + ": Error building docker image" )
+            main.log.debug( self.name + ": " + output )
+            return response
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def dockerStop( self, containerName ):
+        """
+        Stop a docker container
+        Required Arguments:
+         - containerName: Name of the container to stop
+        """
+        try:
+            cmdStr = "docker stop %s" % ( containerName )
+            main.log.info( self.name + ": sending: " + cmdStr )
+            self.handle.sendline( cmdStr)
+            i = self.handle.expect( [ self.prompt,
+                                      "Error response from daemon",
+                                      pexpect.TIMEOUT ], 120 )
+            output = self.handle.before
+            if i == 0:
+                return main.TRUE
+            elif i == 1:
+                output += self.handle.after
+                self.handle.expect( self.prompt )
+                output += self.handle.before
+            elif i == 2:
+                pass
+            main.log.debug( "%s: %s" % ( self.name, output ) )
+            if "No such container" in output:
+                return main.TRUE
+            main.log.error( self.name + ": Error stopping docker image" )
+            main.log.debug( self.name + ": " + output )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def dockerRun( self, image, containerName, options="", imageArgs="" ):
+        """
+        Run a docker image
+        Required Arguments:
+         - containerName: Give a name to the container once its started
+         - image: Run the given image
+        Optional Arguments:
+         - options: A string containing any addition optional arguments
+                    for the docker run command
+        - imageArgs: A string containing command line arguments for the
+                     command run by docker
+        """
+        try:
+            cmdStr = "docker run --name %s %s %s %s" % ( containerName,
+                                                         options if options else "",
+                                                         image,
+                                                         imageArgs )
+            main.log.info( self.name + ": sending: " + cmdStr )
+            self.handle.sendline( cmdStr)
+            i = self.handle.expect( [ self.prompt,
+                                      "Error response from daemon",
+                                      pexpect.TIMEOUT ], 120 )
+            if i == 0:
+                return main.TRUE
+            else:
+                output = self.handle.before
+                main.log.debug( self.name + ": " + output )
+                main.log.error( self.name + ": Error running docker image" )
+                if i == 1:
+                    output += self.handle.after
+                    self.handle.expect( self.prompt )
+                    output += self.handle.before + self.handle.after
+                main.log.debug( self.name + ": " + output )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def dockerAttach( self, containerName, dockerPrompt="" ):
+        """
+        Attach to a docker image
+        Required Arguments:
+         - containerName: The name of the container to attach to
+        Optional Arguments:
+         - dockerPrompt: a regex for matching the docker shell prompt
+        """
+        try:
+            if dockerPrompt:
+                self.dockerPrompt = dockerPrompt
+            cmdStr = "docker attach %s" % containerName
+            main.log.info( self.name + ": sending: " + cmdStr )
+            self.handle.sendline( cmdStr)
+            i = self.handle.expect( [ self.dockerPrompt,
+                                      "Error response from daemon",
+                                      pexpect.TIMEOUT ] )
+            if i == 0:
+                self.inDocker = True
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error connecting to docker container" )
+                output = self.handle.before + str( self.handle.after )
+                if i == 1:
+                    self.handle.expect( self.prompt )
+                    output += self.handle.before + str( self.handle.after )
+                main.log.debug( self.name + ": " + output )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except AttributeError as e:
+            main.log.exception( self.name + ": AttributeError - " + str( e ) )
+            main.log.warn( self.name + ": Make sure dockerPrompt is set" )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def dockerExec( self, containerName, command="/bin/bash", options="-it", dockerPrompt="" ):
+        """
+        Attach to a docker image
+        Required Arguments:
+         - containerName: The name of the container to attach to
+        Optional Arguments:
+         - command: Command to run in the docker container
+         - options: Docker exec options
+         - dockerPrompt: a regex for matching the docker shell prompt
+        """
+        try:
+            if dockerPrompt:
+                self.dockerPrompt = dockerPrompt
+            cmdStr = "docker exec %s %s %s" % ( options, containerName, command )
+            main.log.info( self.name + ": sending: " + cmdStr )
+            self.handle.sendline( cmdStr)
+            i = self.handle.expect( [ self.dockerPrompt,
+                                      "Error response from daemon",
+                                      pexpect.TIMEOUT ] )
+            if i == 0:
+                self.inDocker = True
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error connecting to docker container" )
+                output = self.handle.before + str( self.handle.after )
+                if i == 1:
+                    self.handle.expect( self.prompt )
+                    output += self.handle.before + str( self.handle.after )
+                main.log.debug( self.name + ": " + output )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except AttributeError as e:
+            main.log.exception( self.name + ": AttributeError - " + str( e ) )
+            main.log.warn( self.name + ": Make sure dockerPrompt is set" )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def dockerCp( self, containerName, dockerPath, hostPath, direction="from" ):
+        """
+        Copy a file from/to a docker container to the host
+        Required Arguments:
+         - containerName: The name of the container to copy from/to
+         - dockerPath: the path in the container to copy from/to
+         - hostPath: the path on the host to copy to/from
+        Optional Arguments:
+         - direction: Choose whether to copy "from" the container or "to" the container
+        """
+        try:
+            cmdStr = "docker cp "
+            if direction == "from":
+                cmdStr += "%s:%s %s" % ( containerName, dockerPath, hostPath )
+            elif direction == "to":
+                cmdStr += "%s %s:%s" % ( hostPath, containerName, dockerPath )
+            main.log.info( self.name + ": sending: " + cmdStr )
+            self.handle.sendline( cmdStr)
+            i = self.handle.expect( [ self.prompt,
+                                      "Error",
+                                      pexpect.TIMEOUT ] )
+            if i == 0:
+                retValue = main.TRUE
+            else:
+                main.log.error( self.name + ": Error in docker cp" )
+                output = self.handle.before + str( self.handle.after )
+                if i == 1:
+                    self.handle.expect( self.prompt )
+                    output += self.handle.before + str( self.handle.after )
+                main.log.debug( self.name + ": " + output )
+                retValue = main.FALSE
+            return retValue
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except AttributeError as e:
+            main.log.exception( self.name + ": AttributeError - " + str( e ) )
+            main.log.warn( self.name + ": Make sure dockerPrompt is set" )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def dockerDisconnect( self ):
+        """
+        Send ctrl-c, ctrl-d to session, which should close and exit the
+        attached docker session. This will likely exit the running program
+        in the container and also stop the container.
+        """
+        try:
+            cmdStr = "\x03"
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.send( cmdStr)
+            cmdStr = "\x04"
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.send( cmdStr)
+            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ] )
+            if i == 0:
+                self.inDocker = False
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error disconnecting from docker image" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE

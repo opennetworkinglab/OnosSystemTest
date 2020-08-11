@@ -17,12 +17,11 @@
         <useCommonTopo>True</useCommonTopo>
         <useBmv2>True</useBmv2>
         <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix>bmv2</switchPrefix>
         <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
         <conf>dhcpd.conf,dhcpd6.conf,bgpdr1.conf,bgpdr2.conf,bgpdbgp1.conf,zebradbgp1.conf,bgpdbgp2.conf,zebradbgp2.conf</conf>
-        <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
-        <t3Oar>/home/sdn/t3-app-3.0.0-SNAPSHOT.oar</t3Oar>
     </DEPENDENCY>
 
     <MN_DOCKER>
@@ -31,9 +30,21 @@
         <home>/home/root/</home>
     </MN_DOCKER>
 
+    <CLUSTER>
+        # Params for onos docker
+        <dockerSkipBuild>True</dockerSkipBuild>
+        <dockerBuildCmd>make ONOS_BRANCH=master DOCKER_TAG=TestON-master onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
+        <dockerBuildTimeout>1200</dockerBuildTimeout>
+        <dockerFilePath>~/tost-onos</dockerFilePath>
+        <dockerImageTag>tost:TestON-master</dockerImageTag>
+        <dockerOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/cluster.json:/root/onos/config/cluster.json </dockerOptions> # We start the container detached, so the docker component can connect to cli instead of logs
+        <atomixImageTag>atomix/atomix:3.1.5</atomixImageTag>
+        <atomixOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/atomix.json:/opt/atomix/conf/atomix.json </atomixOptions>
+    </CLUSTER>
+
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,fpm,dhcprelay,netcfghostprovider,routeradvertisement,drivers.bmv2,pipelines.fabric</cellApps>
+        <cellApps>drivers,fpm,dhcprelay,netcfghostprovider,routeradvertisement,drivers.bmv2,pipelines.fabric</cellApps>
     </ENV>
 
     <GIT>

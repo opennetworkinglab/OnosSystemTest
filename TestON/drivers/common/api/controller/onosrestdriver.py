@@ -26,6 +26,7 @@ import os
 import requests
 import types
 import sys
+import time
 
 from drivers.common.api.controllerdriver import Controller
 
@@ -53,7 +54,7 @@ class OnosRestDriver( Controller ):
             else:
                 main.log.info( self.name + ": ip set to " + self.ip_address )
         except KeyError:
-            main.log.info( "Invalid host name," +
+            main.log.info( self.name + ": Invalid host name," +
                            "defaulting to 'localhost' instead" )
             self.ip_address = 'localhost'
         except Exception as inst:
@@ -99,21 +100,21 @@ class OnosRestDriver( Controller ):
         # TODO: Do we need to allow for other protocols besides http?
         # ANSWER: Not yet, but potentially https with certificates
         if ip == "DEFAULT":
-            main.log.warn( "No ip given, reverting to ip from topo file" )
+            main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
             ip = self.ip_address
         if port == "DEFAULT":
-            main.log.warn( "No port given, reverting to port " +
+            main.log.warn( self.name + ": No port given, reverting to port " +
                            "from topo file" )
             port = self.port
 
         try:
             path = "http://" + str( ip ) + ":" + str( port ) + base + url
             if self.user_name and self.pwd:
-                main.log.info( "user/passwd is: " + self.user_name + "/" + self.pwd )
+                main.log.info( self.name + ": user/passwd is: " + self.user_name + "/" + self.pwd )
                 auth = ( self.user_name, self.pwd )
             else:
                 auth = None
-            main.log.info( "Sending request " + path + " using " +
+            main.log.info( self.name + ": Sending request " + path + " using " +
                            method.upper() + " method." )
             response = requests.request( method.upper(),
                                          path,
@@ -142,10 +143,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             response = self.send( url="/intents", ip = ip, port = port )
@@ -157,8 +158,8 @@ class OnosRestDriver( Controller ):
                     b = json.dumps( a )
                     return b
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, AssertionError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -187,10 +188,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             # NOTE: REST url requires the intent id to be in decimal form
@@ -202,8 +203,8 @@ class OnosRestDriver( Controller ):
                     a = json.loads( output )
                     return a
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -223,10 +224,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             response = self.send( url="/applications", ip = ip, port = port )
@@ -238,8 +239,8 @@ class OnosRestDriver( Controller ):
                     b = json.dumps( a )
                     return b
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, AssertionError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -264,44 +265,62 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             query = "/" + str( appName ) + "/active"
-            response = self.send( method="POST",
-                                  url="/applications" + query,
-                                  ip = ip, port = port )
-            if response:
-                output = response[ 1 ]
-                app = json.loads( output )
-                if 200 <= response[ 0 ] <= 299:
-                    if check:
-                        if app.get( 'state' ) == 'ACTIVE':
-                            main.log.info( self.name + ": " + appName +
-                                           " application" +
-                                           " is in ACTIVE state" )
-                            return main.TRUE
+            retry = 0
+            retCode = main.TRUE
+            while retry < 50:
+                if retry > 0:
+                    main.log.warn( self.name + ": Retrying " + query + " for the " + str( retry ) + " time" )
+
+                retry += 1
+                response = self.send( method="POST",
+                                      debug=True,
+                                      url="/applications" + query,
+                                      ip = ip, port = port )
+                if response:
+                    output = response[ 1 ]
+                    if 200 <= response[ 0 ] <= 299:
+                        if check:
+                            app = json.loads( output )
+                            if app.get( 'state' ) == 'ACTIVE':
+                                main.log.info( self.name + ": " + appName +
+                                               " application" +
+                                               " is in ACTIVE state" )
+                                appHealth = self.getAppHealth( appName=appName, ip=ip, port=port )
+                                if "ready" == json.loads( appHealth[1] ).get( 'message' ):
+                                    return main.TRUE
+                                else:
+                                    return main.FALSE
+                            else:
+                                main.log.error( self.name + ": " + appName +
+                                                " application" + " is in " +
+                                                app.get( 'state' ) + " state" )
+                                retCode = main.FALSE
                         else:
-                            main.log.error( self.name + ": " + appName +
-                                            " application" + " is in " +
-                                            app.get( 'state' ) + " state" )
-                            return main.FALSE
+                            main.log.warn( self.name + ": Skipping " + appName +
+                                           "application check" )
+                            return main.TRUE
                     else:
-                        main.log.warn( "Skipping " + appName +
-                                       "application check" )
-                        return main.TRUE
-                else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
-                    return main.FALSE
+                        main.log.error( "Error with REST request, response was: %s: %s" %
+                                        ( response[ 0 ], response[ 1 ] ) )
+                        retCode = main.FALSE
+                time.sleep( 30 )
+                return retCode
+        except ( ValueError ):
+            main.log.exception( self.name + ": Error parsing json" )
+            return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.debug( self.name + ": " + response )
             main.cleanAndExit()
 
     def deactivateApp( self, appName, ip="DEFAULT", port="DEFAULT",
@@ -320,10 +339,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             query = "/" + str( appName ) + "/active"
@@ -347,12 +366,12 @@ class OnosRestDriver( Controller ):
                                             app.get( 'state' ) + " state" )
                             return main.FALSE
                     else:
-                        main.log.warn( "Skipping " + appName +
+                        main.log.warn( self.name + ": Skipping " + appName +
                                        "application check" )
                         return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -373,12 +392,12 @@ class OnosRestDriver( Controller ):
             Returns main.FALSE if error on requests; Returns None for exception
         """
         try:
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             query = "/" + str( appName )
@@ -388,9 +407,77 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     return response
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def getAppHealth( self, appName, ip="DEFAULT",
+                      port="DEFAULT" ):
+        """
+        Decription:
+            Gets the health of the given application
+        Required:
+            str name - Name of onos application
+        Returns:
+            Returns a dictionary of information ONOS application in string type;
+            Returns main.FALSE if error on requests; Returns None for exception
+        """
+        try:
+            response = None
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            response = self.send( url="/applications/%s/health" % str( appName ),
+                                  ip = ip, port = port )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    return response
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def getAllAppHealth( self, retries=1, wait=30 , ip="DEFAULT",
+                         port="DEFAULT" ):
+        """
+        Description:
+            Gets the health of all activated apps
+        Required:
+        Optional:
+            retries - The number of tries to return before returning
+            wait - Time to wait in between retries
+        """
+        try:
+            responses = main.TRUE
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            apps = self.apps()
+            for app in json.loads(apps):
+                appName = app.get( "name" )
+                response = self.getAppHealth( appName=appName, ip=ip, port=port )
+                responses = main.TRUE and "ready" == json.loads( response[1] ).get( "message" )
+            return responses
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -425,12 +512,12 @@ class OnosRestDriver( Controller ):
             if vlanId:
                 intentJson[ 'selector' ][ 'criteria' ].append( { "type": "VLAN_VID",
                                                                  "vlanId": vlanId } )
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             response = self.send( method="POST",
@@ -443,8 +530,8 @@ class OnosRestDriver( Controller ):
                                    " and host: " + hostIdTwo )
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
 
         except ( AttributeError, TypeError ):
@@ -534,9 +621,6 @@ class OnosRestDriver( Controller ):
                                               "types": [ "OPTICAL" ],
                                               "inclusive": "false" } ] }
 
-            # if protected:
-            #     intentJson['constraints'].append( { "type": "Protection", "types": ["Protection"], "inclusive": "true" } )
-
             if ethType == "IPV4":
                 intentJson[ 'selector' ][ 'criteria' ].append( {
                                                          "type": "ETH_TYPE",
@@ -581,12 +665,12 @@ class OnosRestDriver( Controller ):
 
             # TODO: Bandwidth and Lambda will be implemented if needed
 
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             response = self.send( method="POST",
@@ -602,8 +686,8 @@ class OnosRestDriver( Controller ):
                                    " and egress: " + egressDevice + " devices" )
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
 
         except ( AttributeError, TypeError ):
@@ -743,12 +827,12 @@ class OnosRestDriver( Controller ):
 
             # TODO: Bandwidth and Lambda will be implemented if needed
 
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             response = self.send( method="POST",
@@ -764,7 +848,7 @@ class OnosRestDriver( Controller ):
                                    " and egress: " + str( egressDeviceList ) + " devices" )
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " + str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" % ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
             else:
                 main.log.error( "REST request has no response." )
@@ -784,12 +868,12 @@ class OnosRestDriver( Controller ):
             Returns None for exception
         """
         try:
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             # NOTE: REST url requires the intent id to be in decimal form
@@ -800,8 +884,8 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -810,7 +894,7 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getIntentsId( self ):
+    def getIntentsId( self, ip="DEFAULT", port="DEFAULT" ):
         """
         Description:
             Gets all intents ID using intents function
@@ -819,11 +903,11 @@ class OnosRestDriver( Controller ):
         """
         try:
             intentIdList = []
-            intentsJson = json.loads( self.intents() )
+            intentsJson = json.loads( self.intents( ip=ip, port=port ) )
             for intent in intentsJson:
                 intentIdList.append( intent.get( 'id' ) )
             if not intentIdList:
-                main.log.debug( "Cannot find any intents" )
+                main.log.debug( self.name + ": Cannot find any intents" )
                 return main.FALSE
             else:
                 return intentIdList
@@ -894,10 +978,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             response = self.send( url="/hosts", ip = ip, port = port )
@@ -909,8 +993,8 @@ class OnosRestDriver( Controller ):
                     b = json.dumps( a )
                     return b
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, AssertionError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -938,10 +1022,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             query = "/" + mac + "/" + vlan
@@ -956,8 +1040,8 @@ class OnosRestDriver( Controller ):
                     hostId = json.loads( output ).get( 'id' )
                     return hostId
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -977,10 +1061,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             response = self.send( url="/topology", ip = ip, port = port )
@@ -991,8 +1075,8 @@ class OnosRestDriver( Controller ):
                     b = json.dumps( a )
                     return b
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1013,10 +1097,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             response = self.send( url="/devices", ip = ip, port = port )
@@ -1028,8 +1112,8 @@ class OnosRestDriver( Controller ):
                     b = json.dumps( a )
                     return b
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, AssertionError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1067,7 +1151,7 @@ class OnosRestDriver( Controller ):
                     if intentsId == intent[ 'id' ]:
                         state = intent[ 'state' ]
                         return state
-                main.log.info( "Cannot find intent ID" + str( intentsId ) +
+                main.log.info( self.name + ": Cannot find intent ID" + str( intentsId ) +
                                " on the list" )
                 return state
             elif isinstance( intentsId, types.ListType ):
@@ -1081,10 +1165,10 @@ class OnosRestDriver( Controller ):
                             dictList.append( stateDict )
                             break
                 if len( intentsId ) != len( dictList ):
-                    main.log.info( "Cannot find some of the intent ID state" )
+                    main.log.info( self.name + ": Cannot find some of the intent ID state" )
                 return dictList
             else:
-                main.log.info( "Invalid intents ID entry" )
+                main.log.info( self.name + ": Invalid intents ID entry" )
                 return None
 
         except ( AttributeError, TypeError ):
@@ -1126,7 +1210,7 @@ class OnosRestDriver( Controller ):
             if isinstance( expectedState, types.StringType ):
                 for intents in intentsDict:
                     if intents.get( 'state' ) != expectedState:
-                        main.log.debug( self.name + " : Intent ID - " +
+                        main.log.debug( self.name + ": Intent ID - " +
                                         intents.get( 'id' ) +
                                         " actual state = " +
                                         intents.get( 'state' )
@@ -1138,7 +1222,7 @@ class OnosRestDriver( Controller ):
                 for intents in intentsDict:
                     if not any( state == intents.get( 'state' ) for state in
                                 expectedState ):
-                        main.log.debug( self.name + " : Intent ID - " +
+                        main.log.debug( self.name + ": Intent ID - " +
                                         intents.get( 'id' ) +
                                         " actual state = " +
                                         intents.get( 'state' ) +
@@ -1173,10 +1257,10 @@ class OnosRestDriver( Controller ):
             output = None
             url = "/flows"
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             if subjectKey and not subjectClass:
@@ -1194,8 +1278,8 @@ class OnosRestDriver( Controller ):
                     b = json.dumps( a )
                     return b
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, AssertionError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1217,10 +1301,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             url = "/flows/" + deviceId
@@ -1236,8 +1320,8 @@ class OnosRestDriver( Controller ):
                     b = json.dumps( a )
                     return b
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, AssertionError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1265,13 +1349,13 @@ class OnosRestDriver( Controller ):
 
         try:
             if debug:
-                main.log.debug( "Adding flow: " + self.pprint( flowJson ) )
-            output = None
+                main.log.debug( self.name + ": Adding flow: " + self.pprint( flowJson ) )
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             url = "/flows/" + deviceId
@@ -1284,8 +1368,8 @@ class OnosRestDriver( Controller ):
                                    "in device: " + str( deviceId ) )
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except NotImplementedError as e:
             raise e  # Inform the caller
@@ -1438,12 +1522,12 @@ class OnosRestDriver( Controller ):
             Returns main.FALSE, Returns None on error
         """
         try:
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             # NOTE: REST url requires the intent id to be in decimal form
@@ -1454,8 +1538,8 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1504,10 +1588,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             url = "/network/configuration"
@@ -1526,11 +1610,11 @@ class OnosRestDriver( Controller ):
                     return b
                 elif response[ 0 ] == 404:
                     main.log.error( "Requested configuration doesn't exist: " +
-                                    str( response ) )
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return {}
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1551,12 +1635,12 @@ class OnosRestDriver( Controller ):
 
         """
         try:
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             url = "/network/configuration"
@@ -1574,8 +1658,8 @@ class OnosRestDriver( Controller ):
                     main.log.info( self.name + ": Successfully POST cfg" )
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1596,12 +1680,12 @@ class OnosRestDriver( Controller ):
 
         """
         try:
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             url = "/network/configuration"
@@ -1618,8 +1702,8 @@ class OnosRestDriver( Controller ):
                     main.log.info( self.name + ": Successfully delete cfg" )
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1780,7 +1864,7 @@ class OnosRestDriver( Controller ):
             # pprint(flowJson)
             flowJsonList.append( flowJson )
 
-        main.log.info( "Number of flows in batch: " + str( len( flowJsonList ) ) )
+        main.log.info( self.name + ": Number of flows in batch: " + str( len( flowJsonList ) ) )
         flowJsonBatch[ 'flows' ] = flowJsonList
         # pprint(flowJsonBatch)
 
@@ -1800,17 +1884,16 @@ class OnosRestDriver( Controller ):
             The ip and port option are for the requests input's ip and port
             of the ONOS node
         """
-        import time
 
         try:
             if debug:
-                main.log.debug( "Adding flow: " + self.pprint( batch ) )
-            output = None
+                main.log.debug( self.name + ": Adding flow: " + self.pprint( batch ) )
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             url = "/flows/"
@@ -1822,8 +1905,8 @@ class OnosRestDriver( Controller ):
                 main.log.info( self.name + ": Successfully POST flow batch" )
                 return main.TRUE, response
             else:
-                main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                 return main.FALSE, response
         except NotImplementedError as e:
             raise e  # Inform the caller
@@ -1846,12 +1929,12 @@ class OnosRestDriver( Controller ):
             Returns main.FALSE, Returns None on error
         """
         try:
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             # NOTE: REST url requires the intent id to be in decimal form
@@ -1863,8 +1946,8 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -1886,10 +1969,6 @@ class OnosRestDriver( Controller ):
             topology = json.loads( topologyOutput )
             main.log.debug( topology )
             return topology
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
@@ -1948,15 +2027,12 @@ class OnosRestDriver( Controller ):
             else:
                 main.log.info( output )
             return result
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def addGroup( self, deviceId, groupType, bucketList, appCookie, groupId, ip="DEFAULT", port="DEFAULT", debug=False ):
+    def addGroup( self, deviceId, groupType, bucketList, appCookie, groupId,
+                  ip="DEFAULT", port="DEFAULT", debug=False ):
         """
         Description:
             Creates a single Group for the specified device.
@@ -2006,13 +2082,13 @@ class OnosRestDriver( Controller ):
         """
         try:
             if debug:
-                main.log.debug( "Adding group: " + self.pprint( groupJson ) )
-            output = None
+                main.log.debug( self.name + ": Adding group: " + self.pprint( groupJson ) )
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             url = "/groups/" + deviceId
@@ -2025,8 +2101,8 @@ class OnosRestDriver( Controller ):
                                    "in device: " + str( deviceId ) )
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except NotImplementedError as e:
             raise e  # Inform the caller
@@ -2056,10 +2132,10 @@ class OnosRestDriver( Controller ):
         try:
             output = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             url = "/groups"
@@ -2076,8 +2152,8 @@ class OnosRestDriver( Controller ):
                     groups = json.dumps( groupsJson )
                     return groups
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, AssertionError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
@@ -2104,12 +2180,12 @@ class OnosRestDriver( Controller ):
 
         """
         try:
-            output = None
+            response = None
             if ip == "DEFAULT":
-                main.log.warn( "No ip given, reverting to ip from topo file" )
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port " +
+                main.log.warn( self.name + ": No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             query = "/" + str( deviceId ) + "/" + str( appCookie )
@@ -2119,8 +2195,8 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     return main.TRUE
                 else:
-                    main.log.error( "Error with REST request, response was: " +
-                                    str( response ) )
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
                     return main.FALSE
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )

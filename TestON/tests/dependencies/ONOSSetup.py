@@ -44,7 +44,7 @@ class ONOSSetup:
         try:
             main.Cluster
         except ( NameError, AttributeError ):
-            main.Cluster = Cluster( main.ONOScell.nodes )
+            main.Cluster = Cluster( main.ONOScell.nodes, useDocker=main.ONOScell.useDocker )
         main.ONOSbench = main.Cluster.controllers[ 0 ].Bench
         main.testOnDirectory = re.sub( "(/tests)$", "", main.testsRoot )
 
@@ -100,20 +100,20 @@ class ONOSSetup:
         try:
             main.Cluster
         except ( NameError, AttributeError ):
-            main.Cluster = Cluster( main.ONOScell.nodes )
+            main.Cluster = Cluster( main.ONOScell.nodes, useDocker=main.ONOScell.useDocker )
 
         main.cellData = {}  # For creating cell file
 
         return main.TRUE
 
-    def envSetupException( self, e ):
+    def envSetupException( self, error ):
         """
         Description:
             handles the exception that might occur from the environment setup.
         Required:
-            * includeGitPull - exceeption code e.
+            * error - exception returned from except.
         """
-        main.log.exception( e )
+        main.log.exception( error )
         main.cleanAndExit()
 
     def envSetupConclusion( self, stepResult ):
@@ -219,6 +219,21 @@ class ONOSSetup:
         main.log.info( "Safety check, killing all ONOS processes" )
         return cluster.killOnos( killRemoveMax, stopOnos )
 
+    def killingAllOnosDocker( self, cluster, killRemoveMax ):
+        """
+        Description:
+            killing the onos docker images . It will either kill the
+            current runningnodes or max number of the nodes.
+        Required:
+            * cluster - the cluster driver that will be used.
+            * killRemoveMax - The boolean that will decide either to kill
+            only running nodes ( False ) or max number of nodes ( True ).
+        Returns:
+            Returns main.TRUE if successfully killing it.
+        """
+        main.log.info( "Safety check, stopping all ONOS docker containers" )
+        return cluster.dockerStop( killRemoveMax )
+
     def createApplyCell( self, cluster, newCell, cellName, cellApps,
                          mininetIp, useSSH, onosIps, installMax=False,
                          atomixClusterSize=None ):
@@ -243,6 +258,8 @@ class ONOSSetup:
         """
         if atomixClusterSize is None:
             atomixClusterSize = len( cluster.runningNodes )
+        if atomixClusterSize is 1:
+            atomixClusterSize = len( cluster.controllers )
         atomixClusterSize = int( atomixClusterSize )
         cluster.setAtomixNodes( atomixClusterSize )
         atomixIps = [ node.ipAddress for node in cluster.atomixNodes ]
@@ -316,6 +333,25 @@ class ONOSSetup:
             main.cleanAndExit()
         return packageResult
 
+    def buildDocker( self, cluster ):
+        """
+        Description:
+            Build the latest docker
+        Required:
+            * cluster - the cluster driver that will be used.
+        Returns:
+            Returns main.TRUE if it successfully built.
+        """
+        main.step( "Building ONOS Docker image" )
+        buildResult = cluster.dockerBuild()
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=buildResult,
+                                 onpass="Successfully created ONOS docker",
+                                 onfail="Failed to create ONOS docker" )
+        if not buildResult:
+            main.cleanAndExit()
+        return buildResult
+
     def installAtomix( self, cluster, parallel=True ):
         """
         Description:
@@ -360,6 +396,42 @@ class ONOSSetup:
         if not onosInstallResult:
             main.cleanAndExit()
         return onosInstallResult
+
+    def startDocker( self, cluster, installMax, parallel=True ):
+        """
+        Description:
+            Start onos docker containers and verify the result
+        Required:
+            * cluster - the cluster driver that will be used.
+            * installMax - True for installing max number of nodes
+            False for installing current running nodes only.
+        Returns:
+            Returns main.TRUE if it successfully installed
+        """
+        main.step( "Create Cluster Config" )
+        configResult = cluster.genPartitions()
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=configResult,
+                                 onpass="Successfully create cluster config",
+                                 onfail="Failed to create cluster config" )
+
+        # install atomix docker containers
+        main.step( "Installing Atomix via docker containers" )
+        atomixInstallResult = cluster.startAtomixDocker( parallel )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=atomixInstallResult,
+                                 onpass="Successfully start atomix containers",
+                                 onfail="Failed to start atomix containers" )
+
+        main.step( "Installing ONOS via docker containers" )
+        onosInstallResult = cluster.startONOSDocker( installMax, parallel )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=onosInstallResult,
+                                 onpass="Successfully start ONOS containers",
+                                 onfail="Failed to start ONOS containers" )
+        if not onosInstallResult and atomixInstallResult:
+            main.cleanAndExit()
+        return onosInstallResult and atomixInstallResult
 
     def setupSsh( self, cluster ):
         """
@@ -565,6 +637,7 @@ class ONOSSetup:
         if restartCluster:
             atomixKillResult = self.killingAllAtomix( cluster, killRemoveMax, stopAtomix )
             onosKillResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
+            dockerKillResult = self.killingAllOnosDocker( cluster, killRemoveMax )
             killResult = atomixKillResult and onosKillResult
         else:
             killResult = main.TRUE
@@ -577,11 +650,24 @@ class ONOSSetup:
 
             packageResult = main.TRUE
             if not skipPack:
-                packageResult = self.buildOnos(cluster)
+                if cluster.useDocker:
+                    packageResult = self.buildDocker( cluster )
+                else:
+                    packageResult = self.buildOnos( cluster )
 
-            atomixInstallResult = self.installAtomix( cluster, installParallel )
-            onosInstallResult = self.installOnos( cluster, installMax, installParallel )
-            installResult = atomixInstallResult and onosInstallResult
+            if cluster.useDocker:
+                installResult = self.startDocker( cluster, installMax, installParallel )
+            else:
+                atomixInstallResult = self.installAtomix( cluster, installParallel )
+                onosInstallResult = self.installOnos( cluster, installMax, installParallel )
+                installResult = atomixInstallResult and onosInstallResult
+
+            preCLIResult = main.TRUE
+            if cluster.useDocker:
+                attachResult = cluster.attachToONOSDocker()
+                prepareResult = cluster.prepareForCLI()
+
+                preCLIResult = preCLIResult and attachResult and prepareResult
 
             self.processList( extraClean, cleanArgs )
             secureSshResult = self.setupSsh( cluster )
@@ -590,8 +676,11 @@ class ONOSSetup:
             uninstallResult = main.TRUE
             installResult = main.TRUE
             secureSshResult = main.TRUE
+            preCLIResult = main.TRUE
 
-        onosServiceResult = self.checkOnosService( cluster )
+        onosServiceResult = main.TRUE
+        if not cluster.useDocker:
+            onosServiceResult = self.checkOnosService( cluster )
 
         onosCliResult = main.TRUE
         if startOnosCli:
@@ -604,6 +693,11 @@ class ONOSSetup:
             if apps:
                 apps = apps.split( ',' )
                 apps = [ appPrefix + app for app in apps ]
+                if cluster.useDocker:
+                    node = main.Cluster.active( 0 )
+                    for app in apps:
+                        node.activateApp( app )
+
                 onosAppsResult = self.checkOnosApps( cluster, apps )
             else:
                 main.log.warn( "No apps were specified to be checked after startup" )
@@ -616,4 +710,4 @@ class ONOSSetup:
 
         return killResult and cellResult and packageResult and uninstallResult and \
                installResult and secureSshResult and onosServiceResult and onosCliResult and \
-               onosNodesResult and onosAppsResult
+               onosNodesResult and onosAppsResult and preCLIResult

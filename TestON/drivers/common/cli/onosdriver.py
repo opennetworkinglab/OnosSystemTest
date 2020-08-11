@@ -96,7 +96,7 @@ class OnosDriver( CLI ):
                             break
 
                     if not self.onosIps:
-                        main.log.info( "Could not read any environment variable"
+                        main.log.info( self.name + ": Could not read any environment variable"
                                        + " please load a cell file with all" +
                                         " onos IP" )
                         self.maxNodes = None
@@ -105,7 +105,7 @@ class OnosDriver( CLI ):
                                        str( self.onosIps.values() ) +
                                        " ONOS IPs" )
             except KeyError:
-                main.log.info( "Invalid environment variable" )
+                main.log.info( self.name + ": Invalid environment variable" )
             except Exception as inst:
                 main.log.error( "Uncaught exception: " + str( inst ) )
 
@@ -117,7 +117,7 @@ class OnosDriver( CLI ):
                                    ": Trying to connect to " +
                                    self.ip_address )
             except KeyError:
-                main.log.info( "Invalid host name," +
+                main.log.info( self.name + ": Invalid host name," +
                                " connecting to local host instead" )
                 self.ip_address = 'localhost'
             except Exception as inst:
@@ -136,7 +136,7 @@ class OnosDriver( CLI ):
                 self.handle.expect( self.prompt )
                 return self.handle
             else:
-                main.log.info( "Failed to create ONOS handle" )
+                main.log.info( self.name + ": Failed to create ONOS handle" )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -224,7 +224,7 @@ class OnosDriver( CLI ):
                 elif i == 4:
                     # Prompt returned
                     break
-            main.log.info( "onos-package command returned: " + handle )
+            main.log.info( self.name + ": onos-package command returned: " + handle )
             # As long as the sendline does not time out,
             # return true. However, be careful to interpret
             # the results of the onos-package command return
@@ -258,7 +258,7 @@ class OnosDriver( CLI ):
             handle = str( self.handle.before )
             self.handle.expect( self.prompt )
 
-            main.log.info( "onos-build command returned: " +
+            main.log.info( self.name + ": onos-build command returned: " +
                            handle )
 
             if i == 0:
@@ -285,7 +285,7 @@ class OnosDriver( CLI ):
         On Failure, exits the test
         """
         try:
-            main.log.info( "Running 'mvn clean install' on " +
+            main.log.info( self.name + ": Running 'mvn clean install' on " +
                            str( self.name ) +
                            ". This may take some time." )
             self.handle.sendline( "cd " + self.home )
@@ -643,7 +643,7 @@ class OnosDriver( CLI ):
                     self.name +
                     ": Git Checkout %s : Already on this branch" % branch )
                 self.handle.expect( self.prompt )
-                # main.log.info( "DEBUG: after checkout cmd = "+
+                # main.log.info( self.name + ": DEBUG: after checkout cmd = "+
                 # self.handle.before )
                 return main.TRUE
             elif i == 3:
@@ -651,7 +651,7 @@ class OnosDriver( CLI ):
                     self.name +
                     ": Git checkout %s - Switched to this branch" % branch )
                 self.handle.expect( self.prompt )
-                # main.log.info( "DEBUG: after checkout cmd = "+
+                # main.log.info( self.name + ": DEBUG: after checkout cmd = "+
                 # self.handle.before )
                 return main.TRUE
             elif i == 4:
@@ -948,7 +948,7 @@ class OnosDriver( CLI ):
             self.handle.expect( self.prompt )
             handleBefore = self.handle.before
             handleAfter = self.handle.after
-            main.log.info( "Verify cell returned: " + handleBefore +
+            main.log.info( self.name + ": Verify cell returned: " + handleBefore +
                            handleAfter )
             return main.TRUE
         except pexpect.ExceptionPexpect:
@@ -989,7 +989,7 @@ class OnosDriver( CLI ):
             self.handle.expect( ":~" )
 
             if "value=" + paramValue + "," in self.handle.before:
-                main.log.info( "cfg " + configName + " successfully set to " + configParam )
+                main.log.info( self.name + ": cfg " + configName + " successfully set to " + configParam )
                 return main.TRUE
         except pexpect.ExceptionPexpect:
             main.log.exception( self.name + ": Pexpect exception found: " )
@@ -1030,13 +1030,19 @@ class OnosDriver( CLI ):
             self.handle.expect( self.prompt )
 
             self.handle.sendline( "onos-wait-for-start " + ONOSIp )
-            self.handle.expect( self.prompt )
+            i = self.handle.expect( [ self.prompt, "Password: " ] )
+            if i == 1:
+                self.handle.sendline( self.pwd )
+                self.handle.expect( self.prompt )
 
-            self.handle.sendline( "onos " + ONOSIp + " " + cmdstr )
-            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=timeout )
+            self.handle.sendline( "ssh -q -p 8101 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s %s " % ( ONOSIp, cmdstr ) )
+            i = self.handle.expect( [ self.prompt, "Password: ", pexpect.TIMEOUT ], timeout=timeout )
+            if i == 1:
+                self.handle.sendline( self.pwd )
+                i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=timeout )
             if i == 0:
                 handleBefore = self.handle.before
-                main.log.info( "Command sent successfully" )
+                main.log.info( self.name + ": Command sent successfully" )
                 # Obtain return handle that consists of result from
                 # the onos command. The string may need to be
                 # configured further.
@@ -1044,6 +1050,7 @@ class OnosDriver( CLI ):
                 return returnString
             elif i == 1:
                 main.log.error( self.name + ": Timeout when sending " + cmdstr )
+                main.log.debug( self.handle.before )
                 self.handle.send( "\x03" )  # Control-C
                 self.handle.expect( self.prompt )
                 return main.FALSE
@@ -1140,7 +1147,7 @@ class OnosDriver( CLI ):
                 return main.TRUE
             elif i == 2:
                 # same bits are already on ONOS node
-                main.log.info( "ONOS is already installed on " + node )
+                main.log.info( self.name + ": ONOS is already installed on " + node )
                 self.handle.expect( self.prompt )
                 return main.TRUE
             elif i == 3:
@@ -1150,7 +1157,7 @@ class OnosDriver( CLI ):
                 return main.FALSE
             elif i == 4:
                 # prompt
-                main.log.info( "ONOS was installed on {} {}.".format(  node,
+                main.log.info( self.name + ": ONOS was installed on {} {}.".format(  node,
                                "but not started" if 'n' in options else "and started" ) )
                 return main.TRUE
             elif i == 5:
@@ -1190,14 +1197,14 @@ class OnosDriver( CLI ):
                 pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
                 self.handle.expect( self.prompt )
-                main.log.info( "Service is already running" )
+                main.log.info( self.name + ": Service is already running" )
                 return main.TRUE
             elif i == 1:
                 self.handle.expect( self.prompt )
-                main.log.info( "ONOS service started" )
+                main.log.info( self.name + ": ONOS service started" )
                 return main.TRUE
             elif i == 2:
-                main.log.info( "ONOS service started" )
+                main.log.info( self.name + ": ONOS service started" )
                 return main.TRUE
             else:
                 self.handle.expect( self.prompt )
@@ -1230,11 +1237,11 @@ class OnosDriver( CLI ):
                 pexpect.TIMEOUT ], timeout=180 )
             if i == 0:
                 self.handle.expect( self.prompt )
-                main.log.info( "ONOS service stopped" )
+                main.log.info( self.name + ": ONOS service stopped" )
                 return main.TRUE
             elif i == 1:
                 self.handle.expect( self.prompt )
-                main.log.info( "onosStop() Unknown ONOS instance specified: " +
+                main.log.info( self.name + ": onosStop() Unknown ONOS instance specified: " +
                                str( nodeIp ) )
                 return main.FALSE
             elif i == 2:
@@ -1242,7 +1249,7 @@ class OnosDriver( CLI ):
                 main.log.warn( "ONOS wasn't running" )
                 return main.TRUE
             elif i == 3:
-                main.log.info( "ONOS service stopped" )
+                main.log.info( self.name + ": ONOS service stopped" )
                 return main.TRUE
             else:
                 main.log.error( "ONOS service failed to stop" )
@@ -1266,7 +1273,7 @@ class OnosDriver( CLI ):
             self.handle.expect( self.prompt, timeout=180 )
             self.handle.sendline( "onos-uninstall " + str( nodeIp ) )
             self.handle.expect( self.prompt, timeout=180 )
-            main.log.info( "ONOS " + nodeIp + " was uninstalled" )
+            main.log.info( self.name + ": ONOS " + nodeIp + " was uninstalled" )
             # onos-uninstall command does not return any text
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -1297,13 +1304,13 @@ class OnosDriver( CLI ):
                 "ONOS\sprocess\sis\snot\srunning",
                 pexpect.TIMEOUT ], timeout=60 )
             if i == 0:
-                main.log.info( "ONOS instance " + str( nodeIp ) +
+                main.log.info( self.name + ": ONOS instance " + str( nodeIp ) +
                                " was killed and stopped" )
                 self.handle.sendline( "" )
                 self.handle.expect( self.prompt )
                 return main.TRUE
             elif i == 1:
-                main.log.info( "ONOS process was not running" )
+                main.log.info( self.name + ": ONOS process was not running" )
                 self.handle.sendline( "" )
                 self.handle.expect( self.prompt )
                 return main.FALSE
@@ -1337,7 +1344,7 @@ class OnosDriver( CLI ):
                         nodeIp ) + " was killed" )
                 return main.TRUE
             elif i == 1:
-                main.log.info( "No route to host" )
+                main.log.info( self.name + ": No route to host" )
                 return main.FALSE
             elif i == 2:
                 main.log.info(
@@ -1346,7 +1353,7 @@ class OnosDriver( CLI ):
                     " not configured" )
                 return main.FALSE
             else:
-                main.log.info( "ONOS instance was not killed" )
+                main.log.info( self.name + ": ONOS instance was not killed" )
                 return main.FALSE
 
         except pexpect.EOF:
@@ -1359,15 +1366,19 @@ class OnosDriver( CLI ):
 
     def onosAppInstall( self, nodeIp, oarFile ):
         """
-        Calls the command: 'onos-app nodeIp install! oarFile'
+        Calls the command: 'onos-app nodeIp reinstall! oarFile'
         Installs an ONOS application from an oar file
         """
         try:
-            cmd = "onos-app " + str( nodeIp ) +" install! " + str(oarFile)
+            cmd = "onos-app " + str( nodeIp ) + " reinstall! " + str( oarFile )
             self.handle.sendline( cmd )
-            self.handle.expect( self.prompt )
+            i = self.handle.expect( [ "409 Conflict", self.prompt ] )
+            if i == 0:
+                self.handle.expect( self.prompt )
+                time.sleep( 30 )
+                self.handle.sendline( cmd )
             handle = self.handle.before
-            main.log.debug( handle )
+            main.log.debug( "%s: %s" % ( self.name, handle ) )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             assert "error" not in handle, handle
@@ -1442,7 +1453,7 @@ class OnosDriver( CLI ):
 
             self.handle.sendline( "onos-start-network " + mntopo )
             self.handle.expect( "mininet>" )
-            main.log.info( "Network started, entered mininet prompt" )
+            main.log.info( self.name + ": Network started, entered mininet prompt" )
 
             # TODO: Think about whether return is necessary or not
 
@@ -1557,7 +1568,7 @@ class OnosDriver( CLI ):
                 sendCmd = addApp + " > " + str( dirFile ) + " &"
             else:
                 sendCmd = addApp + " &"
-            main.log.info( "Send cmd: " + sendCmd )
+            main.log.info( self.name + ": Send cmd: " + sendCmd )
 
             self.handle.sendline( sendCmd )
 
@@ -1588,7 +1599,7 @@ class OnosDriver( CLI ):
             self.handle.sendline( "\n" )
             self.handle.expect( self.prompt )
 
-            main.log.info( "Tshark started capturing files on " +
+            main.log.info( self.name + ": Tshark started capturing files on " +
                            str( interface ) + " and saving to directory: " +
                            str( dirFile ) )
         except pexpect.EOF:
@@ -1687,7 +1698,7 @@ class OnosDriver( CLI ):
             self.handle.sendline( "sudo kill -9 `ps -ef | grep \"tshark -i\"" +
                                   " | grep -v grep | awk '{print $2}'`" )
             self.handle.sendline( "" )
-            main.log.info( "Tshark stopped" )
+            main.log.info( self.name + ": Tshark stopped" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1713,7 +1724,7 @@ class OnosDriver( CLI ):
 
             if i == 0:
                 handle = self.handle.before
-                main.log.info( "ptpd returned an error: " +
+                main.log.info( self.name + ": ptpd returned an error: " +
                                str( handle ) )
                 return handle
             elif i == 1:
@@ -1856,10 +1867,10 @@ class OnosDriver( CLI ):
             self.handle.expect( self.prompt )
 
             if i == 0 or i == 1:
-                main.log.info( "ONOS is running" )
+                main.log.info( self.name + ": ONOS is running" )
                 return main.TRUE
             elif i == 2 or i == 3:
-                main.log.info( "ONOS is stopped" )
+                main.log.info( self.name + ": ONOS is stopped" )
                 main.log.error( "ONOS service failed to check the status" )
 
                 main.cleanAndExit()
@@ -2033,7 +2044,7 @@ class OnosDriver( CLI ):
 
                 deviceCount - number of switches to be assigned
         '''
-        main.log.info( "Creating link graph configuration file." )
+        main.log.info( self.name + ": Creating link graph configuration file." )
         linkGraphPath = self.home + "/tools/package/etc/linkGraph.cfg"
         tempFile = "/tmp/linkGraph.cfg"
 
@@ -2056,7 +2067,7 @@ class OnosDriver( CLI ):
                 switchList[ node ] += 1
 
         if isinstance( deviceCount, list ):
-            main.log.info( "Using provided device distribution" )
+            main.log.info( self.name + ": Using provided device distribution" )
             switchList = [ 0 ]
             for i in deviceCount:
                 switchList.append( int( i ) )
@@ -2099,7 +2110,7 @@ class OnosDriver( CLI ):
 
         # SCP
         os.system( "scp " + tempFile + " " + self.user_name + "@" + benchIp + ":" + linkGraphPath )
-        main.log.info( "linkGraph.cfg creation complete" )
+        main.log.info( self.name + ": linkGraph.cfg creation complete" )
 
     def configNullDev( self, ONOSIpList, deviceCount, numPorts=10 ):
         '''
@@ -2108,13 +2119,13 @@ class OnosDriver( CLI ):
             numPorts = number of ports per device. Defaults to 10 both in this function and in ONOS. Optional arg
         '''
 
-        main.log.info( "Configuring Null Device Provider" )
+        main.log.info( self.name + ": Configuring Null Device Provider" )
         clusterCount = len( ONOSIpList )
 
         try:
 
             if isinstance( deviceCount, int ) or isinstance( deviceCount, str ):
-                main.log.info( "Creating device distribution" )
+                main.log.info( self.name + ": Creating device distribution" )
                 deviceCount = int( deviceCount )
                 switchList = [ 0 ]*( clusterCount+1 )
                 baselineSwitchCount = deviceCount/clusterCount
@@ -2126,7 +2137,7 @@ class OnosDriver( CLI ):
                     switchList[ node ] += 1
 
             if isinstance( deviceCount, list ):
-                main.log.info( "Using provided device distribution" )
+                main.log.info( self.name + ": Using provided device distribution" )
 
                 if len( deviceCount ) == clusterCount:
                     switchList = [ '0' ]
@@ -2207,7 +2218,7 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
         except AssertionError:
-            main.log.info( "Settings did not post to ONOS" )
+            main.log.info( self.name + ": Settings did not post to ONOS" )
             main.log.error( verification )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
@@ -2270,7 +2281,7 @@ class OnosDriver( CLI ):
                         the end point for extraction of data
         """
         try:
-            main.log.info( " Log Report for {} ".format( nodeIp ).center( 70, '=' ) )
+            main.log.info( self.name + ":  Log Report for {} ".format( nodeIp ).center( 70, '=' ) )
             if isinstance( searchTerms, str ):
                 searchTerms = [ searchTerms ]
             numTerms = len( searchTerms )
@@ -2298,7 +2309,7 @@ class OnosDriver( CLI ):
                         count += 1
                         if before.index( line ) > ( len( before ) - 7 ):
                             logLines[ termIndex ].append( line )
-                main.log.info( "{}: {}".format( term, count ) )
+                main.log.info( self.name + ": {}: {}".format( term, count ) )
                 totalHits += count
                 if termIndex == numTerms - 1:
                     print "\n"
@@ -2310,7 +2321,7 @@ class OnosDriver( CLI ):
                         outputString += ( "\t" + term[ line ] + "\n" )
                     if outputString != ( term[ 0 ] + ": \n" ):
                         main.log.info( outputString )
-            main.log.info( "=" * 70 )
+            main.log.info( self.name + ": =" * 70 )
             return totalHits
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -2551,7 +2562,7 @@ class OnosDriver( CLI ):
 
         return main.TRUE if onosStatus else main.FALSE
 
-    def onosNetCfg( self, controllerIp, path, fileName ):
+    def onosNetCfg( self, controllerIp, path, fileName, user=None, password=None):
         """
         Push a specified json file to ONOS through the onos-netcfg service
 
@@ -2564,14 +2575,23 @@ class OnosDriver( CLI ):
         there is an error.
         """
         try:
-            cmd = "onos-netcfg {0} {1}{2}".format( controllerIp, path, fileName )
-            main.log.info( "Sending: " + cmd )
-            main.ONOSbench.handle.sendline( cmd )
-            main.ONOSbench.handle.expect( self.prompt )
+            cmd = "onos-netcfg "
+            if user:
+                cmd += "-u %s " % user
+            if password:
+                cmd += "-p %s " % password
+            cmd += "{0} {1}{2}".format( controllerIp, path, fileName )
+            main.log.info( self.name + ": Sending: " + cmd )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
             handle = self.handle.before
-            if "Error" in handle or "No such file or directory" in handle or "curl: " in handle:
+            if "Error" in handle or\
+               "No such file or directory" in handle or\
+               "command not found" in handle or\
+               "curl: " in handle:
                 main.log.error( self.name + ":    " + handle + self.handle.after )
                 return main.FALSE
+            main.log.debug( self.name + ":    " + handle )
             return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -2588,7 +2608,7 @@ class OnosDriver( CLI ):
         try:
             onosIPs = " ".join( onosIPs )
             command = "onos-form-cluster {}".format(  onosIPs )
-            main.log.info( "Sending: " + command )
+            main.log.info( self.name + ": Sending: " + command )
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
             self.handle.sendline( command )
@@ -2787,16 +2807,16 @@ class OnosDriver( CLI ):
                 pexpect.TIMEOUT ], timeout=60 )
 
             if i == 0:
-                main.log.info( "Atomix instance " + str( nodeIp ) + " was killed" )
+                main.log.info( self.name + ": Atomix instance " + str( nodeIp ) + " was killed" )
                 return main.TRUE
             elif i == 1:
-                main.log.info( "No route to host" )
+                main.log.info( self.name + ": No route to host" )
                 return main.FALSE
             elif i == 2:
-                main.log.info( "Passwordless login for host: " + str( nodeIp ) + " not configured" )
+                main.log.info( self.name + ": Passwordless login for host: " + str( nodeIp ) + " not configured" )
                 return main.FALSE
             else:
-                main.log.info( "Atomix instance was not killed" )
+                main.log.info( self.name + ": Atomix instance was not killed" )
                 return main.FALSE
 
         except pexpect.EOF:
@@ -2817,7 +2837,7 @@ class OnosDriver( CLI ):
             self.handle.expect( self.prompt, timeout=180 )
             self.handle.sendline( "atomix-uninstall " + str( nodeIp ) )
             self.handle.expect( self.prompt, timeout=180 )
-            main.log.info( "Atomix " + nodeIp + " was uninstalled" )
+            main.log.info( self.name + ": Atomix " + nodeIp + " was uninstalled" )
             # onos-uninstall command does not return any text
             return main.TRUE
         except pexpect.TIMEOUT:
@@ -2913,9 +2933,9 @@ class OnosDriver( CLI ):
             if dstPath:
                 cmd += "-P %s " % ( dstPath )
             cmd += str( url )
-            main.log.info( "Sending: " + cmd )
-            main.ONOSbench.handle.sendline( cmd )
-            main.ONOSbench.handle.expect( self.prompt )
+            main.log.info( self.name + ": Sending: " + cmd )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
             output = self.handle.before
             main.log.debug( output )
             if "Error" in output or "No such file or directory" in output:
@@ -2948,9 +2968,9 @@ class OnosDriver( CLI ):
         # FIXME: Not all options may work, more testing is required, only tested with install(!)
         try:
             cmd = "onos-app %s %s %s/%s" % ( onosIP, option, filePath, fileName )
-            main.log.info( "Sending: " + cmd )
-            main.ONOSbench.handle.sendline( cmd )
-            main.ONOSbench.handle.expect( self.prompt )
+            main.log.info( self.name + ": Sending: " + cmd )
+            self.handle.sendline( cmd )
+            self.handle.expect( self.prompt )
             handle = self.handle.before
             main.log.debug( handle )
             if "Error" in handle or "usage: " in handle or "curl: " in handle:
@@ -2963,4 +2983,102 @@ class OnosDriver( CLI ):
             main.cleanAndExit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def makeDocker( self, path, cmd, prompt="Successfully tagged", timeout=600 ):
+        """
+        Build a docker image using a command, such as make
+        Arguments:
+            - path: a path where the script is located. will cd to path
+            - cmd: the command to run
+        Optional Arguments:
+            - prompt: A custom prompt to expect after the command is finished,
+                      incase the host prompt is printed during the build
+            - timeout: how long to wait for the build
+        """
+        try:
+            main.log.warn( "%s: makeDocker()" % self.name )
+            self.handle.sendline( "cd %s" % path )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( cmd )
+            self.handle.expect( prompt, timeout=timeout )
+            fullResponse = self.handle.before
+            tailResponse = self.handle.after
+            # TODO: error checking, might be difficult with custom expects
+            self.handle.expect( self.prompt )
+            tailResponse += self.handle.before + self.handle.after
+            fullResponse += tailResponse
+            main.log.debug( self.name + ": " + tailResponse )
+            self.handle.sendline( "cd %s" % self.home )
+            self.handle.expect( self.prompt )
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.debug( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+
+    def generateOnosConfig( self, nodeIp, path="cluster.json" ):
+        """
+        Generate onos cluster configuration file
+        Arguments:
+         - nodeIp: ip of the node this file is fore
+        Optional Arguments:
+         - The path to save the file to
+        """
+        try:
+            main.log.info( "%s: Generating onos config file for %s" % ( self.name, nodeIp ) )
+            self.handle.sendline( "onos-gen-config %s %s" % ( nodeIp, path ) )
+            i = self.handle.expect( [ self.prompt, "not found", "Error" ] )
+            response = self.handle.before
+            if i == 0:
+                main.log.debug( "%s: %s" % ( self.name, response ) )
+                return main.TRUE
+            else:
+                response += self.handle.after
+                self.handle.expect( self.prompt )
+                response += self.handle.before
+                main.log.debug( "%s: %s" % ( self.name, response ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.debug( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+
+    def generateAtomixConfig( self, nodeIp, path="atomix.json" ):
+        """
+        Generate atomix cluster configuration file
+        Arguments:
+         - nodeIp: ip of the node this file is fore
+        Optional Arguments:
+         - The path to save the file to
+        """
+        try:
+            main.log.info( "%s: Generating atomix config file for %s" % ( self.name, nodeIp ) )
+            self.handle.sendline( "atomix-gen-config %s %s" % ( nodeIp, path ) )
+            i = self.handle.expect( [ self.prompt, "not found", "Error" ] )
+            response = self.handle.before
+            if i == 0:
+                main.log.debug( "%s: %s" % ( self.name, response ) )
+                return main.TRUE
+            else:
+                response += self.handle.after
+                self.handle.expect( self.prompt )
+                response += self.handle.before
+                main.log.debug( "%s: %s" % ( self.name, response ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.debug( self.name + ":    " + self.handle.before )
             main.cleanAndExit()

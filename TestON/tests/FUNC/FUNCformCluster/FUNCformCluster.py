@@ -147,7 +147,7 @@ class FUNCformCluster:
         main.step( "Executing onos-form-cluster" )
         formClusterResult = main.ONOSbench.formCluster( main.Cluster.getIps( True, True ) )
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=result,
+                                 actual=formClusterResult,
                                  onpass="Successfully formed clusters to ONOS",
                                  onfail="Failed to form clusters to ONOS" )
         onosServiceResult = main.testSetUp.checkOnosService( main.Cluster )

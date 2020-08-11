@@ -86,7 +86,7 @@ class Testcaselib:
             main.stratumRoot = main.params[ 'DEPENDENCY'][ 'stratumRoot'] if 'stratumRoot' in main.params[ 'DEPENDENCY' ] else None
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
-            main.trellisOar = main.params[ 'DEPENDENCY' ][ 'trellisOar' ]
+            main.trellisOar = main.params[ 'DEPENDENCY' ][ 'trellisOar' ] if 'trellisOar' in main.params[ 'DEPENDENCY' ] else None
             main.t3Oar = main.params[ 'DEPENDENCY' ][ 't3Oar' ] if 't3Oar' in main.params[ 'DEPENDENCY' ] else None
 
             stepResult = main.testSetUp.envSetup( False )
@@ -141,7 +141,9 @@ class Testcaselib:
             main.cleanAndExit()
 
         # Install segmentrouting and t3 app
-        appInstallResult = main.ONOSbench.onosAppInstall( main.Cluster.runningNodes[0].ipAddress, main.trellisOar)
+        appInstallResult = main.TRUE
+        if main.trellisOar:
+            appInstallResult = appInstallResult and main.ONOSbench.onosAppInstall( main.Cluster.runningNodes[0].ipAddress, main.trellisOar)
         if main.t3Oar:
             appInstallResult = appInstallResult and main.ONOSbench.onosAppInstall( main.Cluster.runningNodes[0].ipAddress, main.t3Oar)
         utilities.assert_equals( expect=main.TRUE, actual=appInstallResult,
@@ -235,18 +237,6 @@ class Testcaselib:
             if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
                 destDir = "/tmp/mn_conf/"
                 # Try to ensure the destination exists
-                main.log.info( "Create folder for network config files" )
-                handle = main.Mininet1.handle
-                handle.sendline( "mkdir -p %s" % destDir )
-                handle.expect( [ main.Mininet1.prompt, main.Mininet1.dockerPrompt ] )
-                main.log.debug( handle.before + handle.after )
-                # Make sure permissions are correct
-                handle.sendline( "sudo chown %s:%s %s" % ( main.Mininet1.user_name, main.Mininet1.user_name, destDir ) )
-                handle.expect( [ main.Mininet1.prompt, main.Mininet1.dockerPrompt ] )
-                main.log.debug( handle.before + handle.after )
-                handle.sendline( "sudo chmod -R a+rwx %s" % ( destDir ) )
-                handle.expect( [ main.Mininet1.prompt, main.Mininet1.dockerPrompt ] )
-                main.log.debug( handle.before + handle.after )
             for conf in main.topologyConf.split(","):
                 # Update zebra configurations with correct ONOS instance IP
                 if conf in [ "zebradbgp1.conf", "zebradbgp2.conf" ]:
@@ -272,7 +262,7 @@ class Testcaselib:
                                  onfail="Failed to copy topo files" )
         if main.stratumRoot:
             main.Mininet1.handle.sendline( "export STRATUM_ROOT=" + str( main.stratumRoot ) )
-            main.Mininet1.handle.expect( main.Mininet1.prompt )
+            main.Mininet1.handle.expect( main.Mininet1.Prompt() )
         main.step( "Starting Mininet Topology" )
         arg = "--onos-ip=%s %s" % (",".join([ctrl.ipAddress for ctrl in main.Cluster.runningNodes]), args)
         main.topology = topology
@@ -287,9 +277,11 @@ class Testcaselib:
         if not topoResult:
             main.cleanAndExit()
         if main.useBmv2:
+            main.step( "Configure switches in ONOS" )
             # Upload the net-cfg file created for each switch
             filename = "onos-netcfg.json"
             switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+            switchNetCfg = main.TRUE
             for switch in main.Mininet1.getSwitches( switchRegex=r"(StratumBmv2Switch)|(Bmv2Switch)" ).keys():
                 path = "/tmp/mn-stratum/%s/" % switch
                 dstPath = "/tmp/"
@@ -299,6 +291,7 @@ class Testcaselib:
                                      "%s%s" % ( dstPath, dstFileName ),
                                      "from" )
                 main.ONOSbench1.handle.sendline( "sudo sed -i 's/localhost/%s/g' %s%s" % ( main.Mininet1.ip_address, dstPath, dstFileName ) )
+                main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
                 # Configure managementAddress
                 main.ONOSbench1.handle.sendline( "sudo sed -i 's/localhost/%s/g' %s%s" % ( main.Mininet1.ip_address, dstPath, dstFileName ) )
                 main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
@@ -311,7 +304,19 @@ class Testcaselib:
                 main.ONOSbench1.handle.sendline( "sudo sed -i '/\"basic\"/a\        \"name\": \"%s\",' %s%s" % ( switch, dstPath, dstFileName ) )
                 main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
                 main.log.debug( main.ONOSbench1.handle.before + main.ONOSbench1.handle.after )
-                main.ONOSbench1.onosNetCfg( main.ONOSserver1.ip_address, dstPath, dstFileName )
+                node = main.Cluster.active(0)
+                switchNetCfg = switchNetCfg and node.onosNetCfg( node.server.ip_address,
+                                                                 dstPath,
+                                                                 dstFileName,
+                                                                 user=node.REST.user_name,
+                                                                 password=node.REST.pwd )
+            # Stop test if we fail to push switch netcfg
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=switchNetCfg,
+                                     onpass="Successfully pushed switch netcfg",
+                                     onfail="Failed to configure switches in onos" )
+            if not switchNetCfg:
+                main.cleanAndExit()
         # Make sure hosts make some noise
         Testcaselib.discoverHosts( main )
 
@@ -1594,56 +1599,36 @@ class Testcaselib:
 
             main.log.info( "Creating Mininet Docker" )
             handle = main.Mininet1.handle
-            main.Mininet1.dockerPrompt = '#'
             # build docker image
-            buildOutput = ""
-            try:
-                handle.sendline( " docker build -t trellis_mininet %s/../dependencies/" % main.testDir )
-                handle.expect( "Successfully built", timeout=600 )
-                buildOutput = handle.before + str( handle.after )
-                handle.expect( main.Mininet1.prompt )
-                buildOutput += handle.before
-                main.log.debug( buildOutput )
-            except pexpect.TIMEOUT as e:
-                main.log.error( e )
-                buildOutput += handle.before
-                main.log.debug( buildOutput )
+            dockerFilePath = "%s/../dependencies/" % main.testDir
+            dockerName = "trellis_mininet"
+            # TODO: assert on these docker calls
+            main.Mininet1.dockerBuild( dockerFilePath, dockerName )
 
             confDir = "/tmp/mn_conf/"
             # Try to ensure the destination exists
             main.log.info( "Create folder for network config files" )
             handle.sendline( "mkdir -p %s" % confDir )
-            handle.expect( main.Mininet1.prompt )
+            handle.expect( main.Mininet1.Prompt() )
             main.log.debug( handle.before + handle.after )
             # Make sure permissions are correct
             handle.sendline( "sudo chown %s:%s %s" % ( main.Mininet1.user_name, main.Mininet1.user_name, confDir ) )
-            handle.expect( main.Mininet1.prompt )
+            handle.expect( main.Mininet1.Prompt() )
             handle.sendline( "sudo chmod -R a+rwx %s" % ( confDir ) )
-            handle.expect( main.Mininet1.prompt )
+            handle.expect( main.Mininet1.Prompt() )
             main.log.debug( handle.before + handle.after )
             # Stop any leftover container
-            handle.sendline( "docker stop trellis_mininet" )
-            handle.expect( main.Mininet1.bashPrompt )
-            main.log.debug( handle.before )
+            main.Mininet1.dockerStop( dockerName )
             # Start docker container
-            handle.sendline( "docker run --name trellis_mininet %s %s" % ( main.params[ 'MN_DOCKER' ][ 'args' ], main.params[ 'MN_DOCKER' ][ 'name' ] ) )
-            i = handle.expect( [ main.Mininet1.bashPrompt, "Error response from daemon: Conflict. The container name" ] )
-            output = handle.before + handle.after
-            main.log.debug( repr(output) )
-            if i == 1:
+            runResponse = main.Mininet1.dockerRun( main.params[ 'MN_DOCKER' ][ 'name' ],
+                                                   dockerName,
+                                                   main.params[ 'MN_DOCKER' ][ 'args' ] )
+            if runResponse == main.FALSE:
                 main.log.error( "Docker container already running, aborting test" )
                 main.cleanup()
                 main.exit()
 
-            handle.sendline( "docker attach trellis_mininet" )
-            handle.expect( main.Mininet1.dockerPrompt )
-            main.log.debug( handle.before + handle.after )
-            handle.sendline( "sysctl -w net.ipv4.ip_forward=0" )
-            handle.sendline( "sysctl -w net.ipv4.conf.all.forwarding=0" )
-            handle.expect( main.Mininet1.dockerPrompt )
-            main.log.debug( handle.before + handle.after )
-            # We should be good to go
-            main.Mininet1.prompt = main.Mininet1.dockerPrompt
+            main.Mininet1.dockerAttach( dockerName, dockerPrompt='~#' )
             main.Mininet1.sudoRequired = False
 
             # Fow when we create component handles
@@ -1659,19 +1644,12 @@ class Testcaselib:
 
         if hasattr( main, 'Mininet1' ):
             if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
-                main.log.info( "Deleting Mininet Docker" )
+                main.log.info( "Exiting from Mininet Docker" )
 
                 # Detach from container
                 handle = main.Mininet1.handle
                 try:
-                    handle.sendline( "exit" )  # ctrl-p ctrk-q  to detach from container
-                    main.log.debug( "sleeping %i seconds" % ( 5 ) )
-                    time.sleep(5)
-                    handle.expect( main.Mininet1.dockerPrompt )
-                    main.log.debug( handle.before + handle.after )
-                    main.Mininet1.prompt = main.Mininet1.bashPrompt
-                    handle.expect( main.Mininet1.prompt )
-                    main.log.debug( handle.before + handle.after )
+                    main.Mininet1.dockerDisconnect()
                     main.Mininet1.sudoRequired = True
                 except Exception as e:
                     main.log.error( e )

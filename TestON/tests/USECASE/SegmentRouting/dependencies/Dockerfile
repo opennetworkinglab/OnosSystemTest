@@ -5,7 +5,7 @@ WORKDIR $HOME
 RUN ln -s /root/* .
 RUN chmod 777 $HOME
 
-RUN install_packages python-pip openvswitch-switch vim quagga isc-dhcp-server isc-dhcp-client iptables vlan
+RUN install_packages python-pip openvswitch-switch vim quagga isc-dhcp-server isc-dhcp-client iptables vlan vzctl
 RUN pip install ipaddress
 
 RUN ln -s $HOME /var/run/quagga

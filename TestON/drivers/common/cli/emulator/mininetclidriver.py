@@ -163,7 +163,7 @@ class MininetCliDriver( Emulator ):
                     main.log.info( self.name + ": Sending sudo password" )
                     self.handle.sendline( self.pwd )
                     i = self.handle.expect( [ '%s:' % self.user_name,
-                                              self.prompt,
+                                              self.Prompt(),
                                               pexpect.EOF,
                                               pexpect.TIMEOUT ],
                                             timeout )
@@ -210,12 +210,12 @@ class MininetCliDriver( Emulator ):
                     cmdString += mnCmd
                 # Send the command and check if network started
                 self.handle.sendline( "" )
-                self.handle.expect( self.prompt )
+                self.handle.expect( self.Prompt() )
                 main.log.info( "Sending '" + cmdString + "' to " + self.name )
                 self.handle.sendline( cmdString )
                 startTime = time.time()
                 while True:
-                    i = self.handle.expect( [ 'mininet>',
+                    i = self.handle.expect( [ self.mnPrompt,
                                               'Exception|Error',
                                               '\*\*\*',
                                               pexpect.EOF,
@@ -228,7 +228,7 @@ class MininetCliDriver( Emulator ):
                     elif i == 1:
                         response = str( self.handle.before +
                                         self.handle.after )
-                        self.handle.expect( self.prompt )
+                        self.handle.expect( self.Prompt() )
                         response += str( self.handle.before +
                                          self.handle.after )
                         main.log.error(
@@ -1255,7 +1255,7 @@ class MininetCliDriver( Emulator ):
         try:
             response = self.execute(
                 cmd='dump',
-                prompt='mininet>',
+                prompt=self.mnPrompt,
                 timeout=10 )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1271,7 +1271,7 @@ class MininetCliDriver( Emulator ):
         try:
             response = self.execute(
                 cmd='intfs',
-                prompt='mininet>',
+                prompt=self.mnPrompt,
                 timeout=10 )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1285,7 +1285,7 @@ class MininetCliDriver( Emulator ):
     def net( self ):
         main.log.info( self.name + ": List network connections" )
         try:
-            response = self.execute( cmd='net', prompt='mininet>', timeout=10 )
+            response = self.execute( cmd='net', prompt=self.mnPrompt, timeout=10 )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -1298,7 +1298,7 @@ class MininetCliDriver( Emulator ):
     def links( self, timeout=1000 ):
         main.log.info( self.name + ": List network links" )
         try:
-            response = self.execute( cmd='links', prompt='mininet>',
+            response = self.execute( cmd='links', prompt=self.mnPrompt,
                                      timeout=timeout )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1506,7 +1506,7 @@ class MininetCliDriver( Emulator ):
         try:
             response = self.execute(
                 cmd='nodes',
-                prompt='mininet>',
+                prompt=self.mnPrompt,
                 timeout=10 )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1522,7 +1522,7 @@ class MininetCliDriver( Emulator ):
         try:
             response = self.execute(
                 cmd='pingpair',
-                prompt='mininet>',
+                prompt=self.mnPrompt,
                 timeout=20 )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -2253,7 +2253,7 @@ class MininetCliDriver( Emulator ):
         """
         try:
             self.handle.sendline( '' )
-            i = self.handle.expect( [ 'mininet>', self.hostPrompt, pexpect.EOF, pexpect.TIMEOUT ],
+            i = self.handle.expect( [ self.mnPrompt, self.hostPrompt, pexpect.EOF, pexpect.TIMEOUT ],
                                     timeout=2 )
             response = main.TRUE
             if i == 0:
@@ -2292,7 +2292,7 @@ class MininetCliDriver( Emulator ):
             try:
                 self.handle.sendline( "" )
                 i = self.handle.expect( [ self.mnPrompt,
-                                          self.bashPrompt,
+                                          self.Prompt(),
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
                                         timeout )
@@ -2301,8 +2301,8 @@ class MininetCliDriver( Emulator ):
                     startTime = time.time()
                     self.handle.sendline( "exit" )
                     exitRet = 1
-                    while not exitRet:
-                        exitRet = self.handle.expect( [ self.bashprompt,
+                    while exitRet:
+                        exitRet = self.handle.expect( [ self.Prompt(),
                                                         "Traceback",
                                                         "AssertionError",
                                                         self.mnPrompt ],
@@ -2315,6 +2315,7 @@ class MininetCliDriver( Emulator ):
                         cmd = "sudo " + cmd
                     self.handle.sendline( cmd )
                     response = main.TRUE
+                    self.handle.expect( self.Prompt() )
 
                 elif i == 1:
                     main.log.info( " Mininet trying to exit while not " +
@@ -2327,21 +2328,21 @@ class MininetCliDriver( Emulator ):
                                     "TIMEOUT" )
 
                 self.handle.sendline( "" )
-                self.handle.expect( self.prompt )
+                self.handle.expect( self.Prompt() )
                 cmd = "killall -9 dhclient dhcpd zebra bgpd"
                 if self.sudoRequired:
                     cmd = "sudo " + cmd
                 self.handle.sendline( cmd )
-                self.handle.expect( self.prompt )
+                self.handle.expect( self.Prompt() )
 
                 if fileName:
                     self.handle.sendline( "" )
-                    self.handle.expect( self.prompt )
+                    self.handle.expect( self.Prompt() )
                     cmd = "kill -9 \`ps -ef | grep \"" + fileName + "\" | grep -v grep | awk '{print $2}'\`"
                     if self.sudoRequired:
                         cmd = "sudo " + cmd
                     self.handle.sendline( cmd )
-                    self.handle.expect( self.prompt )
+                    self.handle.expect( self.Prompt() )
             except pexpect.TIMEOUT:
                 main.log.error( self.name + ": TIMEOUT exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -3898,7 +3899,7 @@ class MininetCliDriver( Emulator ):
                 host = self.name
             if self.mExecDir:
                 self.handle.sendline( "cd %s" % self.mExecDir )
-                self.handle.expect( self.prompt )
+                self.handle.expect( self.Prompt() )
 
             self.handle.sendline( self.home + "/util/m " + host )
             if self.hostHome:

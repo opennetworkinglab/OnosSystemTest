@@ -361,7 +361,7 @@ class Topology:
         finished = receiver.checkFilter()
         packet = ""
         if finished:
-            packets = receiver.readPackets()
+            packets = receiver.readPackets( detailed=True )
             for packet in packets.splitlines():
                 main.log.debug( packet )
         else:
@@ -448,7 +448,7 @@ class Topology:
         finished = dstHandle.checkFilter()
         packet = ""
         if finished:
-            packets = dstHandle.readPackets()
+            packets = receiver.readPackets( detailed=True )
             for packet in packets.splitlines():
                 main.log.debug( packet )
         else:

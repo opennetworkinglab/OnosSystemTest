@@ -877,7 +877,7 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def readPackets( self ):
+    def readPackets( self, detailed=False ):
         """
         Read all the packets captured by the previous filter
         """
@@ -887,7 +887,10 @@ class ScapyCliDriver( Emulator ):
             self.clearBuffer()
             main.log.debug( self.name + ": end clear buffer" )
 
-            self.handle.sendline( "pkts.summary()")
+            if detailed:
+                self.handle.sendline( "[p for p in pkts]")
+            else:
+                self.handle.sendline( "pkts.summary()")
             output = self.clearBuffer()
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )

@@ -603,37 +603,56 @@ class MininetCliDriver( Emulator ):
             main.TRUE if all packets were successfully sent. Otherwise main.FALSE
         '''
         try:
+            failAsserts = [ "command not found", "Unable to get" ]
             hosts = self.getHosts()
             if not hostList:
                 hostList = hosts.keys()
             discoveryResult = main.TRUE
             for host in hostList:
-                flushCmd = ""
+                flushV6 = False
+                flushV4 = False
                 cmds = []
-                if self.getIPAddress( host ):
-                    flushCmd = "{} ip neigh flush all".format( host )
-                    intf = hosts[ host ][ 'interfaces' ][ 0 ].get( 'name' )
-                    intfStr = "-i {}".format( intf ) if intf else ""
-                    cmds.append( "{} arping -c 1 -w {} {} {}".format(
-                        host, wait, intfStr, dstIp ) )
-                    main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
-                elif self.getIPAddress( host, proto='IPV6' ):
-                    flushCmd = "{} ip -6 neigh flush all".format( host )
-                    # FIXME: we are using the same ipv6Addr for all interfaces
-                    ipv6Addr = self.getIPAddress( host, proto='IPV6' )
-                    for intf in hosts[ host ][ 'interfaces' ]:
-                        intfName = intf[ 'name' ]
+                for intf in hosts[ host ][ 'interfaces' ]:
+                    intfName = intf.get( 'name' )
+                    if self.getIPAddress( host, iface=intfName ):
+                        flushV4 = True
+                        intfStr = "-i {}".format( intfName ) if intfName else ""
+                        cmds.append( "{} arping -c 1 -w {} {} {}".format(
+                            host, wait, intfStr, dstIp ) )
+                        main.log.debug( "Sending IPv4 arping from host {}:{}".format( host, intfName ) )
+                    elif self.getIPAddress( host, proto='IPV6', iface=intfName ):
+                        flushV6 = True
+                        ipv6Addr = self.getIPAddress( host, proto='IPV6', iface=intfName )
                         cmds.append( "{} ndsend {} {}".format( host, ipv6Addr, intfName ) )
                         main.log.debug( "Sending IPv6 ND from interface {} on host {}".format( intfName, host ) )
-                else:
-                    main.log.warn( "No IP addresses configured on host {}, skipping discovery".format( host ) )
-                    discoveryResult = main.FALSE
-                if flushCmd:
+                    else:
+                        main.log.warn( "No IP addresses configured on host {}, trying ping".format( host ) )
+                        cmds.append( "{} ping -c 1 -i 1 -w {} -I {} {}".format(
+                            host, str( int( wait / 1000 ) ), intfName, dstIp ) )
+                if flushV6:
+                    flushCmd = "{} ip -6 neigh flush all".format( host )
                     self.handle.sendline( flushCmd )
                     self.handle.expect( "mininet>" )
+                    main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
+                    response = self.handle.before
+                    for failure in failAsserts:
+                        assert failure not in response, response
+                if flushV4:
+                    flushCmd = "{} ip neigh flush all".format( host )
+                    self.handle.sendline( flushCmd )
+                    self.handle.expect( "mininet>" )
+                    main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
+                    response = self.handle.before
+                    for failure in failAsserts:
+                        assert failure not in response, response
                 for cmd in cmds:
                     self.handle.sendline( cmd )
                     self.handle.expect( "mininet>", timeout=wait + 5 )
+                    main.log.debug( "%s: %s" % ( self.name, self.handle.before ) )
+                    response = self.handle.before
+                    for failure in failAsserts:
+                        assert failure not in response, response
+            # FIXME we are always returning TRUE now
             return discoveryResult
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
@@ -1133,16 +1152,17 @@ class MininetCliDriver( Emulator ):
         else:
             main.log.error( "Connection failed to the host" )
 
-    def getIPAddress( self, host, proto='IPV4' ):
+    def getIPAddress( self, host, proto='IPV4', iface="" ):
         """
            Verifies the host's ip configured or not."""
         if self.handle:
             try:
                 response = self.execute(
                     cmd=host +
-                    " ifconfig",
+                    " ifconfig %s" % iface,
                     prompt="mininet>",
                     timeout=10 )
+                assert "Device not found" not in response, response
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -1157,7 +1177,7 @@ class MininetCliDriver( Emulator ):
                 pattern = r"inet\s(addr:)?(?P<ip>" + ip4Pat + ")\s\s((Bcast:" + ip4Pat + "\s\s|netmask\s" + ip4Pat + "\s\sbroadcast\s" + ip4Pat + "))"
             else:
                 inet6Pat = r'(?P<ip>((?:[0-9a-fA-F]{1,4})?(?:[:0-9a-fA-F]{1,4}){1,7}(?:::)?(?:[:0-9a-fA-F]{1,4}){1,7}))'
-                pattern = r"inet6\s(addr:\s)?" + inet6Pat + r"(/\d+)?\s(Scope:(Global|Link)|\sprefixlen\s(\d)+\s\sscopeid 0x(\d+)\<(link|global>))"
+                pattern = r"inet6\s(addr:\s)?" + inet6Pat + r"(/\d+)?\s(Scope:(Global)|\sprefixlen\s(\d)+\s\sscopeid 0x(\d+)\<(global)>)"
             ipAddressSearch = re.search( pattern, response )
             if not ipAddressSearch:
                 main.log.debug( response )

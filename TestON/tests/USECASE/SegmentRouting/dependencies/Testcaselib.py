@@ -255,6 +255,16 @@ class Testcaselib:
                                                         main.ONOSbench.home + main.bmv2Path + main.bmv2,
                                                         main.Mininet1.home + "custom",
                                                         direction="to" )
+
+        if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
+            # move the config files into home
+            main.Mininet1.handle.sendline( "cp config/* . " )
+            main.Mininet1.handle.expect( main.Mininet1.Prompt() )
+            main.log.debug( main.Mininet1.handle.before + main.Mininet1.handle.after )
+            main.Mininet1.handle.sendline( "ls -al " )
+            main.Mininet1.handle.expect( main.Mininet1.Prompt() )
+            main.log.debug( main.Mininet1.handle.before + main.Mininet1.handle.after )
+
         stepResult = copyResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -1595,46 +1605,58 @@ class Testcaselib:
         """
         Optionally start and setup docker image for mininet
         """
-        if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
+        try:
+            if 'MN_DOCKER' in main.params and main.params['MN_DOCKER']['args']:
 
-            main.log.info( "Creating Mininet Docker" )
-            handle = main.Mininet1.handle
-            # build docker image
-            dockerFilePath = "%s/../dependencies/" % main.testDir
-            dockerName = "trellis_mininet"
-            # TODO: assert on these docker calls
-            main.Mininet1.dockerBuild( dockerFilePath, dockerName )
+                main.log.info( "Creating Mininet Docker" )
+                handle = main.Mininet1.handle
+                # build docker image
+                dockerFilePath = "%s/../dependencies/" % main.testDir
+                dockerName = "trellis_mininet"
+                # Stop any leftover container
+                main.Mininet1.dockerStop( dockerName )
+                # TODO: assert on these docker calls
+                main.Mininet1.dockerBuild( dockerFilePath, dockerName )
 
-            confDir = "/tmp/mn_conf/"
-            # Try to ensure the destination exists
-            main.log.info( "Create folder for network config files" )
-            handle.sendline( "mkdir -p %s" % confDir )
-            handle.expect( main.Mininet1.Prompt() )
-            main.log.debug( handle.before + handle.after )
-            # Make sure permissions are correct
-            handle.sendline( "sudo chown %s:%s %s" % ( main.Mininet1.user_name, main.Mininet1.user_name, confDir ) )
-            handle.expect( main.Mininet1.Prompt() )
-            handle.sendline( "sudo chmod -R a+rwx %s" % ( confDir ) )
-            handle.expect( main.Mininet1.Prompt() )
-            main.log.debug( handle.before + handle.after )
-            # Stop any leftover container
-            main.Mininet1.dockerStop( dockerName )
-            # Start docker container
-            runResponse = main.Mininet1.dockerRun( main.params[ 'MN_DOCKER' ][ 'name' ],
-                                                   dockerName,
-                                                   main.params[ 'MN_DOCKER' ][ 'args' ] )
-            if runResponse == main.FALSE:
-                main.log.error( "Docker container already running, aborting test" )
-                main.cleanup()
-                main.exit()
+                confDir = "/tmp/mn_conf/"
+                # Try to ensure the destination exists
+                main.log.info( "Create folder for network config files" )
+                handle.sendline( "rm -rf %s" % confDir )
+                handle.expect( main.Mininet1.Prompt() )
+                main.log.debug( handle.before + handle.after )
+                handle.sendline( "mkdir -p %s" % confDir )
+                handle.expect( main.Mininet1.Prompt() )
+                main.log.debug( handle.before + handle.after )
+                # Make sure permissions are correct
+                handle.sendline( "sudo chown %s:%s %s" % ( main.Mininet1.user_name, main.Mininet1.user_name, confDir ) )
+                handle.expect( main.Mininet1.Prompt() )
+                handle.sendline( "sudo chmod -R a+rwx %s" % ( confDir ) )
+                handle.expect( main.Mininet1.Prompt() )
+                main.log.debug( handle.before + handle.after )
+                # Start docker container
+                runResponse = main.Mininet1.dockerRun( main.params[ 'MN_DOCKER' ][ 'name' ],
+                                                       dockerName,
+                                                       main.params[ 'MN_DOCKER' ][ 'args' ] )
+                if runResponse == main.FALSE:
+                    main.log.error( "Docker container already running, aborting test" )
+                    main.cleanup()
+                    main.exit()
 
-            main.Mininet1.dockerAttach( dockerName, dockerPrompt='~#' )
-            main.Mininet1.sudoRequired = False
+                main.Mininet1.dockerAttach( dockerName, dockerPrompt='~#' )
+                main.Mininet1.sudoRequired = False
 
-            # Fow when we create component handles
-            main.Mininet1.mExecDir = "/tmp"
-            main.Mininet1.hostHome = main.params[ "MN_DOCKER" ][ "home" ]
-            main.Mininet1.hostPrompt = "/home/root#"
+                # Fow when we create component handles
+                main.Mininet1.mExecDir = "/tmp"
+                main.Mininet1.hostHome = main.params[ "MN_DOCKER" ][ "home" ]
+                main.Mininet1.hostPrompt = "/home/root#"
+
+                # For some reason docker isn't doing this
+                main.Mininet1.handle.sendline( "echo \"127.0.0.1 $(cat /etc/hostname)\" >> /etc/hosts" )
+                main.Mininet1.handle.expect( "etc/hosts" )
+                main.Mininet1.handle.expect( main.Mininet1.Prompt() )
+        except Exception as e:
+            main.log.exception( "Error seting up mininet" )
+            man.skipCase( result="FAIL", msg=e )
 
     @staticmethod
     def mnDockerTeardown( main ):

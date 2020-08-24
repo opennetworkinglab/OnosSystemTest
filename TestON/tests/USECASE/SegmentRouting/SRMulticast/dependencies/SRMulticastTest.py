@@ -25,51 +25,55 @@ def setupTest( main, test_idx, onosNodes ):
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
 
-    skipPackage = False
-    init = False
-    if not hasattr( main, "apps" ):
-        init = True
-        lib.initTest( main )
-    # Skip onos packaging if the cluster size stays the same
-    if not init and onosNodes == main.Cluster.numCtrls:
-        skipPackage = True
+    try:
+        skipPackage = False
+        init = False
+        if not hasattr( main, "apps" ):
+            init = True
+            lib.initTest( main )
+        # Skip onos packaging if the cluster size stays the same
+        if not init and onosNodes == main.Cluster.numCtrls:
+            skipPackage = True
 
-    main.resultFileName = "CASE%03d" % test_idx
-    main.Cluster.setRunningNode( onosNodes )
-    lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
-    # Load configuration files
-    main.step( "Load configurations" )
-    main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
-    if main.useBmv2:
-        # Translate configuration file from OVS-OFDPA to BMv2 driver
-        translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
-        switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
-        translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
-    else:
-        translator.bmv2ToOfdpa( main )
-    lib.loadJson( main )
-    time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
-    main.cfgName = "common" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
-    lib.loadMulticastConfig( main )
-    lib.loadHost( main )
-
-    if hasattr( main, "Mininet1" ):
-        # Run the test with Mininet
-        mininet_args = " --dhcp=1 --routers=1 --ipv6=1 --ipv4=1"
+        main.resultFileName = "CASE%03d" % test_idx
+        main.Cluster.setRunningNode( onosNodes )
+        lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
+        # Load configuration files
+        main.step( "Load configurations" )
+        main.cfgName = "TEST_CONFIG_ipv4=1_ipv6=1" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
         if main.useBmv2:
-            mininet_args += ' --switch bmv2'
-            main.log.info( "Using BMv2 switch" )
-        lib.startMininet( main, main.params[ "DEPENDENCY" ][ "topology" ], args=mininet_args )
-        time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
-    else:
-        # Run the test with physical devices
-        lib.connectToPhysicalNetwork( main )
+            # Translate configuration file from OVS-OFDPA to BMv2 driver
+            translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
+            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+            translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
+        else:
+            translator.bmv2ToOfdpa( main )
+        lib.loadJson( main )
+        time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
+        main.cfgName = "common" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
+        lib.loadMulticastConfig( main )
+        lib.loadHost( main )
 
-    # Create scapy components
-    lib.startScapyHosts( main )
-    # Verify host IP assignment
-    lib.verifyOnosHostIp( main )
-    lib.verifyNetworkHostIp( main )
+        if hasattr( main, "Mininet1" ):
+            # Run the test with Mininet
+            mininet_args = " --dhcp=1 --routers=1 --ipv6=1 --ipv4=1"
+            if main.useBmv2:
+                mininet_args += ' --switch bmv2'
+                main.log.info( "Using BMv2 switch" )
+            lib.startMininet( main, main.params[ "DEPENDENCY" ][ "topology" ], args=mininet_args )
+            time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
+        else:
+            # Run the test with physical devices
+            lib.connectToPhysicalNetwork( main )
+
+        # Create scapy components
+        lib.startScapyHosts( main )
+        # Verify host IP assignment
+        lib.verifyOnosHostIp( main )
+        lib.verifyNetworkHostIp( main )
+    except Exception as e:
+        main.log.exception( "Error in setupTest" )
+        main.skipCase( result="FAIL", msg=e )
 
 def verifyMcastRoutes( main ):
     """

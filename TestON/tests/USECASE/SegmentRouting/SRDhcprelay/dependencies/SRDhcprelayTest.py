@@ -29,59 +29,63 @@ class SRDhcprelayTest ():
 
     @staticmethod
     def runTest( main, testIndex, onosNodes, description, dhcpRelay=False, remoteServer=False, multipleServer=False, ipv6=False, vlan=[], dualHomed=False ):
-        skipPackage = False
-        init = False
-        if not hasattr( main, 'apps' ):
-            init = True
-            run.initTest( main )
-        # Skip onos packaging if the clusrer size stays the same
-        if not init and onosNodes == main.Cluster.numCtrls:
-            skipPackage = True
+        try:
+            skipPackage = False
+            init = False
+            if not hasattr( main, 'apps' ):
+                init = True
+                run.initTest( main )
+            # Skip onos packaging if the clusrer size stays the same
+            if not init and onosNodes == main.Cluster.numCtrls:
+                skipPackage = True
 
-        main.case( '%s, with %d ONOS instance%s' %
-                   ( description, onosNodes, 's' if onosNodes > 1 else '' ) )
+            main.case( '%s, with %d ONOS instance%s' %
+                       ( description, onosNodes, 's' if onosNodes > 1 else '' ) )
 
-        main.cfgName = 'CASE%02d' % testIndex
-        main.resultFileName = 'CASE%02d' % testIndex
-        main.Cluster.setRunningNode( onosNodes )
-        run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
-        if main.useBmv2:
-            # Translate configuration file from OVS-OFDPA to BMv2 driver
-            translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
-            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
-            translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
-        else:
-            translator.bmv2ToOfdpa( main )
-        run.loadJson( main )
-        run.loadHost( main )
-        if hasattr( main, 'Mininet1' ):
-            run.mnDockerSetup( main )
-            # Run the test with Mininet
-            if dualHomed:
-                mininet_args = ' --spine=2 --leaf=4 --dual-homed'
-            else:
-                mininet_args = ' --spine=2 --leaf=2'
-            mininet_args += ' --dhcp-client'
-            if dhcpRelay:
-                mininet_args += ' --dhcp-relay'
-                if multipleServer:
-                    mininet_args += ' --multiple-dhcp-server'
-            if remoteServer:
-                mininet_args += ' --remote-dhcp-server'
-            if ipv6:
-                mininet_args += ' --ipv6'
-            if len( vlan ) > 0 :
-                mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
+            main.cfgName = 'CASE%02d' % testIndex
+            main.resultFileName = 'CASE%02d' % testIndex
+            main.Cluster.setRunningNode( onosNodes )
+            run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
             if main.useBmv2:
-                mininet_args += ' --switch %s' % main.switchType
-                main.log.info( "Using %s switch" % main.switchType )
+                # Translate configuration file from OVS-OFDPA to BMv2 driver
+                translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
+            else:
+                translator.bmv2ToOfdpa( main )
+            run.loadJson( main )
+            run.loadHost( main )
+            if hasattr( main, 'Mininet1' ):
+                run.mnDockerSetup( main )
+                # Run the test with Mininet
+                if dualHomed:
+                    mininet_args = ' --spine=2 --leaf=4 --dual-homed'
+                else:
+                    mininet_args = ' --spine=2 --leaf=2'
+                mininet_args += ' --dhcp-client'
+                if dhcpRelay:
+                    mininet_args += ' --dhcp-relay'
+                    if multipleServer:
+                        mininet_args += ' --multiple-dhcp-server'
+                if remoteServer:
+                    mininet_args += ' --remote-dhcp-server'
+                if ipv6:
+                    mininet_args += ' --ipv6'
+                if len( vlan ) > 0 :
+                    mininet_args += ' --vlan=%s' % ( ','.join( ['%d' % vlanId for vlanId in vlan ] ) )
+                if main.useBmv2:
+                    mininet_args += ' --switch %s' % main.switchType
+                    main.log.info( "Using %s switch" % main.switchType )
 
-            run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
-        else:
-            # Run the test with physical devices
-            # TODO: connect TestON to the physical network
-            pass
-        run.verifyOnosHostIp( main )
-        run.verifyNetworkHostIp( main )
+                run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
+            else:
+                # Run the test with physical devices
+                # TODO: connect TestON to the physical network
+                pass
+            run.verifyOnosHostIp( main, skipOnFail=False )
+            run.verifyNetworkHostIp( main )
+        except Exception as e:
+            main.log.exception( "Error in runTest" )
+            main.skipCase( result="FAIL", msg=e )
 
         run.cleanup( main )

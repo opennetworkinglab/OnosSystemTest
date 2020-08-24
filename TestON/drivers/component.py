@@ -59,6 +59,11 @@ class Component( object ):
             else:
                 raise error
 
+    def checkOptions( self, var, defaultVar ):
+        if var is None or var == "":
+            return defaultVar
+        return var
+
     def connect( self ):
 
         vars( main )[ self.name + 'log' ] = logging.getLogger( self.name )

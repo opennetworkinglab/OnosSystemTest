@@ -53,11 +53,6 @@ class NetworkDriver( CLI ):
         super( NetworkDriver, self ).__init__()
         self.graph = Graph()
 
-    def checkOptions( self, var, defaultVar ):
-        if var is None or var == "":
-            return defaultVar
-        return var
-
     def connect( self, **connectargs ):
         """
         Creates ssh handle for the SDN network "bench".
@@ -635,7 +630,7 @@ class NetworkDriver( CLI ):
                             output = dstHost.checkFilter()
                             main.log.debug( output )
                             if output:
-                                #TODO: parse output?
+                                # TODO: parse output?
                                 packets = dstHost.readPackets()
                                 for packet in packets.splitlines():
                                     main.log.debug( packet )

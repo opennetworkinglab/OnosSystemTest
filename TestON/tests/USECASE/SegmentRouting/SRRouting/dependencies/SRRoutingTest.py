@@ -28,82 +28,87 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
     import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
     import time
 
-    skipPackage = False
-    init = False
-    if not hasattr( main, 'apps' ):
-        init = True
-        lib.initTest( main )
-    if onosNodes < 0:
-        onosNodes = main.Cluster.numCtrls
-    # Skip onos packaging if the cluster size stays the same
-    if not init and onosNodes == main.Cluster.numCtrls:
-        skipPackage = True
+    try:
+        skipPackage = False
+        init = False
+        if not hasattr( main, 'apps' ):
+            init = True
+            lib.initTest( main )
+        if onosNodes < 0:
+            onosNodes = main.Cluster.numCtrls
+        # Skip onos packaging if the cluster size stays the same
+        if not init and onosNodes == main.Cluster.numCtrls:
+            skipPackage = True
 
-    main.internalIpv4Hosts = main.params[ 'TOPO' ][ 'internalIpv4Hosts' ].split( ',' )
-    main.internalIpv6Hosts = main.params[ 'TOPO' ][ 'internalIpv6Hosts' ].split( ',' )
-    main.externalIpv4Hosts = main.params[ 'TOPO' ][ 'externalIpv4Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('externalIpv4Hosts') else []
-    main.externalIpv6Hosts = main.params[ 'TOPO' ][ 'externalIpv6Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('externalIpv6Hosts') else []
-    main.staticIpv4Hosts = main.params[ 'TOPO' ][ 'staticIpv4Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('staticIpv4Hosts') else []
-    main.staticIpv6Hosts = main.params[ 'TOPO' ][ 'staticIpv6Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('staticIpv6Hosts') else []
-    main.disconnectedIpv4Hosts = []
-    main.disconnectedIpv6Hosts = []
-    main.disconnectedExternalIpv4Hosts = []
-    main.disconnectedExternalIpv6Hosts = []
-    main.disconnectedStaticIpv4Hosts = []
-    main.disconnectedStaticIpv6Hosts = []
-    main.resultFileName = 'CASE%03d' % test_idx
-    main.Cluster.setRunningNode( onosNodes )
+        main.internalIpv4Hosts = main.params[ 'TOPO' ][ 'internalIpv4Hosts' ].split( ',' )
+        main.internalIpv6Hosts = main.params[ 'TOPO' ][ 'internalIpv6Hosts' ].split( ',' )
+        main.externalIpv4Hosts = main.params[ 'TOPO' ][ 'externalIpv4Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('externalIpv4Hosts') else []
+        main.externalIpv6Hosts = main.params[ 'TOPO' ][ 'externalIpv6Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('externalIpv6Hosts') else []
+        main.staticIpv4Hosts = main.params[ 'TOPO' ][ 'staticIpv4Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('staticIpv4Hosts') else []
+        main.staticIpv6Hosts = main.params[ 'TOPO' ][ 'staticIpv6Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('staticIpv6Hosts') else []
+        main.disconnectedIpv4Hosts = []
+        main.disconnectedIpv6Hosts = []
+        main.disconnectedExternalIpv4Hosts = []
+        main.disconnectedExternalIpv6Hosts = []
+        main.disconnectedStaticIpv4Hosts = []
+        main.disconnectedStaticIpv6Hosts = []
+        main.resultFileName = 'CASE%03d' % test_idx
+        main.Cluster.setRunningNode( onosNodes )
 
-    lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
+        lib.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
 
-    # Load configuration files
-    if hasattr( main, "Mininet1" ):
-        main.cfgName = 'TEST_CONFIG_ipv4={}_ipv6={}'.format( 1 if ipv4 else 0,
-                                                             1 if ipv6 else 0)
-    else:
-        main.cfgName = main.params[ "DEPENDENCY" ][ "confName" ]
-    if main.useBmv2:
-        # Translate configuration file from OVS-OFDPA to BMv2 driver
-        translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
-        switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
-        translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
-    else:
-        translator.bmv2ToOfdpa( main )
-    lib.loadJson( main )
-    main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
-    time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
-    lib.loadHost( main )
-
-    # if static route flag add routes
-    # these routes are topology specific
-    if static:
-        if ipv4:
-            lib.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.1.1")
-            lib.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.5.1")
-        if ipv6:
-            lib.addStaticOnosRoute( main, "2000::8700/120", "2000::101")
-            lib.addStaticOnosRoute( main, "2000::8700/120", "2000::501")
-    if countFlowsGroups:
-        lib.loadCount( main )
-
-    if hasattr( main, 'Mininet1' ):
-        lib.mnDockerSetup( main )
-        # Run the test with Mininet
-        mininet_args = ' --dhcp=1 --routers=1 --ipv6={} --ipv4={}'.format( 1 if ipv6 else 0,
-                                                                           1 if ipv4 else 0 )
+        # Load configuration files
+        if hasattr( main, "Mininet1" ):
+            main.cfgName = 'TEST_CONFIG_ipv4={}_ipv6={}'.format( 1 if ipv4 else 0,
+                                                                 1 if ipv6 else 0)
+        else:
+            main.cfgName = main.params[ "DEPENDENCY" ][ "confName" ]
         if main.useBmv2:
-            mininet_args += ' --switch %s' % main.switchType
-            main.log.info( "Using %s switch"  % main.switchType )
-        lib.startMininet( main, main.params[ 'DEPENDENCY' ][ 'topology' ], args=mininet_args )
-        main.log.debug( "Waiting %i seconds for ONOS to discover dataplane" % float( main.params[ "timers" ][ "startMininetSleep" ] ))
-        time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
-    else:
-        # Run the test with physical devices
-        lib.connectToPhysicalNetwork( main )
+            # Translate configuration file from OVS-OFDPA to BMv2 driver
+            translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
+            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+            translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
+        else:
+            translator.bmv2ToOfdpa( main )
+        lib.loadJson( main )
+        main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
+        time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
+        lib.loadHost( main )
 
-    # wait some time for onos to install the rules!
-    main.log.info( "Waiting %i seconds for ONOS to program the dataplane" % float( main.params[ "timers" ][ "dhcpSleep" ] ))
-    time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )
+        # if static route flag add routes
+        # these routes are topology specific
+        if static:
+            if ipv4:
+                lib.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.1.1")
+                lib.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.5.1")
+            if ipv6:
+                lib.addStaticOnosRoute( main, "2000::8700/120", "2000::101")
+                lib.addStaticOnosRoute( main, "2000::8700/120", "2000::501")
+        if countFlowsGroups:
+            lib.loadCount( main )
+
+        if hasattr( main, 'Mininet1' ):
+            lib.mnDockerSetup( main )
+            # Run the test with Mininet
+            mininet_args = ' --dhcp=1 --routers=1 --ipv6={} --ipv4={}'.format( 1 if ipv6 else 0,
+                                                                               1 if ipv4 else 0 )
+            if main.useBmv2:
+                mininet_args += ' --switch %s' % main.switchType
+                main.log.info( "Using %s switch" % main.switchType )
+            lib.startMininet( main, main.params[ 'DEPENDENCY' ][ 'topology' ], args=mininet_args )
+            main.log.debug( "Waiting %i seconds for ONOS to discover dataplane" % float( main.params[ "timers" ][ "startMininetSleep" ] ))
+            time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
+        else:
+            # Run the test with physical devices
+            lib.connectToPhysicalNetwork( main )
+
+        lib.saveOnosDiagnostics( main )
+        # wait some time for onos to install the rules!
+        main.log.info( "Waiting %i seconds for ONOS to program the dataplane" % float( main.params[ "timers" ][ "dhcpSleep" ] ))
+        time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )
+    except Exception as e:
+        main.log.exception( "Error in setupTest" )
+        main.skipCase( result="FAIL", msg=e )
 
 def verifyPingInternal( main, ipv4=True, ipv6=True, disconnected=True ):
     """

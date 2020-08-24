@@ -39,6 +39,11 @@ class OnosDriver( CLI ):
         """
         self.name = None
         self.home = None
+        self.maxNodes = None
+        self.karafUser = None
+        self.karafPass = None
+        self.webUser = None
+        self.webPass = None
         self.handle = None
         self.nicAddr = None
         super( OnosDriver, self ).__init__()
@@ -55,26 +60,26 @@ class OnosDriver( CLI ):
 
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
-            self.home = "~/onos"
-            for key in self.options:
-                if key == "home":
-                    self.home = self.options[ 'home' ]
-                    break
-            if self.home is None or self.home == "":
-                self.home = "~/onos"
-
             self.name = self.options[ 'name' ]
 
             # The 'nodes' tag is optional and it is not required in .topo file
             for key in self.options:
-                if key == "nodes":
+                if key == "home":
+                    self.home = self.options[ 'home' ]
+                elif key == "nodes":
                     # Maximum number of ONOS nodes to run, if there is any
                     self.maxNodes = int( self.options[ 'nodes' ] )
-                    break
-                self.maxNodes = None
+                elif key == "web_user":
+                    self.webUser = self.options[ key ]
+                elif key == "web_pass":
+                    self.webPass = self.options[ key ]
 
-            if self.maxNodes is None or self.maxNodes == "":
-                self.maxNodes = 100
+            self.home = self.checkOptions( self.home, "~/onos" )
+            self.maxNodes = self.checkOptions( self.maxNodes, 100 )
+            self.karafUser = self.checkOptions( self.karafUser, self.user_name )
+            self.karafPass = self.checkOptions( self.karafPass, self.pwd )
+            self.webUser = self.checkOptions( self.webUser, "onos" )
+            self.webPass = self.checkOptions( self.webPass, "rocks" )
 
             # Grabs all OC environment variables based on max number of nodes
             self.onosIps = {}  # Dictionary of all possible ONOS ip
@@ -826,6 +831,8 @@ class OnosDriver( CLI ):
             # on here.
             appString = "export ONOS_APPS=" + appString
             onosGroup = "export ONOS_GROUP=" + onosUser
+            onosWebUser = "export ONOS_WEB_USER=" + self.webUser
+            onosWebPass = "export ONOS_WEB_PASS=" + self.webPass
             onosUser = "export ONOS_USER=" + onosUser
             if useSSH:
                 onosUseSSH = "export ONOS_USE_SSH=true"
@@ -871,6 +878,8 @@ class OnosDriver( CLI ):
             cellFile.write( appString + "\n" )
             cellFile.write( onosGroup + "\n" )
             cellFile.write( onosUser + "\n" )
+            cellFile.write( onosWebUser + "\n" )
+            cellFile.write( onosWebPass + "\n" )
             if useSSH:
                 cellFile.write( onosUseSSH + "\n" )
             cellFile.close()
@@ -2718,10 +2727,15 @@ class OnosDriver( CLI ):
             for ip in onosIPs:
                 cmd += " " + str( ip )
             self.handle.sendline( cmd )
-            self.handle.expect( self.prompt, timeout=timeout )
-            handle = self.handle.before
-            main.log.debug( handle )
+            i = 0
+            while i == 0:
+                i = self.handle.expect( [ "Password", self.prompt ], timeout=timeout )
+                handle = self.handle.before
+                main.log.debug( "%s: %s" % ( self.name, handle ) )
+                if i == 0:
+                    self.handle.sendline( self.pwd )
             assert handle is not None, "Error in sendline"
+            assert "The requested URL returned error" not in handle, handle
             assert "Command not found:" not in handle, handle
             assert "Exception:" not in handle, handle
             # Rename and move diags file to dstDir from /tmp
@@ -2730,7 +2744,7 @@ class OnosDriver( CLI ):
             self.handle.sendline( "mv /tmp/onos-diags.tar.gz " + str( dstDir ) + "onos-diags" + str( suffix ) + ".tar.gz" )
             self.handle.expect( self.prompt )
             handle = self.handle.before
-            main.log.debug( handle )
+            main.log.debug( "%s: %s" % ( self.name, handle ) )
             assert handle is not None, "Error in sendline"
             assert "No such file or directory" not in handle, handle
             return main.TRUE

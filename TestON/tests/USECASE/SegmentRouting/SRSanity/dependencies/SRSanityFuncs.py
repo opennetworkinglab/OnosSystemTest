@@ -31,28 +31,32 @@ class SRSanityFuncs():
         self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
 
     def runTest( self, main, caseNum, numNodes, Topo, minFlow ):
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
+        try:
+            if not hasattr( main, 'apps' ):
+                run.initTest( main )
 
-        description = "Bridging and Routing sanity test with " + self.topo[ Topo ][ 3 ] + " and {} Onos".format( numNodes )
-        main.case( description )
+            description = "Bridging and Routing sanity test with " + self.topo[ Topo ][ 3 ] + " and {} Onos".format( numNodes )
+            main.case( description )
 
-        main.cfgName = Topo
-        main.Cluster.setRunningNode( numNodes )
-        run.installOnos( main )
-        run.loadJson( main )
-        run.loadChart( main )
-        run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=minFlow )
-        run.pingAll( main )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        if hasattr( main, 'Mininet1' ):
-            run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass
+            main.cfgName = Topo
+            main.Cluster.setRunningNode( numNodes )
+            run.installOnos( main )
+            run.loadJson( main )
+            run.loadChart( main )
+            run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+            # pre-configured routing and bridging test
+            run.checkFlows( main, minFlowCount=minFlow )
+            run.pingAll( main )
+            # TODO Dynamic config of hosts in subnet
+            # TODO Dynamic config of host not in subnet
+            # TODO Dynamic config of vlan xconnect
+            # TODO Vrouter integration
+            # TODO Mcast integration
+            if hasattr( main, 'Mininet1' ):
+                run.cleanup( main )
+            else:
+                # TODO: disconnect TestON from the physical network
+                pass
+        except Exception as e:
+            main.log.exception( "Error in runTest" )
+            main.skipCase( result="FAIL", msg=e )

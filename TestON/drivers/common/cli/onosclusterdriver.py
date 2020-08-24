@@ -96,11 +96,6 @@ class OnosClusterDriver( CLI ):
         self.nodes = []
         super( OnosClusterDriver, self ).__init__()
 
-    def checkOptions( self, var, defaultVar ):
-        if var is None or var == "":
-            return defaultVar
-        return var
-
     def connect( self, **connectargs ):
         """
         Creates ssh handle for ONOS "bench".
@@ -126,10 +121,16 @@ class OnosClusterDriver( CLI ):
                     self.useDocker = "True" == self.options[ key ]
                 elif key == "docker_prompt":
                     self.dockerPrompt = self.options[ key ]
+                elif key == "web_user":
+                    self.webUser = self.options[ key ]
+                elif key == "web_pass":
+                    self.webPass = self.options[ key ]
 
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
             self.karafPass = self.checkOptions( self.karafPass, self.pwd )
+            self.webUser = self.checkOptions( self.webUser, "onos" )
+            self.webPass = self.checkOptions( self.webPass, "rocks" )
             prefix = self.checkOptions( prefix, "ONOS" )
             self.useDocker = self.checkOptions( self.useDocker, False )
             self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
@@ -250,7 +251,6 @@ class OnosClusterDriver( CLI ):
             main.componentDictionary[ name ][ 'host' ] = host
         main.componentDictionary[name]['type'] = "OnosCliDriver"
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
-        main.log.debug( main.componentDictionary[name] )
 
     def createCliComponent( self, name, host ):
         """

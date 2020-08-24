@@ -34,48 +34,52 @@ class SRHAFuncs():
         self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
 
     def runTest( self, main, caseNum, numNodes, Topo, minFlow, isRandom, isKillingSwitch ):
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
+        try:
+            if not hasattr( main, 'apps' ):
+                run.initTest( main )
 
-        description = "High Availability tests - " + \
-                      self.generateDescription( isRandom, isKillingSwitch ) + \
-                      self.topo[ Topo ][ 3 ]
-        main.case( description )
-        run.config( main, Topo )
-        run.installOnos( main )
-        run.loadJson( main )
-        run.loadChart( main )
-        run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=minFlow )
-        run.pingAll( main )
-        switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
-        link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
-        self.generateRandom( isRandom )
-        for i in range( 0, main.failures ):
-            toKill = self.getNextNum( isRandom, main.Cluster.numCtrls, i )
-            run.killOnos( main, [ toKill ], '{}'.format( switch ),
-                          '{}'.format( link ), '{}'.format( numNodes - 1 ) )
-            run.pingAll( main, 'CASE{}_ONOS_Failure{}'.format( caseNum, i + 1 ) )
-            if isKillingSwitch:
-                self.killAndRecoverSwitch( main, caseNum, numNodes,
-                                           Topo, minFlow, isRandom,
-                                           i, switch, link )
-            run.recoverOnos( main, [ toKill ], '{}'.format( switch ),
-                             '{}'.format( link ), '{}'.format( numNodes ) )
-            run.checkFlows( main, minFlowCount=minFlow,
-                            tag='CASE{}_ONOS{}_Recovery'.format( caseNum, i + 1 ) )
-            run.pingAll( main, 'CASE{}_ONOS_Recovery{}'.format( caseNum, i + 1 ) )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        if hasattr( main, 'Mininet1' ):
-            run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass
+            description = "High Availability tests - " + \
+                          self.generateDescription( isRandom, isKillingSwitch ) + \
+                          self.topo[ Topo ][ 3 ]
+            main.case( description )
+            run.config( main, Topo )
+            run.installOnos( main )
+            run.loadJson( main )
+            run.loadChart( main )
+            run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+            # pre-configured routing and bridging test
+            run.checkFlows( main, minFlowCount=minFlow )
+            run.pingAll( main )
+            switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
+            link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
+            self.generateRandom( isRandom )
+            for i in range( 0, main.failures ):
+                toKill = self.getNextNum( isRandom, main.Cluster.numCtrls, i )
+                run.killOnos( main, [ toKill ], '{}'.format( switch ),
+                              '{}'.format( link ), '{}'.format( numNodes - 1 ) )
+                run.pingAll( main, 'CASE{}_ONOS_Failure{}'.format( caseNum, i + 1 ) )
+                if isKillingSwitch:
+                    self.killAndRecoverSwitch( main, caseNum, numNodes,
+                                               Topo, minFlow, isRandom,
+                                               i, switch, link )
+                run.recoverOnos( main, [ toKill ], '{}'.format( switch ),
+                                 '{}'.format( link ), '{}'.format( numNodes ) )
+                run.checkFlows( main, minFlowCount=minFlow,
+                                tag='CASE{}_ONOS{}_Recovery'.format( caseNum, i + 1 ) )
+                run.pingAll( main, 'CASE{}_ONOS_Recovery{}'.format( caseNum, i + 1 ) )
+            # TODO Dynamic config of hosts in subnet
+            # TODO Dynamic config of host not in subnet
+            # TODO Dynamic config of vlan xconnect
+            # TODO Vrouter integration
+            # TODO Mcast integration
+            if hasattr( main, 'Mininet1' ):
+                run.cleanup( main )
+            else:
+                # TODO: disconnect TestON from the physical network
+                pass
+        except Exception as e:
+            main.log.exception( "Error in runTest" )
+            main.skipCase( result="FAIL", msg=e )
 
     def generateDescription( self, isRandom, isKillingSwitch ):
         return "ONOS " + ( "random " if isRandom else "" ) + "failures" +\

@@ -704,6 +704,7 @@ class Cluster():
         result = main.TRUE
         cliResults = self.command( "startOnosCli",
                                    args=[ "ipAddress" ],
+                                   kwargs= { "karafTimeout": "karafTimeout" },
                                    specificDriver=2,
                                    getFrom=getFrom,
                                    funcFromCtrl=True )

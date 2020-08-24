@@ -29,4 +29,22 @@ RUN git clone https://github.com/jhall11/mininet.git \
 && alias sudo='' \
 && apt-get update \
 && ./install.sh -3fvn
+
+# Install scapy dependencies
+RUN apt-get update && \
+    apt-get -y install \
+    gcc tcpdump libpcap-dev \
+    python3 python3-pip tcpdump
+#install pip packages for scapy
+RUN pip3 install pexpect \
+                 netaddr \
+                 pyYaml \
+                 ipaddr
+RUN git clone https://github.com/secdev/scapy.git \
+    && cd scapy \
+    && python setup.py install \
+    && pip install --pre scapy[basic]
+# Fix for tcpdump/docker bug
+RUN mv /usr/sbin/tcpdump /usr/bin/tcpdump \
+   && ln -s /usr/bin/tcpdump /usr/sbin/tcpdump
 ENTRYPOINT bash

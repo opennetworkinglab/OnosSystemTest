@@ -37,36 +37,40 @@ class SRLinkFailFuncs():
         self.portTwo = '3'
 
     def runTest( self, main, caseNum, numNodes, Topo, minFlow ):
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
+        try:
+            if not hasattr( main, 'apps' ):
+                run.initTest( main )
 
-        description = "Bridging and Routing Link Failure test with " + self.topo[ Topo ][ 3 ] + " and {} Onos".format( numNodes )
-        main.case( description )
+            description = "Bridging and Routing Link Failure test with " + self.topo[ Topo ][ 3 ] + " and {} Onos".format( numNodes )
+            main.case( description )
 
-        main.cfgName = Topo
-        main.Cluster.setRunningNode( numNodes )
-        run.installOnos( main )
-        run.loadJson( main )
-        run.loadChart( main )
-        run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=minFlow )
-        run.pingAll( main )
-        switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
-        link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
-        # link failure
-        run.killLink( main, self.switchOne, self.switchTwo, switches='{}'.format( switch ), links='{}'.format( link - 2 ) )
-        run.pingAll( main, "CASE{}_Failure".format( caseNum ) )
-        run.restoreLink( main, self.switchOne, self.switchTwo, '{}'.format( switch ), '{}'.format( link ),
-                         True, self.dpidOne, self.dpidTwo, self.portOne, self.portTwo )
-        run.pingAll( main, "CASE{}_Recovery".format( caseNum ) )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        if hasattr( main, 'Mininet1' ):
-            run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass
+            main.cfgName = Topo
+            main.Cluster.setRunningNode( numNodes )
+            run.installOnos( main )
+            run.loadJson( main )
+            run.loadChart( main )
+            run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+            # pre-configured routing and bridging test
+            run.checkFlows( main, minFlowCount=minFlow )
+            run.pingAll( main )
+            switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
+            link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
+            # link failure
+            run.killLink( main, self.switchOne, self.switchTwo, switches='{}'.format( switch ), links='{}'.format( link - 2 ) )
+            run.pingAll( main, "CASE{}_Failure".format( caseNum ) )
+            run.restoreLink( main, self.switchOne, self.switchTwo, '{}'.format( switch ), '{}'.format( link ),
+                             True, self.dpidOne, self.dpidTwo, self.portOne, self.portTwo )
+            run.pingAll( main, "CASE{}_Recovery".format( caseNum ) )
+            # TODO Dynamic config of hosts in subnet
+            # TODO Dynamic config of host not in subnet
+            # TODO Dynamic config of vlan xconnect
+            # TODO Vrouter integration
+            # TODO Mcast integration
+            if hasattr( main, 'Mininet1' ):
+                run.cleanup( main )
+            else:
+                # TODO: disconnect TestON from the physical network
+                pass
+        except Exception as e:
+            main.log.exception( "Error in runTest" )
+            main.skipCase( result="FAIL", msg=e )

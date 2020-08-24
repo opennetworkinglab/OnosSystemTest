@@ -58,14 +58,11 @@ class OnosCliDriver( CLI ):
         self.handle = None
         self.karafUser = None
         self.karafPass = None
+        self.karafTimeout = None
+
         self.dockerPrompt = None
         self.graph = Graph()
         super( OnosCliDriver, self ).__init__()
-
-    def checkOptions( self, var, defaultVar ):
-        if var is None or var == "":
-            return defaultVar
-        return var
 
     def connect( self, **connectargs ):
         """
@@ -85,10 +82,13 @@ class OnosCliDriver( CLI ):
                     self.karafPass = self.options[ key ]
                 elif key == "docker_prompt":
                     self.dockerPrompt = self.options[ key ]
+                elif key == "karaf_timeout":
+                    self.karafTimeout = self.options[ key ]
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
             self.karafPass = self.checkOptions( self.karafPass, self.pwd )
             self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
+            self.karafTimeout = self.checkOptions( self.karafTimeout, 7200000  )
 
             for key in self.options:
                 if key == 'onosIp':
@@ -301,6 +301,7 @@ class OnosCliDriver( CLI ):
                 startCliCommand = "onos " + str( ONOSIp )
             self.handle.sendline( startCliCommand )
             tries = 0
+            setTimeout = False
             while tries < 5:
                 i = self.handle.expect( [
                     self.karafPrompt,
@@ -308,14 +309,17 @@ class OnosCliDriver( CLI ):
                     pexpect.TIMEOUT ], onosStartTimeout )
 
                 if i == 0:
-                    main.log.info( str( ONOSIp ) + " CLI Started successfully" )
+                    if setTimeout:
+                        main.log.info( str( ONOSIp ) + " CLI Started successfully" )
+                        return main.TRUE
                     if karafTimeout:
                         self.handle.sendline(
                             "config:property-set -p org.apache.karaf.shell\
                                      sshIdleTimeout " +
-                            karafTimeout )
-                        self.handle.expect( self.karafPrompt )
-                    return main.TRUE
+                            str( karafTimeout ) )
+                        self.handle.expect( "closed by remote host" )
+                        self.handle.sendline( startCliCommand )
+                        setTimeout = True
                 elif i == 1:
                     main.log.info( str( ONOSIp ) + " CLI asking for password" )
                     main.log.debug( "Sending %s" % self.karafPass )

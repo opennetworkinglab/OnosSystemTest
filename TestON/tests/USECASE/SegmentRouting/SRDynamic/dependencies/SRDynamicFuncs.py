@@ -34,42 +34,46 @@ class SRDynamicFuncs():
         self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
 
     def runTest( self, main, caseNum, numNodes, Topo, minBeforeFlow, minAfterFlow, killOnosAndDeleteCfg ):
-        if not hasattr( main, 'apps' ):
-            run.initTest( main )
+        try:
+            if not hasattr( main, 'apps' ):
+                run.initTest( main )
 
-        description = "Bridging and Routing sanity test with " + \
-                      self.topo[ Topo ][ 3 ] + \
-                      "and {} nodes.".format( numNodes ) + \
-                      ( "\nAlso, killing the first Onos and removing the host cfg." if killOnosAndDeleteCfg else "" )
-        main.case( description )
+            description = "Bridging and Routing sanity test with " + \
+                          self.topo[ Topo ][ 3 ] + \
+                          "and {} nodes.".format( numNodes ) + \
+                          ( "\nAlso, killing the first Onos and removing the host cfg." if killOnosAndDeleteCfg else "" )
+            main.case( description )
 
-        main.cfgName = Topo
-        main.Cluster.setRunningNode( numNodes )
-        run.installOnos( main )
-        run.loadJson( main )
-        run.loadChart( main )
-        run.startMininet( main, 'cord_fabric.py',
-                          args=self.topo[ Topo ][ 2 ] )
-        # pre-configured routing and bridging test
-        run.checkFlows( main, minFlowCount=minBeforeFlow )
-        run.pingAll( main, dumpflows=False )
-        run.addHostCfg( main )
-        run.checkFlows( main, minFlowCount=minAfterFlow, dumpflows=False )
-        run.pingAll( main )
-        if killOnosAndDeleteCfg:
-            switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
-            link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
-            self.killAndDelete( main, caseNum, numNodes, minBeforeFlow, switch, link )
-        # TODO Dynamic config of hosts in subnet
-        # TODO Dynamic config of host not in subnet
-        # TODO Dynamic config of vlan xconnect
-        # TODO Vrouter integration
-        # TODO Mcast integration
-        if hasattr( main, 'Mininet1' ):
-            run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass
+            main.cfgName = Topo
+            main.Cluster.setRunningNode( numNodes )
+            run.installOnos( main )
+            run.loadJson( main )
+            run.loadChart( main )
+            run.startMininet( main, 'cord_fabric.py',
+                              args=self.topo[ Topo ][ 2 ] )
+            # pre-configured routing and bridging test
+            run.checkFlows( main, minFlowCount=minBeforeFlow )
+            run.pingAll( main, dumpflows=False )
+            run.addHostCfg( main )
+            run.checkFlows( main, minFlowCount=minAfterFlow, dumpflows=False )
+            run.pingAll( main )
+            if killOnosAndDeleteCfg:
+                switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
+                link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
+                self.killAndDelete( main, caseNum, numNodes, minBeforeFlow, switch, link )
+            # TODO Dynamic config of hosts in subnet
+            # TODO Dynamic config of host not in subnet
+            # TODO Dynamic config of vlan xconnect
+            # TODO Vrouter integration
+            # TODO Mcast integration
+            if hasattr( main, 'Mininet1' ):
+                run.cleanup( main )
+            else:
+                # TODO: disconnect TestON from the physical network
+                pass
+        except Exception as e:
+            main.log.exception( "Error in runTest" )
+            main.skipCase( result="FAIL", msg=e )
 
     def killAndDelete( self, main, caseNum, numNodes, minBeforeFlow, switch, link ):
         run.killOnos( main, [ 0 ], '{}'.format( switch ), '{}'.format( link ), '{}'.format( numNodes - 1 ) )

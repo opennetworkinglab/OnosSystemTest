@@ -26,7 +26,7 @@
     </DEPENDENCY>
 
     <MN_DOCKER>
-        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom:/home/root/mininet/custom -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum:/tmp -v /tmp/mn_conf/:/home/root --hostname mn-stratum -v /etc/network/interfaces:/etc/network/interfaces -it -d</args>
+        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom:/home/root/mininet/custom -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum:/tmp -v /tmp/mn_conf/:/home/root/config --hostname mn-stratum -v /etc/network/interfaces:/etc/network/interfaces -it -d</args>
         <name>trellis_mininet</name>
         <home>/home/root/</home>
     </MN_DOCKER>
@@ -45,7 +45,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3</cellApps>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3</cellApps>
     </ENV>
 
     <ONOS_Configuration>

@@ -16,7 +16,7 @@
         <useCommonConf>False</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
         <useBmv2>False</useBmv2>
-        <bmv2SwitchType>bmv2</bmv2SwitchType>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
         <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py,stratum.py</lib>

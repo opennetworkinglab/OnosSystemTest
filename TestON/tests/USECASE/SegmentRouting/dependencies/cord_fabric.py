@@ -27,11 +27,13 @@ from optparse import OptionParser
 from ipaddress import IPv6Network, IPv4Network
 from mininet.net import Mininet
 from mininet.topo import Topo
-from mininet.node import RemoteController, Host, OVSBridge
+from mininet.node import RemoteController, Host, OVSBridge, OVSSwitch
 from mininet.link import TCLink
 from mininet.log import setLogLevel
 from mininet.cli import CLI
 
+from bmv2 import ONOSBmv2Switch
+from stratum import StratumBmv2Switch
 
 # Parse command line options and dump results
 def parseOptions():
@@ -49,15 +51,27 @@ def parseOptions():
                        help='vid of cross connect, default=-1, -1 means utilize default value' )
     parser.add_option( '--ipv6', action="store_true", dest='ipv6',
                        help='hosts are capable to use also ipv6' )
+    parser.add_option( '--switch', dest='switch', type='str', default='ovs',
+                       help='Switch type: ovs, bmv2 (with fabric.p4), stratum' )
     ( options, args ) = parser.parse_args()
     return options, args
 
 
 opts, args = parseOptions()
 
+FABRIC_PIPECONF = "org.onosproject.pipelines.fabric"
+
+SWITCH_TO_PARAMS_DICT = {
+    "ovs": dict(cls=OVSSwitch),
+    "bmv2": dict(cls=ONOSBmv2Switch, pipeconf=FABRIC_PIPECONF),
+    "stratum": dict(cls=StratumBmv2Switch, pipeconf=FABRIC_PIPECONF, loglevel='debug')
+}
+if opts.switch not in SWITCH_TO_PARAMS_DICT:
+    raise Exception("Unknown switch type '%s'" % opts.switch)
+SWITCH_PARAMS = SWITCH_TO_PARAMS_DICT[opts.switch]
+
 IP6_SUBNET_CLASS = 120
 IP4_SUBNET_CLASS = 24
-
 
 class LeafAndSpine6( Topo ):
 
@@ -132,13 +146,15 @@ class LeafAndSpine( Topo ):
         leafs = {}
         for s in range( spine ):
             spines[ s ] = self.addSwitch( 'spine10%s' % ( s + 1 ),
-                                          dpid="00000000010%s" % ( s + 1 ) )
+                                          dpid="00000000010%s" % ( s + 1 ),
+                                          **SWITCH_PARAMS )
         # Set link speeds to 100Mb/s
         linkopts = dict( bw=100 )
         # Add Leaf switches
         for ls in range( leaf ):
             leafs[ ls ] = self.addSwitch( 'leaf%s' % ( ls + 1 ),
-                                          dpid="00000000000%s" % ( 1 + ls ) )
+                                          dpid="00000000000%s" % ( 1 + ls ),
+                                          **SWITCH_PARAMS )
             # Add hosts under a leaf, fanout hosts per leaf switch
             for f in range( fanout ):
                 host = self.addHost( 'h%s' % ( ls * fanout + f + 1 ),

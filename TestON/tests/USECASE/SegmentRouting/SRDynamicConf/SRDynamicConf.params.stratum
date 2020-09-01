@@ -1,11 +1,10 @@
 <PARAMS>
-    # Sample testcase for physical network: 7
-    <testcases>5,6,7,8,15,16,17,18,25,26,27,28,35,36,37,38,45,46,47,48,55,56,57,58,65,66,67,68,75,76,77,78</testcases>
+    <testcases>range(13, 251, 10)</testcases>
 
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
         <builds>20</builds>
-        <jobName>SRBridging-stratum</jobName>
+        <jobName>SRDynamicConf-stratum</jobName>
     </GRAPH>
 
     <SCALE>
@@ -22,11 +21,11 @@
         <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
-        <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
+        <conf>dhcpd.conf,dhcpd6.conf,bgpdr1.conf,bgpdr2.conf,bgpdbgp1.conf,zebradbgp1.conf,bgpdbgp2.conf,zebradbgp2.conf</conf>
     </DEPENDENCY>
 
     <MN_DOCKER>
-        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom:/home/root/mininet/custom -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum:/tmp -v /tmp/mn_conf/:/home/root/config --hostname mn-stratum -v /etc/network/interfaces:/etc/network/interfaces -it -d</args>
+        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom/:/home/root/mininet/custom/ -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum/:/tmp/ -v /tmp/mn_conf/:/home/root/config/ -v /etc/network/interfaces:/etc/network/interfaces -v /lib/modules/:/lib/modules/ -it -d --hostname mn-stratum  </args>
         <name>trellis_mininet</name>
         <home>/home/root/</home>
     </MN_DOCKER>
@@ -45,8 +44,13 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3</cellApps>
+        <cellApps>drivers,lldpprovider,hostprovider,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric,segmentrouting</cellApps>
     </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
 
     <ONOS_Configuration>
         <org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
@@ -76,10 +80,6 @@
         <org.onosproject.bmv2>DEBUG</org.onosproject.bmv2>
     </ONOS_Logging>
 
-    <GIT>
-        <pull>False</pull>
-        <branch>master</branch>
-    </GIT>
 
     <CTRL>
         <port>6653</port>
@@ -94,12 +94,7 @@
         <startup>10</startup>
     </SLEEP>
 
-    <TOPO>
-        <switchNum>1</switchNum>
-        <linkNum>0</linkNum>
-    </TOPO>
-
     <ALARM>
-        <minPassPercent>100</minPassPercent>
+        <minPassPercent>70</minPassPercent>
     </ALARM>
 </PARAMS>

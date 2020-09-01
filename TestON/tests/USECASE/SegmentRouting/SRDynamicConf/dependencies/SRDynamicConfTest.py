@@ -88,7 +88,7 @@ class SRDynamicConfTest:
                 intfCfg = "%s%s%s.json" % ( main.configPath, main.forJson, TAG )
                 if main.useBmv2:
                     # Translate configuration file from OVS-OFDPA to BMv2 driver
-                    translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
+                    translator.bmv2ToOfdpa( main, intfCfg )  # Try to cleanup if switching between switch types
                     switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
                     translator.ofdpaToBmv2( main, switchPrefix=switchPrefix, cfgFile=intfCfg )
                 else:
@@ -100,7 +100,7 @@ class SRDynamicConfTest:
                 defaultIntfCfg = "%s%s%s_ports.json" % ( main.configPath, main.forJson, topology )
                 if main.useBmv2:
                     # Translate configuration file from OVS-OFDPA to BMv2 driver
-                    translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
+                    translator.bmv2ToOfdpa( main, defaultIntfCfg )  # Try to cleanup if switching between switch types
                     switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
                     translator.ofdpaToBmv2( main, switchPrefix=switchPrefix, cfgFile=defaultIntfCfg )
                 else:
@@ -118,6 +118,7 @@ class SRDynamicConfTest:
 
             # Set up topology
             if hasattr( main, 'Mininet1' ):
+                run.mnDockerSetup( main )
                 # Run the test with mininet topology
                 mininet_args = ' --spine=%d --leaf=%d --fanout=%d' \
                                % ( topo[ topology ][ 0 ], topo[ topology ][ 1 ], fanout )
@@ -128,8 +129,8 @@ class SRDynamicConfTest:
                 if dualHomed:
                     mininet_args += ' --dual-homed'
                 if main.useBmv2:
-                    mininet_args += ' --switch bmv2'
-                    main.log.info( "Using BMv2 switch" )
+                    mininet_args += ' --switch %s' % main.switchType
+                    main.log.info( "Using %s switch" % main.switchType )
 
                 run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
             else:
@@ -374,10 +375,11 @@ class SRDynamicConfTest:
             run.checkFlows( main, minFlowCount=minFlowCountPerLeaf * topo[ topology ][ 1 ], sleep=5, dumpflows=False )
             run.pingAll( main, '%s_After' % TAG, retryAttempts=2 )
 
-            run.cleanup( main )
         except Exception as e:
             main.log.exception( "Error in runTest" )
             main.skipCase( result="FAIL", msg=e )
+        finally:
+            run.cleanup( main )
 
     @staticmethod
     def updateIntfCfg( main, portNum, dualHomed, ips=[], untagged=0, tagged=[], native=0 ):

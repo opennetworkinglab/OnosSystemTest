@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,11,12,21,22,31,41,51,61,71</testcases>
+    <testcases>1,2,21,22,41,61</testcases>
 
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
@@ -33,7 +33,7 @@
     <CLUSTER>
         # Params for onos docker
         <dockerSkipBuild>True</dockerSkipBuild>
-        <dockerBuildCmd>make ONOS_BRANCH=master DOCKER_TAG=TestON-master onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
+        <dockerBuildCmd>make ONOS_VERSION=master DOCKER_TAG=TestON-master onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
         <dockerBuildTimeout>1200</dockerBuildTimeout>
         <dockerFilePath>~/tost-onos</dockerFilePath>
         <dockerImageTag>tost:TestON-master</dockerImageTag>

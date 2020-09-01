@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>101,102,103,104,105,106,107,108,109,201,202,203,204,205,206,207,208,209,301,302,303,304,305,306,307,308,309,601,602,603,604,605,606,620,621,622,630,640,641,642,643,651,652,653,660,661,662,663,664,665</testcases>
+    <testcases>101,104,107,201,204,207,301,304,307,601,602,603,604,605,606,620,621,622,630,640,641,642,643,651,652,653,660,661,662,663,664,665</testcases>
 
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
@@ -33,7 +33,7 @@
     <CLUSTER>
         # Params for onos docker
         <dockerSkipBuild>True</dockerSkipBuild>
-        <dockerBuildCmd>make ONOS_BRANCH=master DOCKER_TAG=TestON-master onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
+        <dockerBuildCmd>make ONOS_VERSION=master DOCKER_TAG=TestON-master onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
         <dockerBuildTimeout>1200</dockerBuildTimeout>
         <dockerFilePath>~/tost-onos</dockerFilePath>
         <dockerImageTag>tost:TestON-master</dockerImageTag>
@@ -44,7 +44,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,fpm,dhcprelay,hostprovider,netcfghostprovider,lldpprovider,routeradvertisement,hostprobingprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3</cellApps>
+        <cellApps>drivers,fpm,dhcprelay,lldpprovider,hostprovider,netcfghostprovider,routeradvertisement,hostprobingprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3</cellApps>
     </ENV>
 
     <GIT>

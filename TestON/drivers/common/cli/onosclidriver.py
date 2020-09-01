@@ -301,7 +301,7 @@ class OnosCliDriver( CLI ):
                 startCliCommand = "onos " + str( ONOSIp )
             self.handle.sendline( startCliCommand )
             tries = 0
-            setTimeout = False
+            timeoutSet = False
             while tries < 5:
                 i = self.handle.expect( [
                     self.karafPrompt,
@@ -309,7 +309,7 @@ class OnosCliDriver( CLI ):
                     pexpect.TIMEOUT ], onosStartTimeout )
 
                 if i == 0:
-                    if setTimeout:
+                    if not karafTimeout or timeoutSet:
                         main.log.info( str( ONOSIp ) + " CLI Started successfully" )
                         return main.TRUE
                     if karafTimeout:
@@ -318,8 +318,9 @@ class OnosCliDriver( CLI ):
                                      sshIdleTimeout " +
                             str( karafTimeout ) )
                         self.handle.expect( "closed by remote host" )
+                        self.handle.expect( self.Prompt() )
                         self.handle.sendline( startCliCommand )
-                        setTimeout = True
+                        timeoutSet = True
                 elif i == 1:
                     main.log.info( str( ONOSIp ) + " CLI asking for password" )
                     main.log.debug( "Sending %s" % self.karafPass )
@@ -327,6 +328,7 @@ class OnosCliDriver( CLI ):
                 else:
                     # If failed, send ctrl+c to process and try again
                     main.log.info( "Starting CLI failed. Retrying..." )
+                    time.sleep( 5 )
                     self.handle.send( "\x03" )
                     self.handle.sendline( startCliCommand )
                 tries += 1

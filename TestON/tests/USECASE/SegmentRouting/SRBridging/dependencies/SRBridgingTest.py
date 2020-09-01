@@ -100,5 +100,5 @@ class SRBridgingTest ():
         except Exception as e:
             main.log.exception( "Error in runTest" )
             main.skipCase( result="FAIL", msg=e )
-
-        run.cleanup( main )
+        finally:
+            run.cleanup( main )

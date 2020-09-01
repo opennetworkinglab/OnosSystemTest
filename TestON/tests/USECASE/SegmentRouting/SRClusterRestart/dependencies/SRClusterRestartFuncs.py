@@ -67,8 +67,5 @@ class SRClusterRestartFuncs():
         except Exception as e:
             main.log.exception( "Error in runTest" )
             main.skipCase( result="FAIL", msg=e )
-        if hasattr( main, 'Mininet1' ):
+        finally:
             run.cleanup( main )
-        else:
-            # TODO: disconnect TestON from the physical network
-            pass

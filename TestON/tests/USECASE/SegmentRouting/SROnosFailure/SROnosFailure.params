@@ -1,5 +1,4 @@
 <PARAMS>
-
     <testcases>1,2,3</testcases>
 
     <GRAPH>
@@ -25,7 +24,7 @@
 
     <GIT>
         <pull>False</pull>
-        <branch>master</branch>
+        <branch>onos-2.2</branch>
     </GIT>
 
     <ONOS_Configuration>

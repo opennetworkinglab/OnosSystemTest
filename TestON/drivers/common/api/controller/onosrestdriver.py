@@ -116,6 +116,8 @@ class OnosRestDriver( Controller ):
                 auth = None
             main.log.info( self.name + ": Sending request " + path + " using " +
                            method.upper() + " method." )
+            if debug:
+                main.log.debug( self.name + ": request data: " + str( data ) )
             response = requests.request( method.upper(),
                                          path,
                                          params=query,

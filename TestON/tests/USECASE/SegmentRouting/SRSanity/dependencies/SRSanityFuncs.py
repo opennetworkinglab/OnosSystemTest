@@ -52,11 +52,12 @@ class SRSanityFuncs():
             # TODO Dynamic config of vlan xconnect
             # TODO Vrouter integration
             # TODO Mcast integration
+        except Exception as e:
+            main.log.exception( "Error in runTest" )
+            main.skipCase( result="FAIL", msg=e )
+        finally:
             if hasattr( main, 'Mininet1' ):
                 run.cleanup( main )
             else:
                 # TODO: disconnect TestON from the physical network
                 pass
-        except Exception as e:
-            main.log.exception( "Error in runTest" )
-            main.skipCase( result="FAIL", msg=e )

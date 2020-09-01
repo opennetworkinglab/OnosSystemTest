@@ -17,6 +17,7 @@
         <useBmv2>False</useBmv2>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
+        <conf>dhcpd.conf,dhcpd6.conf,bgpdr1.conf,bgpdr2.conf,bgpdbgp1.conf,zebradbgp1.conf,bgpdbgp2.conf,zebradbgp2.conf</conf>
         <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
     </DEPENDENCY>
 
@@ -27,7 +28,7 @@
 
     <GIT>
         <pull>False</pull>
-        <branch>master</branch>
+        <branch>onos-2.2</branch>
     </GIT>
 
     <ONOS_Configuration>

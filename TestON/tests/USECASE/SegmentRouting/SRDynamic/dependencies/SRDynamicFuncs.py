@@ -66,14 +66,11 @@ class SRDynamicFuncs():
             # TODO Dynamic config of vlan xconnect
             # TODO Vrouter integration
             # TODO Mcast integration
-            if hasattr( main, 'Mininet1' ):
-                run.cleanup( main )
-            else:
-                # TODO: disconnect TestON from the physical network
-                pass
         except Exception as e:
             main.log.exception( "Error in runTest" )
             main.skipCase( result="FAIL", msg=e )
+        finally:
+            run.cleanup( main )
 
     def killAndDelete( self, main, caseNum, numNodes, minBeforeFlow, switch, link ):
         run.killOnos( main, [ 0 ], '{}'.format( switch ), '{}'.format( link ), '{}'.format( numNodes - 1 ) )

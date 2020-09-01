@@ -1,11 +1,10 @@
 <PARAMS>
-    # Sample testcase for physical network: 7
-    <testcases>5,6,7,8,15,16,17,18,25,26,27,28,35,36,37,38,45,46,47,48,55,56,57,58,65,66,67,68,75,76,77,78</testcases>
+    <testcases>1,2,3</testcases>
 
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
         <builds>20</builds>
-        <jobName>SRBridging-stratum</jobName>
+        <jobName>SROnosFailure-stratum</jobName>
     </GRAPH>
 
     <SCALE>
@@ -14,13 +13,13 @@
     </SCALE>
 
     <DEPENDENCY>
-        <useCommonConf>False</useCommonConf>
+        <useCommonConf>True</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
         <useBmv2>True</useBmv2>
         <bmv2SwitchType>stratum</bmv2SwitchType>
         <switchPrefix>bmv2</switchPrefix>
         <stratumRoot>~/stratum</stratumRoot>
-        <topology>trellis_fabric.py</topology>
+        <topology>cord_fabric.py</topology>
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
         <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
     </DEPENDENCY>
@@ -45,7 +44,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3</cellApps>
+        <cellApps>drivers,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3 </cellApps>
     </ENV>
 
     <ONOS_Configuration>
@@ -88,18 +87,17 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
+        <OnosDiscovery>12</OnosDiscovery>
     </timers>
+
+    <kill>
+        <switch> spine101 </switch>
+        <dpid> 000000000101 </dpid>
+        <links> leaf1 leaf2 </links>
+    </kill>
 
     <SLEEP>
         <startup>10</startup>
     </SLEEP>
 
-    <TOPO>
-        <switchNum>1</switchNum>
-        <linkNum>0</linkNum>
-    </TOPO>
-
-    <ALARM>
-        <minPassPercent>100</minPassPercent>
-    </ALARM>
 </PARAMS>

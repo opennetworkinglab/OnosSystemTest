@@ -42,7 +42,15 @@ class SROnosFailureFuncs():
             run.loadJson( main )
             run.loadChart( main )
             if hasattr( main, 'Mininet1' ):
-                run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+                run.mnDockerSetup( main )  # optionally create and setup docker image
+
+                # Run the test with Mininet
+                mininet_args = self.topo[ Topo ][ 2 ]
+                if main.useBmv2:
+                    mininet_args += ' --switch %s' % main.switchType
+                    main.log.info( "Using %s switch" % main.switchType )
+
+                run.startMininet( main, 'cord_fabric.py', args=mininet_args )
             else:
                 # Run the test with physical devices
                 # TODO: connect TestON to the physical network
@@ -62,11 +70,8 @@ class SROnosFailureFuncs():
             # TODO Dynamic config of vlan xconnect
             # TODO Vrouter integration
             # TODO Mcast integration
-            if hasattr( main, 'Mininet1' ):
-                run.cleanup( main )
-            else:
-                # TODO: disconnect TestON from the physical network
-                pass
         except Exception as e:
             main.log.exception( "Error in runTest" )
             main.skipCase( result="FAIL", msg=e )
+        finally:
+            run.cleanup( main )

@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,11,12,21,22,31,41,51,61,71</testcases>
+    <testcases>1,2,21,22,41,61</testcases>
 
     <GRAPH>
         <nodeCluster>Fabric</nodeCluster>
@@ -33,10 +33,10 @@
     <CLUSTER>
         # Params for onos docker
         <dockerSkipBuild>True</dockerSkipBuild>
-        <dockerBuildCmd>make ONOS_BRANCH=master DOCKER_TAG=TestON-master onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
+        <dockerBuildCmd>make ONOS_VERSION=onos-2.2 DOCKER_TAG=TestON-onos-2.2 onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
         <dockerBuildTimeout>1200</dockerBuildTimeout>
         <dockerFilePath>~/tost-onos</dockerFilePath>
-        <dockerImageTag>tost:TestON-master</dockerImageTag>
+        <dockerImageTag>tost:TestON-onos-2.2</dockerImageTag>
         <dockerOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/cluster.json:/root/onos/config/cluster.json </dockerOptions> # We start the container detached, so the docker component can connect to cli instead of logs
         <atomixImageTag>atomix/atomix:3.1.5</atomixImageTag>
         <atomixOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/atomix.json:/opt/atomix/conf/atomix.json </atomixOptions>
@@ -49,7 +49,7 @@
 
     <GIT>
         <pull>False</pull>
-        <branch>master</branch>
+        <branch>onos-2.2</branch>
     </GIT>
 
     <ONOS_Configuration>

@@ -27,7 +27,7 @@
 
     <GIT>
         <pull>False</pull>
-        <branch>master</branch>
+        <branch>onos-2.2</branch>
     </GIT>
 
     <ONOS_Configuration>

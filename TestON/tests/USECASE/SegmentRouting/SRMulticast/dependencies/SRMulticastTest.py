@@ -58,8 +58,8 @@ def setupTest( main, test_idx, onosNodes ):
             # Run the test with Mininet
             mininet_args = " --dhcp=1 --routers=1 --ipv6=1 --ipv4=1"
             if main.useBmv2:
-                mininet_args += ' --switch bmv2'
-                main.log.info( "Using BMv2 switch" )
+                mininet_args += ' --switch %s' % main.switchType
+                main.log.info( "Using %s switch" % main.switchType )
             lib.startMininet( main, main.params[ "DEPENDENCY" ][ "topology" ], args=mininet_args )
             time.sleep( float( main.params[ "timers" ][ "startMininetSleep" ] ) )
         else:

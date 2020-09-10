@@ -800,7 +800,8 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
             assert output is not None, "Error in sendline"
-            assert "Command not found:" not in output, output
+            # "Command not found" or "Service org.onosproject.security.AuditService not found"
+            assert "not found" not in output, output
             return output
         except AssertionError:
             main.log.exception( "" )

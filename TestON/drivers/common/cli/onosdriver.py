@@ -65,10 +65,10 @@ class OnosDriver( CLI ):
             # The 'nodes' tag is optional and it is not required in .topo file
             for key in self.options:
                 if key == "home":
-                    self.home = self.options[ 'home' ]
+                    self.home = self.options[ key ]
                 elif key == "nodes":
                     # Maximum number of ONOS nodes to run, if there is any
-                    self.maxNodes = int( self.options[ 'nodes' ] )
+                    self.maxNodes = int( self.options[ key ] )
                 elif key == "web_user":
                     self.webUser = self.options[ key ]
                 elif key == "web_pass":

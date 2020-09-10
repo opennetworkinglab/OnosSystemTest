@@ -93,6 +93,7 @@ class OnosClusterDriver( CLI ):
         self.handle = None
         self.useDocker = False
         self.dockerPrompt = None
+        self.maxNodes = None
         self.nodes = []
         super( OnosClusterDriver, self ).__init__()
 
@@ -110,7 +111,7 @@ class OnosClusterDriver( CLI ):
             self.home = "~/onos"
             for key in self.options:
                 if key == "home":
-                    self.home = self.options[ 'home' ]
+                    self.home = self.options[ key ]
                 elif key == "karaf_username":
                     self.karafUser = self.options[ key ]
                 elif key == "karaf_password":
@@ -125,6 +126,9 @@ class OnosClusterDriver( CLI ):
                     self.webUser = self.options[ key ]
                 elif key == "web_pass":
                     self.webPass = self.options[ key ]
+                elif key == "nodes":
+                    # Maximum number of ONOS nodes to run, if there is any
+                    self.maxNodes = self.options[ key ]
 
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
@@ -134,19 +138,9 @@ class OnosClusterDriver( CLI ):
             prefix = self.checkOptions( prefix, "ONOS" )
             self.useDocker = self.checkOptions( self.useDocker, False )
             self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
+            self.maxNodes = int( self.checkOptions( self.maxNodes, 100 ) )
 
             self.name = self.options[ 'name' ]
-
-            # The 'nodes' tag is optional and it is not required in .topo file
-            for key in self.options:
-                if key == "nodes":
-                    # Maximum number of ONOS nodes to run, if there is any
-                    self.maxNodes = int( self.options[ 'nodes' ] )
-                    break
-                self.maxNodes = None
-
-            if self.maxNodes is None or self.maxNodes == "":
-                self.maxNodes = 100
 
             # Grabs all OC environment variables based on max number of nodes
             # TODO: Also support giving an ip range as a compononet option

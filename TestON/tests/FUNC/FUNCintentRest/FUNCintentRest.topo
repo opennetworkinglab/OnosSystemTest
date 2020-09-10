@@ -18,7 +18,7 @@
                 <rest_port></rest_port>
                 <prompt></prompt>  # TODO: we technically need a few of these, one per component
                 <onos_home></onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.
-                <nodes> 3 </nodes>  # number of nodes in the cluster
+                <nodes> 7 </nodes>  # number of nodes in the cluster
             </COMPONENTS>
         </ONOScell>
 

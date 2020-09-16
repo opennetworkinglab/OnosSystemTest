@@ -1,116 +1,136 @@
 {
-    "ports" : {
-        "of:0000000000000001/3" : {
-            "interfaces" : [
+    "apps":{
+        "org.onosproject.dhcprelay":{
+            "default":[
                 {
-                    "ips" : [ "2000::2ff/120" ],
-                    "vlan-untagged": 40
-                }
-            ]
-        },
-        "of:0000000000000001/4" : {
-            "interfaces" : [
-                {
-                    "ips" : [ "2000::2ff/120" ],
-                    "vlan-untagged": 40
-                }
-            ]
-        },
-        "of:0000000000000002/3" : {
-            "interfaces" : [
-                {
-                    "ips" : [ "2000::3ff/120" ],
-                    "vlan-untagged": 50
-                }
-            ]
-        },
-        "of:0000000000000002/4" : {
-            "interfaces" : [
-                {
-                    "ips" : [ "2000::3ff/120" ],
-                    "vlan-untagged": 50
-                }
-            ]
-        },
-        "of:0000000000000002/5" : {
-            "interfaces" : [
-                {
-                    "ips" : [ "10.0.3.254/24", "2000::3ff/120" ],
-                    "vlan-untagged": 30
-                }
-            ]
-        },
-        "of:0000000000000002/6" : {
-            "interfaces" : [
-                {
-                    "ips" : [ "10.0.1.254/24", "2000::1ff/120" ],
-                    "vlan-untagged": 10
-                }
-            ]
-        }
-    },
-    "devices" : {
-        "of:0000000000000001" : {
-            "segmentrouting" : {
-                "ipv4NodeSid" : 201,
-                "ipv4Loopback" : "192.168.0.1",
-                "routerMac" : "00:00:00:00:00:01",
-                "isEdgeRouter" : true,
-                "adjacencySids" : []
-            },
-            "basic" : {
-                "driver" : "ofdpa-ovs"
-            }
-        },
-        "of:0000000000000002" : {
-            "segmentrouting" : {
-                "ipv4NodeSid" : 202,
-                "ipv4Loopback" : "192.168.0.2",
-                "routerMac" : "00:00:00:00:00:02",
-                "isEdgeRouter" : true,
-                "adjacencySids" : []
-            },
-            "basic" : {
-                "driver" : "ofdpa-ovs"
-            }
-        },
-        "of:0000000000000101" : {
-            "segmentrouting" : {
-                "ipv4NodeSid" : 101,
-                "ipv4Loopback" : "192.168.0.101",
-                "routerMac" : "00:00:00:00:01:01",
-                "isEdgeRouter" : false,
-                "adjacencySids" : []
-            },
-            "basic" : {
-                "driver" : "ofdpa-ovs"
-            }
-        },
-        "of:0000000000000102" : {
-            "segmentrouting" : {
-                "ipv4NodeSid" : 102,
-                "ipv4Loopback" : "192.168.0.102",
-                "routerMac" : "00:00:00:00:01:02",
-                "isEdgeRouter" : false,
-                "adjacencySids" : []
-            },
-            "basic" : {
-                "driver" : "ofdpa-ovs"
-            }
-        }
-    },
-    "apps" : {
-        "org.onosproject.dhcprelay" : {
-            "default": [
-                {
-                    "dhcpServerConnectPoint": "of:0000000000000002/5",
-                    "serverIps": ["10.0.3.253", "2000::3fd"]
+                    "dhcpServerConnectPoint":"of:0000000000000002/5",
+                    "serverIps":[
+                        "10.0.3.253",
+                        "2000::3fd"
+                    ]
                 }
             ],
-            "indirect": [
+            "indirect":[
                 {
-                    "dhcpServerConnectPoint": "of:0000000000000002/5",
-                    "serverIps": ["10.0.3.252", "2000::3fc"]
+                    "dhcpServerConnectPoint":"of:0000000000000002/5",
+                    "serverIps":[
+                        "10.0.3.252",
+                        "2000::3fc"
+                    ]
+                }
+            ]
+        }
+    },
+    "devices":{
+        "of:0000000000000001":{
+            "basic":{
+                "driver":"ofdpa-ovs"
+            },
+            "segmentrouting":{
+                "adjacencySids":[],
+                "ipv4Loopback":"192.168.0.1",
+                "ipv4NodeSid":201,
+                "isEdgeRouter":true,
+                "routerMac":"00:00:00:00:00:01"
+            }
+        },
+        "of:0000000000000002":{
+            "basic":{
+                "driver":"ofdpa-ovs"
+            },
+            "segmentrouting":{
+                "adjacencySids":[],
+                "ipv4Loopback":"192.168.0.2",
+                "ipv4NodeSid":202,
+                "isEdgeRouter":true,
+                "routerMac":"00:00:00:00:00:02"
+            }
+        },
+        "of:0000000000000101":{
+            "basic":{
+                "driver":"ofdpa-ovs"
+            },
+            "segmentrouting":{
+                "adjacencySids":[],
+                "ipv4Loopback":"192.168.0.101",
+                "ipv4NodeSid":101,
+                "isEdgeRouter":false,
+                "routerMac":"00:00:00:00:01:01"
+            }
+        },
+        "of:0000000000000102":{
+            "basic":{
+                "driver":"ofdpa-ovs"
+            },
+            "segmentrouting":{
+                "adjacencySids":[],
+                "ipv4Loopback":"192.168.0.102",
+                "ipv4NodeSid":102,
+                "isEdgeRouter":false,
+                "routerMac":"00:00:00:00:01:02"
+            }
+        }
+    },
+    "ports":{
+        "of:0000000000000001/3":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "2000::2ff/120"
+                    ],
+                    "vlan-untagged":40
+                }
+            ]
+        },
+        "of:0000000000000001/4":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "2000::2ff/120"
+                    ],
+                    "vlan-untagged":40
+                }
+            ]
+        },
+        "of:0000000000000002/3":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "2000::3ff/120"
+                    ],
+                    "vlan-untagged":50
+                }
+            ]
+        },
+        "of:0000000000000002/4":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "2000::3ff/120"
+                    ],
+                    "vlan-untagged":50
+                }
+            ]
+        },
+        "of:0000000000000002/5":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.0.3.254/24",
+                        "2000::3ff/120"
+                    ],
+                    "vlan-untagged":30
+                }
+            ]
+        },
+        "of:0000000000000002/6":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.0.1.254/24",
+                        "2000::1ff/120"
+                    ],
+                    "vlan-untagged":10
                 }
             ]
         }

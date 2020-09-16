@@ -1,36 +1,44 @@
 {
-    "ports" : {
-        "of:0000000000000001/1" : {
-            "interfaces" : [
+    "devices":{
+        "of:0000000000000001":{
+            "basic":{
+                "driver":"ofdpa-ovs"
+            },
+            "segmentrouting":{
+                "adjacencySids":[],
+                "ipv4Loopback":"192.168.0.1",
+                "ipv4NodeSid":201,
+                "isEdgeRouter":true,
+                "routerMac":"00:00:00:00:00:01"
+            }
+        }
+    },
+    "ports":{
+        "of:0000000000000001/1":{
+            "interfaces":[
                 {
-                    "ips" : [ "10.0.2.254/24" ],
-                    "vlan-tagged": [10],
-                    "vlan-native": 20
+                    "ips":[
+                        "10.0.2.254/24"
+                    ],
+                    "vlan-native":20,
+                    "vlan-tagged":[
+                        10
+                    ]
                 }
             ]
         },
-        "of:0000000000000001/2" : {
-            "interfaces" : [
+        "of:0000000000000001/2":{
+            "interfaces":[
                 {
-                    "ips" : [ "10.0.2.254/24" ],
-                    "vlan-tagged": [10],
-                    "vlan-native": 20
+                    "ips":[
+                        "10.0.2.254/24"
+                    ],
+                    "vlan-native":20,
+                    "vlan-tagged":[
+                        10
+                    ]
                 }
             ]
-        }
-    },
-    "devices" : {
-        "of:0000000000000001" : {
-            "segmentrouting" : {
-                "ipv4NodeSid" : 201,
-                "ipv4Loopback" : "192.168.0.1",
-                "routerMac" : "00:00:00:00:00:01",
-                "isEdgeRouter" : true,
-                "adjacencySids" : []
-            },
-            "basic" : {
-                "driver" : "ofdpa-ovs"
-            }
         }
     }
 }

@@ -1,0 +1,28 @@
+{
+    "xconnects":[
+        {
+            "deviceId":"of:0000000000000001",
+            "endpoints":[
+                "5",
+                "8"
+            ],
+            "vlanId":10
+        },
+        {
+            "deviceId":"of:0000000000000001",
+            "endpoints":[
+                "5",
+                "7"
+            ],
+            "vlanId":5
+        },
+        {
+            "deviceId":"of:0000000000000001",
+            "endpoints":[
+                "5",
+                "6"
+            ],
+            "vlanId":1
+        }
+    ]
+}

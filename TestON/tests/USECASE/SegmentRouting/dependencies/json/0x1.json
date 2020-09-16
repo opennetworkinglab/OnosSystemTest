@@ -1,63 +1,81 @@
 {
-    "ports" : {
-    "of:0000000000000001/1" : {
-        "interfaces" : [
-        {
-            "ips" : [ "10.0.1.254/24" ],
-            "vlan-untagged" : 100
-        }
-        ]
-    },
-    "of:0000000000000001/2" : {
-        "interfaces" : [
-        {
-            "ips" : [ "10.0.1.254/24" ],
-            "vlan-untagged" : 100
-        }
-        ]
-    },
-    "of:0000000000000001/3" : {
-      "interfaces" : [
-        {
-          "ips" : [ "10.0.1.254/24" ],
-            "vlan-untagged" : 100
-        }
-      ]
-    },
-    "of:0000000000000001/4" : {
-      "interfaces" : [
-        {
-          "ips" : [ "10.0.1.254/24" ],
-            "vlan-untagged" : 100
-        }
-      ]
-    }
-    },
-    "devices" : {
-        "of:0000000000000001" : {
-            "basic":{ "driver" : "ofdpa-ovs" },
-            "segmentrouting" : {
-                "name" : "Leaf-R1",
-                "ipv4NodeSid" : 101,
-                "ipv4Loopback" : "192.168.0.1",
-                "routerMac" : "10:00:00:00:00:01",
-                "isEdgeRouter" : true,
-                "adjacencySids" : []
+    "devices":{
+        "of:0000000000000001":{
+            "basic":{
+                "driver":"ofdpa-ovs"
+            },
+            "segmentrouting":{
+                "adjacencySids":[],
+                "ipv4Loopback":"192.168.0.1",
+                "ipv4NodeSid":101,
+                "isEdgeRouter":true,
+                "name":"Leaf-R1",
+                "routerMac":"10:00:00:00:00:01"
             }
         }
     },
-    "hosts" : {
-        "00:00:00:00:00:01/-1" : {
-            "basic": {
-                "ips": ["10.0.1.1"],
-                "locations": ["of:0000000000000001/1"]
+    "hosts":{
+        "00:00:00:00:00:01/-1":{
+            "basic":{
+                "ips":[
+                    "10.0.1.1"
+                ],
+                "locations":[
+                    "of:0000000000000001/1"
+                ]
             }
         },
-        "00:00:00:00:00:02/-1" : {
-            "basic": {
-                "ips": ["10.0.1.2"],
-                "locations": ["of:0000000000000001/2"]
+        "00:00:00:00:00:02/-1":{
+            "basic":{
+                "ips":[
+                    "10.0.1.2"
+                ],
+                "locations":[
+                    "of:0000000000000001/2"
+                ]
             }
+        }
+    },
+    "ports":{
+        "of:0000000000000001/1":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.0.1.254/24"
+                    ],
+                    "vlan-untagged":100
+                }
+            ]
+        },
+        "of:0000000000000001/2":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.0.1.254/24"
+                    ],
+                    "vlan-untagged":100
+                }
+            ]
+        },
+        "of:0000000000000001/3":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.0.1.254/24"
+                    ],
+                    "vlan-untagged":100
+                }
+            ]
+        },
+        "of:0000000000000001/4":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.0.1.254/24"
+                    ],
+                    "vlan-untagged":100
+                }
+            ]
         }
     }
 }

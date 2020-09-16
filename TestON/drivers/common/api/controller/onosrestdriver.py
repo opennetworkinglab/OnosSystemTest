@@ -1714,6 +1714,145 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def getXconnect( self, ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Get xconnects
+        Returns:
+            Return xconnects json object
+            Returns None for exceptions
+
+        """
+        try:
+            base = "/onos/segmentrouting"
+            response = None
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/xconnect"
+            response = self.send( method="GET",
+                                  base=base,
+                                  url=url, ip = ip, port = port )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    main.log.info( self.name + ": Successfully POST cfg" )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def setXconnect( self, deviceId, vlanId, port1, port2, ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Set xconnects
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+
+        """
+        try:
+            cfgJson = json.loads( '{"deviceId": "%s", "vlanId": "%s", "endpoints":[%s,%s]}' %
+                                 ( deviceId, vlanId, port1, port2 ) )
+            response = self.setXconnectJson( cfgJson, ip=ip, port=port )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def setXconnectJson( self, cfgJson, ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Set xconnects
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+
+        """
+        try:
+            base = "/onos/segmentrouting"
+            response = None
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/xconnect"
+            response = self.send( method="POST",
+                                  base=base,
+                                  url=url, ip = ip, port = port,
+                                  data=json.dumps( cfgJson ) )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    main.log.info( self.name + ": Successfully POST cfg" )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def deleteXconnect( self, cfgJson, ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Remove xconnects
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+
+        """
+        try:
+            base = "/onos/segmentrouting"
+            response = None
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/xconnect"
+            response = self.send( method="DELETE",
+                                  base=base,
+                                  url=url, ip = ip, port = port,
+                                  data=json.dumps( cfgJson ) )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    main.log.info( self.name + ": Successfully POST cfg" )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def createFlowBatch( self,
                          numSw = 1,
                          swIndex = 1,

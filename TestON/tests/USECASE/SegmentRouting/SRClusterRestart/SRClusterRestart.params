@@ -20,7 +20,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,hostprovider,segmentrouting,openflow-base,netcfghostprovider,netcfglinksprovider</cellApps>
+        <cellApps>drivers,hostprovider,segmentrouting,openflow-base,netcfghostprovider,lldpprovider</cellApps>
     </ENV>
 
     <GIT>

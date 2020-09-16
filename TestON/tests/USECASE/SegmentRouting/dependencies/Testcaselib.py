@@ -183,6 +183,13 @@ class Testcaselib:
             main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
 
     @staticmethod
+    def loadXconnects( main, suffix='' ):
+        with open( "%s%s-xconnects.json%s" % ( main.configPath + main.forJson,
+                                     main.cfgName, suffix ) ) as cfg:
+            for xconnect in json.load( cfg ).get('xconnects'):
+                main.Cluster.active( 0 ).REST.setXconnectJson( xconnect )
+
+    @staticmethod
     def loadChart( main ):
         try:
             with open( "%s%s.chart" % ( main.configPath + main.forChart,
@@ -1178,12 +1185,10 @@ class Testcaselib:
                                             "hosts": [ "olt1", "vsg1" ] } } )
         main.pingChart[ 'vlan5' ][ 'expect' ] = 0
         main.pingChart[ 'vlan10' ][ 'expect' ] = 0
-        ports = "[%s,%s]" % ( 5, 6 )
-        cfg = '{"of:0000000000000001":[{"vlan":1,"ports":%s,"name":"OLT 1"}]}' % ports
-        main.Cluster.active( 0 ).REST.setNetCfg( json.loads( cfg ),
-                                                 subjectClass="apps",
-                                                 subjectKey="org.onosproject.segmentrouting",
-                                                 configKey="xconnect" )
+        main.Cluster.active( 0 ).REST.setXconnect( "of:0000000000000001",
+                                                   vlanId=1,
+                                                   port1=5,
+                                                   port2=6 )
 
     @staticmethod
     def delHostCfg( main ):
@@ -1213,9 +1218,8 @@ class Testcaselib:
                                                     configKey="basic" )
         main.step( "Removing vlan configuration" )
         main.pingChart[ 'vlan1' ][ 'expect' ] = 0
-        main.Cluster.active( 0 ).REST.removeNetCfg( subjectClass="apps",
-                                                    subjectKey="org.onosproject.segmentrouting",
-                                                    configKey="xconnect" )
+        main.Cluster.active( 0 ).REST.deleteXconnect( "of:0000000000000001",
+                                                      vlanId=1 )
 
     @staticmethod
     def verifyNetworkHostIp( main, attempts=10, sleep=10 ):

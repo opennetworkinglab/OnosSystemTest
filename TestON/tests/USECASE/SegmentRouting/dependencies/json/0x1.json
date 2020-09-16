@@ -38,7 +38,7 @@
             "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R1",
-                "ipv4NodeSid" : 1,
+                "ipv4NodeSid" : 101,
                 "ipv4Loopback" : "192.168.0.1",
                 "routerMac" : "10:00:00:00:00:01",
                 "isEdgeRouter" : true,
@@ -57,24 +57,6 @@
             "basic": {
                 "ips": ["10.0.1.2"],
                 "locations": ["of:0000000000000001/2"]
-            }
-        }
-    },
-    "apps": {
-        "org.onosproject.segmentrouting": {
-            "xconnect": {
-                "of:0000000000000001": [
-                    {
-                        "vlan": 5,
-                        "ports": [5, 7],
-                        "name": "OLT 1"
-                    },
-                    {
-                        "vlan": 10,
-                        "ports": [5, 8],
-                        "name": "OLT 2"
-                    }
-                ]
             }
         }
     }

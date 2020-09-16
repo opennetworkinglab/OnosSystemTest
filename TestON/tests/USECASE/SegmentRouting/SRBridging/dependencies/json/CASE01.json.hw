@@ -26,7 +26,7 @@
             "segmentrouting":{
                 "isEdgeRouter":true,
                 "routerMac":"00:90:fb:64:cc:9e",
-                "ipv4NodeSid":1,
+                "ipv4NodeSid":201,
                 "ipv4Loopback":"10.128.13.232",
                 "adjacencySids":[]
             }

@@ -16,11 +16,13 @@
         <useCommonConf>True</useCommonConf>
         <useCommonTopo>True</useCommonTopo>
         <topology>cord_fabric.py</topology>
+        <trellisOar>/home/sdn/segmentrouting-app-3.0.1-SNAPSHOT.oar</trellisOar>
+        <t3Oar>/home/sdn/t3-app-4.0.0-SNAPSHOT.oar</t3Oar>
     </DEPENDENCY>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,hostprovider,segmentrouting,openflow-base,netcfghostprovider,netcfglinksprovider</cellApps>
+        <cellApps>drivers,hostprovider,openflow-base,netcfghostprovider,lldpprovider</cellApps>
     </ENV>
 
     <GIT>

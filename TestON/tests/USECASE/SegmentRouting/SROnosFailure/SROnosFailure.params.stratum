@@ -44,7 +44,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3 </cellApps>
+        <cellApps>drivers,hostprovider,netcfghostprovider,lldpprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3 </cellApps>
     </ENV>
 
     <ONOS_Configuration>

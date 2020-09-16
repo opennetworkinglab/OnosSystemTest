@@ -60,7 +60,7 @@
     "devices" : {
         "of:0000000000000001" : {
             "segmentrouting" : {
-                "ipv4NodeSid" : 1,
+                "ipv4NodeSid" : 201,
                 "ipv4Loopback" : "192.168.0.1",
                 "routerMac" : "00:00:00:00:00:01",
                 "isEdgeRouter" : true,
@@ -72,7 +72,7 @@
         },
         "of:0000000000000002" : {
             "segmentrouting" : {
-                "ipv4NodeSid" : 2,
+                "ipv4NodeSid" : 202,
                 "ipv4Loopback" : "192.168.0.2",
                 "routerMac" : "00:00:00:00:00:02",
                 "isEdgeRouter" : true,

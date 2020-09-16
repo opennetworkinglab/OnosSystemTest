@@ -86,7 +86,7 @@
             "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R1",
-                "ipv4NodeSid" : 1,
+                "ipv4NodeSid" : 201,
                 "ipv4Loopback" : "192.168.0.1",
                 "routerMac" : "10:00:00:00:00:01",
                 "isEdgeRouter" : true,
@@ -97,7 +97,7 @@
             "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R2",
-                "ipv4NodeSid" : 2,
+                "ipv4NodeSid" : 202,
                 "ipv4Loopback" : "192.168.0.2",
                 "routerMac" : "10:00:00:00:00:02",
                 "isEdgeRouter" : true,
@@ -108,7 +108,7 @@
             "basic" :{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R3",
-                "ipv4NodeSid" : 3,
+                "ipv4NodeSid" : 203,
                 "ipv4Loopback" : "192.168.0.3",
                 "routerMac" : "10:00:00:00:00:03",
                 "isEdgeRouter" : true,
@@ -119,7 +119,7 @@
             "basic":{ "driver" : "ofdpa-ovs" },
             "segmentrouting" : {
                 "name" : "Leaf-R4",
-                "ipv4NodeSid" : 4,
+                "ipv4NodeSid" : 204,
                 "ipv4Loopback" : "192.168.0.4",
                 "routerMac" : "10:00:00:00:00:04",
                 "isEdgeRouter" : true,
@@ -218,24 +218,6 @@
             "basic": {
                 "ips": ["10.0.4.2"],
                 "locations": ["of:0000000000000004/2"]
-            }
-        }
-    },
-    "apps": {
-        "org.onosproject.segmentrouting": {
-            "xconnect": {
-                "of:0000000000000001": [
-                    {
-                        "vlan": 5,
-                        "ports": [5,7],
-                        "name": "OLT 1"
-                    },
-                    {
-                        "vlan": 10,
-                        "ports": [5,8],
-                        "name": "OLT 2"
-                    }
-                ]
             }
         }
     }

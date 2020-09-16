@@ -21,8 +21,8 @@
         <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
-        <trellisOar>/home/sdn/segmentrouting-oar-3.0.0-SNAPSHOT.oar</trellisOar>
-        <t3Oar>/home/sdn/t3-app-3.0.0-SNAPSHOT.oar</t3Oar>
+        <trellisOar>/home/sdn/segmentrouting-app-3.0.1-SNAPSHOT.oar</trellisOar>
+        <t3Oar>/home/sdn/t3-app-4.0.0-SNAPSHOT.oar</t3Oar>
     </DEPENDENCY>
 
     <jsonFileSuffix>.hw</jsonFileSuffix>

@@ -47,6 +47,8 @@ class SRHAFuncs():
             run.loadJson( main )
             run.loadChart( main )
             run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+            # xconnects need to be loaded after topology
+            run.loadXconnects( main )
             # pre-configured routing and bridging test
             run.checkFlows( main, minFlowCount=minFlow )
             run.pingAll( main )

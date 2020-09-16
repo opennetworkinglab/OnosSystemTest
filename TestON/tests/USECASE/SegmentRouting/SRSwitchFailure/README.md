@@ -12,5 +12,5 @@ Requirements
  - An updated version of the CPQD switch has to be running to make sure it supports group chaining.
 
 The test is executed using the netcfg subsystem:
-    1) APPS=openflow-base,netcfghostprovider,netcfglinksprovider
+    1) APPS=openflow-base,netcfghostprovider,lldpprovider
 The topology is a 2x2 Leaf-spine

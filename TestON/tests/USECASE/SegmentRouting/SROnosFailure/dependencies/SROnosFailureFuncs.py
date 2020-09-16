@@ -55,6 +55,8 @@ class SROnosFailureFuncs():
                 # Run the test with physical devices
                 # TODO: connect TestON to the physical network
                 pass
+            # xconnects need to be loaded after topology
+            run.loadXconnects( main )
             # pre-configured routing and bridging test
             run.checkFlows( main, minFlowCount=minFlow )
             run.pingAll( main, 'CASE{}'.format( caseNum ) )

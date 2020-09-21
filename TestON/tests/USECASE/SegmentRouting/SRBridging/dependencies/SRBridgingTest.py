@@ -47,7 +47,7 @@ class SRBridgingTest ():
             if not hasattr( main, 'apps' ):
                 init = True
                 run.initTest( main )
-            # Skip onos packaging if the clusrer size stays the same
+            # Skip onos packaging if the cluster size stays the same
             if not init and onosNodes == main.Cluster.numCtrls:
                 skipPackage = True
 

@@ -605,6 +605,21 @@ class Cluster():
                 result = result and t.result
         return result
 
+    def startONOSDockerNode( self, node ):
+        """
+        Description:
+            Installing onos via docker container on a specific node.
+        Required:
+            * node - the node to install ONOS on, given in index of runningNodes
+        Returns:
+            Returns main.TRUE if it successfully installed
+        """
+        ctrl = self.runningNodes[ node ]
+        result = ctrl.server.dockerRun( self.dockerImageTag,
+                                        ctrl.name,
+                                        options=self.dockerOptions )
+        return result
+
     def startAtomixDocker( self, installParallel=True ):
         """
         Description:

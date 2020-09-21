@@ -1,0 +1,102 @@
+<PARAMS>
+    <testcases>1,2,4,5</testcases>
+
+    <GRAPH>
+        <nodeCluster>Fabric</nodeCluster>
+        <builds>20</builds>
+        <jobName>SRLinkFailure-stratum</jobName>
+    </GRAPH>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <useCommonConf>True</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix>bmv2</switchPrefix>
+        <stratumRoot>~/stratum</stratumRoot>
+        <topology>cord_fabric.py</topology>
+        <lib>routinglib.py,trellislib.py,stratum.py</lib>
+        <conf>bgpdbgp1.conf,bgpdbgp2.conf,bgpdr1.conf,bgpdr2.conf,dhcpd6.conf,dhcpd.conf,zebradbgp1.conf,zebradbgp2.conf</conf>
+    </DEPENDENCY>
+
+    <MN_DOCKER>
+        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom:/home/root/mininet/custom -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum:/tmp -v /tmp/mn_conf/:/home/root/config --hostname mn-stratum -v /etc/network/interfaces:/etc/network/interfaces -it -d</args>
+        <name>trellis_mininet</name>
+        <home>/home/root/</home>
+    </MN_DOCKER>
+
+    <CLUSTER>
+        # Params for onos docker
+        <dockerSkipBuild>True</dockerSkipBuild>
+        <dockerBuildCmd>make ONOS_VERSION=onos-2.2 DOCKER_TAG=TestON-onos-2.2 onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
+        <dockerBuildTimeout>1200</dockerBuildTimeout>
+        <dockerFilePath>~/tost-onos</dockerFilePath>
+        <dockerImageTag>tost:TestON-onos-2.2</dockerImageTag>
+        <dockerOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/cluster.json:/root/onos/config/cluster.json </dockerOptions> # We start the container detached, so the docker component can connect to cli instead of logs
+        <atomixImageTag>atomix/atomix:3.1.5</atomixImageTag>
+        <atomixOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/atomix.json:/opt/atomix/conf/atomix.json </atomixOptions>
+    </CLUSTER>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,hostprovider,netcfghostprovider,lldpprovider,drivers.bmv2,pipelines.fabric,segmentrouting,t3 </cellApps>
+    </ENV>
+
+    <ONOS_Configuration>
+        <org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
+            <enableMessageLog>true</enableMessageLog>
+        </org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
+    </ONOS_Configuration>
+
+    <ONOS_Logging>
+        <org.onosproject.events>TRACE</org.onosproject.events>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.driver>DEBUG</org.onosproject.driver>
+        <org.onosproject.net.flowobjective.impl>DEBUG</org.onosproject.net.flowobjective.impl>
+        <org.onosproject.routeservice.impl>DEBUG</org.onosproject.routeservice.impl>
+        <org.onosproject.routeservice.store>DEBUG</org.onosproject.routeservice.store>
+        <org.onosproject.routing.fpm>DEBUG</org.onosproject.routing.fpm>
+        <org.onosproject.fpm>DEBUG</org.onosproject.fpm>
+        <org.onosproject.mcast>DEBUG</org.onosproject.mcast>
+        <org.onosproject.p4runtime>DEBUG</org.onosproject.p4runtime>
+        <org.onosproject.protocols.p4runtime>DEBUG</org.onosproject.protocols.p4runtime>
+        <org.onosproject.drivers.p4runtime>DEBUG</org.onosproject.drivers.p4runtime>
+        <org.onosproject.protocols.grpc>DEBUG</org.onosproject.protocols.grpc>
+        <org.onosproject.protocols.gnmi>DEBUG</org.onosproject.protocols.gnmi>
+        <org.onosproject.protocols.gnoi>DEBUG</org.onosproject.protocols.gnoi>
+        <org.onosproject.drivers.gnoi>DEBUG</org.onosproject.drivers.gnoi>
+        <org.onosproject.drivers.gmni>DEBUG</org.onosproject.drivers.gmni>
+        <org.onosproject.drivers.stratum>DEBUG</org.onosproject.drivers.stratum>
+        <org.onosproject.bmv2>DEBUG</org.onosproject.bmv2>
+    </ONOS_Logging>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>onos-2.2</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+    </timers>
+
+    <kill>
+        <switch> spine101 </switch>
+        <dpid> 000000000101 </dpid>
+        <links> leaf1 leaf2 </links>
+    </kill>
+
+    <SLEEP>
+        <startup>10</startup>
+    </SLEEP>
+
+</PARAMS>

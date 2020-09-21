@@ -1306,23 +1306,26 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
-            cmdStr = "onos-die " + str( nodeIp )
-            self.handle.sendline( cmdStr )
-            i = self.handle.expect( [
-                "Killing\sONOS",
-                "ONOS\sprocess\sis\snot\srunning",
-                pexpect.TIMEOUT ], timeout=60 )
-            if i == 0:
-                main.log.info( self.name + ": ONOS instance " + str( nodeIp ) +
-                               " was killed and stopped" )
-                self.handle.sendline( "" )
-                self.handle.expect( self.prompt )
-                return main.TRUE
-            elif i == 1:
-                main.log.info( self.name + ": ONOS process was not running" )
-                self.handle.sendline( "" )
-                self.handle.expect( self.prompt )
-                return main.FALSE
+            if self.inDocker:
+                return self.dockerStop( self.name )
+            else:
+                cmdStr = "onos-die " + str( nodeIp )
+                self.handle.sendline( cmdStr )
+                i = self.handle.expect( [
+                    "Killing\sONOS",
+                    "ONOS\sprocess\sis\snot\srunning",
+                    pexpect.TIMEOUT ], timeout=60 )
+                if i == 0:
+                    main.log.info( self.name + ": ONOS instance " + str( nodeIp ) +
+                                   " was killed and stopped" )
+                    self.handle.sendline( "" )
+                    self.handle.expect( self.prompt )
+                    return main.TRUE
+                elif i == 1:
+                    main.log.info( self.name + ": ONOS process was not running" )
+                    self.handle.sendline( "" )
+                    self.handle.expect( self.prompt )
+                    return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

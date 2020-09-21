@@ -720,20 +720,23 @@ class Testcaselib:
         main.step( "Kill link between %s and %s" % ( end1, end2 ) )
         linkDown = main.Network.link( END1=end1, END2=end2, OPTION="down" )
         linkDown = linkDown and main.Network.link( END2=end1, END1=end2, OPTION="down" )
+        utilities.assert_equals( expect=main.TRUE, actual=linkDown,
+                                 onpass="Link down successful",
+                                 onfail="Failed to turn off link?" )
         # TODO: Can remove this, since in the retry we will wait anyways if topology is incorrect
         main.log.info(
                 "Waiting %s seconds for link down to be discovered" % sleep )
         time.sleep( sleep )
+        main.step( "Checking topology after link down" )
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links },
                                     attempts=10,
                                     sleep=sleep )
-        result = topology and linkDown
-        utilities.assert_equals( expect=main.TRUE, actual=result,
-                                 onpass="Link down successful",
-                                 onfail="Failed to turn off link?" )
+        utilities.assert_equals( expect=main.TRUE, actual=topology,
+                                 onpass="Topology after link down is correct",
+                                 onfail="Topology after link down is incorrect" )
 
     @staticmethod
     def killLinkBatch( main, links, linksAfter, switches, sleep=None ):
@@ -1092,12 +1095,18 @@ class Testcaselib:
         else:
             sleep = float( sleep )
 
+        stepResult = main.TRUE
         for i in nodes:
-            killResult = main.ONOSbench.onosDie( main.Cluster.runningNodes[ i ].ipAddress )
-            utilities.assert_equals( expect=main.TRUE, actual=killResult,
-                                     onpass="ONOS instance Killed",
-                                     onfail="Error killing ONOS instance" )
+            node = main.Cluster.runningNodes[ i ]
+            if node.inDocker:
+                killResult = node.server.dockerStop( node.name )
+            else:
+                killResult = main.ONOSbench.onosDie( node.ipAddress )
+            stepResult = stepResult and killResult
             main.Cluster.runningNodes[ i ].active = False
+        utilities.assert_equals( expect=main.TRUE, actual=stepResult,
+                                 onpass="ONOS instance Killed",
+                                 onfail="Error killing ONOS instance" )
         main.Cluster.reset()
         main.log.debug( "sleeping %i seconds" % ( sleep ) )
         time.sleep( sleep )
@@ -1118,11 +1127,22 @@ class Testcaselib:
             sleep = float( main.params[ 'timers' ][ 'OnosDiscovery' ] )
         else:
             sleep = float( sleep )
-        [ main.ONOSbench.onosStart( main.Cluster.runningNodes[ i ].ipAddress ) for i in nodes ]
+        for i in nodes:
+            node = main.Cluster.runningNodes[ i ]
+            if node.inDocker:
+                main.Cluster.startONOSDockerNode( i )
+            else:
+                main.ONOSbench.onosStart( node.ipAddress )
         main.log.debug( "sleeping %i seconds" % ( sleep ) )
         time.sleep( sleep )
         for i in nodes:
-            isUp = main.ONOSbench.isup( main.Cluster.runningNodes[ i ].ipAddress )
+            node =  main.Cluster.runningNodes[ i ]
+            if node.inDocker:
+                isUp = node.CLI.dockerExec( node.name, dockerPrompt=node.dockerPrompt )
+                isUp = isUp and node.CLI.prepareForCLI()
+                isUp = isUp and node.CLI.onosSecureSSH( userName=node.karafUser, userPWD=node.karafPass )
+            else:
+                isUp = main.ONOSbench.isup( node.ipAddress )
             utilities.assert_equals( expect=main.TRUE, actual=isUp,
                                      onpass="ONOS service is ready",
                                      onfail="ONOS service did not start properly" )

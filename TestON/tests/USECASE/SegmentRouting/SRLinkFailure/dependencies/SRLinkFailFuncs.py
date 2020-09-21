@@ -20,6 +20,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
+import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
 
 class SRLinkFailFuncs():
 
@@ -29,6 +30,7 @@ class SRLinkFailFuncs():
         self.topo[ '0x1' ] = ( 0, 1, '--leaf=1 --spine=0', 'single switch' )
         self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
         self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
+        main.switchType = "ovs"
         self.switchOne = 'spine101'
         self.switchTwo = 'leaf2'
         self.dpidOne = 'of:0000000000000101'
@@ -38,18 +40,46 @@ class SRLinkFailFuncs():
 
     def runTest( self, main, caseNum, numNodes, Topo, minFlow ):
         try:
-            if not hasattr( main, 'apps' ):
-                run.initTest( main )
-
             description = "Bridging and Routing Link Failure test with " + self.topo[ Topo ][ 3 ] + " and {} Onos".format( numNodes )
             main.case( description )
-
+            if not hasattr( main, 'apps' ):
+                run.initTest( main )
             main.cfgName = Topo
             main.Cluster.setRunningNode( numNodes )
             run.installOnos( main )
-            run.loadJson( main )
+            suf = main.params.get( 'jsonFileSuffix', '')
+            xconnectFile = "%s%s-xconnects.json%s" % ( main.configPath + main.forJson,
+                    main.cfgName, suf )
+            if main.useBmv2:
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                # Translate configuration file from OVS-OFDPA to BMv2 driver
+                translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+                translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
+                # translate xconnects
+                translator.bmv2ToOfdpa( main, cfgFile=xconnectFile )
+                translator.ofdpaToBmv2( main, cfgFile=xconnectFile, switchPrefix=switchPrefix )
+            else:
+                translator.bmv2ToOfdpa( main )
+                translator.bmv2ToOfdpa( main, cfgFile=xconnectFile )
+            if suf:
+                run.loadJson( main, suffix=suf )
+            else:
+                run.loadJson( main )
             run.loadChart( main )
-            run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+            if hasattr( main, 'Mininet1' ):
+                run.mnDockerSetup( main )  # optionally create and setup docker image
+
+                # Run the test with Mininet
+                mininet_args = self.topo[ Topo ][ 2 ]
+                if main.useBmv2:
+                    mininet_args += ' --switch %s' % main.switchType
+                    main.log.info( "Using %s switch" % main.switchType )
+
+                run.startMininet( main, 'cord_fabric.py', args=mininet_args )
+            else:
+                # Run the test with physical devices
+                # TODO: connect TestON to the physical network
+                pass
             # xconnects need to be loaded after topology
             run.loadXconnects( main )
             # pre-configured routing and bridging test

@@ -20,6 +20,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
+import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
 
 class SROnosFailureFuncs():
 
@@ -29,6 +30,7 @@ class SROnosFailureFuncs():
         self.topo[ '0x1' ] = ( 0, 1, '--leaf=1 --spine=0', 'single switch' )
         self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
         self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
+        main.switchType = "ovs"
 
     def runTest( self, main, caseNum, numNodes, Topo, minFlow, killList=[ 0 ] ):
         try:
@@ -39,7 +41,24 @@ class SROnosFailureFuncs():
             main.cfgName = Topo
             main.Cluster.setRunningNode( numNodes )
             run.installOnos( main )
-            run.loadJson( main )
+            suf = main.params.get( 'jsonFileSuffix', '')
+            xconnectFile = "%s%s-xconnects.json%s" % ( main.configPath + main.forJson,
+                    main.cfgName, suf )
+            if main.useBmv2:
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                # Translate configuration file from OVS-OFDPA to BMv2 driver
+                translator.bmv2ToOfdpa( main ) # Try to cleanup if switching between switch types
+                translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
+                # translate xconnects
+                translator.bmv2ToOfdpa( main, cfgFile=xconnectFile )
+                translator.ofdpaToBmv2( main, cfgFile=xconnectFile, switchPrefix=switchPrefix )
+            else:
+                translator.bmv2ToOfdpa( main )
+                translator.bmv2ToOfdpa( main, cfgFile=xconnectFile )
+            if suf:
+                run.loadJson( main, suffix=suf )
+            else:
+                run.loadJson( main )
             run.loadChart( main )
             if hasattr( main, 'Mininet1' ):
                 run.mnDockerSetup( main )  # optionally create and setup docker image

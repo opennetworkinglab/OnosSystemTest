@@ -1349,6 +1349,66 @@
         "category": "SR-StratumBMv2",
         "supportedBranches": [ "onos-2.x", "master" ]
     },
+    "SRDynamicConf-stratum": {
+        "test": "SRDynamicConf",
+        "arguments": "--params-file SRDynamicConf.params.stratum --topo-file SRDynamicConf.topo.docker",
+        "wikiName": "SR Dynamic Config with Stratum BMv2 switches",
+        "wikiFile": "SRDynamicConfWiki.txt",
+        "schedules": [
+            {
+                "branch": "master",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-master"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-2.x"
+            }
+        ],
+        "category": "SR-StratumBMv2",
+        "supportedBranches": [ "onos-2.x", "master" ]
+    },
+    "SRLinkFailure-stratum": {
+        "test": "SRLinkFailure",
+        "arguments": "--params-file SRLinkFailure.params.stratum --topo-file SRLinkFailure.topo.docker",
+        "wikiName": "SR Link Failure with Stratum BMv2 switches",
+        "wikiFile": "SRLinkFailureWiki.txt",
+        "schedules": [
+            {
+                "branch": "master",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-master"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-2.x"
+            }
+        ],
+        "category": "SR-StratumBMv2",
+        "supportedBranches": [ "onos-2.x", "master" ]
+    },
+    "SROnosFailure-stratum": {
+        "test": "SROnosFailure",
+        "arguments": "--params-file SROnosFailure.params.stratum --topo-file SROnosFailure.topo.docker",
+        "wikiName": "SR Onos node Failure with Stratum BMv2 switches",
+        "wikiFile": "SROnosFailureWiki.txt",
+        "schedules": [
+            {
+                "branch": "master",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-master"
+            },
+            {
+                "branch": "onos-2.x",
+                "day": "weekdays",
+                "nodeLabel": "Fabric-2.x"
+            }
+        ],
+        "category": "SR-StratumBMv2",
+        "supportedBranches": [ "onos-2.x", "master" ]
+    },
     "SRBridging-stratum": {
         "test": "SRBridging",
         "arguments": "--params-file SRBridging.params.stratum --topo-file SRBridging.topo.docker",

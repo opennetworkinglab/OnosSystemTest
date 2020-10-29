@@ -23,7 +23,7 @@ import json
 """
     Warp function for SCPFportLat test
 """
-def capturePortStatusPack( main, deviceName, interface, portStatus, resultDict, warmup ):
+def capturePortStatusPack( main, deviceName, interface, portStatus, resultDict, warmup, tsharkInterface ):
     """
     Change device port status and use tshark to capture openflow port package
     Args:
@@ -33,13 +33,14 @@ def capturePortStatusPack( main, deviceName, interface, portStatus, resultDict, 
         portStatus: up or down
         resultDict: put result to dictionary
         warmup: if warmup, ignore results
+        tsharkInterface: name of interface which tshark listens to
 
     """
     main.log.info( "Clean up tshark" )
     with open( main.tsharkResultPath, "w" ) as tshark:
         tshark.write( "" )
     main.log.info( "Starting tshark capture" )
-    main.ONOSbench.tsharkGrep( main.ofportStatus, main.tsharkResultPath )
+    main.ONOSbench.tsharkGrep( main.ofportStatus, main.tsharkResultPath, interface=tsharkInterface )
     time.sleep( main.measurementSleep )
     main.log.info( "{} port {} {}".format( deviceName, interface, portStatus ) )
     main.Mininet1.changeInterfaceStatus( deviceName, interface, portStatus )

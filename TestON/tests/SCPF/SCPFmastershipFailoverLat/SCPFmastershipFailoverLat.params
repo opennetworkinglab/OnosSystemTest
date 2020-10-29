@@ -24,6 +24,7 @@
     </GIT>
 
     <TSHARK>
+        <tsharkInterface>lo</tsharkInterface>
         <tsharkResultPath>/tmp/tshark_mastership_failover</tsharkResultPath>
         <ofpRoleRequest>OpenFlow 90 Type: OFPT_ROLE_REQUEST</ofpRoleRequest>
     </TSHARK>

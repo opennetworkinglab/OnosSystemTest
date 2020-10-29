@@ -49,6 +49,7 @@
     </BENCH>
 
     <TSHARK>
+        <tsharkInterface>lo</tsharkInterface>
         <up>
             <TCP>6653\ \[SYN\]</TCP> #1
             <RQ>OpenFlow 90 Type: OFPT_ROLE_REQUEST</RQ> #2

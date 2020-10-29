@@ -70,6 +70,7 @@ class SCPFswitchLat:
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
 
             main.ofPackage = main.params[ 'TSHARK' ]
+            main.tsharkInterface = main.params[ 'TSHARK' ][ 'tsharkInterface' ]
             main.defaultTopoCfg = main.params[ 'CFG' ][ 'defaultTopo' ]
             main.tsharkResultPath = main.params[ 'TEST' ][ 'tsharkResultPath' ]
             main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
@@ -165,9 +166,9 @@ class SCPFswitchLat:
             main.log.info( "************************ Iteration: {} **********************" .format( str( i + 1 ) ) )
             if i < main.warmUp:
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
-                                               "up", resultDict, True )
+                                               "up", resultDict, True, main.tsharkInterface )
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
-                                               "down", resultDict, True )
+                                               "down", resultDict, True, main.tsharkInterface )
                 main.log.debug( "Before devices : " + str( main.Cluster.active( 0 ).CLI.devices() ) )
                 main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
                 main.log.debug( "After devices : " + str( main.Cluster.active( 0 ).CLI.devices() ) )
@@ -176,9 +177,9 @@ class SCPFswitchLat:
                     main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
             else:
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
-                                               "up", resultDict, False )
+                                               "up", resultDict, False, main.tsharkInterface )
                 main.switchFunc.captureOfPack( main, main.device, main.ofPackage,
-                                                "down", resultDict, False )
+                                                "down", resultDict, False, main.tsharkInterface )
                 main.log.debug( "Before devices : " + str( main.Cluster.active( 0 ).CLI.devices() ) )
                 main.Cluster.active( 0 ).CLI.removeDevice( "of:0000000000000001" )
                 main.log.debug("After devices : " + str(main.Cluster.active(0).CLI.devices()))

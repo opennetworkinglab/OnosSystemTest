@@ -62,6 +62,7 @@ class SCPFhostLat:
             # Tshark params
             main.tsharkResultPath = main.params[ 'TSHARK' ][ 'tsharkPath' ]
             main.tsharkPacketIn = main.params[ 'TSHARK' ][ 'tsharkPacketIn' ]
+            main.tsharkInterface = main.params[ 'TSHARK' ][ 'tsharkInterface' ]
 
             main.numlter = main.params[ 'TEST' ][ 'numIter' ]
             main.iterIgnore = int( main.params[ 'TEST' ][ 'iterIgnore' ] )
@@ -189,7 +190,7 @@ class SCPFhostLat:
                 dbFile.write( "" )
 
             main.log.info( 'Starting tshark capture' )
-            main.ONOSbench.tsharkGrep( main.tsharkPacketIn, main.tsharkResultPath )
+            main.ONOSbench.tsharkGrep( main.tsharkPacketIn, main.tsharkResultPath, interface=main.tsharkInterface )
             time.sleep( main.measurementSleep )
 
             main.log.info( 'host 1 arping...' )

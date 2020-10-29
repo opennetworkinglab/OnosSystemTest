@@ -51,6 +51,10 @@
         <numCtrls>3</numCtrls>
     </CTRL>
 
+    <TSHARK>
+        <tsharkInterface>lo</tsharkInterface>
+    </TSHARK>
+
     <SLEEP>
         <startup>15</startup>
         <balance>10</balance>

@@ -32,6 +32,7 @@
         <defaultTopo>org.onosproject.net.topology.impl.DefaultTopologyProvider</defaultTopo>
     </CFG>
     <TSHARK>
+        <tsharkInterface>lo</tsharkInterface>
         <tsharkReusltPath>/tmp/tshark_portStatus</tsharkReusltPath>
         <ofpPortStatus>OpenFlow 146 Type: OFPT_PORT_STATUS</ofpPortStatus>
     </TSHARK>

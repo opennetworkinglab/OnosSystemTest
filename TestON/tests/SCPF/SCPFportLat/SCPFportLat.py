@@ -62,6 +62,7 @@ class SCPFportLat:
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.ofportStatus = main.params[ 'TSHARK' ][ 'ofpPortStatus' ]
             main.tsharkResultPath = main.params[ 'TSHARK' ][ 'tsharkReusltPath' ]
+            main.tsharkInterface = main.params[ 'TSHARK' ][ 'tsharkInterface' ]
             main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
             main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
             main.maxProcessTime = int( main.params[ 'TEST' ][ 'maxProcessTime' ] )
@@ -160,7 +161,8 @@ class SCPFportLat:
                                                      main.interface,
                                                      "down",
                                                      resultDict,
-                                                     False )
+                                                     False,
+                                                     main.tsharkInterface )
                 time.sleep( 2 )
                 # PortUp iteration
                 main.portFunc.capturePortStatusPack( main,
@@ -168,7 +170,8 @@ class SCPFportLat:
                                                      main.interface,
                                                      "up",
                                                      resultDict,
-                                                     False )
+                                                     False,
+                                                     main.tsharkInterface )
             else:
                 # if warm up, keep old result dictionary
                 main.portFunc.capturePortStatusPack( main,
@@ -176,13 +179,15 @@ class SCPFportLat:
                                                      main.interface,
                                                      "down",
                                                      resultDict,
-                                                     True )
+                                                     True,
+                                                     main.tsharkInterface )
                 main.portFunc.capturePortStatusPack( main,
                                                      main.device,
                                                      main.interface,
                                                      "up",
                                                      resultDict,
-                                                     True )
+                                                     True,
+                                                     main.tsharkInterface )
 
         # Dictionary for result
         maxDict = {}

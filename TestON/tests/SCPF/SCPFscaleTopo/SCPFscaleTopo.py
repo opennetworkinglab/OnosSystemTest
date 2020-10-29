@@ -80,6 +80,7 @@ class SCPFscaleTopo:
             main.MNupdateTime = int( main.params[ 'TIMEOUT' ][ 'update' ] )
             main.MNLinksTime = int( main.params[ 'TIMEOUT' ][ 'links' ] )
             main.getTopoTime = int( main.params[ 'TIMEOUT' ][ 'getTopo' ] )
+            main.tsharkInterface = main.params[ 'TSHARK' ][ 'tsharkInterface' ]
             main.currScale = None
             main.maxScale = 1
             main.threadID = 0
@@ -190,7 +191,7 @@ class SCPFscaleTopo:
         with open( main.tsharkResultPath, "w" ) as tshark:
             tshark.write( "" )
         main.log.info( "Starting Tshark capture" )
-        main.ONOSbench.tsharkGrep( main.roleRequest, main.tsharkResultPath, grepOptions='-E' )
+        main.ONOSbench.tsharkGrep( main.roleRequest, main.tsharkResultPath, interface=main.tsharkInterface, grepOptions='-E' )
         main.Cluster.active( 0 ).CLI.activateApp( "org.onosproject.openflow" )
         time.sleep( main.MNSleep )
         main.log.info( "Stop Tshark" )

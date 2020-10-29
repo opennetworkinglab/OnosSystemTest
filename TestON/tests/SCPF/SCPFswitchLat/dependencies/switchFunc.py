@@ -151,7 +151,7 @@ def checkTotalWrongNum():
         main.cleanAndExit()
 
 
-def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
+def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup, tsharkInterface ):
     """
     Args:
         main: TestON class
@@ -180,7 +180,7 @@ def captureOfPack( main, deviceName, ofPack, switchStatus, resultDict, warmup ):
     grepString = grepString[ :-1 ]
     # open tshark
     main.log.info( "starting tshark capture" )
-    main.ONOSbench.tsharkGrep( grepString, main.tsharkResultPath[ switchStatus ][ 'ALL' ], grepOptions='-E' )
+    main.ONOSbench.tsharkGrep( grepString, main.tsharkResultPath[ switchStatus ][ 'ALL' ], interface=tsharkInterface, grepOptions='-E' )
     if switchStatus == 'up':
         # if up, assign switch to controller
         time.sleep( main.measurementSleep )

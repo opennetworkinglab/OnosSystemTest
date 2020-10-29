@@ -50,6 +50,7 @@ class SCPFmastershipFailoverLat:
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.ofpRoleRequest = main.params[ 'TSHARK' ][ 'ofpRoleRequest' ]
             main.tsharkResultPath = main.params[ 'TSHARK' ][ 'tsharkResultPath' ]
+            main.tsharkInterface = main.params[ 'TSHARK' ][ 'tsharkInterface' ]
             main.sampleSize = int( main.params[ 'TEST' ][ 'sampleSize' ] )
             main.warmUp = int( main.params[ 'TEST' ][ 'warmUp' ] )
             main.dbFileName = main.params[ 'DATABASE' ][ 'dbName' ]
@@ -153,7 +154,7 @@ class SCPFmastershipFailoverLat:
             with open( main.tsharkResultPath, "w" ) as tshark:
                 tshark.write( "" )
             main.log.info( "Starting tshark capture." )
-            main.ONOSbench.tsharkGrep( main.ofpRoleRequest, main.tsharkResultPath )
+            main.ONOSbench.tsharkGrep( main.ofpRoleRequest, main.tsharkResultPath, interface=main.tsharkInterface )
             time1 = time.time() * 1000.0
 
             # Kill an ONOS node

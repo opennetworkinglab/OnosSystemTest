@@ -35,6 +35,7 @@
     </SLEEP>
 
     <TSHARK>
+        <tsharkInterface>lo</tsharkInterface>
         <tsharkPath>/tmp/hostLatTshark</tsharkPath>
         <tsharkPacketIn>OpenFlow 150 Type: OFPT_PACKET_IN</tsharkPacketIn>
     </TSHARK>

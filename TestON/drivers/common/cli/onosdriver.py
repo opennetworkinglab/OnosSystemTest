@@ -2574,7 +2574,7 @@ class OnosDriver( CLI ):
 
         return main.TRUE if onosStatus else main.FALSE
 
-    def onosNetCfg( self, controllerIp, path, fileName, user=None, password=None):
+    def onosNetCfg( self, controllerIp, path, fileName, user=None, password=None ):
         """
         Push a specified json file to ONOS through the onos-netcfg service
 
@@ -2967,7 +2967,8 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def onosApp( self, onosIP, option, fileName, filePath='~/onos/'):
+    def onosApp( self, onosIP, option, fileName, filePath='~/onos/',
+                 appName=None, user=None, password=None ):
         """
         Wrapper for onos-app script
 
@@ -2977,14 +2978,21 @@ class OnosDriver( CLI ):
             [ list|install|install!|reinstall|reinstall!|activate|deactivate|uninstall ]
         - fileName - The name of the app file
         Optional Arguments:
+        - appName - The name of the app, some options require this
         - filePath - The location of the file
+        - user - ONOS cli user
+        - password - ONOS cli password
 
         Returns main.TRUE on successfully executing the command, and main.FALSE if
         there is an error.
         """
         # FIXME: Not all options may work, more testing is required, only tested with install(!)
         try:
-            cmd = "onos-app %s %s %s/%s" % ( onosIP, option, filePath, fileName )
+            cmd = "onos-app %s %s %s %s/%s" % ( onosIP, option, appName if "reinstall" in option else "", filePath, fileName )
+            if user:
+                cmd += " -u %s" % user
+            if password:
+                cmd += " -p %s" % password
             main.log.info( self.name + ": Sending: " + cmd )
             self.handle.sendline( cmd )
             self.handle.expect( self.prompt )

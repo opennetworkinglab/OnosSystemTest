@@ -82,17 +82,20 @@ class SRLinkFailFuncs():
                 pass
             # xconnects need to be loaded after topology
             run.loadXconnects( main )
+            switches = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
+            links = ( self.topo[ Topo ][ 0 ] * self.topo[ Topo ][ 1 ] ) * 2
             # pre-configured routing and bridging test
+            run.verifyTopology( main, switches, links, numNodes )
             run.checkFlows( main, minFlowCount=minFlow )
-            run.pingAll( main )
-            switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
-            link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
+            run.pingAll( main, 'CASE{}'.format( caseNum ) )
             # link failure
-            run.killLink( main, self.switchOne, self.switchTwo, switches='{}'.format( switch ), links='{}'.format( link - 2 ) )
-            run.pingAll( main, "CASE{}_Failure".format( caseNum ) )
-            run.restoreLink( main, self.switchOne, self.switchTwo, '{}'.format( switch ), '{}'.format( link ),
+            run.killLink( main, self.switchOne, self.switchTwo, switches='{}'.format( switches ), links='{}'.format( links - 2 ) )
+            run.pingAll( main, 'CASE{}_Failure'.format( caseNum ) )
+            run.restoreLink( main, self.switchOne, self.switchTwo, '{}'.format( switches ), '{}'.format( links ),
                              True, self.dpidOne, self.dpidTwo, self.portOne, self.portTwo )
-            run.pingAll( main, "CASE{}_Recovery".format( caseNum ) )
+            run.checkFlows( main, minFlowCount=minFlow, tag='CASE{}_Recovery'.format( caseNum ) )
+            run.pingAll( main, 'CASE{}_Recovery'.format( caseNum ) )
+            run.verifyTopology( main, switches, links, numNodes )
             # TODO Dynamic config of hosts in subnet
             # TODO Dynamic config of host not in subnet
             # TODO Dynamic config of vlan xconnect

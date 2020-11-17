@@ -2689,7 +2689,7 @@ class OnosCliDriver( CLI ):
         count = self.getTotalFlowsNum( timeout=timeout )
         count = int( count ) if count else 0
         main.log.debug( "found {} flows".format( count ) )
-        return count if ( count > min ) else False
+        return count if ( count >= min ) else False
 
     def checkFlowsState( self, isPENDING=True, timeout=60, noExit=False ):
         """
@@ -3133,7 +3133,7 @@ class OnosCliDriver( CLI ):
         count = self.flowAddedCount( deviceId, core )
         count = int( count ) if count else 0
         main.log.debug( "found {} flows".format( count ) )
-        return count if ((count > expectedFlowCount) if (comparison == 0) else (count == expectedFlowCount)) else main.FALSE
+        return count if ((count >= expectedFlowCount) if (comparison == 0) else (count == expectedFlowCount)) else main.FALSE
 
     def getAllDevicesId( self ):
         """
@@ -3261,7 +3261,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def checkStatus( self, numoswitch, numolink = -1, numoctrl = -1, logLevel="info" ):
+    def checkStatus( self, numoswitch, numolink = -1, numoctrl = -1, numoSCCs=1, logLevel="info" ):
         """
         Checks the number of switches & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
@@ -3270,6 +3270,7 @@ class OnosCliDriver( CLI ):
         Params: numoswitch = expected number of switches
                 numolink = expected number of links
                 numoctrl = expected number of controllers
+                numoSCCs = Number of expected SCCs
                 logLevel = level to log to.
                 Currently accepts 'info', 'warn' and 'report'
 
@@ -3292,36 +3293,52 @@ class OnosCliDriver( CLI ):
             devices = topology.get( 'devices', False )
             links = topology.get( 'links', False )
             nodes = summary.get( 'nodes', False )
-            if devices is False or links is False or nodes is False:
+            SCCs = summary.get( 'SCC(s)', False )
+            if devices is False or links is False or nodes is False or SCCs is False:
+                main.log.warn( "Issues parsing topology and summary output" )
+                main.log.debug( topology )
+                main.log.debug( summary )
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )
-            # Is the number of links is what we expected
+            if not switchCheck:
+                main.log.debug( "switch Check Failed" )
             linkCheck = ( int( links ) == int( numolink ) ) or int( numolink ) == -1
+            if not linkCheck:
+                main.log.debug( "link Check Failed" )
             nodeCheck = ( int( nodes ) == int( numoctrl ) ) or int( numoctrl ) == -1
-            if switchCheck and linkCheck and nodeCheck:
+            if not nodeCheck:
+                main.log.debug( "node Check Failed" )
+            SCCsCheck = ( int( SCCs ) == int( numoSCCs ) ) or int( numoSCCs ) == -1
+            if not SCCsCheck:
+                main.log.debug( "SCCs Check Failed" )
+            if switchCheck and linkCheck and nodeCheck and SCCsCheck:
                 # We expected the correct numbers
-                output = output + "The number of links and switches match "\
+                output = output + "The number of links, switches, nodes, and SCCs match "\
                     + "what was expected"
                 result = main.TRUE
             else:
                 output = output + \
-                    "The number of links and switches does not match " + \
+                    "The number of links, switches, nodes, and SCCs  does not match " + \
                     "what was expected"
                 result = main.FALSE
-            output = output + "\n ONOS sees %i devices" % int( devices )
-            output = output + " (%i expected) " % int( numoswitch )
-            if int( numolink ) > 0:
+            output = output + "\n ONOS sees %i devices " % int( devices )
+            output = output + "(%i expected) " % int( numoswitch )
+            if int( numolink ) >= 0:
                 output = output + "and %i links " % int( links )
-                output = output + "(%i expected)" % int( numolink )
-            if int( numoctrl ) > 0:
+                output = output + "(%i expected) " % int( numolink )
+            if int( numoctrl ) >= 0:
                 output = output + "and %i controllers " % int( nodes )
-                output = output + "(%i expected)" % int( numoctrl )
+                output = output + "(%i expected) " % int( numoctrl )
+            if int( numoSCCs ) >= 0:
+                output = output + "and %i SCCs " % int( SCCs )
+                output = output + "(%i expected)" % int( numoSCCs )
             if logLevel == "report":
                 main.log.report( output )
             elif logLevel == "warn":
                 main.log.warn( output )
             else:
                 main.log.info( output )
+            main.TOPOOUTPUT = output
             return result
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -6759,7 +6776,7 @@ class OnosCliDriver( CLI ):
             output = ""
             for cmdStr in cmdList:
                 self.handle.sendline( cmdStr )
-                self.handle.expect( self.dockerPrompt )
+                self.handle.expect( self.dockerPrompt, timeout=120 )
                 self.handle.sendline( "" )
                 self.handle.expect( self.dockerPrompt )
                 handle = self.handle.before

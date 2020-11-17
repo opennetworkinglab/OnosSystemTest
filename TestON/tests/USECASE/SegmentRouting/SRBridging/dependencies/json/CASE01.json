@@ -1,9 +1,7 @@
 {
     "devices":{
-        "of:0000000000000001":{
-            "basic":{
-                "driver":"ofdpa-ovs"
-            },
+        "device:tofino:leaf1":{
+            "basic":{},
             "segmentrouting":{
                 "adjacencySids":[],
                 "ipv4Loopback":"192.168.0.1",

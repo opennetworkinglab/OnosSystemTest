@@ -102,7 +102,7 @@ class SRRouting:
 
     def CASE9( self, main ):
         """
-        Ping between ipv4 and pv6 hosts and external hosts that is not configured in
+        Ping between ipv4 and ipv6 hosts and external hosts that is not configured in
         external router config, but reachable through the use of route-add
         command.
         """
@@ -1353,7 +1353,7 @@ class SRRouting:
 
     def CASE652( self, main ):
         """
-        Move a dual-homed host from porst 1A and 1B to ports 2A and 2B
+        Move a dual-homed host from ports 1A and 1B to ports 2A and 2B
         Host retains the same MAC and IP address
         Test connectivity (expect no failure)
         """

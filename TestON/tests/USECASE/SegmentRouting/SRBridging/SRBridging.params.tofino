@@ -21,25 +21,34 @@
         <stratumRoot>~/stratum</stratumRoot>
         <topology>trellis_fabric.py</topology>
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
-        <trellisOar>/home/sdn/segmentrouting-app-3.0.1-SNAPSHOT.oar</trellisOar>
-        <t3Oar>/home/sdn/t3-app-4.0.0-SNAPSHOT.oar</t3Oar>
     </DEPENDENCY>
 
     <jsonFileSuffix>.hw</jsonFileSuffix>
 
     <MN_DOCKER>
-        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom:/home/root/mininet/custom -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum:/tmp -v /tmp/mn_conf/:/home/root --hostname mn-stratum -v /etc/network/interfaces:/etc/network/interfaces -it -d</args>
+        <args>--privileged --net host --rm -v topo:/topo -v ~/mininet/custom:/home/root/mininet/custom -v /var/run/openvswitch/:/var/run/openvswitch/ -v /tmp/mn-stratum:/tmp -v /tmp/mn_conf/:/home/root/config --hostname mn-stratum -v /etc/network/interfaces:/etc/network/interfaces -it -d</args>
         <name>trellis_mininet</name>
         <home>/home/root/</home>
     </MN_DOCKER>
+    <CLUSTER>
+        # Params for onos docker
+        <dockerSkipBuild>True</dockerSkipBuild>
+        <dockerBuildCmd>make ONOS_VERSION=onos-2.2 DOCKER_TAG=TestON-onos-2.2 onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
+        <dockerBuildTimeout>1200</dockerBuildTimeout>
+        <dockerFilePath>~/tost-onos</dockerFilePath>
+        <dockerImageTag>registry.aetherproject.org/tost/tost:master</dockerImageTag>
+        <dockerOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/cluster.json:/root/onos/config/cluster.json </dockerOptions> # We start the container detached, so the docker component can connect to cli instead of logs
+        <atomixImageTag>atomix/atomix:3.1.5</atomixImageTag>
+        <atomixOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/atomix.json:/opt/atomix/conf/atomix.json </atomixOptions>
+    </CLUSTER>
+
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,segmentrouting,openflow,fpm,netcfghostprovider,drivers.bmv2,pipelines.fabric,drivers.barefoot</cellApps>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3</cellApps>
     </ENV>
 
     <EXTERNAL_APPS>
-        <fabric-tofino>https://oss.sonatype.org/content/groups/public/org/opencord/fabric-tofino/1.1.0/fabric-tofino-1.1.0.oar</fabric-tofino>
     </EXTERNAL_APPS>
 
     <ONOS_Configuration>

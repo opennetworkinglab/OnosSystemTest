@@ -14,33 +14,25 @@
     "devices":{
         "of:0000000000000001":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":30,
-                "longitude":-105,
-                "name":"s001"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
                 "ipv4Loopback":"192.168.0.1",
                 "ipv4NodeSid":1001,
                 "isEdgeRouter":true,
-                "name":"s001",
                 "routerMac":"00:00:00:00:00:01"
             }
         },
         "of:0000000000000002":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":34,
-                "longitude":-95,
-                "name":"s002"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
                 "ipv4Loopback":"192.168.0.2",
                 "ipv4NodeSid":1002,
                 "isEdgeRouter":true,
-                "name":"s002",
                 "pairDeviceId":"of:0000000000000003",
                 "pairLocalPort":5,
                 "routerMac":"00:00:00:00:00:02"
@@ -48,17 +40,13 @@
         },
         "of:0000000000000003":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":34,
-                "longitude":-90,
-                "name":"s003"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
                 "ipv4Loopback":"192.168.0.3",
                 "ipv4NodeSid":1003,
                 "isEdgeRouter":true,
-                "name":"s003",
                 "pairDeviceId":"of:0000000000000002",
                 "pairLocalPort":5,
                 "routerMac":"00:00:00:00:00:02"
@@ -66,17 +54,13 @@
         },
         "of:0000000000000004":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":34,
-                "longitude":-85,
-                "name":"s004"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
                 "ipv4Loopback":"192.168.0.4",
                 "ipv4NodeSid":1004,
                 "isEdgeRouter":true,
-                "name":"s004",
                 "pairDeviceId":"of:0000000000000005",
                 "pairLocalPort":5,
                 "routerMac":"00:00:00:00:00:04"
@@ -84,17 +68,13 @@
         },
         "of:0000000000000005":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":34,
-                "longitude":-80,
-                "name":"s005"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
                 "ipv4Loopback":"192.168.0.5",
                 "ipv4NodeSid":1005,
                 "isEdgeRouter":true,
-                "name":"s005",
                 "pairDeviceId":"of:0000000000000004",
                 "pairLocalPort":5,
                 "routerMac":"00:00:00:00:00:04"
@@ -102,10 +82,7 @@
         },
         "of:0000000000000006":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":30,
-                "longitude":-110,
-                "name":"s006"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
@@ -114,48 +91,36 @@
                 "ipv6Loopback":"2000::c0a8:0006",
                 "ipv6NodeSid":2006,
                 "isEdgeRouter":true,
-                "name":"s006",
                 "routerMac":"00:00:00:00:00:06"
             }
         },
         "of:0000000000000101":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":42,
-                "longitude":-100,
-                "name":"s101"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
                 "ipv4Loopback":"192.168.0.101",
                 "ipv4NodeSid":1101,
                 "isEdgeRouter":false,
-                "name":"s101",
                 "routerMac":"00:00:00:00:01:01"
             }
         },
         "of:0000000000000102":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":42,
-                "longitude":-95,
-                "name":"s102"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
                 "ipv4Loopback":"192.168.0.102",
                 "ipv4NodeSid":1102,
                 "isEdgeRouter":false,
-                "name":"s102",
                 "routerMac":"00:00:00:00:01:02"
             }
         },
         "of:0000000000000103":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":35,
-                "longitude":-115,
-                "name":"s103"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
@@ -164,16 +129,12 @@
                 "ipv6Loopback":"2000::c0a8:0203",
                 "ipv6NodeSid":2103,
                 "isEdgeRouter":false,
-                "name":"s103",
                 "routerMac":"00:00:00:00:01:03"
             }
         },
         "of:0000000000000104":{
             "basic":{
-                "driver":"ofdpa-ovs",
-                "latitude":35,
-                "longitude":-110,
-                "name":"s104"
+                "driver":"ofdpa-ovs"
             },
             "segmentrouting":{
                 "adjacencySids":[],
@@ -182,7 +143,6 @@
                 "ipv6Loopback":"2000::c0a8:0204",
                 "ipv6NodeSid":2104,
                 "isEdgeRouter":false,
-                "name":"s104",
                 "routerMac":"00:00:00:00:01:04"
             }
         }

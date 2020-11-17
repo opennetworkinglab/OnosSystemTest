@@ -266,12 +266,30 @@ def verify( main, ipv4=True, ipv6=True, disconnected=True, internal=True, extern
     Verify host IP assignment, flow/group number and pings
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
-    # Verify host IP assignment
-    lib.verifyOnosHostIp( main )
-    lib.verifyNetworkHostIp( main )
+
+    spines = 4
+    leaves = 6
+    switches = spines + leaves
+    links = 0
+    #links = ( spines * leaves ) * 2
+    # Some double links, spines 101 and 102 to leaves 2-5
+    links += ( 2 * 4 * 2 ) * 2
+    # Some paired leaves
+    links += ( ( leaves - 2 ) / 2 ) * 2
+    # Paired spines
+    links += ( spines / 2 ) * 2
+    # single homed leaf to spines
+    links += ( 2 * 2 ) * 2
+
+    lib.verifyTopology( main, switches, links, len( main.Cluster.runningNodes ) )
     # check flows / groups numbers
     if countFlowsGroups:
         lib.checkFlowsGroupsFromFile( main )
+    # ping hosts
+    verifyPing( main, ipv4, ipv6, disconnected, internal, external )
+    # Verify host IP assignment
+    lib.verifyOnosHostIp( main )
+    lib.verifyNetworkHostIp( main )
     # ping hosts
     verifyPing( main, ipv4, ipv6, disconnected, internal, external )
 

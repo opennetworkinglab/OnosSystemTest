@@ -203,19 +203,20 @@ class StratumOSSwitchDriver( CLI ):
             main.log.info( "Modify start container script" )
             self.handle.sendline( "sed -i '/--privileged/a \    --name stratum \\\\' start-stratum-container.sh" )
             self.handle.expect( self.prompt )
-            #self.handle.sendline( "sed -i '/LOG_DIR:\/var\/log\/stratum/a \    --entrypoint /bin/bash \\\\' start-stratum-container.sh" )
-            #self.handle.expect( self.prompt )
             # TODO: Add docker pull command to the start-stratum-container.sh script
 
             main.log.info( "Getting chassis config" )
             # TODO: Parameterize this
-            self.handle.sendline( "wget --backups=1 https://raw.githubusercontent.com/stratum/stratum/master/stratum/hal/config/x86-64-accton-wedge100bf-32x-r0/chassis_config.pb.txt" )
-            self.handle.expect( self.prompt )
+            filename = "~/TestON/tests/USECASE/SegmentRouting/dependencies/chassis_config.pb.txt.qa"
+            main.ONOSbench.secureCopy( self.user_name, self.ip_address, filename, "~/TestON/chassis_config.pb.txt", pwd=self.pwd, direction="to" )
             main.log.info( "Modify chassis config" )
             # TODO: Parameterize this
-            self.handle.sendline( "sed -i '$!N;s/\(port: [5|6]\\n\  speed_bps: \)\([0-9]*\)/\\1 40000000000/;P;D' chassis_config.pb.txt" )
-            self.handle.expect( self.prompt )
             self.handle.sendline( "export CHASSIS_CONFIG=~/TestON/chassis_config.pb.txt" )
+            self.handle.expect( self.prompt )
+            #self.handle.sendline( "export DOCKER_IMAGE=registry.aetherproject.org/tost/stratum-bfrt" )
+            self.handle.sendline( "export DOCKER_IMAGE=stratumproject/stratum-bf" )
+            self.handle.expect( self.prompt )
+            self.handle.sendline( "export DOCKER_IMAGE_TAG=9.2.0" )
             self.handle.expect( self.prompt )
             self.handle.sendline( "chmod +x start-stratum-container.sh" )
             self.handle.expect( self.prompt )
@@ -237,7 +238,7 @@ class StratumOSSwitchDriver( CLI ):
         """
         try:
             main.log.info( "Starting switch agent" )
-            self.handle.sendline( "./start-stratum-container.sh --bf-sim" )
+            self.handle.sendline( "./start-stratum-container.sh --bf-sim --bf-switchd-background=false" )
             self.handle.expect( "Chassis config pushed successfully." )
             return main.TRUE
         except pexpect.TIMEOUT:

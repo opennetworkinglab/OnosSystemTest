@@ -688,25 +688,29 @@ class ONOSSetup:
 
         onosNodesResult = self.checkOnosNodes( cluster )
 
+        externalAppsResult = main.TRUE
+        if main.params.get( 'EXTERNAL_APPS' ):
+            node = main.Cluster.controllers[0]
+            for app, url in main.params[ 'EXTERNAL_APPS' ].iteritems():
+                path, fileName = os.path.split( url )
+                main.ONOSbench.onosApp( node.ipAddress, "reinstall!", fileName, appName=app, user=node.karafUser, password=node.karafPass )
+
+
         onosAppsResult = main.TRUE
         if cellApply:
             if apps:
-                apps = apps.split( ',' )
-                apps = [ appPrefix + app for app in apps ]
+                newApps = []
+                appNames = apps.split( ',' )
                 if cluster.useDocker:
                     node = main.Cluster.active( 0 )
-                    for app in apps:
-                        node.activateApp( app )
+                    for app in appNames:
+                        appName = app if "org." in app else appPrefix + app
+                        node.activateApp( appName )
+                        newApps.append( appName )
 
-                onosAppsResult = self.checkOnosApps( cluster, apps )
+                onosAppsResult = self.checkOnosApps( cluster, newApps )
             else:
                 main.log.warn( "No apps were specified to be checked after startup" )
-
-        externalAppsResult = main.TRUE
-        if main.params.get( 'EXTERNAL_APPS' ):
-            for app, url in main.params[ 'EXTERNAL_APPS' ].iteritems():
-                path, fileName = os.path.split( url )
-                main.ONOSbench.onosApp( main.Cluster.controllers[0].ipAddress, "install!", fileName )
 
         return killResult and cellResult and packageResult and uninstallResult and \
                installResult and secureSshResult and onosServiceResult and onosCliResult and \

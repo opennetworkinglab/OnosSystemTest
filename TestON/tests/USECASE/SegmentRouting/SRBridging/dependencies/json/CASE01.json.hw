@@ -1,17 +1,17 @@
 {
     "devices":{
-        "of:0000000000000001":{
+        "device:tofino:leaf1":{
             "segmentrouting":{
                 "adjacencySids":[],
-                "ipv4Loopback":"10.128.13.232",
+                "ipv4Loopback":"10.128.13.211",
                 "ipv4NodeSid":201,
                 "isEdgeRouter":true,
-                "routerMac":"00:90:fb:64:cc:9e"
+                "routerMac":"00:00:00:00:00:01"
             }
         }
     },
     "ports":{
-        "of:0000000000000001/160":{
+        "device:tofino:leaf1/128":{
             "interfaces":[
                 {
                     "ips":[
@@ -21,7 +21,7 @@
                 }
             ]
         },
-        "of:0000000000000001/168":{
+        "device:tofino:leaf1/136":{
             "interfaces":[
                 {
                     "ips":[

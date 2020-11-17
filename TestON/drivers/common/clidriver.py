@@ -274,7 +274,7 @@ class CLI( Component ):
                     timeout=120 )
 
     def secureCopy( self, userName, ipAddress, filePath, dstPath, pwd="",
-                    direction="from" ):
+                    direction="from", options="" ):
         """
         Definition:
             Execute scp command in linux to copy to/from a remote host
@@ -294,12 +294,13 @@ class CLI( Component ):
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host " + \
                   ipAddress + " port 22: Connection refused"
+        cmd = "scp %s " % options
 
         if direction == "from":
-            cmd = 'scp ' + str( userName ) + '@' + str( ipAddress ) + ':' + \
+            cmd = cmd + str( userName ) + '@' + str( ipAddress ) + ':' + \
                   str( filePath ) + ' ' + str( dstPath )
         elif direction == "to":
-            cmd = 'scp ' + str( filePath ) + ' ' + str( userName ) + \
+            cmd = cmd + str( filePath ) + ' ' + str( userName ) + \
                   '@' + str( ipAddress ) + ':' + str( dstPath )
         else:
             main.log.debug( "Wrong direction using secure copy command!" )
@@ -337,9 +338,11 @@ class CLI( Component ):
                 returnVal = main.FALSE
             elif i == 4:  # File Not found
                 main.log.error( self.name + ": No such file found" )
+                main.log.debug( self.handle.before + self.handle.after )
                 returnVal = main.FALSE
             elif i == 5:  # Permission denied
                 main.log.error( self.name + ": Permission denied. Check folder permissions" )
+                main.log.debug( self.handle.before + self.handle.after )
                 returnVal = main.FALSE
             elif i == 6:  # prompt returned
                 return returnVal
@@ -356,7 +359,7 @@ class CLI( Component ):
         self.handle.expect( self.prompt )
         return returnVal
 
-    def scp( self, remoteHost, filePath, dstPath, direction="from" ):
+    def scp( self, remoteHost, filePath, dstPath, direction="from", options="" ):
         """
         Definition:
             Execute scp command in linux to copy to/from a remote host
@@ -375,7 +378,8 @@ class CLI( Component ):
                                 filePath,
                                 dstPath,
                                 pwd=remoteHost.pwd,
-                                direction=direction )
+                                direction=direction,
+                                options=options )
 
     def sshToNode( self, ipAddress, uName="sdn", pwd="rocks" ):
         ssh_newkey = 'Are you sure you want to continue connecting'

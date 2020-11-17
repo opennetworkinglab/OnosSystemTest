@@ -3915,6 +3915,8 @@ class MininetCliDriver( Emulator ):
         if hostHome is not None:
             self.hostHome = hostHome
         try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.Prompt() )
             if not host:
                 host = self.name
             if self.mExecDir:

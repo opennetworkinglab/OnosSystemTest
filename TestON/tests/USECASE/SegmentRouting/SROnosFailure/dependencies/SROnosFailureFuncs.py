@@ -76,16 +76,18 @@ class SROnosFailureFuncs():
                 pass
             # xconnects need to be loaded after topology
             run.loadXconnects( main )
+            switches = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
+            links = ( self.topo[ Topo ][ 0 ] * self.topo[ Topo ][ 1 ] ) * 2
             # pre-configured routing and bridging test
+            run.verifyTopology( main, switches, links, numNodes )
             run.checkFlows( main, minFlowCount=minFlow )
             run.pingAll( main, 'CASE{}'.format( caseNum ) )
-            switch = '{}'.format( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] )
-            link = '{}'.format( ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ] )
-            run.killOnos( main, killList, switch, link, '{}'.format( numNodes - 1 ) )
+            run.killOnos( main, killList, switches, links, '{}'.format( numNodes - 1 ) )
             run.pingAll( main, 'CASE{}_Failure'.format( caseNum ) )
-            run.recoverOnos( main, killList, switch, link, '{}'.format( numNodes ) )
+            run.recoverOnos( main, killList, switches, links, '{}'.format( numNodes ) )
             run.checkFlows( main, minFlowCount=minFlow, tag='CASE{}_Recovery'.format( caseNum ) )
             run.pingAll( main, 'CASE{}_Recovery'.format( caseNum ) )
+            run.verifyTopology( main, switches, links, numNodes )
             # TODO Dynamic config of hosts in subnet
             # TODO Dynamic config of host not in subnet
             # TODO Dynamic config of vlan xconnect

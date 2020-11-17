@@ -52,6 +52,7 @@ class Testcaselib:
         main.Network = Network()
         main.physicalNet = False
         main.testSetUp.envSetupDescription( False )
+        main.logdirBase = main.logdir
         stepResult = main.FALSE
         try:
             # Test variables
@@ -113,7 +114,7 @@ class Testcaselib:
         try:
             if main.params.get( 'EXTERNAL_APPS' ):
                 for app, url in main.params[ 'EXTERNAL_APPS' ].iteritems():
-                    main.log.info( "Downloading %s app from %s" )
+                    main.log.info( "Downloading %s app from %s" % ( app, url ) )
                     main.ONOSbench.onosFetchApp( url )
             if not main.apps:
                 main.log.error( "App list is empty" )
@@ -318,7 +319,7 @@ class Testcaselib:
                 main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
                 main.log.debug( main.ONOSbench1.handle.before + main.ONOSbench1.handle.after )
                 # Configure device name
-                main.ONOSbench1.handle.sendline( "sudo sed -i '/\"basic\"/a\        \"name\": \"%s\",' %s%s" % ( switch, dstPath, dstFileName ) )
+                main.ONOSbench1.handle.sendline( "sudo sed -i '/\"basic\"/a\        \"name\": \"%s:%s\",' %s%s" % ( switchPrefix, switch, dstPath, dstFileName ) )
                 main.ONOSbench1.handle.expect( main.ONOSbench1.prompt )
                 main.log.debug( main.ONOSbench1.handle.before + main.ONOSbench1.handle.after )
                 node = main.Cluster.active(0)
@@ -493,7 +494,7 @@ class Testcaselib:
     @staticmethod
     def checkFlows( main, minFlowCount, tag="", dumpflows=True, sleep=10 ):
         main.step(
-                "Check whether the flow count is bigger than %s" % minFlowCount )
+                "Check whether the flow count is >= %s" % minFlowCount )
         if tag == "":
             tag = 'CASE%d' % main.CurrentTestCaseNumber
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowCount,
@@ -505,7 +506,7 @@ class Testcaselib:
             count = main.Cluster.active( 0 ).CLI.checkFlowCount()
         utilities.assertEquals(
                 expect=True,
-                actual=( count > minFlowCount ),
+                actual=( count >= minFlowCount ),
                 onpass="Flow count looks correct; found %s, expecting at least %s" % ( count, minFlowCount ),
                 onfail="Flow count looks wrong; found %s, expecting at least %s" % ( count, minFlowCount ) )
 
@@ -548,7 +549,7 @@ class Testcaselib:
     @staticmethod
     def checkFlowsByDpid( main, dpid, minFlowCount, sleep=10 ):
         main.step(
-            "Check whether the flow count of device %s is bigger than %s" % ( dpid, minFlowCount ) )
+            "Check whether the flow count of device %s >= than %s" % ( dpid, minFlowCount ) )
         count = utilities.retry( main.Cluster.active( 0 ).CLI.checkFlowAddedCount,
                                  main.FALSE,
                                  args=( dpid, minFlowCount ),
@@ -558,7 +559,7 @@ class Testcaselib:
             count = main.Cluster.active( 0 ).CLI.checkFlowAddedCount( dpid )
         utilities.assertEquals(
             expect=True,
-            actual=( count > minFlowCount ),
+            actual=( count >= minFlowCount ),
             onpass="Flow count looks correct: " + str( count ),
             onfail="Flow count looks wrong: " + str( count ) )
 
@@ -1062,24 +1063,26 @@ class Testcaselib:
             main.cleanAndExit()
 
     @staticmethod
-    def verifyTopology( main, switches, links, expNodes ):
+    def verifyTopology( main, switches, links, expNodes, SCCs=1 ):
         """
         Verifies that the ONOS cluster has an acuurate view of the topology
 
         Params:
         switches, links, expNodes: number of expected switches, links, and nodes at this point in the test ex.: '4', '6', '2'
+        SCCs = Number of connected topology clusters within the control plane, defaults to 1
         """
         main.step( "Check number of topology elements" )
         topology = utilities.retry( main.Cluster.active( 0 ).CLI.checkStatus,
                                     main.FALSE,
                                     kwargs={ 'numoswitch': switches,
                                              'numolink': links,
-                                             'numoctrl': expNodes },
+                                             'numoctrl': expNodes,
+                                             'numoSCCs': SCCs },
                                     attempts=10,
                                     sleep=12 )
         utilities.assert_equals( expect=main.TRUE, actual=topology,
                                  onpass="Number of topology elements are correct",
-                                 onfail="Unexpected number of links, switches, and/or controllers" )
+                                 onfail="Unexpected number of links, switches, and/or controllers: " + main.TOPOOUTPUT )
 
     @staticmethod
     def killOnos( main, nodes, switches, links, expNodes, sleep=None ):
@@ -1136,7 +1139,7 @@ class Testcaselib:
         main.log.debug( "sleeping %i seconds" % ( sleep ) )
         time.sleep( sleep )
         for i in nodes:
-            node =  main.Cluster.runningNodes[ i ]
+            node = main.Cluster.runningNodes[ i ]
             if node.inDocker:
                 isUp = node.CLI.dockerExec( node.name, dockerPrompt=node.dockerPrompt )
                 isUp = isUp and node.CLI.prepareForCLI()
@@ -1640,7 +1643,7 @@ class Testcaselib:
                 # Stop any leftover container
                 main.Mininet1.dockerStop( dockerName )
                 # TODO: assert on these docker calls
-                main.Mininet1.dockerBuild( dockerFilePath, dockerName )
+                main.Mininet1.dockerBuild( dockerFilePath, dockerName, pull=True )
 
                 confDir = "/tmp/mn_conf/"
                 # Try to ensure the destination exists
@@ -1651,6 +1654,8 @@ class Testcaselib:
                 handle.sendline( "mkdir -p %s" % confDir )
                 handle.expect( main.Mininet1.Prompt() )
                 main.log.debug( handle.before + handle.after )
+                handle.sendline( "sudo rm -rf /tmp/mn-stratum/*" )
+                handle.expect( main.Mininet1.Prompt() )
                 # Make sure permissions are correct
                 handle.sendline( "sudo chown %s:%s %s" % ( main.Mininet1.user_name, main.Mininet1.user_name, confDir ) )
                 handle.expect( main.Mininet1.Prompt() )
@@ -1680,7 +1685,7 @@ class Testcaselib:
                 main.Mininet1.handle.expect( main.Mininet1.Prompt() )
         except Exception as e:
             main.log.exception( "Error seting up mininet" )
-            man.skipCase( result="FAIL", msg=e )
+            main.skipCase( result="FAIL", msg=e )
 
     @staticmethod
     def mnDockerTeardown( main ):
@@ -1693,12 +1698,19 @@ class Testcaselib:
                 main.log.info( "Exiting from Mininet Docker" )
 
                 # Detach from container
-                handle = main.Mininet1.handle
                 try:
                     main.Mininet1.dockerDisconnect()
                     main.Mininet1.sudoRequired = True
                 except Exception as e:
                     main.log.error( e )
+
+                # Save docker logs
+                copyResult = main.ONOSbench.scp( main.Mininet1,
+                                                 "/tmp/mn-stratum/*",
+                                                 main.logdir,
+                                                 direction="from",
+                                                 options="-rp" )
+
 
     @staticmethod
     def setOnosConfig( main ):

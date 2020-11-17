@@ -3,7 +3,7 @@
     "device:tofino:leaf1": {
       "basic": {
         "name": "leaf1",
-        "managementAddress": "grpc://10.128.13.232:28000?device_id=1",
+        "managementAddress": "grpc://10.128.13.211:28000?device_id=1",
         "driver": "stratum-tofino",
         "pipeconf": "org.opencord.fabric.tofino.montara_sde_9_0_0"
       }

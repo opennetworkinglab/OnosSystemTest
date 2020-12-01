@@ -106,8 +106,9 @@ class StratumOSSwitchDriver( CLI ):
         try:
             if self.handle:
                 # Stop the agent
-                self.stopSwitchAgent()
-                main.log.debug( self.name + ": Disconnected" )
+                if not main.persistentSetup:
+                    self.stopSwitchAgent()
+                    main.log.debug( self.name + ": Disconnected" )
                 # Disconnect from the device
                 self.handle.sendline( "" )
                 self.handle.expect( self.prompt )

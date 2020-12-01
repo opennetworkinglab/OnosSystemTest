@@ -41,7 +41,7 @@
         </SwitchLeaf1>
 
         <Host1>
-            <host>OCN</host>
+            <host>10.128.13.253</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>HostDriver</type>
@@ -66,7 +66,7 @@
         </Host1>
 
         <Host2>
-            <host>OCN</host>
+            <host>10.128.13.253</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>HostDriver</type>
@@ -91,7 +91,7 @@
         </Host2>
 
         <NetworkBench>
-            <host>OCN</host>
+            <host>10.128.13.253</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>NetworkDriver</type>

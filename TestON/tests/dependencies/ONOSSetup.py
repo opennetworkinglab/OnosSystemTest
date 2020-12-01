@@ -26,6 +26,10 @@ class ONOSSetup:
 
     def __init__( self ):
         self.default = ''
+        try:
+            main.persistentSetup
+        except ( NameError, AttributeError ):
+            main.persistentSetup = False
 
     def envSetupDescription( self, includeCaseDesc=True ):
         """
@@ -605,11 +609,12 @@ class ONOSSetup:
             Returns main.TRUE if it everything successfully proceeded.
         """
         self.setNumCtrls( hasMultiNodeRounds )
-        if includeCaseDesc:
-            main.case( "Starting up " + str( cluster.numCtrls ) +
-                       " node(s) ONOS cluster" )
-            main.caseExplanation = "Set up ONOS with " + str( cluster.numCtrls ) + \
-                                   " node(s) ONOS cluster"
+        if not main.persistentSetup:
+            if includeCaseDesc:
+                main.case( "Starting up " + str( cluster.numCtrls ) +
+                           " node(s) ONOS cluster" )
+                main.caseExplanation = "Set up ONOS with " + str( cluster.numCtrls ) + \
+                                       " node(s) ONOS cluster"
 
         main.log.info( "ONOS cluster size = " + str( cluster.numCtrls ) )
         cellResult = main.TRUE
@@ -634,7 +639,7 @@ class ONOSSetup:
                                                tempOnosIp, installMax,
                                                atomixClusterSize )
 
-        if restartCluster:
+        if not main.persistentSetup and restartCluster:
             atomixKillResult = self.killingAllAtomix( cluster, killRemoveMax, stopAtomix )
             onosKillResult = self.killingAllOnos( cluster, killRemoveMax, stopOnos )
             dockerKillResult = self.killingAllOnosDocker( cluster, killRemoveMax )
@@ -642,7 +647,7 @@ class ONOSSetup:
         else:
             killResult = main.TRUE
 
-        if restartCluster:
+        if not main.persistentSetup and restartCluster:
             atomixUninstallResult = self.uninstallAtomix( cluster, killRemoveMax )
             onosUninstallResult = self.uninstallOnos( cluster, killRemoveMax )
             uninstallResult = atomixUninstallResult and onosUninstallResult
@@ -681,6 +686,9 @@ class ONOSSetup:
         onosServiceResult = main.TRUE
         if not cluster.useDocker:
             onosServiceResult = self.checkOnosService( cluster )
+        elif main.persistentSetup:
+            for ctrl in cluster.getRunningNodes():
+                ctrl.inDocker = True
 
         onosCliResult = main.TRUE
         if startOnosCli:
@@ -689,7 +697,7 @@ class ONOSSetup:
         onosNodesResult = self.checkOnosNodes( cluster )
 
         externalAppsResult = main.TRUE
-        if main.params.get( 'EXTERNAL_APPS' ):
+        if not main.persistentSetup and main.params.get( 'EXTERNAL_APPS' ):
             node = main.Cluster.controllers[0]
             for app, url in main.params[ 'EXTERNAL_APPS' ].iteritems():
                 path, fileName = os.path.split( url )
@@ -697,7 +705,7 @@ class ONOSSetup:
 
 
         onosAppsResult = main.TRUE
-        if cellApply:
+        if not main.persistentSetup and cellApply:
             if apps:
                 newApps = []
                 appNames = apps.split( ',' )

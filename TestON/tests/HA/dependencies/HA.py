@@ -3526,7 +3526,7 @@ class HA():
 
         description = "Check that Leadership Election is still functional"
         main.case( description )
-        # NOTE: Need to re-run after restarts since being a canidate is not persistant
+        # NOTE: Need to re-run after restarts since being a candidate is not persistent
 
         oldLeaders = []  # list of lists of each nodes' candidates before
         newLeaders = []  # list of lists of each nodes' candidates after

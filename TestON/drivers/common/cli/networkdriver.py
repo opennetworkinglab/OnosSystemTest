@@ -532,12 +532,12 @@ class NetworkDriver( CLI ):
                     # Use scapy to send and recieve packets
                     hostPair[ 1 ].startScapy( ifaceName=dstIface )
                     hostPair[ 1 ].addRoutes()
-                    hostPair[ 1 ].startFilter( ifaceName=dstIface, pktFilter="ether host %s and ip host %s" % ( srcMac, srcIPs[0] ) )
+                    hostPair[ 1 ].startFilter( ifaceName=dstIface, pktFilter="ether src host %s and ip src host %s" % ( srcMac, srcIPs[0] ) )
 
                     hostPair[ 0 ].startScapy( ifaceName=srcIface )
                     hostPair[ 0 ].addRoutes()
-                    hostPair[ 0 ].buildEther( dst=dstMac )
-                    hostPair[ 0 ].buildIP( src=srcIPs, dst=dstIPs )
+                    hostPair[ 0 ].buildEther( src=srcMac, dst=dstMac )
+                    hostPair[ 0 ].buildIP( src=srcIPs[0], dst=dstIPs[0] )
                     hostPair[ 0 ].buildICMP( )
                     hostPair[ 0 ].sendPacket( iface=srcIface )
 
@@ -545,7 +545,7 @@ class NetworkDriver( CLI ):
                     if not waiting:
                         pingResult = main.FALSE
                         packets = hostPair[ 1 ].readPackets()
-                        main.log.warn( packets )
+                        main.log.warn( repr( packets ) )
                         for packet in packets.splitlines():
                             main.log.debug( packet )
                             if srcIPs[0] in packet:
@@ -625,7 +625,7 @@ class NetworkDriver( CLI ):
                             main.log.debug( "Pinging from " + str( srcHost.shortName ) + " to " + str( dstHost.shortName ) )
                             # Use scapy to send and recieve packets
                             dstHost.startFilter()
-                            srcHost.buildEther( dst=srcHost.interfaces[0].get( 'mac') )
+                            srcHost.buildEther( src=srcHost.interfaces[0].get( 'mac'), dst=dstHost.interfaces[0].get( 'mac') )
                             srcHost.sendPacket()
                             output = dstHost.checkFilter()
                             main.log.debug( output )
@@ -781,11 +781,12 @@ class NetworkDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def getIPAddress( self, host, proto='IPV4' ):
+    def getIPAddress( self, host, iface=None, proto='IPV4' ):
         """
         Returns IP address of the host
         """
-        response = self.runCmdOnHost( host, "ifconfig" )
+        cmd = "ifconfig %s" % iface if iface else ""
+        response = self.runCmdOnHost( host, cmd )
         pattern = ''
         if proto == 'IPV4':
             pattern = "inet\s(\d+\.\d+\.\d+\.\d+)\s\snetmask"
@@ -1049,11 +1050,13 @@ class NetworkDriver( CLI ):
             for host in hostList:
                 flushCmd = ""
                 cmd = ""
-                if self.getIPAddress( host ) or hosts[host]['interfaces'][0].get( 'ips', False ) :
+                intf = hosts[host]['interfaces'][0].get( 'name' )
+                hostIp = self.getIPAddress( host, iface=intf ) or hosts[host]['interfaces'][0].get( 'ips', False )
+                if hostIp:
                     flushCmd = "sudo ip neigh flush all"
-                    intf = hosts[host]['interfaces'][0].get( 'name' )
                     intfStr = "-i {}".format( intf ) if intf else ""
-                    cmd = "sudo arping -c 1 -w {} {} {}".format( wait, intfStr, dstIp )
+                    srcIp = "-S {}".format( hostIp if isinstance( hostIp, types.StringType ) else hostIp[0] ) if intf else ""
+                    cmd = "sudo arping -c 1 -w {} {} {} {}".format( wait, intfStr, srcIp, dstIp )
                     main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
                     flushCmd = "sudo ip -6 neigh flush all"

@@ -727,7 +727,7 @@ class ScapyCliDriver( Emulator ):
                 # clear buffer
                 if debug:
                     main.log.warn( "%s expect loop iteration" % i )
-                self.handle.expect( self.scapyPrompt, timeout=1 )
+                self.handle.expect( self.scapyPrompt, timeout=5 )
                 response += self.cleanOutput( self.handle.before, debug )
             except pexpect.TIMEOUT:
                 return response

@@ -49,6 +49,7 @@ class Testcaselib:
             main.log.error( "ONOSSetup not found. exiting the test" )
             main.cleanAndExit()
         from tests.dependencies.Network import Network
+        main.persistentSetup = main.params.get( "persistent_setup" )
         main.Network = Network()
         main.physicalNet = False
         main.testSetUp.envSetupDescription( False )
@@ -112,7 +113,7 @@ class Testcaselib:
         """
         # main.scale[ 0 ] determines the current number of ONOS controller
         try:
-            if main.params.get( 'EXTERNAL_APPS' ):
+            if not main.persistentSetup and main.params.get( 'EXTERNAL_APPS' ):
                 for app, url in main.params[ 'EXTERNAL_APPS' ].iteritems():
                     main.log.info( "Downloading %s app from %s" % ( app, url ) )
                     main.ONOSbench.onosFetchApp( url )
@@ -169,6 +170,19 @@ class Testcaselib:
                     time.sleep( 1 )
                 except Exception as e:
                     main.log.error( e )
+
+        # Install segmentrouting and t3 app
+        appInstallResult = main.TRUE
+        if not main.persistentSetup:
+            if main.trellisOar:
+                appInstallResult = appInstallResult and main.ONOSbench.onosAppInstall( main.Cluster.runningNodes[0].ipAddress, main.trellisOar)
+            if main.t3Oar:
+                appInstallResult = appInstallResult and main.ONOSbench.onosAppInstall( main.Cluster.runningNodes[0].ipAddress, main.t3Oar)
+            utilities.assert_equals( expect=main.TRUE, actual=appInstallResult,
+                                     onpass="SR app installation succeded",
+                                     onfail="SR app installation failed" )
+        if not appInstallResult:
+            main.cleanAndExit()
 
         Testcaselib.setOnosLogLevels( main )
         Testcaselib.setOnosConfig( main )
@@ -364,31 +378,32 @@ class Testcaselib:
         if not topoResult:
             main.cleanAndExit()
 
-        # Perform any optional setup
-        for switch in main.NetworkBench.switches:
-            if hasattr( switch, "setup" ):
-                switch.setup()  # We might not need this
+        if not main.persistentSetup:
+            # Perform any optional setup
+            for switch in main.NetworkBench.switches:
+                if hasattr( switch, "setup" ):
+                    switch.setup()  # We might not need this
 
-        main.step( "Assign switches to controllers." )
-        stepResult = main.TRUE
-        switches = main.NetworkBench.getSwitches()
-        pool = []
-        for name in switches.keys():
-            # NOTE: although this terminology is ovsdb centric, we can use this function for other switches too
-            #       e.g. push onos net-cfg for stratum switches
-            thread = main.Thread( target=main.NetworkBench.assignSwController,
-                                  name="assignSwitchToController",
-                                  args=[ name, main.Cluster.getIps(), '6653' ] )
-            pool.append( thread )
-            thread.start()
-        for thread in pool:
-            thread.join( 300 )
-            if not thread.result:
-                stepResult = main.FALSE
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully assign switches to controllers",
-                                 onfail="Failed to assign switches to controllers" )
+            main.step( "Assign switches to controllers." )
+            stepResult = main.TRUE
+            switches = main.NetworkBench.getSwitches()
+            pool = []
+            for name in switches.keys():
+                # NOTE: although this terminology is ovsdb centric, we can use this function for other switches too
+                #       e.g. push onos net-cfg for stratum switches
+                thread = main.Thread( target=main.NetworkBench.assignSwController,
+                                      name="assignSwitchToController",
+                                      args=[ name, main.Cluster.getIps(), '6653' ] )
+                pool.append( thread )
+                thread.start()
+            for thread in pool:
+                thread.join( 300 )
+                if not thread.result:
+                    stepResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass="Successfully assign switches to controllers",
+                                     onfail="Failed to assign switches to controllers" )
 
         # Check devices
         Testcaselib.checkDevices( main, switches=int( main.params[ 'TOPO' ][ 'switchNum' ] ) )
@@ -1000,8 +1015,9 @@ class Testcaselib:
         """
         from tests.dependencies.utils import Utils
         main.utils = Utils()
-        for ctrl in main.Cluster.active():
-            ctrl.CLI.log( "\"Ending Test - Shutting down ONOS and Network\"", level="INFO" )
+        if not main.persistentSetup:
+            for ctrl in main.Cluster.active():
+                ctrl.CLI.log( "\"Ending Test - Shutting down ONOS and Network\"", level="INFO" )
         # Clean up scapy hosts
         if hasattr( main, "scapyHosts" ):
             scapyResult = main.TRUE
@@ -1034,8 +1050,9 @@ class Testcaselib:
         if copyKarafLog:
             main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
 
-        for ctrl in main.Cluster.active():
-            main.ONOSbench.onosStop( ctrl.ipAddress )
+        if not main.persistentSetup:
+            for ctrl in main.Cluster.active():
+                main.ONOSbench.onosStop( ctrl.ipAddress )
         Testcaselib.mnDockerTeardown( main )
 
     @staticmethod

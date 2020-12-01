@@ -3318,7 +3318,7 @@ class OnosCliDriver( CLI ):
                 result = main.TRUE
             else:
                 output = output + \
-                    "The number of links, switches, nodes, and SCCs  does not match " + \
+                    "The number of links, switches, nodes, and SCCs does not match " + \
                     "what was expected"
                 result = main.FALSE
             output = output + "\n ONOS sees %i devices " % int( devices )
@@ -6774,7 +6774,7 @@ class OnosCliDriver( CLI ):
             output = ""
             for cmdStr in cmdList:
                 self.handle.sendline( cmdStr )
-                self.handle.expect( self.dockerPrompt, timeout=120 )
+                self.handle.expect( self.dockerPrompt, timeout=420 )
                 self.handle.sendline( "" )
                 self.handle.expect( self.dockerPrompt )
                 handle = self.handle.before

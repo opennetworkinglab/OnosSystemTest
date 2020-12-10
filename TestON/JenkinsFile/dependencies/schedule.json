@@ -13,12 +13,12 @@
     "thu": [ "thu" ],
     "fri": [ "fri" ],
     "sat": [ "sat" ],
-    "onos-1.x_schedule": [ "sat" ],
-    "onos-2.x_schedule": [ "sun" ],
+    "onos-LTS1_schedule": [ "sat" ],
+    "onos-LTS2_schedule": [ "sun" ],
     "USECASE_master": [ "tue" ],
     "SR_schedule": [ "sun", "mon", "tue", "wed", "thu", "sat" ],
-    "SR_1.x_schedule": [ "mon", "thu" ],
-    "SR_2.x_schedule": [ "tue", "sat" ],
+    "SR_LTS1_schedule": [ "mon", "thu" ],
+    "SR_LTS2_schedule": [ "tue", "sat" ],
     "SR_master_schedule": [ "wed", "sun" ],
     "none": []
 }

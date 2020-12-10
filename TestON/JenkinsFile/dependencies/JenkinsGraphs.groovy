@@ -39,10 +39,10 @@ def initialize( SCPFf=null ){
 
 def getPostjobType( nodeL ){
     switch ( nodeL ){
-        case "Fabric-1.x":
+        case "Fabric-LTS1":
             return "Fabric2"
             break
-        case "Fabric-2.x":
+        case "Fabric-LTS2":
             return "Fabric3"
             break
         case "Fabric-master":

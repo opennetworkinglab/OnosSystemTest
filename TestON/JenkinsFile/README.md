@@ -16,15 +16,15 @@ If you are here to add/modify a branch, schedule, or test, you only need to modi
 The list of branches is located in `dependencies/branches.json`. The file is constructed in the following format:
 
 - `"latest_branches"` - `dict` of the latest branches for each major ONOS version.
-    - `"onos-1.x"` - Latest version of ONOS 1.x (ie: "1.15").
+    - `"onos-LTS1"` - Latest version of ONOS LTS1 (ie: "1.15").
     - `...`
 - `"support_branches"` - `dict` of other ONOS support branches that are not necessarily the latest branches.
-    - `"onos-1.sb1"` - Support branch 1 of ONOS 1.x (ie: "1.12").
+    - `"onos-1.sb1"` - Support branch 1 of ONOS LTS1 (ie: "1.12").
     - `...`
 
 Note: Please avoid adding the `onos-` prefix as the value.
-- Correct: `"onos-1.x": 1.15,`
-- Incorrect: ~~`"onos-1.x": onos-1.15,`~~
+- Correct: `"onos-LTS1": 1.15,`
+- Incorrect: ~~`"onos-LTS1": onos-1.15,`~~
 
 ### Adding a Schedule
 
@@ -41,7 +41,7 @@ The list of tests is located in `dependencies/tests.json`. The file is construct
     - `"wikiName"` - Name of the TestON test as it would appear on the ONOS wiki (this is usually identical to the `<test name>`).
     - `"wikiFile"` - Filename of the text file that the ONOS wiki uses to display the test result summary.
     - `"schedules"` - List of `dict` containing the following:
-        - `"branch"` - ONOS branch label mapping from `branches.json`. (ie: "onos-1.x")
+        - `"branch"` - ONOS branch label mapping from `branches.json`. (ie: "onos-LTS1")
         - `"day"` - Name of the schedule from `schedule.json` that this test runs on the given `"branch"` and `"nodeLabel"`. (ie: "weekdays")
         - `"nodeLabel"` - Node label mapping from Jenkins specifying the node to run the test on (ie: "BM").
     - `"category"` - Category of the test (ie: "FUNC").

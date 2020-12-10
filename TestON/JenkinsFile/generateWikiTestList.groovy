@@ -34,8 +34,8 @@ main()
 def main(){
     test_list.init()
 
-    supportBranch1 = test_list.convertBranchCodeToBranch( "onos-1.x" )
-    supportBranch2 = test_list.convertBranchCodeToBranch( "onos-2.x" )
+    supportBranch1 = test_list.convertBranchCodeToBranch( "onos-LTS1" )
+    supportBranch2 = test_list.convertBranchCodeToBranch( "onos-LTS2" )
 
     initHtmlForWiki()
     initTestCategoryContents()
@@ -129,7 +129,7 @@ def contentsToHTML(){
 }
 
 // adds asterisks based on the support branch number (hack)
-// Example: if support branch is onos-1.x, then adds 1 asterisks, if onos-2.x, then adds 2 asterisks
+// Example: if support branch is onos-LTS1, then adds 1 asterisks, if ONOS-LTS2, then adds 2 asterisks
 def addAsterisks( category, day, test ){
     asterisks = ""
     tempDict = [ test : testCategoryContents[ category ][ day ][ test ] ]
@@ -137,8 +137,11 @@ def addAsterisks( category, day, test ){
     asteriskCount = 0
 
     for ( branch in testBranches ){
-        if ( branch.substring( 0, 1 ) != "m" ){
-            asteriskCount += branch.substring( 0, 1 ) as Integer
+        branch_code = test_list.convertBranchToBranchCode( branch )
+        if ( branch_code == "onos-LTS1" ) {
+            asteriskCount += 1
+        } else if ( branch_code == "onos-LTS2" ) {
+            asteriskCount += 2
         }
     }
 

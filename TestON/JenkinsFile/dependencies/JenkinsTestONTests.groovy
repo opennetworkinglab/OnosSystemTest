@@ -117,7 +117,7 @@ def getBranchesFromDay( day, tests=[:] ){
 }
 
 // Converts a branch code to an actual ONOS branch.
-// Example: converts onos-1.x to onos-1.15
+// Example: converts onos-LTS1 to onos-1.15
 def convertBranchCodeToBranch( branch_code, withPrefix=true ){
     for ( String branch_type in branches.keySet() ){
         for ( String b in branches[ branch_type ].keySet() ){
@@ -129,16 +129,20 @@ def convertBranchCodeToBranch( branch_code, withPrefix=true ){
     return branch_code
 }
 
-// given a branch, returns the corresponding branch code (hack)
-// Example: given "onos-1.15", returns "onos-1.x"
+// given a branch, returns the corresponding branch code
+// Example: given "onos-1.15", returns "onos-LTS1"
 def convertBranchToBranchCode( branch ){
     if ( branch == "master" ){
-        return branch
-    } else if ( branch.substring( 0, 1 ) == "o" ) {
-        return branch.substring( 0, 6 ) + ".x"
-    } else {
-        return "onos-" + branch.substring( 0, 1 ) + ".x"
+      return branch
     }
+    for ( String branch_type in branches.keySet() ){
+        for ( String b in branches[ branch_type ].keySet() ){
+            if ( branches[ branch_type ][ b ] == branch ){
+                return b
+            }
+        }
+    }
+    return "UNKNOWN"
 }
 
 // given a branch without a prefix, returns the branch with the "onos-" prefix

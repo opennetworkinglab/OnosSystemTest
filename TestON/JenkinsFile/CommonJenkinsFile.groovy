@@ -100,7 +100,7 @@ def readParams(){
     branch = params.Branch           // "1.15", "2.1", "master", etc.
     branchWithPrefix = test_list.addPrefixToBranch( branch )
     testStation = params.TestStation // "TestStation-BMs", etc.
-    nodeLabel = params.NodeLabel     // "BM", "VM", "Fabric-1.x", etc.
+    nodeLabel = params.NodeLabel     // "BM", "VM", "Fabric-LTS1", etc.
     testsOverride = params.TestsOverride // "FUNCflow, FUNCintent, [...]", overrides property file
     isGraphOnly = params.OnlyRefreshGraphs // true or false
 }

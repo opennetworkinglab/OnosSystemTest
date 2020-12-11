@@ -1438,12 +1438,12 @@
             {
                 "branch": "master",
                 "day": "none",
-                "nodeLabel": "Fabric-master"
+                "nodeLabel": "QA-POD"
             },
             {
                 "branch": "onos-LTS2",
                 "day": "none",
-                "nodeLabel": "Fabric-LTS2"
+                "nodeLabel": "QA-POD"
             }
         ],
         "category": "SR-Tofino",

@@ -1,13 +1,16 @@
 {
     "latest_branches": {
-        "onos-LTS1": "1.15",
+        "onos-LTS1": "2.5,
         "onos-LTS2": "2.2"
     },
     "support_branches": {
         "onos-1.sb1": "1.12",
         "onos-1.sb2": "1.13",
         "onos-1.sb3": "1.14",
+        "onos-1.sb4": "1.15",
         "onos-2.sb1": "2.0",
-        "onos-2.sb2": "2.1"
+        "onos-2.sb2": "2.1",
+        "onos-2.sb3": "2.3",
+        "onos-2.sb4": "2.4"
     }
 }

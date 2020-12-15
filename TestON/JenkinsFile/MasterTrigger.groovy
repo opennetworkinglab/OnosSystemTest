@@ -258,6 +258,21 @@ def preSetup( onos_branch, test_branch, onos_tag, isManual, category ){
             git branch
             git log -1 --decorate
             '''
+        } else if ( category == "SR-Tofino" ){
+            result = '''echo -e "\n#####  Set TestON Branch #####"
+            echo "TestON Branch is set on: ''' + test_branch + '''"
+            cd ~/OnosSystemTest/
+            git checkout HEAD~1      # Make sure you aren't pn a branch
+            git branch | grep -v "detached from" | xargs git branch -d # delete all local branches merged with remote
+            git branch -D ''' + test_branch + ''' # just in case there are local changes. This will normally result in a branch not found error
+            git clean -df # clean any local files
+            git fetch --all # update all caches from remotes
+            git reset --hard origin/''' + test_branch + '''  # force local index to match remote branch
+            git clean -df # clean any local files
+            git checkout ''' + test_branch + ''' #create new local branch
+            git branch
+            git log -1 --decorate
+            '''
         } else {
             result = '''echo -e "\n#####  Set TestON Branch #####"
             echo "TestON Branch is set on: ''' + test_branch + '''"

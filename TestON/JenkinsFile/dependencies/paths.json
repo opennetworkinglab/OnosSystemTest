@@ -8,6 +8,7 @@
         "Fabric" : "/var/jenkins/workspace/postjob-Fabric/",
         "Fabric5" : "/var/jenkins/workspace/postjob-Fabric5/",
         "Trellis" : "/var/jenkins/workspace/postjob-Trellis-POD/"
+        "QA-POD" : "/var/jenkins/workspace/postjob-QA-POD/"
     },
     "rScript": {
         "directories": {

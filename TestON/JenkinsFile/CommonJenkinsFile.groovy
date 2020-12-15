@@ -313,8 +313,13 @@ def postLogs( prefix ){
 
     resultURL = ""
     if ( category == "SR" || category == "SR-StratumBMv2" || category == "SR-Tofino" ){
-        def post = build job: "SR-log-" + prefix, propagate: false
-        resultURL = post.getAbsoluteUrl()
+        if ( category == "SR-Tofino" ){
+            prefix = "Tofino"
+        }
+        node( params.assignedNode ) {
+            def post = build job: "SR-log-" + prefix, propagate: false
+            resultURL = post.getAbsoluteUrl()
+        }
     }
     return resultURL
 }

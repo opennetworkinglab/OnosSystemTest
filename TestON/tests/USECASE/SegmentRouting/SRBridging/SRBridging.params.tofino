@@ -5,6 +5,7 @@
         <nodeCluster>Fabric</nodeCluster>
         <builds>20</builds>
         <jobName>SRBridging-tofino</jobName>
+        <branch>master</branch>
     </GRAPH>
 
     <SCALE>

@@ -132,11 +132,12 @@ class ONOSSetup:
                                  onpass="Successfully construct " +
                                         "test variables ",
                                  onfail="Failed to construct test variables" )
+        branch = main.params[ 'GRAPH' ].get('branch')
 
         if main.params[ 'GRAPH' ].get('jobName'):
-            url = self.generateGraphURL( testname=main.params[ 'GRAPH' ][ 'jobName' ] )
+            url = self.generateGraphURL( testname=main.params[ 'GRAPH' ][ 'jobName' ], branch=branch )
         else:
-            url = self.generateGraphURL()
+            url = self.generateGraphURL( branch=branch )
         main.log.wiki( url )
 
         if not main.persistentSetup:
@@ -145,14 +146,15 @@ class ONOSSetup:
             #       Or try to link to deployment job?
             main.commit = main.ONOSbench.getVersion( report=True )
 
-    def generateGraphURL( self, testname=main.TEST, width=525, height=350 ):
+    def generateGraphURL( self, testname=main.TEST, width=525, height=350, branch=None ):
         """
         Description:
             Obtain the URL for the graph that corresponds to the test being run.
         """
 
         nodeCluster = main.params[ 'GRAPH' ][ 'nodeCluster' ]
-        branch = main.ONOSbench.getBranchName()
+        if not branch:
+            branch = main.ONOSbench.getBranchName()
         maxBuildsToShow = main.params[ 'GRAPH' ][ 'builds' ]
 
         return '<ac:structured-macro ac:name="html">\n' + \

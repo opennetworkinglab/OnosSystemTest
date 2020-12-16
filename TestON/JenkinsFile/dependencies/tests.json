@@ -1437,12 +1437,7 @@
         "schedules": [
             {
                 "branch": "master",
-                "day": "none",
-                "nodeLabel": "QA-POD"
-            },
-            {
-                "branch": "onos-LTS2",
-                "day": "none",
+                "day": "everyday",
                 "nodeLabel": "QA-POD"
             }
         ],

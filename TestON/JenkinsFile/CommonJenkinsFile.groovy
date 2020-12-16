@@ -124,8 +124,10 @@ def getCurrentTime(){
 
 def initGraphPaths(){
     graphPaths.put( "trendIndividual", fileRelated.rScriptPaths[ "scripts" ][ "trendIndividual" ] )
-    if ( category == "SR" || category == "SR-StratumBMv2" || category == "SR-Tofino" ){
+    if ( category == "SR" || category == "SR-StratumBMv2" ){
         graphPaths.put( "saveDirectory", fileRelated.workspaces[ "base" ] + "postjob-" + ( testStation - "TestStation-" - "s" ) + "/" )
+    } else if ( category == "SR-Tofino" ){
+        graphPaths.put( "saveDirectory", fileRelated.workspaces[ "QA-POD" ] )
     } else if ( category == "SRHA" ) {
         graphPaths.put( "saveDirectory", fileRelated.workspaces[ "Fabric" ] )
     } else if ( category == "SCPF" || category == "USECASE" ){
@@ -379,6 +381,7 @@ def runTest( JenkinsLabel, toBeRun, prop, TestONTest, graphOnly, testCategory,
                     def workSpace = "/var/jenkins/workspace/" + JenkinsLabel
                     def fileContents = ""
                     testArguments = testCategory[ JenkinsLabel ].keySet().contains( "arguments" ) ? testCategory[ JenkinsLabel ][ "arguments" ] : ""
+                    isTofino = testCategory[ JenkinsLabel ][ "category" ] == "SR-Tofino"
                     node( testStation ) {
                         withEnv( [ 'ONOSBranch=' + prop[ "ONOSBranch" ],
                                    'ONOSJAVAOPTS=' + prop[ "ONOSJAVAOPTS" ],
@@ -391,13 +394,17 @@ def runTest( JenkinsLabel, toBeRun, prop, TestONTest, graphOnly, testCategory,
                                     // Remove the old database file
                                     sh SCPFfuncs.cleanupDatabaseFile( JenkinsLabel )
                                 }
-                                sh script: configureJavaVersion(), label: "Configure Java Version"
-                                sh script: initTest(), label: "Test Initialization: stc shutdown; stc teardown; ./cleanup.sh"
+                                if ( !isTofino ) {
+                                    sh script: configureJavaVersion(), label: "Configure Java Version"
+                                    sh script: initTest(), label: "Test Initialization: stc shutdown; stc teardown; ./cleanup.sh"
+                                }
                                 catchError{
                                     sh script: runTestCli_py( TestONTest, testArguments ), label: ( "Run Test: ./cli.py run " + TestONTest + " " + testArguments )
                                 }
-                                catchError{
-                                    sh script: concludeRunTest(), label: "Conclude Running Test: ./cleanup.sh; git clean -df"
+                                if ( !isTofino ) {
+                                    catchError{
+                                        sh script: concludeRunTest(), label: "Conclude Running Test: ./cleanup.sh; git clean -df"
+                                    }
                                 }
                                 catchError{
                                     // For the Wiki page

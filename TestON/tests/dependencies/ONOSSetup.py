@@ -139,7 +139,11 @@ class ONOSSetup:
             url = self.generateGraphURL()
         main.log.wiki( url )
 
-        main.commit = main.ONOSbench.getVersion( report=True )
+        if not main.persistentSetup:
+            # ONOS is not deployed by the test
+            # TODO: Try to get commit another way, maybe container labels?
+            #       Or try to link to deployment job?
+            main.commit = main.ONOSbench.getVersion( report=True )
 
     def generateGraphURL( self, testname=main.TEST, width=525, height=350 ):
         """

@@ -238,7 +238,7 @@ function finished {
 function usage {
     printf "Usage: $(basename $0) [-dgjprsv] \n"
     printf "Usage: $(basename $0) -y [PATH] \n\n"
-    printf "This install script attempts to install deoendencies needed to run teston\n"
+    printf "This install script attempts to install dependencies needed to run teston\n"
     printf "and any tests included in the official repository. If a test still does \n"
     printf "not run after running this script, you can try looking at the test's README\n"
     printf "or the driver files used by the tests. There are some software components\n"

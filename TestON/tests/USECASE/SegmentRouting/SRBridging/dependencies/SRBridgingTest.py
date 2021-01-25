@@ -65,18 +65,21 @@ class SRBridgingTest ():
             main.Cluster.setRunningNode( onosNodes )
             run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
             if main.useBmv2:
-                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
+                if switchPrefix is None:
+                    switchPrefix = ''
                 # Translate configuration file from OVS-OFDPA to BMv2 driver
                 translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
                 translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
             else:
                 translator.bmv2ToOfdpa( main )
-            suf = main.params.get( 'jsonFileSuffix', None)
-            if suf:
-                run.loadJson( main, suffix=suf )
-            else:
-                run.loadJson( main )
-            run.loadChart( main )
+            if not main.persistentSetup:
+                suf = main.params.get( 'jsonFileSuffix', None)
+                if suf:
+                    run.loadJson( main, suffix=suf )
+                else:
+                    run.loadJson( main )
+            run.loadChart( main )  # stores hosts to ping and expected results
             if hasattr( main, 'Mininet1' ):
                 run.mnDockerSetup( main )  # optionally create and setup docker image
 
@@ -94,15 +97,14 @@ class SRBridgingTest ():
 
             else:
                 # Run the test with physical devices
-                run.connectToPhysicalNetwork( main )
+                run.connectToPhysicalNetwork( main, hostDiscovery=False )  # We don't want to do host discovery in the pod
 
             run.checkFlows( main, minFlowCount=self.topo[ topology ][ 5 if main.useBmv2 else 4 ] * self.topo[ topology ][ 1 ], sleep=5 )
             if main.useBmv2:
-                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix' )
-                if switchPrefix == "tofino":
-                    leaf_dpid = [ "device:tofino:leaf%d" % ( ls + 1 ) for ls in range( self.topo[ topology ][ 1 ]) ]
-                else:
-                    leaf_dpid = [ "device:bmv2:leaf%d" % ( ls + 1 ) for ls in range( self.topo[ topology ][ 1 ]) ]
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
+                if switchPrefix is not '' and switchPrefix is not None:
+                    switchPrefix += ':'
+                leaf_dpid = [ "device:%sleaf%d" % ( switchPrefix, ls + 1 ) for ls in range( self.topo[ topology ][ 1 ]) ]
             else:
                 leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( self.topo[ topology ][ 1 ] ) ]
             for dpid in leaf_dpid:

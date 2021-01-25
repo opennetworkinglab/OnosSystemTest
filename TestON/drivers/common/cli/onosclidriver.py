@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*-
 """
 OCT 13 2014
 Copyright 2014 Open Networking Foundation (ONF)
@@ -58,7 +58,9 @@ class OnosCliDriver( CLI ):
         self.handle = None
         self.karafUser = None
         self.karafPass = None
+        self.karafPort = None
         self.karafTimeout = None
+        self.address = None
 
         self.dockerPrompt = None
         self.graph = Graph()
@@ -71,7 +73,6 @@ class OnosCliDriver( CLI ):
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
-            self.karafPrompt = self.user_name + "@root >"
             self.home = "~/onos"
             for key in self.options:
                 if key == "home":
@@ -84,11 +85,16 @@ class OnosCliDriver( CLI ):
                     self.dockerPrompt = self.options[ key ]
                 elif key == "karaf_timeout":
                     self.karafTimeout = self.options[ key ]
+                elif key == "karaf_port":
+                    self.karafPort = self.options[ key ]
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
             self.karafPass = self.checkOptions( self.karafPass, self.pwd )
+            self.karafPort = self.checkOptions( self.karafPort, 8101 )
             self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
             self.karafTimeout = self.checkOptions( self.karafTimeout, 7200000  )
+
+            self.karafPrompt = self.karafUser + "@root >"
 
             for key in self.options:
                 if key == 'onosIp':
@@ -122,6 +128,7 @@ class OnosCliDriver( CLI ):
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( self.prompt )
             if self.handle:
+                self.address = self.ip_address
                 return self.handle
             else:
                 main.log.info( "NO ONOS HANDLE" )
@@ -282,6 +289,7 @@ class OnosCliDriver( CLI ):
         and passed to startOnosCli from PARAMS file as str.
         """
         self.onosIp = ONOSIp
+        self.address = self.onosIp
         try:
             # Check if we are already in the cli
             self.handle.sendline( "" )
@@ -293,7 +301,7 @@ class OnosCliDriver( CLI ):
             # Not in CLI so login
             if self.inDocker:
                 # The Docker does not have all the wrapper scripts
-                startCliCommand = "ssh -p 8101 -o StrictHostKeyChecking=no %s@localhost" % self.karafUser
+                startCliCommand = "ssh -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s@localhost" % ( self.karafPort, self.karafUser )
             elif waitForStart:
                 # Wait for onos start ( onos-wait-for-start ) and enter onos cli
                 startCliCommand = "onos-wait-for-start " + str( ONOSIp )
@@ -342,6 +350,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanAndExit()
         except Exception:
+            main.log.debug( self.handle.before + str( self.handle.after ) )
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
@@ -4931,6 +4940,28 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def getAddress( self):
+        """
+        Get the onos ip address from the cli. This is usefull when connecting using
+        a container manager such as kubernetes. This function also sets self.address
+        the value from ONOS.
+
+        Returns:
+            The string value of the key or
+            None on Error
+        """
+        try:
+            output = self.summary()
+            address = json.loads( output ).get( 'node' )
+            self.address = address
+            return address
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def transactionalMapGet( self, keyName ):
         """
         CLI command to get the value of a key in a consistent map using
@@ -5306,6 +5337,39 @@ class OnosCliDriver( CLI ):
             if re.search( "Error", response ):
                 return main.FALSE
             return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.cleanAndExit()
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def logList( self, saveValues=True ):
+        """
+        Gets the current log levels and optionally saves them
+        returns a dict of the log levels or
+        returns main.FALSE if Error occurred
+        """
+        try:
+            self.handle.sendline( "log:list" )
+            self.handle.expect( self.karafPrompt )
+
+            response = self.handle.before
+            logLevels = {}
+            for line in response.splitlines():
+                parsed = line.split('│')
+                logger = parsed[0].strip()
+                if len( parsed ) != 2 or 'Level' in parsed[1] or logger[0] == '─':
+                    continue
+                level = parsed[1].strip()
+                logLevels[ logger ] = level
+            if saveValues:
+                self.logLevels = logLevels
+            return logLevels
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
             main.cleanAndExit()

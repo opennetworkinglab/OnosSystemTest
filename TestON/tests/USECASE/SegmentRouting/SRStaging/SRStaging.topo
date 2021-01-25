@@ -1,0 +1,218 @@
+<TOPOLOGY>
+    <COMPONENT>
+        <ONOScell>
+            <host>localhost</host>  # ONOS "bench" machine
+            <user>jenkins</user>
+            <password></password>
+            <type>OnosClusterDriver</type>
+            <connect_order>50</connect_order>
+            <jump_host></jump_host>
+            <home>~/Projects/onos/</home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
+            <COMPONENTS>
+                <kubeConfig>~/.kube/stg-ace-menlo</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
+                <useDocker>True</useDocker>  # Whether to use docker for ONOS nodes
+                <docker_prompt>\$</docker_prompt>
+                <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost>True</diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
+                <karaf_username>karaf</karaf_username>
+                <karaf_password>karaf</karaf_password>
+                <web_user>sdn</web_user>
+                <web_pass>rocks</web_pass>
+                <rest_port></rest_port>
+                <prompt></prompt>  # TODO: we technically need a few of these, one per component
+                <onos_home>~/Projects/onos/</onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.
+                <nodes> 3 </nodes>  # number of nodes in the cluster
+            </COMPONENTS>
+        </ONOScell>
+
+        <SwitchLeaf1>
+            <host>10.32.4.132</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>12</connect_order>
+            <jump_host>NetworkBench</jump_host>
+            <COMPONENTS>
+                <shortName>leaf1</shortName>
+                <port1></port1>
+                <link1></link1>
+                <port2></port2>
+                <link2></link2>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </SwitchLeaf1>
+
+        <SwitchLeaf2>
+            <host>10.32.4.136</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>13</connect_order>
+            <jump_host>NetworkBench</jump_host>
+            <COMPONENTS>
+                <shortName>leaf2</shortName>
+                <port1></port1>
+                <link1></link1>
+                <port2></port2>
+                <link2></link2>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </SwitchLeaf2>
+
+        <SwitchSpine1>
+            <host>10.32.4.130</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>14</connect_order>
+            <jump_host>NetworkBench</jump_host>
+            <COMPONENTS>
+                <shortName>spine1</shortName>
+                <port1></port1>
+                <link1></link1>
+                <port2></port2>
+                <link2></link2>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </SwitchSpine1>
+
+        <SwitchSpine2>
+            <host>10.32.4.134</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>15</connect_order>
+            <jump_host>NetworkBench</jump_host>
+            <COMPONENTS>
+                <shortName>spine2</shortName>
+                <port1></port1>
+                <link1></link1>
+                <port2></port2>
+                <link2></link2>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </SwitchSpine2>
+
+        <Host1>
+            <host>10.32.4.138</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>6</connect_order>
+            <jump_host>NetworkBench</jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <ip>10.32.5.161</ip>
+                <shortName>h1</shortName>
+                <port1></port1>
+                <link1></link1>
+                <interfaceName>enp175s0f0</interfaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>false</sudo_required>
+            </COMPONENTS>
+        </Host1>
+
+        <Host2>
+            <host>10.32.4.139</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>7</connect_order>
+            <jump_host>NetworkBench</jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <ip>10.32.5.162</ip>
+                <shortName>h2</shortName>
+                <port1></port1>
+                <link1></link1>
+                <interfaceName>enp175s0f0</interfaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>false</sudo_required>
+            </COMPONENTS>
+        </Host2>
+
+        <Host3>
+            <host>10.32.4.140</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>8</connect_order>
+            <jump_host>NetworkBench</jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <ip>10.32.5.163</ip>
+                <shortName>h3</shortName>
+                <port1></port1>
+                <link1></link1>
+                <interfaceName>enp175s0f0</interfaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>false</sudo_required>
+            </COMPONENTS>
+        </Host3>
+
+        <ng40vm>
+            <host>10.32.5.6</host>
+            <user>ng40</user>
+            <password>ng40</password>
+            <type>HostDriver</type>
+            <connect_order>8</connect_order>
+            <jump_host>NetworkBench</jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <ip>10.32.5.6</ip>
+                <shortName>ng40</shortName>
+                <port1></port1>
+                <link1></link1>
+                <interfaceName>ens8</interfaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+            </COMPONENTS>
+        </ng40vm>
+
+        <NetworkBench>
+            <host>66.201.42.222</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>NetworkDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </NetworkBench>
+
+    </COMPONENT>
+</TOPOLOGY>

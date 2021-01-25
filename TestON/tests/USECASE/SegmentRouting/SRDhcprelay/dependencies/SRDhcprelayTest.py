@@ -49,11 +49,14 @@ class SRDhcprelayTest ():
             if main.useBmv2:
                 # Translate configuration file from OVS-OFDPA to BMv2 driver
                 translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
-                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
+                if switchPrefix is None:
+                    switchPrefix = ''
                 translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
             else:
                 translator.bmv2ToOfdpa( main )
-            run.loadJson( main )
+            if not main.persistentSetup:
+                run.loadJson( main )
             run.loadHost( main )
             if hasattr( main, 'Mininet1' ):
                 run.mnDockerSetup( main )

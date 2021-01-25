@@ -73,6 +73,10 @@ class OnosDriver( CLI ):
                     self.webUser = self.options[ key ]
                 elif key == "web_pass":
                     self.webPass = self.options[ key ]
+                elif key == "karaf_username":
+                    self.karafUser = self.options[ key ]
+                elif key == "karaf_password":
+                    self.karafPass = self.options[ key ]
 
             self.home = self.checkOptions( self.home, "~/onos" )
             self.maxNodes = self.checkOptions( self.maxNodes, 100 )
@@ -158,6 +162,7 @@ class OnosDriver( CLI ):
         response = main.TRUE
         try:
             if self.handle:
+                self.preDisconnect()
                 self.handle.sendline( "" )
                 self.handle.expect( self.prompt )
                 self.handle.sendline( "exit" )
@@ -392,7 +397,7 @@ class OnosDriver( CLI ):
                 elif i == 4:
                     # Prompt returned
                     break
-            main.log.debug( output )
+            main.log.debug( self.name + ": " + output )
             return ret
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
@@ -446,7 +451,7 @@ class OnosDriver( CLI ):
                 elif i == 5:
                     # Prompt returned
                     break
-            main.log.debug( output )
+            main.log.debug( self.name + ": " + output )
             return ret
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
@@ -812,7 +817,6 @@ class OnosDriver( CLI ):
             ~/<self.home>/tools/test/cells/
         """
         try:
-
             # Variable initialization
             cellDirectory = self.home + "/tools/test/cells/"
             # We want to create the cell file in the dependencies directory
@@ -1008,7 +1012,7 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def onosCli( self, ONOSIp, cmdstr, timeout=60 ):
+    def onosCli( self, ONOSIp, cmdstr, cliPort=8101, waitForStart=False, timeout=60 ):
         """
         Uses 'onos' command to send various ONOS CLI arguments.
         Required:
@@ -1038,17 +1042,17 @@ class OnosDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
 
-            self.handle.sendline( "onos-wait-for-start " + ONOSIp )
-            i = self.handle.expect( [ self.prompt, "Password: " ] )
-            if i == 1:
-                self.handle.sendline( self.pwd )
-                self.handle.expect( self.prompt )
-
-            self.handle.sendline( "ssh -q -p 8101 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s %s " % ( ONOSIp, cmdstr ) )
+            if waitForStart:
+                self.handle.sendline( "onos-wait-for-start " + ONOSIp )
+                i = self.handle.expect( [ self.prompt, "Password: " ] )
+                if i == 1:
+                    self.handle.sendline( self.pwd )
+                    self.handle.expect( self.prompt )
+            self.handle.sendline( "ssh -q -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s@%s %s " % ( cliPort, self.karafUser, ONOSIp, cmdstr ) )
             i = self.handle.expect( [ self.prompt, "Password: ", pexpect.TIMEOUT ], timeout=timeout )
             if i == 1:
-                self.handle.sendline( self.pwd )
-                i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=timeout )
+                self.handle.sendline( self.karafPass )
+                i = self.handle.expect( [ self.prompt, "Password:", pexpect.TIMEOUT ], timeout=timeout )
             if i == 0:
                 handleBefore = self.handle.before
                 main.log.info( self.name + ": Command sent successfully" )
@@ -1058,12 +1062,18 @@ class OnosDriver( CLI ):
                 returnString = handleBefore
                 return returnString
             elif i == 1:
+                main.log.error( self.name + ": Incorrect password for ONOS cli" )
+                self.handle.send( "\x03" )  # Control-C
+                self.handle.expect( self.prompt )
+                return main.FALSE
+            elif i == 2:
                 main.log.error( self.name + ": Timeout when sending " + cmdstr )
-                main.log.debug( self.handle.before )
+                main.log.debug( self.name + ": " + self.handle.before )
                 self.handle.send( "\x03" )  # Control-C
                 self.handle.expect( self.prompt )
                 return main.FALSE
         except pexpect.TIMEOUT:
+            main.log.debug( self.handle.before + str( self.handle.after ) )
             main.log.exception( self.name + ": Timeout when sending " + cmdstr )
             return main.FALSE
         except pexpect.EOF:
@@ -1107,7 +1117,7 @@ class OnosDriver( CLI ):
             elif i == 2:
                 # timeout
                 main.log.error( self.name + ": Failed to secure ssh on " + node )
-                main.log.debug( self.handle.before )
+                main.log.debug( self.name + ": " + self.handle.before )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1755,7 +1765,7 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def dumpONOSCmd( self, ONOSIp, CMD, destDir, filename, options="", timeout=60 ):
+    def dumpONOSCmd( self, ONOSIp, CMD, destDir, filename, options="", cliPort=8101, timeout=60 ):
         """
         Dump Cmd to a desired directory.
         For debugging purposes, you may want to use
@@ -1780,7 +1790,7 @@ class OnosDriver( CLI ):
         if destDir[ -1: ] != "/":
             destDir += "/"
         cmd = CMD + " " + options + " > " + str( destDir ) + str( filename ) + localtime
-        return self.onosCli( ONOSIp, cmd, timeout=timeout )
+        return self.onosCli( ONOSIp, cmd, cliPort=cliPort, timeout=timeout )
 
     def cpLogsToDir( self, logToCopy,
                      destDir, copyFileName="" ):

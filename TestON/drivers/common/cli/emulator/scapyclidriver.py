@@ -40,12 +40,14 @@ class ScapyCliDriver( Emulator ):
         super( ScapyCliDriver, self ).__init__()
         self.handle = self
         self.name = None
-        self.home = None
+        self.home = "~/"
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
         # TODO: Refactor driver to use these everywhere
         self.hostPrompt = "\$"
         self.scapyPrompt = ">>>"
+        self.sudoRequired = True
+        self.ifaceName = None
 
     def connect( self, **connectargs ):
         """
@@ -54,9 +56,17 @@ class ScapyCliDriver( Emulator ):
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
-            self.home = self.options[ 'home' ] if 'home' in self.options.keys() else "~/"
-            self.name = self.options[ 'name' ]
-            self.ifaceName = self.options[ 'ifaceName' ] if 'ifaceName' in self.options.keys() else self.name + "-eth0"
+            for key in self.options:
+                if key == "home":
+                    self.home = self.options[ key ]
+                elif key == "name":
+                    self.name = self.options[ key ]
+                elif key == "sudo_required":
+                    self.sudoRequired = False if self.options[ key ] == "false" else True
+                elif key == "ifaceName":
+                    self.ifaceName = self.options[ key ]
+            if self.ifaceName is None:
+                self.ifaceName = self.name + "-eth0"
 
             # Parse route config
             self.routes = []
@@ -151,8 +161,21 @@ class ScapyCliDriver( Emulator ):
 
         try:
             main.log.debug( self.name + ": Starting scapy" )
-            self.handle.sendline( "sudo scapy" )
-            self.handle.expect( self.scapyPrompt )
+            if self.sudoRequired:
+                self.handle.sendline( "sudo scapy" )
+            else:
+                self.handle.sendline( "scapy" )
+            i = self.handle.expect( [ "not found", "password for", self.scapyPrompt ] )
+            if i == 1:
+                main.log.debug( "Sudo asking for password" )
+                main.log.sendline( self.pwd )
+                i = self.handle.expect( [ "not found", self.scapyPrompt ] )
+            if i == 0:
+                output = self.handle.before + self.handle.after
+                self.handle.expect( self.prompt )
+                output += self.handle.before + self.handle.after
+                main.log.debug( self.name + ": Scapy not installed, aborting test. \n" + output )
+                main.cleanAndExit()
             self.handle.sendline( "conf.color_theme = NoTheme()" )
             self.handle.expect( self.scapyPrompt )
             response = self.cleanOutput( self.handle.before )
@@ -1022,6 +1045,9 @@ class ScapyCliDriver( Emulator ):
         main.log.info( self.name + ": Adding route to scapy session; %s via %s out of interface %s" % ( network, gateway, interface ) )
         if gateway is None:
             main.log.error( self.name + ": Gateway is None, cannot set route" )
+            return main.FALSE
+        if network is None or "None" in network:
+            main.log.error( self.name + ": Network is None, cannot set route" )
             return main.FALSE
         try:
             cmdStr = 'conf.route.add( net="%s", gw="%s"' % ( network, gateway )

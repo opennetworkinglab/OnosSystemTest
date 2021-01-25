@@ -109,7 +109,7 @@ class Cluster():
                 nodeList = self.runningNodes
 
         for ctrl in nodeList:
-            ips.append( ctrl.ipAddress )
+            ips.append( ctrl.ipAddress if ctrl.ipAddress is not 'localhost' else ctrl.address )
 
         return ips
 
@@ -310,18 +310,21 @@ class Cluster():
         Returns:
             Returns main.TRUE if it successfully set and verify cell.
         """
+        result = main.TRUE
         setCellResult = self.command( "setCell",
                                       args=[ cellName ],
                                       specificDriver=1,
                                       getFrom="all" )
-        benchCellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = self.command( "verifyCell",
-                                     specificDriver=1,
-                                     getFrom="all" )
-        result = main.TRUE
         for i in range( len( setCellResult ) ):
-            result = result and setCellResult[ i ] and verifyResult[ i ]
+            result = result and setCellResult[ i ]
+        benchCellResult = main.ONOSbench.setCell( cellName )
         result = result and benchCellResult
+        if not self.useDocker:
+            verifyResult = self.command( "verifyCell",
+                                         specificDriver=1,
+                                         getFrom="all" )
+            for i in range( len( verifyResult ) ):
+                result = result and verifyResult[ i ]
         return result
 
     def checkService( self ):
@@ -738,6 +741,7 @@ class Cluster():
             Returns True if it successfully checked
         """
         results = True
+        self.command( "getAddress", specificDriver=2 )
         nodesOutput = self.command( "nodes", specificDriver=2 )
         ips = sorted( self.getIps( activeOnly=True ) )
         for i in nodesOutput:

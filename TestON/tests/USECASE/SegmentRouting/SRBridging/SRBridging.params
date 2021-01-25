@@ -46,8 +46,6 @@
     </ONOS_Logging>
 
     <GIT>
-        <pull>False</pull>
-        <branch>master</branch>
     </GIT>
 
     <CTRL>

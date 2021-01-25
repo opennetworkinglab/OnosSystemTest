@@ -61,10 +61,11 @@ class SRLinkFailFuncs():
             else:
                 translator.bmv2ToOfdpa( main )
                 translator.bmv2ToOfdpa( main, cfgFile=xconnectFile )
-            if suf:
-                run.loadJson( main, suffix=suf )
-            else:
-                run.loadJson( main )
+            if not main.persistentSetup:
+                if suf:
+                    run.loadJson( main, suffix=suf )
+                else:
+                    run.loadJson( main )
             run.loadChart( main )
             if hasattr( main, 'Mininet1' ):
                 run.mnDockerSetup( main )  # optionally create and setup docker image

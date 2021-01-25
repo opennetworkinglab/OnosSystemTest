@@ -73,8 +73,12 @@ class Utils:
         stepResult = main.TRUE
         scpResult = main.TRUE
         copyResult = main.TRUE
+        isKube = False
         for ctrl in main.Cluster.runningNodes:
-            if ctrl.inDocker:
+            if ctrl.k8s:
+                isKube = True
+                continue
+            elif ctrl.inDocker:
                 scpResult = scpResult and ctrl.server.dockerCp( ctrl.name,
                                                                 "/opt/onos/log/karaf.log",
                                                                 "/tmp/karaf.log",
@@ -97,6 +101,28 @@ class Utils:
                 stepResult = main.TRUE and stepResult
             else:
                 stepResult = main.FALSE and stepResult
+        if isKube:
+            # TODO: Look into using Stern, kail, or just use `kubectl logs <pod>`
+            # We also need to save the pod name to switch name mapping
+            main.ONOSbench.kubectlPodNodes( dstPath=main.logdir + "/podMapping.txt",
+                                            kubeconfig=ctrl.k8s.kubeConfig,
+                                            namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
+            # TODO Get stratum write logs
+            # Save image for pods, based on "describe pods"
+            main.ONOSbench.kubectlDescribe( "pods",
+                                            main.logdir + "/describePods.txt",
+                                            kubeconfig=ctrl.k8s.kubeConfig,
+                                            namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
+            # Get the pod logs
+            pods = main.ONOSbench.kubectlGetPodNames( kubeconfig=ctrl.k8s.kubeConfig,
+                                                      namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
+
+            for pod in pods:
+                path = "%s/%s.log" % ( main.logdir, pod )
+                stratumPods = main.ONOSbench.kubectlLogs( pod,
+                                                          path,
+                                                          kubeconfig=ctrl.k8s.kubeConfig,
+                                                          namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully copied remote ONOS logs",

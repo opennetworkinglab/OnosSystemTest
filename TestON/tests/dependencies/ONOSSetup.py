@@ -695,6 +695,7 @@ class ONOSSetup:
         elif main.persistentSetup:
             for ctrl in cluster.getRunningNodes():
                 ctrl.inDocker = True
+                ctrl.CLI.inDocker = True
 
         onosCliResult = main.TRUE
         if startOnosCli:

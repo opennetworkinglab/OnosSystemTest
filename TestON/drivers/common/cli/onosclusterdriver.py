@@ -68,7 +68,7 @@ class Controller():
         raise AttributeError( "Could not find the attribute %s in %r or it's component handles" % ( name, self ) )
 
     def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None,
-                  userName=None, server=None, dockerPrompt=None ):
+                  userName=None, server=None, k8s=None, dockerPrompt=None ):
         # TODO: validate these arguments
         self.name = str( name )
         self.ipAddress = ipAddress
@@ -80,6 +80,7 @@ class Controller():
         self.ip_address = ipAddress
         self.user_name = userName
         self.server = server
+        self.k8s = k8s
         self.dockerPrompt = dockerPrompt
 
 class OnosClusterDriver( CLI ):
@@ -94,6 +95,7 @@ class OnosClusterDriver( CLI ):
         self.useDocker = False
         self.dockerPrompt = None
         self.maxNodes = None
+        self.kubeConfig = None
         self.nodes = []
         super( OnosClusterDriver, self ).__init__()
 
@@ -129,6 +131,8 @@ class OnosClusterDriver( CLI ):
                 elif key == "nodes":
                     # Maximum number of ONOS nodes to run, if there is any
                     self.maxNodes = self.options[ key ]
+                elif key == "kubeConfig":
+                    self.kubeConfig = self.options[ key ]
 
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
@@ -139,43 +143,45 @@ class OnosClusterDriver( CLI ):
             self.useDocker = self.checkOptions( self.useDocker, False )
             self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
             self.maxNodes = int( self.checkOptions( self.maxNodes, 100 ) )
+            self.kubeConfig = self.checkOptions( self.kubeConfig, None )
 
             self.name = self.options[ 'name' ]
 
-            # Grabs all OC environment variables based on max number of nodes
-            # TODO: Also support giving an ip range as a compononet option
-            self.onosIps = {}  # Dictionary of all possible ONOS ip
 
-            try:
-                if self.maxNodes:
-                    for i in range( self.maxNodes ):
-                        envString = "OC" + str( i + 1 )
-                        # If there is no more OC# then break the loop
-                        if os.getenv( envString ):
-                            self.onosIps[ envString ] = os.getenv( envString )
+            if not self.kubeConfig:
+                # Grabs all OC environment variables based on max number of nodes
+                # TODO: Also support giving an ip range as a compononet option
+                self.onosIps = {}  # Dictionary of all possible ONOS ip
+
+                try:
+                    if self.maxNodes:
+                        for i in range( self.maxNodes ):
+                            envString = "OC" + str( i + 1 )
+                            # If there is no more OC# then break the loop
+                            if os.getenv( envString ):
+                                self.onosIps[ envString ] = os.getenv( envString )
+                            else:
+                                self.maxNodes = len( self.onosIps )
+                                main.log.info( self.name +
+                                               ": Created cluster data with " +
+                                               str( self.maxNodes ) +
+                                               " maximum number" +
+                                               " of nodes" )
+                                break
+
+                        if not self.onosIps:
+                            main.log.info( "Could not read any environment variable"
+                                           + " please load a cell file with all" +
+                                            " onos IP" )
+                            self.maxNodes = None
                         else:
-                            self.maxNodes = len( self.onosIps )
-                            main.log.info( self.name +
-                                           ": Created cluster data with " +
-                                           str( self.maxNodes ) +
-                                           " maximum number" +
-                                           " of nodes" )
-                            break
-
-                    if not self.onosIps:
-                        main.log.info( "Could not read any environment variable"
-                                       + " please load a cell file with all" +
-                                        " onos IP" )
-                        self.maxNodes = None
-                    else:
-                        main.log.info( self.name + ": Found " +
-                                       str( self.onosIps.values() ) +
-                                       " ONOS IPs" )
-            except KeyError:
-                main.log.info( "Invalid environment variable" )
-            except Exception as inst:
-                main.log.error( "Uncaught exception: " + str( inst ) )
-
+                            main.log.info( self.name + ": Found " +
+                                           str( self.onosIps.values() ) +
+                                           " ONOS IPs" )
+                except KeyError:
+                    main.log.info( "Invalid environment variable" )
+                except Exception as inst:
+                    main.log.error( "Uncaught exception: " + str( inst ) )
             try:
                 if os.getenv( str( self.ip_address ) ) is not None:
                     self.ip_address = os.getenv( str( self.ip_address ) )
@@ -200,7 +206,41 @@ class OnosClusterDriver( CLI ):
             if self.handle:
                 self.handle.sendline( "cd " + self.home )
                 self.handle.expect( "\$" )
+                if self.kubeConfig:
+                    # Try to get # of onos nodes using given kubernetes configuration
+                    names = self.kubectlGetPodNames( self.kubeConfig,
+                                                     main.params[ 'kubernetes' ][ 'namespace' ],
+                                                     main.params[ 'kubernetes' ][ 'appName' ] )
+                    self.podNames = names
+                    self.onosIps = {}  # Dictionary of all possible ONOS ip
+                    for i in range( 1, len( names ) + 1 ):
+                        self.onosIps[ 'OC%i' % i ] = self.ip_address
+                    self.maxNodes = len( names )
                 self.createComponents( prefix=prefix )
+                if self.kubeConfig:
+                    # Create Port Forwarding sessions for each controller
+                    for node in self.nodes:
+                        kubectl = node.k8s
+                        index = self.nodes.index( node )
+                        # Store each pod name in the k8s component
+                        kubectl.podName = self.podNames[ index ]
+                        # Setup port-forwarding and save the local port
+                        guiPort = 8181
+                        cliPort = 8101
+                        portsList = ""
+                        for port in [ guiPort, cliPort ]:
+                            localPort = port + index + 1
+                            portsList += "%s:%s " % ( localPort, port )
+                            if port == cliPort:
+                                node.CLI.karafPort = localPort
+                        main.log.info( "Setting up port forward for pod %s: [ %s ]" % ( self.podNames[ index ], portsList ) )
+                        pf = kubectl.kubectlPortForward( self.podNames[ index ],
+                                                         portsList,
+                                                         kubectl.kubeConfig,
+                                                         main.params[ 'kubernetes' ][ 'namespace' ] )
+                        if not pf:
+                            main.log.error( "Failed to create port forwarding" )
+                            return main.FALSE
                 return self.handle
             else:
                 main.log.info( "Failed to create ONOS handle" )
@@ -243,6 +283,8 @@ class OnosClusterDriver( CLI ):
         clihost = main.componentDictionary[ name ][ 'COMPONENTS' ].get( "diff_clihost", "" )
         if clihost == "True":
             main.componentDictionary[ name ][ 'host' ] = host
+        home = main.componentDictionary[name]['COMPONENTS'].get( "onos_home", None )
+        main.componentDictionary[name]['home'] = self.checkOptions( home, None )
         main.componentDictionary[name]['type'] = "OnosCliDriver"
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
 
@@ -279,7 +321,6 @@ class OnosClusterDriver( CLI ):
         Parse the cluster options to create an ONOS cli component with the given name
         """
         main.componentDictionary[name] = main.componentDictionary[self.name].copy()
-        main.log.debug( main.componentDictionary[name] )
         user = main.componentDictionary[name]['COMPONENTS'].get( "web_user", "onos" )
         main.componentDictionary[name]['user'] = self.checkOptions( user, "onos" )
         password = main.componentDictionary[name]['COMPONENTS'].get( "web_pass", "rocks" )
@@ -289,7 +330,6 @@ class OnosClusterDriver( CLI ):
         main.componentDictionary[name]['port'] = self.checkOptions( port, "8181" )
         main.componentDictionary[name]['type'] = "OnosRestDriver"
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
-        main.log.debug( main.componentDictionary[name] )
 
     def createRestComponent( self, name, ipAddress ):
         """
@@ -328,7 +368,6 @@ class OnosClusterDriver( CLI ):
         home = main.componentDictionary[name]['COMPONENTS'].get( "onos_home", None )
         main.componentDictionary[name]['home'] = self.checkOptions( home, None )
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
-        main.log.debug( main.componentDictionary[name] )
 
     def createBenchComponent( self, name ):
         """
@@ -372,10 +411,11 @@ class OnosClusterDriver( CLI ):
         home = main.componentDictionary[name]['COMPONENTS'].get( "onos_home", None )
         main.componentDictionary[name]['home'] = self.checkOptions( home, None )
         # TODO: for now we use karaf user name and password also for logging to the onos nodes
-        main.componentDictionary[name]['user'] = self.karafUser
-        main.componentDictionary[name]['password'] = self.karafPass
+        # FIXME: We shouldn't use karaf* for this, what we want is another set of variables to
+        #        login to a shell on the server ONOS is running on
+        #main.componentDictionary[name]['user'] = self.karafUser
+        #main.componentDictionary[name]['password'] = self.karafPass
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
-        main.log.debug( main.componentDictionary[name] )
 
     def createServerComponent( self, name, ipAddress ):
         """
@@ -416,11 +456,14 @@ class OnosClusterDriver( CLI ):
         restPrefix = prefix + "rest"
         benchPrefix = prefix + "bench"
         serverPrefix = prefix + "server"
+        k8sPrefix = prefix + "k8s"
         for i in xrange( 1, self.maxNodes + 1 ):
             cliName = cliPrefix + str( i  )
             restName = restPrefix + str( i )
             benchName = benchPrefix + str( i )
             serverName = serverPrefix + str( i )
+            if self.kubeConfig:
+                k8sName = k8sPrefix + str( i )
 
             # Unfortunately this means we need to have a cell set beofre running TestON,
             # Even if it is just the entire possible cluster size
@@ -430,6 +473,10 @@ class OnosClusterDriver( CLI ):
             rest = self.createRestComponent( restName, ip )
             bench = self.createBenchComponent( benchName )
             server = self.createServerComponent( serverName, ip ) if createServer else None
+            k8s = self.createServerComponent( k8sName, ip ) if self.kubeConfig else None
+            if self.kubeConfig:
+                k8s.kubeConfig = self.kubeConfig
+                k8s.podName = None
             self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1,
-                                           self.user_name, server=server,
+                                           self.user_name, server=server, k8s=k8s,
                                            dockerPrompt=self.dockerPrompt ) )

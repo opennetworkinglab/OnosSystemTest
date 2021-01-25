@@ -365,7 +365,7 @@ class Testcaselib:
         network.discoverHosts()
 
     @staticmethod
-    def connectToPhysicalNetwork( main ):
+    def connectToPhysicalNetwork( main, hostDiscovery=True ):
         main.step( "Connecting to physical netowrk" )
         main.physicalNet = True
         topoResult = main.NetworkBench.connectToNet()
@@ -414,7 +414,8 @@ class Testcaselib:
                                  actual=stepResult,
                                  onpass="Successfully connected inband hosts",
                                  onfail="Failed to connect inband hosts" )
-        Testcaselib.discoverHosts( main )
+        if hostDiscovery:
+            Testcaselib.discoverHosts( main )
 
     @staticmethod
     def saveOnosDiagnostics( main ):
@@ -540,11 +541,13 @@ class Testcaselib:
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "flows",
                                         main.logdir,
-                                        tag + "_FlowsBefore" )
+                                        tag + "_FlowsBefore",
+                                        cliPort=main.Cluster.active(0).CLI.karafPort )
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "groups",
                                         main.logdir,
-                                        tag + "_GroupsBefore" )
+                                        tag + "_GroupsBefore",
+                                        cliPort=main.Cluster.active(0).CLI.karafPort )
 
     @staticmethod
     def checkDevices( main, switches, tag="", sleep=10 ):
@@ -630,7 +633,7 @@ class Testcaselib:
 
     @staticmethod
     def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False,
-                 sleep=10, retryAttempts=1, skipOnFail=False ):
+                 sleep=10, retryAttempts=1, skipOnFail=False, useScapy=True ):
         '''
         Verify connectivity between hosts according to the ping chart
         acceptableFailed: max number of acceptable failed pings.
@@ -697,7 +700,7 @@ class Testcaselib:
                                                  onpass="IPv6 connectivity successfully tested",
                                                  onfail="IPv6 connectivity failed" )
                 elif main.physicalNet:
-                    pa = main.Network.pingallHosts( hosts, ipv6=True, useScapy=True )
+                    pa = main.Network.pingallHosts( hosts, ipv6=True, useScapy=useScapy )
                     utilities.assert_equals( expect=expect, actual=pa,
                                              onpass="IP connectivity successfully tested",
                                              onfail="IP connectivity failed" )
@@ -716,11 +719,13 @@ class Testcaselib:
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "flows",
                                         main.logdir,
-                                        tag + "_FlowsOn" )
+                                        tag + "_FlowsOn",
+                                        cliPort=main.Cluster.active(0).CLI.karafPort )
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "groups",
                                         main.logdir,
-                                        tag + "_GroupsOn" )
+                                        tag + "_GroupsOn",
+                                        cliPort=main.Cluster.active(0).CLI.karafPort )
 
     @staticmethod
     def killLink( main, end1, end2, switches, links, sleep=None ):
@@ -1053,6 +1058,8 @@ class Testcaselib:
         if not main.persistentSetup:
             for ctrl in main.Cluster.active():
                 main.ONOSbench.onosStop( ctrl.ipAddress )
+        else:
+            Testcaselib.resetOnosLogLevels( main )
         Testcaselib.mnDockerTeardown( main )
 
     @staticmethod
@@ -1758,6 +1765,10 @@ class Testcaselib:
         Read and Set onos log levels from the params file
         """
         main.step( 'Set logging levels' )
+        # Get original values incase we want to reset them
+        ctrl = main.Cluster.active(0)
+        ctrl.CLI.logList()
+
         logging = True
         try:
             logs = main.params.get( 'ONOS_Logging', False )
@@ -1770,3 +1781,32 @@ class Testcaselib:
         utilities.assert_equals( expect=True, actual=logging,
                                  onpass="Set log levels",
                                  onfail="Failed to set log levels" )
+
+    @staticmethod
+    def resetOnosLogLevels( main ):
+        """
+        Read and reset onos log levels to a previously read set of values
+        """
+        main.step( 'Reset logging levels' )
+        # Get original values incase we want to reset them
+        ctrl = main.Cluster.active(0)
+        currentLevels = ctrl.CLI.logList( saveValues=False )
+        origLevels = ctrl.CLI.logLevels
+        toBeSet = {}
+        for logger, level in currentLevels.iteritems():
+            if logger not in origLevels:
+                toBeSet[ logger ] = origLevels[ 'ROOT' ]
+            else:
+                oldLevel = origLevels[ logger ]
+                if level != oldLevel:
+                    toBeSet[ logger ] = oldLevel
+        logging = True
+        try:
+            for logger, level in toBeSet.iteritems():
+                for ctrl in main.Cluster.active():
+                    ctrl.CLI.logSet( level, logger )
+        except AttributeError:
+            logging = False
+        utilities.assert_equals( expect=True, actual=logging,
+                                 onpass="Reset log levels",
+                                 onfail="Failed to reset log levels" )

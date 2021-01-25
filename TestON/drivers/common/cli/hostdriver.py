@@ -228,14 +228,12 @@ class HostDriver( ScapyCliDriver ):
             self.handle.sendline( command )
             i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ],
                                     timeout=wait + 5 )
+            response = self.handle.before
             if i == 1:
                 main.log.error(
                     self.name +
                     ": timeout when waiting for response" )
                 main.log.error( self.name + ": response: " + str( self.handle.before ) )
-            self.handle.sendline( "" )
-            self.handle.expect( self.prompt )
-            response = self.handle.before
             if re.search( ',\s0\%\spacket\sloss', response ):
                 main.log.info( self.name + ": no packets lost, host is reachable" )
                 return main.TRUE

@@ -175,6 +175,9 @@ class TestON:
         driver_options[ 'name' ] = component
         driverName = self.componentDictionary[ component ][ 'type' ]
         driver_options[ 'type' ] = driverName
+        driver_home = self.componentDictionary[ component ].get( 'home' )
+        if driver_home:
+            driver_options[ 'home' ] = driver_home
 
         classPath = self.getDriverPath( driverName.lower() )
         driverModule = importlib.import_module( classPath )

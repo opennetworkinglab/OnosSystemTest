@@ -305,7 +305,8 @@ class Topology:
                     main.log.debug( "t3 command: {}".format( cmd ) )
                     main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, cmd, main.logdir,
                                                 "t3-CASE{}-{}-{}-route{}-".format( main.CurrentTestCaseNumber, srcIp, dstIp, i ),
-                                                timeout=10 )
+                                                timeout=10,
+                                                cliPort=main.Cluster.active(0).CLI.karafPort )
         return main.FALSE if unexpectedPings else main.TRUE
 
     def sendScapyPackets( self, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True, acceptableFailed=0, collectT3=True, t3Command="" ):
@@ -337,7 +338,8 @@ class Topology:
             main.log.debug( "Collecting t3 with source {} and destination {}".format( sender.name, receiver.name ) )
             main.log.debug( "t3 command: {}".format( t3Command ) )
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, t3Command, main.logdir,
-                                        "t3-CASE{}-{}-{}-".format( main.CurrentTestCaseNumber, sender.name, receiver.name ) )
+                                        "t3-CASE{}-{}-{}-".format( main.CurrentTestCaseNumber, sender.name, receiver.name ),
+                                        cliPort=main.Cluster.active(0).CLI.karafPort )
         return scapyResult
 
     def sendScapyPacketsHelper( self, sender, receiver, pktFilter, pkt, sIface=None, dIface=None, expect=True ):
@@ -418,7 +420,8 @@ class Topology:
                 main.log.debug( "t3 command: {}".format( cmd ) )
                 main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress, cmd, main.logdir,
                                             "t3-CASE{}-{}-{}-route{}-".format( main.CurrentTestCaseNumber, srcIp, dstIp, i ),
-                                            timeout=10 )
+                                            timeout=10,
+                                            cliPort=main.Cluster.active(0).CLI.karafPort )
         return trafficResult
 
     def pingAndCaptureHelper( self, srcHost, dstIp, dstHost, dstIntf, ipv6=False, expect=True ):

@@ -55,10 +55,11 @@ class SROnosFailureFuncs():
             else:
                 translator.bmv2ToOfdpa( main )
                 translator.bmv2ToOfdpa( main, cfgFile=xconnectFile )
-            if suf:
-                run.loadJson( main, suffix=suf )
-            else:
-                run.loadJson( main )
+            if not main.persistentSetup:
+                if suf:
+                    run.loadJson( main, suffix=suf )
+                else:
+                    run.loadJson( main )
             run.loadChart( main )
             if hasattr( main, 'Mininet1' ):
                 run.mnDockerSetup( main )  # optionally create and setup docker image
@@ -74,8 +75,9 @@ class SROnosFailureFuncs():
                 # Run the test with physical devices
                 # TODO: connect TestON to the physical network
                 pass
-            # xconnects need to be loaded after topology
-            run.loadXconnects( main )
+            if not main.persistentSetup:
+                # xconnects need to be loaded after topology
+                run.loadXconnects( main )
             switches = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
             links = ( self.topo[ Topo ][ 0 ] * self.topo[ Topo ][ 1 ] ) * 2
             # pre-configured routing and bridging test

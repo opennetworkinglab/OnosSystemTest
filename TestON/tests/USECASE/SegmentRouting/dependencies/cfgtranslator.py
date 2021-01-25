@@ -100,6 +100,10 @@ def bmv2ToOfdpa( main, cfgFile="", rolesRE=r'spine|leaf' ):
 # Translate configuration JSON file from OFDPA-OVS driver to BMv2 driver.
 def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="", roleMap={r'0*[1-9]([0-9]){2}': 'spine', r'0{15}[1-9]': "leaf"} ):
     didRE = r"of:0*(?P<swNum>[1-9][0-9]*)(/(?P<portNum>[0-9]+))?"
+    if switchPrefix is None:
+        switchPrefix = ''
+    else:
+        switchPrefix += ':'
     if not cfgFile:
         cfgFile = "%s%s.json" % ( main.configPath + main.forJson,
                                   main.cfgName )
@@ -117,7 +121,7 @@ def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="", roleMap={r'0*[1-9]([0-9]
                     if roleMatch:
                         role = roleValue
                         break
-                new_port = 'device:' + switchPrefix + ':' + role + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
+                new_port = 'device:' + switchPrefix + role + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
                 netcfg[ 'ports' ][ new_port ] = netcfg[ 'ports' ].pop( port )
 
     if 'hosts' in netcfg.keys():
@@ -134,7 +138,7 @@ def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="", roleMap={r'0*[1-9]([0-9]
                             if roleMatch:
                                 role = roleValue
                                 break
-                        new_locations.append( 'device:' + switchPrefix + ':' + role + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' ) )
+                        new_locations.append( 'device:' + switchPrefix + role + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' ) )
                     else:
                         new_locations.append( location )
                 netcfg[ 'hosts' ][ host ][ 'basic' ][ 'locations' ] = new_locations
@@ -149,7 +153,7 @@ def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="", roleMap={r'0*[1-9]([0-9]
                         if roleMatch:
                             role = roleValue
                             break
-                    new_location = 'device:' + switchPrefix + ':' + role + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
+                    new_location = 'device:' + switchPrefix + role + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
                     netcfg[ 'hosts' ][ host ][ 'basic' ][ 'locations' ] = new_location
 
     if 'devices' in netcfg.keys():
@@ -160,9 +164,9 @@ def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="", roleMap={r'0*[1-9]([0-9]
                 #TODO This or roleMap? maybe use this to populate role Map?
                 isLeaf = netcfg[ 'devices' ][ device ][ SR_APP ][ 'isEdgeRouter' ]
                 if isLeaf is True:
-                    new_device = 'device:' + switchPrefix + ':leaf' + searchObj.group( 'swNum' )
+                    new_device = 'device:' + switchPrefix + 'leaf' + searchObj.group( 'swNum' )
                 else:
-                    new_device = 'device:' + switchPrefix + ':spine' + searchObj.group( 'swNum' )
+                    new_device = 'device:' + switchPrefix + 'spine' + searchObj.group( 'swNum' )
                 netcfg[ 'devices' ][ new_device ] = netcfg[ 'devices' ].pop( device )
             if 'pairDeviceId' in netcfg[ 'devices' ][ new_device ][ SR_APP ].keys():
                 searchObj = re.search( didRE,
@@ -175,7 +179,7 @@ def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="", roleMap={r'0*[1-9]([0-9]
                         if roleMatch:
                             role = roleValue
                             break
-                    netcfg[ 'devices' ][ new_device ][ SR_APP ][ 'pairDeviceId' ] = 'device:' + switchPrefix + ':' + role + \
+                    netcfg[ 'devices' ][ new_device ][ SR_APP ][ 'pairDeviceId' ] = 'device:' + switchPrefix + role + \
                                                                                     searchObj.group( 'swNum' )
             if 'basic' in netcfg[ 'devices' ][ new_device ].keys():
                 if 'driver' in netcfg[ 'devices' ][ new_device ][ 'basic' ].keys():
@@ -196,7 +200,7 @@ def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="", roleMap={r'0*[1-9]([0-9]
                                 role = roleValue
                                 break
                         netcfg[ 'apps' ][ DHCP_APP_ID ][ 'default' ][ i ][ 'dhcpServerConnectPoint' ] = \
-                            'device:' + switchPrefix + ':' + role + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
+                            'device:' + switchPrefix + role + searchObj.group( 'swNum' ) + '/' + searchObj.group( 'portNum' )
 
     if 'xconnects' in netcfg.keys():
         new_xconnects = []
@@ -210,7 +214,7 @@ def ofdpaToBmv2( main, switchPrefix="bmv2", cfgFile="", roleMap={r'0*[1-9]([0-9]
                     if roleMatch:
                         role = roleValue
                         break
-                new_device = 'device:' + switchPrefix + ':' + role + searchObj.group( 'swNum' )
+                new_device = 'device:' + switchPrefix + role + searchObj.group( 'swNum' )
                 xconnect[ 'deviceId' ] = new_device
             new_xconnects.append( xconnect )
         netcfg[ 'xconnects' ] = new_xconnects

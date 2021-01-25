@@ -509,7 +509,7 @@ class NetworkDriver( CLI ):
             cannot reach each other"""
         hostComponentList = []
         for hostName in hostList:
-            hostComponent = self.hosts[ hostName ]
+            hostComponent = self.hosts[ str( hostName ) ]
             if hostComponent:
                 hostComponentList.append( hostComponent )
         try:
@@ -611,7 +611,7 @@ class NetworkDriver( CLI ):
                 pingResponse += str( str( srcHost.shortName ) + " -> " )
                 for dstHost in dstComponentList:
                     failedPings = 0
-                    dstIP = dstHost.ip
+                    dstIP = dstHost.ip_address
                     assert dstIP, "Not able to get IP address of host {}".format( dstHost )
                     for iface in srcHost.interfaces:
                         # FIXME This only works if one iface name is configured

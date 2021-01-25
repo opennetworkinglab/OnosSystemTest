@@ -8,12 +8,13 @@
             <connect_order>1</connect_order>
             <home></home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
             <COMPONENTS>
+                <kubeConfig>~/.kube/qa-ace-menlo</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
                 <useDocker>True</useDocker>  # Whether to use docker for ONOS nodes
-                <docker_prompt>~/onos#</docker_prompt>
+                <docker_prompt>\$</docker_prompt>
                 <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
                 <diff_clihost>True</diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
-                <karaf_username></karaf_username>
-                <karaf_password></karaf_password>
+                <karaf_username>karaf</karaf_username>
+                <karaf_password>karaf</karaf_password>
                 <web_user>sdn</web_user>
                 <web_pass>rocks</web_pass>
                 <rest_port></rest_port>
@@ -30,13 +31,14 @@
             <type>StratumOSSwitchDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
+                <prompt>#</prompt>
                 <shortName>leaf1</shortName>
                 <port1>1</port1>
                 <link1>Host1</link1>
                 <port2>2</port2>
                 <link2>Host2</link2>
-                <onosConfigPath>~/TestON/tests/USECASE/SegmentRouting/SRBridging/dependencies/json/</onosConfigPath>
-                <onosConfigFile>tofino-onos-netcfg.json</onosConfigFile>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
             </COMPONENTS>
         </SwitchLeaf1>
 
@@ -49,14 +51,14 @@
             <COMPONENTS>
                 <mac>3c:fd:fe:a8:ea:30</mac>
                 <inband>false</inband>
-                <ip>10.0.2.1</ip>
+                <ip>192.168.102.2</ip>
                 <shortName>h1</shortName>
                 <port1>0</port1>
                 <link1>SwitchLeaf1</link1>
                 <interfaceName>ens6f0</interfaceName>
                 <routes>
                     <route1>
-                        <network>10.0.2.0</network>
+                        <network>192.168.102.1</network>
                         <netmask>24</netmask>
                         <gw></gw>
                         <interface></interface>
@@ -74,14 +76,14 @@
             <COMPONENTS>
                 <mac>3c:fd:fe:a8:ea:31</mac>
                 <inband>false</inband>
-                <ip>10.0.2.2</ip>
+                <ip>192.168.102.11</ip>
                 <shortName>h2</shortName>
                 <port1>0</port1>
                 <link1>SwitchLeaf1</link1>
                 <interfaceName>ens6f1</interfaceName>
                 <routes>
                     <route1>
-                        <network>10.0.2.0</network>
+                        <network>192.168.102.1</network>
                         <netmask>24</netmask>
                         <gw></gw>
                         <interface></interface>

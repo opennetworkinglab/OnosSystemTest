@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 '''
 Created on 20-Dec-2012
 Copyright 2012 Open Networking Foundation

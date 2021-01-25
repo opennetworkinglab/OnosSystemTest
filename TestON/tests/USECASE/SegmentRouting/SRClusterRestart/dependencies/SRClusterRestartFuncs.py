@@ -40,7 +40,8 @@ class SRClusterRestartFuncs():
             main.cfgName = Topo
             main.Cluster.setRunningNode( numNodes )
             run.installOnos( main )
-            run.loadJson( main )
+            if not main.persistentSetup:
+                run.loadJson( main )
             run.loadChart( main )
             if hasattr( main, 'Mininet1' ):
                 run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )

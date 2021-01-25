@@ -22,6 +22,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 import pexpect
 import re
+import os
 
 from drivers.component import Component
 
@@ -47,6 +48,7 @@ class CLI( Component ):
            It will take user_name ,ip_address and password as arguments<br>
            and will return the handle.
         """
+        self.shell = "/bin/bash -l"
         for key in connectargs:
             vars( self )[ key ] = connectargs[ key ]
         self.checkPrompt()
@@ -55,27 +57,24 @@ class CLI( Component ):
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host " + \
             self.ip_address + " port 22: Connection refused"
+        ssh_options = "-t -X -A -o ServerAliveInterval=120 -o TCPKeepAlive=yes"
+        ssh_destination = self.user_name + "@" + self.ip_address
+        envVars = { "TERM": "vt100" }
+        # TODO: Add option to specify which shell/command to use
+        jump_host = main.componentDictionary[ self.name ].get( 'jump_host' )
         if self.port:
-            self.handle = pexpect.spawn(
-                'ssh -X -p ' +
-                self.port +
-                ' ' +
-                self.user_name +
-                '@' +
-                self.ip_address +
-                ' -o ServerAliveInterval=120 -o TCPKeepAlive=yes',
-                env={ "TERM": "vt100" },
-                maxread=1000000 )
-        else:
-            self.handle = pexpect.spawn(
-                'ssh -X ' +
-                self.user_name +
-                '@' +
-                self.ip_address +
-                ' -o ServerAliveInterval=120 -o TCPKeepAlive=yes',
-                env={ "TERM": "vt100" },
-                maxread=1000000,
-                timeout=60 )
+            ssh_option += " -p " + self.port
+        if jump_host:
+            jump_host = main.componentDictionary.get( jump_host )
+            ssh_options += " -J %s@%s" % ( jump_host.get( 'user' ), jump_host.get( 'host' ) )
+        ssh_auth = os.getenv('SSH_AUTH_SOCK')
+        if ssh_auth:
+            envVars[ 'SSH_AUTH_SOCK' ] = ssh_auth
+        self.handle = pexpect.spawn(
+            "ssh %s %s %s" % ( ssh_options, ssh_destination, self.shell ),
+            env=envVars,
+            maxread=1000000,
+            timeout=60 )
 
         # set tty window size
         self.handle.setwinsize( 24, 250 )
@@ -119,6 +118,7 @@ class CLI( Component ):
                     return main.FALSE
             elif i == 2:
                 main.log.error( self.name + ": Connection timeout" )
+                main.log.debug( self.handle.before )
                 return main.FALSE
             elif i == 3:  # timeout
                 main.log.error(
@@ -126,15 +126,18 @@ class CLI( Component ):
                     self.user_name +
                     "@" +
                     self.ip_address )
+                main.log.debug( self.handle.before )
                 return main.FALSE
             elif i == 4:
                 main.log.error(
                     "ssh: connect to host " +
                     self.ip_address +
                     " port 22: Connection refused" )
+                main.log.debug( self.handle.before )
                 return main.FALSE
             elif i == 6:  # Incorrect Password
                 main.log.error( self.name + ": Incorrect Password" )
+                main.log.debug( self.handle.before )
                 return main.FALSE
             elif i == 7:  # Prompt
                 main.log.info( self.name + ": Password not required logged in" )
@@ -146,6 +149,7 @@ class CLI( Component ):
         return self.handle
 
     def disconnect( self ):
+        result = self.preDisconnect()
         result = super( CLI, self ).disconnect( self )
         result = main.TRUE
 
@@ -373,6 +377,10 @@ class CLI( Component ):
                             while "to" means copy "to" the remote machine from
                             local machine
         """
+        jump_host = main.componentDictionary[ remoteHost.name ].get( 'jump_host' )
+        if jump_host:
+            jump_host = main.componentDictionary.get( jump_host )
+            options += " -J %s@%s " % ( jump_host.get( 'user' ), jump_host.get( 'host' ) )
         return self.secureCopy( remoteHost.user_name,
                                 remoteHost.ip_address,
                                 filePath,
@@ -728,7 +736,7 @@ class CLI( Component ):
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
 
-    def dockerRun( self, image, containerName, options="", imageArgs="" ):
+    def dockerRun( self, image, containerName, options="", imageArgs="", background=False ):
         """
         Run a docker image
         Required Arguments:
@@ -745,6 +753,8 @@ class CLI( Component ):
                                                          options if options else "",
                                                          image,
                                                          imageArgs )
+            if background:
+                cmdStr += " &"
             main.log.info( self.name + ": sending: " + cmdStr )
             self.handle.sendline( cmdStr)
             i = self.handle.expect( [ self.prompt,
@@ -923,6 +933,254 @@ class CLI( Component ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+# TODO: How is this different from exitFromCmd used elsewhere?
+    def exitFromProcess( self ):
+        """
+        Send ctrl-c, which should close and exit the program
+        """
+        try:
+            cmdStr = "\x03"
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.send( cmdStr)
+            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ] )
+            if i == 0:
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error exiting process" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def preDisconnect( self ):
+        """
+        A Stub for a function that will be called before disconnect.
+        This can be set if for instance, the shell is running a program
+        and needs to exit the program before disconnecting from the component
+        """
+        print "preDisconnect"
+        return main.TRUE
+
+    def kubectlGetPodNames( self, kubeconfig=None, namespace=None, app=None, name=None ):
+        """
+        Use kubectl to get the names of pods
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        - app: Get pods belonging to a specific app
+        - name: Get pods with a specific name label
+        Returns a list containing the names of the pods or
+            main.FALSE on Error
+        """
+
+        try:
+            cmdStr = "kubectl %s %s get pods %s %s --output=jsonpath='{.items..metadata.name}{\"\\n\"}'" % (
+                        "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                        "-n %s" % namespace if namespace else "",
+                        "-l app=%s" % app if app else "",
+                        "-l name=%s" % name if name else "" )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ] )
+            if i == 3:
+                output = self.handle.before + self.handle.after
+                names = output.split( '\r\n' )[1].split()
+                return names
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def kubectlDescribe( self, describeString, dstPath, kubeconfig=None, namespace=None ):
+        """
+        Use kubectl to get the logs from a pod
+        Required Arguments:
+        - describeString: The string passed to the cli. Example: "pods"
+        - dstPath: The location to save the logs to
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        Returns main.TRUE or
+            main.FALSE on Error
+        """
+
+        try:
+            cmdStr = "kubectl %s %s describe %s > %s " % (
+                        "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                        "-n %s" % namespace if namespace else "",
+                        describeString,
+                        dstPath )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ] )
+            if i == 3:
+                main.log.debug( self.name + ": " + self.handle.before )
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def kubectlPodNodes( self, dstPath=None, kubeconfig=None, namespace=None ):
+        """
+        Use kubectl to get the logs from a pod
+        Optional Arguments:
+        - dstPath: The location to save the logs to
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        Returns main.TRUE if dstPath is given, else the output of the command or
+            main.FALSE on Error
+        """
+
+        try:
+            cmdStr = "kubectl %s %s get pods -o=custom-columns=NAME:.metadata.name,NODE:.spec.nodeName %s " % (
+                        "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                        "-n %s" % namespace if namespace else "",
+                        " > %s" % dstPath if dstPath else "" )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ] )
+            if i == 3:
+                output = self.handle.before
+                main.log.debug( self.name + ": " + output )
+                return output if dstPath else main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def kubectlLogs( self, podName, dstPath, kubeconfig=None, namespace=None, timeout=240 ):
+        """
+        Use kubectl to get the logs from a pod
+        Required Arguments:
+        - podName: The name of the pod to get the logs of
+        - dstPath: The location to save the logs to
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        - timeout: Timeout for command to return. The longer the logs, the longer it will take to fetch them.
+        Returns main.TRUE or
+            main.FALSE on Error
+        """
+
+        try:
+            cmdStr = "kubectl %s %s logs %s > %s " % (
+                        "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                        "-n %s" % namespace if namespace else "",
+                        podName,
+                        dstPath )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ], timeout=timeout )
+            if i == 3:
+                main.log.debug( self.name + ": " + self.handle.before )
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def kubectlPortForward( self, podName, portsList,  kubeconfig=None, namespace=None, ):
+        """
+        Use kubectl to setup port forwarding from the local machine to the kubernetes pod
+
+        Note: This command does not return until the port forwarding session is ended.
+
+        Required Arguments:
+        - podName: The name of the pod as a string
+        - portsList: The list of ports to forward, as a string. see kubectl help for details
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        - app: Get pods belonging to a specific app
+        Returns a list containing the names of the pods or
+            main.FALSE on Error
+
+
+        """
+        try:
+            cmdStr = "kubectl %s %s port-forward pod/%s %s" % (
+                        "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                        "-n %s" % namespace if namespace else "",
+                        podName,
+                        portsList )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error", "closed/timedout",
+                                      self.prompt, "The connection to the server", "Forwarding from" ] )
+            # NOTE: This won't clear the buffer entirely, and each time the port forward
+            #       is used, another line will be added to the buffer. We need to make
+            #       sure we clear the buffer before using this component again.
+
+            if i == 5:
+                # Setup preDisconnect function
+                self.preDisconnect = self.exitFromProcess
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
             return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )

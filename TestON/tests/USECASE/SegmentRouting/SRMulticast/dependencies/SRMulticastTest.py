@@ -44,11 +44,14 @@ def setupTest( main, test_idx, onosNodes ):
         if main.useBmv2:
             # Translate configuration file from OVS-OFDPA to BMv2 driver
             translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
-            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
+            if switchPrefix is None:
+                switchPrefix = ''
             translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
         else:
             translator.bmv2ToOfdpa( main )
-        lib.loadJson( main )
+        if not main.persistentSetup:
+            lib.loadJson( main )
         time.sleep( float( main.params[ "timers" ][ "loadNetcfgSleep" ] ) )
         main.cfgName = "common" if hasattr( main, "Mininet1" ) else main.params[ "DEPENDENCY" ][ "confName" ]
         lib.loadMulticastConfig( main )

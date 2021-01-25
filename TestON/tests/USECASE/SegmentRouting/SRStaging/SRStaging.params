@@ -1,0 +1,80 @@
+<PARAMS>
+    <testcases>7</testcases>
+
+    <GRAPH>
+        <nodeCluster>staging</nodeCluster>
+        <builds>20</builds>
+        <jobName>SRStaging</jobName>
+        <branch>master</branch>
+    </GRAPH>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <useCommonConf>False</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix></switchPrefix>
+        <stratumRoot>~/stratum</stratumRoot>
+        <topology>trellis_fabric.py</topology>
+        <lib>routinglib.py,trellislib.py,stratum.py</lib>
+    </DEPENDENCY>
+
+    <jsonFileSuffix>.hw</jsonFileSuffix>
+
+    <persistent_setup>True</persistent_setup>
+
+    <kubernetes>
+        <appName>onos-tost-onos-classic</appName>
+        <namespace>tost</namespace>
+    </kubernetes>
+
+    <PERF>
+        <traffic_host>Host1 Host2 Host3</traffic_host>
+        <traffic_cmd_arguments> -u -b 20M -t 20</traffic_cmd_arguments>
+
+        <pcap_host>ng40vm</pcap_host>
+        <pcap_cmd_arguments>-t e -F pcap -s 100 </pcap_cmd_arguments>
+
+    </PERF>
+    <ONOS_Logging>
+        <org.onosproject.p4runtime.ctl.client>DEBUG</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.gnmi.ctl>TRACE</org.onosproject.gnmi.ctl>
+    </ONOS_Logging>
+
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3</cellApps>
+    </ENV>
+
+    <EXTERNAL_APPS>
+    </EXTERNAL_APPS>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+    </timers>
+
+    <SLEEP>
+        <startup>10</startup>
+    </SLEEP>
+
+    <TOPO>
+        <switchNum>4</switchNum>
+        <linkNum>16</linkNum>
+    </TOPO>
+
+    <ALARM>
+        <minPassPercent>100</minPassPercent>
+    </ALARM>
+</PARAMS>

@@ -1319,15 +1319,10 @@
                 "branch": "master",
                 "day": "weekdays",
                 "nodeLabel": "Fabric-master"
-            },
-            {
-                "branch": "onos-LTS2",
-                "day": "weekdays",
-                "nodeLabel": "Fabric-LTS2"
             }
         ],
         "category": "SR-StratumBMv2",
-        "supportedBranches": [ "onos-LTS2", "master" ]
+        "supportedBranches": [ "master" ]
     },
     "SRRouting-stratum": {
         "test": "SRRouting",
@@ -1339,15 +1334,10 @@
                 "branch": "master",
                 "day": "weekdays",
                 "nodeLabel": "Fabric-master"
-            },
-            {
-                "branch": "onos-LTS2",
-                "day": "weekdays",
-                "nodeLabel": "Fabric-LTS2"
             }
         ],
         "category": "SR-StratumBMv2",
-        "supportedBranches": [ "onos-LTS2", "master" ]
+        "supportedBranches": [ "master" ]
     },
     "SRDynamicConf-stratum": {
         "test": "SRDynamicConf",
@@ -1359,15 +1349,10 @@
                 "branch": "master",
                 "day": "weekdays",
                 "nodeLabel": "Fabric-master"
-            },
-            {
-                "branch": "onos-LTS2",
-                "day": "weekdays",
-                "nodeLabel": "Fabric-LTS2"
             }
         ],
         "category": "SR-StratumBMv2",
-        "supportedBranches": [ "onos-LTS2", "master" ]
+        "supportedBranches": [  "master" ]
     },
     "SRLinkFailure-stratum": {
         "test": "SRLinkFailure",
@@ -1379,15 +1364,10 @@
                 "branch": "master",
                 "day": "weekdays",
                 "nodeLabel": "Fabric-master"
-            },
-            {
-                "branch": "onos-LTS2",
-                "day": "weekdays",
-                "nodeLabel": "Fabric-LTS2"
             }
         ],
         "category": "SR-StratumBMv2",
-        "supportedBranches": [ "onos-LTS2", "master" ]
+        "supportedBranches": [ "master" ]
     },
     "SROnosFailure-stratum": {
         "test": "SROnosFailure",
@@ -1399,15 +1379,10 @@
                 "branch": "master",
                 "day": "weekdays",
                 "nodeLabel": "Fabric-master"
-            },
-            {
-                "branch": "onos-LTS2",
-                "day": "weekdays",
-                "nodeLabel": "Fabric-LTS2"
             }
         ],
         "category": "SR-StratumBMv2",
-        "supportedBranches": [ "onos-LTS2", "master" ]
+        "supportedBranches": [ "master" ]
     },
     "SRBridging-stratum": {
         "test": "SRBridging",
@@ -1419,15 +1394,10 @@
                 "branch": "master",
                 "day": "weekdays",
                 "nodeLabel": "Fabric-master"
-            },
-            {
-                "branch": "onos-LTS2",
-                "day": "weekdays",
-                "nodeLabel": "Fabric-LTS2"
             }
         ],
         "category": "SR-StratumBMv2",
-        "supportedBranches": [ "onos-LTS2", "master" ]
+        "supportedBranches": [ "master" ]
     },
     "SRBridging-tofino": {
         "test": "SRBridging",

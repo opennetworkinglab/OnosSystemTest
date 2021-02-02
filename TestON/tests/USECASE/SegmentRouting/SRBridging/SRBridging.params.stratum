@@ -37,7 +37,7 @@
         <dockerBuildCmd>make ONOS_VERSION=master DOCKER_TAG=TestON-master onos-build trellis-control-build trellis-t3-build tost-build</dockerBuildCmd> # If using another cmd like make
         <dockerBuildTimeout>1200</dockerBuildTimeout>
         <dockerFilePath>~/tost-onos</dockerFilePath>
-        <dockerImageTag>tost:TestON-master</dockerImageTag>
+        <dockerImageTag>registry.aetherproject.org/tost/tost:master</dockerImageTag>
         <dockerOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/cluster.json:/root/onos/config/cluster.json </dockerOptions> # We start the container detached, so the docker component can connect to cli instead of logs
         <atomixImageTag>atomix/atomix:3.1.5</atomixImageTag>
         <atomixOptions>-d --rm --network host -v ~/.ssh/authorized_keys:/root/.ssh/authorized_keys -v /tmp/atomix.json:/opt/atomix/conf/atomix.json </atomixOptions>

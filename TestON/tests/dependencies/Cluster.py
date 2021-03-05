@@ -746,8 +746,15 @@ class Cluster():
             Returns True if it successfully checked
         """
         results = True
-        self.command( "getAddress", specificDriver=2 )
         nodesOutput = self.command( "nodes", specificDriver=2 )
+        if None in nodesOutput:
+            return False
+        try:
+            self.command( "getAddress", specificDriver=2 )
+        except ( ValueError, TypeError ):
+            main.log.error( "Error parsing summary output" )
+            currentResult = False
+            return currentResult
         ips = sorted( self.getIps( activeOnly=True ) )
         for i in nodesOutput:
             try:

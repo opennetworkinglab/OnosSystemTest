@@ -95,7 +95,9 @@ class OnosClusterDriver( CLI ):
         self.useDocker = False
         self.dockerPrompt = None
         self.maxNodes = None
+        self.karafPromptPass = None
         self.kubeConfig = None
+        self.karafPromptUser = None
         self.nodes = []
         super( OnosClusterDriver, self ).__init__()
 
@@ -118,6 +120,14 @@ class OnosClusterDriver( CLI ):
                     self.karafUser = self.options[ key ]
                 elif key == "karaf_password":
                     self.karafPass = self.options[ key ]
+                elif key == "node_username":
+                    self.nodeUser = self.options[ key ]
+                elif key == "node_password":
+                    self.nodePass = self.options[ key ]
+                elif key == "karafPrompt_username":
+                    self.karafPromptUser = self.options[ key ]
+                elif key == "karafPrompt_password":
+                    self.karafPromptPass = self.options[ key ]
                 elif key == "cluster_name":
                     prefix = self.options[ key ]
                 elif key == "useDocker":
@@ -137,6 +147,10 @@ class OnosClusterDriver( CLI ):
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
             self.karafPass = self.checkOptions( self.karafPass, self.pwd )
+            self.nodeUser = self.checkOptions( self.nodeUser, self.user_name )
+            self.nodePass = self.checkOptions( self.nodePass, self.pwd )
+            self.karafPromptUser = self.checkOptions( self.karafPromptUser, self.user_name )
+            self.karafPromptPass = self.checkOptions( self.karafPromptPass, self.pwd )
             self.webUser = self.checkOptions( self.webUser, "onos" )
             self.webPass = self.checkOptions( self.webPass, "rocks" )
             prefix = self.checkOptions( prefix, "ONOS" )
@@ -288,6 +302,7 @@ class OnosClusterDriver( CLI ):
         home = main.componentDictionary[name]['COMPONENTS'].get( "onos_home", None )
         main.componentDictionary[name]['home'] = self.checkOptions( home, None )
         main.componentDictionary[name]['type'] = "OnosCliDriver"
+        main.componentDictionary[name]['COMPONENTS']['karafPromptUser'] = self.karafPromptUser
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
 
     def createCliComponent( self, name, host ):
@@ -415,8 +430,8 @@ class OnosClusterDriver( CLI ):
         # TODO: for now we use karaf user name and password also for logging to the onos nodes
         # FIXME: We shouldn't use karaf* for this, what we want is another set of variables to
         #        login to a shell on the server ONOS is running on
-        #main.componentDictionary[name]['user'] = self.karafUser
-        #main.componentDictionary[name]['password'] = self.karafPass
+        main.componentDictionary[name]['user'] = self.nodeUser
+        main.componentDictionary[name]['password'] = self.nodePass
         main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
 
     def createServerComponent( self, name, ipAddress ):

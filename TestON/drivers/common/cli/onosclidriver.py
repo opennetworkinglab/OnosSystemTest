@@ -61,7 +61,7 @@ class OnosCliDriver( CLI ):
         self.karafPort = None
         self.karafTimeout = None
         self.address = None
-
+        self.karafPromptUser = None
         self.dockerPrompt = None
         self.graph = Graph()
         super( OnosCliDriver, self ).__init__()
@@ -87,6 +87,8 @@ class OnosCliDriver( CLI ):
                     self.karafTimeout = self.options[ key ]
                 elif key == "karaf_port":
                     self.karafPort = self.options[ key ]
+                elif key == "karafPromptUser":
+                    self.karafPromptUser = self.options[ key ]
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
             self.karafPass = self.checkOptions( self.karafPass, self.pwd )
@@ -94,8 +96,7 @@ class OnosCliDriver( CLI ):
             self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
             self.karafTimeout = self.checkOptions( self.karafTimeout, 7200000  )
 
-            self.karafPrompt = self.karafUser + "@root >"
-
+            self.karafPrompt = self.karafPromptUser + "@root >"
             for key in self.options:
                 if key == 'onosIp':
                     self.onosIp = self.options[ 'onosIp' ]

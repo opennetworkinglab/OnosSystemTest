@@ -16,8 +16,8 @@
                 <diff_clihost>True</diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
                 <karaf_username>karaf</karaf_username>
                 <karaf_password>karaf</karaf_password>
-                <web_user>sdn</web_user>
-                <web_pass>rocks</web_pass>
+                <web_user>karaf</web_user>
+                <web_pass>karaf</web_pass>
                 <rest_port></rest_port>
                 <prompt></prompt>  # TODO: we technically need a few of these, one per component
                 <onos_home>~/Projects/onos/</onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.

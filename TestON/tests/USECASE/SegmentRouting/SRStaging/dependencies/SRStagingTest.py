@@ -45,7 +45,7 @@ class SRStagingTest ():
         self.switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
         main.switchType = "ovs"
 
-    def setupTest( self, main, test_idx, topology, onosNodes, description, vlan = [] ):
+    def setupTest( self, main, topology, onosNodes, description, vlan = [] ):
         try:
             skipPackage = False
             init = False
@@ -62,7 +62,6 @@ class SRStagingTest ():
                          onosNodes,
                          's' if onosNodes > 1 else '' ) )
 
-            main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
             main.Cluster.setRunningNode( onosNodes )
             # Set ONOS Log levels
             # TODO: Check levels before and reset them after
@@ -224,25 +223,56 @@ class SRStagingTest ():
         except Exception as e:
             main.log.exception( "Error in stopCapturing" )
 
-    def linkDown( self, device, port, srcComponentList, dstComponent, shortDesc, longDesc ):
+    def linkDown( self, device, portsList, srcComponentList, dstComponent, shortDesc, longDesc, sleepTime=10 ):
         """"
         High level function that handles an event including monitoring
         Arguments:
             device - String of the device uri in ONOS
-            port - String of the port uri in ONOS
+            portsList - List of strings of the port uri in ONOS that we might take down
             srcComponentLsit - List containing src components, used for sending traffic
             dstComponent - Component used for receiving taffic
             shortDesc - String, Short description, used in reporting and file prefixes
             longDesc - String, Longer description, used in logging
+        Returns:
+            A string of the port id that was brought down
         """
         import time
+        deltaStats = {}
+        for p in portsList:
+            deltaStats[ p ] = {}
         try:
+            # Get port stats info
+            initialStats = json.loads( main.Cluster.active(0).REST.portstats() )
+            for d in initialStats:
+                if d[ 'device' ] == device:
+                    for p in d[ 'ports' ]:
+                        if p[ 'port' ] in portsList:
+                            deltaStats[ p[ 'port' ] ][ 'tx1' ] = p[ 'packetsSent' ]
+
             main.step( "Start Capturing" )
             main.funcs.startCapturing( main,
                                        srcComponentList,
                                        dstComponent,
                                        shortDesc=shortDesc,
                                        longDesc=longDesc )
+            # Let some packets flow
+            time.sleep( float( main.params['timers'].get( 'TrafficDiscovery', 5 ) ) )
+            # Get port stats info
+            updatedStats = json.loads( main.Cluster.active(0).REST.portstats() )
+            for d in updatedStats:
+                if d[ 'device' ] == device:
+                    for p in d[ 'ports' ]:
+                        if p[ 'port' ] in portsList:
+                            deltaStats[ p[ 'port' ] ][ 'tx2' ] = p[ 'packetsSent' ]
+            for port, stats in deltaStats.iteritems():
+                deltaStats[ port ]['delta'] = stats[ 'tx2' ] - stats[ 'tx1' ]
+
+            main.log.debug( deltaStats )
+            port = max( deltaStats, key=lambda p: deltaStats[ p ][ 'tx2' ] - deltaStats[ p ][ 'tx1' ] )
+            if deltaStats[ port ][ 'delta' ] == 0:
+                main.log.warn( "Could not find a port with traffic. Likely need to wait longer for stats to be updated" )
+            main.log.debug( port )
+            # Determine which port to bring down
             main.step( "Port down" )
             ctrl = main.Cluster.active( 0 ).CLI
             portDown = ctrl.portstate( dpid=device, port=port, state="disable" )
@@ -254,18 +284,19 @@ class SRStagingTest ():
                             adminState = p['isEnabled']
             main.log.debug( adminState )
             #TODO ASSERTS
-            main.log.info( "Sleeping 10 seconds" )
-            time.sleep(10)
+            main.log.info( "Sleeping %s seconds" % sleepTime )
+            time.sleep( sleepTime )
             main.step( "Stop Capturing" )
             main.funcs.stopCapturing( main,
                                       srcComponentList,
                                       dstComponent,
                                       shortDesc=shortDesc,
                                       longDesc=longDesc )
+            return port
         except Exception as e:
             main.log.exception( "Error in linkDown" )
 
-    def linkUp( self, device, port, srcComponentList, dstComponent, shortDesc, longDesc ):
+    def linkUp( self, device, port, srcComponentList, dstComponent, shortDesc, longDesc, sleepTime=10 ):
         """"
         High level function that handles an event including monitoring
         Arguments:
@@ -277,6 +308,9 @@ class SRStagingTest ():
             longDesc - String, Longer description, used in logging
         """
         import time
+        if port is None:
+            main.log.warn( "Incorrect port number, cannot bring up port" )
+            return
         try:
             main.step( "Start Capturing" )
             main.funcs.startCapturing( main,
@@ -295,8 +329,8 @@ class SRStagingTest ():
                             adminState = p['isEnabled']
             main.log.debug( adminState )
             #TODO ASSERTS
-            main.log.info( "Sleeping 10 seconds" )
-            time.sleep(10)
+            main.log.info( "Sleeping %s seconds" % sleepTime )
+            time.sleep( sleepTime )
             main.step( "Stop Capturing" )
             main.funcs.stopCapturing( main,
                                       srcComponentList,
@@ -387,7 +421,6 @@ class SRStagingTest ():
             main.log.warn( "Error opening " + dbFileName + " to write results." )
 
     def cleanup( self, main ):
-        # TODO: Do things like restore log levels here
         run.cleanup( main )
+        main.step( "Writing csv results file for db" )
         self.dbWrite( main, "SRStaging-dbfile.csv")
-

@@ -1065,7 +1065,7 @@ class CLI( Component ):
         """
 
         try:
-            cmdStr = "kubectl %s %s get pods -o=custom-columns=NAME:.metadata.name,NODE:.spec.nodeName %s " % (
+            cmdStr = "kubectl %s %s get pods -o wide %s " % (
                         "--kubeconfig %s" % kubeconfig if kubeconfig else "",
                         "-n %s" % namespace if namespace else "",
                         " > %s" % dstPath if dstPath else "" )

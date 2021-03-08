@@ -2345,3 +2345,41 @@ class OnosRestDriver( Controller ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def portstats( self, ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Gets the portstats for each port in ONOS
+        Returns:
+            A list of dicts containing device id and a list of dicts containing the
+            port statistics for each port.
+            Returns main.FALSE if error on request;
+            Returns None for exception
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            response = self.send( url="/statistics/ports", ip = ip, port = port )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    output = response[ 1 ]
+                    a = json.loads( output ).get( 'statistics' )
+                    assert a is not None, "Error parsing json object"
+                    b = json.dumps( a )
+                    return b
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

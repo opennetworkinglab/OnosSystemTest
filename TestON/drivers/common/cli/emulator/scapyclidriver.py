@@ -792,7 +792,7 @@ class ScapyCliDriver( Emulator ):
             self.handle.expect( self.scapyPrompt )
             response = self.cleanOutput( self.handle.before )
             main.log.debug( self.name + ": Send packet response: {}".format( response ) )
-            if "Traceback" in response:
+            if "Traceback" in response or "Errno" in response or "Error" in response:
                 # KeyError, SyntaxError, ...
                 main.log.error( self.name + ": Error in sending command: " + response )
                 return main.FALSE
@@ -915,6 +915,10 @@ class ScapyCliDriver( Emulator ):
             else:
                 self.handle.sendline( "pkts.summary()")
             output = self.clearBuffer()
+            if "Traceback" in output or "Errno" in output or "Error" in output:
+                # KeyError, SyntaxError, IOError, NameError, ...
+                main.log.error( self.name + ": Error in sending command: " + output )
+                main.cleanAndExit()
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
             return None
@@ -1081,7 +1085,7 @@ class ScapyCliDriver( Emulator ):
             gw = route.get( 'gw' )
             iface = route.get( 'interface' )
             returnValues .append( self.addRoute( "%s/%s" % ( route.get( 'network' ), route.get( 'netmask' ) ),
-                                                 gw if gw else main.Cluster.active(0).ipAddress,
+                                                 gw if gw else main.Cluster.active(0).address,
                                                  interface=iface if iface else self.interfaces[ 0 ].get( 'name' ) ) )
         return returnValues
 

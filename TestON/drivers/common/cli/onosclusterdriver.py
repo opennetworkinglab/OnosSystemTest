@@ -233,6 +233,8 @@ class OnosClusterDriver( CLI ):
                             portsList += "%s:%s " % ( localPort, port )
                             if port == cliPort:
                                 node.CLI.karafPort = localPort
+                            elif port == guiPort:
+                                node.REST.port = localPort
                         main.log.info( "Setting up port forward for pod %s: [ %s ]" % ( self.podNames[ index ], portsList ) )
                         pf = kubectl.kubectlPortForward( self.podNames[ index ],
                                                          portsList,

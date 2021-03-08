@@ -35,7 +35,7 @@
 
     <PERF>
         <traffic_host>Host1 Host2 Host3</traffic_host>
-        <traffic_cmd_arguments> -u -b 20M -t 20</traffic_cmd_arguments>
+        <traffic_cmd_arguments> -u -b 20M -t 40</traffic_cmd_arguments>
 
         <pcap_host>ng40vm</pcap_host>
         <pcap_cmd_arguments>-t e -F pcap -s 100 </pcap_cmd_arguments>
@@ -63,6 +63,7 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
+        <TrafficDiscovery>10</TrafficDiscovery>
     </timers>
 
     <SLEEP>

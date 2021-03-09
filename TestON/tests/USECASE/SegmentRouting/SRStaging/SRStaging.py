@@ -183,6 +183,5 @@ class SRStaging:
         longDesc = "%s Recovery: Bring up  %s/%s" % ( descPrefix, device, port4 )
         main.funcs.linkUp( device, port4, srcComponentList, dstComponent, shortDesc, longDesc )
 
-        main.log.warn( main.downtimeResults )
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
         main.funcs.cleanup( main )

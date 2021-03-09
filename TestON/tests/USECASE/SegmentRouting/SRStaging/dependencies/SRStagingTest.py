@@ -25,7 +25,7 @@ import re
 import json
 import pexpect
 
-class SRStagingTest ():
+class SRStagingTest():
 
     def __init__( self ):
         self.default = ''
@@ -45,7 +45,7 @@ class SRStagingTest ():
         self.switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
         main.switchType = "ovs"
 
-    def setupTest( self, main, topology, onosNodes, description, vlan = [] ):
+    def setupTest( self, main, topology, onosNodes, description, vlan=[] ):
         try:
             skipPackage = False
             init = False
@@ -98,7 +98,7 @@ class SRStagingTest ():
         try:
             # ping right before to make sure arp is cached and sudo is authenticated
             for src in srcList:
-                src.handle.sendline( "sudo /bin/ping -c 1 %s" % dst.ip_address )
+                src.handle.sendline( "sudo /bin/ping -c 1 %s" % dst.interfaces[0]['ips'][0] )
                 try:
                     i = src.handle.expect( [ "password", src.prompt ] )
                     if i == 0:
@@ -108,7 +108,7 @@ class SRStagingTest ():
                     main.log.error( "Unexpected response from ping" )
                     src.handle.send( '\x03' )  # ctrl-c
                     src.handle.expect( src.prompt )
-                main.log.warn( "%s: %s" % ( src.name, src.handle.before ) )
+                main.log.warn( "%s: %s" % ( src.name, str( src.handle.before ) ) )
             # TODO: Create new components for iperf and tshark?
             #       Also generate more streams with differnt udp ports or some other
             #       method of guranteeing we kill a link with traffic
@@ -142,7 +142,7 @@ class SRStagingTest ():
             for command in commands:
                 dst.handle.sendline( command )
                 dst.handle.expect( dst.prompt )
-                main.log.debug( "%s: %s" % (dst.name, dst.handle.before ) )
+                main.log.debug( "%s: %s" % (dst.name, str( dst.handle.before ) ) )
             main.log.info( "Starting tshark on %s " % dst.name )
             dst.handle.sendline( "sudo /usr/bin/tshark %s &> /dev/null &" % tsharkArgsReceiver )
             dst.handle.expect( dst.prompt )
@@ -164,7 +164,7 @@ class SRStagingTest ():
                 for command in commands:
                     src.handle.sendline( command )
                     src.handle.expect( src.prompt )
-                    main.log.debug( "%s: %s" % (src.name, src.handle.before ) )
+                    main.log.debug( "%s: %s" % (src.name, str( src.handle.before ) ) )
 
                 main.log.info( "Starting tshark on %s " % src.name )
                 for src in srcList:
@@ -192,31 +192,50 @@ class SRStagingTest ():
             # Stop packet capture
             dst.handle.sendline( 'fg' )  # Bring process to front
             dst.handle.send( '\x03' )  # send ctrl-c
-            dst.handle.expect( dst.prompt )
+            try:
+                for _ in range(10):
+                    dst.handle.expect( dst.prompt, timeout=1 )
+            except pexpect.TIMEOUT:
+                pass
             for src in srcList:
                 src.handle.sendline( 'fg' )  # Bring process to front
                 src.handle.send( '\x03' )  # send ctrl-c
-                src.handle.expect( src.prompt )
+                try:
+                    for _ in range(10):
+                        src.handle.expect( src.prompt, timeout=1 )
+                except pexpect.TIMEOUT:
+                    pass
             # Stop traffic
             for src in srcList:
                 src.handle.sendline( 'fg' )  # Bring process to front
                 src.handle.send( '\x03' )  # send ctrl-c
-                src.handle.expect( src.prompt )
+                try:
+                    for _ in range(10):
+                        src.handle.expect( src.prompt, timeout=1 )
+                except pexpect.TIMEOUT:
+                    pass
             main.pingStop = time.time()
             main.log.warn( "It took %s seconds since we started ping for us to stop pcap" % ( main.pingStop - main.pingStart ) )
 
-            main.downtimeResults[ shortDesc ] = {}
             for src in srcList:
                 pcapFileSender = "%s/tshark/%s-%s-tsharkSender" % ( "~/TestON",
                                                                 shortDesc if shortDesc else "tshark",
                                                                 src.name )
-                main.downtimeResults[ shortDesc ].update( { src.name: self.analyzePcap( src, pcapFileSender, "'udp && ip.src == %s'" % src.interfaces[0]['ips'][0], debug=False) } )
-                main.downtimeResults[ shortDesc ].update( { "%s-%s" % ( src.name, dst.name ): self.analyzePcap( dst, pcapFileReceiver, "'udp && ip.src == %s'" % src.interfaces[0]['ips'][0], debug=False) } )
+                senderTime = self.analyzePcap( src, pcapFileSender, "'udp && ip.src == %s'" % src.interfaces[0]['ips'][0], debug=False )
+                receiverTime = self.analyzePcap( dst, pcapFileReceiver, "'udp && ip.src == %s'" % src.interfaces[0]['ips'][0], debug=False )
+                main.downtimeResults[ "%s-%s" % ( shortDesc, src.name ) ] = senderTime
+                main.downtimeResults[ "%s-%s-%s" % ( shortDesc, src.name, dst.name ) ] = receiverTime
                 # Grab pcap
                 senderSCP = main.ONOSbench.scp( src, pcapFileSender, main.logdir, direction="from" )
+                utilities.assert_equals( expect=main.TRUE, actual=senderSCP,
+                                         onpass="Saved pcap files from %s" % src.name,
+                                         onfail="Failed to scp pcap files from %s" % src.name )
             # Grab logs
             # Grab pcap
             receiverSCP = main.ONOSbench.scp( dst, pcapFileReceiver, main.logdir, direction="from" )
+            utilities.assert_equals( expect=main.TRUE, actual=receiverSCP,
+                                     onpass="Saved pcap files from %s" % dst.name,
+                                     onfail="Failed to scp pcap files from %s" % dst.name )
             # Grab Write logs on switches
             #  TODO: kubectl cp write-reqs.txt
 
@@ -368,16 +387,21 @@ class SRStagingTest ():
                     output += component.handle.before + str( component.handle.after )
             except pexpect.TIMEOUT:
                 main.log.debug( "%s: %s" % ( component.name, output ) )
+                component.handle.send( "\x03" )  # CTRL-C
+                component.handle.expect( component.prompt, timeout=5 )
+                main.log.debug( component.handle.before + str( component.handle.after ) )
             except Exception as e:
                 main.log.exception( "Error in onosDown" )
+                return -1
             lineRE = r'^\s*\d+\s+([0-9.]+)'
             tsharkOptions = "-t dd -r %s -Y %s -T fields -e frame.number -e frame.time_delta  -e ip.src -e ip.dst -e udp" % ( filePath, packetFilter )
             component.handle.sendline( "sudo /usr/bin/tshark %s" % tsharkOptions )
-            i = component.handle.expect( [ "appears to be damaged or corrupt.", "Malformed Packet", component.prompt, pexpect.TIMEOUT ], timeout=60 )
+            i = component.handle.expect( [ "appears to be damaged or corrupt.", "Malformed Packet", component.prompt, pexpect.TIMEOUT ], timeout=240 )
             if i != 2:
                 main.log.error( "Error Reading pcap file" )
+                main.log.debug( component.handle.before + str( component.handle.after ) )
                 component.handle.send( '\x03' )  # CTRL-C to end process
-                component.handle.expect( component.prompt )
+                component.handle.expect( [ component.prompt, pexpect.TIMEOUT ] )
                 main.log.debug( component.handle.before )
                 return 0
             output = component.handle.before
@@ -405,22 +429,25 @@ class SRStagingTest ():
         except Exception as e:
             main.log.exception( "Error in analyzePcap" )
 
-    def dbWrite( self, main, filename ):
+    def dbWrite( self, main, filename, headerOrder=None ):
         try:
             dbFileName = "%s/%s" % ( main.logdir, filename )
             dbfile = open( dbFileName, "w+" )
             header = []
             row = []
-            for eventName, results in main.downtimeResults.iteritems():
-                for measurementName, value in results.iteritems():
-                    header.append( "'%s-%s'" % ( eventName, measurementName ) )
-                    row.append( "'%s'" % value )
+            if not headerOrder:
+                headerOrder = main.downtimeResults.keys()
+                headerOrder.sort()
+            for item in headerOrder:
+                header.append( "'%s'" % item )
+                row.append( "'%s'" % main.downtimeResults[ item ] )
+
             dbfile.write( ",".join( header ) + "\n" + ",".join( row ) + "\n" )
             dbfile.close()
         except IOError:
             main.log.warn( "Error opening " + dbFileName + " to write results." )
 
-    def cleanup( self, main ):
+    def cleanup( self, main, headerOrder=None ):
         run.cleanup( main )
         main.step( "Writing csv results file for db" )
-        self.dbWrite( main, "SRStaging-dbfile.csv")
+        self.dbWrite( main, main.TEST + "-dbfile.csv", headerOrder )

@@ -179,12 +179,11 @@
         </Host3>
 
         <ng40vm>
-            <host>10.32.5.6</host>
+            <host>192.168.122.102</host>
             <user>ng40</user>
             <password>ng40</password>
             <type>HostDriver</type>
             <connect_order>8</connect_order>
-            <jump_host>NetworkBench</jump_host>
             <COMPONENTS>
                 <mac></mac>
                 <inband>false</inband>

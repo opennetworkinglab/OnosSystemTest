@@ -294,11 +294,19 @@ class CLI( Component ):
                             while "to" means copy "to" the remote machine from
                             local machine
         """
-        returnVal = main.TRUE
+        returnVal = main.FALSE
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host " + \
                   ipAddress + " port 22: Connection refused"
         cmd = "scp %s " % options
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt, timeout=5 )
+        except pexpect.TIMEOUT:
+            main.log.error( "%s: Component not ready for input" % self.name )
+            main.log.debug( "%s: %s%s" % ( self.name, self.handle.before, str( self.handle.after ) ) )
+            self.handle.send( "\x03" )  # CTRL-C
+            self.handle.expect( self.prompt, timeout=5 )
 
         if direction == "from":
             cmd = cmd + str( userName ) + '@' + str( ipAddress ) + ':' + \
@@ -313,7 +321,8 @@ class CLI( Component ):
         main.log.info( self.name + ": Sending: " + cmd )
         self.handle.sendline( cmd )
         i = 0
-        while i < 2:
+        timeout = 120
+        while i <= 6 :
             i = self.handle.expect( [
                                 ssh_newkey,
                                 'password:',
@@ -324,15 +333,17 @@ class CLI( Component ):
                                 self.prompt,
                                 pexpect.EOF,
                                 pexpect.TIMEOUT ],
-                                120 )
+                                timeout=timeout )
             if i == 0:  # ask for ssh key confirmation
                 main.log.info( self.name + ": ssh key confirmation received, sending yes" )
                 self.handle.sendline( 'yes' )
             elif i == 1:  # Asked for ssh password
+                timeout = 120
                 main.log.info( self.name + ": ssh connection asked for password, gave password" )
                 self.handle.sendline( pwd )
             elif i == 2:  # File finished transfering
                 main.log.info( self.name + ": Secure copy successful" )
+                timeout = 10
                 returnVal = main.TRUE
             elif i == 3:  # Connection refused
                 main.log.error(
@@ -349,18 +360,21 @@ class CLI( Component ):
                 main.log.debug( self.handle.before + self.handle.after )
                 returnVal = main.FALSE
             elif i == 6:  # prompt returned
-                return returnVal
+                timeout = 10
+                main.log.debug( "%s: %s%s" % ( self.name, repr( self.handle.before ), repr( self.handle.after ) ) )
             elif i == 7:  # EOF
                 main.log.error( self.name + ": Pexpect.EOF found!!!" )
                 main.cleanAndExit()
             elif i == 8:  # timeout
-                main.log.error(
-                    "No route to the Host " +
-                    userName +
-                    "@" +
-                    ipAddress )
-                returnVal = main.FALSE
-        self.handle.expect( self.prompt )
+                if returnVal != main.TRUE:
+                    main.log.error(
+                        "No route to the Host " +
+                        userName +
+                        "@" +
+                        ipAddress )
+                return returnVal
+        self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=5 )
+        main.log.debug( "%s: %s%s" % ( self.name, repr( self.handle.before ), repr( self.handle.after ) ) )
         return returnVal
 
     def scp( self, remoteHost, filePath, dstPath, direction="from", options="" ):
@@ -380,7 +394,7 @@ class CLI( Component ):
         jump_host = main.componentDictionary[ remoteHost.name ].get( 'jump_host' )
         if jump_host:
             jump_host = main.componentDictionary.get( jump_host )
-            options += " -J %s@%s " % ( jump_host.get( 'user' ), jump_host.get( 'host' ) )
+            options += " -o 'ProxyJump %s@%s' " % ( jump_host.get( 'user' ), jump_host.get( 'host' ) )
         return self.secureCopy( remoteHost.user_name,
                                 remoteHost.ip_address,
                                 filePath,

@@ -1,10 +1,10 @@
 <PARAMS>
-    <testcases>1</testcases>
+    <testcases>2</testcases>
 
     <GRAPH>
         <nodeCluster>staging</nodeCluster>
         <builds>20</builds>
-        <jobName>SRStaging</jobName>
+        <jobName>SRstratumRestart</jobName>
         <branch>master</branch>
     </GRAPH>
 

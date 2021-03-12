@@ -255,7 +255,7 @@ class Cluster():
                              cellApps,
                              onosIps,
                              atomixIps,
-                             main.ONOScell.karafUser,
+                             main.ONOScell.nodeUser,
                              useSSH ],
                       specificDriver=1,
                       getFrom="all" if installMax else "running" )
@@ -745,10 +745,15 @@ class Cluster():
         Returns:
             Returns True if it successfully checked
         """
+        import time
         results = True
         nodesOutput = self.command( "nodes", specificDriver=2 )
         if None in nodesOutput:
-            return False
+            time.sleep(60)
+            nodesOutput = self.command( "nodes", specificDriver=2 )
+            main.log.debug(nodesOutput)
+            if None in nodesOutput:
+                return False
         try:
             self.command( "getAddress", specificDriver=2 )
         except ( ValueError, TypeError ):

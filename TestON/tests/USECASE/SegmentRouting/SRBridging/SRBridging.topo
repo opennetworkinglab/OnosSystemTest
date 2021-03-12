@@ -12,8 +12,12 @@
                 <docker_prompt>~/onos#</docker_prompt>
                 <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
                 <diff_clihost></diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
-                <karaf_username></karaf_username>
-                <karaf_password></karaf_password>
+                <karaf_username>sdn</karaf_username>
+                <karaf_password>rocks</karaf_password>
+                <node_username>sdn</node_username>
+                <node_password>rocks</node_password>
+                <karafPrompt_username></karafPrompt_username>
+                <karafPrompt_password></karafPrompt_password>
                 <web_user></web_user>
                 <web_pass></web_pass>
                 <rest_port></rest_port>

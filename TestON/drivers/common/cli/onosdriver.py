@@ -1409,7 +1409,7 @@ class OnosDriver( CLI ):
             main.log.debug( "%s: %s" % ( self.name, handle ) )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
-            assert "error" not in handle, handle
+            # assert "error" not in handle, handle
             assert "usage:" not in handle, handle
             return main.TRUE
         except AssertionError:

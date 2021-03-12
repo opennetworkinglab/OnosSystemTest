@@ -111,6 +111,8 @@ class Testcaselib:
         - Install ONOS cluster
         - Connect to cli
         """
+        # Check params file for local repos on external apps. cd to repos, run the build command, potentially move o/p file to a different location
+
         # main.scale[ 0 ] determines the current number of ONOS controller
         try:
             if not main.persistentSetup and main.params.get( 'EXTERNAL_APPS' ):

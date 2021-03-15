@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1</testcases>
+    <testcases>3</testcases>
 
     <GRAPH>
         <nodeCluster>QA-Pod</nodeCluster>
@@ -34,17 +34,28 @@
     </kubernetes>
 
     <PERF>
-        <traffic_host>Host3</traffic_host>
-        <traffic_container>mlabbe/iperf</traffic_container>
-        <traffic_container_arguments>--net=host  -v /proc/net/arp:/host/arp --rm</traffic_container_arguments>
-        <traffic_cmd_arguments> -u -b 20M -t 20</traffic_cmd_arguments>
-
-        <pcap_host>Host4</pcap_host>
-        <pcap_container>toendeavour/tshark</pcap_container>
-        <pcap_container_arguments>--cap-add=NET_RAW --cap-add=NET_ADMIN --net=host --rm -v ~/TestON/tshark/:/tshark</pcap_container_arguments>
-        <pcap_cmd_arguments>-t e -F pcap</pcap_cmd_arguments>
-        <pcap_cmd_arguments2>-t e -F pcap</pcap_cmd_arguments2>
-
+        <traffic_host>Host2</traffic_host>
+        <pcap_host>ng40vm</pcap_host>
+        <pcap_cmd_arguments>-t e -F pcap -s 100 </pcap_cmd_arguments>
+        <iterations>1</iterations>
+        <topo>
+            <leaf1>
+                <ports>260 268 276 284</ports>
+                <note>eNB</note>
+            </leaf1>
+            <leaf2>
+                <ports>132 140 148 156</ports>
+                <note>upstream</note>
+            </leaf2>
+            <spine1>
+                <ports>132 140 148 156</ports>
+                <note>spine</note>
+            </spine1>
+            <spine2>
+                <ports>132 140 148 156</ports>
+                <note>spine</note>
+            </spine2>
+        </topo>
     </PERF>
 
 
@@ -99,6 +110,7 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
+        <TrafficDiscovery>10</TrafficDiscovery>
     </timers>
 
     <SLEEP>
@@ -106,8 +118,8 @@
     </SLEEP>
 
     <TOPO>
-        <switchNum>1</switchNum>
-        <linkNum>0</linkNum>
+        <switchNum>4</switchNum>
+        <linkNum>16</linkNum>
     </TOPO>
 
     <ALARM>

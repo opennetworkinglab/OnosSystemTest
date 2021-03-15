@@ -24,6 +24,7 @@ class SReNBLeafSpinePortstateFailure:
             main.funcs = SRStagingTest()
 
         descPrefix = "eNB_Leaf_Spine_Portstate"
+        leafType = "eNB"
         main.funcs.setupTest( main,
                               topology='2x2staging',
                               onosNodes=3,
@@ -38,9 +39,17 @@ class SReNBLeafSpinePortstateFailure:
         dbHeaders = []
         srcNames = [ src.name for src in srcComponentList ]
         srcNames.sort()
-        # TODO: MOVE TO CONFIG FILE
-        device = "device:leaf1"
-        portsList = [ 176, 180, 184, 188 ]
+        deviceShortName = None
+        portsList = []
+        for shortName, values in main.params['PERF']['topo'].iteritems():
+            if leafType in values['note']:
+                deviceShortName = shortName
+                portsList = [ int( p ) for p in values['ports'].split() ]
+                break
+        if not deviceShortName:
+            main.skipCase( result="FAIL", msg="Don't know which switch for test" )
+
+        device = "device:" + deviceShortName
         port1 = None
         port2 = None
         port3 = None

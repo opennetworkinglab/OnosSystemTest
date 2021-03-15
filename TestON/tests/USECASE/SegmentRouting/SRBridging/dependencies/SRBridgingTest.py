@@ -66,7 +66,7 @@ class SRBridgingTest ():
             run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
             if main.useBmv2:
                 switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
-                if switchPrefix is None:
+                if switchPrefix is None or "None":
                     switchPrefix = ''
                 # Translate configuration file from OVS-OFDPA to BMv2 driver
                 translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
@@ -102,6 +102,8 @@ class SRBridgingTest ():
             run.checkFlows( main, minFlowCount=self.topo[ topology ][ 5 if main.useBmv2 else 4 ] * self.topo[ topology ][ 1 ], sleep=5 )
             if main.useBmv2:
                 switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
+                if switchPrefix is None or "None":
+                    switchPrefix = ''
                 if switchPrefix is not '' and switchPrefix is not None:
                     switchPrefix += ':'
                 leaf_dpid = [ "device:%sleaf%d" % ( switchPrefix, ls + 1 ) for ls in range( self.topo[ topology ][ 1 ]) ]

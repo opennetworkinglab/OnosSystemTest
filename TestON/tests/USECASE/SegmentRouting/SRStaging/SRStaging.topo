@@ -25,7 +25,7 @@
             </COMPONENTS>
         </ONOScell>
 
-        <SwitchLeaf1>
+        <Leaf1>
             <host>10.32.4.132</host>
             <user>root</user>
             <password>onl</password>
@@ -41,9 +41,9 @@
                 <onosConfigPath></onosConfigPath>
                 <onosConfigFile></onosConfigFile>
             </COMPONENTS>
-        </SwitchLeaf1>
+        </Leaf1>
 
-        <SwitchLeaf2>
+        <Leaf2>
             <host>10.32.4.136</host>
             <user>root</user>
             <password>onl</password>
@@ -59,9 +59,9 @@
                 <onosConfigPath></onosConfigPath>
                 <onosConfigFile></onosConfigFile>
             </COMPONENTS>
-        </SwitchLeaf2>
+        </Leaf2>
 
-        <SwitchSpine1>
+        <Spine1>
             <host>10.32.4.130</host>
             <user>root</user>
             <password>onl</password>
@@ -77,9 +77,9 @@
                 <onosConfigPath></onosConfigPath>
                 <onosConfigFile></onosConfigFile>
             </COMPONENTS>
-        </SwitchSpine1>
+        </Spine1>
 
-        <SwitchSpine2>
+        <Spine2>
             <host>10.32.4.134</host>
             <user>root</user>
             <password>onl</password>
@@ -95,7 +95,7 @@
                 <onosConfigPath></onosConfigPath>
                 <onosConfigFile></onosConfigFile>
             </COMPONENTS>
-        </SwitchSpine2>
+        </Spine2>
 
         <Host1>
             <host>10.32.4.138</host>

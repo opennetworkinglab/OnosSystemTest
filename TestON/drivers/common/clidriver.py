@@ -985,7 +985,7 @@ class CLI( Component ):
         print "preDisconnect"
         return main.TRUE
 
-    def kubectlGetPodNames( self, kubeconfig=None, namespace=None, app=None, name=None ):
+    def kubectlGetPodNames( self, kubeconfig=None, namespace=None, app=None, name=None, nodeName=None ):
         """
         Use kubectl to get the names of pods
         Optional Arguments:
@@ -993,16 +993,18 @@ class CLI( Component ):
         - namespace: The namespace to search in
         - app: Get pods belonging to a specific app
         - name: Get pods with a specific name label
+        - nodeName: Get pods on a specific node
         Returns a list containing the names of the pods or
             main.FALSE on Error
         """
 
         try:
-            cmdStr = "kubectl %s %s get pods %s %s --output=jsonpath='{.items..metadata.name}{\"\\n\"}'" % (
+            cmdStr = "kubectl %s %s get pods %s %s %s --output=jsonpath='{.items..metadata.name}{\"\\n\"}'" % (
                         "--kubeconfig %s" % kubeconfig if kubeconfig else "",
                         "-n %s" % namespace if namespace else "",
                         "-l app=%s" % app if app else "",
-                        "-l name=%s" % name if name else "" )
+                        "-l name=%s" % name if name else "",
+                        "--field-selector=spec.nodeName=%s" % nodeName if nodeName else "" )
             main.log.info( self.name + ": sending: " + repr( cmdStr ) )
             self.handle.sendline( cmdStr )
             i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ] )
@@ -1125,6 +1127,50 @@ class CLI( Component ):
                         "--kubeconfig %s" % kubeconfig if kubeconfig else "",
                         "-n %s" % namespace if namespace else "",
                         podName,
+                        dstPath )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ], timeout=timeout )
+            if i == 3:
+                main.log.debug( self.name + ": " + self.handle.before )
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def kubectlCp( self, podName, srcPath, dstPath, kubeconfig=None, namespace=None, timeout=240 ):
+        """
+        Use kubectl to get a file from a pod
+        Required Arguments:
+        - podName: The name of the pod to get the logs of
+        - srcPath: The file to copy from the pod
+        - dstPath: The location to save the file to locally
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        - timeout: Timeout for command to return. The longer the logs, the longer it will take to fetch them.
+        Returns main.TRUE or
+            main.FALSE on Error
+        """
+
+        try:
+            cmdStr = "kubectl %s %s cp %s:%s %s" % (
+                        "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                        "-n %s" % namespace if namespace else "",
+                        podName,
+                        srcPath,
                         dstPath )
             main.log.info( self.name + ": sending: " + repr( cmdStr ) )
             self.handle.sendline( cmdStr )

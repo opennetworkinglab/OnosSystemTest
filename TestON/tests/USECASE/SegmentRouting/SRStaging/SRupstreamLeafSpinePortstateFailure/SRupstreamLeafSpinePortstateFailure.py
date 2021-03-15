@@ -24,6 +24,7 @@ class SRupstreamLeafSpinePortstateFailure:
             main.funcs = SRStagingTest()
 
         descPrefix = "Upstream_Leaf_Spine_Portstate"
+        leafType = "upstream"
         main.funcs.setupTest( main,
                               topology='2x2staging',
                               onosNodes=3,
@@ -38,9 +39,17 @@ class SRupstreamLeafSpinePortstateFailure:
         dbHeaders = []
         srcNames = [ src.name for src in srcComponentList ]
         srcNames.sort()
-        # TODO: MOVE TO CONFIG FILE
-        device = "device:leaf2"
-        portsList = [260, 268, 276, 284 ]
+        deviceShortName = None
+        portsList = []
+        for shortName, values in main.params['PERF']['topo'].iteritems():
+            if leafType in values['note']:
+                deviceShortName = shortName
+                portsList = [ int( p ) for p in values['ports'].split() ]
+                break
+        if not deviceShortName:
+            main.skipCase( result="FAIL", msg="Don't know which switch for test" )
+
+        device = "device:" + deviceShortName
         port1 = None
         port2 = None
         port3 = None

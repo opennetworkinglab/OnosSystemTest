@@ -35,11 +35,27 @@
 
     <PERF>
         <traffic_host>Host1 Host2 Host3</traffic_host>
-        <traffic_cmd_arguments> -u -b 20M -t 40</traffic_cmd_arguments>
-
         <pcap_host>ng40vm</pcap_host>
         <pcap_cmd_arguments>-t e -F pcap -s 100 </pcap_cmd_arguments>
-
+        <iterations>1</iterations>
+        <topo>
+            <leaf1>
+                <ports>176 180 184 188</ports>
+                <note>eNB</note>
+            </leaf1>
+            <leaf2>
+                <ports>260 268 276 284</ports>
+                <note>upstream</note>
+            </leaf2>
+            <spine1>
+                <ports>128 136 144 152</ports>
+                <note>spine</note>
+            </spine1>
+            <spine2>
+                <ports>132 140 148 156</ports>
+                <note>spine</note>
+            </spine2>
+        </topo>
     </PERF>
     <ONOS_Logging>
         <org.onosproject.p4runtime.ctl.client>DEBUG</org.onosproject.p4runtime.ctl.client>

@@ -36,15 +36,18 @@ class SRONLReboot:
 
         main.downtimeResults = {}
 
-        # TODO: MOVE TO CONFIG FILE
-        switchComponent = getattr( main, "SwitchSpine1" )
-        device = "device:leaf1"
+        switchComponentList = [ getattr( main, "Spine%s" % n ) for n in range( 1, 2+1 ) ]
+        iterations = int( main.params[ 'PERF' ][ 'iterations' ] )
 
-        ## First Spine Reboot
-        shortDesc = descPrefix + "-Failure1"
-        longDesc = "%s Failure: Reboot %s" % ( descPrefix, device )
-        main.funcs.onlReboot( device, switchComponent, srcComponentList, dstComponent, shortDesc, longDesc )
-        ## Second Spine Reboot
+        for i in range( 1, iterations + 1 ):
+            ## Spine ONL Reboot
+            shortDescFailure = descPrefix + "-Failure%s" % i
+            longDescFailure = "%s Failure%s: Reboot switch" % ( descPrefix, i )
+            shortDescRecovery = descPrefix + "-Recovery%s" % i
+            longDescRecovery = "%s Recovery%s: Reboot switch" % ( descPrefix, i )
+            main.funcs.onlReboot( switchComponentList, srcComponentList, dstComponent,
+                                  shortDescFailure, longDescFailure,
+                                  shortDescRecovery, longDescRecovery )
 
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
         main.funcs.cleanup( main )

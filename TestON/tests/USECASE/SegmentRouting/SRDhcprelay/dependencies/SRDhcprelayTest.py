@@ -26,6 +26,7 @@ class SRDhcprelayTest ():
 
     def __init__( self ):
         self.default = ''
+        self.topo = run.getTopo()
 
     @staticmethod
     def runTest( main, testIndex, onosNodes, description, dhcpRelay=False, remoteServer=False, multipleServer=False, ipv6=False, vlan=[], dualHomed=False ):

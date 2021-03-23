@@ -29,33 +29,31 @@ class SRHAFuncs():
 
     def __init__( self ):
         self.default = ''
-        self.topo = dict()
-        self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
-        self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
+        self.topo = run.getTopo()
 
-    def runTest( self, main, caseNum, numNodes, Topo, minFlow, isRandom, isKillingSwitch ):
+    def runTest( self, main, caseNum, numNodes, topology, minFlow, isRandom, isKillingSwitch ):
         try:
             if not hasattr( main, 'apps' ):
                 run.initTest( main )
 
             description = "High Availability tests - " + \
                           self.generateDescription( isRandom, isKillingSwitch ) + \
-                          self.topo[ Topo ][ 3 ]
+                          self.topo[ topology ][ 'description' ]
             main.case( description )
-            run.config( main, Topo )
+            run.config( main, topology )
             run.installOnos( main )
             if not main.persistentSetup:
                 run.loadJson( main )
             run.loadChart( main )
-            run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+            run.startMininet( main, 'cord_fabric.py', args=self.topo[ topology ][ 'mininetArgs' ] )
             if not main.persistentSetup:
                 # xconnects need to be loaded after topology
                 run.loadXconnects( main )
             # pre-configured routing and bridging test
             run.checkFlows( main, minFlowCount=minFlow )
             run.pingAll( main )
-            switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
-            link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
+            switch = self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ]
+            link = ( self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ] ) * self.topo[ topology ][ 'spines' ]
             self.generateRandom( isRandom )
             for i in range( 0, main.failures ):
                 toKill = self.getNextNum( isRandom, main.Cluster.numCtrls, i )
@@ -64,7 +62,7 @@ class SRHAFuncs():
                 run.pingAll( main, 'CASE{}_ONOS_Failure{}'.format( caseNum, i + 1 ) )
                 if isKillingSwitch:
                     self.killAndRecoverSwitch( main, caseNum, numNodes,
-                                               Topo, minFlow, isRandom,
+                                               topology, minFlow, isRandom,
                                                i, switch, link )
                 run.recoverOnos( main, [ toKill ], '{}'.format( switch ),
                                  '{}'.format( link ), '{}'.format( numNodes ) )
@@ -94,8 +92,8 @@ class SRHAFuncs():
     def getNextNum( self, isRandom, numCtrl, pos ):
         return randint( 0, ( numCtrl - 1 ) ) if isRandom else pos % numCtrl
 
-    def killAndRecoverSwitch( self, main, caseNum, numNodes, Topo, minFlow, isRandom, pos, numSwitch, numLink ):
-        switchToKill = self.getNextNum( isRandom, self.topo[ Topo ][ 0 ], pos )
+    def killAndRecoverSwitch( self, main, caseNum, numNodes, topology, minFlow, isRandom, pos, numSwitch, numLink ):
+        switchToKill = self.getNextNum( isRandom, self.topo[ topology ][ 'spines' ], pos )
         run.killSwitch( main, main.spines[ switchToKill ][ 'name' ],
                         switches='{}'.format( numSwitch - 1 ),
                         links='{}'.format( numLink - numSwitch ) )

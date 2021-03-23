@@ -25,26 +25,23 @@ class SRClusterRestartFuncs():
 
     def __init__( self ):
         self.default = ''
-        self.topo = dict()
-        self.topo[ '0x1' ] = ( 0, 1, '--leaf=1 --spine=0', 'single switch' )
-        self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
-        self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
+        self.topo = run.getTopo()
 
-    def runTest( self, main, caseNum, numNodes, Topo, minFlow, testing, killList=[ 0, 1, 2 ] ):
+    def runTest( self, main, caseNum, numNodes, topology, minFlow, testing, killList=[ 0, 1, 2 ] ):
         try:
-            description = "Cluster Restart test with " + self.topo[ Topo ][ 3 ]
+            description = "Cluster Restart test with " + self.topo[ topology ][ 'description' ]
             caseTitle = 'CASE{}_'.format( caseNum ) + testing
             main.case( description )
             if not hasattr( main, 'apps' ):
                 run.initTest( main )
-            main.cfgName = Topo
+            main.cfgName = topology
             main.Cluster.setRunningNode( numNodes )
             run.installOnos( main )
             if not main.persistentSetup:
                 run.loadJson( main )
             run.loadChart( main )
             if hasattr( main, 'Mininet1' ):
-                run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+                run.startMininet( main, 'cord_fabric.py', args=self.topo[ topology ][ 'mininetArgs' ] )
             else:
                 # Run the test with physical devices
                 # TODO: connect TestON to the physical network
@@ -54,8 +51,8 @@ class SRClusterRestartFuncs():
             # pre-configured routing and bridging test
             run.checkFlows( main, minFlowCount=minFlow )
             run.pingAll( main )
-            switch = '{}'.format( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] )
-            link = '{}'.format( ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ] )
+            switch = '{}'.format( self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ] )
+            link = '{}'.format( ( self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ] ) * self.topo[ topology ][ 'spines' ] )
             run.killOnos( main, killList, switch, link, '0' )
             run.pingAll( main, caseTitle, dumpflows=False )
             run.recoverOnos( main, killList, switch, link, '{}'.format( numNodes ) )

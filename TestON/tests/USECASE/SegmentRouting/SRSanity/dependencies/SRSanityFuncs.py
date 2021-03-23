@@ -25,26 +25,23 @@ class SRSanityFuncs():
 
     def __init__( self ):
         self.default = ''
-        self.topo = dict()
-        self.topo[ '0x1' ] = ( 0, 1, '--leaf=1 --spine=0', 'single switch' )
-        self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
-        self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
+        self.topo = run.getTopo()
 
-    def runTest( self, main, caseNum, numNodes, Topo, minFlow ):
+    def runTest( self, main, caseNum, numNodes, topology, minFlow ):
         try:
             if not hasattr( main, 'apps' ):
                 run.initTest( main )
 
-            description = "Bridging and Routing sanity test with " + self.topo[ Topo ][ 3 ] + " and {} Onos".format( numNodes )
+            description = "Bridging and Routing sanity test with " + self.topo[ topology ][ 'description' ] + " and {} Onos".format( numNodes )
             main.case( description )
 
-            main.cfgName = Topo
+            main.cfgName = topology
             main.Cluster.setRunningNode( numNodes )
             run.installOnos( main )
             if not main.persistentSetup:
                 run.loadJson( main )
             run.loadChart( main )
-            run.startMininet( main, 'cord_fabric.py', args=self.topo[ Topo ][ 2 ] )
+            run.startMininet( main, 'cord_fabric.py', args=self.topo[ topology ][ 'mininetArgs' ] )
             if not main.persistentSetup:
                 # xconnects need to be loaded after topology
                 run.loadXconnects( main )

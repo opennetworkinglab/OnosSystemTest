@@ -28,30 +28,27 @@ class SRDynamicFuncs():
 
     def __init__( self ):
         self.default = ''
-        self.topo = dict()
-        self.topo[ '0x1' ] = ( 0, 1, '--leaf=1 --spine=0', 'single switch' )
-        self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
-        self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
+        self.topo = run.getTopo()
 
-    def runTest( self, main, caseNum, numNodes, Topo, minBeforeFlow, minAfterFlow, killOnosAndDeleteCfg ):
+    def runTest( self, main, caseNum, numNodes, topology, minBeforeFlow, minAfterFlow, killOnosAndDeleteCfg ):
         try:
             if not hasattr( main, 'apps' ):
                 run.initTest( main )
 
             description = "Bridging and Routing sanity test with " + \
-                          self.topo[ Topo ][ 3 ] + \
+                          self.topo[ topology ][ 'description' ] + \
                           "and {} nodes.".format( numNodes ) + \
                           ( "\nAlso, killing the first Onos and removing the host cfg." if killOnosAndDeleteCfg else "" )
             main.case( description )
 
-            main.cfgName = Topo
+            main.cfgName = topology
             main.Cluster.setRunningNode( numNodes )
             run.installOnos( main )
             if not main.persistentSetup:
                 run.loadJson( main )
             run.loadChart( main )
             run.startMininet( main, 'cord_fabric.py',
-                              args=self.topo[ Topo ][ 2 ] )
+                              args=self.topo[ topology ][ 'mininetArgs' ] )
             # pre-configured routing and bridging test
             run.checkFlows( main, minFlowCount=minBeforeFlow )
             run.pingAll( main, dumpflows=False )
@@ -59,8 +56,8 @@ class SRDynamicFuncs():
             run.checkFlows( main, minFlowCount=minAfterFlow, dumpflows=False )
             run.pingAll( main )
             if killOnosAndDeleteCfg:
-                switch = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
-                link = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
+                switch = self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ]
+                link = ( self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ] ) * self.topo[ topology ][ 'spines' ]
                 self.killAndDelete( main, caseNum, numNodes, minBeforeFlow, switch, link )
             # TODO Dynamic config of hosts in subnet
             # TODO Dynamic config of host not in subnet

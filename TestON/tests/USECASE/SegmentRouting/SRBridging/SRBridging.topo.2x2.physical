@@ -141,19 +141,19 @@
             <type>HostDriver</type>
             <connect_order>8</connect_order>
             <COMPONENTS>
-                <mac>52:54:00:e3:88:36</mac>
+                <mac>52:54:00:71:b5:96</mac>
                 <inband>false</inband>
-                <ip>192.168.101.101</ip>
+                <ip>192.168.102.101</ip>
                 <shortName>ng40</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>ens8</interfaceName>
+                <interfaceName>ens9</interfaceName>
                 <routes>
                     <route1>
                         <network>192.168.101.1</network>
                         <netmask>24</netmask>
                         <gw>192.168.103.1</gw>
-                        <interface>ens8</interface>
+                        <interface>ens9</interface>
                     </route1>
                 </routes>
             </COMPONENTS>

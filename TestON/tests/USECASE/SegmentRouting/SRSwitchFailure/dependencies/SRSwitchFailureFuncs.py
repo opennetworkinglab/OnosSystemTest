@@ -26,19 +26,16 @@ class SRSwitchFailureFuncs():
 
     def __init__( self ):
         self.default = ''
-        self.topo = dict()
-        self.topo[ '0x1' ] = ( 0, 1, '--leaf=1 --spine=0', 'single switch' )
-        self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
-        self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
+        self.topo = run.getTopo()
         main.switchType = "ovs"
 
-    def runTest( self, main, caseNum, numNodes, Topo, minFlow ):
+    def runTest( self, main, caseNum, numNodes, topology, minFlow ):
         try:
-            description = "Switch Failure test with " + self.topo[ Topo ][ 3 ] + " and {} Onos".format( numNodes )
+            description = "Switch Failure test with " + self.topo[ topology ][ 'description' ] + " and {} Onos".format( numNodes )
             main.case( description )
             if not hasattr( main, 'apps' ):
                 run.initTest( main )
-            main.cfgName = Topo
+            main.cfgName = topology
             main.Cluster.setRunningNode( numNodes )
             run.installOnos( main )
             suf = main.params.get( 'jsonFileSuffix', '')
@@ -65,7 +62,7 @@ class SRSwitchFailureFuncs():
                 run.mnDockerSetup( main )  # optionally create and setup docker image
 
                 # Run the test with Mininet
-                mininet_args = self.topo[ Topo ][ 2 ]
+                mininet_args = self.topo[ topology ][ 'mininetArgs' ]
                 if main.useBmv2:
                     mininet_args += ' --switch %s' % main.switchType
                     main.log.info( "Using %s switch" % main.switchType )
@@ -79,8 +76,8 @@ class SRSwitchFailureFuncs():
             run.loadXconnects( main )
             # switch failure
             switch = main.params[ 'kill' ][ 'switch' ]
-            switchNum = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
-            linkNum = ( self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ] ) * self.topo[ Topo ][ 0 ]
+            switchNum = self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ]
+            linkNum = ( self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ] ) * self.topo[ topology ][ 'spines' ]
             # pre-configured routing and bridging test
             run.checkFlows( main, minFlowCount=minFlow )
             run.pingAll( main )

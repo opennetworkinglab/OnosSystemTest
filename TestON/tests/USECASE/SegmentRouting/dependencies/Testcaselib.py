@@ -96,7 +96,19 @@ class Testcaselib:
             main.testSetUp.envSetupException( e )
 
         main.testSetUp.envSetupConclusion( stepResult )
-
+    @staticmethod
+    def getTopo():
+        topo = dict()
+        # TODO: Check minFlowCount of leaf for BMv2 switch
+        # (number of spine switch, number of leaf switch, dual-homed, description, minFlowCount - leaf (OvS), minFlowCount - leaf (BMv2))
+        topo[ '0x1' ] = { 'spines': 0,'leaves': 1, 'mininetArgs': "--leaf=1 --spine=0", 'dual-homed': False,'description': 'single ToR','minFlow-OvS': 28,'minFlow-Stratum': 20,'dual-linked': False }
+        topo[ '0x2' ] = {'spines': 0,'leaves': 2, 'mininetArgs': "--leaf=2 --spine=0", 'dual-homed': True,'description': 'dual-homed ToR','minFlow-OvS': 37,'minFlow-Stratum': 37,'dual-linked': True }
+        topo[ '2x2' ] = {'spines': 2,'leaves': 2, 'mininetArgs': "--leaf=2 --spine=2", 'dual-homed': False,'description': '2x2 leaf-spine topology','minFlow-OvS': 37,'minFlow-Stratum': 32,'dual-linked': False }
+        topo[ '2x2 dual-linked' ] = {'spines': 2, 'leaves': 2, 'mininetArgs': "--leaf=2 --spine=2", 'dual-homed': False,'description': '2x2 aether dual-linked','minFlow-OvS': 37,'minFlow-Stratum': 32,'dual-linked': True }
+        topo[ '2x4' ] = { 'spines':2,'leaves': 4, 'mininetArgs': "--leaf=4 --spine=2",'dual-homed': True,'description': '2x4 dual-homed leaf-spine topology','minFlow-OvS': 53,'minFlow-Stratum': 53, 'dual-linked': False }
+        topo[ '4x4' ] = {'spines': 4,'leaves': 4, 'dual-homed': True, 'description': '4x4 dual-homed leaf-spine topology','dual-linked': True }
+        topo[ '2x2staging' ] = { 'spines': 2, 'leaves': 2,'dual-homed':  True, 'description': '2x2 leaf-spine topology', 'minFlowOvS': 37, 'minFlow-Stratum': 32 }
+        return topo
     @staticmethod
     def installOnos( main, vlanCfg=True, skipPackage=False, cliSleep=10,
                      parallel=True ):

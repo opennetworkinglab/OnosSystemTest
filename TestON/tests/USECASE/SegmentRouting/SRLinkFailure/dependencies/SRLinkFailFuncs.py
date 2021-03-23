@@ -26,10 +26,7 @@ class SRLinkFailFuncs():
 
     def __init__( self ):
         self.default = ''
-        self.topo = dict()
-        self.topo[ '0x1' ] = ( 0, 1, '--leaf=1 --spine=0', 'single switch' )
-        self.topo[ '2x2' ] = ( 2, 2, '', '2x2 Leaf-spine' )
-        self.topo[ '4x4' ] = ( 4, 4, '--leaf=4 --spine=4', '4x4 Leaf-spine' )
+        self.topo = run.getTopo()
         main.switchType = "ovs"
         self.switchOne = 'spine101'
         self.switchTwo = 'leaf2'
@@ -38,13 +35,13 @@ class SRLinkFailFuncs():
         self.portOne = '2'
         self.portTwo = '3'
 
-    def runTest( self, main, caseNum, numNodes, Topo, minFlow ):
+    def runTest( self, main, caseNum, numNodes, topology, minFlow ):
         try:
-            description = "Bridging and Routing Link Failure test with " + self.topo[ Topo ][ 3 ] + " and {} Onos".format( numNodes )
+            description = "Bridging and Routing Link Failure test with " + self.topo[ topology ][ 'description' ] + " and {} Onos".format( numNodes )
             main.case( description )
             if not hasattr( main, 'apps' ):
                 run.initTest( main )
-            main.cfgName = Topo
+            main.cfgName = topology
             main.Cluster.setRunningNode( numNodes )
             run.installOnos( main )
             suf = main.params.get( 'jsonFileSuffix', '')
@@ -71,7 +68,7 @@ class SRLinkFailFuncs():
                 run.mnDockerSetup( main )  # optionally create and setup docker image
 
                 # Run the test with Mininet
-                mininet_args = self.topo[ Topo ][ 2 ]
+                mininet_args = self.topo[ topology ][ 'mininetArgs' ]
                 if main.useBmv2:
                     mininet_args += ' --switch %s' % main.switchType
                     main.log.info( "Using %s switch" % main.switchType )
@@ -83,8 +80,8 @@ class SRLinkFailFuncs():
                 pass
             # xconnects need to be loaded after topology
             run.loadXconnects( main )
-            switches = self.topo[ Topo ][ 0 ] + self.topo[ Topo ][ 1 ]
-            links = ( self.topo[ Topo ][ 0 ] * self.topo[ Topo ][ 1 ] ) * 2
+            switches = self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ]
+            links = ( self.topo[ topology ][ 'spines' ] * self.topo[ topology ][ 'leaves' ] ) * 2
             # pre-configured routing and bridging test
             run.verifyTopology( main, switches, links, numNodes )
             run.checkFlows( main, minFlowCount=minFlow )

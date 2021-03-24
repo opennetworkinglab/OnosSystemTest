@@ -4955,7 +4955,7 @@ class OnosCliDriver( CLI ):
             address = json.loads( output ).get( 'node' )
             self.address = address
             return address
-        except TypeError:
+        except ( TypeError, ValueError ):
             main.log.exception( self.name + ": Object not as expected" )
             return None
         except Exception:

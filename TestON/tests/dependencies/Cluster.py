@@ -543,7 +543,7 @@ class Cluster():
                 result = result and t.result
         return result
 
-    def installOnos( self, installMax=True, installParallel=True ):
+    def installOnos( self, installMax=True, installParallel=True, retries=5 ):
         """
         Description:
             Installing onos.
@@ -560,16 +560,21 @@ class Cluster():
             options = "-f"
             if installMax and i >= self.numCtrls:
                 options = "-nf"
+            args = [ ctrl.Bench.onosInstall, main.FALSE ]
+            kwargs={ "node" : ctrl.ipAddress,
+                     "options" : options }
             if installParallel:
-                t = main.Thread( target=ctrl.Bench.onosInstall,
+                t = main.Thread( target=utilities.retry,
                                  name="onos-install-" + ctrl.name,
-                                 kwargs={ "node" : ctrl.ipAddress,
-                                          "options" : options } )
+                                 args=args,
+                                 kwargs={ 'kwargs': kwargs,
+                                          'attempts': retries } )
+
                 threads.append( t )
                 t.start()
             else:
                 result = result and \
-                            main.ONOSbench.onosInstall( node=ctrl.ipAddress, options=options )
+                            utilities.retry( args=args, kwargs=kwargs, attempts=retries )
             i += 1
         if installParallel:
             for t in threads:

@@ -435,7 +435,7 @@ class OnosCliDriver( CLI ):
 
     def log( self, cmdStr, level="", noExit=False ):
         """
-            log  the commands in the onos CLI.
+            log the commands in the onos CLI.
             returns main.TRUE on success
             returns main.FALSE if Error occurred
             if noExit is True, TestON will not exit, but clean up
@@ -447,24 +447,21 @@ class OnosCliDriver( CLI ):
             lvlStr = ""
             if level:
                 lvlStr = "--level=" + level
-
-            self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
-            self.handle.expect( "log:log" )
-            self.handle.expect( self.karafPrompt )
-
-            response = self.handle.before
-            if re.search( "Error", response ):
-                main.log.debug( response )
+            handle = self.sendline( "log:log " + lvlStr + " " + cmdStr, noExit=noExit )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            if re.search( "Error", handle ):
+                main.log.error( self.name + ": Error in logging message" )
+                main.log.error( handle )
                 return main.FALSE
-            return main.TRUE
-        except pexpect.TIMEOUT:
-            main.log.exception( self.name + ": TIMEOUT exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            if noExit:
-                main.cleanup()
-                return None
             else:
-                main.cleanAndExit()
+                return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -5330,16 +5327,21 @@ class OnosCliDriver( CLI ):
         Level defaults to INFO
         """
         try:
-            self.handle.sendline( "log:set %s %s" % ( level, app ) )
-            self.handle.expect( self.karafPrompt )
-
-            response = self.handle.before
-            if re.search( "Error", response ):
+            handle = self.sendline( "log:set %s %s" % ( level, app ) )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            if re.search( "Error", handle ):
+                main.log.error( self.name + ": Error in setting log level" )
+                main.log.error( handle )
                 return main.FALSE
-            return main.TRUE
-        except pexpect.TIMEOUT:
-            main.log.exception( self.name + ": TIMEOUT exception found" )
-            main.cleanAndExit()
+            else:
+                return main.TRUE
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

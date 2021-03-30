@@ -20,6 +20,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
+import tests.USECASE.SegmentRouting.SRStaging.dependencies.log_breakdown as logParser
 import time
 import re
 import json
@@ -90,6 +91,7 @@ class SRStagingTest():
         src: the src component that sends the traffic
         dst: the dst component that receives the traffic
         """
+        import datetime
         try:
             # ping right before to make sure arp is cached and sudo is authenticated
             for src in srcList:
@@ -188,7 +190,7 @@ class SRStagingTest():
                 main.log.info( "Starting tshark on %s " % src.name )
                 src.handle.sendline( "sudo /usr/bin/tshark %s &> /dev/null " % tsharkArgsSender )
             # Timestamp used for EVENT START
-            main.eventStart = time.time()
+            main.eventStart = datetime.datetime.utcnow()
             # LOG Event start in ONOS logs
             for ctrl in main.Cluster.active():
                 ctrl.CLI.log( "'%s START'" % longDesc, level="INFO" )
@@ -197,13 +199,16 @@ class SRStagingTest():
             main.skipCase( result="FAIL", msg=e )
 
     def stopCapturing( self, main, srcList, dst, shortDesc=None, longDesc=None ):
+        import datetime
         import time
+        from tests.dependencies.utils import Utils
+        main.utils = Utils()
         try:
             pcapFileReceiver = "%s/tshark/%s-%s-tsharkReceiver" % ( "~/TestON",
                                                                     shortDesc if shortDesc else "tshark",
                                                                     dst.name )
             # Timestamp used for EVENT STOP
-            main.eventStop = time.time()
+            main.eventStop = datetime.datetime.utcnow()
             # LOG Event stop in ONOS logs
             for ctrl in main.Cluster.active():
                 ctrl.CLI.log( "'%s STOP'" % longDesc, level="INFO" )
@@ -233,6 +238,7 @@ class SRStagingTest():
                                          onpass="Saved pcap files from %s" % src.name,
                                          onfail="Failed to scp pcap files from %s" % src.name )
             # Grab logs
+            main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
             # Grab pcap
             receiverSCP = main.ONOSbench.scp( dst, pcapFileReceiver, main.logdir, direction="from" )
             utilities.assert_equals( expect=main.TRUE, actual=receiverSCP,
@@ -255,6 +261,42 @@ class SRStagingTest():
 
         except Exception as e:
             main.log.exception( "Error in stopCapturing" )
+
+    @staticmethod
+    def analyzeLogs( shortDesc, event, logDir=main.logdir ):
+        try:
+            import datetime
+            main.log.step( "Read saved component logs" )
+            main.log.debug( main.eventStart )
+            # Seems like there is clock skew, +/- 30 seconds
+            MINUTE = datetime.timedelta( minutes=1 )
+            lines, podMapping = logParser.readLogsFromTestFolder( main.eventStart-MINUTE,
+                                                                  main.eventStop+MINUTE,
+                                                                  testDir=logDir )
+            # Write a merged log file
+            ordered_lines = sorted( lines, key=logParser.sortByDateTime )
+            mergedLogFile = "%s/%s-mergedLogs.txt" % ( logDir, shortDesc )
+            with open( mergedLogFile, 'w' ) as output:
+                for line in ordered_lines:
+                    output.write( "%s %s" % ( line['pod'], line['line'] ) )
+
+            # Pull out lines related to test. These are stored in logParser
+            logParser.analyzeLogs( ordered_lines, podMapping )
+            # save human readable results to this file
+            outFile = "log_breakdown_output"
+            outputTextFile = "%s/%s-%s.txt" %( logDir, shortDesc, outFile )
+            # Find component times based on these lines
+            resultsDict = logParser.breakdownEvent( event, podMapping, outputFile=outputTextFile )
+            main.log.debug( json.dumps( resultsDict, sort_keys=True, indent=4 ) )
+            # Add these times to be saved to test output
+            componentBreakdownDict = {}
+            for oldKey in resultsDict.keys():
+                newKey = "%s-%s" % ( shortDesc, oldKey )
+                componentBreakdownDict[ newKey ] = resultsDict[ oldKey ]
+            main.downtimeResults.update( componentBreakdownDict )
+            main.log.debug( json.dumps( main.downtimeResults, sort_keys=True, indent=4 ) )
+        except Exception:
+            main.log.exception( "Error while breaking down logs" )
 
     @staticmethod
     def clearBuffer( component, kill=False, debug=False ):
@@ -332,6 +374,8 @@ class SRStagingTest():
                                       dstComponent,
                                       shortDesc=shortDesc,
                                       longDesc=longDesc )
+            # Break down logs
+            main.funcs.analyzeLogs( shortDesc, 'portstate_down' )
             return port
         except Exception as e:
             main.log.exception( "Error in linkDown" )
@@ -381,6 +425,8 @@ class SRStagingTest():
                                       dstComponent,
                                       shortDesc=shortDesc,
                                       longDesc=longDesc )
+            # Break down logs
+            main.funcs.analyzeLogs( shortDesc, 'portstate_up' )
         except Exception as e:
             main.log.exception( "Error in linkUp" )
 
@@ -431,6 +477,8 @@ class SRStagingTest():
                                       dstComponent,
                                       shortDesc=shortDescFailure,
                                       longDesc=longDescFailure )
+            # Break down logs
+            main.funcs.analyzeLogs( shortDescFailure, 'shutdown_onl' )
             # Try to minimize the amount of time we are sending 20mb/s while switch is down
             # Large pcaps can cause timeouts when analyzing the results
             #time.sleep( 60 )
@@ -469,6 +517,8 @@ class SRStagingTest():
                                       dstComponent,
                                       shortDesc=shortDescRecovery,
                                       longDesc=longDescRecovery )
+            # Break down logs
+            main.funcs.analyzeLogs( shortDescRecovery, 'start_onl' )
             # Check the switch is back in ONOS
         except Exception as e:
             main.log.exception( "Error in onlReboot" )
@@ -533,6 +583,8 @@ class SRStagingTest():
                                       dstComponent,
                                       shortDesc=shortDescFailure,
                                       longDesc=longDescFailure )
+            # Break down logs
+            main.funcs.analyzeLogs( shortDescFailure, 'powerdown_switch' )
 
             # Try to minimize the amount of time we are sending 20mb/s while switch is down
             #time.sleep( 60 )
@@ -571,6 +623,8 @@ class SRStagingTest():
                                       dstComponent,
                                       shortDesc=shortDescRecovery,
                                       longDesc=longDescRecovery )
+            # Break down logs
+            main.funcs.analyzeLogs( shortDescRecovery, 'powerup_switch' )
         except Exception as e:
             main.log.exception( "Error in killSwitchAgent" )
 

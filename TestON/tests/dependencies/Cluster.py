@@ -109,7 +109,7 @@ class Cluster():
                 nodeList = self.runningNodes
 
         for ctrl in nodeList:
-            ips.append( ctrl.ipAddress if ctrl.ipAddress is not 'localhost' else ctrl.address )
+            ips.append( ctrl.ipAddress if 'localhost' not in ctrl.ipAddress else ctrl.address )
 
         return ips
 

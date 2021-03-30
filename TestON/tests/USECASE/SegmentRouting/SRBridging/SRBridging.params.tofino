@@ -34,7 +34,7 @@
     </kubernetes>
 
     <PERF>
-        <traffic_host>Host2</traffic_host>
+        <traffic_host>Host1</traffic_host>
         <pcap_host>ng40vm</pcap_host>
         <pcap_cmd_arguments>-t e -F pcap -s 100 </pcap_cmd_arguments>
         <iterations>1</iterations>

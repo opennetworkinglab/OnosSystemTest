@@ -88,7 +88,7 @@ class Utils:
                                                               "/tmp/karaf.log",
                                                               direction="from" )
             else:
-                scpResult = scpResult and main.ONOSbench.scp( ctrl,
+                scpResult = scpResult and main.ONOSbench.scp( ctrl.server,
                                                               "/opt/onos/log/karaf.log",
                                                               "/tmp/karaf.log",
                                                               direction="from" )

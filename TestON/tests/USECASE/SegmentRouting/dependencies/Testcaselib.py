@@ -1800,6 +1800,11 @@ class Testcaselib:
                 oldLevel = origLevels[ logger ]
                 if level != oldLevel:
                     toBeSet[ logger ] = oldLevel
+        # In case a previous test didn't reset
+        logs = main.params.get( 'ONOS_Logging_Reset', False )
+        if logs:
+            for namespace, level in logs.items():
+                toBeSet[ namespace ] = level
         logging = True
         try:
             for logger, level in toBeSet.iteritems():

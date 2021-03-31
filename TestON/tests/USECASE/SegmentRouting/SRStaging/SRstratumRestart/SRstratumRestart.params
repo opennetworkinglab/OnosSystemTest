@@ -62,6 +62,11 @@
         <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
         <org.onosproject.gnmi.ctl>TRACE</org.onosproject.gnmi.ctl>
     </ONOS_Logging>
+    <ONOS_Logging_Reset>
+        <org.onosproject.p4runtime.ctl.client>INFO</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.gnmi.ctl>INFO</org.onosproject.gnmi.ctl>
+    </ONOS_Logging_Reset>
 
 
     <ENV>

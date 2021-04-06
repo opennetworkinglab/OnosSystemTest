@@ -2727,7 +2727,7 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def onosDiagnostics( self, onosIPs, dstDir, suffix, timeout=300, profile="TRELLIS_PROFILE" ):
+    def onosDiagnostics( self, onosIPs, dstDir, suffix, timeout=300, profile="TRELLIS_PROFILE", onosPortnumber=8181 ):
         """
             Run onos-diagnostics with given ONOS instance IPs and save output to dstDir
             with suffix specified E.g. onos-diags-suffix.tar.gz
@@ -2741,7 +2741,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "export DIAGS_PROFILE=%s" % profile )
             self.handle.expect( self.prompt )
-            cmd = "onos-diagnostics"
+            cmd = "onos-diagnostics -P %s" % onosPortnumber
             assert isinstance( onosIPs, list )
             for ip in onosIPs:
                 cmd += " " + str( ip )

@@ -41,7 +41,7 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
             skipPackage = True
 
         main.internalIpv4Hosts = main.params[ 'TOPO' ][ 'internalIpv4Hosts' ].split( ',' )
-        main.internalIpv6Hosts = main.params[ 'TOPO' ][ 'internalIpv6Hosts' ].split( ',' )
+        main.internalIpv6Hosts = main.params[ 'TOPO' ][ 'internalIpv6Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get( 'internalIpv6Hosts' ) else []
         main.externalIpv4Hosts = main.params[ 'TOPO' ][ 'externalIpv4Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('externalIpv4Hosts') else []
         main.externalIpv6Hosts = main.params[ 'TOPO' ][ 'externalIpv6Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('externalIpv6Hosts') else []
         main.staticIpv4Hosts = main.params[ 'TOPO' ][ 'staticIpv4Hosts' ].split( ',' ) if main.params[ 'TOPO' ].get('staticIpv4Hosts') else []
@@ -63,16 +63,16 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
                                                                  1 if ipv6 else 0)
         else:
             main.cfgName = main.params[ "DEPENDENCY" ][ "confName" ]
-        if main.useBmv2:
-            # Translate configuration file from OVS-OFDPA to BMv2 driver
-            translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
-            switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
-            if switchPrefix is None:
-                switchPrefix = ''
-            translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
-        else:
-            translator.bmv2ToOfdpa( main )
         if not main.persistentSetup:
+            if main.useBmv2:
+                # Translate configuration file from OVS-OFDPA to BMv2 driver
+                translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
+                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
+                if switchPrefix is None:
+                    switchPrefix = ''
+                translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
+            else:
+                translator.bmv2ToOfdpa( main )
             lib.loadJson( main )
         main.log.debug( "sleeping %i seconds" % float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
         time.sleep( float( main.params[ 'timers' ][ 'loadNetcfgSleep' ] ) )
@@ -270,20 +270,8 @@ def verify( main, ipv4=True, ipv6=True, disconnected=True, internal=True, extern
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
 
-    spines = 4
-    leaves = 6
-    switches = spines + leaves
-    links = 0
-    #links = ( spines * leaves ) * 2
-    # Some double links, spines 101 and 102 to leaves 2-5
-    links += ( 2 * 4 * 2 ) * 2
-    # Some paired leaves
-    links += ( ( leaves - 2 ) / 2 ) * 2
-    # Paired spines
-    links += ( spines / 2 ) * 2
-    # single homed leaf to spines
-    links += ( 2 * 2 ) * 2
-
+    switches = int(main.params["TOPO"][ "switchNum" ])
+    links = int( main.params["TOPO"][ "linkNum" ])
     lib.verifyTopology( main, switches, links, len( main.Cluster.runningNodes ) )
     # check flows / groups numbers
     if countFlowsGroups:

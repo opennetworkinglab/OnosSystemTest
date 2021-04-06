@@ -259,10 +259,12 @@ class Topology:
                     hostHandle.startHostCli()
                 else:
                     hostHandle.connectInband()
-            srcIpList[ src ] = main.Network.getIPAddress( src, proto='IPV6' if ipv6 else 'IPV4' )
+            hostHandle = getattr( main, src )
+            srcIpList[ src ] = main.Network.getIPAddress( src, proto='IPV6' if ipv6 else 'IPV4', iface=hostHandle.interfaces[0].get("name") )
         unexpectedPings = []
         for dst in dstList:
-            dstIp = main.Network.getIPAddress( dst, proto='IPV6' if ipv6 else 'IPV4' )
+            hostHandle = getattr( main, dst )
+            dstIp = main.Network.getIPAddress( dst, proto='IPV6' if ipv6 else 'IPV4', iface=hostHandle.interfaces[0].get("name") )
             # Start pings from src hosts in parallel
             pool = []
             for src in srcList:

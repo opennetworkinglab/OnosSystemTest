@@ -438,9 +438,8 @@ class Testcaselib:
         suffix: suffix string of the file name. E.g. onos-diags-case1.tar.gz
         """
         main.log.info( "Collecting onos-diags..." )
-        main.ONOSbench.onosDiagnostics( [ctrl.ipAddress for ctrl in main.Cluster.runningNodes],
-                                        main.logdir,
-                                        "-CASE%d" % main.CurrentTestCaseNumber )
+        for ctrl in main.Cluster.runningNodes:
+            main.ONOSbench.onosDiagnostics( [ctrl.ipAddress], main.logdir,"-CASE%d" % main.CurrentTestCaseNumber, onosPortnumber=ctrl.REST.port )
 
     @staticmethod
     def config( main, cfgName ):

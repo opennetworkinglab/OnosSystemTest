@@ -115,7 +115,7 @@ class ScapyCliDriver( Emulator ):
                                 self.user_name +
                                 "@" +
                                 self.ip_address )
-                main.log.error( "Failed to connect to the Mininet Host" )
+                main.log.error( "Failed to connect to the Host" )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

@@ -168,7 +168,7 @@ class TestON:
         '''
         global driver_options
         self.initiated = False
-        self.log.info( "Creating component Handle: " + component )
+        self.log.info( "Creating component handle: " + component )
         driver_options = {}
         if 'COMPONENTS' in self.componentDictionary[ component ].keys():
             driver_options = dict( self.componentDictionary[ component ][ 'COMPONENTS' ] )

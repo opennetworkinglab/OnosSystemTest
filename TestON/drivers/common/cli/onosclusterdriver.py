@@ -98,6 +98,8 @@ class OnosClusterDriver( CLI ):
         self.karafPromptPass = None
         self.kubeConfig = None
         self.karafPromptUser = None
+        self.nodeUser = None
+        self.nodePass = None
         self.nodes = []
         super( OnosClusterDriver, self ).__init__()
 

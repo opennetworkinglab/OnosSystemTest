@@ -18,6 +18,7 @@
                 <karaf_password>karaf</karaf_password>
                 <web_user>karaf</web_user>
                 <web_pass>karaf</web_pass>
+                <karafPromptUser>karaf</karafPromptUser>
                 <rest_port></rest_port>
                 <prompt></prompt>  # TODO: we technically need a few of these, one per component
                 <onos_home>~/Projects/onos/</onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.

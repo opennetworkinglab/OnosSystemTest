@@ -1007,12 +1007,19 @@ class CLI( Component ):
                         "--field-selector=spec.nodeName=%s" % nodeName if nodeName else "" )
             main.log.info( self.name + ": sending: " + repr( cmdStr ) )
             self.handle.sendline( cmdStr )
-            i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ] )
-            if i == 3:
+            i = self.handle.expect( [ "not found", "error", "The connection to the server", "Unable to find", "No resources found", self.prompt ] )
+            if i == 4:
+                # Command worked, but returned no pods
+                output = self.handle.before + self.handle.after
+                main.log.warn( self.name + ": " + output )
+                return []
+            elif i == 5:
+                # Command returned pods
                 output = self.handle.before + self.handle.after
                 names = output.split( '\r\n' )[1].split()
                 return names
             else:
+                # Some error occured
                 main.log.error( self.name + ": Error executing command" )
                 main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
                 return main.FALSE

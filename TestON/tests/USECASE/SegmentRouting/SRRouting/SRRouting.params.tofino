@@ -29,7 +29,7 @@
     <persistent_setup>True</persistent_setup>
 
     <kubernetes>
-        <appName>onos-tost-onos-classic</appName>
+        <appName>onos-classic</appName>
         <namespace>tost</namespace>
     </kubernetes>
 

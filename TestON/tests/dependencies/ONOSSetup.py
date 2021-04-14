@@ -266,6 +266,7 @@ class ONOSSetup:
         Returns:
             Returns main.TRUE if it successfully executed.
         """
+        stepResult = main.TRUE
         if atomixClusterSize is None:
             atomixClusterSize = len( cluster.runningNodes )
         if atomixClusterSize is 1:
@@ -274,11 +275,12 @@ class ONOSSetup:
         cluster.setAtomixNodes( atomixClusterSize )
         atomixIps = [ node.ipAddress for node in cluster.atomixNodes ]
         main.log.info( "Atomix Cluster Size = {} ".format( atomixClusterSize ) )
-        if newCell:
-            cluster.createCell( cellName, cellApps, mininetIp, useSSH, onosIps,
-                                atomixIps, installMax )
-        main.step( "Apply cell to environment" )
-        stepResult = cluster.applyCell( cellName )
+        if not main.persistentSetup:
+            if newCell:
+                cluster.createCell( cellName, cellApps, mininetIp, useSSH, onosIps,
+                                    atomixIps, installMax )
+            main.step( "Apply cell to environment" )
+            stepResult = cluster.applyCell( cellName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully applied cell to " +

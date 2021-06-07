@@ -108,11 +108,11 @@
             <COMPONENTS>
                 <mac></mac>
                 <inband>false</inband>
-                <ip>10.32.5.161</ip>
+                <ip>10.32.5.188</ip>
                 <shortName>h1</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>enp175s0f0</interfaceName>
+                <interfaceName>fabr52</interfaceName>
                 <routes>
                     <route1>
                         <network></network>
@@ -135,11 +135,11 @@
             <COMPONENTS>
                 <mac></mac>
                 <inband>false</inband>
-                <ip>10.32.5.162</ip>
+                <ip>10.32.5.185</ip>
                 <shortName>h2</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>enp175s0f0</interfaceName>
+                <interfaceName>fabr52</interfaceName>
                 <routes>
                     <route1>
                         <network></network>
@@ -162,11 +162,11 @@
             <COMPONENTS>
                 <mac></mac>
                 <inband>false</inband>
-                <ip>10.32.5.163</ip>
+                <ip>10.32.5.189</ip>
                 <shortName>h3</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>enp175s0f0</interfaceName>
+                <interfaceName>fabr52</interfaceName>
                 <routes>
                     <route1>
                         <network></network>

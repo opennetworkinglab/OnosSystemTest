@@ -562,7 +562,7 @@ class SRStagingTest():
             stopTime = time.time()
             main.log.warn( "It took %s seconds for the switch to reconnect to ONOS" % float( stopTime - startTime ) )
 
-            main.step( "ONL Restart on Switch %s" % switchComponent.name )
+            main.step( "Stratum agent start on Switch %s" % switchComponent.name )
             main.log.info( "Sleeping %s seconds" % sleepTime )
             time.sleep( sleepTime )
             main.step( "Stop Capturing" )
@@ -599,7 +599,9 @@ class SRStagingTest():
             except Exception as e:
                 main.log.exception( "Error in onosDown" )
                 return -1
-            oneLiner = "sort -u -g -k2,2 | tail -1 | cut -f2 "
+            # Remove first and last packet, sometimes there can be a long gap between these and the other packets
+            # Then sort by time from previous packet, grab the last one and print the time from previous packet
+            oneLiner = "head -n -1 | tail -n +1 | sort -u -g -k2,2 | tail -1 | cut -f2 "
             tsharkOptions = "-t dd -r %s -Y %s -T fields -e frame.number -e frame.time_delta  -e ip.src -e ip.dst -e udp | %s" % ( filePath, packetFilter, oneLiner )
             component.handle.sendline( "sudo /usr/bin/tshark %s" % tsharkOptions )
             i = component.handle.expect( [ "appears to be damaged or corrupt.",

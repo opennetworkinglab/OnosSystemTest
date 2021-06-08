@@ -56,6 +56,7 @@ class HostDriver( ScapyCliDriver ):
             self.interfaces.append( { 'ips': [ self.options[ 'ip' ] ],
                                       'isUp': True,
                                       'mac': self.options[ 'mac' ],
+                                      'dhcp': self.options[ 'dhcp' ],
                                       'name': self.options.get( 'interfaceName', None ) } )
 
             try:
@@ -79,6 +80,15 @@ class HostDriver( ScapyCliDriver ):
                 ip_address=self.ip_address,
                 port=None,
                 pwd=self.pwd )
+
+            # Update IP of interfaces if using dhcp
+            for intf in self.interfaces:
+                if intf[ 'dhcp' ].lower() == "true":
+                    ip = self.getIPAddress( iface=intf[ 'name' ] )
+                    if ip:
+                        intf['ips'] = [ ip ]
+                    else:
+                        main.log.warn( self.name + ": Could not find IP of %s" % intf[ 'name' ] )
 
             if self.handle:
                 main.log.info( "Connection successful to the " +
@@ -207,6 +217,26 @@ class HostDriver( ScapyCliDriver ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.log.error( self.name + ":     " + self.handle.before )
             return main.FALSE
+
+    def getIPAddress( self, iface=None, proto='IPV4' ):
+        """
+        Returns IP address of the host
+        """
+        cmd = "ifconfig %s" % iface if iface else ""
+        response = self.command( cmd )
+        pattern = ''
+        if proto == 'IPV4':
+            pattern = "inet\s(\d+\.\d+\.\d+\.\d+)\s\snetmask"
+        else:
+            pattern = "inet6\s([\w,:]*)/\d+\s\sprefixlen"
+        ipAddressSearch = re.search( pattern, response )
+        if not ipAddressSearch:
+            return None
+        main.log.info(
+            self.name +
+            ": IP-Address is " +
+            ipAddressSearch.group( 1 ) )
+        return ipAddressSearch.group( 1 )
 
     def ping( self, dst, ipv6=False, interface=None, wait=3 ):
         """

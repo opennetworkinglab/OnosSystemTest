@@ -599,9 +599,9 @@ class SRStagingTest():
             except Exception as e:
                 main.log.exception( "Error in onosDown" )
                 return -1
-            # Remove first and last packet, sometimes there can be a long gap between these and the other packets
+            # Remove first and last packets, sometimes there can be a long gap between these and the other packets
             # Then sort by time from previous packet, grab the last one and print the time from previous packet
-            oneLiner = "head -n -1 | tail -n +1 | sort -u -g -k2,2 | tail -1 | cut -f2 "
+            oneLiner = "head -n -50 | tail -n +50 | sort -u -g -k2,2 | tail -1 | cut -f2 "
             tsharkOptions = "-t dd -r %s -Y %s -T fields -e frame.number -e frame.time_delta  -e ip.src -e ip.dst -e udp | %s" % ( filePath, packetFilter, oneLiner )
             component.handle.sendline( "sudo /usr/bin/tshark %s" % tsharkOptions )
             i = component.handle.expect( [ "appears to be damaged or corrupt.",

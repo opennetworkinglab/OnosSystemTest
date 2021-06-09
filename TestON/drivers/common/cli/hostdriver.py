@@ -56,7 +56,7 @@ class HostDriver( ScapyCliDriver ):
             self.interfaces.append( { 'ips': [ self.options[ 'ip' ] ],
                                       'isUp': True,
                                       'mac': self.options[ 'mac' ],
-                                      'dhcp': self.options[ 'dhcp' ],
+                                      'dhcp': self.options.get( 'dhcp', "False" ),
                                       'name': self.options.get( 'interfaceName', None ) } )
 
             try:

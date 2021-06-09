@@ -538,6 +538,7 @@ class NetworkDriver( CLI ):
                     hostPair[ 0 ].addRoutes()
                     hostPair[ 0 ].buildEther( src=srcMac, dst=dstMac )
                     hostPair[ 0 ].buildIP( src=srcIPs[0], dst=dstIPs[0] )
+                    hostPair[ 0 ].buildVLAN( vlan=[102, 103] )
                     hostPair[ 0 ].buildICMP( )
                     hostPair[ 0 ].sendPacket( iface=srcIface )
 

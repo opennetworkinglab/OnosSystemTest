@@ -15,6 +15,8 @@
                 <diff_clihost>True</diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
                 <karaf_username>karaf</karaf_username>
                 <karaf_password>karaf</karaf_password>
+                <karafPrompt_username>karaf</karafPrompt_username>
+                <karafPrompt_password>karaf</karafPrompt_password>
                 <web_user>karaf</web_user>
                 <web_pass>karaf</web_pass>
                 <rest_port></rest_port>

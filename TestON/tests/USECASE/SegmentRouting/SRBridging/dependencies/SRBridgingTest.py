@@ -55,19 +55,20 @@ class SRBridgingTest ():
             if self.topo[ topology ][ 'dual-homed' ]:
                 links += ( leaves - 1 ) * 2
 
-            main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, ( ( test_idx - 1 ) % 10 ) % 4 + 1 )
+            main.cfgName = 'CASE%01d%01d' % ( test_idx / 10, test_idx % 10 )
+            print (main.cfgName, "Testcase : CASE 09")
             main.Cluster.setRunningNode( onosNodes )
             run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
-            if main.useBmv2:
-                switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
-                if switchPrefix is None or "None":
-                    switchPrefix = ''
-                # Translate configuration file from OVS-OFDPA to BMv2 driver
-                translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
-                translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
-            else:
-                translator.bmv2ToOfdpa( main )
             if not main.persistentSetup:
+                if main.useBmv2:
+                    switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
+                    if switchPrefix is None or "None":
+                        switchPrefix = ''
+                    # Translate configuration file from OVS-OFDPA to BMv2 driver
+                    translator.bmv2ToOfdpa( main )  # Try to cleanup if switching between switch types
+                    translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
+                else:
+                    translator.bmv2ToOfdpa( main )
                 suf = main.params.get( 'jsonFileSuffix', None)
                 if suf:
                     run.loadJson( main, suffix=suf )

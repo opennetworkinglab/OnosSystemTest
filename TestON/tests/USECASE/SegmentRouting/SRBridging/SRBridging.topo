@@ -16,8 +16,8 @@
                 <karaf_password>rocks</karaf_password>
                 <node_username>sdn</node_username>
                 <node_password>rocks</node_password>
-                <karafPrompt_username></karafPrompt_username>
-                <karafPrompt_password></karafPrompt_password>
+                <karafPrompt_username>karaf</karafPrompt_username>
+                <karafPrompt_password>karaf</karafPrompt_password>
                 <web_user></web_user>
                 <web_pass></web_pass>
                 <rest_port></rest_port>

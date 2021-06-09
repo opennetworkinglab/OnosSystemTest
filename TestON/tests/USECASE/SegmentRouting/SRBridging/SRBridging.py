@@ -193,6 +193,7 @@ class SRBridging:
                             topology='2x4',
                             onosNodes=3,
                             description="Bridging test between two untagged hosts on vlan-untagged port" )
+
     def CASE9( self, main ):
         """
         Tests connectivity between two untagged hosts
@@ -212,7 +213,7 @@ class SRBridging:
         except ( NameError, AttributeError ):
             main.funcs = SRBridgingTest()
         main.funcs.runTest( main,
-                            test_idx=7,
+                            test_idx=9,
                             topology='2x2 dual-linked',
                             onosNodes=3,
                             description="Bridging test between two untagged hosts on vlan-untagged port" )
@@ -417,6 +418,31 @@ class SRBridging:
                             description="Bridging test between two tagged hosts",
                             vlan=[ 10, 10, 20, 20 ] )
 
+    def CASE19( self, main ):
+        """
+        Tests connectivity between two tagged hosts
+        (Ports are configured as vlan-tagged)
+
+        Sets up 3 ONOS instances
+        Start 2x2 leaf-spine topology
+        Pingall
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
+        except ImportError:
+            main.log.error( "SRBridgingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRBridgingTest()
+        main.funcs.runTest( main,
+                            test_idx=19,
+                            topology='2x2 dual-linked',
+                            onosNodes=3,
+                            description="Bridging test between two tagged hosts"
+                            vlan=[ 10, 10, 20, 20 ] )
+
     def CASE21( self, main ):
         """
         Tests connectivity between two untagged hosts
@@ -606,6 +632,30 @@ class SRBridging:
         main.funcs.runTest( main,
                             test_idx=28,
                             topology='2x4',
+                            onosNodes=3,
+                            description="Bridging test between two untagged hosts on vlan-native port" )
+
+    def CASE29( self, main ):
+        """
+        Tests connectivity between two untagged hosts
+        (Ports are configured as vlan-native with vlan-tagged)
+
+        Sets up 3 ONOS instances
+        Start 2x2 leaf-spine topology
+        Pingall
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
+        except ImportError:
+            main.log.error( "SRBridgingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRBridgingTest()
+        main.funcs.runTest( main,
+                            test_idx=29,
+                            topology='2x2 dual-linked',
                             onosNodes=3,
                             description="Bridging test between two untagged hosts on vlan-native port" )
 
@@ -817,6 +867,31 @@ class SRBridging:
                            description="Bridging test between two untagged hosts, "
                                        "one on vlan-untagged port and the other on vlan-native port" )
 
+    def CASE39( self, main ):
+        """
+        Tests connectivity between two untagged hosts
+        (Ports are configured as vlan-native and vlan-tagged, another with vlan-untagged)
+
+        Sets up 3 ONOS instances
+        Start 2x2 leaf-spine topology
+        Pingall
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
+        except ImportError:
+            main.log.error( "SRBridgingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRBridgingTest()
+        main.funcs.runTest( main,
+                            test_idx=39,
+                            topology='2x2 dual-linked',
+                            onosNodes=3,
+                            description="Bridging test between two untagged hosts, "
+                                        "one on vlan-untagged port and the other on vlan-native port" )
+
     def CASE41( self, main ):
         """
         Tests connectivity between untagged host and tagged host
@@ -1025,6 +1100,32 @@ class SRBridging:
                             description="Bridging test between untagged host and tagged host",
                             vlan=[ 0, 10, 0, 20 ] )
 
+    def CASE49( self, main ):
+        """
+        Tests connectivity between untagged host and tagged host
+        (Ports are configured as vlan-untagged and
+        vlan-tagged with same vlan-id, respectively)
+
+        Sets up 3 ONOS instances
+        Start 2x2 leaf-spine topology
+        Pingall
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
+        except ImportError:
+            main.log.error( "SRBridgingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRBridgingTest()
+        main.funcs.runTest( main,
+                            test_idx=49,
+                            topology='2x2 dual-linked',
+                            onosNodes=3,
+                            description="Bridging test between two untagged hostand tagged host",
+                            vlan=[ 102, 103 ] )
+
     def CASE51( self, main ):
         """
         Tests connectivity between two untagged hosts with different vlan id
@@ -1216,6 +1317,30 @@ class SRBridging:
                             topology='2x4',
                             onosNodes=3,
                             description="Bridging test between two untagged hosts with different vlan id" )
+
+    def CASE59( self, main ):
+        """
+        Tests connectivity between two untagged hosts with different vlan id
+        (Ports are configured as vlan-untagged 10 and 20, respectively)
+
+        Sets up 3 ONOS instances
+        Start 2x2 leaf-spine topology
+        Pingall
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
+        except ImportError:
+            main.log.error( "SRBridgingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRBridgingTest()
+        main.funcs.runTest( main,
+                            test_idx=59,
+                            topology='2x2 dual-linked',
+                            onosNodes=3,
+                            description="Bridging test between two untagged hosts with different vlan-id" )
 
     def CASE61( self, main ):
         """
@@ -1413,6 +1538,31 @@ class SRBridging:
         main.funcs.runTest( main,
                             test_idx=68,
                             topology='2x4',
+                            onosNodes=3,
+                            description="Bridging test between two tagged hosts with different vlan id",
+                            vlan=[ 10, 20, 30, 40 ] )
+
+    def CASE69( self, main ):
+        """
+        Tests connectivity between two tagged hosts with different vlan id
+        (Ports are configured as vlan-tagged 10 and 20, respectively)
+
+        Sets up 3 ONOS instances
+        Start 2x2 leaf-spine topology
+        Pingall
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
+        except ImportError:
+            main.log.error( "SRBridgingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRBridgingTest()
+        main.funcs.runTest( main,
+                            test_idx=69,
+                            topology='2x2 dual-linked',
                             onosNodes=3,
                             description="Bridging test between two tagged hosts with different vlan id",
                             vlan=[ 10, 20, 30, 40 ] )
@@ -1615,4 +1765,29 @@ class SRBridging:
                             topology='2x4',
                             onosNodes=3,
                             description="Bridging test between untagged and tagged hosts with different vlan id",
+                            vlan=[ 0, 20, 0, 40 ] )
+
+    def CASE79( self, main ):
+        """
+        Tests connectivity between untagged and tagged hosts with different vlan id
+        (Ports are configured as vlan-untagged 10 and vlan-tagged 20, respectively)
+
+        Sets up 3 ONOS instances
+        Start 2x2 leaf-spine topology
+        Pingall
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRBridging.dependencies.SRBridgingTest import SRBridgingTest
+        except ImportError:
+            main.log.error( "SRBridgingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRBridgingTest()
+        main.funcs.runTest( main,
+                            test_idx=79,
+                            topology='2x2 dual-linked',
+                            onosNodes=3,
+                            description="Bridging test between untagged and tagged hosts with different vlan idt",
                             vlan=[ 0, 20, 0, 40 ] )

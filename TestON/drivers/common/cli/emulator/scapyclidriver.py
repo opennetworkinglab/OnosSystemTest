@@ -344,6 +344,46 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def buildVLAN( self, **kwargs ):
+        """
+        Build a VLAN frame
+        """
+        try:
+            main.log.debug( self.name + ": Building VLAN Frame" )
+            # Set the IP frame
+            cmd = 'vlan = Dot1Q( '
+            options = []
+            for key, value in kwargs.iteritems():
+                if isinstance( value, str ):
+                    value = '"' + value + '"'
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + response )
+                return main.FALSE
+            self.handle.sendline( "packet = ether/ip/vlan" )
+            self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + response )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def buildIPv6( self, **kwargs ):
         """
         Build an IPv6 frame

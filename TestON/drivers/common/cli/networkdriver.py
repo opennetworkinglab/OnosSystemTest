@@ -786,23 +786,12 @@ class NetworkDriver( CLI ):
         """
         Returns IP address of the host
         """
-        cmd = "ifconfig %s" % iface if iface else ""
-        response = self.runCmdOnHost( host, cmd )
-        pattern = ''
-        if proto == 'IPV4':
-            pattern = "inet\s(\d+\.\d+\.\d+\.\d+)\s\snetmask"
+        hostComponent = self.hosts[ host ]
+        if hostComponent:
+            return hostComponent.getIPAddress( iface=iface, proto=proto )
         else:
-            pattern = "inet6\s([\w,:]*)/\d+\s\sprefixlen"
-        ipAddressSearch = re.search( pattern, response )
-        if not ipAddressSearch:
+            main.log.warn( self.name + ": Could not find host with short name '%s'" % host )
             return None
-        main.log.info(
-            self.name +
-            ": IP-Address of Host " +
-            host +
-            " is " +
-            ipAddressSearch.group( 1 ) )
-        return ipAddressSearch.group( 1 )
 
     def getLinkRandom( self, timeout=60, nonCut=True, excludeNodes=[], skipLinks=[] ):
         """

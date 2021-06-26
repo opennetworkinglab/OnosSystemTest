@@ -440,7 +440,7 @@ class SRBridging:
                             test_idx=19,
                             topology='2x2 dual-linked',
                             onosNodes=3,
-                            description="Bridging test between two tagged hosts"
+                            description="Bridging test between two tagged hosts",
                             vlan=[ 10, 10, 20, 20 ] )
 
     def CASE21( self, main ):

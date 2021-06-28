@@ -224,11 +224,21 @@ class HostDriver( ScapyCliDriver ):
         """
         cmd = "ifconfig %s" % iface if iface else ""
         response = self.command( cmd )
-        pattern = ''
-        if proto == 'IPV4':
-            pattern = "inet\s(\d+\.\d+\.\d+\.\d+)\s\snetmask"
+        if "Command 'ifconfig' not found" in response:
+            # ip a show dev
+            cmd = "ip addr show %s" % iface if iface else ""
+            response = self.command( cmd )
+            pattern = ''
+            if proto == 'IPV4':
+                pattern = "inet\s(\d+\.\d+\.\d+\.\d+)/\d+"
+            else:
+                pattern = "inet6\s([\w,:]*)/\d+"
         else:
-            pattern = "inet6\s([\w,:]*)/\d+\s\sprefixlen"
+            pattern = ''
+            if proto == 'IPV4':
+                pattern = "inet\s(\d+\.\d+\.\d+\.\d+)\s\snetmask"
+            else:
+                pattern = "inet6\s([\w,:]*)/\d+\s\sprefixlen"
         ipAddressSearch = re.search( pattern, response )
         if not ipAddressSearch:
             return None
@@ -335,9 +345,15 @@ class HostDriver( ScapyCliDriver ):
             command = "ifconfig"
             main.log.info( self.name + ": Sending: " + command )
             self.handle.sendline( command )
-            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ],
+            i = self.handle.expect( [ "Command 'ifconfig' not found", self.prompt, pexpect.TIMEOUT ],
                                     timeout=wait + 5 )
-            if i == 1:
+            if i == 0:
+                response = self.handle.before
+                self.handle.expect( [ self.prompt, pexpect.TIMEOUT ] )
+                response += str( self.handle.before )
+                main.log.error( self.name + ": Error running ifconfig: %s " % response )
+                return response
+            if i == 2:
                 main.log.error(
                     self.name +
                     ": timeout when waiting for response" )

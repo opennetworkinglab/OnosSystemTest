@@ -51,9 +51,9 @@ class SRDynamicFuncs():
                               args=self.topo[ topology ][ 'mininetArgs' ] )
             # pre-configured routing and bridging test
             run.checkFlows( main, minFlowCount=minBeforeFlow )
-            run.pingAll( main, dumpflows=False )
+            run.pingAll( main, dumpFlows=False )
             run.addHostCfg( main )
-            run.checkFlows( main, minFlowCount=minAfterFlow, dumpflows=False )
+            run.checkFlows( main, minFlowCount=minAfterFlow, dumpFlows=False )
             run.pingAll( main )
             if killOnosAndDeleteCfg:
                 switch = self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ]
@@ -73,5 +73,5 @@ class SRDynamicFuncs():
     def killAndDelete( self, main, caseNum, numNodes, minBeforeFlow, switch, link ):
         run.killOnos( main, [ 0 ], '{}'.format( switch ), '{}'.format( link ), '{}'.format( numNodes - 1 ) )
         run.delHostCfg( main )
-        run.checkFlows( main, minFlowCount=minBeforeFlow, dumpflows=False )
+        run.checkFlows( main, minFlowCount=minBeforeFlow, dumpFlows=False )
         run.pingAll( main, "CASE{}_After".format( caseNum ) )

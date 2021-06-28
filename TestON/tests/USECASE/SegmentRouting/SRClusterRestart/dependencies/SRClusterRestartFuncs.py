@@ -54,7 +54,7 @@ class SRClusterRestartFuncs():
             switch = '{}'.format( self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ] )
             link = '{}'.format( ( self.topo[ topology ][ 'spines' ] + self.topo[ topology ][ 'leaves' ] ) * self.topo[ topology ][ 'spines' ] )
             run.killOnos( main, killList, switch, link, '0' )
-            run.pingAll( main, caseTitle, dumpflows=False )
+            run.pingAll( main, caseTitle, dumpFlows=False )
             run.recoverOnos( main, killList, switch, link, '{}'.format( numNodes ) )
             run.checkFlows( main, minFlowCount=minFlow, tag=caseTitle )
             run.pingAll( main, caseTitle )

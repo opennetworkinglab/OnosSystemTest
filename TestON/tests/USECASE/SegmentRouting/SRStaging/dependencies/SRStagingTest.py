@@ -36,6 +36,7 @@ class SRStagingTest():
         # (number of spine switch, number of leaf switch, dual-homed, description, minFlowCount - leaf (OvS), minFlowCount - leaf (BMv2))
         self.switchNames = {}
         self.switchNames[ '0x1' ] = [ "leaf1" ]
+        self.switchNames[ '0x2' ] = [ "leaf1", "leaf2" ]
         self.switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
         main.switchType = "ovs"
 

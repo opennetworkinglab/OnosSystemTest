@@ -96,6 +96,7 @@ class Testcaselib:
             main.testSetUp.envSetupException( e )
 
         main.testSetUp.envSetupConclusion( stepResult )
+
     @staticmethod
     def getTopo():
         topo = dict()
@@ -222,11 +223,12 @@ class Testcaselib:
     @staticmethod
     def loadChart( main ):
         try:
-            with open( "%s%s.chart" % ( main.configPath + main.forChart,
-                                        main.cfgName ) ) as chart:
+            filename = "%s%s.chart" % ( main.configPath + main.forChart,
+                                        main.cfgName )
+            with open( filename ) as chart:
                 main.pingChart = json.load( chart )
         except IOError:
-            main.log.warn( "No chart file found." )
+            main.log.warn( "No chart file found at %s" % filename )
 
     @staticmethod
     def loadHost( main ):
@@ -521,7 +523,7 @@ class Testcaselib:
                                  onfail="Some bucket numbers are not as expected" )
 
     @staticmethod
-    def checkFlows( main, minFlowCount, tag="", dumpflows=True, sleep=10 ):
+    def checkFlows( main, minFlowCount, tag="", dumpFlows=True, sleep=10 ):
         main.step(
                 "Check whether the flow count is >= %s" % minFlowCount )
         if tag == "":
@@ -550,7 +552,7 @@ class Testcaselib:
                 actual=flowCheck,
                 onpass="Flow status is correct!",
                 onfail="Flow status is wrong!" )
-        if dumpflows:
+        if dumpFlows:
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "flows",
                                         main.logdir,
@@ -645,7 +647,7 @@ class Testcaselib:
         return
 
     @staticmethod
-    def pingAll( main, tag="", dumpflows=True, acceptableFailed=0, basedOnIp=False,
+    def pingAll( main, tag="", dumpFlows=True, acceptableFailed=0, basedOnIp=False,
                  sleep=10, retryAttempts=1, skipOnFail=False, useScapy=True ):
         '''
         Verify connectivity between hosts according to the ping chart
@@ -728,7 +730,72 @@ class Testcaselib:
                 Testcaselib.cleanup( main, copyKarafLog=False )
                 main.skipCase()
 
-        if dumpflows:
+        if dumpFlows:
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
+                                        "flows",
+                                        main.logdir,
+                                        tag + "_FlowsOn",
+                                        cliPort=main.Cluster.active(0).CLI.karafPort )
+            main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
+                                        "groups",
+                                        main.logdir,
+                                        tag + "_GroupsOn",
+                                        cliPort=main.Cluster.active(0).CLI.karafPort )
+
+    @staticmethod
+    def pingAllFabricIntfs( main, srcList, tag="", dumpFlows=True, skipOnFail=False ):
+        '''
+        Verify connectivity between hosts and their fabric interfaces
+        '''
+        main.log.report( "Check host connectivity with fabric" )
+        if tag == "":
+            tag = 'CASE%d' % main.CurrentTestCaseNumber
+        expect = main.TRUE
+        import json
+        import re
+        hostsJson = json.loads( main.Cluster.active( 0 ).hosts() )
+        netcfgJson = json.loads( main.Cluster.active( 0 ).getNetCfg( subjectClass='ports') )
+        for hostname in srcList:
+            try:
+                hostComponent = main.Network.hosts[ str( hostname ) ]
+                srcIface = hostComponent.interfaces[0].get( 'name' )
+                main.step( "Verify fabric connectivity for %s with tag %s" % ( str( hostname ), tag ) )
+                #Get host location, check netcfg for that port's ip
+                hostIp = hostComponent.getIPAddress( iface=srcIface )
+                main.log.warn( "Looking for %s" % hostIp )
+                ips = []
+                for obj in hostsJson:
+                    if hostIp in obj['ipAddresses']:
+                        for location in obj['locations']:
+                            main.log.debug( location )
+                            did = location['elementId'].encode( 'utf-8' )
+                            port = location['port'].encode( 'utf-8' )
+                            m = re.search( '\((\d+)\)', port )
+                            if m:
+                                port = m.group(1)
+                            portId = "%s/%s" % ( did, port )
+                            # Lookup ip assigned to this network port
+                            ips.extend( [ x.encode( 'utf-8' ) for x in netcfgJson[ portId ][ 'interfaces' ][0][ 'ips' ] ] )
+                ips = set( ips )
+                ipRE = r'(\d+\.\d+\.\d+\.\d+)/\d+|([\w,:]*)/\d+'
+                for ip in ips:
+                    ipMatch = re.search( ipRE, ip )
+                    if ipMatch:
+                        fabricIntfIp = ipMatch.group(1)
+                        main.log.debug( "Found %s as gateway ip for %s" % ( fabricIntfIp, hostname ) )
+                        pa = hostComponent.ping( fabricIntfIp, interface=srcIface )
+                        utilities.assert_equals( expect=expect, actual=pa,
+                                                 onpass="IP connectivity successfully tested",
+                                                 onfail="IP connectivity failed" )
+                        if pa != expect:
+                            Testcaselib.saveOnosDiagnostics( main )
+                            if skipOnFail:
+                                Testcaselib.cleanup( main, copyKarafLog=False )
+                                main.skipCase()
+            except ValueError:
+                main.log.exception( "Could not get gateway ip for %s" % hostname )
+
+        if dumpFlows:
             main.ONOSbench.dumpONOSCmd( main.Cluster.active( 0 ).ipAddress,
                                         "flows",
                                         main.logdir,

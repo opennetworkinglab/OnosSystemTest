@@ -137,7 +137,7 @@ class SRDynamicConfTest:
 
             # minFlowCountPerLeaf = 13 +  [# of ports] * 5 + [# of hosts] * 2 + [# of vlan ids]
             minFlowCountPerLeaf = 13 + ( fanout + self.topo[ topology ][ 'spines' ]) * 5 + fanout * 2 + len( set( vlan ) )
-            run.checkFlows( main, minFlowCount=minFlowCountPerLeaf * self.topo[ topology ][ 'leaves' ], sleep=5, dumpflows=False )
+            run.checkFlows( main, minFlowCount=minFlowCountPerLeaf * self.topo[ topology ][ 'leaves' ], sleep=5, dumpFlows=False )
             # Check connectivity before changing interface configuration
             run.pingAll( main, '%s_Before' % TAG, retryAttempts=2 )
 
@@ -370,7 +370,7 @@ class SRDynamicConfTest:
                 main.log.debug( "Ping chart is not changed" )
 
             # Check connectivity after changing interface configuration
-            run.checkFlows( main, minFlowCount=minFlowCountPerLeaf * self.topo[ topology ][ 'leaves' ], sleep=5, dumpflows=False )
+            run.checkFlows( main, minFlowCount=minFlowCountPerLeaf * self.topo[ topology ][ 'leaves' ], sleep=5, dumpFlows=False )
             run.pingAll( main, '%s_After' % TAG, retryAttempts=2 )
 
         except Exception as e:

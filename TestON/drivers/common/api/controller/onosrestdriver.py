@@ -1598,11 +1598,12 @@ class OnosRestDriver( Controller ):
                 port = self.port
             url = "/network/configuration"
             if subjectClass:
-                url += "/" + subjectClass
+                url += "/" + self.checkRegex( subjectClass )
                 if subjectKey:
-                    url += "/" + subjectKey
+                    url += "/" + self.checkRegex( subjectKey )
                     if configKey:
-                        url += "/" + configKey
+                        url += "/" + self.checkRegex( configKey )
+            url = requests.utils.quote( url, safe="%/" )
             response = self.send( url=url, ip = ip, port = port )
             if response:
                 if 200 <= response[ 0 ] <= 299:
@@ -1624,6 +1625,10 @@ class OnosRestDriver( Controller ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def checkRegex( self, inputStr ):
+        res = inputStr.replace('/', '%2f')
+        return res
 
     def setNetCfg( self, cfgJson, ip="DEFAULT", port="DEFAULT",
                    subjectClass=None, subjectKey=None, configKey=None ):
@@ -1647,11 +1652,12 @@ class OnosRestDriver( Controller ):
                 port = self.port
             url = "/network/configuration"
             if subjectClass:
-                url += "/" + subjectClass
+                url += "/" + self.checkRegex( subjectClass )
                 if subjectKey:
-                    url += "/" + subjectKey
+                    url += "/" + self.checkRegex( subjectKey )
                     if configKey:
-                        url += "/" + configKey
+                        url += "/" + self.checkRegex( configKey )
+            url = requests.utils.quote( url, safe="%/" )
             response = self.send( method="POST",
                                   url=url, ip = ip, port = port,
                                   data=json.dumps( cfgJson ) )

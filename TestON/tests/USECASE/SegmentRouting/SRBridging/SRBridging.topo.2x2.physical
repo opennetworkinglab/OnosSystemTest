@@ -15,6 +15,8 @@
                 <diff_clihost>True</diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
                 <karaf_username>karaf</karaf_username>
                 <karaf_password>karaf</karaf_password>
+                <node_username>sdn</node_username>
+                <node_password>rocks</node_password>
                 <karafPrompt_username>karaf</karafPrompt_username>
                 <karafPrompt_password>karaf</karafPrompt_password>
                 <web_user>karaf</web_user>
@@ -22,7 +24,7 @@
                 <rest_port></rest_port>
                 <prompt></prompt>  # TODO: we technically need a few of these, one per component
                 <onos_home></onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.
-                <nodes> 7 </nodes>  # number of nodes in the cluster
+                <nodes> 3 </nodes>  # number of nodes in the cluster
             </COMPONENTS>
         </ONOScell>
 

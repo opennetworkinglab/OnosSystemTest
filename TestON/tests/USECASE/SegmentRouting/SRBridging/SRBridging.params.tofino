@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>3</testcases>
+    <testcases>9,19,29,39,49,59,69,79</testcases>
 
     <GRAPH>
         <nodeCluster>QA-Pod</nodeCluster>

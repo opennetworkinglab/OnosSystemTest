@@ -34,6 +34,7 @@ class SRBridgingTest ():
         self.switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
         main.switchType = "ovs"
 
+
     def runTest( self, main, test_idx, topology, onosNodes, description, vlan = [] ):
         try:
             skipPackage = False
@@ -93,7 +94,12 @@ class SRBridgingTest ():
             else:
                 # Run the test with physical devices
                 run.connectToPhysicalNetwork( main, hostDiscovery=False )  # We don't want to do host discovery in the pod
-
+                if main.cfgName:
+                    returnValue = run.loadNewJson( main )
+                    utilities.assert_equals( expect=main.TRUE,
+                                 actual=returnValue,
+                                 onpass="Successfully changed network config",
+                                 onfail="Failed to changed network config" )
             run.checkFlows( main, minFlowCount=self.topo[ topology ][ 'minFlow-Stratum' if main.useBmv2 else 'minFlow-OvS' ] * self.topo[ topology ][ 'leaves' ], sleep=5 )
             if main.useBmv2:
                 switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )

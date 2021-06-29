@@ -54,7 +54,8 @@ class Utils:
                                  onfail="Failed to stopped mininet" )
         return topoResult
 
-    def copyKarafLog( self, copyFileName="", before=False, includeCaseDesc=True ):
+    def copyKarafLog( self, copyFileName="", before=False, includeCaseDesc=True,
+                      useStern=False, startTime=None ):
         """
         Description:
             copy the karaf log and verify it.
@@ -63,6 +64,8 @@ class Utils:
             copyFileName.
         Returns:
         """
+        import datetime
+        import math
         # TODO: Also grab the rotated karaf logs
         main.log.report( "Copy karaf logs" )
         if includeCaseDesc:
@@ -102,12 +105,10 @@ class Utils:
             else:
                 stepResult = main.FALSE and stepResult
         if isKube:
-            # TODO: Look into using Stern, kail, or just use `kubectl logs <pod>`
             # We also need to save the pod name to switch name mapping
             main.ONOSbench.kubectlPodNodes( dstPath=main.logdir + "/podMapping.txt",
                                             kubeconfig=ctrl.k8s.kubeConfig,
                                             namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
-            # TODO Get stratum write logs
             # Save image for pods, based on "describe pods"
             main.ONOSbench.kubectlDescribe( "pods",
                                             main.logdir + "/describePods.txt",
@@ -117,12 +118,28 @@ class Utils:
             pods = main.ONOSbench.kubectlGetPodNames( kubeconfig=ctrl.k8s.kubeConfig,
                                                       namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
 
+            MINUTE = datetime.timedelta( minutes=1 )
             for pod in pods:
                 path = "%s/%s.log" % ( main.logdir, pod )
-                stratumPods = main.ONOSbench.kubectlLogs( pod,
-                                                          path,
-                                                          kubeconfig=ctrl.k8s.kubeConfig,
-                                                          namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
+                if useStern:
+                    if startTime:
+                        now = datetime.datetime.utcnow()
+                        duration = ( now - startTime ) + MINUTE
+                        since = "%ss" % int( math.ceil( duration.total_seconds() ) )
+                    else:
+                        since = "1h"
+                    podResults = main.ONOSbench.sternLogs( pod,
+                                                           path,
+                                                           kubeconfig=ctrl.k8s.kubeConfig,
+                                                           namespace=main.params[ 'kubernetes' ][ 'namespace' ],
+                                                           since=since,
+                                                           wait=10 )
+                else:
+                    podResults = main.ONOSbench.kubectlLogs( pod,
+                                                             path,
+                                                             kubeconfig=ctrl.k8s.kubeConfig,
+                                                             namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
+                stepResult = stepResult and podResults
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully copied remote ONOS logs",

@@ -102,11 +102,11 @@ class SRStaging:
         port4 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Third Link Up
         shortDesc = descPrefix + "-Recovery3"
-        longDesc = "%s Recovery: Bring upn %s/%s" % ( descPrefix, device, port3 )
+        longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port3 )
         main.funcs.linkUp( device, port3, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Forth Link Up
         shortDesc = descPrefix + "-Recovery4"
-        longDesc = "%s Recovery: Bring up  %s/%s" % ( descPrefix, device, port4 )
+        longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port4 )
         main.funcs.linkUp( device, port4, srcComponentList, dstComponent, shortDesc, longDesc )
 
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
@@ -176,11 +176,11 @@ class SRStaging:
         port4 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Third Link Up
         shortDesc = descPrefix + "-Recovery3"
-        longDesc = "%s Recovery: Bring upn %s/%s" % ( descPrefix, device, port3 )
+        longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port3 )
         main.funcs.linkUp( device, port3, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Forth Link Up
         shortDesc = descPrefix + "-Recovery4"
-        longDesc = "%s Recovery: Bring up  %s/%s" % ( descPrefix, device, port4 )
+        longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port4 )
         main.funcs.linkUp( device, port4, srcComponentList, dstComponent, shortDesc, longDesc )
 
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )

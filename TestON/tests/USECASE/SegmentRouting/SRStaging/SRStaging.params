@@ -28,6 +28,8 @@
 
     <persistent_setup>True</persistent_setup>
 
+    <use_stern>True</use_stern>
+
     <kubernetes>
         <appName>onos-classic</appName>
         <namespace>tost</namespace>

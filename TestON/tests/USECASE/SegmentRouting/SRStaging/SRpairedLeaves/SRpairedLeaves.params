@@ -26,6 +26,8 @@
 
     <persistent_setup>True</persistent_setup>
 
+    <use_stern>True</use_stern>
+
     <kubernetes>
         <appName>onos-classic</appName>
         <namespace>tost</namespace>
@@ -49,11 +51,13 @@
     </PERF>
     <ONOS_Logging>
         <org.onosproject.p4runtime.ctl.client>DEBUG</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.p4runtime.ctl.client.writerequestimpl>TRACE</org.onosproject.p4runtime.ctl.client.writerequestimpl>
         <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
         <org.onosproject.gnmi.ctl>TRACE</org.onosproject.gnmi.ctl>
     </ONOS_Logging>
     <ONOS_Logging_Reset>
         <org.onosproject.p4runtime.ctl.client>INFO</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.p4runtime.ctl.client.writerequestimpl>INFO</org.onosproject.p4runtime.ctl.client.writerequestimpl>
         <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
         <org.onosproject.gnmi.ctl>INFO</org.onosproject.gnmi.ctl>
     </ONOS_Logging_Reset>

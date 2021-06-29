@@ -105,7 +105,7 @@ class SRupstreamLeafSpinePortstateFailure:
             dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
         ## Third Link Up
         shortDesc = descPrefix + "-Recovery3"
-        longDesc = "%s Recovery: Bring upn %s/%s" % ( descPrefix, device, port3 )
+        longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port3 )
         main.funcs.linkUp( device, port3, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
             dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
@@ -113,7 +113,7 @@ class SRupstreamLeafSpinePortstateFailure:
             dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
         ## Forth Link Up
         shortDesc = descPrefix + "-Recovery4"
-        longDesc = "%s Recovery: Bring up  %s/%s" % ( descPrefix, device, port4 )
+        longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port4 )
         main.funcs.linkUp( device, port4, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
             dbHeaders.append( "%s-%s" % ( shortDesc, src ) )

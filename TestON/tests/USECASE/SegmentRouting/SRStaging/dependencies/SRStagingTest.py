@@ -231,6 +231,7 @@ class SRStagingTest():
                 receiverTime = self.analyzePcap( dst, pcapFileReceiver, "'udp && ip.src == %s'" % src.interfaces[0]['ips'][0], debug=False )
                 main.downtimeResults[ "%s-%s" % ( shortDesc, src.name ) ] = senderTime
                 main.downtimeResults[ "%s-%s-%s" % ( shortDesc, src.name, dst.name ) ] = receiverTime
+                # TODO: Add alarm here if time is too high
                 # Grab pcap
                 # TODO: Move this elsewhere, for automatic recovery, this chould delay us
                 #       to not start capture for the recovery until its already happened
@@ -239,7 +240,10 @@ class SRStagingTest():
                                          onpass="Saved pcap files from %s" % src.name,
                                          onfail="Failed to scp pcap files from %s" % src.name )
             # Grab logs
-            main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
+            useStern = main.params['use_stern'].lower() == "true"
+            main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True,
+                                     includeCaseDesc=False, useStern=useStern,
+                                     startTime=main.eventStart )
             # Grab pcap
             receiverSCP = main.ONOSbench.scp( dst, pcapFileReceiver, main.logdir, direction="from" )
             utilities.assert_equals( expect=main.TRUE, actual=receiverSCP,
@@ -849,6 +853,6 @@ class SRStagingTest():
             main.log.warn( "Error opening " + dbFileName + " to write results." )
 
     def cleanup( self, main, headerOrder=None ):
-        run.cleanup( main )
+        run.cleanup( main, copyKarafLog=False )
         main.step( "Writing csv results file for db" )
         self.dbWrite( main, main.TEST + "-dbfile.csv", headerOrder )

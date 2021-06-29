@@ -1115,6 +1115,56 @@ class CLI( Component ):
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
 
+    def sternLogs( self, podString, dstPath, kubeconfig=None, namespace=None, since='1h', wait=60 ):
+        """
+        Use stern to get the logs from a pod
+        Required Arguments:
+        - podString: The name of the pod or partial name of the pods to get the logs of
+        - dstPath: The location to save the logs to
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        - since: Return logs newer than a relative duration like 5s, 2m, or 3h. Defaults to 1h
+        - wait: How long to wait, in seconds, before killing the process. Stern does not currently
+                support a way to exit if cought up to present time. Defaults to 60 seconds
+        Returns main.TRUE or
+            main.FALSE on Error
+        """
+        import time
+        try:
+            cmdStr = "stern %s %s %s %s > %s " % (
+                     "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                     "-n %s" % namespace if namespace else "",
+                     "--since %s" % since if since else "",
+                     podString,
+                     dstPath )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            time.sleep( int( wait ) )
+            self.handle.send( '\x03' )  # CTRL-C
+            i = self.handle.expect( [ "not found", "Error: ", "The connection to the server", self.prompt ] )
+            if i == 3:
+                main.log.debug( self.name + ": " + self.handle.before )
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                response = self.handle.before + str( self.handle.after )
+                self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=5 )
+                response += self.handle.before + str( self.handle.after )
+                main.log.debug( self.name + ": " + response )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
     def kubectlLogs( self, podName, dstPath, kubeconfig=None, namespace=None, timeout=240 ):
         """
         Use kubectl to get the logs from a pod

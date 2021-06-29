@@ -1847,6 +1847,7 @@ class Testcaselib:
         main.step( 'Set logging levels' )
         # Get original values incase we want to reset them
         ctrl = main.Cluster.active(0)
+        ctrl.CLI.clearBuffer( timeout=1 )
         ctrl.CLI.logList()
 
         logging = True
@@ -1870,6 +1871,7 @@ class Testcaselib:
         main.step( 'Reset logging levels' )
         # Get original values incase we want to reset them
         ctrl = main.Cluster.active(0)
+        ctrl.CLI.clearBuffer( timeout=1 )
         currentLevels = ctrl.CLI.logList( saveValues=False )
         origLevels = ctrl.CLI.logLevels
         toBeSet = {}

@@ -298,7 +298,8 @@ class SRStagingTest():
             for oldKey in resultsDict.keys():
                 newKey = "%s-%s" % ( shortDesc, oldKey )
                 componentBreakdownDict[ newKey ] = resultsDict[ oldKey ]
-            main.downtimeResults.update( componentBreakdownDict )
+            # We need another way of uploading, this doesn't have guarenteed order and # of fields
+            # main.downtimeResults.update( componentBreakdownDict )
             main.log.debug( json.dumps( main.downtimeResults, sort_keys=True, indent=4 ) )
         except Exception:
             main.log.exception( "Error while breaking down logs" )

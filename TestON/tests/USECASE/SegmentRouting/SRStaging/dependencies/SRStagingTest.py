@@ -25,9 +25,10 @@ import time
 import re
 import json
 import pexpect
+import os
 
 
-class SRStagingTest():
+class SRStagingTest:
 
     def __init__( self ):
         self.default = ''
@@ -50,7 +51,13 @@ class SRStagingTest():
             # Skip onos packaging if the cluster size stays the same
             if not init and onosNodes == main.Cluster.numCtrls:
                 skipPackage = True
+            try:
+                main.downtimeResults
+            except ( NameError, AttributeError ):
+                main.downtimeResults = {}
 
+            main.logdir = main.logdir + "/CASE" + str( main.CurrentTestCaseNumber )
+            os.mkdir( main.logdir )
             main.case( '%s, with %s, %s switches and %d ONOS instance%s' %
                        ( description, self.topo[ topology ][ 'description' ],
                          main.switchType,
@@ -85,8 +92,107 @@ class SRStagingTest():
             main.skipCase( result="FAIL", msg=e )
 
     @staticmethod
+    def getHostConnections( main, host ):
+        """
+        Returns a dictionary with keys as devices the host is connected
+        to and values as the string name of the ports connected to the host
+        """
+        import json
+        import re
+        hostsJson = json.loads( main.Cluster.active(0).REST.hosts() )
+        locations = {}
+        ip = host.interfaces[0]['ips'][0]
+        for h in hostsJson:
+            if ip in h[ 'ipAddresses' ]:
+                for connectPoint in h[ 'locations' ]:
+                    did = connectPoint[ 'elementId' ].encode( 'utf-8' )
+                    device = locations.get( did, [] )
+                    port = connectPoint['port'].encode( 'utf-8' )
+                    m = re.search( '\((\d+)\)', port )
+                    if m:
+                        port = m.group(1)
+                    device.append( int( port ) )
+                    locations[ did ] = device
+        return locations
+
+    @staticmethod
+    def singlePingWithSudo( main, src, dstIp ):
+        """
+        Send a single ping with sudo. This verifies connectivity and sudo access
+        """
+        # TODO: Assert
+        src.handle.sendline( "sudo /bin/ping -w 1 -c 1 %s -I %s" % ( dstIp,
+                                                                     src.interfaces[0]['name'] ) )
+        try:
+            i = src.handle.expect( [ "password", src.prompt ] )
+            if i == 0:
+                src.handle.sendline( src.pwd )
+                i = src.handle.expect( [ "password", src.prompt ] )
+                assert i != 0, "Incorrect Password"
+        except Exception:
+            main.log.exception( "%s: Unexpected response from ping" % src.name )
+            src.handle.send( '\x03' )  # ctrl-c
+            src.handle.expect( src.prompt )
+        main.funcs.clearBuffer( src )
+        main.log.warn( "%s: %s" % ( src.name, str( src.handle.before ) ) )
+
+    @staticmethod
+    def startIperf( main, src, dst, trafficSelector, trafficDuration ):
+        """
+        Start iperf from src ip to dst ip
+        Handles connectivity check and sudo password input as well
+        Arguments:
+            src: src host component
+            dst: dst host component
+            trafficSelector: traffic selector string, passed to iperf
+            trafficDuration: Traffic duration string, passed to iperf
+
+        """
+        dstIp = dst.interfaces[0]['ips'][0]
+        srcIp = src.interfaces[0]['ips'][0]
+        iperfArgs = "%s --bind %s -c %s -t %s" % ( trafficSelector,
+                                                   srcIp,
+                                                   dstIp,
+                                                   trafficDuration )
+        main.log.info( "Starting iperf between %s and %s" % ( src.shortName, dst.shortName ) )
+        iperfSrc = getattr( main, "NetworkBench-%s" % src.shortName )
+        sudoCheck = main.funcs.singlePingWithSudo( main, iperfSrc, dst.interfaces[0]['ips'][0] )
+        iperfSrc.handle.sendline( "/usr/bin/iperf %s " % iperfArgs )
+
+    @staticmethod
+    def startTshark( main, host, pingDesc=None, direction="Sender" ):
+        """
+        """
+
+        if direction == "Sender":
+            suffix = "Sender"
+            hostStr = "src host %s" % host.interfaces[0]['ips'][0]
+        else:
+            suffix = "Receiver"
+            hostStr = "dst host %s" % host.interfaces[0]['ips'][0]
+        if not pingDesc:
+            pingDesc = host.name
+        fileName = "%s-tshark%s" % ( pingDesc, suffix )
+        pcapFile = "%s/tshark/%s" % ( "~/TestON", fileName )
+        tsharkArgs = "%s -i %s -f 'udp && %s' -w %s" % ( main.params[ 'PERF' ][ 'pcap_cmd_arguments' ],
+                                                         host.interfaces[0]['name'],
+                                                         hostStr,
+                                                         pcapFile )
+        commands = [ 'mkdir -p ~/TestON/tshark',
+                     'rm %s' % pcapFile,
+                     'touch %s' % pcapFile,
+                     'chmod o=rw %s' % pcapFile ]
+        for command in commands:
+            host.handle.sendline( command )
+            host.handle.expect( host.prompt )
+            main.log.debug( "%s: %s" % ( host.name, str( host.handle.before ) ) )
+        main.log.info( "Starting tshark on %s " % host.name )
+        host.handle.sendline( "sudo /usr/bin/tshark %s &> /dev/null " % tsharkArgs )
+
+    @staticmethod
     def startCapturing( main, srcList, dst, shortDesc=None, longDesc=None,
-                        trafficDuration=60, trafficSelector="-u -b 20M" ):
+                        trafficDuration=60, trafficSelector="-u -b 20M",
+                        bidirectional=False ):
         """
         Starts logging, traffic generation, traffic filters, etc before a failure is induced
         src: the src component that sends the traffic
@@ -94,102 +200,51 @@ class SRStagingTest():
         """
         import datetime
         try:
+            if not isinstance( srcList, list ):
+                srcList = [ srcList ]
+            srcReceiverList = [ ]
+            dstReceiver = None
+            if bidirectional:
+                # Create new sessions so we can send and receive on the same host
+                for src in srcList:
+                    newName = "%s-%s" % ( src.shortName, "Receiver" )
+                    main.Network.copyComponent( src.name, newName )
+                    srcReceiver = getattr( main, newName )
+                    srcReceiverList.append( srcReceiver )
+                newName = "%s-%s" % ( dst.shortName, "Receiver" )
+                main.Network.copyComponent( dst.name, newName )
+                dstReceiver = getattr( main, newName )
+
             # ping right before to make sure arp is cached and sudo is authenticated
             for src in srcList:
-                src.handle.sendline( "sudo /bin/ping -w 1 -c 1 %s -I %s" % ( dst.interfaces[0]['ips'][0],
-                                                                        src.interfaces[0]['name'] ) )
-                try:
-                    i = src.handle.expect( [ "password", src.prompt ] )
-                    if i == 0:
-                        src.handle.sendline( src.pwd )
-                        src.handle.expect( src.prompt )
-                except Exception:
-                    main.log.error( "%s: Unexpected response from ping" % src.name )
-                    src.handle.send( '\x03' )  # ctrl-c
-                    src.handle.expect( src.prompt )
-                main.funcs.clearBuffer( src )
-                main.log.warn( "%s: %s" % ( src.name, str( src.handle.before ) ) )
-                dst.handle.sendline( "sudo /bin/ping -w 1 -c 1 %s -I %s" % ( src.interfaces[0]['ips'][0],
-                                                                        dst.interfaces[0]['name'] ) )
-                try:
-                    i = dst.handle.expect( [ "password", dst.prompt ] )
-                    if i == 0:
-                        dst.handle.sendline( dst.pwd )
-                        dst.handle.expect( dst.prompt )
-                except Exception:
-                    main.log.error( "%s: Unexpected response from ping" % dst.name )
-                    dst.handle.send( '\x03' )  # ctrl-c
-                    dst.handle.expect( dst.prompt )
-                main.funcs.clearBuffer( dst )
-                main.log.warn( "%s: %s" % ( dst.name, str( dst.handle.before ) ) )
+                main.funcs.singlePingWithSudo( main, src, dst.interfaces[0]['ips'][0] )
+                main.funcs.singlePingWithSudo( main, dst, src.interfaces[0]['ips'][0] )
+            if bidirectional:
+                for src in srcReceiverList:
+                    main.funcs.singlePingWithSudo( main, src, dstReceiver.interfaces[0]['ips'][0] )
+                    main.funcs.singlePingWithSudo( main, dstReceiver, src.interfaces[0]['ips'][0] )
             # Start traffic
             # TODO: ASSERTS
             main.pingStart = time.time()
-            dstIp = dst.interfaces[0]['ips'][0]
             for src in srcList:
-                srcIp = src.interfaces[0]['ips'][0]
-                iperfArgs = "%s --bind %s -c %s -t %s" % ( trafficSelector,
-                                                           srcIp,
-                                                           dstIp,
-                                                           trafficDuration )
-                main.log.info( "Starting iperf" )
-                iperfSrc = getattr( main, "NetworkBench-%s" % src.shortName )
-                iperfSrc.handle.sendline( "sudo /bin/ping -w 1 -c 1 %s -I %s" % ( dst.interfaces[0]['ips'][0],
-                                                                             iperfSrc.interfaces[0]['name'] ) )
-                try:
-                    i = iperfSrc.handle.expect( [ "password", iperfSrc.prompt ] )
-                    if i == 0:
-                        iperfSrc.handle.sendline( iperfSrc.pwd )
-                        iperfSrc.handle.expect( iperfSrc.prompt )
-                except Exception:
-                    main.log.error( "%s: Unexpected response from ping" % iperfSrc.name )
-                    iperfSrc.handle.send( '\x03' )  # ctrl-c
-                    iperfSrc.handle.expect( iperfSrc.prompt )
-                main.funcs.clearBuffer( iperfSrc )
-                main.log.warn( "%s: %s" % ( iperfSrc.name, str( iperfSrc.handle.before ) ) )
-
-                iperfSrc.handle.sendline( "/usr/bin/iperf %s " % iperfArgs )
-            # TODO: Do we need to add udp port to filter?
-            # Start packet capture
-            pcapFileReceiver = "%s/tshark/%s-%s-tsharkReceiver" % ( "~/TestON",
-                                                                    shortDesc if shortDesc else "tshark",
-                                                                    dst.name )
-            tsharkArgsReceiver = "%s -i %s -f 'udp && host %s' -w %s" % ( main.params[ 'PERF' ][ 'pcap_cmd_arguments' ],
-                                                                          dst.interfaces[0]['name'],
-                                                                          dstIp,
-                                                                          pcapFileReceiver )
-            commands = [ 'mkdir -p ~/TestON/tshark',
-                         'rm %s' % pcapFileReceiver,
-                         'touch %s' % pcapFileReceiver,
-                         'chmod o=rw %s' % pcapFileReceiver ]
-            for command in commands:
-                dst.handle.sendline( command )
-                dst.handle.expect( dst.prompt )
-                main.log.debug( "%s: %s" % (dst.name, str( dst.handle.before ) ) )
-            main.log.info( "Starting tshark on %s " % dst.name )
-            dst.handle.sendline( "sudo /usr/bin/tshark %s &> /dev/null " % tsharkArgsReceiver )
+                main.funcs.startIperf( main, src, dst, trafficSelector, trafficDuration )
+                if bidirectional:
+                    main.funcs.startIperf( main, dstReceiver, src, trafficSelector, trafficDuration )
+            # Start packet capture on receiver
+            pingDesc = "%s-%s" % ( shortDesc, dst.shortName )
+            main.funcs.startTshark( main, dst, pingDesc, direction="Receiver" )
+            if bidirectional:
+                for src in srcReceiverList:
+                    pingDesc = "%s-%s" % ( shortDesc, src.shortName )
+                    main.funcs.startTshark( main, src, pingDesc, direction="Receiver" )
 
             for src in srcList:
-                srcIp = src.interfaces[0]['ips'][0]
-                pcapFileSender = "%s/tshark/%s-%s-tsharkSender" % ( "~/TestON",
-                                                                    shortDesc if shortDesc else "tshark",
-                                                                    src.name )
-                tsharkArgsSender = "%s -i %s -f 'udp && host %s' -w %s" % ( main.params[ 'PERF' ][ 'pcap_cmd_arguments' ],
-                                                                            src.interfaces[0]['name'],
-                                                                            srcIp,
-                                                                            pcapFileSender )
-                # Prepare file with correct permissions
-                commands = [ 'mkdir -p ~/TestON/tshark',
-                             'rm %s' % pcapFileSender,
-                             'touch %s' % pcapFileSender,
-                             'chmod o=rw %s' % pcapFileSender ]
-                for command in commands:
-                    src.handle.sendline( command )
-                    src.handle.expect( src.prompt )
-                    main.log.debug( "%s: %s" % (src.name, str( src.handle.before ) ) )
+                pingDesc = "%s-%s%s" % ( shortDesc, src.shortName, "-to-%s" % dst.shortName if bidirectional else "" )
+                main.funcs.startTshark( main, src, pingDesc=pingDesc, direction="Sender" )
+                if bidirectional:
+                    pingDesc = "%s-%s%s" % ( shortDesc, dst.shortName, "-to-%s" % src.shortName if bidirectional else "" )
+                    main.funcs.startTshark( main, dstReceiver, pingDesc=pingDesc, direction="Sender" )
 
-                main.log.info( "Starting tshark on %s " % src.name )
-                src.handle.sendline( "sudo /usr/bin/tshark %s &> /dev/null " % tsharkArgsSender )
             # Timestamp used for EVENT START
             main.eventStart = datetime.datetime.utcnow()
             # LOG Event start in ONOS logs
@@ -199,15 +254,33 @@ class SRStagingTest():
             main.log.exception( "Error in startCapturing" )
             main.skipCase( result="FAIL", msg=e )
 
-    def stopCapturing( self, main, srcList, dst, shortDesc=None, longDesc=None ):
+    def checkContinuedFlow(self):
+        """
+        We need a way to verify that traffic hasn't stopped.
+        Maybe check filesize of pcaps is increasing?
+        """
+        return main.TRUE
+
+    def stopCapturing( self, main, srcList, dst, shortDesc=None, longDesc=None, bidirectional=False ):
         import datetime
         import time
         from tests.dependencies.utils import Utils
         main.utils = Utils()
+        if not isinstance( srcList, list ):
+            srcList = [ srcList ]
         try:
-            pcapFileReceiver = "%s/tshark/%s-%s-tsharkReceiver" % ( "~/TestON",
-                                                                    shortDesc if shortDesc else "tshark",
-                                                                    dst.name )
+            srcReceiverList = [ ]
+            dstReceiver = None
+            if bidirectional:
+                for src in srcList:
+                    newName = "%s-%s" % ( src.shortName, "Receiver" )
+                    srcReceiver = getattr( main, newName )
+                    srcReceiverList.append( srcReceiver )
+                newName = "%s-%s" % ( dst.shortName, "Receiver" )
+                dstReceiver = getattr( main, newName )
+            pingDescReceiver = "%s%s" % ( "%s-" % shortDesc if shortDesc else "", dst.shortName )
+            pcapFileReceiver = "%s/tshark/%s-tsharkReceiver" % ( "~/TestON",
+                                                                 pingDescReceiver )
             # Timestamp used for EVENT STOP
             main.eventStop = datetime.datetime.utcnow()
             # LOG Event stop in ONOS logs
@@ -224,31 +297,57 @@ class SRStagingTest():
             main.log.warn( "It took %s seconds since we started ping for us to stop pcap" % ( main.pingStop - main.pingStart ) )
 
             for src in srcList:
-                pcapFileSender = "%s/tshark/%s-%s-tsharkSender" % ( "~/TestON",
-                                                                    shortDesc if shortDesc else "tshark",
-                                                                    src.name )
+                pingDesc = "%s-%s%s" % ( shortDesc, src.shortName, "-to-%s" % dst.shortName if bidirectional else "" )
+                pingDescReceiver = "%s%s-to-%s" % ( "%s-" % shortDesc if shortDesc else "", src.shortName, dst.shortName )
+                pcapFileSender = "%s/tshark/%s-tsharkSender" % ( "~/TestON",
+                                                                 pingDesc )
                 senderTime = self.analyzePcap( src, pcapFileSender, "'udp && ip.src == %s'" % src.interfaces[0]['ips'][0], debug=False )
                 receiverTime = self.analyzePcap( dst, pcapFileReceiver, "'udp && ip.src == %s'" % src.interfaces[0]['ips'][0], debug=False )
-                main.downtimeResults[ "%s-%s" % ( shortDesc, src.name ) ] = senderTime
-                main.downtimeResults[ "%s-%s-%s" % ( shortDesc, src.name, dst.name ) ] = receiverTime
+                main.downtimeResults[ "%s" % pingDesc ] = senderTime
+                main.downtimeResults[ "%s" % pingDescReceiver ] = receiverTime
                 # TODO: Add alarm here if time is too high
                 # Grab pcap
-                # TODO: Move this elsewhere, for automatic recovery, this chould delay us
+                # TODO: Move this elsewhere, for automatic recovery, this could delay us
                 #       to not start capture for the recovery until its already happened
                 senderSCP = main.ONOSbench.scp( src, pcapFileSender, main.logdir, direction="from" )
                 utilities.assert_equals( expect=main.TRUE, actual=senderSCP,
                                          onpass="Saved pcap files from %s" % src.name,
                                          onfail="Failed to scp pcap files from %s" % src.name )
-            # Grab logs
-            useStern = main.params['use_stern'].lower() == "true"
-            main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True,
-                                     includeCaseDesc=False, useStern=useStern,
-                                     startTime=main.eventStart )
+            if bidirectional:
+                for src in srcReceiverList:
+                    pingDescOther = "%s-%s%s" % ( shortDesc, dstReceiver.shortName, "-to-%s" % src.shortName if bidirectional else "" )
+                    pcapFileSender = "%s/tshark/%s-tsharkSender" % ( "~/TestON",
+                                                                     pingDescOther )
+                    pingDescReceiverOther = "%s%s-to-%s" % ( "%s-" % shortDesc if shortDesc else "", src.shortName, dstReceiver.shortName )
+                    pcapFileReceiverOther = "%s/tshark/%s-tsharkReceiver" % ( "~/TestON",
+                                                                              pingDescReceiverOther )
+                    senderTime = self.analyzePcap( dstReceiver, pcapFileSender, "'udp && ip.src == %s'" % dstReceiver.interfaces[0]['ips'][0], debug=False )
+                    receiverTime = self.analyzePcap( src, pcapFileReceiverOther, "'udp && ip.src == %s'" % dstReceiver.interfaces[0]['ips'][0], debug=False )
+                    main.downtimeResults[ "%s" % pingDescOther ] = senderTime
+                    main.downtimeResults[ "%s" % pingDescReceiverOther ] = receiverTime
+                    # Grab pcap
+                    # TODO: Move this elsewhere, for automatic recovery, this could delay us
+                    #       to not start capture for the recovery until its already happened
+                    senderSCP = main.ONOSbench.scp( dstReceiver, pcapFileSender, main.logdir, direction="from" )
+                    utilities.assert_equals( expect=main.TRUE, actual=senderSCP,
+                                             onpass="Saved pcap files from %s" % src.name,
+                                             onfail="Failed to scp pcap files from %s" % src.name )
+                    # Grab pcap
+                    receiverSCP = main.ONOSbench.scp( src, pcapFileReceiverOther, main.logdir, direction="from" )
+                    utilities.assert_equals( expect=main.TRUE, actual=receiverSCP,
+                                             onpass="Saved pcap files from %s" % dst.name,
+                                             onfail="Failed to scp pcap files from %s" % dst.name )
+
             # Grab pcap
             receiverSCP = main.ONOSbench.scp( dst, pcapFileReceiver, main.logdir, direction="from" )
             utilities.assert_equals( expect=main.TRUE, actual=receiverSCP,
                                      onpass="Saved pcap files from %s" % dst.name,
                                      onfail="Failed to scp pcap files from %s" % dst.name )
+            # Grab logs
+            useStern = main.params['use_stern'].lower() == "true"
+            main.utils.copyKarafLog( shortDesc, before=True,
+                                     includeCaseDesc=True, useStern=useStern,
+                                     startTime=main.eventStart )
             # Grab Write logs on switches
             kubeConfig = main.Cluster.active(0).k8s.kubeConfig
             namespace = main.params[ 'kubernetes' ][ 'namespace' ]
@@ -263,20 +362,24 @@ class SRStagingTest():
                 utilities.assert_equals( expect=main.TRUE, actual=writeResult,
                                          onpass="Saved write-req file from %s" % switch,
                                          onfail="Failed to cp write-req file from %s" % switch )
+            # We also need to save the pod name to switch name mapping
+            main.ONOSbench.kubectlPodNodes( dstPath=main.logdir + "/podMapping.txt",
+                                            kubeconfig=kubeConfig,
+                                            namespace=namespace )
 
-        except Exception as e:
+        except Exception:
             main.log.exception( "Error in stopCapturing" )
 
     @staticmethod
-    def analyzeLogs( shortDesc, event, logDir=main.logdir ):
+    def analyzeLogs( shortDesc, event, startTime, stopTime, logDir=main.logdir ):
         try:
             import datetime
             main.log.step( "Read saved component logs" )
             main.log.debug( main.eventStart )
             # Seems like there is clock skew, +/- 30 seconds
             MINUTE = datetime.timedelta( minutes=1 )
-            lines, podMapping = logParser.readLogsFromTestFolder( main.eventStart-MINUTE,
-                                                                  main.eventStop+MINUTE,
+            lines, podMapping = logParser.readLogsFromTestFolder( startTime-MINUTE,
+                                                                  stopTime+MINUTE,
                                                                   testDir=logDir )
             # Write a merged log file
             ordered_lines = sorted( lines, key=logParser.sortByDateTime )
@@ -289,7 +392,7 @@ class SRStagingTest():
             logParser.analyzeLogs( ordered_lines, podMapping )
             # save human readable results to this file
             outFile = "log_breakdown_output"
-            outputTextFile = "%s/%s-%s.txt" %( logDir, shortDesc, outFile )
+            outputTextFile = "%s/%s-%s.txt" % ( logDir, shortDesc, outFile )
             # Find component times based on these lines
             resultsDict = logParser.breakdownEvent( event, podMapping, outputFile=outputTextFile )
             main.log.debug( json.dumps( resultsDict, sort_keys=True, indent=4 ) )
@@ -298,7 +401,7 @@ class SRStagingTest():
             for oldKey in resultsDict.keys():
                 newKey = "%s-%s" % ( shortDesc, oldKey )
                 componentBreakdownDict[ newKey ] = resultsDict[ oldKey ]
-            # We need another way of uploading, this doesn't have guarenteed order and # of fields
+            # We need another way of uploading, this doesn't have guaranteed order and # of fields
             # main.downtimeResults.update( componentBreakdownDict )
             main.log.debug( json.dumps( main.downtimeResults, sort_keys=True, indent=4 ) )
         except Exception:
@@ -306,21 +409,15 @@ class SRStagingTest():
 
     @staticmethod
     def clearBuffer( component, kill=False, debug=False ):
-        i = 0
         if kill:
             component.handle.send( "\x03" )  # Ctrl-C
         for _ in range(10):
-            i = component.handle.expect( [ component.prompt, pexpect.TIMEOUT ] , timeout=1 )
+            i = component.handle.expect( [ component.prompt, pexpect.TIMEOUT ], timeout=1 )
             if debug:
                 main.log.debug( "%s: %s" % ( component.name, str( component.handle.before ) ) )
             if i == 1:
                 # Do we check if the ctrl-c worked?
                 break
-                """
-                if kill:
-                    component.handle.send( "\x03" )  # Ctrl-C
-                    component.handle.expect( component.prompt, timeout=1 )
-                """
         try:
             component.handle.sendline( "uname" )
             component.handle.expect( "Linux" )
@@ -330,7 +427,8 @@ class SRStagingTest():
             component.handle.expect( component.prompt )
 
     @staticmethod
-    def linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc, sleepTime=10 ):
+    def linkDown( targets, srcComponentList, dstComponent, shortDesc,
+                  longDesc, sleepTime=10, stat='packetsSent', bidirectional=False ):
         """"
         High level function that handles an event including monitoring
         Arguments:
@@ -353,11 +451,14 @@ class SRStagingTest():
                                        srcComponentList,
                                        dstComponent,
                                        shortDesc=shortDesc,
-                                       longDesc=longDesc )
+                                       longDesc=longDesc,
+                                       bidirectional=bidirectional )
             # Let some packets flow
-            time.sleep( float( main.params['timers'].get( 'TrafficDiscovery', 5 ) ) )
+            trafficDiscoverySleep = float( main.params['timers'].get( 'TrafficDiscovery', 5 ) )
+            main.log.debug( "Sleeping %d seconds for traffic counters to update" % trafficDiscoverySleep )
+            time.sleep( trafficDiscoverySleep )
             updatedStats = json.loads( main.Cluster.active(0).REST.portstats() )
-            port = main.funcs.findPortWithTraffic( device, portsList, initialStats, updatedStats )
+            device, port = main.funcs.findPortWithTraffic( targets, initialStats, updatedStats, stat=stat )
 
             # Determine which port to bring down
             main.step( "Port down" )
@@ -371,23 +472,27 @@ class SRStagingTest():
                         if "(%s)" % port in p['port']:
                             adminState = p['isEnabled']
             main.log.debug( adminState )
-            #TODO ASSERTS
+            # TODO ASSERTS
             main.log.info( "Sleeping %s seconds" % sleepTime )
             time.sleep( sleepTime )
+            main.step( "Verify Traffic still flows" )
+            #checkContinuedFlow()
             main.step( "Stop Capturing" )
             main.funcs.stopCapturing( main,
                                       srcComponentList,
                                       dstComponent,
                                       shortDesc=shortDesc,
-                                      longDesc=longDesc )
+                                      longDesc=longDesc,
+                                      bidirectional=bidirectional )
             # Break down logs
-            main.funcs.analyzeLogs( shortDesc, 'portstate_down' )
-            return port
-        except Exception as e:
+            main.funcs.analyzeLogs( shortDesc, 'portstate_down', main.eventStart, main.eventStop, main.logdir )
+            return device, port
+        except Exception:
             main.log.exception( "Error in linkDown" )
 
     @staticmethod
-    def linkUp( device, port, srcComponentList, dstComponent, shortDesc, longDesc, sleepTime=10 ):
+    def linkUp( device, port, srcComponentList, dstComponent, shortDesc, longDesc,
+                sleepTime=10, bidirectional=False ):
         """"
         High level function that handles an event including monitoring
         Arguments:
@@ -410,7 +515,8 @@ class SRStagingTest():
                                        srcComponentList,
                                        dstComponent,
                                        shortDesc=shortDesc,
-                                       longDesc=longDesc )
+                                       longDesc=longDesc,
+                                       bidirectional=bidirectional )
             main.step( "Port Up" )
             ctrl = main.Cluster.active( 0 ).CLI
             portUp = ctrl.portstate( dpid=device, port=port, state="enable" )
@@ -422,7 +528,7 @@ class SRStagingTest():
                         if "(%s)" % port in p['port']:
                             adminState = p['isEnabled']
             main.log.debug( adminState )
-            #TODO ASSERTS
+            # TODO ASSERTS
             main.log.info( "Sleeping %s seconds" % sleepTime )
             time.sleep( sleepTime )
             main.step( "Stop Capturing" )
@@ -430,16 +536,17 @@ class SRStagingTest():
                                       srcComponentList,
                                       dstComponent,
                                       shortDesc=shortDesc,
-                                      longDesc=longDesc )
+                                      longDesc=longDesc,
+                                      bidirectional=bidirectional )
             # Break down logs
-            main.funcs.analyzeLogs( shortDesc, 'portstate_up' )
-        except Exception as e:
+            main.funcs.analyzeLogs( shortDesc, 'portstate_up', main.eventStart, main.eventStop, main.logdir )
+        except Exception:
             main.log.exception( "Error in linkUp" )
 
     @staticmethod
     def onlReboot( switchComponentList, srcComponentList, dstComponent,
                    shortDescFailure, longDescFailure, shortDescRecovery, longDescRecovery,
-                   sleepTime=5 ):
+                   sleepTime=5, bidirectional=False ):
         """"
         High level function that handles an event including monitoring
         Arguments:
@@ -463,7 +570,8 @@ class SRStagingTest():
                                        dstComponent,
                                        shortDesc=shortDescFailure,
                                        longDesc=longDescFailure,
-                                       trafficDuration=120 )
+                                       trafficDuration=120,
+                                       bidirectional=bidirectional )
             # Let some packets flow
             time.sleep( float( main.params['timers'].get( 'TrafficDiscovery', 5 ) ) )
             updatedStats = json.loads( main.Cluster.active(0).REST.portstats() )
@@ -474,7 +582,7 @@ class SRStagingTest():
             startTime = time.time()
             switchComponent.handle.sendline( "sudo reboot" )
 
-            #TODO ASSERTS
+            # TODO ASSERTS
             main.log.info( "Sleeping %s seconds" % sleepTime )
             time.sleep( sleepTime )
             main.step( "Stop Capturing" )
@@ -482,12 +590,10 @@ class SRStagingTest():
                                       srcComponentList,
                                       dstComponent,
                                       shortDesc=shortDescFailure,
-                                      longDesc=longDescFailure )
+                                      longDesc=longDescFailure,
+                                      bidirectional=bidirectional )
             # Break down logs
-            main.funcs.analyzeLogs( shortDescFailure, 'shutdown_onl' )
-            # Try to minimize the amount of time we are sending 20mb/s while switch is down
-            # Large pcaps can cause timeouts when analyzing the results
-            #time.sleep( 60 )
+            main.funcs.analyzeLogs( shortDescFailure, 'shutdown_onl', main.eventStart, main.eventStop, main.logdir )
             main.case( longDescRecovery )
             main.step( "Start Capturing" )
             main.funcs.startCapturing( main,
@@ -495,7 +601,8 @@ class SRStagingTest():
                                        dstComponent,
                                        shortDesc=shortDescRecovery,
                                        longDesc=longDescRecovery,
-                                       trafficDuration=300 )
+                                       trafficDuration=300,
+                                       bidirectional=bidirectional )
             # TODO: Reconnect to the NetworkBench version as well
             connect = utilities.retry( switchComponent.connect,
                                        main.FALSE,
@@ -522,17 +629,18 @@ class SRStagingTest():
                                       srcComponentList,
                                       dstComponent,
                                       shortDesc=shortDescRecovery,
-                                      longDesc=longDescRecovery )
+                                      longDesc=longDescRecovery,
+                                      bidirectional=bidirectional )
             # Break down logs
-            main.funcs.analyzeLogs( shortDescRecovery, 'start_onl' )
+            main.funcs.analyzeLogs( shortDescRecovery, 'start_onl', main.eventStart, main.eventStop, main.logdir )
             # Check the switch is back in ONOS
-        except Exception as e:
+        except Exception:
             main.log.exception( "Error in onlReboot" )
 
     @staticmethod
     def killSwitchAgent( switchComponentList, srcComponentList, dstComponent,
-                         shortDescFailure, longDescFailure, shortDescRecovery, longDescRecovery,
-                         sleepTime=5 ):
+                         shortDescFailure, longDescFailure, shortDescRecovery,
+                         longDescRecovery, sleepTime=5, bidirectional=False ):
         """"
         High level function that handles an event including monitoring
         Arguments:
@@ -556,7 +664,8 @@ class SRStagingTest():
                                        dstComponent,
                                        shortDesc=shortDescFailure,
                                        longDesc=longDescFailure,
-                                       trafficDuration=120 )
+                                       trafficDuration=120,
+                                       bidirectional=bidirectional )
             # Let some packets flow
             time.sleep( float( main.params['timers'].get( 'TrafficDiscovery', 5 ) ) )
             updatedStats = json.loads( main.Cluster.active(0).REST.portstats() )
@@ -580,7 +689,7 @@ class SRStagingTest():
             main.ONOSbench.handle.sendline( "kubectl --kubeconfig %s delete pod -n %s %s" % ( kubeConfig, namespace, output[0] ) )
             main.ONOSbench.handle.expect( main.ONOSbench.prompt )
             main.log.debug( repr( main.ONOSbench.handle.before ) + repr( main.ONOSbench.handle.after ) )
-            #TODO ASSERTS
+            # TODO ASSERTS
             main.log.info( "Sleeping %s seconds" % sleepTime )
             time.sleep( sleepTime )
             main.step( "Stop Capturing" )
@@ -588,12 +697,11 @@ class SRStagingTest():
                                       srcComponentList,
                                       dstComponent,
                                       shortDesc=shortDescFailure,
-                                      longDesc=longDescFailure )
+                                      longDesc=longDescFailure,
+                                      bidirectional=bidirectional )
             # Break down logs
-            main.funcs.analyzeLogs( shortDescFailure, 'powerdown_switch' )
+            main.funcs.analyzeLogs( shortDescFailure, 'powerdown_switch', main.eventStart, main.eventStop, main.logdir )
 
-            # Try to minimize the amount of time we are sending 20mb/s while switch is down
-            #time.sleep( 60 )
             main.case( longDescRecovery )
             main.step( "Start Capturing" )
             main.funcs.startCapturing( main,
@@ -601,7 +709,8 @@ class SRStagingTest():
                                        dstComponent,
                                        shortDesc=shortDescRecovery,
                                        longDesc=longDescRecovery,
-                                       trafficDuration=400 )
+                                       trafficDuration=400,
+                                       bidirectional=bidirectional )
             # FIXME: We should check the health of the pod
             #connect = utilities.retry( switchComponent.connect,
             #                           main.FALSE,
@@ -628,23 +737,24 @@ class SRStagingTest():
                                       srcComponentList,
                                       dstComponent,
                                       shortDesc=shortDescRecovery,
-                                      longDesc=longDescRecovery )
+                                      longDesc=longDescRecovery,
+                                      bidirectional=bidirectional )
             # Break down logs
-            main.funcs.analyzeLogs( shortDescRecovery, 'powerup_switch' )
-        except Exception as e:
+            main.funcs.analyzeLogs( shortDescRecovery, 'powerup_switch', main.eventStart, main.eventStop, main.logdir )
+        except Exception:
             main.log.exception( "Error in killSwitchAgent" )
 
     @staticmethod
     def onosDown():
         try:
             pass
-        except Exception as e:
+        except Exception:
             main.log.exception( "Error in onosDown" )
 
     @staticmethod
     def analyzePcap( component, filePath, packetFilter, debug=False, timeout=240 ):
         try:
-            main.log.debug( "%s analyzing pcap file" % component.name )
+            main.log.info( "%s analyzing pcap file %s" % ( component.name, filePath ) )
             output = ""
             try:
                 component.handle.sendline( "" )
@@ -656,11 +766,13 @@ class SRStagingTest():
                 component.handle.send( "\x03" )  # CTRL-C
                 component.handle.expect( component.prompt, timeout=10 )
                 main.log.debug( component.handle.before + str( component.handle.after ) )
-            except Exception as e:
+            except Exception:
                 main.log.exception( "Error in onosDown" )
                 return -1
-            # Remove first and last packets, sometimes there can be a long gap between these and the other packets
-            # Then sort by time from previous packet, grab the last one and print the time from previous packet
+            # Remove first and last packets, sometimes there can be a long gap between
+            # these and the other packets
+            # Then sort by time from previous packet, grab the last one and print
+            # the time from previous packet
             oneLiner = "head -n -50 | tail -n +50 | sort -u -g -k2,2 | tail -1 | cut -f2 "
             tsharkOptions = "-t dd -r %s -Y %s -T fields -e frame.number -e frame.time_delta  -e ip.src -e ip.dst -e udp | %s" % ( filePath, packetFilter, oneLiner )
             component.handle.sendline( "sudo /usr/bin/tshark %s" % tsharkOptions )
@@ -680,7 +792,7 @@ class SRStagingTest():
             assert "error" not in output, output
             lineRE = r'^([0-9.]+)$'
             for line in output.splitlines():
-                m = re.search (lineRE, line )
+                m = re.search( lineRE, line )
                 if m:
                     if debug:
                         main.log.debug( repr( line ) )
@@ -690,77 +802,72 @@ class SRStagingTest():
                     return delta
             main.log.error( "No Packets found" )
             return 0
-            """
-            lineRE = r'^\s*\d+\s+([0-9.]+)'
-            deltas = []
-            for line in output.splitlines():
-                # Search for a packet in each line
-                # If match, save the delta time of the packet
-                m = re.search( lineRE, line )
-                if m:
-                    if debug:
-                        main.log.debug( repr( line ) )
-                        main.log.info( m.groups() )
-                    deltas.append( float( m.group(1) ) * 1000  )
-                else:
-                    main.log.warn( repr( line ) )
-            if not deltas:
-                main.log.error( "No Packets found" )
-                return 0
-            # Print largest timestamp gap
-            deltas.sort()
-            if debug:
-                main.log.debug( deltas[ -10: ] )  # largest 10
-            main.log.info( "%s: Detected downtime (longest gap between packets): %s ms" % ( component.name, deltas[ -1 ] )  )
-            return deltas[ -1 ]
-            """
-        except Exception as e:
+        except Exception:
             main.log.exception( "Error in analyzePcap" )
 
     @staticmethod
-    def findPortWithTraffic( device, portsList, initialStats, updatedStats ):
+    def findPortWithTraffic( targets, initialStats, updatedStats, stat="packetsSent" ):
         """
         Given a device id and a list of ports, returns the port with the most packets sent
         between two device statistics reads
         Arguments:
             device - String, device id of the device to check
-            portsList - list if ints, the ports on the device to look at
+            portsList - list of ints, the ports on the device to look at
             initialStats - A dict created from the json output of ONOS device statistics
             updatedStats - A dict created from the json output of ONOS device statistics
+        Optional Arguments:
+            stat - String, The stat to compare for each port across updates. Defaults to 'packetsSent'
         Returns:
             The port with the largest increase in packets sent between the two device statistics
 
         """
         try:
-            deltaStats = {}
-            for p in portsList:
-                deltaStats[ p ] = {}
-            for d in initialStats:
-                if d[ 'device' ] == device:
-                    for p in d[ 'ports' ]:
-                        if p[ 'port' ] in portsList:
-                            deltaStats[ p[ 'port' ] ][ 'tx1' ] = p[ 'packetsSent' ]
-            for d in updatedStats:
-                if d[ 'device' ] == device:
-                    for p in d[ 'ports' ]:
-                        if p[ 'port' ] in portsList:
-                            deltaStats[ p[ 'port' ] ][ 'tx2' ] = p[ 'packetsSent' ]
-            for port, stats in deltaStats.iteritems():
-                deltaStats[ port ]['delta'] = stats[ 'tx2' ] - stats[ 'tx1' ]
-            main.log.debug( deltaStats )
-            port = max( deltaStats, key=lambda p: deltaStats[ p ][ 'tx2' ] - deltaStats[ p ][ 'tx1' ] )
-            if deltaStats[ port ][ 'delta' ] == 0:
-                main.log.warn( "Could not find a port with traffic. Likely need to wait longer for stats to be updated" )
-            main.log.debug( port )
-            return port
+            targetsStats = {}
+            main.log.debug( targets )
+            main.log.debug( stat )
+            for device, portsList in targets.iteritems():
+                deltaStats = {p: {} for p in portsList}
+                for d in initialStats:
+                    if d[ 'device' ] == device:
+                        for p in d[ 'ports' ]:
+                            if p[ 'port' ] in portsList:
+                                deltaStats[ p[ 'port' ] ][ 'value1' ] = p[ stat ]
+                for d in updatedStats:
+                    if d[ 'device' ] == device:
+                        for p in d[ 'ports' ]:
+                            if p[ 'port' ] in portsList:
+                                deltaStats[ p[ 'port' ] ][ 'value2' ] = p[ stat ]
+                for port, stats in deltaStats.iteritems():
+                    assert stats, "Expected port not found"
+                    deltaStats[ port ]['delta'] = stats[ 'value2' ] - stats[ 'value1' ]
+                port = max( deltaStats, key=lambda p: deltaStats[ p ][ 'value2' ] - deltaStats[ p ][ 'value1' ] )
+                if deltaStats[ port ][ 'delta' ] == 0:
+                    main.log.warn( "Could not find a port with traffic on %s. Likely need to wait longer for stats to be updated" % device )
+                main.log.debug( port )
+                targetsStats[ device ] = deltaStats
+            # Find out which port has highest delta across all devices
+            main.log.debug( targetsStats )
+            retDevice = None
+            retPort = None
+            highestDelta = 0
+            for device, deltaStats in targetsStats.iteritems():
+                for p in deltaStats:
+                    delta = deltaStats[ p ][ 'value2' ] - deltaStats[ p ][ 'value1' ]
+                    if delta > highestDelta:
+                        highestDelta = delta
+                        retPort = p
+                        retDevice = device
+            main.log.debug( "Chosen port %s/%s" % ( retDevice, retPort ) )
+            return retDevice, retPort
         except Exception as e:
             main.log.exception( "Error in findPortWithTraffic" )
+            main.log.debug( "Initial: %s\nUpdated: %s\n" % ( initialStats, updatedStats ) )
             main.skipCase( result="FAIL", msg=e )
 
     @staticmethod
     def findSwitchWithTraffic( switchComponentList, initialStats, updatedStats ):
         """
-        Given a list of switch components, returns the swtich component with the
+        Given a list of switch components, returns the switch component with the
         port with the most packets sent between two device statistics reads
         Arguments:
             switchComponentList - List of switch components to check
@@ -838,22 +945,30 @@ class SRStagingTest():
         """
         try:
             dbFileName = "%s/%s" % ( main.logdir, filename )
-            dbfile = open( dbFileName, "w+" )
-            header = []
-            row = []
-            if not headerOrder:
-                headerOrder = main.downtimeResults.keys()
-                headerOrder.sort()
-            for item in headerOrder:
-                header.append( "'%s'" % item )
-                row.append( "'%s'" % main.downtimeResults[ item ] )
+            with open( dbFileName, "w+" ) as dbfile:
+                header = []
+                row = []
+                if not headerOrder:
+                    headerOrder = main.downtimeResults.keys()
+                    headerOrder.sort()
+                for item in headerOrder:
+                    header.append( "'%s'" % item )
+                    row.append( "'%s'" % main.downtimeResults[ item ] )
 
-            dbfile.write( ",".join( header ) + "\n" + ",".join( row ) + "\n" )
-            dbfile.close()
+                dbfile.write( ",".join( header ) + "\n" + ",".join( row ) + "\n" )
+            return main.TRUE
         except IOError:
             main.log.warn( "Error opening " + dbFileName + " to write results." )
+            return main.FALSE
+        except KeyError:
+            main.log.exception( "1 or more given headers not found" )
+            return main.FALSE
 
     def cleanup( self, main, headerOrder=None ):
         run.cleanup( main, copyKarafLog=False )
+        main.logdir = main.logdirBase
         main.step( "Writing csv results file for db" )
-        self.dbWrite( main, main.TEST + "-dbfile.csv", headerOrder )
+        writeResult = self.dbWrite( main, main.TEST + "-dbfile.csv", headerOrder )
+        utilities.assert_equals( expect=main.TRUE, actual=writeResult,
+                                 onpass="Successfully wrote test results to csv file",
+                                 onfail="Failed to write csv file" )

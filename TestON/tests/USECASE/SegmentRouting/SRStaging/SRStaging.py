@@ -76,14 +76,16 @@ class SRStaging:
         port3 = None
         port4 = None
 
+        targets = {}
+        targets[device] = portsList
         ## First Link Down
         shortDesc = descPrefix + "-Failure1"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port1 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device1, port1 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Second Link Down
         shortDesc = descPrefix + "-Failure2"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port2 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device2, port2 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         ## First Link Up
         shortDesc = descPrefix + "-Recovery1"
         longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port1 )
@@ -95,11 +97,11 @@ class SRStaging:
         ## Third Link Down
         shortDesc = descPrefix + "-Failure3"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port3 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device3, port3 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Forth Link Down
         shortDesc = descPrefix + "-Failure4"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port4 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device4, port4 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Third Link Up
         shortDesc = descPrefix + "-Recovery3"
         longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port3 )
@@ -153,11 +155,11 @@ class SRStaging:
         ## First Link Down
         shortDesc = descPrefix + "-Failure1"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port1 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device1, port1 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Second Link Down
         shortDesc = descPrefix + "-Failure2"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port2 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device2, port2 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         ## First Link Up
         shortDesc = descPrefix + "-Recovery1"
         longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port1 )
@@ -169,11 +171,11 @@ class SRStaging:
         ## Third Link Down
         shortDesc = descPrefix + "-Failure3"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port3 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device3, port3 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Forth Link Down
         shortDesc = descPrefix + "-Failure4"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port4 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device4, port4 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         ## Third Link Up
         shortDesc = descPrefix + "-Recovery3"
         longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port3 )

@@ -88,7 +88,7 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
-        <TrafficDiscovery>10</TrafficDiscovery>
+        <TrafficDiscovery>15</TrafficDiscovery>
     </timers>
 
     <SLEEP>

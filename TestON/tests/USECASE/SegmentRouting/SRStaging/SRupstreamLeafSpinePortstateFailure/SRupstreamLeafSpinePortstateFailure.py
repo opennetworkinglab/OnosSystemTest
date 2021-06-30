@@ -58,67 +58,69 @@ class SRupstreamLeafSpinePortstateFailure:
         ## First Link Down
         shortDesc = descPrefix + "-Failure1"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port1 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        targets = {}
+        targets[device] = portsList
+        device1, port1 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
-            dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
-        for src in srcNames:
-            dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
+            srcComponent = getattr( main, src )
+            dbHeaders.append( "%s-%s" % ( shortDesc, srcComponent.shortName ) )
+            dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
         ## Second Link Down
         shortDesc = descPrefix + "-Failure2"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port2 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device2, port2 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
-            dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
-        for src in srcNames:
-            dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
+            srcComponent = getattr( main, src )
+            dbHeaders.append( "%s-%s" % ( shortDesc, srcComponent.shortName ) )
+            dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
         ## First Link Up
         shortDesc = descPrefix + "-Recovery1"
         longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port1 )
         main.funcs.linkUp( device, port1, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
-            dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
-        for src in srcNames:
-            dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
+            srcComponent = getattr( main, src )
+            dbHeaders.append( "%s-%s" % ( shortDesc, srcComponent.shortName ) )
+            dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
         ## Second Link Up
         shortDesc = descPrefix + "-Recovery2"
         longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port2 )
         main.funcs.linkUp( device, port2, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
-            dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
-        for src in srcNames:
-            dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
+            srcComponent = getattr( main, src )
+            dbHeaders.append( "%s-%s" % ( shortDesc, srcComponent.shortName ) )
+            dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
         ## Third Link Down
         shortDesc = descPrefix + "-Failure3"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port3 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device3, port3 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
-            dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
-        for src in srcNames:
-            dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
+            srcComponent = getattr( main, src )
+            dbHeaders.append( "%s-%s" % ( shortDesc, srcComponent.shortName ) )
+            dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
         ## Forth Link Down
         shortDesc = descPrefix + "-Failure4"
         longDesc = "%s Failure: Bring down port with most traffic on %s" % ( descPrefix, device )
-        port4 = main.funcs.linkDown( device, portsList, srcComponentList, dstComponent, shortDesc, longDesc )
+        device4, port4 = main.funcs.linkDown( targets, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
-            dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
-        for src in srcNames:
-            dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
+            srcComponent = getattr( main, src )
+            dbHeaders.append( "%s-%s" % ( shortDesc, srcComponent.shortName ) )
+            dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
         ## Third Link Up
         shortDesc = descPrefix + "-Recovery3"
         longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port3 )
         main.funcs.linkUp( device, port3, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
-            dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
-        for src in srcNames:
-            dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
+            srcComponent = getattr( main, src )
+            dbHeaders.append( "%s-%s" % ( shortDesc, srcComponent.shortName ) )
+            dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
         ## Forth Link Up
         shortDesc = descPrefix + "-Recovery4"
         longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, device, port4 )
         main.funcs.linkUp( device, port4, srcComponentList, dstComponent, shortDesc, longDesc )
         for src in srcNames:
-            dbHeaders.append( "%s-%s" % ( shortDesc, src ) )
-        for src in srcNames:
-            dbHeaders.append( "%s-%s-%s" % ( shortDesc, src, dstComponent.name ) )
+            srcComponent = getattr( main, src )
+            dbHeaders.append( "%s-%s" % ( shortDesc, srcComponent.shortName ) )
+            dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
 
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
         main.funcs.cleanup( main, headerOrder=dbHeaders )

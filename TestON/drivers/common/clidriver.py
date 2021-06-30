@@ -322,6 +322,7 @@ class CLI( Component ):
         self.handle.sendline( cmd )
         i = 0
         timeout = 120
+        hit = False
         while i <= 6 :
             i = self.handle.expect( [
                                 ssh_newkey,
@@ -335,38 +336,46 @@ class CLI( Component ):
                                 pexpect.TIMEOUT ],
                                 timeout=timeout )
             if i == 0:  # ask for ssh key confirmation
+                hit = True
                 main.log.info( self.name + ": ssh key confirmation received, sending yes" )
                 self.handle.sendline( 'yes' )
             elif i == 1:  # Asked for ssh password
+                hit = True
                 timeout = 120
                 main.log.info( self.name + ": ssh connection asked for password, gave password" )
                 self.handle.sendline( pwd )
             elif i == 2:  # File finished transfering
+                hit = True
                 main.log.info( self.name + ": Secure copy successful" )
                 timeout = 10
                 returnVal = main.TRUE
             elif i == 3:  # Connection refused
+                hit = True
                 main.log.error(
                     "ssh: connect to host " +
                     ipAddress +
                     " port 22: Connection refused" )
                 returnVal = main.FALSE
             elif i == 4:  # File Not found
+                hit = True
                 main.log.error( self.name + ": No such file found" )
                 main.log.debug( self.handle.before + self.handle.after )
                 returnVal = main.FALSE
             elif i == 5:  # Permission denied
+                hit = True
                 main.log.error( self.name + ": Permission denied. Check folder permissions" )
                 main.log.debug( self.handle.before + self.handle.after )
                 returnVal = main.FALSE
             elif i == 6:  # prompt returned
+                hit = True
                 timeout = 10
                 main.log.debug( "%s: %s%s" % ( self.name, repr( self.handle.before ), repr( self.handle.after ) ) )
             elif i == 7:  # EOF
+                hit = True
                 main.log.error( self.name + ": Pexpect.EOF found!!!" )
                 main.cleanAndExit()
             elif i == 8:  # timeout
-                if returnVal != main.TRUE:
+                if not hit:
                     main.log.error(
                         "No route to the Host " +
                         userName +

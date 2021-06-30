@@ -120,8 +120,16 @@ class Utils:
 
             MINUTE = datetime.timedelta( minutes=1 )
             for pod in pods:
-                path = "%s/%s.log" % ( main.logdir, pod )
+                path = "%s/%s_%s.log" % ( main.logdir, copyFileName, pod )
                 if useStern:
+                    wait=10
+                    if "onos-classic" in pod:
+                        wait=30
+                    elif "stratum" in pod:
+                        wait=30
+                    else:
+                        main.log.debug( "Skipping fetch logs for %s" % pod )
+                        continue
                     if startTime:
                         now = datetime.datetime.utcnow()
                         duration = ( now - startTime ) + MINUTE
@@ -133,7 +141,7 @@ class Utils:
                                                            kubeconfig=ctrl.k8s.kubeConfig,
                                                            namespace=main.params[ 'kubernetes' ][ 'namespace' ],
                                                            since=since,
-                                                           wait=10 )
+                                                           wait=wait )
                 else:
                     podResults = main.ONOSbench.kubectlLogs( pod,
                                                              path,

@@ -278,7 +278,7 @@ class CLI( Component ):
                     timeout=120 )
 
     def secureCopy( self, userName, ipAddress, filePath, dstPath, pwd="",
-                    direction="from", options="" ):
+                    direction="from", options="", timeout=120 ):
         """
         Definition:
             Execute scp command in linux to copy to/from a remote host
@@ -321,7 +321,6 @@ class CLI( Component ):
         main.log.info( self.name + ": Sending: " + cmd )
         self.handle.sendline( cmd )
         i = 0
-        timeout = 120
         hit = False
         while i <= 6 :
             i = self.handle.expect( [
@@ -386,7 +385,7 @@ class CLI( Component ):
         main.log.debug( "%s: %s%s" % ( self.name, repr( self.handle.before ), repr( self.handle.after ) ) )
         return returnVal
 
-    def scp( self, remoteHost, filePath, dstPath, direction="from", options="" ):
+    def scp( self, remoteHost, filePath, dstPath, direction="from", options="", timeout=120 ):
         """
         Definition:
             Execute scp command in linux to copy to/from a remote host
@@ -410,7 +409,8 @@ class CLI( Component ):
                                 dstPath,
                                 pwd=remoteHost.pwd,
                                 direction=direction,
-                                options=options )
+                                options=options,
+                                timeout=timeout )
 
     def sshToNode( self, ipAddress, uName="sdn", pwd="rocks" ):
         ssh_newkey = 'Are you sure you want to continue connecting'
@@ -553,6 +553,45 @@ class CLI( Component ):
                 elif unitsList.index( unitMatch ) > unitsList.index( unit ):
                     retValue &= False
             return retValue
+        except AssertionError:
+            main.log.error( self.name + ": Could not execute command: " + output )
+            return False
+        except ValueError as e:
+            main.log.error( self.name + ": Error parsing output: " + output )
+            main.log.error( e )
+            return False
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return False
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+
+    def fileSize( self, path, inBytes=True ):
+        """
+        Run `du` on the file path and returns the file size
+
+        Arguments:
+        path - A string containing the path supplied to the du command
+        Optional Arguments:
+        inBytes - Display size in bytes, defaults to true
+
+        Returns the size of the file as an int
+        """
+        sizeRe = r'(?P<number>\d+\.*\d*)(?P<unit>\D)'
+        try:
+            cmdStr = "du %s %s" % ( "-b" if inBytes else "", path )
+            self.handle.sendline( cmdStr )
+            self.handle.expect( self.prompt )
+            output = self.handle.before
+            assert "cannot access" not in output
+            assert "command not found" not in output
+            assert "No such file or directory" not in output
+            main.log.debug( output )
+            lines = [ line for line in output.split( '\r\n' ) ]
+            return int( lines[1].split()[0] )
         except AssertionError:
             main.log.error( self.name + ": Could not execute command: " + output )
             return False
@@ -994,7 +1033,8 @@ class CLI( Component ):
         print "preDisconnect"
         return main.TRUE
 
-    def kubectlGetPodNames( self, kubeconfig=None, namespace=None, app=None, name=None, nodeName=None ):
+    def kubectlGetPodNames( self, kubeconfig=None, namespace=None, app=None, name=None,
+                            nodeName=None, status=None ):
         """
         Use kubectl to get the names of pods
         Optional Arguments:
@@ -1003,17 +1043,22 @@ class CLI( Component ):
         - app: Get pods belonging to a specific app
         - name: Get pods with a specific name label
         - nodeName: Get pods on a specific node
+        - status: Get pods with the specified Status
         Returns a list containing the names of the pods or
             main.FALSE on Error
         """
 
         try:
-            cmdStr = "kubectl %s %s get pods %s %s %s --output=jsonpath='{.items..metadata.name}{\"\\n\"}'" % (
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            main.log.debug( self.handle.before + self.handle.after )
+            cmdStr = "kubectl %s %s get pods %s %s %s %s --output=jsonpath='{.items..metadata.name}{\"\\n\"}'" % (
                         "--kubeconfig %s" % kubeconfig if kubeconfig else "",
                         "-n %s" % namespace if namespace else "",
                         "-l app=%s" % app if app else "",
                         "-l name=%s" % name if name else "",
-                        "--field-selector=spec.nodeName=%s" % nodeName if nodeName else "" )
+                        "--field-selector=spec.nodeName=%s" % nodeName if nodeName else "",
+                        "--field-selector=status.phase=%s" % status if status else "" )
             main.log.info( self.name + ": sending: " + repr( cmdStr ) )
             self.handle.sendline( cmdStr )
             i = self.handle.expect( [ "not found", "error", "The connection to the server", "Unable to find", "No resources found", self.prompt ] )
@@ -1097,6 +1142,9 @@ class CLI( Component ):
         """
 
         try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            main.log.debug( self.handle.before + self.handle.after )
             cmdStr = "kubectl %s %s get pods -o wide %s " % (
                         "--kubeconfig %s" % kubeconfig if kubeconfig else "",
                         "-n %s" % namespace if namespace else "",
@@ -1149,19 +1197,23 @@ class CLI( Component ):
                      dstPath )
             main.log.info( self.name + ": sending: " + repr( cmdStr ) )
             self.handle.sendline( cmdStr )
-            time.sleep( int( wait ) )
-            self.handle.send( '\x03' )  # CTRL-C
-            i = self.handle.expect( [ "not found", "Error: ", "The connection to the server", self.prompt ] )
-            if i == 3:
-                main.log.debug( self.name + ": " + self.handle.before )
-                return main.TRUE
+            if int( wait ) >= 0:
+                time.sleep( int( wait ) )
+                self.handle.send( '\x03' )  # CTRL-C
+                i = self.handle.expect( [ "not found", "Error: ", "The connection to the server", self.prompt ] )
+                if i == 3:
+                    main.log.debug( self.name + ": " + self.handle.before )
+                    return main.TRUE
+                else:
+                    main.log.error( self.name + ": Error executing command" )
+                    response = self.handle.before + str( self.handle.after )
+                    self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=5 )
+                    response += self.handle.before + str( self.handle.after )
+                    main.log.debug( self.name + ": " + response )
+                    return main.FALSE
             else:
-                main.log.error( self.name + ": Error executing command" )
-                response = self.handle.before + str( self.handle.after )
-                self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=5 )
-                response += self.handle.before + str( self.handle.after )
-                main.log.debug( self.name + ": " + response )
-                return main.FALSE
+                self.preDisconnect = self.exitFromProcess
+                return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -1245,8 +1297,11 @@ class CLI( Component ):
                 main.log.debug( self.name + ": " + self.handle.before )
                 return main.TRUE
             else:
+                output = self.handle.before + str( self.handle.after )
                 main.log.error( self.name + ": Error executing command" )
-                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                self.handle.expect( [ self.prompt, pexpect.TIMEOUT ] )
+                output += self.handle.before + str( self.handle.after )
+                main.log.debug( self.name + ": " + output )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

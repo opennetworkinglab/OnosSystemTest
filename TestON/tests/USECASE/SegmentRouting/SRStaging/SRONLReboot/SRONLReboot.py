@@ -36,8 +36,12 @@ class SRONLReboot:
 
         main.downtimeResults = {}
 
-        switchComponentList = [ getattr( main, "Spine%s" % n ) for n in range( 1, 2+1 ) ]
         iterations = int( main.params[ 'PERF' ][ 'iterations' ] )
+        targets = {}
+        for shortName, values in main.params[ 'PERF' ][ 'topo' ].iteritems():
+            if 'spine' in values[ 'notes' ]:
+                portsList = [ int( p ) for p in values['ports'].split() ]
+                targets[ 'device:' + shortName ] = portsList
 
         for i in range( 1, iterations + 1 ):
             ## Spine ONL Reboot
@@ -45,9 +49,10 @@ class SRONLReboot:
             longDescFailure = "%s Failure%s: Reboot switch" % ( descPrefix, i )
             shortDescRecovery = descPrefix + "-Recovery%s" % i
             longDescRecovery = "%s Recovery%s: Reboot switch" % ( descPrefix, i )
-            main.funcs.onlReboot( switchComponentList, srcComponentList, dstComponent,
+            main.funcs.onlReboot( targets, srcComponentList, dstComponent,
                                   shortDescFailure, longDescFailure,
-                                  shortDescRecovery, longDescRecovery )
+                                  shortDescRecovery, longDescRecovery,
+                                  stat='packetsReceived', bidirectional=False )
 
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
         main.funcs.cleanup( main )

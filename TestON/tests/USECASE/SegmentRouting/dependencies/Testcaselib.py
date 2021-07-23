@@ -1141,13 +1141,16 @@ class Testcaselib:
             main.scapyHosts = []
 
         if removeHostComponent:
-            for host in main.internalIpv4Hosts + main.internalIpv6Hosts + main.externalIpv4Hosts + main.externalIpv6Hosts:
-                if hasattr( main, host ):
-                    if hasattr( main, 'Mininet1' ):
-                        pass
-                    else:
-                        getattr( main, host ).disconnectInband()
-                    main.Network.removeHostComponent( host )
+            try:
+                for host in main.internalIpv4Hosts + main.internalIpv6Hosts + main.externalIpv4Hosts + main.externalIpv6Hosts:
+                    if hasattr( main, host ):
+                        if hasattr( main, 'Mininet1' ):
+                            pass
+                        else:
+                            getattr( main, host ).disconnectInband()
+                        main.Network.removeHostComponent( host )
+            except AttributeError as e:
+                main.log.warn( "Could not cleanup host components: " + repr( e ) )
 
         if hasattr( main, 'Mininet1' ):
             main.utils.mininetCleanup( main.Mininet1 )

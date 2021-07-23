@@ -22,6 +22,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 '''
 import threading
 
+
 class Thread( threading.Thread ):
     def __init__( self, target=None, threadID=None, name="", args=(),
                   kwargs={} ):
@@ -38,8 +39,13 @@ class Thread( threading.Thread ):
             if self.target is not None:
                 self.result = self.target( *self.args, **self.kwargs )
         except Exception as e:
+            tClass = getattr( self.target, 'im_class', None )
+            tFunc = getattr( self.target, 'im_func', None )
+            if tClass:
+                tName = "%s.%s" % ( tClass, tFunc )
+            else:
+                tName = tFunc
             print "ThreadID:" + str( self.threadID ) + ", Name:" + \
                   self.name + "- something went wrong with " + \
-                  str( self.target.im_class ) + "." + \
-                  str( self.target.im_func ) + " method: "
+                  str( tName ) + " method: "
             print e

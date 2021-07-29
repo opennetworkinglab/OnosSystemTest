@@ -39,7 +39,7 @@ class SRONLReboot:
         iterations = int( main.params[ 'PERF' ][ 'iterations' ] )
         targets = {}
         for shortName, values in main.params[ 'PERF' ][ 'topo' ].iteritems():
-            if 'spine' in values[ 'notes' ]:
+            if 'spine' in values[ 'note' ]:
                 portsList = [ int( p ) for p in values['ports'].split() ]
                 targets[ 'device:' + shortName ] = portsList
 

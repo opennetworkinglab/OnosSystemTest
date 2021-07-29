@@ -352,7 +352,8 @@ class SRpairedLeaves:
         main.funcs.onlReboot( targets, srcComponentList, dstComponent,
                               shortDescFailure, longDescFailure,
                               shortDescRecovery, longDescRecovery,
-                              stat='packetsReceived', bidirectional=False )
+                              stat='packetsReceived', bidirectional=False,
+                              singleFlow=True )
         # Cleanup
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
         main.funcs.cleanup( main )
@@ -393,7 +394,174 @@ class SRpairedLeaves:
         main.funcs.onlReboot( targets, srcComponent, dstComponentList,
                               shortDescFailure, longDescFailure,
                               shortDescRecovery, longDescRecovery,
+                              stat='packetsSent', bidirectional=False,
+                              singleFlow=True )
+        # Cleanup
+        main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
+        main.funcs.cleanup( main )
+
+    def CASE205( self, main ):
+        """
+        Connect to Pod
+        Create Flow between 2 dual homed hosts
+        Kill the leaf that traffic first flows into
+        Verify flow continues using other link
+        Collect logs and analyze results
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import SRStagingTest
+            import json
+        except ImportError:
+            main.log.error( "SRStagingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRStagingTest()
+
+        descPrefix = "CASE205-Source-Leaf"
+        pod = main.params['GRAPH'].get( 'nodeCluster', "hardware" )
+        main.funcs.setupTest( main,
+                              topology='0x2',
+                              onosNodes=3,
+                              description="%s tests on the %s pod" % ( descPrefix, pod ) )
+        srcComponent = getattr( main, 'Compute1' )
+        dstComponent = getattr( main, 'Compute2' )
+
+        targets = main.funcs.getHostConnections( main, srcComponent )
+        shortDescFailure = descPrefix + "-Failure"
+        longDescFailure = "%s Failure: Bring down switch with traffic from %s" % ( descPrefix, srcComponent.name )
+        shortDescRecovery = descPrefix + "-Recovery"
+        longDescRecovery = "%s Recovery: Bring up switch previously killed" % descPrefix
+        main.funcs.killSwitchAgent( targets, srcComponent, dstComponent,
+                              shortDescFailure, longDescFailure,
+                              shortDescRecovery, longDescRecovery,
+                              stat='packetsReceived', bidirectional=False )
+        # Cleanup
+        main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
+        main.funcs.cleanup( main )
+
+    def CASE206( self, main ):
+        """
+        Connect to Pod
+        Create Flow between 2 dual homed hosts
+        Kill the last leaf that traffic flows out of
+        Verify flow continues using other link
+        Collect logs and analyze results
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import SRStagingTest
+            import json
+        except ImportError:
+            main.log.error( "SRStagingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRStagingTest()
+
+        descPrefix = "CASE206-Destination-Leaf"
+        pod = main.params['GRAPH'].get( 'nodeCluster', "hardware" )
+        main.funcs.setupTest( main,
+                              topology='0x2',
+                              onosNodes=3,
+                              description="%s tests on the %s pod" % ( descPrefix, pod ) )
+        srcComponent = getattr( main, 'Compute1' )
+        dstComponent = getattr( main, 'Compute2' )
+
+        targets = main.funcs.getHostConnections( main, dstComponent )
+        shortDescFailure = descPrefix + "-Failure"
+        longDescFailure = "%s Failure: Bring down switch with traffic from %s" % ( descPrefix, srcComponent.name )
+        shortDescRecovery = descPrefix + "-Recovery"
+        longDescRecovery = "%s Recovery: Bring up switch previously killed" % descPrefix
+        main.funcs.killSwitchAgent( targets, srcComponent, dstComponent,
+                              shortDescFailure, longDescFailure,
+                              shortDescRecovery, longDescRecovery,
                               stat='packetsSent', bidirectional=False )
+        # Cleanup
+        main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
+        main.funcs.cleanup( main )
+
+    def CASE207( self, main ):
+        """
+        Connect to Pod
+        Create Flow between 1 dual homed host and 1 single homed host
+        Kill the leaf that traffic first flows into
+        Verify flow continues using other link
+        Collect logs and analyze results
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import SRStagingTest
+            import json
+        except ImportError:
+            main.log.error( "SRStagingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRStagingTest()
+
+        descPrefix = "CASE207-Source-Leaf"
+        pod = main.params['GRAPH'].get( 'nodeCluster', "hardware" )
+        main.funcs.setupTest( main,
+                              topology='0x2',
+                              onosNodes=3,
+                              description="%s tests on the %s pod" % ( descPrefix, pod ) )
+        srcComponentList = [ getattr( main, name ) for name in [ 'ManagmentServer', 'Compute1', 'Compute2' ] ]
+        dstComponent = getattr( main, 'Compute3' )
+
+        targets = main.funcs.getHostConnections( main, srcComponentList, excludedDIDs=[ 'leaf2' ] )
+        shortDescFailure = descPrefix + "-Failure"
+        longDescFailure = "%s Failure: Bring down switch with traffic to %s" % ( descPrefix, dstComponent.name )
+        shortDescRecovery = descPrefix + "-Recovery"
+        longDescRecovery = "%s Recovery: Bring up switch previously killed" % descPrefix
+        main.funcs.killSwitchAgent( targets, srcComponentList, dstComponent,
+                              shortDescFailure, longDescFailure,
+                              shortDescRecovery, longDescRecovery,
+                              stat='packetsReceived', bidirectional=False,
+                              singleFlow=True )
+        # Cleanup
+        main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
+        main.funcs.cleanup( main )
+
+    def CASE208( self, main ):
+        """
+        Connect to Pod
+        Create Flow between 1 dual homed host and 1 single homed host
+        Kill the last leaf that traffic flows out of
+        Verify flow continues using other link
+        Collect logs and analyze results
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import SRStagingTest
+            import json
+        except ImportError:
+            main.log.error( "SRStagingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRStagingTest()
+
+        descPrefix = "CASE208-Destination-Leaf"
+        pod = main.params['GRAPH'].get( 'nodeCluster', "hardware" )
+        main.funcs.setupTest( main,
+                              topology='0x2',
+                              onosNodes=3,
+                              description="%s tests on the %s pod" % ( descPrefix, pod ) )
+        srcComponent = getattr( main, 'Compute3' )
+        dstComponentList = [ getattr( main, name ) for name in [ 'ManagmentServer', 'Compute1', 'Compute2' ] ]
+
+        targets = main.funcs.getHostConnections( main, dstComponentList, excludedDIDs=[ 'leaf2' ] )
+        shortDescFailure = descPrefix + "-Failure"
+        longDescFailure = "%s Failure: Bring down switch with traffic from %s" % ( descPrefix, srcComponent.name )
+        shortDescRecovery = descPrefix + "-Recovery"
+        longDescRecovery = "%s Recovery: Bring up switch previously killed" % descPrefix
+        main.funcs.killSwitchAgent( targets, srcComponent, dstComponentList,
+                              shortDescFailure, longDescFailure,
+                              shortDescRecovery, longDescRecovery,
+                              stat='packetsSent', bidirectional=False,
+                              singleFlow=True )
         # Cleanup
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
         main.funcs.cleanup( main )

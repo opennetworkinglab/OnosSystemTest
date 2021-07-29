@@ -119,6 +119,7 @@ class HostDriver( ScapyCliDriver ):
         response = main.TRUE
         try:
             if self.handle:
+                self.preDisconnect()
                 # Disconnect from the host
                 if not self.options[ 'inband' ] == 'True':
                     self.handle.sendline( "" )

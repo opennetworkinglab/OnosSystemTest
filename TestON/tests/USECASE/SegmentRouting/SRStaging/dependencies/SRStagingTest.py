@@ -1011,7 +1011,7 @@ class SRStagingTest:
                     if prevSeq:
                         diff = curSeq - prevSeq
                         if diff > 1:
-                            if DEBUGGING or diff > 5:
+                            if DEBUGGING or diff > 1:
                                 main.log.debug( "\nCurrent Packet:  %s\n vs.\nPrevious Packet: %s" % ( packet, prevPacket ) )
                             duration = curTime - prevTime
                             millis = float( duration.days ) * 24 * 60 * 60 * 1000

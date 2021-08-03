@@ -123,4 +123,4 @@ class SReNBLeafSpinePortstateFailure:
             dbHeaders.append( "%s-%s-to-%s" % ( shortDesc, srcComponent.shortName, dstComponent.shortName ) )
 
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
-        main.funcs.cleanup( main, headerOrder=dbHeaders )
+        main.funcs.cleanup( main )

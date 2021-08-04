@@ -264,6 +264,14 @@ class SRStagingTest:
             else:
                 main.log.warn( "main.k8sLogComponents is already defined" )
                 main.log.debug( main.k8sLogComponents )
+            try:
+                main.trafficComponents
+            except ( NameError, AttributeError ):
+                main.trafficComponents = []
+            else:
+                main.log.warn( "main.trafficComponents is already defined" )
+                main.log.debug( main.trafficComponents )
+
 
             switchComponent = None
             ctrl = main.Cluster.active(0)
@@ -301,26 +309,34 @@ class SRStagingTest:
                     senderName = flowStr + "-Sender"
                     main.Network.copyComponent( src.name, senderName )
                     sender = getattr( main, senderName )
+                    main.trafficComponents.append( sender )
                     receiverName = flowStr + "-Receiver"
                     main.Network.copyComponent( dst.name, receiverName )
                     receiver = getattr( main, receiverName )
+                    main.trafficComponents.append( receiver )
                     hostPairs.append( ( sender, receiver ) )
                     main.Network.copyComponent( src.name, "%s-iperf" % senderName )
+                    main.trafficComponents.append( getattr( main, "%s-iperf" % senderName ) )
                     newName = "%s-%s" % ( dst.shortName, "FileSize" )
                     main.Network.copyComponent( dst.name, newName )
+                    main.trafficComponents.append( getattr( main, newName ) )
                     newName = "%s-%s" % ( src.shortName, "FileSize" )
                     main.Network.copyComponent( src.name, newName )
+                    main.trafficComponents.append( getattr( main, newName ) )
                     if bidirectional:
                         # Create new sessions so we can handle multiple flows per host
                         flowStr = "%s-to-%s" % ( dst.shortName, src.shortName )
                         senderName = flowStr + "-Sender"
                         main.Network.copyComponent( dst.name, senderName )
                         sender = getattr( main, senderName )
+                        main.trafficComponents.append( sender )
                         receiverName = flowStr + "-Receiver"
                         main.Network.copyComponent( src.name, receiverName )
                         receiver = getattr( main, receiverName )
+                        main.trafficComponents.append( receiver )
                         hostPairs.append( ( sender, receiver ) )
                         main.Network.copyComponent( dst.name, "%s-iperf" % senderName )
+                        main.trafficComponents.append( "%s-iperf" % senderName )
 
             # TODO: make sure hostPairs is a set?
             main.log.debug( ["%s to %s" % ( p[0], p[1] ) for p in hostPairs ] )
@@ -1264,6 +1280,13 @@ class SRStagingTest:
             return main.FALSE
 
     def cleanup( self, main, headerOrder=None ):
+        try:
+            for component in main.trafficComponents:
+                main.Network.removeComponent( component.name )
+            main.trafficComponents = []
+        except Exception:
+            main.log.exception( "Error cleaning up traffic components" )
+
         run.cleanup( main, copyKarafLog=False )
         main.logdir = main.logdirBase
         main.step( "Writing csv results file for db" )

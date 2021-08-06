@@ -1,0 +1,177 @@
+<TOPOLOGY>
+    <COMPONENT>
+        <ONOScell>
+            <host>localhost</host>  # ONOS "bench" machine
+            <user>sid</user>
+            <password>sid</password>
+            <type>OnosClusterDriver</type>
+            <connect_order>1</connect_order>
+            <home></home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
+            <COMPONENTS>
+                <kubeConfig>~/.kube/qa-ace-menlo</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
+                <useDocker>True</useDocker>  # Whether to use docker for ONOS nodes
+                <docker_prompt>\$</docker_prompt>
+                <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost>True</diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
+                <karaf_username>karaf</karaf_username>
+                <karaf_password>karaf</karaf_password>
+                <node_username>sid</node_username>
+                <node_password>sid</node_password>
+                <karafPrompt_username>karaf</karafPrompt_username>
+                <karafPrompt_password>karaf</karafPrompt_password>
+                <web_user>karaf</web_user>
+                <web_pass>karaf</web_pass>
+                <rest_port></rest_port>
+                <prompt></prompt>  # TODO: we technically need a few of these, one per component
+                <onos_home></onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.
+                <nodes> 3 </nodes>  # number of nodes in the cluster
+            </COMPONENTS>
+        </ONOScell>
+
+        <Leaf1>
+            <host>10.128.13.209</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <prompt>#</prompt>
+                <shortName>leaf1</shortName>
+                <port1>1</port1>
+                <link1>Host1</link1>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </Leaf1>
+
+        <Leaf2>
+            <host>10.128.13.211</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <prompt>#</prompt>
+                <shortName>leaf2</shortName>
+                <port1>2</port1>
+                <link1>Host2</link1>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </Leaf2>
+
+        <Spine1>
+            <host>10.128.13.213</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <prompt>#</prompt>
+                <shortName>spine1</shortName>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </Spine1>
+
+        <Spine2>
+            <host>10.128.13.215</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <prompt>#</prompt>
+                <shortName>spine2</shortName>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </Spine2>
+
+        <Host1>
+            <host>10.128.13.253</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>HostDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS>
+                <mac>3c:fd:fe:a8:ea:30</mac>
+                <inband>false</inband>
+                <ip>192.168.102.3</ip>
+                <shortName>h1</shortName>
+                <port1>0</port1>
+                <link1>Leaf1</link1>
+                <interfaceName>ens6f0</interfaceName>
+                <routes>
+                    <route1>
+                        <network>192.168.103.1</network>
+                        <netmask>24</netmask>
+                        <gw>192.168.102.1</gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+            </COMPONENTS>
+        </Host1>
+
+        <Host2>
+            <host>10.128.13.253</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>HostDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS>
+                <mac>3c:fd:fe:a8:ea:31</mac>
+                <inband>false</inband>
+                <ip>192.168.103.3</ip>
+                <shortName>h2</shortName>
+                <port1>0</port1>
+                <link1>Leaf1</link1>
+                <interfaceName>ens6f1</interfaceName>
+                <routes>
+                    <route1>
+                        <network>192.168.102.1</network>
+                        <netmask>24</netmask>
+                        <gw>192.168.103.1</gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+            </COMPONENTS>
+        </Host2>
+
+        <ng40vm>
+            <host>10.92.1.71</host>
+            <user>ng40</user>
+            <password>ng40</password>
+            <type>HostDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS>
+                <mac>52:54:00:71:b5:96</mac>
+                <inband>false</inband>
+                <ip>192.168.102.101</ip>
+                <shortName>ng40</shortName>
+                <port1></port1>
+                <link1></link1>
+                <interfaceName>ens9</interfaceName>
+                <routes>
+                    <route1>
+                        <network>192.168.101.1</network>
+                        <netmask>24</netmask>
+                        <gw>192.168.103.1</gw>
+                        <interface>ens9</interface>
+                    </route1>
+                </routes>
+            </COMPONENTS>
+        </ng40vm>
+
+        <NetworkBench>
+            <host>10.128.13.253</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>NetworkDriver</type>
+            <connect_order>10</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </NetworkBench>
+
+    </COMPONENT>
+</TOPOLOGY>

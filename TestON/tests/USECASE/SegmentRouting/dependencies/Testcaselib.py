@@ -226,7 +226,7 @@ class Testcaselib:
 
                 currentJSON = json.loads( currentJSON )
                 if currentJSON['interfaces'][0]['ips'] != deviceCfg['interfaces'][0]['ips']:
-                    currentJSON['interfaces'][0]['ips'] == deviceCfg['interfaces'][0]['ips']
+                    currentJSON['interfaces'][0]['ips'] = deviceCfg['interfaces'][0]['ips']
                     data = { 'interfaces': currentJSON['interfaces'] }
                     A = main.Cluster.active( 0 ).REST.setNetCfg(  data , subjectClass = "ports", subjectKey = device )
                     returnValue = returnValue and A
@@ -873,7 +873,7 @@ class Testcaselib:
                             if len( vlans ) == 0:
                                 main.log.debug( "Could not find vlan setting for %s" % hostname )
                 vlans = set( vlans )
-                hostComponent.interfaces[0][ 'vlan' ] = vlans
+                hostComponent.interfaces[0][ 'vlan' ] = list( vlans )
                 main.log.debug( repr( hostComponent.interfaces[0] ) )
                 main.log.debug( repr( hostComponent.interfaces[0].get( 'vlan' ) ) )
             except ValueError:

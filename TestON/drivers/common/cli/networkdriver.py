@@ -529,17 +529,28 @@ class NetworkDriver( CLI ):
                     main.log.debug( "Pinging from " + str( hostPair[ 0 ].shortName ) + " to " + str( hostPair[ 1 ].shortName ) )
                     srcIPs = hostPair[ 0 ].interfaces[0].get( 'ips' )
                     dstIPs = hostPair[ 1 ].interfaces[0].get( 'ips' )
+                    srcVLANs = hostPair[0].interfaces[0].get( 'vlan' )
+                    if srcVLANs:
+                        VLAN = srcVLANs[0]
+                    else:
+                        VLAN=None
+                    dstVLANs = hostPair[1].interfaces[0].get( 'vlan' )
                     # Use scapy to send and recieve packets
                     hostPair[ 1 ].startScapy( ifaceName=dstIface )
                     hostPair[ 1 ].addRoutes()
-                    hostPair[ 1 ].startFilter( ifaceName=dstIface, pktFilter="ether src host %s and ip src host %s" % ( srcMac, srcIPs[0] ) )
-
+                    filters = []
+                    if srcMac:
+                        filters.append( "ether src host %s" % srcMac )
+                    if srcIPs[0]:
+                        filters.append( "ip src host %s" % srcIPs[0] )
+                    hostPair[ 1 ].startFilter( ifaceName=dstIface, pktFilter=" and ".join(filters) )
                     hostPair[ 0 ].startScapy( ifaceName=srcIface )
                     hostPair[ 0 ].addRoutes()
                     hostPair[ 0 ].buildEther( src=srcMac, dst=dstMac )
+                    if VLAN:
+                        hostPair[ 0 ].buildVLAN( vlan=VLAN )
                     hostPair[ 0 ].buildIP( src=srcIPs[0], dst=dstIPs[0] )
-                    hostPair[ 0 ].buildVLAN( vlan=[102, 103] )
-                    hostPair[ 0 ].buildICMP( )
+                    hostPair[ 0 ].buildICMP( vlan=VLAN )
                     hostPair[ 0 ].sendPacket( iface=srcIface )
 
                     waiting = not hostPair[ 1 ].checkFilter()

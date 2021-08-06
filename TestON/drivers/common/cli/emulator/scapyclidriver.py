@@ -168,7 +168,7 @@ class ScapyCliDriver( Emulator ):
             i = self.handle.expect( [ "not found", "password for", self.scapyPrompt ] )
             if i == 1:
                 main.log.debug( "Sudo asking for password" )
-                main.log.sendline( self.pwd )
+                self.handle.sendline( self.pwd )
                 i = self.handle.expect( [ "not found", self.scapyPrompt ] )
             if i == 0:
                 output = self.handle.before + self.handle.after
@@ -283,7 +283,7 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def buildIP( self, **kwargs ):
+    def buildIP( self, vlan=False, **kwargs ):
         """
         Build an IP frame
 
@@ -326,7 +326,10 @@ class ScapyCliDriver( Emulator ):
                 # KeyError, SyntaxError, ...
                 main.log.error( "Error in sending command: " + response )
                 return main.FALSE
-            self.handle.sendline( "packet = ether/ip" )
+            if vlan:
+                self.handle.sendline( "packet = ether/vlan/ip" )
+            else:
+                self.handle.sendline( "packet = ether/ip" )
             self.handle.expect( self.scapyPrompt )
             response = self.cleanOutput( self.handle.before )
             if "Traceback" in response:
@@ -366,7 +369,7 @@ class ScapyCliDriver( Emulator ):
                 # KeyError, SyntaxError, ...
                 main.log.error( "Error in sending command: " + response )
                 return main.FALSE
-            self.handle.sendline( "packet = ether/ip/vlan" )
+            self.handle.sendline( "packet = ether/vlan" )
             self.handle.expect( self.scapyPrompt )
             response = self.cleanOutput( self.handle.before )
             if "Traceback" in response:
@@ -384,7 +387,7 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def buildIPv6( self, **kwargs ):
+    def buildIPv6( self, vlan=False, **kwargs ):
         """
         Build an IPv6 frame
 
@@ -422,7 +425,10 @@ class ScapyCliDriver( Emulator ):
                 # KeyError, SyntaxError, ...
                 main.log.error( "Error in sending command: " + response )
                 return main.FALSE
-            self.handle.sendline( "packet = ether/ipv6" )
+            if vlan:
+                self.handle.sendline( "packet = ether/vlan/ipv6" )
+            else:
+                self.handle.sendline( "packet = ether/ipv6" )
             self.handle.expect( self.scapyPrompt )
             response = self.cleanOutput( self.handle.before )
             if "Traceback" in response:
@@ -704,7 +710,7 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def buildICMP( self, ipVersion=4, **kwargs ):
+    def buildICMP( self, ipVersion=4, vlan=False, **kwargs ):
         """
         Build an ICMP frame
 
@@ -750,14 +756,20 @@ class ScapyCliDriver( Emulator ):
                 # KeyError, SyntaxError, ...
                 main.log.error( "Error in sending command: " + response )
                 return main.FALSE
-
-            if str( ipVersion ) is '4':
-                self.handle.sendline( "packet = ether/ip/icmp" )
-            elif str( ipVersion ) is '6':
-                self.handle.sendline( "packet = ether/ipv6/icmp6" )
+            if vlan:
+                if str( ipVersion ) is '4':
+                    self.handle.sendline( "packet = ether/vlan/ip/icmp" )
+                elif str( ipVersion ) is '6':
+                    self.handle.sendline( "packet = ether/vlan/ipv6/icmp6" )
             else:
-                main.log.error( "Unrecognized option for ipVersion, given " +
+                if str( ipVersion ) is '4':
+                    self.handle.sendline( "packet = ether/ip/icmp" )
+                elif str( ipVersion ) is '6':
+                    self.handle.sendline( "packet = ether/ipv6/icmp6" )
+                else:
+                    main.log.error( "Unrecognized option for ipVersion, given " +
                                 repr( ipVersion ) )
+
                 return main.FALSE
             self.handle.expect( self.scapyPrompt )
             response = self.cleanOutput( self.handle.before )

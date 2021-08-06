@@ -1,10 +1,10 @@
 <PARAMS>
-    <testcases>9,19,29,39,49,59,69,79</testcases>
+    <testcases>13,23</testcases>
 
     <GRAPH>
         <nodeCluster>QA-Pod</nodeCluster>
         <builds>20</builds>
-        <jobName>SRBridging-tofino</jobName>
+        <jobName>SRDynamicConf-tofino</jobName>
         <branch>master</branch>
     </GRAPH>
 

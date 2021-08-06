@@ -1,0 +1,99 @@
+<PARAMS>
+    <testcases>6</testcases>
+
+    <GRAPH>
+        <nodeCluster>pairedleaves</nodeCluster>
+        <builds>20</builds>
+        <jobName>SRBridging-tofino</jobName>
+        <branch>master</branch>
+    </GRAPH>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <useCommonConf>False</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix></switchPrefix>
+        <stratumRoot>~/stratum</stratumRoot>
+        <topology>trellis_fabric.py</topology>
+        <lib>routinglib.py,trellislib.py,stratum.py</lib>
+    </DEPENDENCY>
+
+    <jsonFileSuffix>.hw</jsonFileSuffix>
+
+    <persistent_setup>True</persistent_setup>
+
+    <kubernetes>
+        <appName>onos-classic</appName>
+        <namespace>tost</namespace>
+    </kubernetes>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3</cellApps>
+    </ENV>
+
+    <EXTERNAL_APPS>
+    </EXTERNAL_APPS>
+
+    <ONOS_Configuration>
+        <org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
+            <enableMessageLog>true</enableMessageLog>
+        </org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
+    </ONOS_Configuration>
+
+    <ONOS_Logging>
+        <org.onosproject.events>TRACE</org.onosproject.events>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.driver>DEBUG</org.onosproject.driver>
+        <org.onosproject.net.flowobjective.impl>DEBUG</org.onosproject.net.flowobjective.impl>
+        <org.onosproject.routeservice.impl>DEBUG</org.onosproject.routeservice.impl>
+        <org.onosproject.routeservice.store>DEBUG</org.onosproject.routeservice.store>
+        <org.onosproject.routing.fpm>DEBUG</org.onosproject.routing.fpm>
+        <org.onosproject.fpm>DEBUG</org.onosproject.fpm>
+        <org.onosproject.mcast>DEBUG</org.onosproject.mcast>
+        <org.onosproject.p4runtime>DEBUG</org.onosproject.p4runtime>
+        <org.onosproject.protocols.p4runtime>DEBUG</org.onosproject.protocols.p4runtime>
+        <org.onosproject.drivers.p4runtime>DEBUG</org.onosproject.drivers.p4runtime>
+        <org.onosproject.protocols.grpc>DEBUG</org.onosproject.protocols.grpc>
+        <org.onosproject.protocols.gnmi>DEBUG</org.onosproject.protocols.gnmi>
+        <org.onosproject.protocols.gnoi>DEBUG</org.onosproject.protocols.gnoi>
+        <org.onosproject.drivers.gnoi>DEBUG</org.onosproject.drivers.gnoi>
+        <org.onosproject.drivers.gmni>DEBUG</org.onosproject.drivers.gmni>
+        <org.onosproject.drivers.barefoot>DEBUG</org.onosproject.drivers.barefoot>
+        <org.onosproject.bmv2>DEBUG</org.onosproject.bmv2>
+    </ONOS_Logging>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6653</port>
+    </CTRL>
+
+    <timers>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
+        <TrafficDiscovery>10</TrafficDiscovery>
+    </timers>
+
+    <SLEEP>
+        <startup>10</startup>
+    </SLEEP>
+
+    <TOPO>
+        <switchNum>2</switchNum>
+        <linkNum>2</linkNum>
+    </TOPO>
+
+    <ALARM>
+        <minPassPercent>100</minPassPercent>
+    </ALARM>
+</PARAMS>

@@ -72,12 +72,14 @@ class OnosRestDriver( Controller ):
             A formatted string for printing or None on error
         """
         try:
+            if not jsonObject:
+                return None
             if isinstance( jsonObject, str ):
                 jsonObject = json.loads( jsonObject )
             return json.dumps( jsonObject, sort_keys=True,
                                indent=4, separators=( ',', ': ' ) )
         except ( TypeError, ValueError ):
-            main.log.exception( "Error parsing jsonObject" )
+            main.log.exception( "Error parsing jsonObject %s" % repr(jsonObject) )
             return None
 
     def send( self, url, ip = "DEFAULT", port = "DEFAULT", base="/onos/v1", method="GET",

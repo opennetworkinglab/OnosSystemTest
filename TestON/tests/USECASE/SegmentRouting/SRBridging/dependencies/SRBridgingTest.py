@@ -34,7 +34,6 @@ class SRBridgingTest ():
         self.switchNames[ '2x2' ] = [ "leaf1", "leaf2", "spine101", "spine102" ]
         main.switchType = "ovs"
 
-
     def runTest( self, main, test_idx, topology, onosNodes, description, vlan = [] ):
         try:
             skipPackage = False
@@ -90,7 +89,6 @@ class SRBridgingTest ():
                     main.log.info( "Using %s switch" % main.switchType )
 
                 run.startMininet( main, 'trellis_fabric.py', args=mininet_args )
-
             else:
                 # Run the test with physical devices
                 run.connectToPhysicalNetwork( main, hostDiscovery=False )  # We don't want to do host discovery in the pod
@@ -112,6 +110,7 @@ class SRBridgingTest ():
                 leaf_dpid = [ "of:%016d" % ( ls + 1 ) for ls in range( self.topo[ topology ][ 'leaves' ] ) ]
             for dpid in leaf_dpid:
                 run.checkFlowsByDpid( main, dpid, self.topo[ topology ][ 'minFlow-Stratum' if main.useBmv2 else 'minFlow-OvS' ], sleep=5 )
+            run.populateHostsVlan( main, main.Network.hosts.keys()  )
             run.verifyTopology( main, switches, links, onosNodes )
             run.pingAll( main )
         except Exception as e:

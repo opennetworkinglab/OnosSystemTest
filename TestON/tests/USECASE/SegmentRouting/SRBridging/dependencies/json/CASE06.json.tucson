@@ -1,0 +1,48 @@
+{
+"ports":{
+        "device:leaf1/56":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.32.11.126/25"
+                    ],
+                    "vlan-untagged":111,
+                    "name": "compute-1-1"
+                }
+            ]
+        },
+        "device:leaf2/56":{
+            "interfaces":[
+                {
+                    "ips":[
+                        "10.32.11.126/25"
+                    ],
+                    "vlan-untagged":111,
+                    "name": "compute-1-2"
+                }
+            ]
+        },
+        "device:leaf1/40": {
+            "interfaces": [
+              {
+                "ips": [
+                  "10.32.11.126/25"
+                ],
+                "vlan-untagged": 111,
+                "name": "compute-2-1"
+              }
+            ]
+          },
+          "device:leaf2/40": {
+            "interfaces": [
+              {
+                "ips": [
+                  "10.32.11.126/25"
+                ],
+                "vlan-untagged": 111,
+                "name": "compute-2-2"
+              }
+            ]
+          }
+    }
+}

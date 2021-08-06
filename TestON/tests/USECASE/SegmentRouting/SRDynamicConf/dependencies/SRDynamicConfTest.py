@@ -18,6 +18,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
     You should have received a copy of the GNU General Public License
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 """
+from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
 
 import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
 
@@ -26,8 +27,7 @@ class SRDynamicConfTest:
         self.default = ''
         self.topo = run.getTopo()
 
-    @staticmethod
-    def runTest( main, testIndex, topology, onosNodes, description, vlan=( 0, 0, 0, 0 ) ):
+    def runTest( self, main, testIndex, topology, onosNodes, description, vlan=( 0, 0, 0, 0 ) ):
         '''
         Tests connectivity for each test case.
         Configuration files:
@@ -51,7 +51,6 @@ class SRDynamicConfTest:
             portNum = self.topo[ topology ][ 'description' ]
             defaultIntf = 'bond0' if dualHomed else 'eth0'
 
-            from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
             if not hasattr( main, 'apps' ):
                 init = True
                 run.initTest( main )
@@ -78,38 +77,41 @@ class SRDynamicConfTest:
                 translator.bmv2ToOfdpa( main )
             if not main.persistentSetup:
                 run.loadJson( main )
-            run.loadChart( main )
 
             # Provide topology-specific interface configuration
             import json
-            try:
-                intfCfg = "%s%s%s.json" % ( main.configPath, main.forJson, TAG )
-                if main.useBmv2:
-                    # Translate configuration file from OVS-OFDPA to BMv2 driver
-                    translator.bmv2ToOfdpa( main, intfCfg )  # Try to cleanup if switching between switch types
-                    switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
-                    translator.ofdpaToBmv2( main, switchPrefix=switchPrefix, cfgFile=intfCfg )
-                else:
-                    translator.bmv2ToOfdpa( main, intfCfg )
-                with open( intfCfg ) as cfg:
-                    main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
-            except IOError:
-                # Load default interface configuration
-                defaultIntfCfg = "%s%s%s_ports.json" % ( main.configPath, main.forJson, topology )
-                if main.useBmv2:
-                    # Translate configuration file from OVS-OFDPA to BMv2 driver
-                    translator.bmv2ToOfdpa( main, defaultIntfCfg )  # Try to cleanup if switching between switch types
-                    switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
-                    translator.ofdpaToBmv2( main, switchPrefix=switchPrefix, cfgFile=defaultIntfCfg )
-                else:
-                    translator.bmv2ToOfdpa( main, defaultIntfCfg )
-                with open( defaultIntfCfg ) as cfg:
-                    main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
+            if not main.persistentSetup:
+                try:
+                    intfCfg = "%s%s%s.json" % ( main.configPath, main.forJson, TAG )
+                    if main.useBmv2:
+                        # Translate configuration file from OVS-OFDPA to BMv2 driver
+                        translator.bmv2ToOfdpa( main, intfCfg )  # Try to cleanup if switching between switch types
+                        switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                        translator.ofdpaToBmv2( main, switchPrefix=switchPrefix, cfgFile=intfCfg )
+                    else:
+                        translator.bmv2ToOfdpa( main, intfCfg )
+                    with open( intfCfg ) as cfg:
+                        main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
+                except IOError:
+                    # Load default interface configuration
+                    defaultIntfCfg = "%s%s%s_ports.json" % ( main.configPath, main.forJson, topology )
+                    if main.useBmv2:
+                        # Translate configuration file from OVS-OFDPA to BMv2 driver
+                        translator.bmv2ToOfdpa( main, defaultIntfCfg )  # Try to cleanup if switching between switch types
+                        switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', "bmv2" )
+                        translator.ofdpaToBmv2( main, switchPrefix=switchPrefix, cfgFile=defaultIntfCfg )
+                    else:
+                        translator.bmv2ToOfdpa( main, defaultIntfCfg )
+                    with open( defaultIntfCfg ) as cfg:
+                        main.Cluster.active( 0 ).REST.setNetCfg( json.load( cfg ) )
 
             try:
-                with open( "%s%sCASE%d.chart" % (main.configPath, main.forChart, testIndex / 10 * 10) ) as chart:
+                suffix='qa'
+                main.log.debug("%s%sCASE%d.chart%s" % (main.configPath, main.forChart, testIndex / 10 * 10, suffix ))
+                with open( "%s%sCASE%d.chart.%s" % (main.configPath, main.forChart, testIndex / 10 * 10, suffix ) ) as chart:
                     main.pingChart = json.load( chart )
             except IOError:
+                main.log.debug("default_chart")
                 # Load default chart
                 with open( "%s%sdefault.chart" % (main.configPath, main.forChart) ) as chart:
                     main.pingChart = json.load( chart )

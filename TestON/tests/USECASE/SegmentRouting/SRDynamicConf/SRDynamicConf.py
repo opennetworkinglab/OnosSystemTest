@@ -76,11 +76,15 @@ class SRDynamicConf:
         Pingall
         """
         from tests.USECASE.SegmentRouting.SRDynamicConf.dependencies.SRDynamicConfTest import SRDynamicConfTest
-        SRDynamicConfTest.runTest( main,
+        try:
+            test=SRDynamicConfTest()
+            test.runTest( main,
                                    testIndex=13,
                                    topology='2x2',
                                    onosNodes=3,
                                    description='Changing port configuration from untagged 10 to tagged 10' )
+        except Exception:
+            main.log.exception("debug")
 
     def CASE14( self, main ):
         """

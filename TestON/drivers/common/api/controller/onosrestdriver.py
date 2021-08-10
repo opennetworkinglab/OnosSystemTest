@@ -118,11 +118,16 @@ class OnosRestDriver( Controller ):
                            method.upper() + " method." )
             if debug:
                 main.log.debug( self.name + ": request data: " + str( data ) )
+            self.log( "Sending %s to %s with %s\n" % ( method.upper(),
+                                                       path,
+                                                       self.pprint( data ) ) )
             response = requests.request( method.upper(),
                                          path,
                                          params=query,
                                          data=data,
                                          auth=auth )
+            self.log( "Received %s code with body: %s\n" % ( response.status_code,
+                                                             self.pprint( response.text.encode( 'utf8' ) ) ) )
             if debug:
                 main.log.debug( response )
             return ( response.status_code, response.text.encode( 'utf8' ) )
@@ -1913,7 +1918,6 @@ class OnosRestDriver( Controller ):
             The ip and port option are for the requests input's ip and port
             of the ONOS node
         """
-        # from pprint import pprint
 
         flowJsonList = []
         flowJsonBatch = { "flows": flowJsonList }
@@ -2008,12 +2012,10 @@ class OnosRestDriver( Controller ):
                 flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type": "IP_PROTO",
                                                         "protocol": ipProto } )
-            # pprint(flowJson)
             flowJsonList.append( flowJson )
 
         main.log.info( self.name + ": Number of flows in batch: " + str( len( flowJsonList ) ) )
         flowJsonBatch[ 'flows' ] = flowJsonList
-        # pprint(flowJsonBatch)
 
         return flowJsonBatch
 

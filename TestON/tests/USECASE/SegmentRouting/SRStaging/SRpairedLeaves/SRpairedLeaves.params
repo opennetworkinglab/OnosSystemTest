@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,101,102,103,104,201,202,203,204,205,206,207,208</testcases>
+    <testcases>1,2,101,102,103,104,201,202,203,204,205,206,207,208,301</testcases>
 
     <GRAPH>
         <nodeCluster>pairedleaves</nodeCluster>
@@ -78,7 +78,7 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
-        <TrafficDiscovery>10</TrafficDiscovery>
+        <TrafficDiscovery>13</TrafficDiscovery>
     </timers>
 
     <SLEEP>

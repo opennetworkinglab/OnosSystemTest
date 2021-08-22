@@ -39,6 +39,7 @@ class HostDriver( ScapyCliDriver ):
         self.inband = False
         self.prompt = "\$"
         self.scapyPrompt = ">>>"
+        self.tempRoutes = []
 
     def connect( self, **connectargs ):
         """
@@ -120,6 +121,9 @@ class HostDriver( ScapyCliDriver ):
         try:
             if self.handle:
                 self.preDisconnect()
+                if self.tempRoutes:
+                    for r in self.tempRoutes:
+                        self.deleteRoute( *r )
                 # Disconnect from the host
                 if not self.options[ 'inband' ] == 'True':
                     self.handle.sendline( "" )
@@ -210,6 +214,132 @@ class HostDriver( ScapyCliDriver ):
                 main.log.error( self.name + ": timeout when waiting for response" )
                 main.log.error( self.name + ": response: " + str( self.handle.before ) )
             return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+
+    def getRoutes( self ):
+        """
+        Returns the output of 'ip route show' command
+        # TODO: process and return a a list or json object
+        """
+        try:
+            cmd = "ip route show"
+            self.handle.sendline( cmd )
+            i = self.handle.expect( [ "password|Password", self.prompt ]  )
+            if i == 0:
+                self.handle.sendline( self.pwd )
+                j = self.handle.expect( [ "password|Password", self.prompt ] )
+                if j != 1:
+                    main.log.error( "Incorrect password" )
+                    return main.FALSE
+            return self.handle.before
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+
+    def addRoute( self, route, gw, interface=None, sudoRequired=True, purgeOnDisconnect=True ):
+        """
+        Adds a static route to the host
+        Arguments:
+        * route - String, CIDR notation for the destination subnet
+        * gw - String, IP address of gateway
+        Optional Arguments:
+        * interface - String, The interface to use for this route, defaults to None, or the default interface
+        * sudoRequired - Boolean, whether sudo is needed for this command, defaults to True
+        * purgeOnDisconnect - Boolean, remove this route before disconnecting from component
+        """
+        try:
+            cmd = "ip route add %s via %s" % ( route, gw )
+            if sudoRequired:
+                cmd = "sudo %s" % cmd
+            if interface:
+                cmd = "%s dev %s" % ( cmd, interface )
+            if purgeOnDisconnect:
+                self.tempRoutes.append( (route, gw, interface, sudoRequired ) )
+            self.handle.sendline( cmd )
+            i = self.handle.expect( [ "password|Password", self.prompt, "Error" ]  )
+            output = ""
+            if i == 2:
+                output += self.handle.before + self.handle.after
+                self.handle.expect( self.prompt )
+                output += self.handle.before + self.handle.after
+                main.log.error( "%s: Erorr in ip route command: %s" % ( self.name, output ) )
+                return main.FALSE
+            elif i == 0:
+                self.handle.sendline( self.pwd )
+                j = self.handle.expect( [ "password|Password", self.prompt, "Error" ] )
+                if j == 0:
+                    main.log.error( "Incorrect password" )
+                    return main.FALSE
+                elif j == 2:
+                    output += self.handle.before + self.handle.after
+                    self.handle.expect( self.prompt )
+                    output += self.handle.before + self.handle.after
+                    main.log.error( "%s: Erorr in ip route command: %s" % ( self.name, output ) )
+                    return main.FALSE
+            output += self.handle.before + self.handle.after
+            main.log.debug( output )
+            return self.handle.before
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+
+    def deleteRoute( self, route, gw, interface=None, sudoRequired=True ):
+        """
+        Deletess a static route from the host
+        Arguments:
+        * route - String, CIDR notation for the destination subnet
+        * gw - String, IP address of gateway
+        Optional Arguments:
+        * interface - String, The interface to use for this route, defaults to None, or the default interface
+        * sudoRequired - Boolean, whether sudo is needed for this command, defaults to True
+        """
+        try:
+            cmd = "ip route del %s via %s" % ( route, gw )
+            if sudoRequired:
+                cmd = "sudo %s" % cmd
+            if interface:
+                cmd = "%s dev %s" % ( cmd, interface )
+            self.handle.sendline( cmd )
+            i = self.handle.expect( [ "password|Password", self.prompt, "Error" ]  )
+            output = ""
+            if i == 2:
+                output += self.handle.before + self.handle.after
+                self.handle.expect( self.prompt )
+                output += self.handle.before + self.handle.after
+                main.log.error( "%s: Erorr in ip route command: %s" % ( self.name, output ) )
+                return main.FALSE
+            elif i == 0:
+                self.handle.sendline( self.pwd )
+                j = self.handle.expect( [ "password|Password", self.prompt, "Error" ] )
+                if j == 0:
+                    main.log.error( "Incorrect password" )
+                    return main.FALSE
+                elif j == 2:
+                    output += self.handle.before + self.handle.after
+                    self.handle.expect( self.prompt )
+                    output += self.handle.before + self.handle.after
+                    main.log.error( "%s: Erorr in ip route command: %s" % ( self.name, output ) )
+                    return main.FALSE
+            output += self.handle.before + self.handle.after
+            main.log.debug( output )
+            return self.handle.before
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

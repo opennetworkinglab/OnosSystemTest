@@ -160,51 +160,72 @@ class SRStagingTest:
         main.log.warn( "%s: %s" % ( src.name, str( src.handle.before ) ) )
 
     @staticmethod
-    def startIperf( main, src, dst, trafficSelector, trafficDuration ):
+    def startIperf( main, src, dstIp, trafficSelector, trafficDuration ):
         """
         Start iperf from src ip to dst ip
         Handles connectivity check and sudo password input as well
         Arguments:
             src: src host component
-            dst: dst host component
+            dstIp: dst ip
             trafficSelector: traffic selector string, passed to iperf
             trafficDuration: Traffic duration string, passed to iperf
 
         """
-        dstIp = dst.interfaces[0]['ips'][0]
         srcIp = src.interfaces[0]['ips'][0]
         iperfArgs = "%s --bind %s -c %s -t %s" % ( trafficSelector,
                                                    srcIp,
                                                    dstIp,
                                                    trafficDuration )
-        main.log.info( "Starting iperf between %s and %s" % ( src.shortName, dst.shortName ) )
-        sudoCheck = main.funcs.singlePingWithSudo( main, src, dst.interfaces[0]['ips'][0] )
+        main.log.info( "Starting iperf between %s and %s" % ( src.shortName, dstIp ) )
+        sudoCheck = main.funcs.singlePingWithSudo( main, src, dstIp )
         src.handle.sendline( "/usr/bin/iperf %s " % iperfArgs )
         src.preDisconnect = src.exitFromProcess
 
     @staticmethod
-    def startTshark( main, host, pingDesc=None, direction="Sender", srcIP=None, dstIP=None ):
+    def startPing( main, src, dstIp, count=None, interval=".3" ):
+        """
+        Start ping from src to dst ip
+        Arguments:
+            src: src host component
+            dstIp: dst ip
+            count: how many packets to send, defaults to None, or until stopped
+            interval: How long to wait, in seconds, between pings, defaults to .5
+        """
+        srcIface = src.interfaces[0]['name']
+        pingCmd = "ping -I %s %s " % ( srcIface, dstIp )
+        if count:
+            pingCmd += " -c %s " % count
+        if interval:
+            pingCmd += " -i %s " % interval
+
+        main.log.info( "Starting ping between %s and %s" % ( src.shortName, dstIp ) )
+        src.handle.sendline( pingCmd )
+        src.preDisconnect = src.exitFromProcess
+
+
+    @staticmethod
+    def startTshark( main, host, pingDesc=None, direction="Sender", srcIp=None, dstIp=None, protocolStr="udp" ):
         """
         """
 
+        hostStr = ""
         if direction == "Sender":
             suffix = "Sender"
-            hostStr = "src host %s" % host.interfaces[0]['ips'][0]
-            if dstIP:
-                hostStr += " && dst host %s" % dstIP
         else:
             suffix = "Receiver"
-            hostStr = "dst host %s" % host.interfaces[0]['ips'][0]
-            if srcIP:
-                hostStr += " && src host %s" % srcIP
+        if dstIp:
+            hostStr += " && dst host %s" % dstIp
+        if srcIp:
+            hostStr += " && src host %s" % srcIp
         if not pingDesc:
             pingDesc = host.name
         fileName = "%s-tshark%s" % ( pingDesc, suffix )
         pcapFile = "%s/tshark/%s.pcap" % ( "~/TestON", fileName )
-        tsharkArgs = "%s -i %s -f 'udp && %s' -w %s" % ( main.params[ 'PERF' ][ 'pcap_cmd_arguments' ],
-                                                         host.interfaces[0]['name'],
-                                                         hostStr,
-                                                         pcapFile )
+        tsharkArgs = "%s -i %s -f '%s %s' -w %s" % ( main.params[ 'PERF' ][ 'pcap_cmd_arguments' ],
+                                                        host.interfaces[0]['name'],
+                                                        protocolStr,
+                                                        hostStr,
+                                                        pcapFile )
         commands = [ 'mkdir -p ~/TestON/tshark',
                      'rm %s' % pcapFile,
                      'touch %s' % pcapFile,
@@ -219,26 +240,41 @@ class SRStagingTest:
 
     @staticmethod
     def setupFlow( main, src, dst, shortDesc=None, longDesc=None,
-                   trafficDuration=600, trafficSelector="-u -b 20M" ):
+                   trafficDuration=600, trafficSelector="-u -b 20M", pingOnly=False, dstIp=None ):
         """
         Setup iperf flow between two hosts, also handles packet captures, etc.
         """
         try:
-            main.log.info( "Setting up flow between %s and %s" % ( src.shortName, dst.shortName ) )
+            if not dstIp:
+                 dstIp = dst.interfaces[0]['ips'][0]
+            main.log.info( "Setting up flow between %s and %s%s" % ( src.shortName, dst.shortName, "" if not dstIp else " with dstIp %s" % dstIp ) )
             # ping right before to make sure arp is cached and sudo is authenticated
             main.funcs.singlePingWithSudo( main, src, dst.interfaces[0]['ips'][0] )
             main.funcs.singlePingWithSudo( main, dst, src.interfaces[0]['ips'][0] )
             # Start traffic
             # TODO: ASSERTS
-            iperfSrc = getattr( main, "%s-iperf" % src.name )
-            main.funcs.startIperf( main, iperfSrc, dst, trafficSelector, trafficDuration )
+            if pingOnly:
+                trafficCmd = "ping"
+                protocolStr = "icmp"
+            else:
+                trafficCmd = "iperf"
+                protocolStr = "udp"
+            trafficSrc = getattr( main, "%s-%s" % ( src.name, trafficCmd ) )
+            if trafficCmd == "iperf":
+                main.funcs.startIperf( main, trafficSrc, dstIp, trafficSelector, trafficDuration )
+            elif trafficCmd == "ping":
+                main.funcs.startPing( main, trafficSrc, dstIp )
+            else:
+                raise NotImplemented, "Unknown Traffic Command"
             # Start packet capture
             pingDesc = "%s-%s-to-%s" % ( shortDesc, src.shortName, dst.shortName )
             pcapFileReceiver = "%s/tshark/%s-tsharkReceiver.pcap" % ( "~/TestON", pingDesc )
             pcapFileSender = "%s/tshark/%s-tsharkSender.pcap" % ( "~/TestON", pingDesc )
-            # FIXME: Also filter by sender here
-            main.funcs.startTshark( main, dst, pingDesc=pingDesc, direction="Receiver", srcIP=src.interfaces[0]['ips'][0] )
-            main.funcs.startTshark( main, src, pingDesc=pingDesc, direction="Sender", dstIP=dst.interfaces[0]['ips'][0] )
+            srcIp = src.interfaces[0]['ips'][0]
+            main.funcs.startTshark( main, dst, pingDesc=pingDesc, direction="Receiver",
+                                    srcIp=srcIp, dstIp=dstIp, protocolStr=protocolStr )
+            main.funcs.startTshark( main, src, pingDesc=pingDesc, direction="Sender",
+                                    srcIp=srcIp, dstIp=dstIp, protocolStr=protocolStr )
 
         except Exception as e:
             main.log.exception( "Error in setupFlow" )
@@ -248,7 +284,7 @@ class SRStagingTest:
     def startCapturing( main, srcList, dstList, shortDesc=None, longDesc=None,
                         trafficDuration=600, trafficSelector="-u -b 20M",
                         bidirectional=False, singleFlow=False, targets=None,
-                        threshold=10, stat="packetsSent" ):
+                        threshold=10, stat="packetsSent", pingOnly=False, dstIp=None ):
         """
         Starts logging, traffic generation, traffic filters, etc before a failure is induced
         src: the src component that sends the traffic
@@ -300,6 +336,7 @@ class SRStagingTest:
             if not isinstance( dstList, list ):
                 dstList = [ dstList ]
             hostPairs = []
+            trafficCmd = "ping" if pingOnly else "iperf"
             for src in srcList:
                 for dst in dstList:
                     if src == dst:
@@ -315,8 +352,8 @@ class SRStagingTest:
                     receiver = getattr( main, receiverName )
                     main.trafficComponents.append( receiver )
                     hostPairs.append( ( sender, receiver ) )
-                    main.Network.copyComponent( src.name, "%s-iperf" % senderName )
-                    main.trafficComponents.append( getattr( main, "%s-iperf" % senderName ) )
+                    main.Network.copyComponent( src.name, "%s-%s" % ( senderName, trafficCmd ) )
+                    main.trafficComponents.append( getattr( main, "%s-%s" % ( senderName, trafficCmd ) ) )
                     newName = "%s-%s" % ( dst.shortName, "FileSize" )
                     main.Network.copyComponent( dst.name, newName )
                     main.trafficComponents.append( getattr( main, newName ) )
@@ -335,8 +372,8 @@ class SRStagingTest:
                         receiver = getattr( main, receiverName )
                         main.trafficComponents.append( receiver )
                         hostPairs.append( ( sender, receiver ) )
-                        main.Network.copyComponent( dst.name, "%s-iperf" % senderName )
-                        main.trafficComponents.append( "%s-iperf" % senderName )
+                        main.Network.copyComponent( dst.name, "%s-%s" % ( senderName, trafficCmd ) )
+                        main.trafficComponents.append( "%s-%s" % ( senderName, trafficCmd ) )
 
             # TODO: make sure hostPairs is a set?
             main.log.debug( ["%s to %s" % ( p[0], p[1] ) for p in hostPairs ] )
@@ -348,10 +385,10 @@ class SRStagingTest:
                 src, dst = pair
                 main.funcs.setupFlow( main, src, dst, shortDesc=shortDesc,
                                       longDesc=longDesc, trafficDuration=trafficDuration,
-                                      trafficSelector=trafficSelector )
+                                      trafficSelector=trafficSelector, pingOnly=pingOnly, dstIp=dstIp )
                 if singleFlow:
                     # Let some packets flow
-                    trafficSleep = float( main.params['timers'].get( 'TrafficDiscovery', 5 ) )
+                    trafficSleep = float( main.params['timers'].get( 'TrafficDiscovery', 10 ) )
                     main.log.info( "Sleeping %s seconds for packet counters to update" % trafficSleep )
                     time.sleep( trafficSleep )
                     updatedStats = json.loads( main.Cluster.active(0).REST.portstats() )
@@ -366,12 +403,13 @@ class SRStagingTest:
                         break
                     else:
                         main.funcs.stopFlow( main, src, dst, shortDesc=shortDesc,
-                                             longDesc=longDesc, abort=True )
+                                             longDesc=longDesc, abort=True,
+                                             pingOnly=pingOnly )
             if singleFlow and not switchComponent:
                 main.log.error( "Could not find a flow going through desired switch/port, aborting test" )
                 main.skipCase( result="PASS" )
             main.pingStarted = time.time()
-            main.log.warn( "It took %s seconds to start all iperf and tshark sessions" % ( main.pingStarted - main.pingStart ) )
+            main.log.warn( "It took %s seconds to start all traffic  and tshark sessions" % ( main.pingStarted - main.pingStart ) )
 
             # Timestamp used for EVENT START
             main.eventStart = datetime.datetime.utcnow()
@@ -396,7 +434,7 @@ class SRStagingTest:
         return result
 
     @staticmethod
-    def stopFlow( main, src, dst, shortDesc=None, longDesc=None, abort=False ):
+    def stopFlow( main, src, dst, shortDesc=None, longDesc=None, abort=False, pingOnly=False ):
         """
         Check flow is still connected, Stop iperf, tshark, etc
         """
@@ -438,12 +476,19 @@ class SRStagingTest:
             main.funcs.clearBuffer( dst, kill=True, debug=True )
             main.funcs.clearBuffer( src, kill=True, debug=True )
             # Stop traffic
-            iperfSrc = getattr( main, "%s-iperf" % src.name )
-            main.funcs.clearBuffer( iperfSrc, kill=True, debug=True )
+            if pingOnly:
+                trafficSrc = getattr( main, "%s-ping" % src.name )
+            else:
+                trafficSrc = getattr( main, "%s-iperf" % src.name )
+            main.funcs.clearBuffer( trafficSrc, kill=True, debug=True )
 
             if not abort:
                 srcIp = src.interfaces[0]['ips'][0]
-                filterStr = "'udp && ip.src == %s'" % srcIp
+                if pingOnly:
+                    filterStr = "'icmp "
+                else:
+                    filterStr = "'udp "
+                filterStr += " && ip.src == %s'" % srcIp
                 #senderTime = main.funcs.analyzePcap( main, src, pcapFileSender, filterStr, debug=False )
                 #receiverTime = main.funcs.analyzePcap( main, dst, pcapFileReceiver, filterStr, debug=False )
                 #main.downtimeResults[ "%s" % senderResultDesc ] = senderTime     # Orig
@@ -462,8 +507,14 @@ class SRStagingTest:
                                          onpass="Saved pcap files from %s" % dst.name,
                                          onfail="Failed to scp pcap files from %s" % dst.name )
 
-                senderLosses = main.funcs.analyzeIperfPcap( main, main.logdir + "/" + pingDesc + "-tsharkSender.pcap", filterStr )
-                receiverLosses = main.funcs.analyzeIperfPcap( main, main.logdir + "/" + pingDesc + "-tsharkReceiver.pcap", filterStr )
+                senderLosses = main.funcs.analyzeIperfPcap( main,
+                                                            main.logdir + "/" + pingDesc + "-tsharkSender.pcap",
+                                                            filterStr,
+                                                            pingOnly=pingOnly )
+                receiverLosses = main.funcs.analyzeIperfPcap( main,
+                                                              main.logdir + "/" + pingDesc + "-tsharkReceiver.pcap",
+                                                              filterStr,
+                                                              pingOnly=pingOnly )
                 ms, dropped = max( senderLosses, key=lambda i: i[0] )
                 colName = "%s" % senderResultDesc
                 main.downtimeResults[ colName[:63] ] = ms
@@ -481,7 +532,7 @@ class SRStagingTest:
 
     @staticmethod
     def stopCapturing( main, srcList, dstList, shortDesc=None, longDesc=None, bidirectional=False,
-                       killedNodes=None ):
+                       killedNodes=None, pingOnly=False ):
         import datetime
         import time
         from tests.dependencies.utils import Utils
@@ -523,7 +574,7 @@ class SRStagingTest:
             for pair in hostPairs:
                 src, dst = pair
                 main.funcs.stopFlow( main, src, dst, shortDesc=shortDesc,
-                                     longDesc=longDesc )
+                                     longDesc=longDesc, pingOnly=pingOnly )
 
             main.pingStop = time.time()
             main.log.warn( "It took %s seconds since we started to stop ping for us to stop pings" % ( main.pingStop - main.pingStopping ) )
@@ -555,6 +606,7 @@ class SRStagingTest:
                 killedPods.extend( pods )
             switches = [ switch for switch in switches if switch not in killedPods ]
 
+            """
             for switch in switches:
                 dstFile = "%s/%s-%s-write-reqs.txt" % ( main.logdir, shortDesc, switch )
                 writeResult = main.ONOSbench.kubectlCp( switch, "/tmp/p4_writes.txt", dstFile,
@@ -563,6 +615,7 @@ class SRStagingTest:
                 utilities.assert_equals( expect=main.TRUE, actual=writeResult,
                                          onpass="Saved write-req file from %s" % switch,
                                          onfail="Failed to cp write-req file from %s" % switch )
+            """
         except Exception:
             main.log.exception( "Error in stopCapturing" )
 
@@ -624,7 +677,8 @@ class SRStagingTest:
 
     @staticmethod
     def linkDown( targets, srcComponentList, dstComponentList, shortDesc,
-                  longDesc, sleepTime=10, stat='packetsSent', bidirectional=False ):
+                  longDesc, sleepTime=10, stat='packetsSent', bidirectional=False,
+                  pingOnly=False, dstIp=None ):
         """"
         High level function that handles an event including monitoring
         Arguments:
@@ -638,6 +692,8 @@ class SRStagingTest:
             sleepTime - How long to wait between starting the capture and stopping
             stat - String, The stat to compare for each port across updates. Defaults to 'packetsSent'
             bidirectional - Boolean, Whether to start traffic flows in both directions. Defaults to False
+            pingOnly - Boolean, Use ping if True else use iperf, defaults to False
+             - String, If set, use this as the destination IP for traffic, defaults to None
         Returns:
             A string of the port id that was brought down
         """
@@ -645,13 +701,16 @@ class SRStagingTest:
         try:
             initialStats = json.loads( main.Cluster.active(0).REST.portstats() )
             main.step( "Start Capturing" )
+            threshold = 2 if pingOnly else 100
             main.funcs.startCapturing( main,
                                        srcComponentList,
                                        dstComponentList,
                                        shortDesc=shortDesc,
                                        longDesc=longDesc,
                                        bidirectional=bidirectional,
-                                       threshold=100 )
+                                       threshold=threshold,
+                                       pingOnly=pingOnly,
+                                       dstIp=dstIp )
             # Let some packets flow
             trafficDiscoverySleep = float( main.params['timers'].get( 'TrafficDiscovery', 5 ) )
             main.log.debug( "Sleeping %d seconds for traffic counters to update" % trafficDiscoverySleep )
@@ -680,7 +739,8 @@ class SRStagingTest:
                                       dstComponentList,
                                       shortDesc=shortDesc,
                                       longDesc=longDesc,
-                                      bidirectional=bidirectional )
+                                      bidirectional=bidirectional,
+                                      pingOnly=pingOnly )
             # Break down logs
             main.log.warn( main.logdir )
             # This is not currently working, disabling for now
@@ -691,7 +751,7 @@ class SRStagingTest:
 
     @staticmethod
     def linkUp( device, port, srcComponentList, dstComponentList, shortDesc, longDesc,
-                sleepTime=10, bidirectional=False ):
+                sleepTime=10, bidirectional=False, pingOnly=False, dstIp=None ):
         """"
         High level function that handles an event including monitoring
         Arguments:
@@ -704,6 +764,8 @@ class SRStagingTest:
         Option Arguments:
             sleepTime - How long to wait between starting the capture and stopping
             bidirectional - Boolean, Whether to start traffic flows in both directions. Defaults to False
+            pingOnly - Boolean, Use ping if True else use iperf, defaults to False
+            dstIp - String, If set, use this as the destination IP for traffic, defaults to None
         """
         import time
         if port is None:
@@ -717,7 +779,9 @@ class SRStagingTest:
                                        shortDesc=shortDesc,
                                        longDesc=longDesc,
                                        bidirectional=bidirectional,
-                                       threshold=100 )
+                                       threshold=100,
+                                       pingOnly=pingOnly,
+                                       dstIp=dstIp )
             main.step( "Port Up" )
             ctrl = main.Cluster.active( 0 ).CLI
             portUp = ctrl.portstate( dpid=device, port=port, state="enable" )
@@ -738,7 +802,8 @@ class SRStagingTest:
                                       dstComponentList,
                                       shortDesc=shortDesc,
                                       longDesc=longDesc,
-                                      bidirectional=bidirectional )
+                                      bidirectional=bidirectional,
+                                      pingOnly=pingOnly )
             # Break down logs
             # This is not currently working, disabling for now
             # main.funcs.analyzeLogs( shortDesc, 'portstate_up', main.eventStart, main.eventStop, main.logdir )
@@ -987,7 +1052,7 @@ class SRStagingTest:
             main.log.exception( "Error in onosDown" )
 
     @staticmethod
-    def analyzeIperfPcap( main, pcapFile, filterStr, timeout=240 ):
+    def analyzeIperfPcap( main, pcapFile, filterStr, timeout=240, pingOnly=False ):
         """
         Given a pcap file, will use tshark to create a csv file with iperf fields.
         Then reads the file and computes drops in packets and duration of disruption
@@ -997,7 +1062,12 @@ class SRStagingTest:
             import datetime
             baseName = pcapFile[ :pcapFile.rfind('.') ]
             csvFile = baseName + ".csv"  # TODO: Strip any file extensions from pcapFile first
-            tsharkCmd = 'tshark -r %s -Y %s -T fields -e frame.number -e frame.time_delta -e frame.time_epoch -e ip.src -e ip.dst -e iperf2.udp.sequence -d udp.port==5001,iperf2 -E separator=,' % ( pcapFile, filterStr )
+            tsharkCmd = 'tshark -r %s -Y %s -T fields -e frame.number -e frame.time_delta -e frame.time_epoch -e ip.src -e ip.dst ' % ( pcapFile, filterStr )
+            if pingOnly:
+                tsharkCmd += ' -e icmp.seq '
+            else:
+                tsharkCmd += ' -e iperf2.udp.sequence -d udp.port==5001,iperf2'
+            tsharkCmd += ' -E separator=,'
             bench = main.ONOSbench
             bench.handle.sendline( "%s > %s" % ( tsharkCmd, csvFile ) )
             bench.handle.expect( bench.Prompt(), timeout=timeout )

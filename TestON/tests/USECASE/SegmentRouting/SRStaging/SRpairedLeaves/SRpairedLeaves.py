@@ -565,3 +565,108 @@ class SRpairedLeaves:
         # Cleanup
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
         main.funcs.cleanup( main )
+
+    def CASE301( self, main ):
+        """
+        Connect to Pod
+        Setup static route to public internet via mgmt
+        Ping public ip
+        chech which link the ICMP traffic is going to
+        Kill that link
+        Verify flow continues using other link
+        Restore link
+        verify traffic still flows
+        Collect logs and analyze results
+        """
+        try:
+            from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import SRStagingTest
+            import json
+            import re
+        except ImportError:
+            main.log.error( "SRStagingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRStagingTest()
+
+        descPrefix = "CASE301-Upstream-Link"
+        pod = main.params['GRAPH'].get( 'nodeCluster', "hardware" )
+        main.funcs.setupTest( main,
+                              topology='0x2',
+                              onosNodes=3,
+                              description="%s tests on the %s pod" % ( descPrefix, pod ) )
+
+        # TODO Route ADD
+        dstIp = "8.8.8.8"
+        route = "%s/32" % dstIp
+        """
+        Try this on the host:
+        ip route add 8.8.8.8/32 via <fabric interface ip>
+        and this in ONOS:
+        route-add 8.8.8.8/32 via <mgmt server fabric ip
+        """
+
+        srcComponent = getattr( main, 'Compute1' )
+        nextHopComponent = getattr( main, 'ManagmentServer' )
+
+        # Add route in host to outside host via gateway ip
+        srcIface = srcComponent.interfaces[0].get( 'name' )
+        srcIp = srcComponent.getIPAddress( iface=srcIface )
+        hostsJson = json.loads( main.Cluster.active( 0 ).hosts() )
+        netcfgJson = json.loads( main.Cluster.active( 0 ).getNetCfg( subjectClass='ports') )
+        ips = []
+        fabricIntfIp = None
+        for obj in hostsJson:
+            if srcIp in obj['ipAddresses']:
+                for location in obj['locations']:
+                    main.log.debug( location )
+                    did = location['elementId'].encode( 'utf-8' )
+                    port = location['port'].encode( 'utf-8' )
+                    m = re.search( '\((\d+)\)', port )
+                    if m:
+                        port = m.group(1)
+                    portId = "%s/%s" % ( did, port )
+                    # Lookup ip assigned to this network port
+                    ips.extend( [ x.encode( 'utf-8' ) for x in netcfgJson[ portId ][ 'interfaces' ][0][ 'ips' ] ] )
+        ips = set( ips )
+        ipRE = r'(\d+\.\d+\.\d+\.\d+)/\d+|([\w,:]*)/\d+'
+        for ip in ips:
+            ipMatch = re.search( ipRE, ip )
+            if ipMatch:
+                fabricIntfIp = ipMatch.group(1)
+                main.log.debug( "Found %s as gateway ip for %s" % ( fabricIntfIp, srcComponent.shortName ) )
+                # FIXME: How to chose the correct one if there are multiple? look at subnets
+        srcComponent.addRoute( route, fabricIntfIp, srcIface, sudoRequired=True, purgeOnDisconnect=True )
+        main.log.debug( srcComponent.getRoutes() )
+
+        # Add route in ONOS
+        nextHopIface = nextHopComponent.interfaces[0].get( 'name' )
+        nextHopIp = nextHopComponent.getIPAddress( iface=nextHopIface )
+        main.Cluster.active( 0 ).routeAdd( route, nextHopIp )
+        main.log.debug( main.Cluster.active( 0 ).routes() )
+
+
+
+        ####
+        targets = main.funcs.getHostConnections( main, nextHopComponent )
+        shortDesc = descPrefix + "-Failure"
+        longDesc = "%s Failure: Bring down port with traffic to %s" % ( descPrefix, route )
+        #TODO: Option to just do ping
+        killDevice, killPort = main.funcs.linkDown( targets, srcComponent, nextHopComponent, shortDesc,
+                                                    longDesc, stat='packetsSent', bidirectional=False,
+                                                    pingOnly=True, dstIp=dstIp )
+        shortDesc = descPrefix + "-Recovery"
+        longDesc = "%s Recovery: Bring up %s/%s" % ( descPrefix, killDevice, killPort )
+        main.funcs.linkUp( killDevice, killPort, srcComponent, nextHopComponent, shortDesc, longDesc,
+                           bidirectional=False, pingOnly=True, dstIp=dstIp )
+
+        # Remove route in ONOS
+        main.Cluster.active( 0 ).routeRemove( route, nextHopIp )
+        main.log.debug( main.Cluster.active( 0 ).routes() )
+        # Remove route on host
+        srcComponent.deleteRoute( route, fabricIntfIp, srcIface, sudoRequired=True )
+        main.log.debug( srcComponent.getRoutes() )
+        # Cleanup
+        main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
+        main.funcs.cleanup( main )

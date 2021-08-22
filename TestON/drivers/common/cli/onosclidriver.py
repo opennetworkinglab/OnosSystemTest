@@ -6908,3 +6908,85 @@ class OnosCliDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def routeAdd( self, prefix, nextHop, jsonFormat=True ):
+        """
+        Add a route with the given prefix and nextHop
+        """
+        try:
+            cmdStr = "route-add %s %s %s" % ( "-j" if jsonFormat else "", prefix, nextHop )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def routeRemove( self, prefix, nextHop, source=None, jsonFormat=True ):
+        """
+        Remove a route with the given prefix and nextHop
+        """
+        try:
+            if source:
+                raise NotImplemented
+            cmdStr = "route-remove %s %s %s" % ( "-j" if jsonFormat else "", prefix, nextHop )
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def routes( self, jsonFormat=True, args="" ):
+        """
+        Get routes from ONOS
+        """
+        try:
+            cmdStr = "routes"
+            if jsonFormat:
+                cmdStr = cmdStr + " -j"
+            handle = self.sendline( cmdStr )
+            assert handle is not None, "Error in sendline"
+            assert "Command not found:" not in handle, handle
+            assert "Unsupported command:" not in handle, handle
+            assert "Error executing command" not in handle, handle
+            return handle
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

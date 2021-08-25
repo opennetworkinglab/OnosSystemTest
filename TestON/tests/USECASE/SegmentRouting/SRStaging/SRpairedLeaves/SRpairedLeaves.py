@@ -637,7 +637,7 @@ class SRpairedLeaves:
                 fabricIntfIp = ipMatch.group(1)
                 main.log.debug( "Found %s as gateway ip for %s" % ( fabricIntfIp, srcComponent.shortName ) )
                 # FIXME: How to chose the correct one if there are multiple? look at subnets
-        srcComponent.addRoute( route, fabricIntfIp, srcIface, sudoRequired=True, purgeOnDisconnect=True )
+        srcComponent.addRouteToHost( route, fabricIntfIp, srcIface, sudoRequired=True, purgeOnDisconnect=True )
         main.log.debug( srcComponent.getRoutes() )
 
         # Add route in ONOS

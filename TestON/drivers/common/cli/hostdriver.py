@@ -248,7 +248,7 @@ class HostDriver( ScapyCliDriver ):
             main.log.error( self.name + ":     " + self.handle.before )
             return main.FALSE
 
-    def addRoute( self, route, gw, interface=None, sudoRequired=True, purgeOnDisconnect=True ):
+    def addRouteToHost( self, route, gw, interface=None, sudoRequired=True, purgeOnDisconnect=True ):
         """
         Adds a static route to the host
         Arguments:

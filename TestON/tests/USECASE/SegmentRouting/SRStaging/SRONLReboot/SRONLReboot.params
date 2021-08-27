@@ -42,7 +42,7 @@
         <iterations>1</iterations>
         <topo>
             <leaf1>
-                <ports>176 180 184 188</ports>
+                <ports>132 148 140 156</ports>
                 <note>eNB</note>
             </leaf1>
             <leaf2>
@@ -50,7 +50,7 @@
                 <note>upstream</note>
             </leaf2>
             <spine1>
-                <ports>128 136 144 152</ports>
+                <ports>132 140 148 156</ports>
                 <note>spine</note>
             </spine1>
             <spine2>

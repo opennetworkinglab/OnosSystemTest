@@ -670,3 +670,61 @@ class SRpairedLeaves:
         # Cleanup
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )
         main.funcs.cleanup( main )
+
+    def CASE302 ( self, main ):
+        """
+        Send ping packets from one host to another host and check flows from DeepInsight.
+        """
+
+        try:
+            from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import SRStagingTest
+            from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
+            from core import utilities
+            import time
+            import socket
+        except ImportError as e:
+            main.log.exception( "SRStagingTest not found. Exiting the test" )
+            main.cleanAndExit()
+        try:
+            main.funcs
+        except ( NameError, AttributeError ):
+            main.funcs = SRStagingTest()
+
+        pod = main.params['GRAPH'].get( 'nodeCluster', "hardware" )
+        main.cfgName = 'CASE302'
+        main.funcs.setupTest( main,
+                              topology='0x2',
+                              onosNodes=3,
+                              description="INT flow report tests on %s POD" % ( pod ) )
+        startTimeMs = ( time.time() - 5 ) * 1000
+        run.verifyPing( main, ['h1'], ['h2'] )
+        endTimeMs = ( time.time() + 5 ) * 1000
+        main.step( "Checking flow report from DeepInsight" )
+
+        def getFiveTupleCount(*args, **kwargs):
+            flows = main.DeepInsight.getFlows(
+                startTimeMs=startTimeMs,
+                endTimeMs=endTimeMs,
+                srcIp=main.h1.interfaces[0]['ips'][0],
+                dstIp=main.h2.interfaces[0]['ips'][0],
+                ipProto=socket.IPPROTO_ICMP
+            )
+            if "FiveTupleCount" in flows:
+                return flows["FiveTupleCount"]
+            else:
+                return 0
+
+        # Need to wait few seconds until DeepInsight database updated.
+        fiveTupleCount = utilities.retry(
+            f=getFiveTupleCount,
+            retValue=0,
+            attempts=60,
+        )
+
+        utilities.assert_equals(
+            expect=1, actual=fiveTupleCount,
+            onpass="Got 1 flow report from DeepInsight as expected.",
+            onfail="Got %d flow reports from DeepInsight (expect 1)" % ( fiveTupleCount )
+        )
+
+        main.funcs.cleanup( main )

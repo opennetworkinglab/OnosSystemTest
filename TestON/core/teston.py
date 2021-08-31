@@ -235,6 +235,7 @@ class TestON:
         self.code = test.getStepCode()
         repeat = int( self.params.get( 'repeat', 1 ) )
         self.TOTAL_TC_PLANNED = len( self.testcases_list ) * repeat
+        self.log.TAP( "1..%s" % self.TOTAL_TC_PLANNED )
 
         result = self.TRUE
         while repeat:
@@ -303,33 +304,75 @@ class TestON:
             self.testCaseResult[ str( self.CurrentTestCaseNumber ) ] = self.CASERESULT
             self.organizeResult( self.CurrentTestCaseNumber, self.CASERESULT )
             self.logger.updateCaseResults( self )
-            self.log.wiki( "<p>" + self.caseExplanation + "</p>" )
             self.log.summary( self.caseExplanation )
-            self.log.wiki( "<ul>" )
-            subcaseMessage = False
-            for line in self.stepCache.splitlines():
-                if re.search( "[0-9]\.[0-9]", line ):  # Step
-                    if subcaseMessage:  # End of Failure Message Printout
-                        self.log.wiki( "</ul>\n" )
-                        subcaseMessage = False
-                    if re.search( " - PASS$", line ):
-                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
-                    elif re.search( " - FAIL$", line ):
-                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
-                    elif re.search( " - No Result$", line ):
-                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
-                else:  # Substep
-                    if not subcaseMessage:  # Open Failure Message Printout
-                        self.log.wiki( "<ul><li>" + line + "</li>\n" )
-                        subcaseMessage = True
-                    else:  # Add to Failure Message Printout
-                        self.log.wiki( "<li>" + line + "</li>\n" )
-            if subcaseMessage:  # End of Failure Message Printout for last item
-                self.log.wiki( "</ul>\n" )
-            self.log.wiki( "</ul>" )
             self.log.summary( self.stepCache )
+            self.caseResultsWiki()
+            self.caseResultsTAP()
             self.stepCache = ""
         return result
+
+    def caseResultsWiki( self ):
+        """
+        Add case results to the wiki results file
+        """
+        self.log.wiki( "<p>" + self.caseExplanation + "</p>" )
+        self.log.wiki( "<ul>" )
+        subcaseMessage = False
+        for line in self.stepCache.splitlines():
+            if re.search( "[0-9]\.[0-9]", line ):  # Step
+                if subcaseMessage:  # End of Failure Message Printout
+                    self.log.wiki( "</ul>\n" )
+                    subcaseMessage = False
+                if re.search( " - PASS$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
+                elif re.search( " - FAIL$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
+                elif re.search( " - No Result$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+            else:  # Substep
+                if not subcaseMessage:  # Open Failure Message Printout
+                    self.log.wiki( "<ul><li>" + line + "</li>\n" )
+                    subcaseMessage = True
+                else:  # Add to Failure Message Printout
+                    self.log.wiki( "<li>" + line + "</li>\n" )
+        if subcaseMessage:  # End of Failure Message Printout for last item
+            self.log.wiki( "</ul>\n" )
+        self.log.wiki( "</ul>" )
+
+    def caseResultsTAP( self ):
+        """
+        Add case results to the TAP results file
+        """
+        #self.log.TAP( "<p>" + self.caseExplanation + "</p>" )
+        main.log.debug( self.stepCache )
+        subcaseMessage = False
+        steps = 0
+        stepLines = []
+        for line in self.stepCache.splitlines():
+            main.log.debug( line )
+            if re.search( "[0-9]\.[0-9]", line ):  # Step
+                if subcaseMessage:  # End of Failure Message Printout
+                    subcaseMessage = False
+                if re.search( " - PASS$", line ):
+                    steps += 1
+                    stepLines.append( "    ok -- STEP %s" % line )
+                elif re.search( " - FAIL$", line ):
+                    steps += 1
+                    stepLines.append( "    not ok -- STEP %s" % line )
+                elif re.search( " - No Result$", line ):
+                    steps += 1
+                    stepLines.append( "    ok -- STEP %s # TODO: No assertion in test step" % line )
+            else:  # Substep
+                if not subcaseMessage:  # Open Failure Message Printout
+                    stepLines.append( "    # %s" % line )
+                    subcaseMessage = True
+                else:  # Add to Failure Message Printout
+                    self.log.TAP( "    # %s" % line )
+        if steps > 0:
+            self.log.TAP( "    1..%s" % steps )
+            for line in stepLines:
+                self.log.TAP( line )
+
 
     def organizeResult( self, caseNum, result ):
         """
@@ -382,18 +425,8 @@ class TestON:
                 self.log.exception( "" )
                 self.stepCount = self.stepCount + 1
                 self.logger.updateCaseResults( self )
-                # WIKI results
-                self.log.wiki( "<ul>" )
-                for line in self.stepCache.splitlines():
-                    if re.search( " - PASS$", line ):
-                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
-                    elif re.search( " - FAIL$", line ):
-                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
-                    elif re.search( " - No Result$", line ):
-                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
-                    else:  # Should only be on fail message
-                        self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
-                self.log.wiki( "</ul>" )
+                self.stepResultsWiki()
+                self.stepResultsTAP()
                 # summary results
                 self.log.summary( self.stepCache )
                 self.stepCache = ""
@@ -407,6 +440,40 @@ class TestON:
             self.logger.updateCaseResults( self )
             result = self.cleanup()
             return self.FALSE
+
+    def stepResultsWiki( self ):
+        """
+        Add step results to the wiki file
+        """
+        # WIKI results
+        self.log.wiki( "<ul>" )
+        for line in self.stepCache.splitlines():
+            if re.search( " - PASS$", line ):
+                self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
+            elif re.search( " - FAIL$", line ):
+                self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
+            elif re.search( " - No Result$", line ):
+                self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+            else:  # Should only be on fail message
+                self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
+        self.log.wiki( "</ul>" )
+
+    def stepResultsTAP( self ):
+        """
+        Add step results to the TAP file
+        """
+        # TAP results
+        # TODO Do we need indetation for the steps?
+        main.log.debug( "StepResultsTAP" )
+        for line in self.stepCache.splitlines():
+            if re.search( " - PASS$", line ):
+                self.log.TAP( "    ok -- STEP %s" % line )
+            elif re.search( " - FAIL$", line ):
+                self.log.TAP( "    not ok -- STEP %s" % line )
+            elif re.search( " - No Result$", line ):
+                self.log.TAP( "    ok -- STEP %s # TODO: No assertion in test step" % line )
+            else:  # Should only be on fail message
+                self.log.TAP( "    # %s" % line )
 
     def parseStepResults( self, testCaseNumber ):
         """

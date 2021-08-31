@@ -125,7 +125,7 @@ class HostDriver( ScapyCliDriver ):
                     for r in self.tempRoutes:
                         self.deleteRoute( *r )
                 # Disconnect from the host
-                if not self.options[ 'inband' ] == 'True':
+                if not self.options.get( 'inband', False ) == 'True':
                     self.handle.sendline( "" )
                     self.handle.expect( self.prompt )
                     self.handle.sendline( "exit" )

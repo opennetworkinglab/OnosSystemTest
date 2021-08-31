@@ -97,6 +97,12 @@ class Logger:
         main.wikiFile.write( main.TEST + " at " + currentTime + "<p></p>\n" )
         main.wikiFile.close()
 
+        # TAP file header
+        main.TAPFile = open( main.TAPFileName, "w+" )
+        main.TAPFile.write( "TAP version 13\n" )
+        main.TAPFile.close()
+
+
     def initlog( self, main ):
         '''
             Initialise all the log handles.
@@ -115,6 +121,7 @@ class Logger:
         main.LogFileName = main.logdir + "/" + main.TEST + "_" + str( currentTime ) + ".log"
         main.ReportFileName = main.logdir + "/" + main.TEST + "_" + str( currentTime ) + ".rpt"
         main.WikiFileName = main.logdir + "/" + main.TEST + "Wiki.txt"
+        main.TAPFileName = main.logdir + "/" + main.TEST + ".tap"
         main.SummaryFileName = main.logdir + "/" + main.TEST + "Summary.txt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
         main.resultFile = main.logdir + "/" + main.TEST + "Result.txt"
@@ -165,6 +172,18 @@ class Logger:
             main.wikiFile.close()
 
         main.log.wiki = wiki
+
+        def TAP( msg ):
+            '''
+                Will append the message to the txt file for TAP.
+            '''
+            main.log._log( 6, msg, "OpenFlowAutoMattion", "OFAutoMation" )
+            main.TAPFile = open( main.TAPFileName, "a+" )
+            main.TAPFile.write( msg + "\n" )
+            main.TAPFile.close()
+
+        main.log.TAP = TAP
+
 
         def exact( exmsg ):
             '''
@@ -338,19 +357,23 @@ class Logger:
             main.TOTAL_TC_NORESULT = main.TOTAL_TC_NORESULT + 1
             main.log.exact( "\n " + "*" * 29 + "\n" + "\n Result: No Assertion Called \n" + "*" * 29 + "\n" )
             line = "Case " + case + ": " + main.CurrentTestCase + " - No Result"
+            main.log.TAP( "ok - %s # TODO No assert called" % line )
         elif currentResult == 1:
             main.TOTAL_TC_RUN = main.TOTAL_TC_RUN + 1
             main.TOTAL_TC_PASS = main.TOTAL_TC_PASS + 1
             main.log.exact( "\n" + "*" * 29 + "\n Result: Pass \n" + "*" * 29 + "\n" )
             line = "Case " + case + ": " + main.CurrentTestCase + " - PASS"
+            main.log.TAP( "ok - %s" % line )
         elif currentResult == 0:
             main.TOTAL_TC_RUN = main.TOTAL_TC_RUN + 1
             main.TOTAL_TC_FAIL = main.TOTAL_TC_FAIL + 1
             main.log.exact( "\n" + "*" * 29 + "\n Result: Failed \n" + "*" * 29 + "\n" )
             line = "Case " + case + ": " + main.CurrentTestCase + " - FAIL"
+            main.log.TAP( "not ok - %s" % line )
         else:
             main.log.error( " Unknown result of case " + case +
                             ". Result was: " + currentResult )
             line = "Case " + case + ": " + main.CurrentTestCase + " - ERROR"
+            main.log.TAP( "not ok - %s" % line )
         main.log.wiki( "<h3>" + line + "</h3>" )
         main.log.summary( line )

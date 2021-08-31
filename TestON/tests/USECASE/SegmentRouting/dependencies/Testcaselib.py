@@ -831,6 +831,56 @@ class Testcaselib:
                                         cliPort=main.Cluster.active(0).CLI.karafPort )
 
     @staticmethod
+    def populateHostsVlan( main, hostList ):
+        """
+        Set the vlan for each host.
+        Checks what interface the host is configured on and reads the netcfg for that interface
+        """
+        import json
+        import re
+        hostsJson = json.loads( main.Cluster.active( 0 ).hosts() )
+        netcfgJson = json.loads( main.Cluster.active( 0 ).getNetCfg( subjectClass='ports') )
+        for hostname in hostList:
+            try:
+                hostComponent = main.Network.hosts[ str( hostname ) ]
+                srcIface = hostComponent.interfaces[0].get( 'name' )
+                #Get host location, check netcfg for that port's ip
+                hostIp = hostComponent.getIPAddress( iface=srcIface )
+                main.log.warn( "Looking for allowed vlans for %s" % hostIp )
+                vlans = []
+                for obj in hostsJson:
+                    if hostIp in obj['ipAddresses']:
+                        for location in obj['locations']:
+                            did = location['elementId'].encode( 'utf-8' )
+                            port = location['port'].encode( 'utf-8' )
+                            m = re.search( '\((\d+)\)', port )
+                            if m:
+                                port = m.group(1)
+                            portId = "%s/%s" % ( did, port )
+                            # Lookup ip assigned to this network port
+                            # Valid host vlans:
+                            # None if vlan-untagged
+                            # vlanid if vlan-tagged: vlanid
+                            # None if vlan-native + any vlan ids from vlan-tagged
+                            intf = netcfgJson[ portId ][ 'interfaces' ][0]
+                            for field in intf.keys():
+                                if "vlan-untagged" in field:
+                                    vlans.append( None )
+                                if "vlan-tagged" in field:
+                                    vlans.append( int( intf[ field ].encode( 'utf-8' ) ) )
+                                if "vlan-native" in field:
+                                    vlans.append( None )
+                            if len( vlans ) == 0:
+                                main.log.debug( "Could not find vlan setting for %s" % hostname )
+                vlans = set( vlans )
+                hostComponent.interfaces[0][ 'vlan' ] = vlans
+                main.log.debug( repr( hostComponent.interfaces[0] ) )
+                main.log.debug( repr( hostComponent.interfaces[0].get( 'vlan' ) ) )
+            except ValueError:
+                main.log.exception( "Error getting vlans for %s" % hostname )
+
+
+    @staticmethod
     def killLink( main, end1, end2, switches, links, sleep=None ):
         """
         end1,end2: identify the switches, ex.: 'leaf1', 'spine1'

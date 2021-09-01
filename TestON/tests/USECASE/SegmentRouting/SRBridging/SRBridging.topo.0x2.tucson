@@ -72,6 +72,7 @@
                 <port1></port1>
                 <link1></link1>
                 <interfaceName>pairbond</interfaceName>
+                <scapy_path>/usr/bin/scapy</scapy_path>
                 <routes>
                     <route1>
                         <network>10.32.11.126</network>
@@ -100,6 +101,7 @@
                 <port1></port1>
                 <link1></link1>
                 <interfaceName>pairbond</interfaceName>
+                <scapy_path>/usr/bin/scapy</scapy_path>
                 <routes>
                     <route1>
                         <network>10.32.11.126</network>
@@ -128,6 +130,7 @@
                 <port1></port1>
                 <link1></link1>
                 <interfaceName>eno2</interfaceName>
+                <scapy_path>/usr/bin/scapy</scapy_path>
                 <routes>
                     <route1>
                         <network>10.32.11.254</network>
@@ -155,6 +158,7 @@
                 <port1></port1>
                 <link1></link1>
                 <interfaceName>pairbond</interfaceName>
+                <scapy_path>/usr/bin/scapy</scapy_path>
                 <routes>
                     <route1>
                         <network>10.32.11.126</network>

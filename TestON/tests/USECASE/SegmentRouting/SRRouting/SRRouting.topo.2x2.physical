@@ -101,7 +101,7 @@
                 <shortName>h1</shortName>
                 <port1>0</port1>
                 <link1>Leaf1</link1>
-                <interfaceName>ens6f0</interfaceName>
+                <ifaceName>ens6f0</ifaceName>
                 <routes>
                     <route1>
                         <network>192.168.101.1</network>
@@ -126,7 +126,7 @@
                 <shortName>h2</shortName>
                 <port1>0</port1>
                 <link1>Leaf1</link1>
-                <interfaceName>ens6f1</interfaceName>
+                <ifaceName>ens6f1</ifaceName>
                 <routes>
                     <route1>
                         <network>192.168.101.1</network>
@@ -151,7 +151,7 @@
                 <shortName>ng40</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>ens8</interfaceName>
+                <ifaceName>ens8</ifaceName>
                 <routes>
                     <route1>
                         <network>192.168.101.1</network>

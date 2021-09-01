@@ -57,3 +57,41 @@ Documents
  Note
 -------
 Corresponding logs for the executed test or example will be available in ~/logs/
+
+
+TestON Docker container
+----
+
+This container image is based on Ubuntu 18.04 and contains the following tools/packages:
+
+* OpenSSH server and client
+* Kubectl (v1.22.1)
+* Python2 and pip
+* Curl
+* Supervisor (To start sshd)
+
+By default, an user `jenkins` will be creted with password `jenkins`.
+
+To build the container image:
+
+```bash
+./docker/build.sh [--wk] [--di]
+```
+
+To include user's SSH keys, use `--wk` option.
+To include DeepInsight API utility, add `--di` option.
+
+For some tests, you need to include config files such as Kubernetes POD config.
+You can copy them to the `docker/fs/` directory before building it.
+
+A new container image called `teston` will be created after build.
+
+Use the following command to start the container:
+
+```bash
+./docker/start.sh
+```
+
+This command will start a container with name `teston` and listen on TCP port `2222` that allows users to connect it via ssh.
+
+The command will also start a bash shell with user `jenkins`. Exit this shell to stop the container.

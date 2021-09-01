@@ -71,7 +71,7 @@
                 <shortName>h1</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>pairbond</interfaceName>
+                <ifaceName>pairbond</ifaceName>
                 <scapy_path>/usr/bin/scapy</scapy_path>
                 <routes>
                     <route1>
@@ -100,7 +100,7 @@
                 <shortName>h2</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>pairbond</interfaceName>
+                <ifaceName>pairbond</ifaceName>
                 <scapy_path>/usr/bin/scapy</scapy_path>
                 <routes>
                     <route1>
@@ -129,7 +129,7 @@
                 <shortName>h3</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>eno2</interfaceName>
+                <ifaceName>eno2</ifaceName>
                 <scapy_path>/usr/bin/scapy</scapy_path>
                 <routes>
                     <route1>
@@ -157,7 +157,7 @@
                 <shortName>mgmt</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>pairbond</interfaceName>
+                <ifaceName>pairbond</ifaceName>
                 <scapy_path>/usr/bin/scapy</scapy_path>
                 <routes>
                     <route1>

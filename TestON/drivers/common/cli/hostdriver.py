@@ -58,7 +58,7 @@ class HostDriver( ScapyCliDriver ):
                                       'isUp': True,
                                       'mac': self.options[ 'mac' ],
                                       'dhcp': self.options.get( 'dhcp', "False" ),
-                                      'name': self.options.get( 'interfaceName', None ) } )
+                                      'name': self.options.get( 'ifaceName', None ) } )
 
             try:
                 if os.getenv( str( self.ip_address ) ) is not None:

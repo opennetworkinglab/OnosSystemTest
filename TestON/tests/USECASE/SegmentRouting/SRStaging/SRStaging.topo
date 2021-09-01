@@ -113,7 +113,7 @@
                 <shortName>h1</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>fabr52</interfaceName>
+                <ifaceName>fabr52</ifaceName>
                 <routes>
                     <route1>
                         <network></network>
@@ -141,7 +141,7 @@
                 <shortName>h2</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>fabr52</interfaceName>
+                <ifaceName>fabr52</ifaceName>
                 <routes>
                     <route1>
                         <network></network>
@@ -169,7 +169,7 @@
                 <shortName>h3</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>fabr52</interfaceName>
+                <ifaceName>fabr52</ifaceName>
                 <routes>
                     <route1>
                         <network></network>
@@ -195,7 +195,7 @@
                 <shortName>ng40</shortName>
                 <port1></port1>
                 <link1></link1>
-                <interfaceName>ens8</interfaceName>
+                <ifaceName>ens8</ifaceName>
                 <routes>
                     <route1>
                         <network></network>

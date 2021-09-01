@@ -2,8 +2,8 @@
     <COMPONENT>
         <ONOScell>
             <host>localhost</host>  # ONOS "bench" machine
-            <user>sdn</user>
-            <password>rocks</password>
+            <user>jenkins</user>
+            <password></password>
             <type>OnosClusterDriver</type>
             <connect_order>1</connect_order>
             <home></home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
@@ -174,8 +174,8 @@
 
         <NetworkBench>
             <host>10.128.13.253</host>
-            <user>sdn</user>
-            <password>rocks</password>
+            <user>jenkins</user>
+            <password></password>
             <type>NetworkDriver</type>
             <connect_order>10</connect_order>
             <COMPONENTS>

@@ -48,6 +48,7 @@ class ScapyCliDriver( Emulator ):
         self.scapyPrompt = ">>>"
         self.sudoRequired = True
         self.ifaceName = None
+        self.scapyPath = "scapy"
 
     def connect( self, **connectargs ):
         """
@@ -65,6 +66,8 @@ class ScapyCliDriver( Emulator ):
                     self.sudoRequired = False if self.options[ key ] == "false" else True
                 elif key == "ifaceName":
                     self.ifaceName = self.options[ key ]
+                elif key == "scapy_path":
+                    self.scapyPath = self.options[ key ]
             if self.ifaceName is None:
                 self.ifaceName = self.name + "-eth0"
 
@@ -162,9 +165,9 @@ class ScapyCliDriver( Emulator ):
         try:
             main.log.debug( self.name + ": Starting scapy" )
             if self.sudoRequired:
-                self.handle.sendline( "sudo scapy" )
+                self.handle.sendline( "sudo %s" % self.scapyPath )
             else:
-                self.handle.sendline( "scapy" )
+                self.handle.sendline( self.scapyPath )
             i = self.handle.expect( [ "not found", "password for", self.scapyPrompt ] )
             if i == 1:
                 main.log.debug( "Sudo asking for password" )

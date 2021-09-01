@@ -147,13 +147,14 @@ class ScapyCliDriver( Emulator ):
             response = main.FALSE
         return response
 
-    def startScapy( self, mplsPath="", ifaceName=None ):
+    def startScapy( self, mplsPath="", ifaceName=None, enableGtp=False ):
         """
         Start the Scapy cli
         optional:
             mplsPath - The path where the MPLS class is located
             NOTE: This can be a relative path from the user's home dir
             ifaceName - the name of the default interface to use.
+            enableGtp - True if you want to generate GTP traffic
         """
         mplsLines = [ 'import imp',
                       'imp.load_source( "mplsClass", "{}mplsClass.py" )'.format( mplsPath ),
@@ -161,6 +162,9 @@ class ScapyCliDriver( Emulator ):
                       'bind_layers(Ether, MPLS, type = 0x8847)',
                       'bind_layers(MPLS, MPLS, bottom_of_label_stack = 0)',
                       'bind_layers(MPLS, IP)' ]
+
+        # TODO: add GTPPDUSessionContainer when scapy is updated
+        gtpLines = [ 'from scapy.contrib.gtp import GTP_U_Header']
 
         try:
             main.log.debug( self.name + ": Starting scapy" )
@@ -201,6 +205,13 @@ class ScapyCliDriver( Emulator ):
                     self.handle.expect( self.scapyPrompt )
                     response = self.cleanOutput( self.handle.before )
 
+            if enableGtp:
+                for line in gtpLines:
+                    main.log.debug( self.name + ": sending line: " + line )
+                    self.handle.sendline( line )
+                    self.handle.expect( self.scapyPrompt )
+                    response = self.cleanOutput( self.handle.before )
+
             # Set interface
             if ifaceName:
                 self.handle.sendline( 'conf.iface = "' + ifaceName + '"' )
@@ -224,6 +235,62 @@ class ScapyCliDriver( Emulator ):
             main.log.debug( self.name + ": Stopping scapy" )
             self.handle.sendline( "exit()" )
             self.handle.expect( self.hostPrompt )
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+
+    def buildGTP( self, ipVersion=4, **kwargs ):
+        """
+        Build a GTP frame.
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+        Default frame:
+        ###[ GTP_U_Header ]###
+          gtp_type=g_pdu
+
+        Returns main.TRUE or main.FALSE on error
+        """
+
+        try:
+            main.log.debug( self.name + ": Building GTP Frame" )
+            # Set the UDP frame
+            cmd = 'gtp = GTP_U_Header( '
+            options = []
+            for key, value in kwargs.iteritems():
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + response )
+                return main.FALSE
+            if str( ipVersion ) is '4':
+                self.handle.sendline( "packet = ether/ip/udp/gtp" )
+            elif str( ipVersion ) is '6':
+                self.handle.sendline( "packet = ether/ipv6/udp/gtp" )
+            else:
+                main.log.error( "Unrecognized option for ipVersion, given " +
+                                repr( ipVersion ) )
+                return main.FALSE
+            self.handle.expect( self.scapyPrompt )
+            response = self.cleanOutput( self.handle.before )
+            if "Traceback" in response:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + response )
+                return main.FALSE
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
@@ -286,9 +353,12 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def buildIP( self, vlan=False, **kwargs ):
+    def buildIP( self, vlan=False, overGtp=False, **kwargs ):
         """
         Build an IP frame
+
+        If overGtp is True, it creates an inner IPv4 frame. The outer IP header
+        must be IPv4.
 
         Will create a frame class with the given options. If a field is
         left blank it will default to the below value unless it is
@@ -314,7 +384,10 @@ class ScapyCliDriver( Emulator ):
         try:
             main.log.debug( self.name + ": Building IP Frame" )
             # Set the IP frame
-            cmd = 'ip = IP( '
+            if overGtp:
+                cmd = 'inner_ip = IP( '
+            else:
+                cmd = 'ip = IP( '
             options = []
             for key, value in kwargs.iteritems():
                 if isinstance( value, str ):
@@ -330,9 +403,15 @@ class ScapyCliDriver( Emulator ):
                 main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             if vlan:
-                self.handle.sendline( "packet = ether/vlan/ip" )
+                if overGtp:
+                    self.handle.sendline( "packet = ether/vlan/ip/udp/gtp/inner_ip" )
+                else:
+                    self.handle.sendline( "packet = ether/vlan/ip" )
             else:
-                self.handle.sendline( "packet = ether/ip" )
+                if overGtp:
+                    self.handle.sendline( "packet = ether/ip/udp/gtp/inner_ip" )
+                else:
+                    self.handle.sendline( "packet = ether/ip" )
             self.handle.expect( self.scapyPrompt )
             response = self.cleanOutput( self.handle.before )
             if "Traceback" in response:
@@ -390,9 +469,12 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def buildIPv6( self, vlan=False, **kwargs ):
+    def buildIPv6( self, vlan=False, overGtp=False, **kwargs ):
         """
         Build an IPv6 frame
+
+        If overGtp is True, it creates an inner IPv6 frame. The outer ip header
+        must be IPv6.
 
         Will create a frame class with the given options. If a field is
         left blank it will default to the below value unless it is
@@ -413,7 +495,10 @@ class ScapyCliDriver( Emulator ):
         try:
             main.log.debug( self.name + ": Building IPv6 Frame" )
             # Set the IPv6 frame
-            cmd = 'ipv6 = IPv6( '
+            if overGtp:
+                cmd = 'inner_ipv6 = IPv6( '
+            else:
+                cmd = 'ipv6 = IPv6( '
             options = []
             for key, value in kwargs.iteritems():
                 if isinstance( value, str ):
@@ -429,9 +514,15 @@ class ScapyCliDriver( Emulator ):
                 main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             if vlan:
-                self.handle.sendline( "packet = ether/vlan/ipv6" )
+                if overGtp:
+                    self.handle.sendline( "packet = ether/vlan/ipv6/udp/gtp/inner_ipv6" )
+                else:
+                    self.handle.sendline( "packet = ether/vlan/ipv6" )
             else:
-                self.handle.sendline( "packet = ether/ipv6" )
+                if overGtp:
+                    self.handle.sendline( "packet = ether/ipv6/udp/gtp/inner_ipv6" )
+                else:
+                    self.handle.sendline( "packet = ether/ipv6" )
             self.handle.expect( self.scapyPrompt )
             response = self.cleanOutput( self.handle.before )
             if "Traceback" in response:
@@ -449,9 +540,12 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def buildTCP( self, ipVersion=4, **kwargs ):
+    def buildTCP( self, ipVersion=4, overGtp=False, **kwargs ):
         """
         Build an TCP frame
+
+        If overGtp is True, it creates an inner TCP frame, in this case ipVersion
+        signals the IP version of both outer and inner headers.
 
         Will create a frame class with the given options. If a field is
         left blank it will default to the below value unless it is
@@ -483,7 +577,10 @@ class ScapyCliDriver( Emulator ):
         try:
             main.log.debug( self.name + ": Building TCP" )
             # Set the TCP frame
-            cmd = 'tcp = TCP( '
+            if overGtp:
+                cmd = 'inner_tcp = TCP( '
+            else:
+                cmd = 'tcp = TCP( '
             options = []
             for key, value in kwargs.iteritems():
                 options.append( str( key ) + "=" + str( value ) )
@@ -497,9 +594,15 @@ class ScapyCliDriver( Emulator ):
                 main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             if str( ipVersion ) is '4':
-                self.handle.sendline( "packet = ether/ip/tcp" )
+                if overGtp:
+                    self.handle.sendline( "packet = ether/ip/udp/gtp/inner_ip/inner_tcp" )
+                else:
+                    self.handle.sendline( "packet = ether/ip/tcp" )
             elif str( ipVersion ) is '6':
-                self.handle.sendline( "packet = ether/ipv6/tcp" )
+                if overGtp:
+                    self.handle.sendline( "packet = ether/ipv6/udp/gtp/inner_ipv6/inner_tcp" )
+                else:
+                    self.handle.sendline( "packet = ether/ipv6/tcp" )
             else:
                 main.log.error( "Unrecognized option for ipVersion, given " +
                                 repr( ipVersion ) )
@@ -521,9 +624,12 @@ class ScapyCliDriver( Emulator ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def buildUDP( self, ipVersion=4, **kwargs ):
+    def buildUDP( self, ipVersion=4, overGtp=False, **kwargs ):
         """
         Build an UDP frame
+
+        If overGtp is True, it creates an inner UDP frame, in this case ipVersion
+        signals the IP version of both outer and inner headers.
 
         Will create a frame class with the given options. If a field is
         left blank it will default to the below value unless it is
@@ -548,7 +654,10 @@ class ScapyCliDriver( Emulator ):
         try:
             main.log.debug( self.name + ": Building UDP Frame" )
             # Set the UDP frame
-            cmd = 'udp = UDP( '
+            if overGtp:
+                cmd = 'inner_udp = UDP( '
+            else:
+                cmd = 'udp = UDP( '
             options = []
             for key, value in kwargs.iteritems():
                 options.append( str( key ) + "=" + str( value ) )
@@ -562,9 +671,15 @@ class ScapyCliDriver( Emulator ):
                 main.log.error( "Error in sending command: " + response )
                 return main.FALSE
             if str( ipVersion ) is '4':
-                self.handle.sendline( "packet = ether/ip/udp" )
+                if overGtp:
+                    self.handle.sendline( "packet = ether/ip/udp/gtp/inner_ip/inner_udp" )
+                else:
+                    self.handle.sendline( "packet = ether/ip/udp" )
             elif str( ipVersion ) is '6':
-                self.handle.sendline( "packet = ether/ipv6/udp" )
+                if overGtp:
+                    self.handle.sendline( "packet = ether/ipv6/udp/gtp/inner_ipv6/inner_udp" )
+                else:
+                    self.handle.sendline( "packet = ether/ipv6/udp" )
             else:
                 main.log.error( "Unrecognized option for ipVersion, given " +
                                 repr( ipVersion ) )

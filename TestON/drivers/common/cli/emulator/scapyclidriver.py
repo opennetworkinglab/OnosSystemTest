@@ -885,7 +885,7 @@ class ScapyCliDriver( Emulator ):
             self.handle.expect( self.scapyPrompt )
             response = self.handle.before + self.handle.after
             self.cleanOutput( response )
-            cmd = 'pkts = sniff(count = %s, filter = "%s", prn=lambda p: p.summary() )' % ( sniffCount, pktFilter )
+            cmd = 'pkts = sniff(count = %s, iface="%s", filter = "%s", prn=lambda p: p.summary() )' % ( sniffCount, ifaceName, pktFilter )
             main.log.info( self.name + ": Starting filter on " + self.name + ' > ' + cmd )
             self.handle.sendline( cmd )
             response = self.clearBuffer()

@@ -25,10 +25,11 @@
 
 # TODO: Add help to this file, and some more options?
 #       Maybe kill/uninstall ONOS?
-sudo kill -9 `ps -ef | grep "./cli.py" | grep -v grep | awk '{print $2}'`
-sudo kill -9 `ps -ef | grep "bin/teston" | grep -v grep | awk '{print $2}'`
-sudo kill -9 `ps -ef | grep "ssh -X" | grep -v grep | awk '{print $2}'`
-sudo kill -9 `ps ax | grep '[p]ython -m SimpleHTTPServer 8000' | awk '{print $1}'`
+sudo kill -9 `ps -ef | grep "./cli.py" | grep -v grep | awk '{print $2}'` &> /dev/null
+sudo kill -9 `ps -ef | grep "bin/teston" | grep -v grep | awk '{print $2}'` &> /dev/null
+sudo kill -9 `ps -ef | grep "/usr/bin/ssh" | grep -v grep | awk '{print $2}'` &> /dev/null
+sudo kill -9 `ps ax | grep '[p]ython -m SimpleHTTPServer 8000' | awk '{print $1}'` &> /dev/null
+sudo kill -9 `ps ax | grep 'kubectl' | awk '{print $2}'` &> /dev/null
 
 export user=${ONOS_USER:-$USER}
 if [[ -z "${OCN}" ]]; then

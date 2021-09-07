@@ -1,3 +1,4 @@
 fs/home/jenkins/*
+!fs/home/jenkins/.ipython
 fs/usr/local
 fs/tmp

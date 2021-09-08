@@ -1,0 +1,5 @@
+{
+  "flows": ["BE_FROM_PDN", "RT_FROM_PDN"],
+  "duration": 10
+}
+

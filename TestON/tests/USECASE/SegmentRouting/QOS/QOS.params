@@ -1,0 +1,120 @@
+<PARAMS>
+    <testcases>1</testcases>
+
+    <GRAPH>
+        <nodeCluster>pairedleaves</nodeCluster>
+        <builds>20</builds>
+        <jobName>QOS</jobName>
+        <branch>master</branch>
+    </GRAPH>
+
+    <persistent_setup>True</persistent_setup>
+
+    <kubernetes>
+        <appName>onos-classic</appName>
+        <namespace>tost</namespace>
+    </kubernetes>
+
+    <UP4>
+        <s1u_address>10.32.11.126</s1u_address>
+        <enb_address>10.32.11.124</enb_address>
+        <ues>
+            <ue1>
+                <pfcp_session_id>100</pfcp_session_id>
+                <ue_address>10.240.0.1</ue_address>
+                <teid>100</teid>
+                <up_id>10</up_id>
+                <down_id>11</down_id>
+                <!-- <qfi>0</qfi>Best Effort -->
+                <five_g>False</five_g>
+            </ue1>
+            <ue2>
+                <pfcp_session_id>100</pfcp_session_id>
+                <ue_address>10.240.0.2</ue_address>
+                <teid>200</teid>
+                <up_id>20</up_id>
+                <down_id>21</down_id>
+                <qfi>2</qfi> <!-- Real Time -->
+                <five_g>False</five_g>
+            </ue2>
+        </ues>
+    </UP4>
+
+    <TREX>
+        <port_stats>0,2</port_stats> <!-- TRex port 0 = PDN, TRex port 2 = eNodeB -->
+        <flows>
+            <BE_FROM_PDN>
+                <name>Best Effort</name>
+                <l1_bps>1500000000</l1_bps>
+                <trex_port>0</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.125</ip_src>
+                    <ip_dst>10.240.0.1</ip_dst>
+                    <eth_src>3C:EC:EF:3E:0B:A1</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                </packet>
+            </BE_FROM_PDN>
+            <RT_FROM_PDN>
+                <name>Real Time</name>
+                <l1_bps>40000000</l1_bps>
+                <trex_port>0</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.125</ip_src>
+                    <ip_dst>10.240.0.2</ip_dst>
+                    <eth_src>3C:EC:EF:3E:0B:A1</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                </packet>
+                <latency_stats>true</latency_stats>
+                <flow_id>10</flow_id> <!-- Mandatory when latency_stats=true -->
+                <delay>50000</delay> <!-- wait 50 ms till start to let queues fill up -->
+                <expected_min_received>1</expected_min_received>
+                <expected_max_dropped>0</expected_max_dropped>
+                <expected_99_9_percentile_latency>100</expected_99_9_percentile_latency>
+            </RT_FROM_PDN>
+        </flows>
+    </TREX>
+
+    <TOPO>
+        <switchNum>2</switchNum>
+        <linkNum>2</linkNum>
+    </TOPO>
+
+    <ONOS_Logging>
+        <org.onosproject.p4runtime.ctl.client>DEBUG</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.p4runtime.ctl.client.writerequestimpl>TRACE</org.onosproject.p4runtime.ctl.client.writerequestimpl>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.gnmi.ctl>TRACE</org.onosproject.gnmi.ctl>
+        <org.omecproject.up4>TRACE</org.omecproject.up4>
+    </ONOS_Logging>
+    <ONOS_Logging_Reset>
+        <org.onosproject.p4runtime.ctl.client>INFO</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.p4runtime.ctl.client.writerequestimpl>INFO</org.onosproject.p4runtime.ctl.client.writerequestimpl>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.gnmi.ctl>INFO</org.onosproject.gnmi.ctl>
+        <org.omecproject.up4>INFO</org.omecproject.up4>
+    </ONOS_Logging_Reset>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3,up4</cellApps>
+    </ENV>
+
+    <DEPENDENCY>
+        <useCommonConf>False</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix></switchPrefix>
+        <stratumRoot>~/stratum</stratumRoot>
+        <topology>trellis_fabric.py</topology>
+        <lib></lib>
+    </DEPENDENCY>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+</PARAMS>

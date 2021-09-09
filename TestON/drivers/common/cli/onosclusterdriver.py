@@ -54,7 +54,7 @@ class Controller():
         name. This method should return the (computed) attribute value
         or raise an AttributeError exception.
 
-        We will look into each of the node's component handles to try to find the attreibute, looking at REST first
+        We will look into each of the node's component handles to try to find the attribute, looking at REST first
         """
         if hasattr( self.REST, name ):
             main.log.debug( "%s: Using Rest driver's attribute for '%s'" % ( self.name, name ) )
@@ -65,10 +65,13 @@ class Controller():
         if hasattr( self.Bench, name ):
             main.log.debug( "%s: Using Bench driver's attribute for '%s'" % ( self.name, name ) )
             return getattr( self.Bench, name )
+        if hasattr( self.p4rtUp4, name ):
+            main.log.debug( "%s: Using UP4 driver's attribute for '%s'" % ( self.name, name ) )
+            return getattr( self.p4rtUp4, name )
         raise AttributeError( "Could not find the attribute %s in %r or it's component handles" % ( name, self ) )
 
     def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None,
-                  userName=None, server=None, k8s=None, dockerPrompt=None ):
+                  userName=None, server=None, k8s=None, p4rtUp4=None, dockerPrompt=None ):
         # TODO: validate these arguments
         self.name = str( name )
         self.ipAddress = ipAddress
@@ -81,6 +84,7 @@ class Controller():
         self.user_name = userName
         self.server = server
         self.k8s = k8s
+        self.p4rtUp4 = p4rtUp4
         self.dockerPrompt = dockerPrompt
 
 class OnosClusterDriver( CLI ):
@@ -101,6 +105,7 @@ class OnosClusterDriver( CLI ):
         self.nodeUser = None
         self.nodePass = None
         self.nodes = []
+        self.up4Port = None
         super( OnosClusterDriver, self ).__init__()
 
     def connect( self, **connectargs ):
@@ -145,6 +150,9 @@ class OnosClusterDriver( CLI ):
                     self.maxNodes = self.options[ key ]
                 elif key == "kubeConfig":
                     self.kubeConfig = self.options[ key ]
+                elif key == "up4_port":
+                    # Defining up4_port triggers the creation of the P4RuntimeCliDriver component
+                    self.up4Port = self.options[ key ]
 
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
@@ -160,6 +168,7 @@ class OnosClusterDriver( CLI ):
             self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
             self.maxNodes = int( self.checkOptions( self.maxNodes, 100 ) )
             self.kubeConfig = self.checkOptions( self.kubeConfig, None )
+            self.up4Port = self.checkOptions(self.up4Port, None)
 
             self.name = self.options[ 'name' ]
 
@@ -243,14 +252,19 @@ class OnosClusterDriver( CLI ):
                         # Setup port-forwarding and save the local port
                         guiPort = 8181
                         cliPort = 8101
+                        fwdPorts = [ guiPort, cliPort ]
+                        if self.up4Port:
+                            fwdPorts.append( int( self.up4Port ) )
                         portsList = ""
-                        for port in [ guiPort, cliPort ]:
+                        for port in fwdPorts:
                             localPort = port + index + 1
                             portsList += "%s:%s " % ( localPort, port )
                             if port == cliPort:
                                 node.CLI.karafPort = localPort
                             elif port == guiPort:
                                 node.REST.port = localPort
+                            elif self.up4Port and port == int( self.up4Port ):
+                                node.p4rtUp4.p4rtPort = localPort
                         main.log.info( "Setting up port forward for pod %s: [ %s ]" % ( self.podNames[ index ], portsList ) )
                         pf = kubectl.kubectlPortForward( self.podNames[ index ],
                                                          portsList,
@@ -466,6 +480,51 @@ class OnosClusterDriver( CLI ):
             main.log.error( name + " component already exists!" )
             main.cleanAndExit()
 
+    def setP4rtCLIOptions( self, name, ipAddress ):
+        """
+        Parse the cluster options to create an UP4 component with the given name
+
+        Arguments:
+            name - The name of the P4RuntimeCLI component
+            ipAddress - The ip address of the ONOS instance
+        """
+        main.componentDictionary[name] = main.componentDictionary[self.name].copy()
+        main.componentDictionary[name]['type'] = "P4RuntimeCliDriver"
+        main.componentDictionary[name]['host'] = ipAddress
+        port = main.componentDictionary[name]['COMPONENTS'].get( "p4rt_port", "9559" )
+        main.componentDictionary[name]['p4rt_port'] = self.checkOptions( port, "9559" )
+        main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+
+    def createP4rtCLIComponent( self, name, ipAddress ):
+        """
+        Creates a new P4Runtime CLI component. This will be connected to the node
+        ONOS is running on.
+
+        Arguments:
+            name - The string of the name of this component. The new component
+                   will be assigned to main.<name> .
+                   In addition, main.<name>.name = str( name )
+            ipAddress - The ip address of the server
+        """
+        try:
+            # look to see if this component already exists
+            getattr( main, name )
+        except AttributeError:
+            # namespace is clear, creating component
+            self.setP4rtCLIOptions( name, ipAddress )
+            return main.componentInit( name )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+        else:
+            # namespace is not clear!
+            main.log.error( name + " component already exists!" )
+            main.cleanAndExit()
+
     def createComponents( self, prefix='', createServer=True ):
         """
         Creates a CLI and REST component for each nodes in the cluster
@@ -476,6 +535,7 @@ class OnosClusterDriver( CLI ):
         benchPrefix = prefix + "bench"
         serverPrefix = prefix + "server"
         k8sPrefix = prefix + "k8s"
+        up4Prefix = prefix + "up4cl"
         for i in xrange( 1, self.maxNodes + 1 ):
             cliName = cliPrefix + str( i  )
             restName = restPrefix + str( i )
@@ -483,6 +543,8 @@ class OnosClusterDriver( CLI ):
             serverName = serverPrefix + str( i )
             if self.kubeConfig:
                 k8sName = k8sPrefix + str( i )
+            if self.up4Port:
+                up4Name = up4Prefix + str( i )
 
             # Unfortunately this means we need to have a cell set beofre running TestON,
             # Even if it is just the entire possible cluster size
@@ -493,9 +555,10 @@ class OnosClusterDriver( CLI ):
             bench = self.createBenchComponent( benchName )
             server = self.createServerComponent( serverName, ip ) if createServer else None
             k8s = self.createServerComponent( k8sName, ip ) if self.kubeConfig else None
+            p4rtUp4 = self.createP4rtCLIComponent( up4Name, ip ) if self.up4Port else None
             if self.kubeConfig:
                 k8s.kubeConfig = self.kubeConfig
                 k8s.podName = None
             self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1,
                                            self.user_name, server=server, k8s=k8s,
-                                           dockerPrompt=self.dockerPrompt ) )
+                                           p4rtUp4=p4rtUp4, dockerPrompt=self.dockerPrompt ) )

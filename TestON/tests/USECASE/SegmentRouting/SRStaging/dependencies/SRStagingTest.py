@@ -1329,6 +1329,8 @@ class SRStagingTest:
                           print in alphabetical order
         """
         try:
+            if not main.downtimeResults:
+                return main.TRUE
             dbFileName = "%s/%s" % ( main.logdir, filename )
             with open( dbFileName, "w+" ) as dbfile:
                 header = []

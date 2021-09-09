@@ -1,0 +1,87 @@
+<PARAMS>
+    <testcases>1</testcases>
+
+    <GRAPH>
+        <nodeCluster>pairedleaves</nodeCluster>
+        <builds>20</builds>
+        <jobName>UP4</jobName>
+        <branch>master</branch>
+    </GRAPH>
+
+    <persistent_setup>True</persistent_setup>
+
+    <kubernetes>
+        <appName>onos-classic</appName>
+        <namespace>tost</namespace>
+    </kubernetes>
+
+    <UP4>
+        <pdn_host>Compute1</pdn_host>
+        <enodeb_host>Compute3</enodeb_host>
+        <s1u_address>10.32.11.126</s1u_address>
+        <enb_address>10.32.11.194</enb_address>
+        <router_mac>00:00:0A:4C:1C:46</router_mac>
+        <ues>
+            <ue1>
+                <pfcp_session_id>100</pfcp_session_id>
+                <ue_address>10.240.0.1</ue_address>
+                <teid>100</teid>
+                <up_id>10</up_id>
+                <down_id>11</down_id>
+                <qfi></qfi>
+                <five_g>False</five_g>
+            </ue1>
+            <ue2>
+                <pfcp_session_id>100</pfcp_session_id>
+                <ue_address>10.240.0.2</ue_address>
+                <teid>200</teid>
+                <up_id>20</up_id>
+                <down_id>21</down_id>
+                <qfi></qfi>
+                <five_g>False</five_g>
+            </ue2>
+        </ues>
+    </UP4>
+
+    <TOPO>
+        <switchNum>2</switchNum>
+        <linkNum>2</linkNum>
+    </TOPO>
+
+    <ONOS_Logging>
+        <org.onosproject.p4runtime.ctl.client>DEBUG</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.p4runtime.ctl.client.writerequestimpl>TRACE</org.onosproject.p4runtime.ctl.client.writerequestimpl>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.gnmi.ctl>TRACE</org.onosproject.gnmi.ctl>
+        <org.omecproject.up4>TRACE</org.omecproject.up4>
+    </ONOS_Logging>
+    <ONOS_Logging_Reset>
+        <org.onosproject.p4runtime.ctl.client>INFO</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.p4runtime.ctl.client.writerequestimpl>INFO</org.onosproject.p4runtime.ctl.client.writerequestimpl>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.gnmi.ctl>INFO</org.onosproject.gnmi.ctl>
+        <org.omecproject.up4>INFO</org.omecproject.up4>
+    </ONOS_Logging_Reset>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3,up4</cellApps>
+    </ENV>
+
+    <DEPENDENCY>
+        <useCommonConf>False</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix></switchPrefix>
+        <stratumRoot>~/stratum</stratumRoot>
+        <topology>trellis_fabric.py</topology>
+        <lib></lib>
+    </DEPENDENCY>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+</PARAMS>

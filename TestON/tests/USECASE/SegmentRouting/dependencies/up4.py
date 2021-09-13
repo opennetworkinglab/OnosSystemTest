@@ -119,29 +119,18 @@ class UP4:
         main.log.info(
             "Sending %d packets from eNodeB host" % len(self.emulated_ues))
         for ue in self.emulated_ues.values():
-            self.enodeb_host.buildEther()
-            self.enodeb_host.buildIP(src=self.enb_address, dst=self.s1u_address)
-            self.enodeb_host.buildUDP(ipVersion=4, dport=GPDU_PORT)
-            # FIXME: With newer scapy TEID becomes teid (required for Scapy 2.4.5)
-            self.enodeb_host.buildGTP(gtp_type=0xFF, TEID=int(ue["teid"]))
-            self.enodeb_host.buildIP(overGtp=True, src=ue["ue_address"],
-                                     dst=self.pdn_interface["ips"][0])
-            self.enodeb_host.buildUDP(ipVersion=4, overGtp=True, sport=UE_PORT,
-                                      dport=PDN_PORT)
+            UP4.buildGtpPacket(self.enodeb_host,
+                               src_ip_outer=self.enb_address,
+                               dst_ip_outer=self.s1u_address,
+                               src_ip_inner=ue["ue_address"],
+                               dst_ip_inner=self.pdn_interface["ips"][0],
+                               src_udp_inner=UE_PORT,
+                               dst_udp_inner=PDN_PORT,
+                               teid=int(ue["teid"]))
 
             self.enodeb_host.sendPacket(iface=self.enodeb_interface["name"])
 
-        finished = self.pdn_host.checkFilter()
-        packets = ""
-        if finished:
-            packets = self.pdn_host.readPackets(detailed=True)
-            for p in packets.splitlines():
-                main.log.debug(p)
-            # We care only of the last line from readPackets
-            packets = packets.splitlines()[-1]
-        else:
-            kill = self.pdn_host.killFilter()
-            main.log.debug(kill)
+        packets = UP4.checkFilterAndGetPackets(self.pdn_host)
         fail = False
         if len(self.emulated_ues) != packets.count('Ether'):
             fail = True
@@ -179,23 +168,15 @@ class UP4:
         for ue in self.emulated_ues.values():
             # From PDN we have to set dest MAC, otherwise scapy will do ARP
             # request for the UE IP address.
-            self.pdn_host.buildEther(dst=self.router_mac)
-            self.pdn_host.buildIP(src=self.pdn_interface["ips"][0],
-                                  dst=ue["ue_address"])
-            self.pdn_host.buildUDP(ipVersion=4, sport=PDN_PORT, dport=UE_PORT)
+            UP4.buildUdpPacket(self.pdn_host,
+                               dst_eth=self.router_mac,
+                               src_ip=self.pdn_interface["ips"][0],
+                               dst_ip=ue["ue_address"],
+                               src_udp=PDN_PORT,
+                               dst_udp=UE_PORT)
             self.pdn_host.sendPacket(iface=self.pdn_interface["name"])
 
-        finished = self.enodeb_host.checkFilter()
-        packets = ""
-        if finished:
-            packets = self.enodeb_host.readPackets(detailed=True)
-            for p in packets.splitlines():
-                main.log.debug(p)
-            # We care only of the last line from readPackets
-            packets = packets.splitlines()[-1]
-        else:
-            kill = self.enodeb_host.killFilter()
-            main.log.debug(kill)
+        packets = UP4.checkFilterAndGetPackets(self.enodeb_host)
 
         # The BPF filter might capture non-GTP packets because we can't filter
         # GTP header in BPF. For this reason, check that the captured packets
@@ -220,6 +201,111 @@ class UP4:
 
         utilities.assert_equal(
             expect=False, actual=fail, onpass=msg, onfail=msg)
+
+    def verifyNoUesFlow(self, onosCli, retries=3):
+        """
+        Verify that no PDRs and FARs are installed in ONOS.
+
+        :param onosCli:  An instance of a OnosCliDriver
+        :param retries: number of retries
+        :return:
+        """
+        retValue = utilities.retry(f=UP4.__verifyNoPdrsFarsOnos,
+                                   retValue=False,
+                                   args=[onosCli],
+                                   sleep=1,
+                                   attempts=retries)
+        utilities.assert_equal(expect=True,
+                               actual=retValue,
+                               onpass="No PDRs and FARs in ONOS",
+                               onfail="Stale PDRs or FARs")
+
+    @staticmethod
+    def __verifyNoPdrsFarsOnos(onosCli):
+        """
+        Verify that no PDRs and FARs are installed in ONOS
+
+        :param onosCli: An instance of a OnosCliDriver
+        """
+        pdrs = onosCli.sendline(cmdStr="up4:read-pdrs", showResponse=True,
+                                noExit=True, expectJson=False)
+        fars = onosCli.sendline(cmdStr="up4:read-fars", showResponse=True,
+                                noExit=True, expectJson=False)
+        return pdrs == "" and fars == ""
+
+    def verifyUp4Flow(self, onosCli):
+        """
+        Verify PDRs and FARs installed via UP4 using the ONOS CLI.
+
+        :param onosCli: An instance of a OnosCliDriver
+        """
+        pdrs = onosCli.sendline(cmdStr="up4:read-pdrs", showResponse=True,
+                                noExit=True, expectJson=False)
+        fars = onosCli.sendline(cmdStr="up4:read-fars", showResponse=True,
+                                noExit=True, expectJson=False)
+        fail = False
+        failMsg = ""
+        for ue in self.emulated_ues.values():
+            if pdrs.count(self.upPdrOnosString(**ue)) != 1:
+                failMsg += self.upPdrOnosString(**ue) + "\n"
+                fail = True
+            if pdrs.count(self.downPdrOnosString(**ue)) != 1:
+                failMsg += self.downPdrOnosString(**ue) + "\n"
+                fail = True
+            if fars.count(self.upFarOnosString(**ue)) != 1:
+                failMsg += self.upFarOnosString(**ue) + "\n"
+                fail = True
+            if fars.count(self.downFarOnosString(**ue)) != 1:
+                failMsg += self.downFarOnosString(**ue) + "\n"
+                fail = True
+        utilities.assert_equal(expect=False, actual=fail,
+                               onpass="Correct PDRs and FARs in ONOS",
+                               onfail="Wrong PDRs and FARs in ONOS. Missing PDR/FAR:\n" + failMsg)
+
+    def upPdrOnosString(self, pfcp_session_id, teid=None, up_id=None,
+                        teid_up=None, far_id_up=None, ctr_id_up=None, qfi=None,
+                        **kwargs):
+        # TODO: consider that with five_g the output might be different
+        if up_id is not None:
+            far_id_up = up_id
+            ctr_id_up = up_id
+        if teid is not None:
+            teid_up = teid
+        if qfi is not None:
+            return "PDR{{Match(Dst={}, TEID={}) -> LoadParams(SEID={}, FAR={}, CtrIdx={}, QFI={})}}".format(
+                self.s1u_address, hex(int(teid_up)), hex(int(pfcp_session_id)),
+                far_id_up,
+                ctr_id_up, qfi)
+        return "PDR{{Match(Dst={}, TEID={}) -> LoadParams(SEID={}, FAR={}, CtrIdx={})}}".format(
+            self.s1u_address, hex(int(teid_up)), hex(int(pfcp_session_id)),
+            far_id_up, ctr_id_up)
+
+    def downPdrOnosString(self, pfcp_session_id, ue_address, down_id=None,
+                          far_id_down=None, ctr_id_down=None, **kwargs):
+        # TODO: consider that with five_g the output might be different
+        if down_id is not None:
+            far_id_down = down_id
+            ctr_id_down = down_id
+        return "PDR{{Match(Dst={}, !GTP) -> LoadParams(SEID={}, FAR={}, CtrIdx={})}}".format(
+            ue_address, hex(int(pfcp_session_id)), far_id_down, ctr_id_down)
+
+    def downFarOnosString(self, pfcp_session_id, teid=None, down_id=None,
+                          teid_down=None, far_id_down=None, **kwargs):
+        if down_id is not None:
+            far_id_down = down_id
+        if teid is not None:
+            teid_down = teid
+        return "FAR{{Match(ID={}, SEID={}) -> Encap(Src={}, SPort={}, TEID={}, Dst={})}}".format(
+            far_id_down, hex(int(pfcp_session_id)), self.s1u_address, GPDU_PORT,
+            hex(int(teid_down)),
+            self.enb_address)
+
+    def upFarOnosString(self, pfcp_session_id, up_id=None, far_id_up=None,
+                        **kwargs):
+        if up_id is not None:
+            far_id_up = up_id
+        return "FAR{{Match(ID={}, SEID={}) -> Forward()}}".format(
+            far_id_up, hex(int(pfcp_session_id)))
 
     @staticmethod
     def __sanitizeUeData(ue):
@@ -406,3 +492,36 @@ class UP4:
                     "*** Entry %d of %d deleted." % (i + 1, len(entries)))
             else:
                 main.log.error("Error during table delete")
+
+    @staticmethod
+    def buildGtpPacket(host, src_ip_outer, dst_ip_outer, src_ip_inner,
+                       dst_ip_inner, src_udp_inner, dst_udp_inner, teid):
+        host.buildEther()
+        host.buildIP(src=src_ip_outer, dst=dst_ip_outer)
+        host.buildUDP(ipVersion=4, dport=GPDU_PORT)
+        # FIXME: With newer scapy TEID becomes teid (required for Scapy 2.4.5)
+        host.buildGTP(gtp_type=0xFF, TEID=teid)
+        host.buildIP(overGtp=True, src=src_ip_inner, dst=dst_ip_inner)
+        host.buildUDP(ipVersion=4, overGtp=True, sport=src_udp_inner,
+                      dport=dst_udp_inner)
+
+    @staticmethod
+    def buildUdpPacket(host, src_ip, dst_ip, src_udp, dst_udp, src_eth=None,
+                       dst_eth=None):
+        host.buildEther(src=src_eth, dst=dst_eth)
+        host.buildIP(src=src_ip, dst=dst_ip)
+        host.buildUDP(ipVersion=4, sport=src_udp, dport=dst_udp)
+
+    @staticmethod
+    def checkFilterAndGetPackets(host):
+        finished = host.checkFilter()
+        if finished:
+            packets = host.readPackets(detailed=True)
+            for p in packets.splitlines():
+                main.log.debug(p)
+            # We care only of the last line from readPackets
+            return packets.splitlines()[-1]
+        else:
+            kill = host.killFilter()
+            main.log.debug(kill)
+        return ""

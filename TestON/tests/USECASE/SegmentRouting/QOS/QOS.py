@@ -25,14 +25,19 @@ class QOS:
         run.installOnos(main, skipPackage=True, cliSleep=5)
 
         main.step("Start P4rt client and setup TRex")
+        # Use the first available ONOS instance CLI
+        onos_cli = main.Cluster.active(0).CLI
         up4 = UP4()
         trex = Trex()
         # Get the P4RT client connected to UP4 in the first available ONOS instance
         up4.setup(main.Cluster.active(0).p4rtUp4)
         trex.setup(main.TRexClient)
 
-        main.step("Attach UEs")
+        main.step("Program PDRs and FARs via UP4")
         up4.attachUes()
+
+        main.step("Verify PDRs and FARs in ONOS")
+        up4.verifyUp4Flow(onos_cli)
 
         # Load traffic config for the current test case
         main.step("Load test JSON config")
@@ -60,8 +65,11 @@ class QOS:
                 main.step("{}: Assert 99.9 Percentile Latency".format(flow))
                 trex.assert99_9PercentileLatency(flow)
 
-        main.step("Detach UEs")
+        main.step("Remove PDRs and FARs via UP4")
         up4.detachUes()
+
+        main.step("Verify removed PDRs and FARs from ONOS")
+        up4.verifyNoUesFlow(onos_cli)
 
         main.step("Teardown")
         trex.teardown()

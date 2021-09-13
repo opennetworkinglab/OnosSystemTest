@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1</testcases>
+    <testcases>1,2</testcases>
 
     <GRAPH>
         <nodeCluster>pairedleaves</nodeCluster>

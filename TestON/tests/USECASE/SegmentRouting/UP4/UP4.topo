@@ -56,6 +56,35 @@
             </COMPONENTS>
         </Compute1>
 
+        <Compute2>
+            <host>10.76.28.72</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>7</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <dhcp>True</dhcp>
+                <ip>10.32.11.3</ip>
+                <shortName>h2</shortName>
+                <port1></port1>
+                <link1></link1>
+                <ifaceName>pairbond</ifaceName>
+                <scapy_path>/usr/bin/scapy</scapy_path>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>true</sudo_required>
+            </COMPONENTS>
+        </Compute2>
+
         <Compute3>
             <host>10.76.28.68</host>
             <user>jenkins</user>

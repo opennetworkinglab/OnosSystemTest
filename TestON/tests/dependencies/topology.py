@@ -263,6 +263,15 @@ class Topology:
             srcIpList[ src ] = main.Network.getIPAddress( src, proto='IPV6' if ipv6 else 'IPV4', iface=hostHandle.interfaces[0].get("name") )
         unexpectedPings = []
         for dst in dstList:
+            if not hasattr( main, dst ):
+                main.log.info( "Creating component for host {}".format( dst ) )
+                main.Network.createHostComponent( dst )
+                hostHandle = getattr( main, dst )
+                if hasattr( main, 'Mininet1' ):
+                    main.log.info( "Starting CLI on host {}".format( dst ) )
+                    hostHandle.startHostCli()
+                else:
+                    hostHandle.connectInband()
             hostHandle = getattr( main, dst )
             dstIp = main.Network.getIPAddress( dst, proto='IPV6' if ipv6 else 'IPV4', iface=hostHandle.interfaces[0].get("name") )
             # Start pings from src hosts in parallel

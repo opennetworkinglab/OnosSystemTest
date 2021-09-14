@@ -48,6 +48,7 @@ class SRpairedLeaves:
         """
         try:
             from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import SRStagingTest
+            from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
             import json
         except ImportError:
             main.log.error( "SRStagingTest not found. Exiting the test" )
@@ -63,6 +64,7 @@ class SRpairedLeaves:
                               topology='0x2',
                               onosNodes=3,
                               description="%s tests on the %s pod" % ( descPrefix, pod ) )
+        hosts = [ 'h1', 'h2', 'h3', 'mgmt' ]
         run.pingAllFabricIntfs( main, hosts, dumpFlows=False )
         main.funcs.cleanup( main )
 

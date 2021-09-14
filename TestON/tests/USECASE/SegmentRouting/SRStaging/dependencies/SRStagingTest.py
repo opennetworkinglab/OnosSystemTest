@@ -1353,8 +1353,9 @@ class SRStagingTest:
 
     def cleanup( self, main, headerOrder=None ):
         try:
-            for component in main.trafficComponents:
-                main.Network.removeComponent( component.name )
+            if getattr( main, "trafficComponents" ):
+                for component in main.trafficComponents:
+                    main.Network.removeComponent( component.name )
             main.trafficComponents = []
         except Exception:
             main.log.exception( "Error cleaning up traffic components" )

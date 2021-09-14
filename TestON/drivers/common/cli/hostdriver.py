@@ -248,7 +248,7 @@ class HostDriver( ScapyCliDriver ):
             main.log.error( self.name + ":     " + self.handle.before )
             return main.FALSE
 
-    def addRouteToHost( self, route, gw, interface=None, sudoRequired=True, purgeOnDisconnect=True ):
+    def addRouteToHost( self, route, gw, interface=None, sudoRequired=True, purgeOnDisconnect=True, cmdPath='/sbin/ip' ):
         """
         Adds a static route to the host
         Arguments:
@@ -260,7 +260,11 @@ class HostDriver( ScapyCliDriver ):
         * purgeOnDisconnect - Boolean, remove this route before disconnecting from component
         """
         try:
-            cmd = "ip route add %s via %s" % ( route, gw )
+            if cmdPath:
+                cmd = cmdPath
+            else:
+                cmd = "ip"
+            cmd += " route add %s via %s" % ( route, gw )
             if sudoRequired:
                 cmd = "sudo %s" % cmd
             if interface:
@@ -300,7 +304,7 @@ class HostDriver( ScapyCliDriver ):
             main.log.error( self.name + ":     " + self.handle.before )
             return main.FALSE
 
-    def deleteRoute( self, route, gw, interface=None, sudoRequired=True ):
+    def deleteRoute( self, route, gw, interface=None, sudoRequired=True, cmdPath='/sbin/ip'  ):
         """
         Deletess a static route from the host
         Arguments:
@@ -311,7 +315,11 @@ class HostDriver( ScapyCliDriver ):
         * sudoRequired - Boolean, whether sudo is needed for this command, defaults to True
         """
         try:
-            cmd = "ip route del %s via %s" % ( route, gw )
+            if cmdPath:
+                cmd = cmdPath
+            else:
+                cmd = "ip"
+            cmd += " route del %s via %s" % ( route, gw )
             if sudoRequired:
                 cmd = "sudo %s" % cmd
             if interface:

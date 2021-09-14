@@ -183,7 +183,7 @@
         </Host3>
 
         <ng40vm>
-            <host>192.168.122.102</host>
+            <host>10.92.1.95</host>
             <user>ng40</user>
             <password>ng40</password>
             <type>HostDriver</type>

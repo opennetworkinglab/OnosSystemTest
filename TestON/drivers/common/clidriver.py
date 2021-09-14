@@ -91,6 +91,7 @@ class CLI( Component ):
                                       'Permission denied, please try again.',
                                       self.prompt ],
                                     120 )
+            self.log( str( self.handle.before ) + str( self.handle.after ) )
             if i == 0:  # Accept key, then expect either a password prompt or access
                 main.log.info( self.name + ": ssh key confirmation received, send yes" )
                 self.handle.sendline( 'yes' )

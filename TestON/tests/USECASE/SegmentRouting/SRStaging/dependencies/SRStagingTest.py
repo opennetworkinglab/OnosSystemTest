@@ -1353,7 +1353,7 @@ class SRStagingTest:
 
     def cleanup( self, main, headerOrder=None ):
         try:
-            if getattr( main, "trafficComponents" ):
+            if hasattr( main, "trafficComponents" ):
                 for component in main.trafficComponents:
                     main.Network.removeComponent( component.name )
             main.trafficComponents = []

@@ -519,7 +519,6 @@ class NetworkDriver( CLI ):
             failedPings = 0
             hostPairs = itertools.permutations( list( hostComponentList ), 2 )
             for hostPair in list( hostPairs ):
-                pingResponse += hostPair[ 0 ].options[ 'shortName' ] + " -> "
                 ipDst = hostPair[ 1 ].options.get( 'ip6', hostPair[ 1 ].options[ 'ip' ] ) if ipv6 else hostPair[ 1 ].options[ 'ip' ]
                 srcIface = hostPair[ 0 ].interfaces[0].get( 'name' )
                 dstIface = hostPair[ 1 ].interfaces[0].get( 'name' )
@@ -529,60 +528,76 @@ class NetworkDriver( CLI ):
                     main.log.debug( "Pinging from " + str( hostPair[ 0 ].shortName ) + " to " + str( hostPair[ 1 ].shortName ) )
                     srcIPs = hostPair[ 0 ].interfaces[0].get( 'ips' )
                     dstIPs = hostPair[ 1 ].interfaces[0].get( 'ips' )
-                    srcVLANs = hostPair[0].interfaces[0].get( 'vlan' )
-                    if srcVLANs:
-                        VLAN = srcVLANs[0]
-                    else:
-                        VLAN=None
-                    dstVLANs = hostPair[1].interfaces[0].get( 'vlan' )
-                    # Use scapy to send and recieve packets
-                    hostPair[ 1 ].startScapy( ifaceName=dstIface )
-                    hostPair[ 1 ].addRoutes()
-                    filters = []
-                    if srcMac:
-                        filters.append( "ether src host %s" % srcMac )
-                    if srcIPs[0]:
-                        filters.append( "ip src host %s" % srcIPs[0] )
-                    hostPair[ 1 ].startFilter( ifaceName=dstIface, pktFilter=" and ".join(filters) )
-                    hostPair[ 0 ].startScapy( ifaceName=srcIface )
-                    hostPair[ 0 ].addRoutes()
-                    hostPair[ 0 ].buildEther( src=srcMac, dst=dstMac )
-                    if VLAN:
-                        hostPair[ 0 ].buildVLAN( vlan=VLAN )
-                    hostPair[ 0 ].buildIP( src=srcIPs[0], dst=dstIPs[0] )
-                    hostPair[ 0 ].buildICMP( vlan=VLAN )
-                    hostPair[ 0 ].sendPacket( iface=srcIface )
+                    srcVLANs = hostPair[0].interfaces[0].get( 'vlan', [None] )
+                    main.log.debug( srcVLANs )
+                    for VLAN in srcVLANs:
+                        pingResponse += hostPair[ 0 ].options[ 'shortName' ]
+                        if VLAN:
+                            pingResponse += "." + str( VLAN )
+                        pingResponse += " -> "
+                        main.log.debug( VLAN )
+                        dstVLANs = hostPair[1].interfaces[0].get( 'vlan' )
+                        # Use scapy to send and recieve packets
+                        hostPair[ 1 ].startScapy( ifaceName=dstIface )
+                        hostPair[ 1 ].addRoutes()
+                        filters = []
+                        if srcMac:
+                            filters.append( "ether src host %s" % srcMac )
+                        if srcIPs[0]:
+                            filters.append( "ip src host %s" % srcIPs[0] )
+                        hostPair[ 1 ].startFilter( ifaceName=dstIface, pktFilter=" and ".join(filters) )
+                        hostPair[ 0 ].startScapy( ifaceName=srcIface )
+                        hostPair[ 0 ].addRoutes()
+                        hostPair[ 0 ].buildEther( src=srcMac, dst=dstMac )
+                        if VLAN:
+                            hostPair[ 0 ].buildVLAN( vlan=VLAN )
+                        hostPair[ 0 ].buildIP( src=srcIPs[0], dst=dstIPs[0] )
+                        hostPair[ 0 ].buildICMP( vlan=VLAN )
+                        hostPair[ 0 ].sendPacket( iface=srcIface )
 
-                    waiting = not hostPair[ 1 ].checkFilter()
-                    if not waiting:
-                        pingResult = main.FALSE
-                        packets = hostPair[ 1 ].readPackets()
-                        main.log.warn( repr( packets ) )
-                        for packet in packets.splitlines():
-                            main.log.debug( packet )
-                            if srcIPs[0] in packet:
-                                pingResult = main.TRUE
-                    else:
-                        main.log.warn( "Did not receive packets, killing filter" )
-                        kill = hostPair[ 1 ].killFilter()
-                        main.log.debug( kill )
-                        hostPair[ 1 ].handle.sendline( "" )
-                        hostPair[ 1 ].handle.expect( hostPair[ 1 ].scapyPrompt )
-                        main.log.debug( hostPair[ 1 ].handle.before )
-                        # One of the host to host pair is unreachable
-                        pingResult = main.FALSE
-                    hostPair[ 0 ].stopScapy()
-                    hostPair[ 1 ].stopScapy()
+                        waiting = not hostPair[ 1 ].checkFilter()
+                        if not waiting:
+                            pingResult = main.FALSE
+                            packets = hostPair[ 1 ].readPackets()
+                            main.log.warn( repr( packets ) )
+                            for packet in packets.splitlines():
+                                main.log.debug( packet )
+                                if srcIPs[0] in packet:
+                                    pingResult = main.TRUE
+                        else:
+                            main.log.warn( "Did not receive packets, killing filter" )
+                            kill = hostPair[ 1 ].killFilter()
+                            main.log.debug( kill )
+                            hostPair[ 1 ].handle.sendline( "" )
+                            hostPair[ 1 ].handle.expect( hostPair[ 1 ].scapyPrompt )
+                            main.log.debug( hostPair[ 1 ].handle.before )
+                            # One of the host to host pair is unreachable
+                            pingResult = main.FALSE
+                        hostPair[ 0 ].stopScapy()
+                        hostPair[ 1 ].stopScapy()
+                        if pingResult:
+                            pingResponse += hostPair[ 1 ].options[ 'shortName' ]
+                            if VLAN:
+                                pingResponse += "." + str( VLAN )
+                        else:
+                            pingResponse += "X"
+                            # One of the host to host pair is unreachable
+                            isReachable = main.FALSE
+                            failedPings += 1
+                        pingResponse += "\n"
                 else:
+                    pingResponse += hostPair[ 0 ].options[ 'shortName' ] + " -> "
                     pingResult = hostPair[ 0 ].ping( ipDst, interface=srcIface, wait=int( wait ) )
-                if pingResult:
-                    pingResponse += hostPair[ 1 ].options[ 'shortName' ]
-                else:
-                    pingResponse += "X"
-                    # One of the host to host pair is unreachable
-                    isReachable = main.FALSE
-                    failedPings += 1
-                pingResponse += "\n"
+                    if pingResult:
+                        pingResponse += hostPair[ 1 ].options[ 'shortName' ]
+                        if VLAN:
+                            pingResponse += "." + str( VLAN )
+                    else:
+                        pingResponse += "X"
+                        # One of the host to host pair is unreachable
+                        isReachable = main.FALSE
+                        failedPings += 1
+                    pingResponse += "\n"
             main.log.info( pingResponse + "Failed pings: " + str( failedPings ) )
             return isReachable
         except Exception:

@@ -91,3 +91,25 @@ class DeepInsightApiDriver( API ):
             endTime,
             granularity,
         )
+
+    def getAnomalyRecords(
+        self,
+        startTime = None,
+        endTime = None,
+        srcIp = None,
+        dstIp = None,
+        srcPort = None,
+        dstPort = None,
+        ipProto = None,
+        anomalyType = None,
+    ):
+        return self.client.get_anomaly_records(
+            startTime,
+            endTime,
+            srcIp,
+            dstIp,
+            srcPort,
+            dstPort,
+            ipProto,
+            anomalyType
+        )

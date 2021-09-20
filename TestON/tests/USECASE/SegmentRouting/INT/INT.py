@@ -221,3 +221,63 @@ class INT:
 
         main.step("Clean up the test")
         intTest.cleanUp(main)
+
+    def CASE4(self, main):
+        """
+        Generate traffic at high rate and expect queue congestion reports in DeepInsight.
+        """
+        from core import utilities
+        import time
+        from tests.USECASE.SegmentRouting.INT.dependencies.IntTest import IntTest
+        from tests.USECASE.SegmentRouting.dependencies.trex import Trex
+        main.cfgName = 'CASE4'
+
+        main.step("Setting up the test")
+        intTest = IntTest(scapy=False)
+        intTest.setUpTest(main)
+        dstIp = main.params["TREX"]["flows"]["FLOW1"]["packet"]["ip_dst"]
+
+        main.step("Set up TRex client")
+        trex = Trex()
+        trex.setup(main.TRexClient)
+
+        # See SRpairedLeaves.param for the detail of each flow.
+        main.step("Reset queue report filter")
+        # Here we are using a low-latency(no congestion) traffic to reset the queue.
+        # report filter.
+        trex.createFlow("RESET_QUEUE_REPORT_FILTER")
+        trex.sendAndReceiveTraffic(5)
+        trex.resetFlows()
+        main.step("Generating traffic")
+        startTimeMs = (time.time() - 5) * 1000
+        trex.createFlow("FLOW1")
+        trex.createFlow("FLOW2")
+        trex.sendAndReceiveTraffic(10)
+        endTimeMs = (time.time() + 5) * 1000
+
+        main.step("Checking queue report from DeepInsight")
+        def getQueueAnomaly(*args, **kwargs):
+            return main.DeepInsight.getAnomalyRecords(
+                startTime=startTimeMs,
+                endTime=endTimeMs,
+                dstIp=dstIp,
+                anomalyType="congested_flow",
+            )
+
+        # Need to wait few seconds until DeepInsight database updated.
+        queueAnomalies = utilities.retry(
+            f=getQueueAnomaly,
+            retValue=[[]],
+            attempts=60,
+        )
+
+        # We should get at least two congestion records
+        utilities.assert_lesser(
+            expect=2, actual=len(queueAnomalies),
+            onpass="Got %d anomalies with 'congested_flow' type as expcted." % (len(queueAnomalies)),
+            onfail="Did not get any anomaly with 'congested_flow' type."
+        )
+
+        main.step("Clean up the test")
+        trex.teardown()
+        intTest.cleanUp(main)

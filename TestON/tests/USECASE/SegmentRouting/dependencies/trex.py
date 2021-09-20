@@ -67,6 +67,9 @@ class Trex:
             self.packets[flow_name] = scapy_helper.simple_udp_packet(
                 **self.traffic_flows[flow_name]["packet"])
 
+    def resetFlows(self):
+        self.packets = {}
+
     def sendAndReceiveTraffic(self, duration):
         """
         Connect the client, create the flows in trex (with packets created with

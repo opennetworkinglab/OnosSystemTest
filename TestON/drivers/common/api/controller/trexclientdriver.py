@@ -149,7 +149,7 @@ class TrexClientDriver(Controller):
                                               trex_args=trex_args)
         success = self.__set_up_trex_server(
             self.trex_daemon_client, self.trex_address,
-            pathToTrexConfig + self.trex_config,
+            os.path.join(pathToTrexConfig, self.trex_config),
             self.force_restart
         )
         if not success:

@@ -3,4 +3,45 @@
 <PARAMS>
     <testcases>1,2,3</testcases>
     <routerMac>00:00:0A:4C:1C:46</routerMac>
+    <TREX>
+        <flows>
+            <RESET_QUEUE_REPORT_FILTER>
+                <!-- A low-throughput flow to reset the queue report filter -->
+                <name>Low throughput flow</name>
+                <l1_bps>10000</l1_bps>
+                <trex_port>0</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.123</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:40</eth_src>
+                    <eth_dst>40:A6:B7:22:AB:21</eth_dst>
+                </packet>
+            </RESET_QUEUE_REPORT_FILTER>
+            <FLOW1>
+                <name>Flow 1</name>
+                <l1_bps>25000000000</l1_bps> <!-- 25G -->
+                <trex_port>0</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.123</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:40</eth_src>
+                    <eth_dst>40:A6:B7:22:AB:21</eth_dst>
+                </packet>
+            </FLOW1>
+            <FLOW2>
+                <name>Flow 2</name>
+                <l1_bps>25000000000</l1_bps> <!-- 25G -->
+                <trex_port>2</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.124</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:20</eth_src>
+                    <eth_dst>40:A6:B7:22:AB:21</eth_dst>
+                </packet>
+            </FLOW2>
+        </flows>
+    </TREX>
 </PARAMS>

@@ -100,6 +100,19 @@
             </COMPONENTS>
         </DeepInsight>
 
+        <TRexClient>
+            <host>localhost</host>
+            <type>TrexClientDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+                <trex_address>10.76.28.72</trex_address> <!-- Compute2 -->
+                <trex_config>trex_config.yaml</trex_config> <!-- relative path starting from ./dependencies-->
+                <force_restart>True</force_restart>
+                <software_mode>True</software_mode>
+                <trex_library_python_path>/home/jenkins/trex_python</trex_library_python_path>
+            </COMPONENTS>
+        </TRexClient>
+
         <!-- A NetworkDriver to provide functions such as "createHostComponent" -->
         <INTNetwork>
             <host>localhost</host>

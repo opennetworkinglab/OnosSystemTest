@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Copyright 2021-present Open Networking Foundation.
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+import os
 from tests.dependencies.Network import Network
 
 class IntTest:
@@ -12,6 +13,7 @@ class IntTest:
     def setUpTest(self, main):
         main.Network = Network()
         main.Network.connectToNet()
+        main.configPath = os.path.join(os.path.dirname(main.testFile), "dependencies")
 
         for host in self.hosts:
             main.Network.createHostComponent(host)

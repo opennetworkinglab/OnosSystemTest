@@ -85,13 +85,12 @@ class UP4:
 
     def attachUes(self):
         for ue in self.emulated_ues.values():
-            # Sanitize values coming from the params file
             ue = UP4.__sanitizeUeData(ue)
             self.attachUe(**ue)
 
     def detachUes(self):
         for ue in self.emulated_ues.values():
-            # No need to sanitize, has already been done in attach
+            ue = UP4.__sanitizeUeData(ue)
             self.detachUe(**ue)
 
     def testUpstreamTraffic(self):
@@ -309,7 +308,7 @@ class UP4:
 
     @staticmethod
     def __sanitizeUeData(ue):
-        if "five_g" in ue:
+        if "five_g" in ue and type(ue["five_g"]) != bool:
             ue["five_g"] = bool(strtobool(ue["five_g"]))
         if "qfi" in ue and ue["qfi"] == "":
             ue["qfi"] = None

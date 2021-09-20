@@ -75,7 +75,7 @@ class Testcaselib:
             main.configPath = main.path + ( "/.." if main.useCommonConf else "" ) + "/dependencies/"
             main.bmv2Path = "/tools/dev/mininet/"
             main.forJson = "json/"
-            main.forcfg = "netcfg/"
+            # main.forcfg = "netcfg/"
             main.forChart = "chart/"
             main.forConfig = "conf/"
             main.forHost = "host/"
@@ -217,7 +217,7 @@ class Testcaselib:
     @staticmethod
     def loadNewJson( main, suffix='' ):
         returnValue = main.TRUE
-        with open( "%s%s.cfg%s" % ( main.configPath + main.forcfg,
+        with open( "%s%s.json%s" % ( main.configPath + main.forJson,
                                      main.cfgName, suffix ) ) as cfg:
             desiredJSON = json.load ( cfg )
             for device in desiredJSON ["ports"].keys():
@@ -846,6 +846,8 @@ class Testcaselib:
                 srcIface = hostComponent.interfaces[0].get( 'name' )
                 #Get host location, check netcfg for that port's ip
                 hostIp = hostComponent.getIPAddress( iface=srcIface )
+                if not hostIp:
+                    hostIp=hostComponent.interfaces[0].get( 'ips' )[0]
                 main.log.warn( "Looking for allowed vlans for %s" % hostIp )
                 vlans = []
                 for obj in hostsJson:
@@ -863,11 +865,13 @@ class Testcaselib:
                             # vlanid if vlan-tagged: vlanid
                             # None if vlan-native + any vlan ids from vlan-tagged
                             intf = netcfgJson[ portId ][ 'interfaces' ][0]
+                            main.log.debug( intf )
                             for field in intf.keys():
                                 if "vlan-untagged" in field:
                                     vlans.append( None )
                                 if "vlan-tagged" in field:
-                                    vlans.append( int( intf[ field ].encode( 'utf-8' ) ) )
+                                    for VLAN in intf[ field ]:
+                                        vlans.append( VLAN )
                                 if "vlan-native" in field:
                                     vlans.append( None )
                             if len( vlans ) == 0:

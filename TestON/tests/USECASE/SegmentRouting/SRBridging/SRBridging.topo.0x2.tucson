@@ -66,7 +66,7 @@
             <COMPONENTS>
                 <mac></mac>
                 <inband>false</inband>
-                <dhcp>True</dhcp>
+                <dhcp>False</dhcp>
                 <ip>10.32.11.2</ip>
                 <shortName>h1</shortName>
                 <port1></port1>
@@ -95,7 +95,7 @@
             <COMPONENTS>
                 <mac></mac>
                 <inband>false</inband>
-                <dhcp>True</dhcp>
+                <dhcp>False</dhcp>
                 <ip>10.32.11.3</ip>
                 <shortName>h2</shortName>
                 <port1></port1>
@@ -124,7 +124,7 @@
             <COMPONENTS>
                 <mac></mac>
                 <inband>false</inband>
-                <dhcp>True</dhcp>
+                <dhcp>False</dhcp>
                 <ip>10.32.11.194</ip>
                 <shortName>h3</shortName>
                 <port1></port1>
@@ -152,7 +152,7 @@
             <COMPONENTS>
                 <mac></mac>
                 <inband>false</inband>
-                <dhcp>True</dhcp>
+                <dhcp>False</dhcp>
                 <ip>10.32.11.1</ip>
                 <shortName>mgmt</shortName>
                 <port1></port1>

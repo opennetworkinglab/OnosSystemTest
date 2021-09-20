@@ -6,7 +6,7 @@
                     "ips":[
                         "10.32.11.126/25"
                     ],
-                    "vlan-untagged":111,
+                    "vlan-tagged":[111],
                     "name": "compute-1-1"
                 }
             ]
@@ -17,7 +17,7 @@
                     "ips":[
                         "10.32.11.126/25"
                     ],
-                    "vlan-untagged":111,
+                    "vlan-tagged":[111],
                     "name": "compute-1-2"
                 }
             ]
@@ -28,7 +28,7 @@
                 "ips": [
                   "10.32.11.126/25"
                 ],
-                "vlan-untagged":111,
+                "vlan-tagged":[111],
                 "name": "compute-2-1"
               }
             ]
@@ -39,7 +39,7 @@
                 "ips": [
                   "10.32.11.126/25"
                 ],
-                "vlan-untagged":111,
+                "vlan-tagged":[111],
                 "name": "compute-2-2"
               }
             ]

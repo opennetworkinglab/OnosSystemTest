@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>6</testcases>
+    <testcases>6,16,26,36,46,56,66,76</testcases>
 
     <GRAPH>
         <nodeCluster>pairedleaves</nodeCluster>
@@ -24,7 +24,7 @@
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
     </DEPENDENCY>
 
-    <jsonFileSuffix>.hw</jsonFileSuffix>
+    <jsonFileSuffix>.tucson</jsonFileSuffix>
 
     <persistent_setup>True</persistent_setup>
 

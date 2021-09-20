@@ -59,6 +59,7 @@ class SRBridgingTest ():
             print (main.cfgName, "Testcase : CASE 09")
             main.Cluster.setRunningNode( onosNodes )
             run.installOnos( main, skipPackage=skipPackage, cliSleep=5 )
+            suf = main.params.get( 'jsonFileSuffix', None)
             if not main.persistentSetup:
                 if main.useBmv2:
                     switchPrefix = main.params[ 'DEPENDENCY' ].get( 'switchPrefix', '' )
@@ -69,7 +70,6 @@ class SRBridgingTest ():
                     translator.ofdpaToBmv2( main, switchPrefix=switchPrefix )
                 else:
                     translator.bmv2ToOfdpa( main )
-                suf = main.params.get( 'jsonFileSuffix', None)
                 if suf:
                     run.loadJson( main, suffix=suf )
                 else:
@@ -93,7 +93,7 @@ class SRBridgingTest ():
                 # Run the test with physical devices
                 run.connectToPhysicalNetwork( main, hostDiscovery=False )  # We don't want to do host discovery in the pod
                 if main.cfgName:
-                    returnValue = run.loadNewJson( main )
+                    returnValue = run.loadNewJson( main, suffix=suf )
                     utilities.assert_equals( expect=main.TRUE,
                                  actual=returnValue,
                                  onpass="Successfully changed network config",

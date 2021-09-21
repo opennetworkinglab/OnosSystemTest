@@ -273,18 +273,22 @@ class UP4:
         if qfi is not None:
             return "PDR{{Match(Dst={}, TEID={}) -> LoadParams(SEID={}, FAR={}, CtrIdx={}, QFI={})}}".format(
                 self.s1u_address, hex(int(teid_up)), hex(int(pfcp_session_id)),
-                far_id_up,
-                ctr_id_up, qfi)
+                far_id_up, ctr_id_up, qfi)
         return "PDR{{Match(Dst={}, TEID={}) -> LoadParams(SEID={}, FAR={}, CtrIdx={})}}".format(
             self.s1u_address, hex(int(teid_up)), hex(int(pfcp_session_id)),
             far_id_up, ctr_id_up)
 
     def downPdrOnosString(self, pfcp_session_id, ue_address, down_id=None,
-                          far_id_down=None, ctr_id_down=None, **kwargs):
+                          far_id_down=None, ctr_id_down=None, qfi=None,
+                          **kwargs):
         # TODO: consider that with five_g the output might be different
         if down_id is not None:
             far_id_down = down_id
             ctr_id_down = down_id
+        if qfi is not None:
+            return "PDR{{Match(Dst={}, !GTP) -> LoadParams(SEID={}, FAR={}, CtrIdx={}, QFI={})}}".format(
+                ue_address, hex(int(pfcp_session_id)), far_id_down, ctr_id_down,
+                qfi)
         return "PDR{{Match(Dst={}, !GTP) -> LoadParams(SEID={}, FAR={}, CtrIdx={})}}".format(
             ue_address, hex(int(pfcp_session_id)), far_id_down, ctr_id_down)
 

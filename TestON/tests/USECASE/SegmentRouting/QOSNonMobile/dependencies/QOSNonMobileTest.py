@@ -98,7 +98,8 @@ class QOSNonMobileTest:
         main.step("Send traffic with TRex")
         for flow in testCfg["flows"]:
             trex.createFlow(flow)
-        trex.sendAndReceiveTraffic(testCfg["duration"])
+        results = trex.sendAndReceiveTraffic(testCfg["duration"])
+        trex.verifyCongestion(results)
 
         trex.logPortStats()
         for flow in testCfg["flows"]:

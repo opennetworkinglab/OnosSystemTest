@@ -75,7 +75,7 @@ class Trex:
         Connect the client, create the flows in trex (with packets created with
         createFlow, send and receive the traffic, and disconnect the client.
         :param duration: traffic duration
-        :return:
+        :return: port statistics collected while running the test
         """
         self.trex_client.connectTrexClient()
         for flow_name, packet in self.packets.items():
@@ -88,8 +88,38 @@ class Trex:
                                        delay=flow_config["delay"],
                                        flow_id=flow_config["flow_id"],
                                        flow_stats=flow_config["latency_stats"])
-        self.trex_client.startAndWaitTraffic(duration=duration)
+        result = self.trex_client.startAndWaitTraffic(duration=duration,
+                                                      ports=self.port_stats)
         self.trex_client.disconnectTrexClient()
+        return result
+
+    def verifyCongestion(self, live_stats, multiplier=1):
+        """
+        Verify and assert that the test was able to generate congestion by
+        checking that average TX traffic is greater than average RX traffic from
+        stats collected during the test.
+
+        :param live_stats: Stats collected during tests
+        :param multiplier: Multiplier for RX traffic in case we encap/decap traffic
+        :return:
+        """
+        avg_tx = sum(
+            [sum(v["tx_bps"]) / len(v["tx_bps"])
+             for (k, v) in live_stats.items() if k != "duration"]
+        )
+        avg_rx = sum(
+            [sum(v["rx_bps"]) / len(v["rx_bps"])
+             for (k, v) in live_stats.items() if k != "duration"]
+        )
+
+        utilities.assert_equals(
+            expect=True,
+            actual=avg_tx > avg_rx * multiplier,
+            onpass="Congestion created: AVG TX ({}) > AVG RX ({})".format(
+                avg_tx, avg_rx),
+            onfail="NO Congestion: AVG TX ({}) <= AVG RX ({})".format(
+                avg_tx, avg_rx)
+        )
 
     def assertRxPackets(self, flow_name):
         if not self.isFlowStats(flow_name):
@@ -137,6 +167,10 @@ class Trex:
     def assert99_9PercentileLatency(self, flow_name):
         if not self.isFlowStats(flow_name):
             main.log.info("No flow stats for flow {}".format(flow_name))
+            return
+        if not "expected_99_9_percentile_latency" in self.traffic_flows[flow_name].keys():
+            main.log.info("No 99.9th percentile parameter for test")
+            return
         expected_99_9_percentile_latency = int(
             self.traffic_flows[flow_name].get(
                 "expected_99_9_percentile_latency", "0"))
@@ -148,6 +182,25 @@ class Trex:
                 flow_name),
             onfail="Traffic Flow {}: 99.9th percentile latency is too high {}".format(
                 flow_name, latency_stats.percentile_99_9))
+
+    def assert90PercentileLatency(self, flow_name):
+        if not self.isFlowStats(flow_name):
+            main.log.info("No flow stats for flow {}".format(flow_name))
+            return
+        if not "expected_90_percentile_latency" in self.traffic_flows[flow_name].keys():
+            main.log.info("No 90th percentile parameter for test")
+            return
+        expected_90_percentile_latency = int(
+            self.traffic_flows[flow_name].get(
+                "expected_90_percentile_latency", "0"))
+        latency_stats = self.__getLatencyStats(flow_name)
+        utilities.assert_equals(
+            expect=True,
+            actual=latency_stats.percentile_90 <= expected_90_percentile_latency,
+            onpass="Traffic Flow {}: 90th percentile latency below threshold".format(
+                flow_name),
+            onfail="Traffic Flow {}: 90th percentile latency is too high {}".format(
+                flow_name, latency_stats.percentile_90))
 
     def logPortStats(self):
         main.log.debug(self.port_stats)

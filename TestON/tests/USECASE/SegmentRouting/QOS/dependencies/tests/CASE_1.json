@@ -1,5 +1,6 @@
 {
   "flows": ["BE_FROM_PDN", "RT_FROM_PDN"],
-  "duration": 10
+  "duration": 10,
+  "multiplier": 1.02571
 }
 

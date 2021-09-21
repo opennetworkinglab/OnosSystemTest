@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1</testcases>
+    <testcases>1,2</testcases>
 
     <GRAPH>
         <nodeCluster>pairedleaves</nodeCluster>
@@ -48,8 +48,61 @@
     </UP4>
 
     <TREX>
-        <port_stats>0,2</port_stats> <!-- TRex port 0 = PDN, TRex port 2 = eNodeB -->
+        <port_stats>0,2,3</port_stats> <!-- TRex port 0 = PDN, TRex port 2 = eNodeB, TRex port 3 = second eNB -->
         <flows>
+            <BE1_FROM_UE>
+                <name>Best Effort 1</name>
+                <l1_bps>40000000000</l1_bps>
+                <trex_port>2</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.240.0.1</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:20</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <gtp_teid>100</gtp_teid>
+                    <s1u_addr>10.32.11.126</s1u_addr>
+                    <enb_addr>10.32.11.124</enb_addr>
+                </packet>
+            </BE1_FROM_UE>
+            <BE2_FROM_UE>
+                <name>Best Effort 2</name>
+                <l1_bps>35000000000</l1_bps>
+                <trex_port>3</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.240.0.1</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:21</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <gtp_teid>100</gtp_teid>
+                    <s1u_addr>10.32.11.126</s1u_addr>
+                    <enb_addr>10.32.11.123</enb_addr>
+                </packet>
+            </BE2_FROM_UE>
+            <RT_FROM_UE>
+                <name>Real Time</name>
+                <l1_bps>22000000</l1_bps> <!-- Smaller than the smaller RT max BW -->
+                <trex_port>3</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.240.0.2</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:21</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <gtp_teid>200</gtp_teid>
+                    <s1u_addr>10.32.11.126</s1u_addr>
+                    <enb_addr>10.32.11.123</enb_addr>
+                </packet>
+                <latency_stats>true</latency_stats>
+                <flow_id>10</flow_id>
+                <delay>50000</delay>
+                <expected_max_dropped>0</expected_max_dropped>
+                <expected_max_latency>1500</expected_max_latency>
+                <!-- Verify the 90th percentile instead of 99.9th because of latency introduced by TRex SW Mode -->
+                <expected_90_percentile_latency>150</expected_90_percentile_latency>
+            </RT_FROM_UE>
+
             <BE_FROM_PDN>
                 <name>Best Effort</name>
                 <l1_bps>2000000000</l1_bps>

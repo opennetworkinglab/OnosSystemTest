@@ -230,11 +230,13 @@ class TrexClientDriver(Controller):
         self.all_sender_port.add(trex_port)
         return True
 
-    def startAndWaitTraffic(self, duration=10):
+    def startAndWaitTraffic(self, duration=10, ports=[]):
         """
         Start generating traffic and wait traffic to be send
+
         :param duration: Traffic generation duration
-        :return:
+        :param ports: Ports IDs to monitor while traffic is active
+        :return: port statistics collected while traffic is active
         """
         if not self.trex_client:
             main.log.error(
@@ -244,6 +246,7 @@ class TrexClientDriver(Controller):
         self.trex_client.start(list(self.all_sender_port), mult="1",
                                duration=duration)
         main.log.info("Waiting until all traffic is sent..")
+        result = self.__monitor_port_stats(ports)
         self.trex_client.wait_on_traffic(ports=list(self.all_sender_port),
                                          rx_delay_ms=100)
         main.log.info("...traffic sent!")
@@ -251,7 +254,7 @@ class TrexClientDriver(Controller):
         self.all_sender_port = set()
         main.log.info("Getting stats")
         self.stats = self.trex_client.get_stats()
-        main.log.info("GOT stats")
+        return result
 
     def getFlowStats(self, flow_id):
         if self.stats is None:
@@ -319,7 +322,8 @@ class TrexClientDriver(Controller):
             trex_daemon_client.start_stateless(cfg=trex_config_file_on_server)
         except ConnectionRefusedError:
             main.log.error(
-                "Unable to connect to server %s.\n" + "Did you start the Trex daemon?" % trex_address)
+                "Unable to connect to server %s.\n" +
+                "Did you start the Trex daemon?" % trex_address)
             return False
 
         return True
@@ -353,6 +357,87 @@ class TrexClientDriver(Controller):
     K = 1000
     M = 1000 * K
     G = 1000 * M
+
+    def __monitor_port_stats(self, ports, time_interval=1):
+        """
+        List some port stats continuously while traffic is active
+
+        :param ports: List of ports ids to monitor
+        :param time_interval: Interval between read
+        :return: Statistics read while traffic is active
+        """
+
+        results = {
+            port_id: {"rx_bps": [], "tx_bps": [], "rx_pps": [], "tx_pps": []}
+            for port_id in ports
+        }
+        results["duration"] = []
+
+        prev = {
+            port_id: {
+                "opackets": 0,
+                "ipackets": 0,
+                "obytes": 0,
+                "ibytes": 0,
+                "time": time.time(),
+            }
+            for port_id in ports
+        }
+
+        s_time = time.time()
+        while self.trex_client.is_traffic_active():
+            stats = self.trex_client.get_stats(ports=ports)
+            if not stats:
+                break
+
+            main.log.debug(
+                "\nTRAFFIC RUNNING {:.2f} SEC".format(time.time() - s_time))
+            main.log.debug(
+                "{:^4} | {:<10} | {:<10} | {:<10} | {:<10} |".format(
+                    "Port", "RX bps", "TX bps", "RX pps", "TX pps"
+                )
+            )
+            main.log.debug(
+                "----------------------------------------------------------")
+
+            for port in ports:
+                opackets = stats[port]["opackets"]
+                ipackets = stats[port]["ipackets"]
+                obytes = stats[port]["obytes"]
+                ibytes = stats[port]["ibytes"]
+                time_diff = time.time() - prev[port]["time"]
+
+                rx_bps = 8 * (ibytes - prev[port]["ibytes"]) / time_diff
+                tx_bps = 8 * (obytes - prev[port]["obytes"]) / time_diff
+                rx_pps = ipackets - prev[port]["ipackets"] / time_diff
+                tx_pps = opackets - prev[port]["opackets"] / time_diff
+
+                main.log.debug(
+                    "{:^4} | {:<10} | {:<10} | {:<10} | {:<10} |".format(
+                        port,
+                        TrexClientDriver.__to_readable(rx_bps, "bps"),
+                        TrexClientDriver.__to_readable(tx_bps, "bps"),
+                        TrexClientDriver.__to_readable(rx_pps, "pps"),
+                        TrexClientDriver.__to_readable(tx_pps, "pps"),
+                    )
+                )
+
+                results["duration"].append(time.time() - s_time)
+                results[port]["rx_bps"].append(rx_bps)
+                results[port]["tx_bps"].append(tx_bps)
+                results[port]["rx_pps"].append(rx_pps)
+                results[port]["tx_pps"].append(tx_pps)
+
+                prev[port]["opackets"] = opackets
+                prev[port]["ipackets"] = ipackets
+                prev[port]["obytes"] = obytes
+                prev[port]["ibytes"] = ibytes
+                prev[port]["time"] = time.time()
+
+            time.sleep(time_interval)
+            main.log.debug("")
+
+        return results
 
     @staticmethod
     def __to_readable(src, unit="bps"):

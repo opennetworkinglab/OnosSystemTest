@@ -1,0 +1,5 @@
+{
+  "flows": ["BE1_FROM_UE", "BE2_FROM_UE", "RT_FROM_UE"],
+  "duration": 10,
+  "multiplier": 0.97428
+}

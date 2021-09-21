@@ -148,16 +148,23 @@ class SRStagingTest:
                                                                      src.interfaces[0]['name'] ) )
         try:
             i = src.handle.expect( [ "password", src.prompt ] )
+            output = src.handle.before + src.handle.after
             if i == 0:
                 src.handle.sendline( src.pwd )
                 i = src.handle.expect( [ "password", src.prompt ] )
                 assert i != 0, "Incorrect Password"
+                output = src.handle.before + src.handle.after
         except Exception:
             main.log.exception( "%s: Unexpected response from ping" % src.name )
             src.handle.send( '\x03' )  # ctrl-c
             src.handle.expect( src.prompt )
+            return main.FALSE
         main.funcs.clearBuffer( src )
         main.log.warn( "%s: %s" % ( src.name, str( src.handle.before ) ) )
+        if " 0% packet loss" in output:
+            return main.TRUE
+        else:
+            return main.FALSE
 
     @staticmethod
     def startIperf( main, src, dstIp, trafficSelector, trafficDuration ):
@@ -178,6 +185,8 @@ class SRStagingTest:
                                                    trafficDuration )
         main.log.info( "Starting iperf between %s and %s" % ( src.shortName, dstIp ) )
         sudoCheck = main.funcs.singlePingWithSudo( main, src, dstIp )
+        if not sudoCheck:
+            main.skipCase( result="FAIL", msg="Incorrect permissions for sudo" )
         src.handle.sendline( "/usr/bin/iperf %s " % iperfArgs )
         src.preDisconnect = src.exitFromProcess
 
@@ -249,8 +258,20 @@ class SRStagingTest:
                  dstIp = dst.interfaces[0]['ips'][0]
             main.log.info( "Setting up flow between %s and %s%s" % ( src.shortName, dst.shortName, "" if not dstIp else " with dstIp %s" % dstIp ) )
             # ping right before to make sure arp is cached and sudo is authenticated
-            main.funcs.singlePingWithSudo( main, src, dst.interfaces[0]['ips'][0] )
-            main.funcs.singlePingWithSudo( main, dst, src.interfaces[0]['ips'][0] )
+            sudoCheck1 = main.funcs.singlePingWithSudo( main, src, dst.interfaces[0]['ips'][0] )
+            checkDesc = "sudo ping from %s to %s" % ( src.shortName, dst.interfaces[0]['ips'][0] )
+            if not sudoCheck1:
+                main.skipCase( result="FAIL", msg="Incorrect permissions for %s" % checkDesc )
+            utilities.assert_equals( expect=main.TRUE, actual=sudoCheck1,
+                                     onpass="Successfully %s" % checkDesc ,
+                                     onfail="Failed to %s" % checkDesc )
+            sudoCheck2 = main.funcs.singlePingWithSudo( main, dst, src.interfaces[0]['ips'][0] )
+            checkDesc = "sudo ping from %s to %s" % ( dst.shortName, src.interfaces[0]['ips'][0] )
+            if not sudoCheck2:
+                main.skipCase( result="FAIL", msg="Incorrect permissions for %s" % checkDesc )
+            utilities.assert_equals( expect=main.TRUE, actual=sudoCheck1,
+                                     onpass="Successfully %s" % checkDesc ,
+                                     onfail="Failed to %s" % checkDesc )
             # Start traffic
             # TODO: ASSERTS
             if pingOnly:

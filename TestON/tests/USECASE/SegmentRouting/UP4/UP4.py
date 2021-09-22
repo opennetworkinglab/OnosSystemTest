@@ -3,7 +3,6 @@ class UP4:
     def __init__(self):
         self.default = ''
 
-    # TODO: add test case that checks entries are being inserted and deleted from ONOS correclty
     def CASE1(self, main):
         main.case("Fabric UPF traffic terminated in the fabric")
         """
@@ -249,4 +248,120 @@ class UP4:
         main.step("Stop scapy and p4rt client")
         up4.teardown()
         bess_host.stopScapy()
+        run.cleanup(main)
+
+    def CASE3(self, main):
+        main.case("Verify UP4 from different ONOS instances")
+        """
+        Program PDRs and FARs via UP4 on first ONOS instance
+        Repeat for all ONOS Instances:
+            Verify PDRs and FARs via P4RT
+            Disconnect P4RT client
+        Verify and delete PDRs and FARs via UP4 on the third ONOS instance
+        Repeat for all ONOS Instance:
+            Verify removed PDRs and FARs via P4RT
+            Disconnect P4RT client
+        """
+        try:
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
+            from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
+                Testcaselib as run
+        except ImportError as e:
+            main.log.error("Import not found. Exiting the test")
+            main.log.error(e)
+            main.cleanAndExit()
+
+        run.initTest(main)
+        main.log.info(main.Cluster.numCtrls)
+        main.Cluster.setRunningNode(3)
+        run.installOnos(main, skipPackage=True, cliSleep=5)
+
+        onos_cli_0 = main.Cluster.active(0).CLI
+        onos_cli_1 = main.Cluster.active(1).CLI
+        onos_cli_2 = main.Cluster.active(2).CLI
+        up4_0 = UP4()
+        up4_1 = UP4()
+        up4_2 = UP4()
+
+        main.step("Program PDRs and FARs via UP4 on ONOS 0")
+        up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
+        up4_0.attachUes()
+        up4_0.verifyUp4Flow(onos_cli_0)
+        up4_0.teardown()
+
+        main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 1")
+        up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
+        utilities.assert_equal(
+            expect=True,
+            actual=up4_1.verifyUesFlowNumberP4rt(),
+            onpass="Correct number of PDRs and FARs",
+            onfail="Wrong number of PDRs and FARs"
+        )
+        up4_1.teardown()
+
+        main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 2")
+        up4_2.setup(main.Cluster.active(2).p4rtUp4, no_host=True)
+        utilities.assert_equal(
+            expect=True,
+            actual=up4_2.verifyUesFlowNumberP4rt(),
+            onpass="Correct number of PDRs and FARs",
+            onfail="Wrong number of PDRs and FARs"
+        )
+
+        main.step("Verify all ONOS instances have the same number of flows")
+        onos_0_flow_count = onos_cli_0.checkFlowCount()
+        onos_1_flow_count = onos_cli_1.checkFlowCount()
+        onos_2_flow_count = onos_cli_2.checkFlowCount()
+        utilities.assert_equal(
+            expect=True,
+            actual=onos_0_flow_count == onos_1_flow_count == onos_2_flow_count,
+            onpass="All ONOS instances have the same number of flows",
+            onfail="ONOS instances have different number of flows: (%d, %d, %d)" % (
+                onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
+        )
+
+        main.step("Remove PDRs and FARs via UP4 on ONOS 2")
+        up4_2.detachUes()
+        up4_2.verifyNoUesFlow(onos_cli_2)
+
+        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 2")
+        utilities.assert_equal(
+            expect=True,
+            actual=up4_2.verifyNoUesFlowNumberP4rt(),
+            onpass="No PDRs and FARs",
+            onfail="Stale PDRs and FARs"
+        )
+        up4_2.teardown()
+
+        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 1")
+        up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
+        utilities.assert_equal(
+            expect=True,
+            actual=up4_1.verifyNoUesFlowNumberP4rt(),
+            onpass="No PDRs and FARs",
+            onfail="Stale PDRs and FARs"
+        )
+        up4_1.teardown()
+
+        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 0")
+        up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
+        utilities.assert_equal(
+            expect=True,
+            actual=up4_0.verifyNoUesFlowNumberP4rt(),
+            onpass="No PDRs and FARs",
+            onfail="Stale PDRs and FARs"
+        )
+        up4_0.teardown()
+
+        main.step("Verify all ONOS instances have the same number of flows")
+        onos_0_flow_count = onos_cli_0.checkFlowCount()
+        onos_1_flow_count = onos_cli_1.checkFlowCount()
+        onos_2_flow_count = onos_cli_2.checkFlowCount()
+        utilities.assert_equal(
+            expect=True,
+            actual=onos_0_flow_count == onos_1_flow_count == onos_2_flow_count,
+            onpass="All ONOS instances have the same number of flows",
+            onfail="ONOS instances have different number of flows: (%d, %d, %d)" % (
+            onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
+        )
         run.cleanup(main)

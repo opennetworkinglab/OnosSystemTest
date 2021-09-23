@@ -362,6 +362,174 @@ class UP4:
             actual=onos_0_flow_count == onos_1_flow_count == onos_2_flow_count,
             onpass="All ONOS instances have the same number of flows",
             onfail="ONOS instances have different number of flows: (%d, %d, %d)" % (
-            onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
+                onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
         )
+        run.cleanup(main)
+
+    def CASE4(self, main):
+        main.case("Verify UP4 wipe-out after ONOS reboot")
+        """
+        Program PDRs/FARs
+        Kill ONOS POD
+        Verify PDRs/FARs from other ONOS instances
+        Remove PDRs/FARs
+        Wait/Verify ONOS is back
+        Verify no PDRs/FARs from rebooted instance
+        Re-program PDRs/FARs from rebooted instance
+        Verify all instances have same number of flows
+        Remove PDRs/FARs (cleanup)
+        """
+        try:
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
+            from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
+                Testcaselib as run
+        except ImportError as e:
+            main.log.error("Import not found. Exiting the test")
+            main.log.error(e)
+            main.cleanAndExit()
+
+        run.initTest(main)
+        main.log.info(main.Cluster.numCtrls)
+        main.Cluster.setRunningNode(3)
+        run.installOnos(main, skipPackage=True, cliSleep=5)
+
+        onos_cli_0 = main.Cluster.active(0).CLI
+        onos_cli_1 = main.Cluster.active(1).CLI
+        onos_cli_2 = main.Cluster.active(2).CLI
+        kubectl_0 = main.Cluster.active(0).k8s
+
+        up4_0 = UP4()
+        up4_1 = UP4()
+        up4_2 = UP4()
+
+        main.step("Program PDRs and FARs via UP4 on ONOS 0")
+        up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
+        up4_0.attachUes()
+        up4_0.verifyUp4Flow(onos_cli_0)
+        up4_0.teardown()
+
+        onosPod = main.params["UP4_delete_pod"]
+        # Exit from previous port forwarding, because we need to restore
+        # port-forwarding after ONOS reboot.
+        kubectl_0.clearBuffer()
+        kubectl_0.exitFromProcess()
+        main.step("Kill " + onosPod)
+        utilities.assert_equal(
+            expect=main.TRUE,
+            actual=kubectl_0.kubectlDeletePod(
+                podName=onosPod,
+                kubeconfig=kubectl_0.kubeConfig,
+                namespace=main.params['kubernetes']['namespace']
+            ),
+            onpass="%s pod correctly deleted" % onosPod,
+            onfail="%s pod has not been deleted" % onosPod
+        )
+
+        main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 2")
+        up4_2.setup(main.Cluster.active(2).p4rtUp4, no_host=True)
+        utilities.assert_equal(
+            expect=True,
+            actual=up4_2.verifyUesFlowNumberP4rt(),
+            onpass="Correct number of PDRs and FARs",
+            onfail="Wrong number of PDRs and FARs"
+        )
+
+        main.step("Remove PDRs and FARs via UP4 on ONOS 2")
+        up4_2.detachUes()
+        up4_2.verifyNoUesFlow(onos_cli_2)
+
+        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 2")
+        utilities.assert_equal(
+            expect=True,
+            actual=up4_2.verifyNoUesFlowNumberP4rt(),
+            onpass="No PDRs and FARs",
+            onfail="Stale PDRs and FARs"
+        )
+        up4_2.teardown()
+
+        main.step("Verify ONOS 0 has restarted correctly")
+        onosStarted = utilities.retry(
+            f=kubectl_0.kubectlCheckPodReady,
+            retValue=main.FALSE,
+            kwargs={
+                "podName": onosPod,
+                "kubeconfig": kubectl_0.kubeConfig,
+                "namespace": main.params['kubernetes']['namespace']
+            },
+            sleep=10,
+            attempts=10
+        )
+        utilities.assert_equal(
+            expect=main.TRUE,
+            actual=onosStarted,
+            onpass="%s pod correctly restarted" % onosPod,
+            onfail="%s pod haven't restarted correctly" % onosPod
+        )
+
+        main.step("Verify ONOS cluster is in good shape")
+        # A bug in kubectl port forwarding doesn't terminate port-forwarding
+        # when the container changed, nor reconnect correctly to the restarted
+        # container.
+        # See: https://github.com/kubernetes/kubectl/issues/686
+        # Re-build the port-list for port forwarding
+        portList = "%s:%s " % (main.Cluster.active(0).CLI.karafPort, 8101)
+        portList += "%s:%s " % (main.Cluster.active(0).REST.port, 8181)
+        portList += "%s:%s " % (main.Cluster.active(0).p4rtUp4.p4rtPort,
+                                main.ONOScell.up4Port)
+        kubectl_0.clearBuffer()
+        kubectl_0.kubectlPortForward(
+            onosPod,
+            portList,
+            kubectl_0.kubeConfig,
+            main.params['kubernetes']['namespace']
+        )
+        onos_cli_0.clearBuffer()  # Trigger ONOS CLI reconnection
+        onosNodesStatus = utilities.retry(
+            f=main.Cluster.nodesCheck,
+            retValue=False,
+            sleep=5,
+            attempts=10
+        )
+        utilities.assert_equal(
+            expect=True,
+            actual=onosNodesStatus,
+            onpass="ONOS nodes status correct",
+            onfail="Wrong ONOS nodes status"
+        )
+
+        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 0")
+        up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
+        utilities.assert_equal(
+            expect=True,
+            actual=up4_0.verifyNoUesFlowNumberP4rt(),
+            onpass="No PDRs and FARs",
+            onfail="Stale PDRs and FARs"
+        )
+
+        main.step("Re-program PDRs and FARs via UP4 on ONOS 0 after restart")
+        up4_0.attachUes()
+        up4_0.verifyUp4Flow(onos_cli_0)
+        up4_0.teardown()
+
+        main.step("Verify PDRs and FARs via UP4 on ONOS 1")
+        up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
+        up4_1.verifyUp4Flow(onos_cli_1)
+
+        main.step("Verify all ONOS instances have the same number of flows")
+        onos_0_flow_count = onos_cli_0.checkFlowCount()
+        onos_1_flow_count = onos_cli_1.checkFlowCount()
+        onos_2_flow_count = onos_cli_2.checkFlowCount()
+        utilities.assert_equal(
+            expect=True,
+            actual=onos_0_flow_count == onos_1_flow_count == onos_2_flow_count,
+            onpass="All ONOS instances have the same number of flows",
+            onfail="ONOS instances have different number of flows: (%d, %d, %d)" % (
+                onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
+        )
+
+        main.step("Cleanup PDRs and FARs via UP4 on ONOS 1")
+        up4_1.detachUes()
+        up4_1.verifyNoUesFlow(onos_cli_2)
+        up4_1.teardown()
+
         run.cleanup(main)

@@ -1366,3 +1366,83 @@ class CLI( Component ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
+
+    def kubectlDeletePod( self, podName, kubeconfig=None, namespace=None, timeout=240 ):
+        try:
+            cmdStr = "kubectl %s %s delete pod %s" % (
+                "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                "-n %s" % namespace if namespace else "",
+                podName )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error",
+                                      "The connection to the server",
+                                      self.prompt ],
+                                    timeout=timeout )
+            if i == 3:
+                main.log.debug( self.name + ": " + self.handle.before )
+                self.clearBuffer()
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                self.clearBuffer()
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def kubectlCheckPodReady( self, podName, kubeconfig=None, namespace=None, timeout=240 ):
+        try:
+            cmdStr = "kubectl %s %s get pods " \
+                     "-o go-template='{{range $index, $element := .items}}{{range .status.containerStatuses}}{{if .ready}}{{$element.metadata.name}}{{\" ready\\n\"}}{{end}}{{end}}{{end}}' | grep --color=never %s" % (
+                "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                "-n %s" % namespace if namespace else "",
+                podName )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            # Since the command contains the prompt ($), we first expect for the
+            # last part of the command and then we expect the actual values
+            self.handle.expect("grep --color=never %s" % podName, timeout=1)
+            i = self.handle.expect( [ podName + " ready",
+                                      self.prompt ],
+                                    timeout=timeout )
+            if i == 0:
+                main.log.debug( self.name + ": " + podName + " ready" )
+                self.clearBuffer()
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                self.clearBuffer()
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def clearBuffer(self):
+        i = 0
+        response = ''
+        while True:
+            try:
+                i += 1
+                self.handle.expect( self.prompt, timeout=5 )
+                response += self.cleanOutput( self.handle.before )
+            except pexpect.TIMEOUT:
+                return response

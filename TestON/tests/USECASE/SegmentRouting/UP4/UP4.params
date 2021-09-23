@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3</testcases>
+    <testcases>1,2,3,4</testcases>
 
     <GRAPH>
         <nodeCluster>pairedleaves</nodeCluster>
@@ -42,6 +42,8 @@
             </ue2>
         </ues>
     </UP4>
+
+    <UP4_delete_pod>onos-tost-onos-classic-0</UP4_delete_pod>
 
     <TOPO>
         <switchNum>2</switchNum>

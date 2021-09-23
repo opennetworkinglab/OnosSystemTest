@@ -639,8 +639,14 @@ class SRpairedLeaves:
                 fabricIntfIp = ipMatch.group(1)
                 main.log.debug( "Found %s as gateway ip for %s" % ( fabricIntfIp, srcComponent.shortName ) )
                 # FIXME: How to chose the correct one if there are multiple? look at subnets
-        srcComponent.addRouteToHost( route, fabricIntfIp, srcIface, sudoRequired=True, purgeOnDisconnect=True )
+        addResult = srcComponent.addRouteToHost( route, fabricIntfIp, srcIface, sudoRequired=True, purgeOnDisconnect=True )
+        failMsg = "Failed to add static route to host"
+        utilities.assert_equals( expect=main.TRUE, actual=addResult,
+                                 onpass="Added static route to host",
+                                 onfail=failMsg )
         main.log.debug( srcComponent.getRoutes() )
+        if not addResult:
+            main.skipCase( result="FAIL", msg=failMsg )
 
         # Add route in ONOS
         nextHopIface = nextHopComponent.interfaces[0].get( 'name' )
@@ -667,7 +673,10 @@ class SRpairedLeaves:
         main.Cluster.active( 0 ).routeRemove( route, nextHopIp )
         main.log.debug( main.Cluster.active( 0 ).routes() )
         # Remove route on host
-        srcComponent.deleteRoute( route, fabricIntfIp, srcIface, sudoRequired=True )
+        delResult = srcComponent.deleteRoute( route, fabricIntfIp, srcIface, sudoRequired=True )
+        utilities.assert_equals( expect=main.TRUE, actual=delResult,
+                                 onpass="Removed static route from host",
+                                 onfail="Failed to remove static route from host" )
         main.log.debug( srcComponent.getRoutes() )
         # Cleanup
         main.log.warn( json.dumps( main.downtimeResults, indent=4, sort_keys=True ) )

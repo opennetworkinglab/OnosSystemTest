@@ -57,7 +57,7 @@ class CLI( Component ):
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host " + \
             self.ip_address + " port 22: Connection refused"
-        ssh_options = "-t -X -A -o ServerAliveInterval=120 -o TCPKeepAlive=yes"
+        ssh_options = "-t -X -A -o ServerAliveInterval=50 -o TCPKeepAlive=yes"
         ssh_destination = self.user_name + "@" + self.ip_address
         envVars = { "TERM": "vt100" }
         # TODO: Add option to specify which shell/command to use

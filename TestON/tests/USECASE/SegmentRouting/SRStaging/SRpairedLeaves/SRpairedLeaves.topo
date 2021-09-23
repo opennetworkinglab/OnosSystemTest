@@ -184,19 +184,5 @@
             </COMPONENTS>
         </NetworkBench>
 
-        <DeepInsight>
-            <host>10.76.28.74</host>
-            <user>jenkins</user>
-            <password></password>
-            <type>DeepInsightApiDriver</type>
-            <connect_order>1</connect_order>
-            <COMPONENTS>
-                <server_url>https://10.76.28.74:30000</server_url>
-                <username>diadmin</username>
-                <password>diadmin</password>
-                <verify_ssl>False</verify_ssl>
-            </COMPONENTS>
-        </DeepInsight>
-
     </COMPONENT>
 </TOPOLOGY>

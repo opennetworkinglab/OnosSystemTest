@@ -1,0 +1,115 @@
+<!-- SPDX-FileCopyrightText: Copyright 2021-present Open Networking Foundation. -->
+<!-- SPDX-License-Identifier: GPL-2.0-or-later -->
+<TOPOLOGY>
+    <COMPONENT>
+        <Compute1>
+            <host>10.76.28.74</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>6</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <dhcp>True</dhcp>
+                <ip>10.32.11.2</ip>
+                <shortName>h1</shortName>
+                <port1></port1>
+                <link1></link1>
+                <ifaceName>pairbond</ifaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>false</sudo_required>
+            </COMPONENTS>
+        </Compute1>
+
+        <Compute2>
+            <host>10.76.28.72</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>7</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <dhcp>True</dhcp>
+                <ip>10.32.11.3</ip>
+                <shortName>h2</shortName>
+                <port1></port1>
+                <link1></link1>
+                <ifaceName>pairbond</ifaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>false</sudo_required>
+            </COMPONENTS>
+        </Compute2>
+
+        <Compute3>
+            <host>10.76.28.68</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>8</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <dhcp>True</dhcp>
+                <ip>10.32.11.194</ip>
+                <shortName>h3</shortName>
+                <port1></port1>
+                <link1></link1>
+                <ifaceName>eno2</ifaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>false</sudo_required>
+            </COMPONENTS>
+        </Compute3>
+
+        <DeepInsight>
+            <host>10.76.28.74</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>DeepInsightApiDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <server_url>https://10.76.28.74:30000</server_url>
+                <username>diadmin</username>
+                <password>diadmin</password>
+                <verify_ssl>False</verify_ssl>
+            </COMPONENTS>
+        </DeepInsight>
+
+        <!-- A NetworkDriver to provide functions such as "createHostComponent" -->
+        <INTNetwork>
+            <host>localhost</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>NetworkDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </INTNetwork>
+
+    </COMPONENT>
+</TOPOLOGY>

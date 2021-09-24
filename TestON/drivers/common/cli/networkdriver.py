@@ -539,7 +539,6 @@ class NetworkDriver( CLI ):
                         dstVLANs = hostPair[1].interfaces[0].get( 'vlan' )
                         # Use scapy to send and recieve packets
                         hostPair[ 1 ].startScapy( ifaceName=dstIface )
-                        hostPair[ 1 ].addRoutes()
                         filters = []
                         if srcMac:
                             filters.append( "ether src host %s" % srcMac )
@@ -547,7 +546,6 @@ class NetworkDriver( CLI ):
                             filters.append( "ip src host %s" % srcIPs[0] )
                         hostPair[ 1 ].startFilter( ifaceName=dstIface, pktFilter=" and ".join(filters) )
                         hostPair[ 0 ].startScapy( ifaceName=srcIface )
-                        hostPair[ 0 ].addRoutes()
                         hostPair[ 0 ].buildEther( src=srcMac, dst=dstMac )
                         if VLAN:
                             hostPair[ 0 ].buildVLAN( vlan=VLAN )

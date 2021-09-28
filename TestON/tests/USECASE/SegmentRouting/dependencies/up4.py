@@ -246,7 +246,7 @@ class UP4:
         """
         return self.readPdrsNumber() == self.readFarsNumber() == preInstalledUes * 2
 
-    def verifyNoUesFlow(self, onosCli, retries=3):
+    def verifyNoUesFlow(self, onosCli, retries=10):
         """
         Verify that no PDRs and FARs are installed in ONOS.
 
@@ -257,7 +257,7 @@ class UP4:
         retValue = utilities.retry(f=UP4.__verifyNoPdrsFarsOnos,
                                    retValue=False,
                                    args=[onosCli],
-                                   sleep=1,
+                                   sleep=5,
                                    attempts=retries)
         utilities.assert_equal(expect=True,
                                actual=retValue,

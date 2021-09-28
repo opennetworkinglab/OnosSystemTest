@@ -529,7 +529,7 @@ class UP4:
 
         main.step("Cleanup PDRs and FARs via UP4 on ONOS 1")
         up4_1.detachUes()
-        up4_1.verifyNoUesFlow(onos_cli_2)
+        up4_1.verifyNoUesFlow(onos_cli_1)
         up4_1.teardown()
 
         run.cleanup(main)

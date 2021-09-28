@@ -37,6 +37,7 @@
                 <trex_config>trex_config.yaml</trex_config> <!-- relative path starting from ./dependencies-->
                 <force_restart>True</force_restart>
                 <software_mode>True</software_mode>
+                <trex_library_python_path>/home/jenkins/trex_python</trex_library_python_path>
             </COMPONENTS>
         </TRexClient>
 

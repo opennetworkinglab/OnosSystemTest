@@ -8,14 +8,12 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 import time
 import os
+import sys
+import importlib
 import collections
 import numpy as np
 
 from drivers.common.api.controllerdriver import Controller
-from trex.stl.api import STLClient, STLStreamDstMAC_PKT
-from trex_stf_lib.trex_client import CTRexClient
-from trex_stl_lib.api import STLFlowLatencyStats, STLPktBuilder, STLStream, \
-    STLTXCont
 
 from socket import error as ConnectionRefusedError
 from distutils.util import strtobool
@@ -93,9 +91,12 @@ class TrexClientDriver(Controller):
         self.stats = None
         self.trex_client = None
         self.trex_daemon_client = None
+        self.trex_library_python_path = None
         super(TrexClientDriver, self).__init__()
 
     def connect(self, **connectargs):
+        global STLClient, STLStreamDstMAC_PKT, CTRexClient, STLPktBuilder, \
+            STLFlowLatencyStats, STLStream, STLTXCont
         try:
             for key in connectargs:
                 vars(self)[key] = connectargs[key]
@@ -108,7 +109,19 @@ class TrexClientDriver(Controller):
                     self.force_restart = bool(strtobool(self.options[key]))
                 elif key == "software_mode":
                     self.software_mode = bool(strtobool(self.options[key]))
+                elif key == "trex_library_python_path":
+                    self.trex_library_python_path = self.options[key]
             self.name = self.options["name"]
+            if self.trex_library_python_path is not None:
+                sys.path.append(self.trex_library_python_path)
+            # Import after appending the TRex library Python path
+            STLClient = getattr(importlib.import_module("trex.stl.api"), "STLClient")
+            STLStreamDstMAC_PKT = getattr(importlib.import_module("trex.stl.api"), "STLStreamDstMAC_PKT")
+            CTRexClient = getattr(importlib.import_module("trex_stf_lib.trex_client"), "CTRexClient")
+            STLFlowLatencyStats = getattr(importlib.import_module("trex_stl_lib.api"), "STLFlowLatencyStats")
+            STLPktBuilder = getattr(importlib.import_module("trex_stl_lib.api"), "STLPktBuilder")
+            STLStream = getattr(importlib.import_module("trex_stl_lib.api"), "STLStream")
+            STLTXCont = getattr(importlib.import_module("trex_stl_lib.api"), "STLTXCont")
         except Exception as inst:
             main.log.error("Uncaught exception: " + str(inst))
             main.cleanAndExit()

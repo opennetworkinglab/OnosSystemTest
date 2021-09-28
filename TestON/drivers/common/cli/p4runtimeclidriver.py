@@ -293,6 +293,29 @@ class P4RuntimeCliDriver(CLI):
             main.log.exception(self.name + ": Uncaught exception!")
             main.cleanAndExit()
 
+    def readNumberTableEntries(self, tableName):
+        """
+        Read table entries and return the number of entries present in a table.
+
+        :param tableName: Name of table to read from
+        :return: Number of entries,
+        """
+        try:
+            main.log.debug(self.name + ": Reading table entries from " + tableName)
+            cmd = 'table_entry["%s"].read(lambda te: print(te))' % tableName
+            response = self.__clearSendAndExpect(cmd, clearBufferAfter=True)
+            # Every table entries starts with "table_id: [P4RT obj ID] ("[tableName]")"
+            return response.count("table_id")
+        except pexpect.TIMEOUT:
+            main.log.exception(self.name + ": Command timed out")
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception(self.name + ": connection closed.")
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
+            main.cleanAndExit()
+
     def disconnect(self):
         """
         Called at the end of the test to stop the p4rt CLI component and
@@ -337,10 +360,12 @@ class P4RuntimeCliDriver(CLI):
             response = main.FALSE
         return response
 
-    def __clearSendAndExpect(self, cmd):
-        self.clearBuffer()
+    def __clearSendAndExpect(self, cmd, clearBufferAfter=False, debug=False):
+        self.clearBuffer(debug)
         self.handle.sendline(cmd)
         self.handle.expect(self.p4rtShPrompt)
+        if clearBufferAfter:
+            return self.clearBuffer()
         return self.handle.before
 
     def clearBuffer(self, debug=False):

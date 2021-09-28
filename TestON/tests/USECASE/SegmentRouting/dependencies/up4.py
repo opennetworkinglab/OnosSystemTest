@@ -53,20 +53,28 @@ class UP4:
         self.emulated_ues = []
         self.up4_client = None
 
-    def setup(self, p4rt_client):
+    def setup(self, p4rt_client, no_host=False):
+        """
+        Set up P4RT and scapy on eNB and PDN hosts
+        :param p4rt_client: a P4RuntimeCliDriver component
+        :param no_host: True if you don't want to start scapy on the hosts
+        :return:
+        """
         self.s1u_address = main.params["UP4"]["s1u_address"]
         self.enb_address = main.params["UP4"]["enb_address"]
         self.emulated_ues = main.params["UP4"]['ues']
         self.up4_client = p4rt_client
 
         # Optional Parameters
-        if "enodeb_host" in main.params["UP4"]:
-            self.enodeb_host = getattr(main, main.params["UP4"]["enodeb_host"])
-            self.enodeb_interface = self.enodeb_host.interfaces[0]
-        if "pdn_host" in main.params["UP4"]:
-            self.pdn_host = getattr(main, main.params["UP4"]["pdn_host"])
-            self.pdn_interface = self.pdn_host.interfaces[0]
-        self.router_mac = main.params["UP4"].get("router_mac", None)
+        if not no_host:
+            if "enodeb_host" in main.params["UP4"]:
+                self.enodeb_host = getattr(main,
+                                           main.params["UP4"]["enodeb_host"])
+                self.enodeb_interface = self.enodeb_host.interfaces[0]
+            if "pdn_host" in main.params["UP4"]:
+                self.pdn_host = getattr(main, main.params["UP4"]["pdn_host"])
+                self.pdn_interface = self.pdn_host.interfaces[0]
+            self.router_mac = main.params["UP4"].get("router_mac", None)
 
         # Start components
         self.up4_client.startP4RtClient()
@@ -200,6 +208,43 @@ class UP4:
 
         utilities.assert_equal(
             expect=False, actual=fail, onpass=msg, onfail=msg)
+
+    def readPdrsNumber(self):
+        """
+        Read the PDRs table and return the number of entries in the PDRs table
+
+        :return: Number of entries in the PDRs table
+        """
+        tableName = 'PreQosPipe.pdrs'
+        return self.up4_client.readNumberTableEntries(tableName)
+
+    def readFarsNumber(self):
+        """
+        Read the FARs table and return the number of entries in the FARs table
+
+        :return: Number of entries in the FARs table
+        """
+        tableName = 'PreQosPipe.load_far_attributes'
+        return self.up4_client.readNumberTableEntries(tableName)
+
+    def verifyUesFlowNumberP4rt(self):
+        """
+        Verify via P4RT CLI that the number of PDRs and FARs is the expected one
+
+        :return: True if the number of PDRs and FARs is expected, False otherwise
+        """
+        nPdrs = self.readPdrsNumber()
+        nFars = self.readFarsNumber()
+        return nPdrs == nFars == len(self.emulated_ues) * 2
+
+    def verifyNoUesFlowNumberP4rt(self, preInstalledUes=0):
+        """
+        Verify via P4RT CLI that there is no PDRs and FARs installed.
+
+        :param preInstalledUes: Number of UEs whose PDRs and FARs are still programmed
+        :return:
+        """
+        return self.readPdrsNumber() == self.readFarsNumber() == preInstalledUes * 2
 
     def verifyNoUesFlow(self, onosCli, retries=3):
         """

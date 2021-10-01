@@ -1,7 +1,7 @@
 <!-- SPDX-FileCopyrightText: Copyright 2021-present Open Networking Foundation. -->
 <!-- SPDX-License-Identifier: GPL-2.0-or-later -->
 <PARAMS>
-    <testcases>1,2,3</testcases>
+    <testcases>1,2,3,4</testcases>
     <routerMac>00:00:0A:4C:1C:46</routerMac>
     <TREX>
         <flows>

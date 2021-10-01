@@ -495,7 +495,7 @@ class NetworkDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def pingallHosts( self, hostList, ipv6=False, wait=1, useScapy=False ):
+    def pingallHosts( self, hostList, ipv6=False, wait=1, useScapy=False, returnResult=False ):
         """
             Ping all specified IPv4 hosts
 
@@ -518,6 +518,7 @@ class NetworkDriver( CLI ):
             pingResponse = "IPv4 ping across specified hosts\n"
             failedPings = 0
             hostPairs = itertools.permutations( list( hostComponentList ), 2 )
+            resultList = []
             for hostPair in list( hostPairs ):
                 ipDst = hostPair[ 1 ].options.get( 'ip6', hostPair[ 1 ].options[ 'ip' ] ) if ipv6 else hostPair[ 1 ].options[ 'ip' ]
                 srcIface = hostPair[ 0 ].interfaces[0].get( 'name' )
@@ -532,6 +533,7 @@ class NetworkDriver( CLI ):
                     main.log.debug( srcVLANs )
                     for VLAN in srcVLANs:
                         pingResponse += hostPair[ 0 ].options[ 'shortName' ]
+                        # returnResult.append({ "src": hostPair[0].shortName, "vlan": VLAN, "dst": hostPair[1].shortName, "result": pingResult})
                         if VLAN:
                             pingResponse += "." + str( VLAN )
                         pingResponse += " -> "
@@ -571,6 +573,7 @@ class NetworkDriver( CLI ):
                             main.log.debug( hostPair[ 1 ].handle.before )
                             # One of the host to host pair is unreachable
                             pingResult = main.FALSE
+                        resultList.append({ "src": hostPair[0].shortName, "vlan": str(VLAN), "dst": hostPair[1].shortName, "result": pingResult})
                         hostPair[ 0 ].stopScapy()
                         hostPair[ 1 ].stopScapy()
                         if pingResult:
@@ -586,6 +589,7 @@ class NetworkDriver( CLI ):
                 else:
                     pingResponse += hostPair[ 0 ].options[ 'shortName' ] + " -> "
                     pingResult = hostPair[ 0 ].ping( ipDst, interface=srcIface, wait=int( wait ) )
+                    resultList.append({ "src": hostPair[0].shortName, "vlan": str(VLAN), "dst": hostPair[1].shortName, "result": pingResult})
                     if pingResult:
                         pingResponse += hostPair[ 1 ].options[ 'shortName' ]
                         if VLAN:
@@ -597,7 +601,10 @@ class NetworkDriver( CLI ):
                         failedPings += 1
                     pingResponse += "\n"
             main.log.info( pingResponse + "Failed pings: " + str( failedPings ) )
-            return isReachable
+            if returnResult:
+                return resultList
+            else:
+                return isReachable
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()

@@ -74,7 +74,7 @@ class SRBridgingTest ():
                     run.loadJson( main, suffix=suf )
                 else:
                     run.loadJson( main )
-            run.loadChart( main )  # stores hosts to ping and expected results
+            run.loadChart( main, suf )  # stores hosts to ping and expected results
             if hasattr( main, 'Mininet1' ):
                 run.mnDockerSetup( main )  # optionally create and setup docker image
 

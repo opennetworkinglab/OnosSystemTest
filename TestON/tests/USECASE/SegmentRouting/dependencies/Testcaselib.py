@@ -244,10 +244,10 @@ class Testcaselib:
                 main.Cluster.active( 0 ).REST.setXconnectJson( xconnect )
 
     @staticmethod
-    def loadChart( main ):
+    def loadChart( main, suffix='' ):
         try:
-            filename = "%s%s.chart" % ( main.configPath + main.forChart,
-                                        main.cfgName )
+            filename = "%s%s.chart%s" % ( main.configPath + main.forChart,
+                                        main.cfgName, suffix )
             with open( filename ) as chart:
                 main.pingChart = json.load( chart )
         except IOError:
@@ -738,8 +738,22 @@ class Testcaselib:
                                                  onpass="IPv6 connectivity successfully tested",
                                                  onfail="IPv6 connectivity failed" )
                 elif main.physicalNet:
-                    pa = main.Network.pingallHosts( hosts, ipv6=True, useScapy=useScapy )
-                    utilities.assert_equals( expect=expect, actual=pa,
+                    pa = main.Network.pingallHosts( hosts, ipv6=True, useScapy=useScapy, returnResult=True )
+                    combinedResult = True
+                    for result in pa:
+                        expectedResult = None
+                        for ping in main.pingChart.values():
+                            if result["src"] in ping["hosts"] and result["dst"] in ping["hosts"]:
+                                # Check if the vlan in ping is the same as in the result. If true, set the expected result to result at expect
+                                # If expected result is not the same as the actual result, then the combined result is false
+                                # if we cannot find the expected result, then expect should be the default between the hosts
+                                if str(result["vlan"]) in ping.get("vlans", [] ):
+                                    expectedResult = ping["vlans"].get(str(result["vlan"]))
+                        if expectedResult is None:
+                            expectedRresult = expect
+                        if expectedResult != result["result"]:
+                            combinedResult = False
+                    utilities.assert_equals( expect=True, actual=combinedResult,
                                              onpass="IP connectivity successfully tested",
                                              onfail="IP connectivity failed" )
                 else:

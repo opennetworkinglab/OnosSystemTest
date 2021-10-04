@@ -4,6 +4,7 @@ class QOS:
         self.default = ''
 
     def CASE1(self, main):
+        main.case("Leaf-Edge with Mobile Traffic Classification")
         # Leaf-Edge-Mobile
         # Attach 2 UEs with different QFI
         # Generate traffic with Trex for the two UEs

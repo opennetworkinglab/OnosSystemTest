@@ -36,10 +36,8 @@ class UP4:
         # Get the P4RT client connected to UP4 in the first available ONOS instance
         up4.setup(main.Cluster.active(0).p4rtUp4)
 
-        main.step("Program PDRs and FARs via UP4")
+        main.step("Program and Verify PDRs and FARs via UP4")
         up4.attachUes()
-
-        main.step("Verify PDRs and FARs in ONOS")
         up4.verifyUp4Flow(onos_cli)
 
         # ------- Test Upstream traffic (enb->pdn)
@@ -50,10 +48,8 @@ class UP4:
         main.step("Test downstream traffic")
         up4.testDownstreamTraffic()
 
-        main.step("Remove PDRs and FARs via UP4")
+        main.step("Remove and Verify PDRs and FARs via UP4")
         up4.detachUes()
-
-        main.step("Verify removed PDRs and FARs from ONOS")
         up4.verifyNoUesFlow(onos_cli)
 
         main.step("Stop scapy and p4rt client")
@@ -108,10 +104,8 @@ class UP4:
         pdn_host = up4.pdn_host
         pdn_interface = up4.pdn_interface
 
-        main.step("Program PDRs and FARs for UEs via UP4")
+        main.step("Program and Verify PDRs and FARs for UEs via UP4")
         up4.attachUes()
-
-        main.step("Verify PDRs and FARs in ONOS")
         up4.verifyUp4Flow(onos_cli)
 
         # ------------------- UPSTREAM -------------------
@@ -239,10 +233,8 @@ class UP4:
                                    n_packets, tot_packets))
         # ------------------------------------------------
 
-        main.step("Remove PDRs and FARs for UEs via UP4")
+        main.step("Remove and Verify PDRs and FARs for UEs via UP4")
         up4.detachUes()
-
-        main.step("Verify removed PDRs and FARs from ONOS")
         up4.verifyNoUesFlow(onos_cli)
 
         main.step("Stop scapy and p4rt client")
@@ -283,7 +275,7 @@ class UP4:
         up4_1 = UP4()
         up4_2 = UP4()
 
-        main.step("Program PDRs and FARs via UP4 on ONOS 0")
+        main.step("Program and Verify PDRs and FARs via UP4 on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
@@ -320,7 +312,7 @@ class UP4:
                 onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
         )
 
-        main.step("Remove PDRs and FARs via UP4 on ONOS 2")
+        main.step("Remove and Verify PDRs and FARs via UP4 on ONOS 2")
         up4_2.detachUes()
         up4_2.verifyNoUesFlow(onos_cli_2)
 
@@ -402,7 +394,7 @@ class UP4:
         up4_1 = UP4()
         up4_2 = UP4()
 
-        main.step("Program PDRs and FARs via UP4 on ONOS 0")
+        main.step("Program and Verify PDRs and FARs via UP4 on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
@@ -434,7 +426,7 @@ class UP4:
             onfail="Wrong number of PDRs and FARs"
         )
 
-        main.step("Remove PDRs and FARs via UP4 on ONOS 2")
+        main.step("Remove and Verify PDRs and FARs via UP4 on ONOS 2")
         up4_2.detachUes()
         up4_2.verifyNoUesFlow(onos_cli_2)
 

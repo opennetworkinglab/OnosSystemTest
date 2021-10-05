@@ -751,6 +751,10 @@ class Testcaselib:
                                     expectedResult = ping["vlans"].get(str(result["vlan"]))
                         if expectedResult is None:
                             expectedRresult = expect
+                        if expectedResult.lower() == "true":
+                            expectedResult = main.TRUE
+                        else:
+                            expectedResult = main.FALSE
                         if expectedResult != result["result"]:
                             combinedResult = False
                     utilities.assert_equals( expect=True, actual=combinedResult,

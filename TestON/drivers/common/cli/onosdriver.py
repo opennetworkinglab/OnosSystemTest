@@ -2786,6 +2786,66 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def onosDiagnosticsK8s( self, onosNames, dstDir, suffix, timeout=300, profile="TRELLIS_PROFILE",
+                            namespace="tost", karafDir="apache-karaf-4.2.9", diagsCmd="onos-diagnostics-k8s" ):
+        """
+            Run onos-diagnostics-k8s with given ONOS instance IPs and save output to dstDir
+            with suffix specified E.g. onos-diags-suffix.tar.gz
+            required arguments:
+                onosNames - list of ONOS pod names for collecting diags
+                dstDir - diags file will be saved under the directory specified
+                suffix - diags file will be named with the suffix specified
+            returns:
+                main.FALSE if there's an error executing the command, and main.TRUE otherwise
+        """
+        try:
+            self.handle.sendline( "export DIAGS_PROFILE=%s" % profile )
+            self.handle.expect( self.prompt )
+            cmd = "%s -s %s -k %s" % ( diagsCmd, namespace, karafDir )
+            assert isinstance( onosNames, list )
+            for pod in onosNames:
+                cmd += " " + str( pod )
+            self.handle.sendline( cmd )
+            i = 0
+            while i != 2:
+                i = self.handle.expect( [ "Password", ".txt", self.prompt ], timeout=timeout )
+                handle = self.handle.before
+                main.log.debug( "%s: %s" % ( self.name, handle ) )
+                if i == 0:
+                    self.handle.sendline( self.pwd )
+            assert handle is not None, "Error in sendline"
+            assert "The requested URL returned error" not in handle, handle
+            assert "Command not found:" not in handle, handle
+            assert "Exception:" not in handle, handle
+            # Rename and move diags file to dstDir from /tmp
+            if dstDir[ -1: ] != "/":
+                dstDir += "/"
+            self.handle.sendline( "mv /tmp/onos-diags.tar.gz " + str( dstDir ) + "onos-diags" + str( suffix ) + ".tar.gz" )
+            self.handle.expect( self.prompt )
+            handle = self.handle.before
+            main.log.debug( "%s: %s" % ( self.name, handle ) )
+            assert handle is not None, "Error in sendline"
+            assert "No such file or directory" not in handle, handle
+            return main.TRUE
+        except AssertionError:
+            main.log.exception( "{} Error in onos-diagnostics-k8s output:".format( self.name ) )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in onosDiagnostics-k8s" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            self.exitFromCmd( self.prompt, 100 )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def onosPower( self, onosIP, toggle, userName=None ):
         """
             Run onos-power script to tell the cell warden to simulate a power faulure

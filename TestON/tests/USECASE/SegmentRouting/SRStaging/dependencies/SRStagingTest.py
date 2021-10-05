@@ -102,6 +102,8 @@ class SRStagingTest:
             else:
                 # Run the test with physical devices
                 run.connectToPhysicalNetwork( main, hostDiscovery=False )  # We don't want to do host discovery in the pod
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in setupTest" )
             main.skipCase( result="FAIL", msg=e )
@@ -297,6 +299,8 @@ class SRStagingTest:
             main.funcs.startTshark( main, src, pingDesc=pingDesc, direction="Sender",
                                     srcIp=srcIp, dstIp=dstIp, protocolStr=protocolStr )
 
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in setupFlow" )
             main.skipCase( result="FAIL", msg=e )
@@ -435,6 +439,8 @@ class SRStagingTest:
             # Timestamp used for EVENT START
             main.eventStart = datetime.datetime.utcnow()
             return switchComponent, srcList, dstList
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in startCapturing" )
             main.skipCase( result="FAIL", msg=e )
@@ -547,6 +553,8 @@ class SRStagingTest:
                 colName = "%s" % "%s-dropped-packets" % receiverResultDesc
                 main.downtimeResults[ colName[:63] ] = dropped
 
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in stopFlow" )
             main.skipCase( result="FAIL", msg=e )
@@ -637,6 +645,8 @@ class SRStagingTest:
                                          onpass="Saved write-req file from %s" % switch,
                                          onfail="Failed to cp write-req file from %s" % switch )
             """
+        except SkipCase:
+            raise
         except Exception:
             main.log.exception( "Error in stopCapturing" )
 
@@ -674,6 +684,8 @@ class SRStagingTest:
             # We need another way of uploading, this doesn't have guaranteed order and # of fields
             # main.downtimeResults.update( componentBreakdownDict )
             main.log.debug( json.dumps( main.downtimeResults, sort_keys=True, indent=4 ) )
+        except SkipCase:
+            raise
         except Exception:
             main.log.exception( "Error while breaking down logs" )
 
@@ -767,6 +779,8 @@ class SRStagingTest:
             # This is not currently working, disabling for now
             # main.funcs.analyzeLogs( shortDesc, 'portstate_down', main.eventStart, main.eventStop, main.logdir )
             return device, port
+        except SkipCase:
+            raise
         except Exception:
             main.log.exception( "Error in linkDown" )
 
@@ -828,6 +842,8 @@ class SRStagingTest:
             # Break down logs
             # This is not currently working, disabling for now
             # main.funcs.analyzeLogs( shortDesc, 'portstate_up', main.eventStart, main.eventStop, main.logdir )
+        except SkipCase:
+            raise
         except Exception:
             main.log.exception( "Error in linkUp" )
 
@@ -941,6 +957,8 @@ class SRStagingTest:
             # This is not currently working, disabling for now
             # main.funcs.analyzeLogs( shortDescRecovery, 'start_onl', main.eventStart, main.eventStop, main.logdir )
             # Check the switch is back in ONOS
+        except SkipCase:
+            raise
         except Exception:
             main.log.exception( "Error in onlReboot" )
 
@@ -1062,6 +1080,8 @@ class SRStagingTest:
             # Break down logs
             # This is not currently working, disabling for now
             # main.funcs.analyzeLogs( shortDescRecovery, 'powerup_switch', main.eventStart, main.eventStop, main.logdir )
+        except SkipCase:
+            raise
         except Exception:
             main.log.exception( "Error in killSwitchAgent" )
 
@@ -1069,6 +1089,8 @@ class SRStagingTest:
     def onosDown():
         try:
             pass
+        except SkipCase:
+            raise
         except Exception:
             main.log.exception( "Error in onosDown" )
 
@@ -1145,6 +1167,8 @@ class SRStagingTest:
 
             # TODO What to return? List of touples? [(duration, dropped Packets),...] ?
             return output
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in analyzeIperfPcap" )
 
@@ -1163,6 +1187,8 @@ class SRStagingTest:
                 component.handle.send( "\x03" )  # CTRL-C
                 component.handle.expect( component.prompt, timeout=10 )
                 main.log.debug( component.handle.before + str( component.handle.after ) )
+            except SkipCase:
+                raise
             except Exception:
                 main.log.exception( "Error in onosDown" )
                 return -1
@@ -1199,6 +1225,8 @@ class SRStagingTest:
                     return delta
             main.log.error( "No Packets found" )
             return 0
+        except SkipCase:
+            raise
         except Exception:
             main.log.exception( "Error in analyzePcap" )
 
@@ -1244,6 +1272,8 @@ class SRStagingTest:
                 main.log.debug( port )
                 targetsStats[ device ] = deltaStats
             return targetsStats
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in portstatsDelta" )
             main.log.debug( "Initial: %s\nUpdated: %s\n" % (initialStats, updatedStats) )
@@ -1284,6 +1314,8 @@ class SRStagingTest:
                 main.log.warn( "Delta not above threshold of %s" % threshold )
                 return None, None
             return retDevice, retPort
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in findPortWithTraffic" )
             main.log.debug( "Initial: %s\nUpdated: %s\n" % ( initialStats, updatedStats ) )
@@ -1320,6 +1352,8 @@ class SRStagingTest:
                     switchComponent = main.Network.switches[ switch ]
             main.log.debug( switchComponent )
             return switchComponent
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in findSwitchWithTraffic" )
             main.skipCase( result="FAIL", msg=e )
@@ -1335,6 +1369,8 @@ class SRStagingTest:
                 if switchComponent.shortName in device[ 'id' ]:
                     return device[ 'available' ]
             return False
+        except SkipCase:
+            raise
         except Exception as e:
             main.log.exception( "Error in switchIsConnected" )
             main.skipCase( result="FAIL", msg=e )

@@ -357,23 +357,23 @@ class Logger:
             main.TOTAL_TC_NORESULT = main.TOTAL_TC_NORESULT + 1
             main.log.exact( "\n " + "*" * 29 + "\n" + "\n Result: No Assertion Called \n" + "*" * 29 + "\n" )
             line = "Case " + case + ": " + main.CurrentTestCase + " - No Result"
-            main.log.TAP( "ok - %s # TODO No assert called" % line )
+            main.log.TAP( "ok %s # TODO No assert called" % line )
         elif currentResult == 1:
             main.TOTAL_TC_RUN = main.TOTAL_TC_RUN + 1
             main.TOTAL_TC_PASS = main.TOTAL_TC_PASS + 1
             main.log.exact( "\n" + "*" * 29 + "\n Result: Pass \n" + "*" * 29 + "\n" )
             line = "Case " + case + ": " + main.CurrentTestCase + " - PASS"
-            main.log.TAP( "ok - %s" % line )
+            main.log.TAP( "ok %s" % line )
         elif currentResult == 0:
             main.TOTAL_TC_RUN = main.TOTAL_TC_RUN + 1
             main.TOTAL_TC_FAIL = main.TOTAL_TC_FAIL + 1
             main.log.exact( "\n" + "*" * 29 + "\n Result: Failed \n" + "*" * 29 + "\n" )
             line = "Case " + case + ": " + main.CurrentTestCase + " - FAIL"
-            main.log.TAP( "not ok - %s" % line )
+            main.log.TAP( "not ok %s" % line )
         else:
             main.log.error( " Unknown result of case " + case +
                             ". Result was: " + currentResult )
             line = "Case " + case + ": " + main.CurrentTestCase + " - ERROR"
-            main.log.TAP( "not ok - %s" % line )
+            main.log.TAP( "not ok %s" % line )
         main.log.wiki( "<h3>" + line + "</h3>" )
         main.log.summary( line )

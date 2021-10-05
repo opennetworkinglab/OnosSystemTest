@@ -265,6 +265,10 @@ class OnosClusterDriver( CLI ):
                                 node.REST.port = localPort
                             elif self.up4Port and port == int( self.up4Port ):
                                 node.p4rtUp4.p4rtPort = localPort
+                        # Set kubeconfig for all components
+                        for shell in [ node.CLI, node.Bench, node.k8s, node.p4rtUp4  ]:
+                            if shell:
+                                shell.setEnv( "KUBECONFIG", value=kubectl.kubeConfig )
                         main.log.info( "Setting up port forward for pod %s: [ %s ]" % ( self.podNames[ index ], portsList ) )
                         pf = kubectl.kubectlPortForward( self.podNames[ index ],
                                                          portsList,

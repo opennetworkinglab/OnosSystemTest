@@ -463,8 +463,14 @@ class Testcaselib:
         suffix: suffix string of the file name. E.g. onos-diags-case1.tar.gz
         """
         main.log.info( "Collecting onos-diags..." )
+        podNames = []
         for ctrl in main.Cluster.runningNodes:
-            main.ONOSbench.onosDiagnostics( [ctrl.ipAddress], main.logdir,"-CASE%d" % main.CurrentTestCaseNumber, onosPortnumber=ctrl.REST.port )
+            if ctrl.k8s:
+                podNames.append( ctrl.k8s.podName )
+            else:
+                main.ONOSbench.onosDiagnostics( [ctrl.ipAddress], main.logdir, "-CASE%d" % main.CurrentTestCaseNumber, onosPortnumber=ctrl.REST.port )
+        if podNames:
+            main.ONOSbench.onosDiagnosticsK8s( podNames, main.logdir, "-CASE%d" % main.CurrentTestCaseNumber )
 
     @staticmethod
     def config( main, cfgName ):

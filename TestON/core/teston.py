@@ -254,6 +254,8 @@ class TestON:
         self.stepResultsList = []
         self.stepName = ""
         self.caseExplanation = ""
+        self.CASERESULT = self.ERROR
+        self.STEPRESULT = self.NORESULT
         result = self.TRUE
 
         # NOTE: number of main.step statements in the
@@ -343,35 +345,26 @@ class TestON:
         """
         Add case results to the TAP results file
         """
-        #self.log.TAP( "<p>" + self.caseExplanation + "</p>" )
         main.log.debug( self.stepCache )
-        subcaseMessage = False
         steps = 0
         stepLines = []
         for line in self.stepCache.splitlines():
-            main.log.debug( line )
             if re.search( "[0-9]\.[0-9]", line ):  # Step
-                if subcaseMessage:  # End of Failure Message Printout
-                    subcaseMessage = False
                 if re.search( " - PASS$", line ):
                     steps += 1
-                    stepLines.append( "    ok -- STEP %s" % line )
+                    stepLines.append( "    ok - STEP %s" % line )
                 elif re.search( " - FAIL$", line ):
                     steps += 1
-                    stepLines.append( "    not ok -- STEP %s" % line )
+                    stepLines.append( "    not ok - STEP %s" % line )
                 elif re.search( " - No Result$", line ):
                     steps += 1
-                    stepLines.append( "    ok -- STEP %s # TODO: No assertion in test step" % line )
+                    stepLines.append( "    ok - STEP %s # TODO: No assertion in test step" % line )
             else:  # Substep
-                if not subcaseMessage:  # Open Failure Message Printout
-                    stepLines.append( "    # %s" % line )
-                    subcaseMessage = True
-                else:  # Add to Failure Message Printout
-                    self.log.TAP( "    # %s" % line )
+                stepLines.append( "    # %s" % line )
         if steps > 0:
             self.log.TAP( "    1..%s" % steps )
-            for line in stepLines:
-                self.log.TAP( line )
+        for line in stepLines:
+            self.log.TAP( line )
 
 
     def organizeResult( self, caseNum, result ):
@@ -467,11 +460,11 @@ class TestON:
         main.log.debug( "StepResultsTAP" )
         for line in self.stepCache.splitlines():
             if re.search( " - PASS$", line ):
-                self.log.TAP( "    ok -- STEP %s" % line )
+                self.log.TAP( "    ok - STEP %s" % line )
             elif re.search( " - FAIL$", line ):
-                self.log.TAP( "    not ok -- STEP %s" % line )
+                self.log.TAP( "    not ok - STEP %s" % line )
             elif re.search( " - No Result$", line ):
-                self.log.TAP( "    ok -- STEP %s # TODO: No assertion in test step" % line )
+                self.log.TAP( "    ok - STEP %s # TODO: No assertion in test step" % line )
             else:  # Should only be on fail message
                 self.log.TAP( "    # %s" % line )
 
@@ -501,7 +494,7 @@ class TestON:
         except Exception:
             self.log.exception( "Error parsing step results" )
 
-    def skipCase( self, result="DEFAULT", msg=None ):
+    def skipCase( self, result="NORESULT", msg=None ):
         """
         Will skip the rest of the code in a test case. The case results will be
         determined as normal based on completed assertions unless the result
@@ -515,7 +508,9 @@ class TestON:
         result = result.upper().strip()
         if result == "PASS":
             self.CASERESULT = self.TRUE
-        elif result == "FAIL":
+        elif result == "NORESULT":
+            self.CASERESULT = self.NORESULT
+        else:
             self.CASERESULT = self.FALSE
         self.onFailMsg = "Skipping the rest of this case. "
         if msg:

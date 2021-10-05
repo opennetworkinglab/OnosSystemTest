@@ -1,0 +1,6 @@
+{
+  "leaf1": {"expect": "False",
+    "hosts":["h1", "h2"],
+    "vlans":{"111":"False", "120":"False"}
+  }
+}

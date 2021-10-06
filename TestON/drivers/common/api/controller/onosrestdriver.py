@@ -2393,3 +2393,226 @@ class OnosRestDriver( Controller ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def getSlices( self, ip="DEFAULT", port="DEFAULT", debug=False ):
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/fabrictna/slicing/slice"
+            response = self.send( url=url, ip = ip, port = port, base="/onos" )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    output = response[ 1 ]
+                    if debug:
+                        main.log.debug(self.name + ": read: " + output)
+                    slices = json.loads( output ).get( 'Slices' )
+                    assert slices is not None, "Error parsing json object"
+                    return json.dumps( slices )
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def addSlice( self, slice_id, ip="DEFAULT", port="DEFAULT", debug=False ):
+        self.__slices( slice_id, ip, port, debug, method="POST" )
+
+    def removeSlice( self, slice_id, ip="DEFAULT", port="DEFAULT", debug=False ):
+        self.__slices( slice_id, ip, port, debug, method="DELETE" )
+
+    def getTrafficClasses( self, slice_id, ip="DEFAULT", port="DEFAULT", debug=False ):
+        try:
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/fabrictna/slicing/tc/%d" % slice_id
+            response = self.send( url=url, ip = ip, port = port, base="/onos" )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    output = response[ 1 ]
+                    if debug:
+                        main.log.debug(self.name + ": read: " + output)
+                    traffic_classes = json.loads( output ).get( 'TrafficClasses' )
+                    assert traffic_classes is not None, "Error parsing json object"
+                    return json.dumps( traffic_classes )
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def addTrafficClassToSlice( self, slice_id, traffic_class,
+                                ip="DEFAULT", port="DEFAULT", debug=False ):
+        self.__trafficClass( slice_id, traffic_class, ip, port, debug, method="POST" )
+
+    def removeTrafficClassToSlice( self, slice_id, traffic_class,
+                                   ip="DEFAULT", port="DEFAULT", debug=False ):
+        self.__trafficClass( slice_id, traffic_class, ip, port, debug, method="DELETE" )
+
+    def addSlicingClassifierFlow( self, slice_id, traffic_class, traffic_selector,
+                                  ip="DEFAULT", port="DEFAULT", debug=False ):
+        self.__slicingClassifierFlow( slice_id, traffic_class, traffic_selector,
+                                     ip, port, debug, method="POST" )
+
+    def removeSlicingClassifierFlow( self, slice_id, traffic_class, traffic_selector,
+                                     ip="DEFAULT", port="DEFAULT", debug=False ):
+        self.__slicingClassifierFlow( slice_id, traffic_class, traffic_selector,
+                                     ip, port, debug, method="DELETE" )
+
+    def getSlicingClassifierFlow( self, slice_id, traffic_class, ip="DEFAULT",
+                                  port="DEFAULT", debug=False ):
+        try:
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/fabrictna/slicing/flow/%d/%s" % ( slice_id, traffic_class )
+            response = self.send( url=url, ip = ip, port = port, base="/onos" )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    output = response[ 1 ]
+                    if debug:
+                        main.log.debug(self.name + ": read: " + output)
+                    traffic_selector = json.loads( output ).get( 'TrafficSelector' )
+                    assert traffic_selector is not None, "Error parsing json object"
+                    return json.dumps( traffic_selector )
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def __slices( self, slice_id, ip="DEFAULT", port="DEFAULT", debug=False,
+                  method="POST" ):
+        try:
+            if debug:
+                main.log.debug( self.name + ": %s Slice" % method )
+                main.log.debug( self.name + ": Slice ID: %d" % slice_id )
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/fabrictna/slicing/slice/%d" % slice_id
+            response = self.send( method=method,
+                                  url=url, ip = ip, port = port,
+                                  base="/onos", data = {} )
+            if response:
+                if "200" in str( response[ 0 ] ):
+                    main.log.info( self.name + ": Successfully %s Slice ID: %d " % ( method, slice_id ) )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except NotImplementedError as e:
+            raise # Inform the caller
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def __trafficClass( self, slice_id, traffic_class, ip="DEFAULT", port="DEFAULT",
+                        debug=False, method="POST" ):
+        try:
+            if debug:
+                main.log.debug( self.name + ": %s Traffic Class" % method )
+                main.log.debug( self.name + ": Slice ID: %d, Traffic Class: %s" % ( slice_id, traffic_class ) )
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/fabrictna/slicing/tc/%d/%s" % ( slice_id, traffic_class )
+            response = self.send( method=method,
+                                  url=url, ip = ip, port = port,
+                                  base="/onos", data = {} )
+            if response:
+                if "200" in str( response[ 0 ] ):
+                    main.log.info( self.name + ": Successfully %s " % method +
+                                   "Slice ID: %d, Traffic Class: %s" % ( slice_id, traffic_class ) )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except NotImplementedError as e:
+            raise # Inform the caller
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
+    def __slicingClassifierFlow( self, slice_id, traffic_class, traffic_selector,
+                                 ip="DEFAULT", port="DEFAULT", debug=False,
+                                 method="POST" ):
+        try:
+            if debug:
+                main.log.debug( self.name + ": %s Slicing Classifier Flow" % method )
+                main.log.debug( self.name + ": Slice ID: %d, Traffic Class: %s, Traffic Selector: %s" % (
+                    slice_id, traffic_class, self.pprint( traffic_selector ) ) )
+            if ip == "DEFAULT":
+                main.log.warn( self.name + ": No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( self.name + ": No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/fabrictna/slicing/flow/%d/%s" % ( slice_id, traffic_class )
+            response = self.send( method=method,
+                                  url=url, ip = ip, port = port,
+                                  data=json.dumps( traffic_selector ),
+                                  base="/onos" )
+            if response:
+                if "200" in str( response[ 0 ] ):
+                    main.log.info( self.name + ": Successfully %s Slicing Classifier Flow for " % method +
+                                   "Slice ID: %d, Traffic Class: %s" % ( slice_id, traffic_class ) )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: %s: %s" %
+                                    ( response[ 0 ], response[ 1 ] ) )
+                    return main.FALSE
+        except NotImplementedError as e:
+            raise # Inform the caller
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()

@@ -216,24 +216,28 @@ class Testcaselib:
 
     @staticmethod
     def loadNewJson( main, suffix='' ):
-        returnValue = main.TRUE
         with open( "%s%s.json%s" % ( main.configPath + main.forJson,
                                      main.cfgName, suffix ) ) as cfg:
             desiredJSON = json.load ( cfg )
-            for device in desiredJSON ["ports"].keys():
-                deviceCfg = desiredJSON[ "ports" ][ device ]
-                currentJSON = main.Cluster.active( 0 ).REST.getNetCfg( subjectClass = "ports", subjectKey = device )
+        return Testcaselib.netCfgTransition( main, desiredJSON )
 
-                currentJSON = json.loads( currentJSON )
-                if currentJSON['interfaces'][0]['ips'] != deviceCfg['interfaces'][0]['ips']:
-                    currentJSON['interfaces'][0]['ips'] = deviceCfg['interfaces'][0]['ips']
-                    data = { 'interfaces': currentJSON['interfaces'] }
-                    A = main.Cluster.active( 0 ).REST.setNetCfg(  data , subjectClass = "ports", subjectKey = device )
-                    returnValue = returnValue and A
-                currentJSON['interfaces'] = deviceCfg['interfaces']
+    @staticmethod
+    def netCfgTransition( main, desiredJSON ):
+        returnValue = main.TRUE
+        for device in desiredJSON ["ports"].keys():
+            deviceCfg = desiredJSON[ "ports" ][ device ]
+            currentJSON = main.Cluster.active( 0 ).REST.getNetCfg( subjectClass = "ports", subjectKey = device )
+
+            currentJSON = json.loads( currentJSON )
+            if currentJSON['interfaces'][0]['ips'] != deviceCfg['interfaces'][0]['ips']:
+                currentJSON['interfaces'][0]['ips'] = deviceCfg['interfaces'][0]['ips']
                 data = { 'interfaces': currentJSON['interfaces'] }
-                B = main.Cluster.active( 0 ).REST.setNetCfg( data , subjectClass = "ports", subjectKey = device )
-                returnValue = returnValue and B
+                A = main.Cluster.active( 0 ).REST.setNetCfg(  data , subjectClass = "ports", subjectKey = device )
+                returnValue = returnValue and A
+            currentJSON['interfaces'] = deviceCfg['interfaces']
+            data = { 'interfaces': currentJSON['interfaces'] }
+            B = main.Cluster.active( 0 ).REST.setNetCfg( data , subjectClass = "ports", subjectKey = device )
+            returnValue = returnValue and B
         return returnValue
 
     @staticmethod

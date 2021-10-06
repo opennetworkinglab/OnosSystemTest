@@ -21,6 +21,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
 import tests.USECASE.SegmentRouting.dependencies.cfgtranslator as translator
+import json
 
 class SRBridgingTest ():
 
@@ -38,6 +39,7 @@ class SRBridgingTest ():
         try:
             skipPackage = False
             init = False
+            originalJSON = None
             if not hasattr( main, 'apps' ):
                 init = True
                 run.initTest( main )
@@ -93,6 +95,7 @@ class SRBridgingTest ():
                 # Run the test with physical devices
                 run.connectToPhysicalNetwork( main, hostDiscovery=False )  # We don't want to do host discovery in the pod
                 if main.cfgName:
+                    originalJSON = main.Cluster.active( 0 ).REST.getNetCfg()
                     returnValue = run.loadNewJson( main, suffix=suf )
                     utilities.assert_equals( expect=main.TRUE,
                                  actual=returnValue,
@@ -113,6 +116,8 @@ class SRBridgingTest ():
             run.populateHostsVlan( main, main.Network.hosts.keys()  )
             run.verifyTopology( main, switches, links, onosNodes )
             run.pingAll( main )
+            if originalJSON:
+              run.netCfgTransition( main, json.loads(originalJSON) )
         except Exception as e:
             main.log.exception( "Error in runTest" )
             main.skipCase( result="FAIL", msg=e )

@@ -136,7 +136,7 @@
                         <network>10.32.11.254</network>
                         <netmask>26</netmask>
                         <gw>10.32.11.254</gw>
-                        <interface>26</interface>
+                        <interface>eno2</interface>
                     </route1>
                 </routes>
                 <sudo_required>true</sudo_required>

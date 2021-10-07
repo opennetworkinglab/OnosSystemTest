@@ -74,6 +74,7 @@ class TestON:
         __builtin__.main = self
         __builtin__.path = path
         __builtin__.utilities = Utilities()
+        __builtin__.SkipCase = SkipCase
         self.TRUE = 1
         self.FALSE = 0
         self.ERROR = -1

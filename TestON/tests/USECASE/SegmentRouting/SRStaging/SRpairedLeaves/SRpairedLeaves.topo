@@ -86,7 +86,8 @@
                         <interface></interface>
                     </route1>
                 </routes>
-                <sudo_required>false</sudo_required>
+                <sudo_required>true</sudo_required>
+                <scapy_path>/usr/bin/scapy</scapy_path>
             </COMPONENTS>
         </Compute1>
 
@@ -114,7 +115,8 @@
                         <interface></interface>
                     </route1>
                 </routes>
-                <sudo_required>false</sudo_required>
+                <sudo_required>true</sudo_required>
+                <scapy_path>/usr/bin/scapy</scapy_path>
             </COMPONENTS>
         </Compute2>
 
@@ -142,7 +144,8 @@
                         <interface></interface>
                     </route1>
                 </routes>
-                <sudo_required>false</sudo_required>
+                <sudo_required>true</sudo_required>
+                <scapy_path>/usr/bin/scapy</scapy_path>
             </COMPONENTS>
         </Compute3>
 
@@ -169,7 +172,8 @@
                         <interface></interface>
                     </route1>
                 </routes>
-                <sudo_required>false</sudo_required>
+                <sudo_required>true</sudo_required>
+                <scapy_path>/usr/bin/scapy</scapy_path>
 
             </COMPONENTS>
         </ManagmentServer>

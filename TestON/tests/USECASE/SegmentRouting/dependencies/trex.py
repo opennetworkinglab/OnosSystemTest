@@ -173,6 +173,10 @@ class Trex:
             packet["gtp_teid"] = int(packet["gtp_teid"])
         if "pktlen" in packet.keys():
             packet["pktlen"] = int(packet["pktlen"])
+        if "udp_dport" in packet.keys():
+            packet["udp_dport"] = int(packet["udp_dport"])
+        if "udp_sport" in packet.keys():
+            packet["udp_sport"] = int(packet["udp_sport"])
         return packet
 
     @staticmethod

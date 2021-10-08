@@ -1,0 +1,19 @@
+# TRex Port ID=0 --> PCI BUS: d8:00.0, Linux Intf: enp216s0f0 connected to leaf1/0 (PDN)
+# TRex Port ID=1 --> PCI BUS: d8:00.1, Linux Intf: enp216s0f1 not connected, but required by TRex to have an even number of interfaces
+# TRex Port ID=2 --> PCI BUS: 5e:00.0, Linux Intf: enp94s0f0 connected to leaf2/0 (eNodeB)
+# TRex Port ID=3 --> PCI BUS: 5e:00.1, Linux Intf: enp94s0f1 connected to leaf2/4
+
+- version: 2
+  port_limit: 4
+  interfaces: [ 'd8:00.0', 'd8:00.1', '5e:00.0', '5e:00.1']
+  port_bandwidth_gb: 40
+  c: 20
+  port_info:
+    - src_mac: 40:A6:B7:22:AB:40
+      dest_mac: 00:00:0A:4C:1C:46
+    - src_mac: 40:A6:B7:22:AB:41
+      dest_mac: 00:00:0A:4C:1C:46
+    - src_mac: 40:A6:B7:22:AB:20
+      dest_mac: 00:00:0A:4C:1C:46
+    - src_mac: 40:A6:B7:22:AB:21
+      dest_mac: 00:00:0A:4C:1C:46

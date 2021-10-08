@@ -1,0 +1,5 @@
+{
+  "flows": ["BE_TO_ENB", "RT_TO_ENB"],
+  "duration": 10
+}
+

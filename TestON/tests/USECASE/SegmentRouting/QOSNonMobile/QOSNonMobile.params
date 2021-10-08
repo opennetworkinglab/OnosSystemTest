@@ -1,0 +1,175 @@
+<PARAMS>
+    <testcases>1,2</testcases>
+
+    <GRAPH>
+        <nodeCluster>pairedleaves</nodeCluster>
+        <builds>20</builds>
+        <jobName>QOS</jobName>
+        <branch>master</branch>
+    </GRAPH>
+
+    <persistent_setup>True</persistent_setup>
+
+    <kubernetes>
+        <appName>onos-classic</appName>
+        <namespace>tost</namespace>
+    </kubernetes>
+
+    <SLICING>
+        <slices>
+            <slice1>
+                <slice_id>1</slice_id>
+                <traffic_classes>BEST_EFFORT,REAL_TIME</traffic_classes>
+            </slice1>
+        </slices>
+        <traffic_classification>
+            <slice_1_be>
+                <slice_id>1</slice_id>
+                <traffic_class>BEST_EFFORT</traffic_class>
+                <traffic_selector>
+                    <criteria1>
+                        <type>UDP_DST</type>
+                        <udpPort>100</udpPort>
+                    </criteria1>
+                </traffic_selector>
+            </slice_1_be>
+            <slice_1_rt>
+                <slice_id>1</slice_id>
+                <traffic_class>REAL_TIME</traffic_class>
+                <traffic_selector>
+                    <criteria1>
+                        <type>UDP_DST</type>
+                        <udpPort>200</udpPort>
+                    </criteria1>
+                </traffic_selector>
+            </slice_1_rt>
+        </traffic_classification>
+    </SLICING>
+
+    <TREX>
+        <port_stats>0,2,3</port_stats>
+        <flows>
+            <BE_TO_ENB>
+                <name>Best Effort</name>
+                <l1_bps>2000000000</l1_bps>
+                <trex_port>0</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.125</ip_src>
+                    <ip_dst>10.32.11.124</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:40</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <udp_dport>100</udp_dport>
+                </packet>
+            </BE_TO_ENB>
+            <RT_TO_ENB>
+                <name>Real Time</name>
+                <l1_bps>24000000</l1_bps> <!-- Smaller than the smaller RT max BW -->
+                <trex_port>0</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.125</ip_src>
+                    <ip_dst>10.32.11.124</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:40</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <udp_dport>200</udp_dport>
+                </packet>
+                <latency_stats>true</latency_stats>
+                <flow_id>10</flow_id> <!-- Mandatory when latency_stats=true -->
+                <delay>50000</delay> <!-- wait 50 ms till start to let queues fill up -->
+                <expected_min_received>1</expected_min_received>
+                <expected_max_dropped>0</expected_max_dropped>
+                <expected_99_9_percentile_latency>100</expected_99_9_percentile_latency>
+            </RT_TO_ENB>
+            <BE_1_TO_PDN>
+                <name>Best Effort 1</name>
+                <l1_bps>40000000000</l1_bps>
+                <trex_port>2</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.124</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:20</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <udp_dport>100</udp_dport>
+                </packet>
+            </BE_1_TO_PDN>
+            <BE_2_TO_PDN>
+                <name>Best Effort 2</name>
+                <l1_bps>25000000000</l1_bps>
+                <trex_port>3</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.123</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:21</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <udp_dport>100</udp_dport>
+                </packet>
+            </BE_2_TO_PDN>
+            <RT_TO_PDN>
+                <name>Real Time</name>
+                <l1_bps>24000000</l1_bps> <!-- Smaller than the smaller RT max BW -->
+                <trex_port>3</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.32.11.123</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <eth_src>40:A6:B7:22:AB:21</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <udp_dport>200</udp_dport>
+                </packet>
+                <latency_stats>true</latency_stats>
+                <flow_id>10</flow_id> <!-- Mandatory when latency_stats=true -->
+                <delay>50000</delay> <!-- wait 50 ms till start to let queues fill up -->
+                <expected_min_received>1</expected_min_received>
+                <expected_max_dropped>0</expected_max_dropped>
+                <expected_99_9_percentile_latency>100</expected_99_9_percentile_latency>
+            </RT_TO_PDN>
+        </flows>
+    </TREX>
+
+    <TOPO>
+        <switchNum>2</switchNum>
+        <linkNum>2</linkNum>
+    </TOPO>
+
+    <ONOS_Logging>
+        <org.onosproject.p4runtime.ctl.client>DEBUG</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.p4runtime.ctl.client.writerequestimpl>TRACE</org.onosproject.p4runtime.ctl.client.writerequestimpl>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.gnmi.ctl>TRACE</org.onosproject.gnmi.ctl>
+        <org.omecproject.up4>TRACE</org.omecproject.up4>
+        <org.stratumproject.fabric.tna.slicing>TRACE</org.stratumproject.fabric.tna.slicing>
+    </ONOS_Logging>
+    <ONOS_Logging_Reset>
+        <org.onosproject.p4runtime.ctl.client>INFO</org.onosproject.p4runtime.ctl.client>
+        <org.onosproject.p4runtime.ctl.client.writerequestimpl>INFO</org.onosproject.p4runtime.ctl.client.writerequestimpl>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.gnmi.ctl>INFO</org.onosproject.gnmi.ctl>
+        <org.omecproject.up4>INFO</org.omecproject.up4>
+        <org.stratumproject.fabric.tna.slicing>INFO</org.stratumproject.fabric.tna.slicing>
+    </ONOS_Logging_Reset>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3,up4</cellApps>
+    </ENV>
+
+    <DEPENDENCY>
+        <useCommonConf>False</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix></switchPrefix>
+        <stratumRoot>~/stratum</stratumRoot>
+        <topology>trellis_fabric.py</topology>
+        <lib></lib>
+    </DEPENDENCY>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+</PARAMS>

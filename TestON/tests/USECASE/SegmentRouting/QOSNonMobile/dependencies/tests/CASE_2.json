@@ -1,0 +1,5 @@
+{
+  "flows": ["BE_1_TO_PDN","BE_2_TO_PDN", "RT_TO_PDN"],
+  "duration": 10
+}
+

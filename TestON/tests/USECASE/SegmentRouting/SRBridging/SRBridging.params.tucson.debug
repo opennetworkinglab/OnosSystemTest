@@ -1,10 +1,10 @@
 <PARAMS>
-    <testcases>1,2,101,102,103,104,301</testcases>
+    <testcases>6,16,26,36,46,56,66,76</testcases>
 
     <GRAPH>
         <nodeCluster>pairedleaves</nodeCluster>
         <builds>20</builds>
-        <jobName>SRpairedLeaves</jobName>
+        <jobName>SRBridging-tofino</jobName>
         <branch>master</branch>
     </GRAPH>
 
@@ -24,46 +24,44 @@
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
     </DEPENDENCY>
 
-    <persistent_setup>True</persistent_setup>
+    <jsonFileSuffix>.tucson</jsonFileSuffix>
 
-    <use_stern>True</use_stern>
+    <persistent_setup>True</persistent_setup>
 
     <kubernetes>
         <appName>onos-classic</appName>
         <namespace>tost</namespace>
     </kubernetes>
 
-    <PERF>
-        <traffic_host>Compute1 Compute2</traffic_host>
-        <pcap_host>Compute3</pcap_host>
-        <pcap_cmd_arguments>-t e -F pcap -s 100 </pcap_cmd_arguments>
-        <iterations>1</iterations>
-        <topo>
-            <leaf1>
-                <ports>176 180 184 188</ports>
-                <note>eNB</note>
-            </leaf1>
-            <leaf2>
-                <ports>260 268 276 284</ports>
-                <note>upstream</note>
-            </leaf2>
-        </topo>
-    </PERF>
-    <ONOS_Logging>
-        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
-    </ONOS_Logging>
-    <ONOS_Logging_Reset>
-        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
-    </ONOS_Logging_Reset>
-
-
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3</cellApps>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3</cellApps>
     </ENV>
 
     <EXTERNAL_APPS>
     </EXTERNAL_APPS>
+
+    <ONOS_Configuration>
+        <org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
+            <enableMessageLog>true</enableMessageLog>
+        </org.onosproject.grpc.ctl.GrpcChannelControllerImpl>
+    </ONOS_Configuration>
+
+    <ONOS_Logging>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.net.flowobjective.impl>DEBUG</org.onosproject.net.flowobjective.impl>
+        <org.stratumproject.fabric.tna>DEBUG</org.stratumproject.fabric.tna>
+    </ONOS_Logging>
+    <ONOS_Logging_Reset>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.onosproject.net.flowobjective.impl>INFO</org.onosproject.net.flowobjective.impl>
+        <org.stratumproject.fabric.tna>INFO</org.stratumproject.fabric.tna>
+    </ONOS_Logging_Reset>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
 
     <CTRL>
         <port>6653</port>
@@ -72,7 +70,7 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
-        <TrafficDiscovery>13</TrafficDiscovery>
+        <TrafficDiscovery>10</TrafficDiscovery>
     </timers>
 
     <SLEEP>

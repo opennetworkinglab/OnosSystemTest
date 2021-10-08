@@ -51,17 +51,11 @@
     </TOPO>
 
     <ONOS_Logging>
-        <org.onosproject.p4runtime.ctl.client>DEBUG</org.onosproject.p4runtime.ctl.client>
-        <org.onosproject.p4runtime.ctl.client.writerequestimpl>TRACE</org.onosproject.p4runtime.ctl.client.writerequestimpl>
         <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
-        <org.onosproject.gnmi.ctl>TRACE</org.onosproject.gnmi.ctl>
         <org.omecproject.up4>TRACE</org.omecproject.up4>
     </ONOS_Logging>
     <ONOS_Logging_Reset>
-        <org.onosproject.p4runtime.ctl.client>INFO</org.onosproject.p4runtime.ctl.client>
-        <org.onosproject.p4runtime.ctl.client.writerequestimpl>INFO</org.onosproject.p4runtime.ctl.client.writerequestimpl>
         <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
-        <org.onosproject.gnmi.ctl>INFO</org.onosproject.gnmi.ctl>
         <org.omecproject.up4>INFO</org.omecproject.up4>
     </ONOS_Logging_Reset>
 

@@ -48,26 +48,11 @@
     </ONOS_Configuration>
 
     <ONOS_Logging>
-        <org.onosproject.events>TRACE</org.onosproject.events>
         <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
-        <org.onosproject.driver>DEBUG</org.onosproject.driver>
-        <org.onosproject.net.flowobjective.impl>DEBUG</org.onosproject.net.flowobjective.impl>
-        <org.onosproject.routeservice.impl>DEBUG</org.onosproject.routeservice.impl>
-        <org.onosproject.routeservice.store>DEBUG</org.onosproject.routeservice.store>
-        <org.onosproject.routing.fpm>DEBUG</org.onosproject.routing.fpm>
-        <org.onosproject.fpm>DEBUG</org.onosproject.fpm>
-        <org.onosproject.mcast>DEBUG</org.onosproject.mcast>
-        <org.onosproject.p4runtime>DEBUG</org.onosproject.p4runtime>
-        <org.onosproject.protocols.p4runtime>DEBUG</org.onosproject.protocols.p4runtime>
-        <org.onosproject.drivers.p4runtime>DEBUG</org.onosproject.drivers.p4runtime>
-        <org.onosproject.protocols.grpc>DEBUG</org.onosproject.protocols.grpc>
-        <org.onosproject.protocols.gnmi>DEBUG</org.onosproject.protocols.gnmi>
-        <org.onosproject.protocols.gnoi>DEBUG</org.onosproject.protocols.gnoi>
-        <org.onosproject.drivers.gnoi>DEBUG</org.onosproject.drivers.gnoi>
-        <org.onosproject.drivers.gmni>DEBUG</org.onosproject.drivers.gmni>
-        <org.onosproject.drivers.barefoot>DEBUG</org.onosproject.drivers.barefoot>
-        <org.onosproject.bmv2>DEBUG</org.onosproject.bmv2>
     </ONOS_Logging>
+    <ONOS_Logging_Reset>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+    </ONOS_Logging_Reset>
 
     <GIT>
         <pull>False</pull>

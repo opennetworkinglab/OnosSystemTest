@@ -294,7 +294,7 @@ class HostDriver( ScapyCliDriver ):
                     return main.FALSE
             output += self.handle.before + self.handle.after
             main.log.debug( output )
-            return self.handle.before
+            return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -347,7 +347,7 @@ class HostDriver( ScapyCliDriver ):
                     return main.FALSE
             output += self.handle.before + self.handle.after
             main.log.debug( output )
-            return self.handle.before
+            return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

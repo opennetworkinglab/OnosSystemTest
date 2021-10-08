@@ -32,6 +32,7 @@ class UP4:
         main.step("Start scapy and p4rt client")
         # Use the first available ONOS instance CLI
         onos_cli = main.Cluster.active(0).CLI
+        initial_flow_count = onos_cli.checkFlowCount()
         up4 = UP4()
         # Get the P4RT client connected to UP4 in the first available ONOS instance
         up4.setup(main.Cluster.active(0).p4rtUp4)
@@ -39,6 +40,11 @@ class UP4:
         main.step("Program and Verify PDRs and FARs via UP4")
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
+
+        run.checkFlows(
+            main,
+            minFlowCount=initial_flow_count+(len(up4.emulated_ues)*2)
+        )
 
         # ------- Test Upstream traffic (enb->pdn)
         main.step("Test upstream traffic")
@@ -52,11 +58,13 @@ class UP4:
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
 
+        run.checkFlows(main, minFlowCount=initial_flow_count)
+
         main.step("Stop scapy and p4rt client")
         up4.teardown()
         run.cleanup(main)
 
-    def CASE2(self):
+    def CASE2(self, main):
         main.case("BESS traffic routed")
         """
         Program PDRs and FARs for UEs managed via UP4
@@ -90,6 +98,7 @@ class UP4:
         main.step("Start scapy and p4rt client + Scapy on BESS Host")
         # Use the first available ONOS instance CLI
         onos_cli = main.Cluster.active(0).CLI
+        initial_flow_count = onos_cli.checkFlowCount()
         up4 = UP4()
         # Get the P4RT client connected to UP4 in the first available ONOS instance
         up4.setup(main.Cluster.active(0).p4rtUp4)
@@ -107,6 +116,11 @@ class UP4:
         main.step("Program and Verify PDRs and FARs for UEs via UP4")
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
+
+        run.checkFlows(
+            main,
+            minFlowCount=initial_flow_count+(len(up4.emulated_ues)*2)
+        )
 
         # ------------------- UPSTREAM -------------------
         # ------- eNB -> fabric -> BESS (encapped)
@@ -237,6 +251,8 @@ class UP4:
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
 
+        run.checkFlows(main, minFlowCount=initial_flow_count)
+
         main.step("Stop scapy and p4rt client")
         up4.teardown()
         bess_host.stopScapy()
@@ -274,12 +290,18 @@ class UP4:
         up4_0 = UP4()
         up4_1 = UP4()
         up4_2 = UP4()
+        initial_flow_count = onos_cli_0.checkFlowCount()
 
         main.step("Program and Verify PDRs and FARs via UP4 on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
         up4_0.teardown()
+
+        run.checkFlows(
+            main,
+            minFlowCount=initial_flow_count+(len(up4_0.emulated_ues)*2)
+        )
 
         main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 1")
         up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
@@ -315,6 +337,8 @@ class UP4:
         main.step("Remove and Verify PDRs and FARs via UP4 on ONOS 2")
         up4_2.detachUes()
         up4_2.verifyNoUesFlow(onos_cli_2)
+
+        run.checkFlows(main, minFlowCount=initial_flow_count)
 
         main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 2")
         utilities.assert_equal(
@@ -394,11 +418,18 @@ class UP4:
         up4_1 = UP4()
         up4_2 = UP4()
 
+        initial_flow_count = onos_cli_0.checkFlowCount()
+
         main.step("Program and Verify PDRs and FARs via UP4 on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
         up4_0.teardown()
+
+        run.checkFlows(
+            main,
+            minFlowCount=initial_flow_count+(len(up4_0.emulated_ues)*2)
+        )
 
         onosPod = main.params["UP4_delete_pod"]
         # Exit from previous port forwarding, because we need to restore
@@ -438,6 +469,17 @@ class UP4:
             onfail="Stale PDRs and FARs"
         )
         up4_2.teardown()
+
+        main.step("Verify all active ONOS instances have the same number of flows")
+        onos_1_flow_count = onos_cli_1.checkFlowCount()
+        onos_2_flow_count = onos_cli_2.checkFlowCount()
+        utilities.assert_equal(
+            expect=True,
+            actual=onos_1_flow_count == onos_2_flow_count,
+            onpass="All ONOS instances have the same number of flows",
+            onfail="ONOS instances have different number of flows: (%d, %d)" % (
+                onos_1_flow_count, onos_2_flow_count)
+        )
 
         main.step("Verify ONOS 0 has restarted correctly")
         onosStarted = utilities.retry(
@@ -498,10 +540,17 @@ class UP4:
             onfail="Stale PDRs and FARs"
         )
 
+        run.checkFlows(main, minFlowCount=initial_flow_count)
+
         main.step("Re-program PDRs and FARs via UP4 on ONOS 0 after restart")
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
         up4_0.teardown()
+
+        run.checkFlows(
+            main,
+            minFlowCount=initial_flow_count+(len(up4_0.emulated_ues)*2)
+        )
 
         main.step("Verify PDRs and FARs via UP4 on ONOS 1")
         up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
@@ -523,5 +572,7 @@ class UP4:
         up4_1.detachUes()
         up4_1.verifyNoUesFlow(onos_cli_1)
         up4_1.teardown()
+
+        run.checkFlows(main, minFlowCount=initial_flow_count)
 
         run.cleanup(main)

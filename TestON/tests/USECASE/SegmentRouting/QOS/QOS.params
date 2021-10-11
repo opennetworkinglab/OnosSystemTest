@@ -45,25 +45,25 @@
         <flows>
             <BE_FROM_PDN>
                 <name>Best Effort</name>
-                <l1_bps>1500000000</l1_bps>
+                <l1_bps>2000000000</l1_bps>
                 <trex_port>0</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>
                     <ip_src>10.32.11.125</ip_src>
                     <ip_dst>10.240.0.1</ip_dst>
-                    <eth_src>3C:EC:EF:3E:0B:A1</eth_src>
+                    <eth_src>40:A6:B7:22:AB:40</eth_src>
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
                 </packet>
             </BE_FROM_PDN>
             <RT_FROM_PDN>
                 <name>Real Time</name>
-                <l1_bps>40000000</l1_bps>
+                <l1_bps>22000000</l1_bps> <!-- Smaller than the smaller RT max BW -->
                 <trex_port>0</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>
                     <ip_src>10.32.11.125</ip_src>
                     <ip_dst>10.240.0.2</ip_dst>
-                    <eth_src>3C:EC:EF:3E:0B:A1</eth_src>
+                    <eth_src>40:A6:B7:22:AB:40</eth_src>
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
                 </packet>
                 <latency_stats>true</latency_stats>

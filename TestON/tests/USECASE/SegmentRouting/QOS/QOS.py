@@ -83,4 +83,5 @@ class QOS:
         main.step("Teardown")
         trex.teardown()
         up4.teardown()
+        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)

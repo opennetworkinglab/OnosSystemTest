@@ -62,6 +62,8 @@ class UP4:
 
         main.step("Stop scapy and p4rt client")
         up4.teardown()
+
+        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)
 
     def CASE2(self, main):
@@ -256,6 +258,8 @@ class UP4:
         main.step("Stop scapy and p4rt client")
         up4.teardown()
         bess_host.stopScapy()
+
+        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)
 
     def CASE3(self, main):
@@ -380,6 +384,8 @@ class UP4:
             onfail="ONOS instances have different number of flows: (%d, %d, %d)" % (
                 onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
         )
+
+        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)
 
     def CASE4(self, main):
@@ -432,6 +438,14 @@ class UP4:
         )
 
         onosPod = main.params["UP4_delete_pod"]
+
+        # Save ONOS diags of the POD we are killing otherwise we lose ONOS logs
+        main.ONOSbench.onosDiagnosticsK8s(
+            [onosPod],
+            main.logdir,
+            "-CASE%d-%s_BeforeKill" % (main.CurrentTestCaseNumber, onosPod)
+        )
+
         # Exit from previous port forwarding, because we need to restore
         # port-forwarding after ONOS reboot.
         kubectl_0.clearBuffer()
@@ -575,4 +589,5 @@ class UP4:
 
         run.checkFlows(main, minFlowCount=initial_flow_count)
 
+        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)

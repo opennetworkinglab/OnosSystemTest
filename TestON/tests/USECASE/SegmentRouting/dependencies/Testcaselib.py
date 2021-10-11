@@ -2005,3 +2005,9 @@ class Testcaselib:
         utilities.assert_equals( expect=True, actual=logging,
                                  onpass="Reset log levels",
                                  onfail="Failed to reset log levels" )
+
+    @staticmethod
+    def saveOnosDiagsIfFailure( main ):
+        if main.FALSE in main.stepResultsList:
+            # Some step has failed
+            Testcaselib.saveOnosDiagnostics( main )

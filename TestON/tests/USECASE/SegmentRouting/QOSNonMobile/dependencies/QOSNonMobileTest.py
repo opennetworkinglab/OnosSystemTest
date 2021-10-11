@@ -175,6 +175,7 @@ class QOSNonMobileTest:
 
         main.step("Teardown")
         trex.teardown()
+        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)
 
     def __cleanupTrafficSelector(self, traffic_selector):

@@ -51,8 +51,13 @@ RUN apt update && \
     mkdir -p /var/run/sshd && \
     mkdir -p /var/log/supervisor && \
     useradd -m jenkins && \
+    chmod 777 /tmp && \
     chsh -s /bin/bash jenkins && \
     echo jenkins:jenkins | chpasswd
+
+RUN curl -sS --fail "https://repo1.maven.org/maven2/org/onosproject/onos-releases/2.5.4/onos-admin-2.5.4.tar.gz" | tar zx && \
+    mv onos-admin-2.5.4/* /usr/local/bin/ && \
+    rm -r onos-admin-2.5.4
 
 ENV PYTHONPATH=${TREX_EXT_LIBS}:${TREX_LIBS}
 # TODO: should we parametrize those?

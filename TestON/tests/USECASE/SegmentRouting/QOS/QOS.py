@@ -28,6 +28,7 @@ class QOS:
         main.step("Start P4rt client and setup TRex")
         # Use the first available ONOS instance CLI
         onos_cli = main.Cluster.active(0).CLI
+        initial_flow_count = onos_cli.checkFlowCount()
         up4 = UP4()
         trex = Trex()
         # Get the P4RT client connected to UP4 in the first available ONOS instance
@@ -39,6 +40,11 @@ class QOS:
 
         main.step("Verify PDRs and FARs in ONOS")
         up4.verifyUp4Flow(onos_cli)
+
+        run.checkFlows(
+            main,
+            minFlowCount=initial_flow_count+(len(up4.emulated_ues)*2)
+        )
 
         # Load traffic config for the current test case
         main.step("Load test JSON config")
@@ -71,6 +77,8 @@ class QOS:
 
         main.step("Verify removed PDRs and FARs from ONOS")
         up4.verifyNoUesFlow(onos_cli)
+
+        run.checkFlows(main, minFlowCount=initial_flow_count)
 
         main.step("Teardown")
         trex.teardown()

@@ -16,13 +16,15 @@ class UP4:
         Verify removed PDRs and FARs
         """
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
+                N_FLOWS_PER_UE
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
         except ImportError as e:
             main.log.error("Import not found. Exiting the test")
             main.log.error(e)
             main.cleanAndExit()
+        n_switches = int(main.params["TOPO"]["switchNum"])
 
         run.initTest(main)
         main.log.info(main.Cluster.numCtrls)
@@ -43,7 +45,8 @@ class UP4:
 
         run.checkFlows(
             main,
-            minFlowCount=initial_flow_count+(len(up4.emulated_ues)*2)
+            minFlowCount=initial_flow_count + (
+                    len(up4.emulated_ues) * N_FLOWS_PER_UE * n_switches)
         )
 
         # ------- Test Upstream traffic (enb->pdn)
@@ -82,13 +85,15 @@ class UP4:
         UE_PORT = 400
         PDN_PORT = 800
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
+                N_FLOWS_PER_UE
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
         except ImportError as e:
             main.log.error("Import not found. Exiting the test")
             main.log.error(e)
             main.cleanAndExit()
+        n_switches = int(main.params["TOPO"]["switchNum"])
 
         run.initTest(main)
         main.log.info(main.Cluster.numCtrls)
@@ -119,7 +124,8 @@ class UP4:
 
         run.checkFlows(
             main,
-            minFlowCount=initial_flow_count+(len(up4.emulated_ues)*2)
+            minFlowCount=initial_flow_count + (
+                    len(up4.emulated_ues) * N_FLOWS_PER_UE * n_switches)
         )
 
         # ------------------- UPSTREAM -------------------
@@ -278,6 +284,7 @@ class UP4:
             main.log.error("Import not found. Exiting the test")
             main.log.error(e)
             main.cleanAndExit()
+        n_switches = int(main.params["TOPO"]["switchNum"])
 
         run.initTest(main)
         main.log.info(main.Cluster.numCtrls)
@@ -300,7 +307,8 @@ class UP4:
 
         run.checkFlows(
             main,
-            minFlowCount=initial_flow_count+(len(up4_0.emulated_ues)*2)
+            minFlowCount=initial_flow_count + (
+                    len(up4_0.emulated_ues) * N_FLOWS_PER_UE * n_switches)
         )
 
         main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 1")
@@ -396,13 +404,15 @@ class UP4:
         Remove PDRs/FARs (cleanup)
         """
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
+                N_FLOWS_PER_UE
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
         except ImportError as e:
             main.log.error("Import not found. Exiting the test")
             main.log.error(e)
             main.cleanAndExit()
+        n_switches = int(main.params["TOPO"]["switchNum"])
 
         run.initTest(main)
         main.log.info(main.Cluster.numCtrls)
@@ -428,7 +438,8 @@ class UP4:
 
         run.checkFlows(
             main,
-            minFlowCount=initial_flow_count+(len(up4_0.emulated_ues)*2)
+            minFlowCount=initial_flow_count + (
+                    len(up4_0.emulated_ues) * N_FLOWS_PER_UE * n_switches)
         )
 
         onosPod = main.params["UP4_delete_pod"]
@@ -470,7 +481,8 @@ class UP4:
         )
         up4_2.teardown()
 
-        main.step("Verify all active ONOS instances have the same number of flows")
+        main.step(
+            "Verify all active ONOS instances have the same number of flows")
         onos_1_flow_count = onos_cli_1.checkFlowCount()
         onos_2_flow_count = onos_cli_2.checkFlowCount()
         utilities.assert_equal(
@@ -549,7 +561,8 @@ class UP4:
 
         run.checkFlows(
             main,
-            minFlowCount=initial_flow_count+(len(up4_0.emulated_ues)*2)
+            minFlowCount=initial_flow_count + (
+                    len(up4_0.emulated_ues) * N_FLOWS_PER_UE * n_switches)
         )
 
         main.step("Verify PDRs and FARs via UP4 on ONOS 1")

@@ -108,7 +108,7 @@ class P4RuntimeCliDriver(CLI):
         try:
             main.log.debug(self.name + ": Starting P4Runtime Shell CLI")
             grpcAddr = "%s:%s" % (self.p4rtAddress, self.p4rtPort)
-            startP4RtShLine = "python3 -m p4runtime_sh --grpc-addr " + grpcAddr + \
+            startP4RtShLine = "python3 -m p4runtime_sh -v --grpc-addr " + grpcAddr + \
                               " --device-id " + self.p4rtDeviceId + \
                               " --election-id " + self.p4rtElectionId
             if pushConfig:
@@ -119,6 +119,9 @@ class P4RuntimeCliDriver(CLI):
                         "You should provide a P4 Runtime config to push!")
                     main.cleanAndExit()
             response = self.__clearSendAndExpect(startP4RtShLine)
+            if "CRITICAL" in response:
+                main.log.exception(self.name + ": Connection error.")
+                main.cleanAndExit()
             self.preDisconnect = self.stopP4RtClient
         except pexpect.TIMEOUT:
             main.log.exception(self.name + ": Command timed out")

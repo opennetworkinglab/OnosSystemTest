@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,4</testcases>
+    <testcases>1,2,3,4,5</testcases>
 
     <GRAPH>
         <nodeCluster>pairedleaves</nodeCluster>
@@ -16,10 +16,21 @@
     </kubernetes>
 
     <UP4>
-        <pdn_host>Compute1</pdn_host>
-        <enodeb_host>Compute3</enodeb_host>
+        <pdn_host>MgmtServer</pdn_host>
+        <enodebs>
+            <enodeb_1>
+                <host>Compute3</host>
+                <enb_address>10.32.11.194</enb_address>
+                <ues>ue1,ue2</ues>
+            </enodeb_1>
+            <enodeb_2>
+                <host>Compute1</host>
+                <interface>eno3</interface>
+                <enb_address>10.32.11.122</enb_address>
+                <ues>ue3</ues>
+            </enodeb_2>
+        </enodebs>
         <s1u_address>10.32.11.126</s1u_address>
-        <enb_address>10.32.11.194</enb_address>
         <router_mac>00:00:0A:4C:1C:46</router_mac>
         <ues>
             <ue1>
@@ -40,8 +51,27 @@
                 <qfi></qfi>
                 <five_g>False</five_g>
             </ue2>
+            <ue3>
+                <pfcp_session_id>100</pfcp_session_id>
+                <ue_address>10.240.0.3</ue_address>
+                <teid>201</teid>
+                <up_id>30</up_id>
+                <down_id>31</down_id>
+                <qfi></qfi>
+                <five_g>False</five_g>
+            </ue3>
         </ues>
+        <switch_to_kill>Leaf2</switch_to_kill> <!-- Component name of the switch to kill in CASE 5 -->
+        <enodebs_fail>enodeb_1</enodebs_fail> <!-- list of eNodeBs that should fail traffic forwarding in CASE 5-->
     </UP4>
+
+    <!--  Parameters for UP4 CASE2 related to Emulated BESS UPF  -->
+    <BESS_UPF>
+        <enodeb_host>Compute3</enodeb_host>
+        <enb_address>10.32.11.194</enb_address>
+        <ue_address>10.241.0.1</ue_address> <!-- different subnet than the one used for UP4 UEs -->
+        <bess_host>Compute2</bess_host>
+    </BESS_UPF>
 
     <UP4_delete_pod>onos-tost-onos-classic-0</UP4_delete_pod>
 

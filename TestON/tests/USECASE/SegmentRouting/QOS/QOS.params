@@ -17,7 +17,14 @@
 
     <UP4>
         <s1u_address>10.32.11.126</s1u_address>
-        <enb_address>10.32.11.124</enb_address>
+        <enodebs>
+            <enodeb_1>
+                <host>TRexClient</host>
+                <enb_address>10.32.11.124</enb_address>
+                <interface>pairbond</interface> <!-- useless for this test, we use TRex to generate traffic -->
+                <ues>ue1,ue2</ues>
+            </enodeb_1>
+        </enodebs>
         <ues>
             <ue1>
                 <pfcp_session_id>100</pfcp_session_id>

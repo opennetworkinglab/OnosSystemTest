@@ -82,7 +82,6 @@ class UP4:
         Verify removed PDRs and FARs
         """
         BESS_TEID = 300
-        BESS_UE_ADDR = "10.241.0.1"
         GPDU_PORT = 2152
         UE_PORT = 400
         PDN_PORT = 800
@@ -111,12 +110,14 @@ class UP4:
         up4.setup(main.Cluster.active(0).p4rtUp4)
 
         # Setup the emulated BESS host and required parameters
-        bess_host = main.Compute2  # FIXME: Parametrize?
+        bess_host = getattr(main, main.params["BESS_UPF"]["bess_host"])
         bess_interface = bess_host.interfaces[0]
         bess_s1u_address = bess_interface["ips"][0]
         bess_host.startScapy(ifaceName=bess_interface["name"], enableGtp=True)
-        enodeb_host = up4.enodeb_host
-        enodeb_interface = up4.enodeb_interface
+        bess_ue_address = main.params["BESS_UPF"]["ue_address"]
+        enodeb_host = getattr(main, main.params["BESS_UPF"]["enodeb_host"])
+        enodeb_address = main.params["BESS_UPF"]["enb_address"]
+        enodeb_interface = enodeb_host.interfaces[0]["name"]
         pdn_host = up4.pdn_host
         pdn_interface = up4.pdn_interface
 
@@ -136,7 +137,7 @@ class UP4:
         # Start filter before sending packets, BESS should receive GTP encapped
         # packets
         pkt_filter_upstream = "ip and udp src port %d and udp dst port %d and src host %s and dst host %s" % (
-            GPDU_PORT, GPDU_PORT, up4.enb_address, bess_s1u_address)
+            GPDU_PORT, GPDU_PORT, enodeb_address, bess_s1u_address)
         main.log.info("Start listening on %s intf %s" % (
             bess_host.name, bess_interface["name"]))
         main.log.debug("BPF Filter BESS Upstream: \n %s" % pkt_filter_upstream)
@@ -145,9 +146,9 @@ class UP4:
                               pktFilter=pkt_filter_upstream)
         # Send GTP Packet
         UP4.buildGtpPacket(enodeb_host,
-                           src_ip_outer=up4.enb_address,
+                           src_ip_outer=enodeb_address,
                            dst_ip_outer=bess_s1u_address,
-                           src_ip_inner=BESS_UE_ADDR,
+                           src_ip_inner=bess_ue_address,
                            dst_ip_inner=pdn_interface["ips"][0],
                            src_udp_inner=UE_PORT,
                            dst_udp_inner=PDN_PORT,
@@ -168,7 +169,7 @@ class UP4:
         main.step("Test upstream BESS -> fabric -> PDN")
         # Start filter before sending packets, PDN should receive non-GTP packet
         pkt_filter_upstream = "ip and udp src port %d and udp dst port %d and src host %s and dst host %s" % (
-            UE_PORT, PDN_PORT, BESS_UE_ADDR, pdn_interface["ips"][0])
+            UE_PORT, PDN_PORT, bess_ue_address, pdn_interface["ips"][0])
         main.log.info("Start listening on %s intf %s" % (
             pdn_host.name, pdn_interface["name"]))
         main.log.debug("BPF Filter PDN Upstream: \n %s" % pkt_filter_upstream)
@@ -177,7 +178,7 @@ class UP4:
                              pktFilter=pkt_filter_upstream)
         # Send UDP Packet
         UP4.buildUdpPacket(bess_host,
-                           src_ip=BESS_UE_ADDR,
+                           src_ip=bess_ue_address,
                            dst_ip=pdn_interface["ips"][0],
                            src_udp=UE_PORT,
                            dst_udp=PDN_PORT)
@@ -196,7 +197,7 @@ class UP4:
         # ------- PDN -> fabric -> BESS (not-encapped)
         main.step("Test downstream PDN -> fabric -> BESS")
         pkt_filter_downstream = "ip and udp src port %d and udp dst port %d and src host %s and dst host %s" % (
-            PDN_PORT, UE_PORT, pdn_interface["ips"][0], BESS_UE_ADDR)
+            PDN_PORT, UE_PORT, pdn_interface["ips"][0], bess_ue_address)
         main.log.info("Start listening on %s intf %s" % (
             bess_host.name, bess_interface["name"]))
         main.log.debug(
@@ -207,7 +208,7 @@ class UP4:
         UP4.buildUdpPacket(pdn_host,
                            dst_eth=up4.router_mac,
                            src_ip=pdn_interface["ips"][0],
-                           dst_ip=BESS_UE_ADDR,
+                           dst_ip=bess_ue_address,
                            src_udp=PDN_PORT,
                            dst_udp=UE_PORT)
         pdn_host.sendPacket()
@@ -224,20 +225,20 @@ class UP4:
         # ------- BESS -> fabric -> eNB (encapped)
         main.step("Test downstream BESS -> fabric -> eNB")
         pkt_filter_downstream = "ip and udp src port %d and udp dst port %d and src host %s and dst host %s" % (
-            GPDU_PORT, GPDU_PORT, bess_s1u_address, up4.enb_address)
+            GPDU_PORT, GPDU_PORT, bess_s1u_address, enodeb_address)
         main.log.info("Start listening on %s intf %s" % (
-            enodeb_host.name, enodeb_interface["name"]))
+            enodeb_host.name, enodeb_interface))
         main.log.debug(
             "BPF Filter BESS Downstream: \n %s" % pkt_filter_downstream)
-        enodeb_host.startFilter(ifaceName=enodeb_interface["name"],
+        enodeb_host.startFilter(ifaceName=enodeb_interface,
                                 sniffCount=1,
                                 pktFilter=pkt_filter_downstream)
         # Build GTP packet from BESS host
         UP4.buildGtpPacket(bess_host,
                            src_ip_outer=bess_s1u_address,
-                           dst_ip_outer=up4.enb_address,
+                           dst_ip_outer=enodeb_address,
                            src_ip_inner=pdn_interface["ips"][0],
-                           dst_ip_inner=BESS_UE_ADDR,
+                           dst_ip_inner=bess_ue_address,
                            src_udp_inner=PDN_PORT,
                            dst_udp_inner=UE_PORT,
                            teid=BESS_TEID)
@@ -604,4 +605,124 @@ class UP4:
         run.checkFlows(main, minFlowCount=initial_flow_count)
 
         run.saveOnosDiagsIfFailure(main)
+        run.cleanup(main)
+
+    def CASE5(self, main):
+        main.case("UP4 Data Plane Failure Test")
+        """
+        Program PDRs/FARs
+        Kill one switch
+        Verify that traffic from eNodebs that are connected to that switch fails
+        Verify that traffic from other eNodeBs is being forwarded
+        Wait for the switch to be up again
+        Check flows
+        Remove PDRs/FARs (cleanup)
+        """
+        try:
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
+                N_FLOWS_PER_UE
+            from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
+                Testcaselib as run
+            from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import \
+                SRStagingTest
+            import time
+            import itertools
+        except ImportError as e:
+            main.log.error("Import not found. Exiting the test")
+            main.log.error(e)
+            main.cleanAndExit()
+        n_switches = int(main.params["TOPO"]["switchNum"])
+        switch_to_kill = main.params["UP4"]["switch_to_kill"]
+
+        run.initTest(main)
+        main.log.info(main.Cluster.numCtrls)
+        main.Cluster.setRunningNode(3)
+        run.installOnos(main, skipPackage=True, cliSleep=5)
+
+        onos_cli = main.Cluster.active(0).CLI
+
+        up4 = UP4()
+
+        initial_flow_count = onos_cli.checkFlowCount()
+
+        main.step("Program and Verify PDRs and FARs via UP4")
+        up4.setup(main.Cluster.active(0).p4rtUp4)
+        up4.attachUes()
+        up4.verifyUp4Flow(onos_cli)
+
+        run.checkFlows(
+            main,
+            minFlowCount=initial_flow_count+(len(up4.emulated_ues)*4*n_switches)
+        )
+
+        main.step("Kill switch")
+        switch_component = getattr(main, switch_to_kill)
+        switch_component.handle.sendline("sudo reboot")
+
+        sleepTime = 20
+        main.log.info("Sleeping %s seconds for Fabric to react" % sleepTime)
+        time.sleep(sleepTime)
+
+        available = utilities.retry(SRStagingTest.switchIsConnected,
+                                    True,
+                                    args=[switch_component],
+                                    attempts=300,
+                                    getRetryingTime=True)
+        main.log.info("Switch %s is available in ONOS? %s" % (
+            switch_to_kill, available))
+        utilities.assert_equal(
+            expect=False,
+            actual=available,
+            onpass="Switch was rebooted (ONL reboot) successfully",
+            onfail="Switch was not rebooted (ONL reboot) successfully"
+        )
+
+        enodebs_fail = main.params["UP4"]["enodebs_fail"].split(",")
+        enodebs_no_fail = list(set(up4.enodebs.keys()) - set(enodebs_fail))
+
+        # ------- Test Upstream traffic (enbs->pdn)
+        main.step("Test upstream traffic FAIL")
+        up4.testUpstreamTraffic(enb_names=enodebs_fail, shouldFail=True)
+        main.step("Test upstream traffic NO FAIL")
+        up4.testUpstreamTraffic(enb_names=enodebs_no_fail, shouldFail=False)
+
+        # ------- Test Downstream traffic (pdn->enbs)
+        main.step("Test downstream traffic FAIL")
+        up4.testDownstreamTraffic(enb_names=enodebs_fail, shouldFail=True)
+        main.step("Test downstream traffic NO FAIL")
+        up4.testDownstreamTraffic(enb_names=enodebs_no_fail, shouldFail=False)
+
+        # Reconnect to the switch
+        connect = utilities.retry(switch_component.connect,
+                                  main.FALSE,
+                                  attempts=30,
+                                  getRetryingTime=True)
+        main.log.info("Connected to the switch %s? %s" % (
+            switch_to_kill, connect))
+        # Wait switch to be back in ONOS
+        available = utilities.retry(SRStagingTest.switchIsConnected,
+                                    False,
+                                    args=[switch_component],
+                                    attempts=300,
+                                    getRetryingTime=True)
+        main.log.info("Switch %s is available in ONOS? %s" % (
+            switch_to_kill, available))
+        utilities.assert_equal(
+            expect=True,
+            actual=available and connect == main.TRUE,
+            onpass="Switch is back available in ONOS",
+            onfail="Switch is not available in ONOS, may influence subsequent tests!"
+        )
+
+        main.step("Test upstream traffic AFTER switch reboot")
+        up4.testUpstreamTraffic()
+
+        main.step("Cleanup PDRs and FARs via UP4")
+        up4.detachUes()
+        up4.verifyNoUesFlow(onos_cli)
+        up4.teardown()
+
+        run.checkFlows(main, minFlowCount=initial_flow_count)
+
+        # Teardown
         run.cleanup(main)

@@ -38,6 +38,7 @@ import email.mime.application
 import time
 import random
 
+
 class Utilities:
     '''
        Utilities will take care about the basic functions like :
@@ -95,17 +96,26 @@ class Utilities:
         onfail:'Action or string to be triggered or displayed respectively when the assert failed'
         not:'optional argument to specify the negation of the each assertion type'
         operator:'assertion type will be defined by using operator. Like equal , greater, lesser, matches.'
+        onfailFunc: Function to run when the assert fails. Will default to a noop function.
+        onfailFuncArgs: Arguments for onfailFunc
+        onfailFuncKwargs: Keyword Arguments for onfailFunc
 
         It will return the assertion result.
 
         '''
+        def noop( *args, **kwargs ):
+            pass
 
         arguments = self.parse_args( [ "EXPECT", "ACTUAL", "ONPASS", "ONFAIL", "NOT", "OPERATOR" ], **assertParam )
+        onfailFunc = noop
+        onfailFunc = assertParam.get( "onfailFunc", noop )
+        onfailFuncArgs = assertParam.get( "onfailFuncArgs", [] )
+        onfailFuncKwargs = assertParam.get( "onfailFuncKwargs", {} )
 
         result = 0
         valuetype = ''
         operation = "not " + str( arguments[ "OPERATOR" ] ) if arguments[ 'NOT' ] and arguments[ 'NOT' ] == 1 else arguments[ "OPERATOR" ]
-        operators = { 'equals': { 'STR': '==', 'NUM': '==' }, 'matches': '=~', 'greater': '>' , 'lesser': '<' }
+        operators = { 'equals': { 'STR': '==', 'NUM': '==' }, 'matches': '=~', 'greater': '>', 'lesser': '<' }
 
         expectMatch = re.match( '^\s*[+-]?0(e0)?\s*$', str( arguments[ "EXPECT" ] ), re.I + re.M )
         if not( ( not expectMatch ) and ( arguments[ "EXPECT" ] == 0 ) ):
@@ -123,9 +133,8 @@ class Utilities:
         try:
             opcode = operators[ str( arguments[ "OPERATOR" ] ) ][ valuetype ] if arguments[ "OPERATOR" ] == 'equals' else operators[ str( arguments[ "OPERATOR" ] ) ]
 
-        except KeyError as e:
-            print "Key Error in assertion"
-            print e
+        except KeyError:
+            main.log.exeception( "Key Error in assertion" )
             return main.FALSE
 
         if opcode == '=~':
@@ -143,19 +152,19 @@ class Utilities:
             try:
                 if str( opcode ) == "==":
                     main.log.info( "Verifying the Expected is equal to the actual or not using assert_equal" )
-                    if( arguments[ "EXPECT" ] == arguments[ "ACTUAL" ] ):
+                    if arguments[ "EXPECT" ] == arguments[ "ACTUAL" ]:
                         result = main.TRUE
                     else:
                         result = main.FALSE
                 elif str( opcode ) == ">":
                     main.log.info( "Verifying the Expected is Greater than the actual or not using assert_greater" )
-                    if( ast.literal_eval( arguments[ "EXPECT" ] ) > ast.literal_eval( arguments[ "ACTUAL" ] ) ):
+                    if ast.literal_eval( arguments[ "EXPECT" ] ) > ast.literal_eval( arguments[ "ACTUAL" ] ):
                         result = main.TRUE
                     else:
                         result = main.FALSE
                 elif str( opcode ) == "<":
                     main.log.info( "Verifying the Expected is Lesser than the actual or not using assert_lesser" )
-                    if( ast.literal_eval( arguments[ "EXPECT" ] ) < ast.literal_eval( arguments[ "ACTUAL" ] ) ):
+                    if ast.literal_eval( arguments[ "EXPECT" ] ) < ast.literal_eval( arguments[ "ACTUAL" ] ):
                         result = main.TRUE
                     else:
                         result = main.FALSE
@@ -182,9 +191,8 @@ class Utilities:
         if not isinstance( msg, str ):
             try:
                 eval( str( msg ) )
-            except SyntaxError as e:
-                print "function definition is not right"
-                print e
+            except SyntaxError:
+                main.log.exception( "function definition is not right" )
 
         main.last_result = result
         if main.stepResults[ 2 ]:
@@ -195,7 +203,16 @@ class Utilities:
                 pass
         else:
             main.log.warn( "Assertion called before a test step" )
-        return result
+        try:
+            if result != main.TRUE:
+                onfailFunc( *onfailFuncArgs, **onfailFuncKwargs )
+        except SkipCase:
+            raise
+        except Exception:
+            main.log.exception( "Error calling onfailFunc: %s" % onfailFunc )
+            return False
+        else:
+            return result
 
     def parse_args( self, args, **kwargs ):
         '''

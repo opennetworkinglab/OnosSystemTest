@@ -13,6 +13,8 @@ UE_PORT = 400
 PDN_PORT = 800
 GPDU_PORT = 2152
 
+N_FLOWS_PER_UE = 4
+
 
 class UP4:
     """
@@ -141,7 +143,7 @@ class UP4:
         fail = False
         if len(self.emulated_ues) != packets.count('Ether'):
             fail = True
-            msg = "Failed to capture packets in PDN. "
+            msg = "Failed to capture packets in PDN.\n" + str(packets)
         else:
             msg = "Correctly captured packet in PDN. "
         # We expect exactly 1 packet per UE
@@ -149,9 +151,9 @@ class UP4:
                         for ue in self.emulated_ues.values()]
         if pktsFiltered.count(1) != len(pktsFiltered):
             fail = True
-            msg += "More than one packet per UE in downstream. "
+            msg += "\nError on the number of packets per UE in downstream.\n" + str(packets)
         else:
-            msg += "One packet per UE in upstream. "
+            msg += "\nOne packet per UE in upstream. "
 
         utilities.assert_equal(
             expect=False, actual=fail, onpass=msg, onfail=msg)
@@ -196,15 +198,15 @@ class UP4:
         fail = False
         if len(self.emulated_ues) != sum(pktsFiltered):
             fail = True
-            msg = "Failed to capture packets in eNodeB. "
+            msg = "Failed to capture packets in eNodeB.\n" + str(packets)
         else:
             msg = "Correctly captured packets in eNodeB. "
         # We expect exactly 1 packet per UE
         if pktsFiltered.count(1) != len(pktsFiltered):
             fail = True
-            msg += "More than one packet per GTP TEID in downstream. "
+            msg += "\nError on the number of packets per GTP TEID in downstream.\n" + str(packets)
         else:
-            msg += "One packet per GTP TEID in downstream. "
+            msg += "\nOne packet per GTP TEID in downstream. "
 
         utilities.assert_equal(
             expect=False, actual=fail, onpass=msg, onfail=msg)
@@ -277,18 +279,32 @@ class UP4:
                                 noExit=True, expectJson=False)
         return pdrs == "" and fars == ""
 
-    def verifyUp4Flow(self, onosCli):
+    def verifyUp4Flow(self, onosCli, retries=10):
         """
         Verify PDRs and FARs installed via UP4 using the ONOS CLI.
 
         :param onosCli: An instance of a OnosCliDriver
+        :param retries: Number of retries
         """
+        failString=""
+        retValue = utilities.retry(f=self.__internalVerifyUp4Flow,
+                                   retValue=False,
+                                   args=[onosCli, failString],
+                                   sleep=5,
+                                   attempts=retries)
+        utilities.assert_equal(
+            expect=True,
+            actual=retValue,
+            onpass="Correct PDRs and FARs in ONOS",
+            onfail="Wrong PDRs and FARs in ONOS. Missing PDR/FAR:\n" + failString
+        )
+
+    def __internalVerifyUp4Flow(self, onosCli, failMsg=""):
         pdrs = onosCli.sendline(cmdStr="up4:read-pdrs", showResponse=True,
                                 noExit=True, expectJson=False)
         fars = onosCli.sendline(cmdStr="up4:read-fars", showResponse=True,
                                 noExit=True, expectJson=False)
         fail = False
-        failMsg = ""
         for ue in self.emulated_ues.values():
             if pdrs.count(self.upPdrOnosString(**ue)) != 1:
                 failMsg += self.upPdrOnosString(**ue) + "\n"
@@ -302,9 +318,7 @@ class UP4:
             if fars.count(self.downFarOnosString(**ue)) != 1:
                 failMsg += self.downFarOnosString(**ue) + "\n"
                 fail = True
-        utilities.assert_equal(expect=False, actual=fail,
-                               onpass="Correct PDRs and FARs in ONOS",
-                               onfail="Wrong PDRs and FARs in ONOS. Missing PDR/FAR:\n" + failMsg)
+        return not fail
 
     def upPdrOnosString(self, pfcp_session_id, teid=None, up_id=None,
                         teid_up=None, far_id_up=None, ctr_id_up=None, qfi=None,

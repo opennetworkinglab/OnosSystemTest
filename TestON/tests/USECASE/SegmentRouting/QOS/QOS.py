@@ -10,7 +10,8 @@ class QOS:
         # Generate traffic with Trex for the two UEs
         # --> no packet drop on RT flow, reasonable latency on RT flow
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
+                N_FLOWS_PER_UE
             from tests.USECASE.SegmentRouting.dependencies.trex import Trex
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
@@ -19,6 +20,7 @@ class QOS:
             main.log.error("Import not found. Exiting the test")
             main.log.error(e)
             main.cleanAndExit()
+        n_switches = int(main.params["TOPO"]["switchNum"])
 
         run.initTest(main)
         main.log.info(main.Cluster.numCtrls)
@@ -43,7 +45,8 @@ class QOS:
 
         run.checkFlows(
             main,
-            minFlowCount=initial_flow_count+(len(up4.emulated_ues)*2)
+            minFlowCount=initial_flow_count + (
+                        len(up4.emulated_ues) * N_FLOWS_PER_UE * n_switches)
         )
 
         # Load traffic config for the current test case

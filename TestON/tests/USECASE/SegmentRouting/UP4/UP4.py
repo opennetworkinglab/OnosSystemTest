@@ -281,7 +281,8 @@ class UP4:
             Disconnect P4RT client
         """
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
+                N_FLOWS_PER_UE
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
         except ImportError as e:

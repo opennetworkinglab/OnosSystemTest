@@ -2,9 +2,9 @@
     <testcases>2</testcases>
 
     <GRAPH>
-        <nodeCluster>staging</nodeCluster>
+        <nodeCluster>pairedleaves</nodeCluster>
         <builds>20</builds>
-        <jobName>SRrollingRestart</jobName>
+        <jobName>SRpairedLeaves</jobName>
         <branch>master</branch>
     </GRAPH>
 
@@ -24,8 +24,6 @@
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
     </DEPENDENCY>
 
-    <jsonFileSuffix>.hw</jsonFileSuffix>
-
     <persistent_setup>True</persistent_setup>
 
     <use_stern>True</use_stern>
@@ -36,40 +34,26 @@
     </kubernetes>
 
     <PERF>
-        <traffic_host>Host1 Host2 Host3</traffic_host>
-        <pcap_host>ng40vm</pcap_host>
+        <traffic_host>Compute1 Compute2</traffic_host>
+        <pcap_host>Compute3</pcap_host>
         <pcap_cmd_arguments>-t e -F pcap -s 100 </pcap_cmd_arguments>
         <iterations>1</iterations>
         <topo>
             <leaf1>
-                <ports>132 148 140 156</ports>
+                <ports>176 180 184 188</ports>
                 <note>eNB</note>
             </leaf1>
             <leaf2>
                 <ports>260 268 276 284</ports>
                 <note>upstream</note>
             </leaf2>
-            <spine1>
-                <ports>132 140 148 156</ports>
-                <note>spine</note>
-            </spine1>
-            <spine2>
-                <ports>132 140 148 156</ports>
-                <note>spine</note>
-            </spine2>
         </topo>
     </PERF>
     <ONOS_Logging>
-        <org.onosproject.p4runtime.ctl.client>DEBUG</org.onosproject.p4runtime.ctl.client>
-        <org.onosproject.p4runtime.ctl.client.writerequestimpl>TRACE</org.onosproject.p4runtime.ctl.client.writerequestimpl>
         <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
-        <org.onosproject.gnmi.ctl>TRACE</org.onosproject.gnmi.ctl>
     </ONOS_Logging>
     <ONOS_Logging_Reset>
-        <org.onosproject.p4runtime.ctl.client>INFO</org.onosproject.p4runtime.ctl.client>
-        <org.onosproject.p4runtime.ctl.client.writerequestimpl>INFO</org.onosproject.p4runtime.ctl.client.writerequestimpl>
         <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
-        <org.onosproject.gnmi.ctl>INFO</org.onosproject.gnmi.ctl>
     </ONOS_Logging_Reset>
 
 
@@ -88,17 +72,18 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
-        <TrafficDiscovery>10</TrafficDiscovery>
+        <TrafficDiscovery>13</TrafficDiscovery>
     </timers>
 
+    <restartRounds>2</restartRounds>
 
     <SLEEP>
         <startup>10</startup>
     </SLEEP>
 
     <TOPO>
-        <switchNum>4</switchNum>
-        <linkNum>16</linkNum>
+        <switchNum>2</switchNum>
+        <linkNum>2</linkNum>
     </TOPO>
 
     <ALARM>

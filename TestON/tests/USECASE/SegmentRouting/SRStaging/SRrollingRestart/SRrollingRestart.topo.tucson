@@ -1,0 +1,192 @@
+<TOPOLOGY>
+    <COMPONENT>
+        <ONOScell>
+            <host>localhost</host>  # ONOS "bench" machine
+            <user>jenkins</user>
+            <password></password>
+            <type>OnosClusterDriver</type>
+            <connect_order>50</connect_order>
+            <jump_host></jump_host>
+            <home>~/onos</home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
+            <COMPONENTS>
+                <kubeConfig>~/.kube/dev-pairedleaves-tucson</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
+                <useDocker>True</useDocker>  # Whether to use docker for ONOS nodes
+                <docker_prompt>\$</docker_prompt>
+                <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
+                <diff_clihost>True</diff_clihost> # if it has different host other than localhost for CLI. True or empty. OC# will be used if True.
+                <karaf_username>karaf</karaf_username>
+                <karaf_password>karaf</karaf_password>
+                <web_user>karaf</web_user>
+                <web_pass>karaf</web_pass>
+                <karafPrompt_username>karaf</karafPrompt_username>
+                <rest_port></rest_port>
+                <prompt></prompt>  # TODO: we technically need a few of these, one per component
+                <onos_home>~/onos/</onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.
+                <nodes> 3 </nodes>  # number of nodes in the cluster
+            </COMPONENTS>
+        </ONOScell>
+
+        <Leaf1>
+            <host>10.76.28.70</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>12</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <shortName>leaf1</shortName>
+                <port1></port1>
+                <link1></link1>
+                <port2></port2>
+                <link2></link2>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </Leaf1>
+
+        <Leaf2>
+            <host>10.76.28.71</host>
+            <user>root</user>
+            <password>onl</password>
+            <type>StratumOSSwitchDriver</type>
+            <connect_order>13</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <shortName>leaf2</shortName>
+                <port1></port1>
+                <link1></link1>
+                <port2></port2>
+                <link2></link2>
+                <onosConfigPath></onosConfigPath>
+                <onosConfigFile></onosConfigFile>
+            </COMPONENTS>
+        </Leaf2>
+
+        <Compute1>
+            <host>10.76.28.74</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>6</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <dhcp>True</dhcp>
+                <ip>10.32.11.2</ip>
+                <shortName>h1</shortName>
+                <port1></port1>
+                <link1></link1>
+                <ifaceName>pairbond</ifaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>true</sudo_required>
+                <scapy_path>/usr/bin/scapy</scapy_path>
+            </COMPONENTS>
+        </Compute1>
+
+        <Compute2>
+            <host>10.76.28.72</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>7</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <dhcp>True</dhcp>
+                <ip>10.32.11.3</ip>
+                <shortName>h2</shortName>
+                <port1></port1>
+                <link1></link1>
+                <ifaceName>pairbond</ifaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>true</sudo_required>
+                <scapy_path>/usr/bin/scapy</scapy_path>
+            </COMPONENTS>
+        </Compute2>
+
+        <Compute3>
+            <host>10.76.28.68</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>8</connect_order>
+            <jump_host></jump_host>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <dhcp>True</dhcp>
+                <ip>10.32.11.194</ip>
+                <shortName>h3</shortName>
+                <port1></port1>
+                <link1></link1>
+                <ifaceName>eno2</ifaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>true</sudo_required>
+                <scapy_path>/usr/bin/scapy</scapy_path>
+            </COMPONENTS>
+        </Compute3>
+
+        <ManagmentServer>
+            <host>10.76.28.66</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>HostDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <mac></mac>
+                <inband>false</inband>
+                <dhcp>True</dhcp>
+                <ip>10.32.11.1</ip>
+                <shortName>mgmt</shortName>
+                <port1></port1>
+                <link1></link1>
+                <ifaceName>pairbond</ifaceName>
+                <routes>
+                    <route1>
+                        <network></network>
+                        <netmask></netmask>
+                        <gw></gw>
+                        <interface></interface>
+                    </route1>
+                </routes>
+                <sudo_required>true</sudo_required>
+                <scapy_path>/usr/bin/scapy</scapy_path>
+
+            </COMPONENTS>
+        </ManagmentServer>
+
+        <NetworkBench>
+            <host>10.76.28.66</host>
+            <user>jenkins</user>
+            <password></password>
+            <type>NetworkDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </NetworkBench>
+
+    </COMPONENT>
+</TOPOLOGY>

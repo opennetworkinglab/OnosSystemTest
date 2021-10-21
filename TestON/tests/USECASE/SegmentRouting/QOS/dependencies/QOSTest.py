@@ -20,7 +20,7 @@ class QOSTest:
         up4 = UP4()
         trex = Trex()
         # Get the P4RT client connected to UP4 in the first available ONOS instance
-        up4.setup(main.Cluster.active(0).p4rtUp4)
+        up4.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         trex.setup(main.TRexClient)
 
         main.step("Program PDRs and FARs via UP4")

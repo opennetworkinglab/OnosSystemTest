@@ -36,9 +36,9 @@ import xmldict
 import importlib
 import threading
 import pdb
-module = new.module( "test" )
 import openspeak
 import subprocess
+module = new.module( "test" )
 global path, drivers_path, core_path, tests_path, logs_path
 location = os.path.abspath( os.path.dirname( __file__ ) )
 path = re.sub( "(core|bin)$", "", location )
@@ -51,12 +51,13 @@ sys.path.append( path )
 sys.path.append( drivers_path )
 sys.path.append( core_path )
 sys.path.append( tests_path )
-
 from core.utilities import Utilities
 from core.Thread import Thread
 
+
 class SkipCase( Exception ):
     pass
+
 
 class TestON:
     '''
@@ -238,14 +239,14 @@ class TestON:
         self.TOTAL_TC_PLANNED = len( self.testcases_list ) * repeat
         self.log.TAP( "1..%s" % self.TOTAL_TC_PLANNED )
 
-        result = self.TRUE
+        executed = self.TRUE
         while repeat:
             self.leftCase.extend( self.testcases_list )
             for self.CurrentTestCaseNumber in self.testcases_list:
                 self.executedCase.append( self.leftCase.pop( 0 ) )
-                result = self.runCase( self.CurrentTestCaseNumber )
+                executed = self.runCase( self.CurrentTestCaseNumber )
             repeat -= 1
-        return result
+        return executed
 
     def runCase( self, testCaseNumber ):
         self.CurrentTestCaseNumber = testCaseNumber
@@ -257,7 +258,7 @@ class TestON:
         self.caseExplanation = ""
         self.CASERESULT = self.ERROR
         self.STEPRESULT = self.NORESULT
-        result = self.TRUE
+        executed = self.TRUE
 
         # NOTE: number of main.step statements in the
         #       outer most level of the test case. used to
@@ -281,10 +282,11 @@ class TestON:
             return self.FALSE
         self.stepCount = 0
         while self.stepCount < len( self.code[ self.testCaseNumber ].keys() ):
-            result = self.runStep( self.code, self.testCaseNumber )
-            if result == self.FALSE:
+            executed = self.runStep( self.code, self.testCaseNumber )
+            if executed == self.FALSE:
+                # Skip the rest of the case if python error or SkipCase
                 break
-            elif result == self.TRUE:
+            elif executed == self.TRUE:
                 continue
         # stepResults format: ( stepNo[], stepName[], stepResult[], onFail[] )
         stepResults = self.stepResultsList
@@ -312,7 +314,7 @@ class TestON:
             self.caseResultsWiki()
             self.caseResultsTAP()
             self.stepCache = ""
-        return result
+        return executed
 
     def caseResultsWiki( self ):
         """
@@ -367,7 +369,6 @@ class TestON:
         for line in stepLines:
             self.log.TAP( line )
 
-
     def organizeResult( self, caseNum, result ):
         """
             Organize the result and put the current number into either
@@ -400,6 +401,7 @@ class TestON:
                 self.stepCount = self.stepCount + 1
                 return self.FALSE
             except StandardError as e:
+                e_info = sys.exc_info()
                 try:
                     stepNo = self.stepResults[ 0 ][ self.stepNumber - 1 ]
                 except IndexError:
@@ -412,17 +414,21 @@ class TestON:
                     stepName = self.stepResults[ 1 ][ self.stepNumber - 1 ]
                 except IndexError:
                     stepName = "<IndexError>"
-                self.log.error( "\nException in the following section of" +
-                                " code: " + str( testCaseNumber ) + "." +
-                                str( stepNo ) + ": " + stepName )
-                self.log.error( str( e.__class__ ) + str( e.message ) )
-                self.log.exception( "" )
+                errorMsg = "Exception in the following section of" +\
+                            " code: " + str( testCaseNumber ) + "." +\
+                            str( stepNo ) + ": " + stepName + "\n\t" +\
+                            str( e.__class__ ) + str( e.message )
+                self.log.error( errorMsg, exc_info=e_info )
+                self.onFailMsg = errorMsg + ". Skipping the rest of this case. "
+                self.stepCache += "\t\t" + self.onFailMsg + "\n"
                 self.stepCount = self.stepCount + 1
+                self.testCaseResult[ str( self.CurrentTestCaseNumber ) ] = self.FALSE
+                self.organizeResult( self.CurrentTestCaseNumber, self.FALSE )
                 self.logger.updateCaseResults( self )
-                self.stepResultsWiki()
-                self.stepResultsTAP()
-                # summary results
+                self.log.summary( self.caseExplanation )
                 self.log.summary( self.stepCache )
+                self.caseResultsWiki()
+                self.caseResultsTAP()
                 self.stepCache = ""
                 self.cleanup()
                 self.exit()
@@ -515,7 +521,10 @@ class TestON:
             self.CASERESULT = self.FALSE
         self.onFailMsg = "Skipping the rest of this case. "
         if msg:
-            self.onFailMsg += str( msg )
+            if isinstance( msg, Exception ):
+                self.onFailMsg += str( repr( msg ) )
+            else:
+                self.onFailMsg += str( msg )
         raise SkipCase
 
     def addCaseHeader( self ):
@@ -597,7 +606,7 @@ class TestON:
                                            str( component ) )
                         except StandardError:
                             self.log.exception( "Exception while disconnecting from " +
-                                                 str( component ) )
+                                                str( component ) )
                             result = self.FALSE
                     # Closing all the driver's session files
                     for driver in self.componentDictionary.keys():
@@ -612,7 +621,7 @@ class TestON:
                                            " close log file" )
                         except StandardError:
                             self.log.exception( "Exception while closing log files for " +
-                                                 str( driver ) )
+                                                str( driver ) )
                             result = self.FALSE
                 else:
                     pass  # Someone else already ran through this function
@@ -927,6 +936,7 @@ def verifyOptions( options ):
     verifyTestCases( options )
     verifyOnosCell( options )
 
+
 def verifyTest( options ):
     try:
         if options.testname:
@@ -941,11 +951,13 @@ def verifyTest( options ):
         print "Test or Example not specified please specify the --test <test name > or --example <example name>"
         main.exit()
 
+
 def verifyExample( options ):
     if options.example:
         main.testDir = path + '/examples/'
         main.tests_path = path + "/examples/"
         main.classPath = "examples." + main.TEST + "." + main.TEST
+
 
 def verifyLogdir( options ):
     # Verifying Log directory option
@@ -953,6 +965,7 @@ def verifyLogdir( options ):
         main.logdir = options.logdir
     else:
         main.logdir = main.FALSE
+
 
 def verifyMail( options ):
     # Mail-To: field
@@ -969,6 +982,7 @@ def verifyMail( options ):
     # Mail-From account password
     main.senderPwd = main.config[ 'config' ].get( 'mail_pass' )
 
+
 def evalTestCase( tempList ):
     tList = []
     for tcase in tempList:
@@ -978,11 +992,10 @@ def evalTestCase( tempList ):
             tList.extend( [ tcase ] )
     return tList
 
+
 def verifyTestCases( options ):
     # Getting Test cases list
     if options.testcases:
-        testcases_list = options.testcases
-        # sys.exit()
         testcases_list = re.sub( "(\[|\])", "", options.testcases )
         main.testcases_list = eval( testcases_list + "," )
     else:
@@ -993,6 +1006,7 @@ def verifyTestCases( options ):
             print "Testcases not specifed in params, please provide in " + \
                   "params file or 'testcases' commandline argument"
             sys.exit()
+
 
 def verifyOnosCell( options ):
     # Verifying onoscell option
@@ -1017,6 +1031,7 @@ def verifyOnosCell( options ):
                 main.apps = ( splitOutput[ i ].split( "=" ) )[ 1 ]
     else:
         main.onoscell = main.FALSE
+
 
 def verifyTestScript( options ):
     '''
@@ -1070,6 +1085,7 @@ def verifyTestScript( options ):
     main.params = main.parser.parseFile( main.testDir + "/" + main.paramsFile )
     main.topology = main.parser.parseFile( main.testDir + "/" + main.topoFile )
 
+
 def verifyParams( options ):
     try:
         main.params = main.params[ 'PARAMS' ]
@@ -1117,6 +1133,7 @@ def verifyParams( options ):
                 main.exit()
             else:
                 paramDict[ keyList[ 0 ] ] = value
+
 
 def load_parser():
     '''
@@ -1184,6 +1201,7 @@ def load_defaultParser():
     except ImportError:
         print sys.exc_info()[ 1 ]
 
+
 def load_logger():
     '''
     It facilitates the loading customised parser for topology and params file.
@@ -1219,6 +1237,7 @@ def load_logger():
     else:
         load_defaultlogger()
 
+
 def load_defaultlogger():
     '''
     It will load the default parser which is xml parser to parse the params and
@@ -1239,6 +1258,7 @@ def load_defaultlogger():
     except ImportError:
         print sys.exc_info()[ 1 ]
         main.exit()
+
 
 def _echo( self ):
     print "THIS IS ECHO"

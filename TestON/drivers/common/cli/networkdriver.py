@@ -1074,10 +1074,10 @@ class NetworkDriver( CLI ):
                 intf = hosts[host]['interfaces'][0].get( 'name' )
                 hostIp = self.getIPAddress( host, iface=intf ) or hosts[host]['interfaces'][0].get( 'ips', False )
                 if hostIp:
-                    flushCmd = "sudo ip neigh flush all"
+                    flushCmd = "sudo /sbin/ip neigh flush all"
                     intfStr = "-i {}".format( intf ) if intf else ""
                     srcIp = "-S {}".format( hostIp if isinstance( hostIp, types.StringType ) else hostIp[0] ) if intf else ""
-                    cmd = "sudo arping -c 1 -w {} {} {} {}".format( wait, intfStr, srcIp, dstIp )
+                    cmd = "sudo /usr/sbin/arping -c 1 -w {} {} {} {}".format( wait, intfStr, srcIp, dstIp )
                     main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
                     flushCmd = "sudo ip -6 neigh flush all"

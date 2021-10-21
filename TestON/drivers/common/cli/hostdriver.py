@@ -171,10 +171,10 @@ class HostDriver( ScapyCliDriver ):
             self.handle.expect( self.prompt )
             self.handle.sendline( "ssh {}@{}".format( self.options[ 'username' ],
                                                       self.options[ 'ip' ] ) )
-            i = self.handle.expect( [ "password:|Password:", self.prompt, pexpect.TIMEOUT ], timeout=30 )
+            i = self.handle.expect( [ "password|Password", self.prompt, pexpect.TIMEOUT ], timeout=30 )
             if i == 0:
-                self.handle.sendline( self.options[ 'password' ] )
-                j = self.handle.expect( [ "password:|Password:", self.prompt, pexpect.TIMEOUT ], timeout=10 )
+                self.handle.sendline( self.pwd )
+                j = self.handle.expect( [ "password|Password", self.prompt, pexpect.TIMEOUT ], timeout=10 )
                 if j != 1:
                     main.log.error( "Incorrect password" )
                     return main.FALSE
@@ -539,14 +539,21 @@ class HostDriver( ScapyCliDriver ):
         try:
             main.log.info( self.name + ": Sending: " + cmd )
             self.handle.sendline( cmd )
-            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ],
+            i = self.handle.expect( [ "password|Password", self.prompt, pexpect.TIMEOUT ],
                                     timeout=wait + 5 )
             response = self.handle.before
             if debug:
                 main.log.debug( response )
-            if i == 1:
+            if i == 0:
+                self.handle.sendline( self.pwd )
+                j = self.handle.expect( [ "password|Password", self.prompt, pexpect.TIMEOUT ], timeout=10 )
+                if j != 1:
+                    main.log.error( "Incorrect password" )
+                    return main.FALSE
+            if i == 2:
                 main.log.error( self.name + ": timeout when waiting for response" )
                 main.log.error( self.name + ": response: " + str( response ) )
+            main.log.debug( self.prompt )
             return response
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -555,3 +562,4 @@ class HostDriver( ScapyCliDriver ):
         except Exception:
             main.log.exception( self.name + ": uncaught exception!" )
             main.cleanAndExit()
+            self.clearBuffer()

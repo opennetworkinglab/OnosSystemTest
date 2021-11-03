@@ -364,14 +364,17 @@ class TrexClientDriver(Controller):
 
         :param ports: List of ports ids to monitor
         :param time_interval: Interval between read
-        :return: Statistics read while traffic is active
+        :return: Statistics read while traffic is active, or empty result if no
+                 ports provided.
         """
-
         results = {
             port_id: {"rx_bps": [], "tx_bps": [], "rx_pps": [], "tx_pps": []}
             for port_id in ports
         }
         results["duration"] = []
+
+        if not ports:
+            return results
 
         prev = {
             port_id: {

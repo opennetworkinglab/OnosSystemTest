@@ -358,7 +358,7 @@ class NetworkDriver( CLI ):
         except Exception:
             main.log.error( self.name + ": failed to get host MAC address" )
 
-    def runCmdOnHost( self, hostName, cmd ):
+    def runCmdOnHost( self, hostName, cmd, debug=False ):
         """
         Run shell command on specified host and return output
         Required:
@@ -367,7 +367,7 @@ class NetworkDriver( CLI ):
         """
         hostComponent = self.hosts[ hostName ]
         if hostComponent:
-            return hostComponent.command( cmd )
+            return hostComponent.command( cmd, debug )
         return None
 
     def assignSwController( self, sw, ip, port="6653", ptcp="" ):
@@ -1080,7 +1080,7 @@ class NetworkDriver( CLI ):
                     cmd = "sudo /usr/sbin/arping -c 1 -w {} {} {} {}".format( wait, intfStr, srcIp, dstIp )
                     main.log.debug( "Sending IPv4 arping from host {}".format( host ) )
                 elif self.getIPAddress( host, proto='IPV6' ):
-                    flushCmd = "sudo ip -6 neigh flush all"
+                    flushCmd = "sudo /sbin/ip -6 neigh flush all"
                     intf = hosts[host]['interfaces'][0]['name']
                     cmd = "ndisc6 -r 1 -w {} {} {}".format( wait, dstIp6, intf )
                     main.log.debug( "Sending IPv6 ND from host {}".format( host ) )

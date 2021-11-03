@@ -36,6 +36,7 @@ andrew@onlab.us
 shreya@onlab.us
 jeremyr@opennetworking.org
 """
+import ipaddress
 import pexpect
 import re
 import json
@@ -1350,7 +1351,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception" )
             return None
 
-    def verifyHostIp( self, hostList=[], prefix="" ):
+    def verifyHostIp( self, hostList=[], prefix="", prefixLength=24 ):
         """
         Description:
             Verify that all hosts have IP address assigned to them
@@ -1365,19 +1366,28 @@ class OnosCliDriver( CLI ):
         """
         try:
             hosts = self.hosts()
-            hosts = json.loads( hosts )
+            hosts = json.loads( hosts, "utf-8" )
             if not hostList:
                 hostList = [ host[ "id" ] for host in hosts ]
+            hostList = [ str( h.lower() ) for h in hostList ]
             for host in hosts:
                 hostId = host[ "id" ]
-                if hostId not in hostList:
+                hostId = str( hostId.lower() )
+                match = False
+                for onosHostId in hostList:
+                    if onosHostId == hostId:
+                        match = True
+                if not match:
                     continue
                 ipList = host[ "ipAddresses" ]
                 main.log.debug( self.name + ": IP list on host " + str( hostId ) + ": " + str( ipList ) )
                 if not ipList:
                     main.log.warn( self.name + ": Failed to discover any IP addresses on host " + str( hostId ) )
                 else:
-                    if not any( ip.startswith( str( prefix ) ) for ip in ipList ):
+                    # if no hostIp in subnet: Get warning otherwise remove hostId from hostList
+                    subnetString = u"%s/%s" % (prefix, prefixLength)
+                    subnet =  ipaddress.ip_network( subnetString, strict=False )
+                    if not any( ipaddress.ip_address( ip ) in subnet for ip in ipList ):
                         main.log.warn( self.name + ": None of the IPs on host " + str( hostId ) + " has prefix " + str( prefix ) )
                     else:
                         main.log.debug( self.name + ": Found matching IP on host " + str( hostId ) )

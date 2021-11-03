@@ -80,6 +80,7 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
 
         # if static route flag add routes
         # these routes are topology specific
+        # these should be in the params file
         if static:
             if ipv4:
                 lib.addStaticOnosRoute( main, "10.0.88.0/24", "10.0.1.1")
@@ -105,7 +106,7 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
             # Run the test with physical devices
             lib.connectToPhysicalNetwork( main )
 
-        lib.saveOnosDiagnostics( main )
+        # lib.saveOnosDiagnostics( main )
         # wait some time for onos to install the rules!
         main.log.info( "Waiting %i seconds for ONOS to program the dataplane" % float( main.params[ "timers" ][ "dhcpSleep" ] ))
         time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )

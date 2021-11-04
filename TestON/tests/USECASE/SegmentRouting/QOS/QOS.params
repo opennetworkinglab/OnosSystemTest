@@ -100,7 +100,7 @@
                 <expected_max_dropped>0</expected_max_dropped>
                 <expected_max_latency>1500</expected_max_latency>
                 <!-- Verify the 90th percentile instead of 99.9th because of latency introduced by TRex SW Mode -->
-                <expected_90_percentile_latency>150</expected_90_percentile_latency>
+                <expected_90_percentile_latency>200</expected_90_percentile_latency>
             </RT_FROM_UE>
 
             <BE_FROM_PDN>

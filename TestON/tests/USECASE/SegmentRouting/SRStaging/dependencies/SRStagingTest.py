@@ -1027,9 +1027,10 @@ class SRStagingTest:
                 main.log.warn( "Did not find a specific switch pod to kill" )
             startTime = time.time()
             # Delete pod
-            main.ONOSbench.handle.sendline( "kubectl --kubeconfig %s delete pod -n %s %s" % ( kubeConfig, namespace, output[0] ) )
-            main.ONOSbench.handle.expect( main.ONOSbench.prompt )
-            main.log.debug( repr( main.ONOSbench.handle.before ) + repr( main.ONOSbench.handle.after ) )
+            deleted = main.ONOSbench.kubectlDeletePod( output[0], kubeConfig, namespace )
+            utilities.assert_equals( expect=main.TRUE, actual=deleted,
+                                     onpass="Successfully deleted switch pod",
+                                     onfail="Failed to delete switch pod" )
             # TODO ASSERTS
             main.log.info( "Sleeping %s seconds" % sleepTime )
             time.sleep( sleepTime )
@@ -1092,13 +1093,93 @@ class SRStagingTest:
             main.log.exception( "Error in killSwitchAgent" )
 
     @staticmethod
-    def onosDown():
+    def onosDown( main, controller, preventRestart=False ):
+        """
+        Brings down an ONOS kubernetes pod. If preventRestart, will attempt to prevent
+        it from coming back on that node by adding a taint.
+        Returns the nodeName of the pod that was killed
+        """
         try:
-            pass
+            # Get pod name to delete
+            podName = controller.k8s.podName
+            kubeConfig = main.Cluster.active(0).k8s.kubeConfig
+            namespace = main.params[ 'kubernetes' ][ 'namespace' ]
+            if preventRestart:
+                # Cordon off the node so no more pods will be scheduled
+                k8sNode = controller.Bench.kubectlGetPodNode( podName,
+                                                              kubeconfig=kubeConfig,
+                                                              namespace=namespace )
+                main.step( "Cordon off k8s node %s, which is hosting onos k8s pod %s" % ( k8sNode,
+                                                                                          controller.name ) )
+                cordoned = controller.Bench.kubectlCordonNode( k8sNode,
+                                                               kubeconfig=kubeConfig,
+                                                               namespace=namespace )
+                utilities.assert_equals( expect=main.TRUE, actual=cordoned,
+                                         onpass="Successfully cordoned k8s node",
+                                         onfail="Failed to cordon off k8s node" )
+                controller.active = False
+                main.Cluster.setRunningNode( main.Cluster.getRunningPos() )
+            else:
+                k8sNode = None
+            main.step( "Delete onos k8s pod %s" % controller.name )
+            #startTime = time.time()
+            # Delete pod
+            deleted = controller.Bench.kubectlDeletePod( podName, kubeConfig, namespace )
+            utilities.assert_equals( expect=main.TRUE, actual=deleted,
+                                     onpass="Successfully deleted switch pod",
+                                     onfail="Failed to delete switch pod" )
+            return k8sNode
         except SkipCase:
             raise
         except Exception:
             main.log.exception( "Error in onosDown" )
+
+    @staticmethod
+    def onosUp( main, k8sNode, controller ):
+        """
+        Brings up an ONOS kubernetes pod by uncordoning the node
+        """
+        try:
+            kubeConfig = main.Cluster.active(0).k8s.kubeConfig
+            namespace = main.params[ 'kubernetes' ][ 'namespace' ]
+            podName = controller.k8s.podName
+            # Uncordon the node so pod will be scheduled
+            main.step( "Uncordon k8s node %s, which is hosting onos k8s pod %s" % ( k8sNode,
+                                                                                    controller.name ) )
+            #startTime = time.time()
+            uncordoned = controller.Bench.kubectlUncordonNode( k8sNode,
+                                                               kubeconfig=kubeConfig,
+                                                               namespace=namespace )
+            utilities.assert_equals( expect=main.TRUE, actual=uncordoned,
+                                     onpass="Successfully uncordoned k8s node",
+                                     onfail="Failed to uncordon k8s node" )
+
+            # Check pod is ready
+            main.step( "Wait for ONOS pod to restart" )
+            ready = utilities.retry( controller.Bench.kubectlCheckPodReady,
+                                     main.FALSE,
+                                     kwargs={ "podName": podName,
+                                              "kubeconfig": kubeConfig,
+                                              "namespace": namespace },
+                                     attempts=50,
+                                     getRetryingTime=True )
+            utilities.assert_equals( expect=main.TRUE, actual=ready,
+                                     onpass="Successfully restarted onos pod",
+                                     onfail="Failed to restart onos pod" )
+            controller.active = True
+            # Set all nodes as "running", then reduce to only "active" nodes
+            main.Cluster.runningNodes = main.Cluster.controllers
+            main.Cluster.setRunningNode( main.Cluster.getRunningPos() )
+            controller.k8s.clearBuffer()
+            controller.k8s.kubectlPortForward( podName,
+                                               controller.k8s.portForwardList,
+                                               kubeConfig,
+                                               namespace )
+            #stopTime = time.time()
+        except SkipCase:
+            raise
+        except Exception:
+            main.log.exception( "Error in onosUp" )
 
     @staticmethod
     def analyzeIperfPcap( main, pcapFile, filterStr, timeout=240, pingOnly=False ):
@@ -1196,7 +1277,7 @@ class SRStagingTest:
             except SkipCase:
                 raise
             except Exception:
-                main.log.exception( "Error in onosDown" )
+                main.log.exception( "Error in analyzePcap" )
                 return -1
             # Remove first and last packets, sometimes there can be a long gap between
             # these and the other packets

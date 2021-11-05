@@ -35,6 +35,7 @@ class CLI( Component ):
     def __init__( self ):
         super( CLI, self ).__init__()
         self.inDocker = False
+        self.portForwardList = None
 
     def checkPrompt( self ):
         for key in self.options:
@@ -57,7 +58,7 @@ class CLI( Component ):
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host " + \
             self.ip_address + " port 22: Connection refused"
-        ssh_options = "-t -X -A -o ServerAliveInterval=50 -o TCPKeepAlive=yes"
+        ssh_options = "-t -X -A -o ServerAliveInterval=50 -o ServerAliveCountMax=1000 -o TCPKeepAlive=yes"
         ssh_destination = self.user_name + "@" + self.ip_address
         envVars = { "TERM": "vt100" }
         # TODO: Add option to specify which shell/command to use
@@ -1132,7 +1133,7 @@ class CLI( Component ):
 
     def kubectlPodNodes( self, dstPath=None, kubeconfig=None, namespace=None ):
         """
-        Use kubectl to get the logs from a pod
+        Use kubectl to get the pod to node mappings
         Optional Arguments:
         - dstPath: The location to save the logs to
         - kubeconfig: The path to a kubeconfig file
@@ -1140,7 +1141,6 @@ class CLI( Component ):
         Returns main.TRUE if dstPath is given, else the output of the command or
             main.FALSE on Error
         """
-
         try:
             self.handle.sendline( "" )
             self.handle.expect( self.prompt )
@@ -1171,6 +1171,49 @@ class CLI( Component ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
+
+    def kubectlGetPodNode( self, podName, kubeconfig=None, namespace=None ):
+        """
+        Use kubectl to get the node a given pod is running on
+        Arguments:
+        - podName: The name of the pod
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        Returns a string of the node name or None
+        """
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            main.log.debug( self.handle.before + self.handle.after )
+            cmdStr = "kubectl %s %s get pods %s --output=jsonpath='{.spec.nodeName}{\"\\n\"}'" % (
+                        "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                        "-n %s" % namespace if namespace else "",
+                        podName )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ] )
+            if i == 3:
+                output = self.handle.before
+                main.log.debug( self.name + ": " + output )
+                output = output.splitlines()
+                main.log.warn( output )
+                return output[1] if len( output ) == 3 else None
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return None
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return None
 
     def sternLogs( self, podString, dstPath, kubeconfig=None, namespace=None, since='1h', wait=60 ):
         """
@@ -1315,11 +1358,11 @@ class CLI( Component ):
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
 
-    def kubectlPortForward( self, podName, portsList,  kubeconfig=None, namespace=None, ):
+    def kubectlPortForward( self, podName, portsList, kubeconfig=None, namespace=None ):
         """
         Use kubectl to setup port forwarding from the local machine to the kubernetes pod
 
-        Note: This command does not return until the port forwarding session is ended.
+        Note: This cli command does not return until the port forwarding session is ended.
 
         Required Arguments:
         - podName: The name of the pod as a string
@@ -1327,9 +1370,7 @@ class CLI( Component ):
         Optional Arguments:
         - kubeconfig: The path to a kubeconfig file
         - namespace: The namespace to search in
-        - app: Get pods belonging to a specific app
-        Returns a list containing the names of the pods or
-            main.FALSE on Error
+        Returns main.TRUE if a port-forward session was created or main.FALSE on Error
 
 
         """
@@ -1341,8 +1382,11 @@ class CLI( Component ):
                         portsList )
             main.log.info( self.name + ": sending: " + repr( cmdStr ) )
             self.handle.sendline( cmdStr )
+            self.handle.expect( "pod/%s" % podName )
+            output = self.handle.before + self.handle.after
             i = self.handle.expect( [ "not found", "error", "closed/timedout",
                                       self.prompt, "The connection to the server", "Forwarding from" ] )
+            output += self.handle.before + str( self.handle.after )
             # NOTE: This won't clear the buffer entirely, and each time the port forward
             #       is used, another line will be added to the buffer. We need to make
             #       sure we clear the buffer before using this component again.
@@ -1350,10 +1394,11 @@ class CLI( Component ):
             if i == 5:
                 # Setup preDisconnect function
                 self.preDisconnect = self.exitFromProcess
+                self.portForwardList = portsList
                 return main.TRUE
             else:
                 main.log.error( self.name + ": Error executing command" )
-                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                main.log.debug( self.name + ": " + output )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1362,6 +1407,132 @@ class CLI( Component ):
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def checkPortForward( self, podName, portsList=None, kubeconfig=None, namespace=None ):
+        """
+        Check that kubectl port-forward session is still active and restarts it if it was closed.
+
+
+        Required Arguments:
+        - podName: The name of the pod as a string
+        - portsList: The list of ports to forward, as a string. see kubectl help for details. Deafults to
+                     the last used string on this node.
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        Returns main.TRUE if a port-forward session was created or is still active, main.FALSE on Error
+
+
+        """
+        try:
+            if not portsList:
+                portsList = self.portForwardList
+            self.handle.sendline( "" )
+            i = self.handle.expect( [ self.prompt, pexpect.TIMEOUT ], timeout=5 )
+            output = self.handle.before + str( self.handle.after )
+            main.log.debug( "%s: %s" % ( self.name, output ) )
+            if i == 0:
+                # We are not currently in a port-forwarding session, try to re-establish.
+                return self.kubectlPortForward( podName, portsList, kubeconfig, namespace )
+            elif i == 1:
+                # Still in a command, port-forward is probably still active
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def kubectlCordonNode( self, nodeName, kubeconfig=None, namespace=None, timeout=240, uncordonOnDisconnect=True ):
+        try:
+            cmdStr = "kubectl %s %s cordon %s" % (
+                "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                "-n %s" % namespace if namespace else "",
+                nodeName )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            if uncordonOnDisconnect:
+                self.nodeName = nodeName
+                if kubeconfig:
+                    self.kubeconfig = kubeconfig
+                if namespace:
+                    self.namespace = namespace
+                self.preDisconnect = self.kubectlUncordonNode
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error",
+                                      "The connection to the server",
+                                      "node/%s cordoned" % nodeName,
+                                      "node/%s already cordoned" % nodeName, ],
+                                    timeout=timeout )
+            if i == 3 or i == 4:
+                output = self.handle.before + self.handle.after
+                main.log.debug( self.name + ": " + output )
+                self.clearBuffer()
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                self.clearBuffer()
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            self.clearBuffer()
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
+    def kubectlUncordonNode( self, nodeName=None, kubeconfig=None, namespace=None, timeout=240 ):
+        try:
+            if not nodeName:
+                nodeName = getattr( self, "nodeName" )
+            if not kubeconfig:
+                kubeconfig = getattr( self, "kubeconfig", None )
+            if not kubeconfig:
+                namespace = getattr( self, "namespace", None )
+            cmdStr = "kubectl %s %s uncordon %s" % (
+                "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                "-n %s" % namespace if namespace else "",
+                nodeName )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error",
+                                      "The connection to the server",
+                                      "node/%s uncordoned" % nodeName,
+                                      "node/%s already uncordoned" % nodeName, ],
+                                    timeout=timeout )
+            if i == 3 or i == 4:
+                output = self.handle.before + self.handle.after
+                main.log.debug( self.name + ": " + output )
+                self.clearBuffer()
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                self.clearBuffer()
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            self.clearBuffer()
             return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
@@ -1411,7 +1582,7 @@ class CLI( Component ):
             self.handle.sendline( cmdStr )
             # Since the command contains the prompt ($), we first expect for the
             # last part of the command and then we expect the actual values
-            self.handle.expect("grep --color=never %s" % podName, timeout=1)
+            self.handle.expect( "grep --color=never %s" % podName, timeout=1 )
             i = self.handle.expect( [ podName + " ready",
                                       self.prompt ],
                                     timeout=timeout )

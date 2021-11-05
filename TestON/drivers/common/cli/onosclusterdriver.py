@@ -168,7 +168,7 @@ class OnosClusterDriver( CLI ):
             self.dockerPrompt = self.checkOptions( self.dockerPrompt, "~/onos#" )
             self.maxNodes = int( self.checkOptions( self.maxNodes, 100 ) )
             self.kubeConfig = self.checkOptions( self.kubeConfig, None )
-            self.up4Port = self.checkOptions(self.up4Port, None)
+            self.up4Port = self.checkOptions( self.up4Port, None )
 
             self.name = self.options[ 'name' ]
 

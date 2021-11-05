@@ -496,7 +496,21 @@ class OnosCliDriver( CLI ):
                                       self.Prompt(),
                                       pexpect.TIMEOUT ] )
             response = self.handle.before
-            if i == 1:
+            if i == 1:  # Not in ONOS CLI
+                # FIXME: This isn't really the correct place for this, but it works for now
+                # Check if port-forward session is still up first
+                if hasattr( main, "Cluster"):
+                    ctrl = None
+                    for c in main.Cluster.controllers:
+                        if c.CLI is self:
+                            ctrl = c
+                            break
+                    if not ctrl:
+                        main.log.warn( self.name + ": Could not find this node in Cluster. Can't check port-forward status" )
+                    elif ctrl.k8s:
+                        ctrl.k8s.checkPortForward( ctrl.k8s.podName,
+                                                   kubeconfig=ctrl.k8s.kubeConfig,
+                                                   namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
                 main.log.error( self.name + ": onos cli session closed. " )
                 if self.onosIp:
                     main.log.warn( "Trying to reconnect " + self.onosIp )

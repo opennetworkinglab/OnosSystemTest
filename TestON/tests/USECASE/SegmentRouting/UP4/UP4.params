@@ -61,8 +61,16 @@
                 <five_g>False</five_g>
             </ue3>
         </ues>
-        <switch_to_kill>Leaf2</switch_to_kill> <!-- Component name of the switch to kill in CASE 5 -->
-        <enodebs_fail>enodeb_1</enodebs_fail> <!-- list of eNodeBs that should fail traffic forwarding in CASE 5-->
+        <UP4_dataplane_fail>
+            <switch_to_kill>Leaf2</switch_to_kill> <!-- Component name of the switch to kill in CASE 5 -->
+            <k8s_switch_node>leaf2</k8s_switch_node>
+            <k8s_label>node-role.aetherproject.org</k8s_label>
+            <k8s_label_value_test>switch-test</k8s_label_value_test>
+            <k8s_label_value_normal>switch</k8s_label_value_normal>
+            <enodebs_fail>enodeb_1</enodebs_fail> <!-- list of eNodeBs that should fail traffic forwarding in CASE 5-->
+        </UP4_dataplane_fail>
+
+
     </UP4>
 
     <!--  Parameters for UP4 CASE2 related to Emulated BESS UPF  -->

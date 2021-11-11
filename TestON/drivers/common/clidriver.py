@@ -1453,6 +1453,44 @@ class CLI( Component ):
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
 
+    def kubectlSetLabel( self, nodeName, label, value, kubeconfig=None, namespace=None,
+                         timeout=240, overwrite=True ):
+        try:
+            cmdStr = "kubectl %s %s label node %s %s %s=%s" % (
+                "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                "-n %s" % namespace if namespace else "",
+                nodeName, "--overwrite" if overwrite else "",
+                label, value )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "error",
+                                      "The connection to the server",
+                                      "node/%s not labeled" % nodeName,
+                                      "node/%s labeled" % nodeName, ],
+                                    timeout=timeout )
+            if i == 3 or i == 4:
+                output = self.handle.before + self.handle.after
+                main.log.debug( self.name + ": " + output )
+                self.clearBuffer()
+                return main.TRUE
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                self.clearBuffer()
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            self.clearBuffer()
+            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return main.FALSE
+
     def kubectlCordonNode( self, nodeName, kubeconfig=None, namespace=None, timeout=240, uncordonOnDisconnect=True ):
         try:
             cmdStr = "kubectl %s %s cordon %s" % (

@@ -612,6 +612,7 @@ class UP4:
         """
         Program PDRs/FARs
         Kill one switch
+        Set label on switch K8S node to prevent K8S to redeploy stratum
         Verify that traffic from eNodebs that are connected to that switch fails
         Verify that traffic from other eNodeBs is being forwarded
         Wait for the switch to be up again
@@ -632,7 +633,11 @@ class UP4:
             main.log.error(e)
             main.cleanAndExit()
         n_switches = int(main.params["TOPO"]["switchNum"])
-        switch_to_kill = main.params["UP4"]["switch_to_kill"]
+        switch_to_kill = main.params["UP4"]["UP4_dataplane_fail"]["switch_to_kill"]
+        k8s_switch_node = main.params["UP4"]["UP4_dataplane_fail"]["k8s_switch_node"]
+        k8s_label = main.params["UP4"]["UP4_dataplane_fail"]["k8s_label"]
+        k8s_label_value_test = main.params["UP4"]["UP4_dataplane_fail"]["k8s_label_value_test"]
+        k8s_label_value_normal = main.params["UP4"]["UP4_dataplane_fail"]["k8s_label_value_normal"]
 
         run.initTest(main)
         main.log.info(main.Cluster.numCtrls)
@@ -640,6 +645,9 @@ class UP4:
         run.installOnos(main, skipPackage=True, cliSleep=5)
 
         onos_cli = main.Cluster.active(0).CLI
+        kubectl = main.Cluster.active(0).Bench
+        kubeconfig = main.Cluster.active(0).k8s.kubeConfig
+        namespace = main.params['kubernetes']['namespace']
 
         up4 = UP4()
 
@@ -655,64 +663,123 @@ class UP4:
             minFlowCount=initial_flow_count+(len(up4.emulated_ues)*4*n_switches)
         )
 
-        main.step("Kill switch")
-        switch_component = getattr(main, switch_to_kill)
-        switch_component.handle.sendline("sudo reboot")
-
-        sleepTime = 20
-        main.log.info("Sleeping %s seconds for Fabric to react" % sleepTime)
-        time.sleep(sleepTime)
-
-        available = utilities.retry(SRStagingTest.switchIsConnected,
-                                    True,
-                                    args=[switch_component],
-                                    attempts=300,
-                                    getRetryingTime=True)
-        main.log.info("Switch %s is available in ONOS? %s" % (
-            switch_to_kill, available))
+        main.step("Set label to switch k8s node and kill switch")
+        # K8s node name correspond to the switch name in lowercase
         utilities.assert_equal(
-            expect=False,
-            actual=available,
-            onpass="Switch was rebooted (ONL reboot) successfully",
-            onfail="Switch was not rebooted (ONL reboot) successfully"
+            expect=main.TRUE,
+            actual=kubectl.kubectlSetLabel(
+                nodeName=k8s_switch_node,
+                label=k8s_label,
+                value=k8s_label_value_test,
+                kubeconfig=kubeconfig,
+                namespace=namespace,
+            ),
+            onpass="Label has been set correctly on node %s" % k8s_switch_node,
+            onfail="Label has not been set on node %s" % k8s_switch_node
         )
+        try:
+            def checkNumberStratumPods(n_value):
+                pods = kubectl.kubectlGetPodNames(
+                    kubeconfig=kubeconfig,
+                    namespace=namespace,
+                    name="stratum"
+                )
+                main.log.info("PODS: " + str(pods))
+                return n_value == len(pods) if pods is not main.FALSE else False
+            # Execute the following in try/except/finally to be sure to restore the
+            # k8s label even in case of unhandled exception.
 
-        enodebs_fail = main.params["UP4"]["enodebs_fail"].split(",")
-        enodebs_no_fail = list(set(up4.enodebs.keys()) - set(enodebs_fail))
+            # Wait for stratum pod to be removed from the switch
+            removed = utilities.retry(checkNumberStratumPods,
+                            False,
+                            args=[n_switches-1],
+                            attempts=50
+            )
+            main.log.info("Stratum has been removed from the switch? %s" % removed)
 
-        # ------- Test Upstream traffic (enbs->pdn)
-        main.step("Test upstream traffic FAIL")
-        up4.testUpstreamTraffic(enb_names=enodebs_fail, shouldFail=True)
-        main.step("Test upstream traffic NO FAIL")
-        up4.testUpstreamTraffic(enb_names=enodebs_no_fail, shouldFail=False)
+            switch_component = getattr(main, switch_to_kill)
+            switch_component.handle.sendline("sudo reboot")
 
-        # ------- Test Downstream traffic (pdn->enbs)
-        main.step("Test downstream traffic FAIL")
-        up4.testDownstreamTraffic(enb_names=enodebs_fail, shouldFail=True)
-        main.step("Test downstream traffic NO FAIL")
-        up4.testDownstreamTraffic(enb_names=enodebs_no_fail, shouldFail=False)
+            sleepTime = 20
+            main.log.info("Sleeping %s seconds for Fabric to react" % sleepTime)
+            time.sleep(sleepTime)
 
-        # Reconnect to the switch
-        connect = utilities.retry(switch_component.connect,
-                                  main.FALSE,
-                                  attempts=30,
-                                  getRetryingTime=True)
-        main.log.info("Connected to the switch %s? %s" % (
-            switch_to_kill, connect))
-        # Wait switch to be back in ONOS
-        available = utilities.retry(SRStagingTest.switchIsConnected,
-                                    False,
-                                    args=[switch_component],
-                                    attempts=300,
-                                    getRetryingTime=True)
-        main.log.info("Switch %s is available in ONOS? %s" % (
-            switch_to_kill, available))
-        utilities.assert_equal(
-            expect=True,
-            actual=available and connect == main.TRUE,
-            onpass="Switch is back available in ONOS",
-            onfail="Switch is not available in ONOS, may influence subsequent tests!"
-        )
+            available = utilities.retry(SRStagingTest.switchIsConnected,
+                                        True,
+                                        args=[switch_component],
+                                        attempts=300,
+                                        getRetryingTime=True)
+            main.log.info("Switch %s is available in ONOS? %s" % (
+                switch_to_kill, available))
+            utilities.assert_equal(
+                expect=True,
+                actual=not available and removed,
+                onpass="Switch was rebooted (ONL reboot) successfully and stratum" +
+                       " removed from switch k8s node",
+                onfail="Switch was not rebooted (ONL reboot) successfully or stratum " +
+                       "not removed from switch k8s node"
+            )
+
+            enodebs_fail = main.params["UP4"]["UP4_dataplane_fail"]["enodebs_fail"].split(",")
+            enodebs_no_fail = list(set(up4.enodebs.keys()) - set(enodebs_fail))
+
+            # ------- Test Upstream traffic (enbs->pdn)
+            main.step("Test upstream traffic FAIL")
+            up4.testUpstreamTraffic(enb_names=enodebs_fail, shouldFail=True)
+            main.step("Test upstream traffic NO FAIL")
+            up4.testUpstreamTraffic(enb_names=enodebs_no_fail, shouldFail=False)
+
+            # ------- Test Downstream traffic (pdn->enbs)
+            main.step("Test downstream traffic FAIL")
+            up4.testDownstreamTraffic(enb_names=enodebs_fail, shouldFail=True)
+            main.step("Test downstream traffic NO FAIL")
+            up4.testDownstreamTraffic(enb_names=enodebs_no_fail, shouldFail=False)
+        except Exception as e:
+            main.log.error("Unhandled exception!")
+            main.log.error(e)
+        finally:
+            utilities.assert_equal(
+                expect=main.TRUE,
+                actual=kubectl.kubectlSetLabel(
+                    nodeName=k8s_switch_node,
+                    label=k8s_label,
+                    value=k8s_label_value_normal,
+                    kubeconfig=kubeconfig,
+                    namespace=namespace,
+                ),
+                onpass="Label has been set correctly on node %s" % k8s_switch_node,
+                onfail="Label has not been set on node %s" % k8s_switch_node
+            )
+            # Reconnect to the switch
+            connect = utilities.retry(switch_component.connect,
+                                      main.FALSE,
+                                      attempts=30,
+                                      getRetryingTime=True)
+            main.log.info("Connected to the switch %s? %s" % (
+                switch_to_kill, connect))
+
+            # Wait for stratum pod to be re-deployed on the switch
+            deployed = utilities.retry(checkNumberStratumPods,
+                            False,
+                            args=[n_switches],
+                            attempts=50
+                            )
+            main.log.info("Stratum has been redeployed on the switch? %s" % deployed)
+
+            # Wait switch to be back in ONOS
+            available = utilities.retry(SRStagingTest.switchIsConnected,
+                                        False,
+                                        args=[switch_component],
+                                        attempts=300,
+                                        getRetryingTime=True)
+            main.log.info("Switch %s is available in ONOS? %s" % (
+                switch_to_kill, available))
+            utilities.assert_equal(
+                expect=True,
+                actual=available and connect == main.TRUE and deployed,
+                onpass="Switch is back available in ONOS and stratum has been redeployed",
+                onfail="Switch is not available in ONOS, may influence subsequent tests!"
+            )
 
         main.step("Test upstream traffic AFTER switch reboot")
         up4.testUpstreamTraffic()
@@ -726,3 +793,4 @@ class UP4:
 
         # Teardown
         run.cleanup(main)
+

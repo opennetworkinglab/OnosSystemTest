@@ -416,6 +416,8 @@ class UP4:
                 N_FLOWS_PER_UE
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
+            from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import \
+                SRStagingTest
         except ImportError as e:
             main.log.error("Import not found. Exiting the test")
             main.log.error(e)
@@ -430,7 +432,7 @@ class UP4:
         onos_cli_0 = main.Cluster.active(0).CLI
         onos_cli_1 = main.Cluster.active(1).CLI
         onos_cli_2 = main.Cluster.active(2).CLI
-        kubectl_0 = main.Cluster.active(0).k8s
+        ctrl_0 = main.Cluster.active(0)
 
         up4_0 = UP4()
         up4_1 = UP4()
@@ -459,21 +461,7 @@ class UP4:
             "-CASE%d-%s_BeforeKill" % (main.CurrentTestCaseNumber, onosPod)
         )
 
-        # Exit from previous port forwarding, because we need to restore
-        # port-forwarding after ONOS reboot.
-        kubectl_0.clearBuffer()
-        kubectl_0.exitFromProcess()
-        main.step("Kill " + onosPod)
-        utilities.assert_equal(
-            expect=main.TRUE,
-            actual=kubectl_0.kubectlDeletePod(
-                podName=onosPod,
-                kubeconfig=kubectl_0.kubeConfig,
-                namespace=main.params['kubernetes']['namespace']
-            ),
-            onpass="%s pod correctly deleted" % onosPod,
-            onfail="%s pod has not been deleted" % onosPod
-        )
+        onosK8sNode = SRStagingTest.onosDown(main, ctrl_0, preventRestart=True)
 
         main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 2")
         up4_2.setup(main.Cluster.active(2).p4rtUp4, no_host=True)
@@ -509,43 +497,9 @@ class UP4:
                 onos_1_flow_count, onos_2_flow_count)
         )
 
-        main.step("Verify ONOS 0 has restarted correctly")
-        onosStarted = utilities.retry(
-            f=kubectl_0.kubectlCheckPodReady,
-            retValue=main.FALSE,
-            kwargs={
-                "podName": onosPod,
-                "kubeconfig": kubectl_0.kubeConfig,
-                "namespace": main.params['kubernetes']['namespace']
-            },
-            sleep=10,
-            attempts=10
-        )
-        utilities.assert_equal(
-            expect=main.TRUE,
-            actual=onosStarted,
-            onpass="%s pod correctly restarted" % onosPod,
-            onfail="%s pod haven't restarted correctly" % onosPod
-        )
+        SRStagingTest.onosUp(main, onosK8sNode, ctrl_0)
 
         main.step("Verify ONOS cluster is in good shape")
-        # A bug in kubectl port forwarding doesn't terminate port-forwarding
-        # when the container changed, nor reconnect correctly to the restarted
-        # container.
-        # See: https://github.com/kubernetes/kubectl/issues/686
-        # Re-build the port-list for port forwarding
-        portList = "%s:%s " % (main.Cluster.active(0).CLI.karafPort, 8101)
-        portList += "%s:%s " % (main.Cluster.active(0).REST.port, 8181)
-        portList += "%s:%s " % (main.Cluster.active(0).p4rtUp4.p4rtPort,
-                                main.ONOScell.up4Port)
-        kubectl_0.clearBuffer()
-        kubectl_0.kubectlPortForward(
-            onosPod,
-            portList,
-            kubectl_0.kubeConfig,
-            main.params['kubernetes']['namespace']
-        )
-        onos_cli_0.clearBuffer()  # Trigger ONOS CLI reconnection
         onosNodesStatus = utilities.retry(
             f=main.Cluster.nodesCheck,
             retValue=False,

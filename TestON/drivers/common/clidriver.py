@@ -145,6 +145,11 @@ class CLI( Component ):
 
         self.handle.sendline( "" )
         self.handle.expect( self.prompt )
+
+        # disable bracketed paste mode which is enabled by default on newer versions of bash/readline
+        self.handle.sendline( "bind 'set enable-bracketed-paste off'" )
+        self.handle.expect( self.prompt )
+
         self.handle.sendline( "cd" )
         self.handle.expect( self.prompt )
         return self.handle

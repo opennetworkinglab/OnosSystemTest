@@ -114,7 +114,7 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
         main.log.exception( "Error in setupTest" )
         main.skipCase( result="FAIL", msg=e )
 
-def verifyPingInternal( main, ipv4=True, ipv6=True, disconnected=True ):
+def verifyPingInternal( main, ipv4=True, ipv6=True, disconnected=True, skipOnFail=True, expect=True ):
     """
     Verify all connected internal hosts are able to reach each other,
     and disconnected internal hosts cannot reach any other internal host
@@ -125,13 +125,13 @@ def verifyPingInternal( main, ipv4=True, ipv6=True, disconnected=True ):
         lib.verifyPing( main,
                         [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
                         [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
-                        stepMsg="Verify reachability of connected internal IPv4 hosts" )
+                        stepMsg="Verify reachability of connected internal IPv4 hosts", skipOnFail=skipOnFail, expect=expect )
     if ipv6:
         lib.verifyPing( main,
                         [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
                         [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
                         ipv6=True,
-                        stepMsg="Verify reachability of connected internal IPv6 hosts" )
+                        stepMsg="Verify reachability of connected internal IPv6 hosts", skipOnFail=skipOnFail, expect=expect )
     # Verify disconnected hosts
     if disconnected:
         if main.disconnectedIpv4Hosts:
@@ -141,7 +141,7 @@ def verifyPingInternal( main, ipv4=True, ipv6=True, disconnected=True ):
             lib.verifyPing( main, main.internalIpv6Hosts, main.disconnectedIpv6Hosts, ipv6=True, expect=False,
                             stepMsg="Verify unreachability of disconnected internal IPv6 hosts" )
 
-def verifyPingExternal( main, ipv4=True, ipv6=True, disconnected=True ):
+def verifyPingExternal( main, ipv4=True, ipv6=True, disconnected=True, skipOnFail=True, expect=True ):
     """
     Verify all connected internal hosts are able to reach external hosts,
     and disconnected internal hosts cannot reach any external host
@@ -153,14 +153,14 @@ def verifyPingExternal( main, ipv4=True, ipv6=True, disconnected=True ):
                         [ h for h in main.internalIpv4Hosts if h not in main.disconnectedIpv4Hosts ],
                         [ h for h in main.externalIpv4Hosts if h not in main.disconnectedExternalIpv4Hosts ],
                         stepMsg="Verify reachability from connected internal IPv4 hosts to external IPv4 hosts",
-                        t3Simple=False )
+                        t3Simple=False, skipOnFail=skipOnFail, expect=expect )
     if ipv6:
         lib.verifyPing( main,
                         [ h for h in main.internalIpv6Hosts if h not in main.disconnectedIpv6Hosts ],
                         [ h for h in main.externalIpv6Hosts if h not in main.disconnectedExternalIpv6Hosts ],
                         ipv6=True,
                         stepMsg="Verify reachability from connected internal IPv6 hosts to external IPv6 hosts",
-                        t3Simple=False )
+                        t3Simple=False, skipOnFail=skipOnFail, expect=expect )
     # Verify disconnected hosts
     if disconnected:
         # Disconnected internal to connected external
@@ -192,39 +192,46 @@ def verifyPingExternal( main, ipv4=True, ipv6=True, disconnected=True ):
                             stepMsg="Verify unreachability of connected internal IPv6 hosts to disconnected external IPv6 hosts",
                             t3Simple=False )
 
-def verifyPing( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True ):
+def verifyPing( main, ipv4=True, ipv6=True, disconnected=False, internal=True, external=True, skipOnFail=True, expect=True ):
     """
     Verify reachability and unreachability of connected/disconnected hosts
     """
     if internal:
-        verifyPingInternal( main, ipv4, ipv6, disconnected )
+        verifyPingInternal( main, ipv4, ipv6, disconnected, skipOnFail, expect=expect )
     if external:
-        verifyPingExternal( main, ipv4, ipv6, disconnected )
+        verifyPingExternal( main, ipv4, ipv6, disconnected, skipOnFail, expect=expect )
 
-def verifyLinkFailure( main, ipv4=True, ipv6=True, disconnected=False,
-                       internal=True, external=True, countFlowsGroups=False ):
+def verifyLinkFailure( main, linksToRemove, expectedLinks, expectedSwitches, ipv4=True, ipv6=True, disconnected=False,
+                       internal=True, external=True, countFlowsGroups=False, skipOnFail=True, expectedConnectivity=True ):
     """
-    Kill and recover all links to spine101 and 102 sequencially and run verifications
+    Kill all links sequencially and run verifications
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
-    linksToRemove = [ ["spine103", "spine101"],
-                      ["leaf2", "spine101"],
-                      ["leaf3", "spine101"],
-                      ["leaf4", "spine101"],
-                      ["leaf5", "spine101"] ]
-    lib.killLinkBatch( main, linksToRemove, 30, 10 )
-    verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
-    lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
-    verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
-    linksToRemove = [ ["spine104", "spine102"],
-                      ["leaf2", "spine102"],
-                      ["leaf3", "spine102"],
-                      ["leaf4", "spine102"],
-                      ["leaf5", "spine102"] ]
-    lib.killLinkBatch( main, linksToRemove, 30, 10 )
-    verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
-    lib.restoreLinkBatch( main, linksToRemove, 48, 10 )
-    verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
+    #linksToRemove = [ ["leaf1", 260] ]
+    if hasattr( main, "Mininet1" ):
+        skipOnFail=True
+        lib.killLinkBatch( main, linksToRemove, expectedLinks, expectedSwitches )
+    else:
+        skipOnFail=False
+        for link in linksToRemove:
+            main.Cluster.next().portstate( dpid="device:"+link[0], port=link[1], state="disable" )
+    verifyPing( main, ipv4, ipv6, disconnected, internal, external, skipOnFail=skipOnFail, expect=expectedConnectivity )
+
+def verifyLinksRestored( main, linksToRemove, expectedLinks, expectedSwitches, ipv4=True, ipv6=True, disconnected=False,
+                         internal=True, external=True, countFlowsGroups=False, skipOnFail=True, topoSleep=30 ):
+    """
+    Recover all links sequencially and run verifications
+    """
+    from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+    import time
+    if hasattr( main, "Mininet1"):
+        lib.restoreLinkBatch( main, linksToRemove, expectedLinks, expectedSwitches )
+    else:
+        for link in linksToRemove:
+            main.Cluster.next().portstate( dpid="device:"+link[0], port=link[1], state="enable" )
+    time.sleep(topoSleep)
+    lib.discoverHosts(main)
+    verifyPing( main, ipv4, ipv6, disconnected, internal, external )
 
 def verifySwitchFailure( main, ipv4=True, ipv6=True, disconnected=False,
                          internal=True, external=True, countFlowsGroups=False ):
@@ -233,9 +240,9 @@ def verifySwitchFailure( main, ipv4=True, ipv6=True, disconnected=False,
     """
     from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
     for switchToKill in [ "spine101", "spine102" ]:
-        lib.killSwitch( main, switchToKill, 9, 30 )
+        lib.killSwitch( main, switchToKill, expectedLinks, expectedSwitches )
         verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
-        lib.recoverSwitch( main, switchToKill, 10, 48 )
+        lib.recoverSwitch( main, switchToKill, expectedLinks, expectedSwitches )
         verify( main, ipv4, ipv6, disconnected, internal, external, countFlowsGroups )
 
 def verifyOnosFailure( main, ipv4=True, ipv6=True, disconnected=False,

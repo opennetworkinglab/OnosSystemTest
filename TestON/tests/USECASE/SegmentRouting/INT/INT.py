@@ -135,8 +135,13 @@ class INT:
         )
 
         main.step("Checking drop reason from the report")
-        dropAnomaly = dropAnomalies[0]
-        dropReason = dropAnomaly["DropReason"]
+        try:
+            dropAnomaly = dropAnomalies[0]
+            dropReason = dropAnomaly["DropReason"]
+        except IndexError:
+            main.log.warn( "No drop report was found" )
+            dropAnomaly = None
+            dropReason = None
 
         # DROP_REASON_PORT_VLAN_MAPPING_MISS = 55
         utilities.assert_equals(
@@ -211,8 +216,13 @@ class INT:
         )
 
         main.step("Checking drop reason from report")
-        dropAnomaly = dropAnomalies[0]
-        dropReason = dropAnomaly["DropReason"]
+        try:
+            dropAnomaly = dropAnomalies[0]
+            dropReason = dropAnomaly["DropReason"]
+        except IndexError:
+            main.log.warn( "No drop report was found" )
+            dropAnomaly = None
+            dropReason = None
         # DROP_REASON_IP_TTL_ZERO = 26
         utilities.assert_equals(
             expect=26, actual=dropReason,

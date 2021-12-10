@@ -322,8 +322,7 @@ class TrexClientDriver(Controller):
             trex_daemon_client.start_stateless(cfg=trex_config_file_on_server)
         except ConnectionRefusedError:
             main.log.error(
-                "Unable to connect to server %s.\n" +
-                "Did you start the Trex daemon?" % trex_address)
+                "Unable to connect to server %s.\nDid you start the Trex daemon?" % trex_address)
             return False
 
         return True

@@ -72,7 +72,9 @@
         <switchNum>10</switchNum>
         <linkNum>48</linkNum>
     </TOPO>
-
+    <LinksToRemove>
+         [ ["spine103", "spine101"], ["leaf2", "spine101"], ["leaf3", "spine101"], ["leaf4", "spine101"], ["leaf5", "spine101"] ]
+    </LinksToRemove>
     <ALARM>
         <minPassPercent>80</minPassPercent>
     </ALARM>

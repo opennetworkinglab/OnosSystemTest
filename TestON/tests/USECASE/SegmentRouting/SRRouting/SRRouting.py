@@ -125,7 +125,24 @@ class SRRouting:
         main.case( "Test link failures with IPv4 hosts" )
         setupTest( main, test_idx=101, onosNodes=3, ipv6=False, external=False )
         verify( main, ipv6=False, external=False, disconnected=False )
-        verifyLinkFailure( main, ipv6=False, external=False )
+        MaxLinks = int( main.params["TOPO"]["linkNum"] )
+        MaxSwitches = int( main.params["TOPO"]["switchNum"] )
+        currentLinks = MaxLinks
+        expect = True
+        for stage in main.params.get( "CASE101Links", [] ):
+            main.log.debug("linksFailures" + stage )
+            linksToRemove = []
+            for switch in main.params[ "CASE101Links" ][ stage ]:
+                main.log.debug("processingSwitch" + switch )
+                if switch == "expect":
+                    expect = main.params[ "CASE101Links" ][ stage ][ switch ].split() == "True"
+                    continue
+                endpoints = main.params[ "CASE101Links" ][ stage ][ switch ].split(",")
+                for endpoint in endpoints:
+                    linksToRemove.append( [ switch, endpoint ] )
+            currentLinks = (currentLinks - 2*len(linksToRemove))
+            verifyLinkFailure( main, linksToRemove, currentLinks, MaxSwitches, ipv6=False, external=False, skipOnFail=False, expectedConnectivity=expect )
+            verifyLinksRestored( main, linksToRemove, MaxLinks, MaxSwitches, ipv6=False, external=False, skipOnFail=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE102( self, main ):
@@ -164,7 +181,24 @@ class SRRouting:
         main.case( "Test link failures with IPv4 hosts including external hosts" )
         setupTest( main, test_idx=104, onosNodes=3, ipv6=False )
         verify( main, ipv6=False, disconnected=False )
-        verifyLinkFailure( main, ipv6=False )
+        MaxLinks = int( main.params["TOPO"]["linkNum"] )
+        MaxSwitches = int( main.params["TOPO"]["switchNum"] )
+        currentLinks = MaxLinks
+        expect = True
+        for stage in main.params.get( "CASE104Links", [] ):
+            main.log.debug("linksFailures" + stage )
+            linksToRemove = []
+            for switch in main.params[ "CASE104Links" ][ stage ]:
+                main.log.debug("processingSwitch" + switch )
+                if switch == "expect":
+                    expect = main.params[ "CASE104Links" ][ stage ][ switch ].split() == "True"
+                    continue
+                endpoints = main.params[ "CASE104Links" ][ stage ][ switch ].split(",")
+                for endpoint in endpoints:
+                    linksToRemove.append( [ switch, endpoint ] )
+            currentLinks = (currentLinks - 2*len(linksToRemove))
+            verifyLinkFailure( main, linksToRemove, currentLinks, MaxSwitches, ipv6=False, external=False, skipOnFail=False, expectedConnectivity=expect )
+            verifyLinksRestored( main, linksToRemove, MaxLinks, MaxSwitches, ipv6=False, external=False, skipOnFail=False )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
 
     def CASE105( self, main ):

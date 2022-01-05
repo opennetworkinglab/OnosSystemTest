@@ -23,7 +23,7 @@ class QOSTest:
         up4.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         trex.setup(main.TRexClient)
 
-        main.step("Program PDRs and FARs via UP4")
+        main.step("Program UPF entities via UP4")
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
 
@@ -65,7 +65,7 @@ class QOSTest:
                 main.step("{}: Assert 99.9 Percentile Latency".format(flow))
                 trex.assert99_9PercentileLatency(flow)
 
-        main.step("Remove PDRs and FARs via UP4")
+        main.step("Remove UPF entities via UP4")
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
 

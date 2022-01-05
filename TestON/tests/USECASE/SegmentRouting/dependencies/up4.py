@@ -14,7 +14,7 @@ UE_PORT = 400
 PDN_PORT = 800
 GPDU_PORT = 2152
 
-N_FLOWS_PER_UE = 4
+N_FLOWS_PER_UE = 5
 
 
 class UP4:
@@ -45,11 +45,11 @@ class UP4:
         <s1u_address>10.32.11.126</s1u_address>
         <ues>
             <ue2>
-                <pfcp_session_id>100</pfcp_session_id>
                 <ue_address>10.240.0.2</ue_address>
                 <teid>200</teid>
                 <up_id>20</up_id>
                 <down_id>21</down_id>
+                <!-- QFI == TC, QFI = 0 means BEST EFFORT -->
                 <qfi>2</qfi>
                 <five_g>False</five_g>
             </ue2>
@@ -101,7 +101,7 @@ class UP4:
             if self.enodebs is not None:
                 for enb in self.enodebs.values():
                     enb["host"].startScapy(ifaceName=enb["interface"],
-                                            enableGtp=True)
+                                           enableGtp=True)
             if self.pdn_host is not None:
                 self.pdn_host.startScapy(ifaceName=self.pdn_interface["name"])
 
@@ -182,7 +182,8 @@ class UP4:
         pktsFiltered = [packets.count("src=" + ue["ue_address"]) for ue in ues]
         if pktsFiltered.count(1) != len(pktsFiltered):
             fail = True
-            msg += "\nError on the number of packets per UE in downstream.\n" + str(packets)
+            msg += "\nError on the number of packets per UE in downstream.\n" + str(
+                packets)
         else:
             msg += "\nOne packet per UE in upstream. "
 
@@ -202,7 +203,8 @@ class UP4:
             GPDU_PORT, GPDU_PORT, self.s1u_address)
         ues = []
         for enb in enodebs:
-            filter_down = pkt_filter_downstream + " and dst host %s" % enb["enb_address"]
+            filter_down = pkt_filter_downstream + " and dst host %s" % enb[
+                "enb_address"]
             main.log.info("Start listening on %s intf %s" % (
                 enb["host"], enb["interface"]))
             main.log.debug("BPF Filter Downstream: \n %s" % filter_down)
@@ -232,8 +234,8 @@ class UP4:
         # are from the expected tunnels.
         # TODO: check inner UDP and IP fields as well
         # FIXME: with newer scapy TEID becomes teid (required for Scapy 2.4.5)
-        pktsFiltered= [packets.count("TEID=" + hex(int(ue["teid"])) + "L ")
-             for ue in ues]
+        pktsFiltered = [packets.count("TEID=" + hex(int(ue["teid"])) + "L ")
+                        for ue in ues]
         main.log.info("PACKETS: " + str(packets))
         main.log.info("PKTs Filtered: " + str(pktsFiltered))
         fail = False
@@ -245,89 +247,102 @@ class UP4:
         # We expect exactly 1 packet per UE
         if pktsFiltered.count(1) != len(pktsFiltered):
             fail = True
-            msg += "\nError on the number of packets per GTP TEID in downstream.\n" + str(packets)
+            msg += "\nError on the number of packets per GTP TEID in downstream.\n" + str(
+                packets)
         else:
             msg += "\nOne packet per GTP TEID in downstream. "
 
         utilities.assert_equal(
             expect=shouldFail, actual=fail, onpass=msg, onfail=msg)
 
-    def readPdrsNumber(self):
+    def readUeSessionsNumber(self):
         """
-        Read the PDRs table and return the number of entries in the PDRs table
+        Read the UE session tables and return the number of entries
 
-        :return: Number of entries in the PDRs table
+        :return: Number of entries in the UE session tables
         """
-        tableName = 'PreQosPipe.pdrs'
-        return self.up4_client.readNumberTableEntries(tableName)
+        tableName = 'PreQosPipe.sessions_uplink'
+        nUeSess = self.up4_client.readNumberTableEntries(tableName)
+        tableName = 'PreQosPipe.sessions_downlink'
+        nUeSess += self.up4_client.readNumberTableEntries(tableName)
+        return nUeSess
 
-    def readFarsNumber(self):
+    def readTerminationsNumber(self):
         """
-        Read the FARs table and return the number of entries in the FARs table
+        Read the terminations and return the number of entities
 
-        :return: Number of entries in the FARs table
+        :return: Number of terminations entities
         """
-        tableName = 'PreQosPipe.load_far_attributes'
-        return self.up4_client.readNumberTableEntries(tableName)
+        tableName = 'PreQosPipe.terminations_uplink'
+        nTerm = self.up4_client.readNumberTableEntries(tableName)
+        tableName = 'PreQosPipe.terminations_downlink'
+        nTerm += self.up4_client.readNumberTableEntries(tableName)
+        return nTerm
 
     def verifyUesFlowNumberP4rt(self):
         """
-        Verify via P4RT CLI that the number of PDRs and FARs is the expected one
+        Verify via P4RT CLI that the number of UE sessions and terminations
+        is the expected one
 
-        :return: True if the number of PDRs and FARs is expected, False otherwise
+        :return: True if the number of UE sessions and terminations is expected,
+        False otherwise
         """
-        nPdrs = self.readPdrsNumber()
-        nFars = self.readFarsNumber()
-        return nPdrs == nFars == len(self.emulated_ues) * 2
+        nUeSessions = self.readUeSessionsNumber()
+        nTerminations = self.readTerminationsNumber()
+        return nUeSessions == nTerminations == len(self.emulated_ues) * 2
 
     def verifyNoUesFlowNumberP4rt(self, preInstalledUes=0):
         """
-        Verify via P4RT CLI that there is no PDRs and FARs installed.
+        Verify via P4RT CLI that there is no UE sessions and terminations installed.
 
-        :param preInstalledUes: Number of UEs whose PDRs and FARs are still programmed
+        :param preInstalledUes: Number of UEs whose UE sessions and terminations
+         are still programmed
         :return:
         """
-        return self.readPdrsNumber() == self.readFarsNumber() == preInstalledUes * 2
+        return self.readUeSessionsNumber() == self.readTerminationsNumber() == preInstalledUes * 2
 
     def verifyNoUesFlow(self, onosCli, retries=10):
         """
-        Verify that no PDRs and FARs are installed in ONOS.
+        Verify that no UE session, terminations are installed in ONOS.
 
         :param onosCli:  An instance of a OnosCliDriver
         :param retries: number of retries
         :return:
         """
-        retValue = utilities.retry(f=UP4.__verifyNoPdrsFarsOnos,
+        retValue = utilities.retry(f=UP4.__verifyNoUeSessionAndTerminationOnos,
                                    retValue=False,
                                    args=[onosCli],
                                    sleep=5,
                                    attempts=retries)
         utilities.assert_equal(expect=True,
                                actual=retValue,
-                               onpass="No PDRs and FARs in ONOS",
-                               onfail="Stale PDRs or FARs")
+                               onpass="No UE session and terminations in ONOS",
+                               onfail="Stale UE session or terminations")
 
     @staticmethod
-    def __verifyNoPdrsFarsOnos(onosCli):
+    def __verifyNoUeSessionAndTerminationOnos(onosCli):
         """
-        Verify that no PDRs and FARs are installed in ONOS
+        Verify that no UE session, terminations are installed in ONOS
 
         :param onosCli: An instance of a OnosCliDriver
         """
-        pdrs = onosCli.sendline(cmdStr="up4:read-pdrs", showResponse=True,
-                                noExit=True, expectJson=False)
-        fars = onosCli.sendline(cmdStr="up4:read-fars", showResponse=True,
-                                noExit=True, expectJson=False)
-        return pdrs == "" and fars == ""
+        sessions = onosCli.sendline(cmdStr="up4:read-entities -s",
+                                    showResponse=True,
+                                    noExit=True, expectJson=False)
+        terminations = onosCli.sendline(cmdStr="up4:read-entities -t",
+                                        showResponse=True,
+                                        noExit=True, expectJson=False)
+        return sessions == "" and terminations == ""
 
     def verifyUp4Flow(self, onosCli, retries=10):
         """
-        Verify PDRs and FARs installed via UP4 using the ONOS CLI.
+        Verify UE session, terminations and GTP tunnel peers installed via UP4
+        using the ONOS CLI.
 
         :param onosCli: An instance of a OnosCliDriver
         :param retries: Number of retries
         """
-        failString=""
+        failString = ""
         retValue = utilities.retry(f=self.__internalVerifyUp4Flow,
                                    retValue=False,
                                    args=[onosCli, failString],
@@ -336,131 +351,124 @@ class UP4:
         utilities.assert_equal(
             expect=True,
             actual=retValue,
-            onpass="Correct PDRs and FARs in ONOS",
-            onfail="Wrong PDRs and FARs in ONOS. Missing PDR/FAR:\n" + failString
+            onpass="Correct UE session, terminations and GTP tunnel peers in ONOS",
+            onfail="Wrong UE session, terminations and GTP tunnel peers in ONOS. " +
+                   "Missing:\n" + failString
         )
 
     def __internalVerifyUp4Flow(self, onosCli, failMsg=""):
-        pdrs = onosCli.sendline(cmdStr="up4:read-pdrs", showResponse=True,
-                                noExit=True, expectJson=False)
-        fars = onosCli.sendline(cmdStr="up4:read-fars", showResponse=True,
-                                noExit=True, expectJson=False)
+        sessions = onosCli.sendline(cmdStr="up4:read-entities -s",
+                                    showResponse=True,
+                                    noExit=True, expectJson=False)
+        terminations = onosCli.sendline(cmdStr="up4:read-entities -t",
+                                        showResponse=True,
+                                        noExit=True, expectJson=False)
+        tunn_peer = onosCli.sendline(cmdStr="up4:read-entities -g",
+                                     showResponse=True,
+                                     noExit=True, expectJson=False)
         fail = False
         for (ue_name, ue) in self.emulated_ues.items():
-            if pdrs.count(self.upPdrOnosString(**ue)) != 1:
-                failMsg += self.upPdrOnosString(**ue) + "\n"
+            if sessions.count(self.upUeSessionOnosString(**ue)) != 1:
+                failMsg += self.upUeSessionOnosString(**ue) + "\n"
                 fail = True
-            if pdrs.count(self.downPdrOnosString(**ue)) != 1:
-                failMsg += self.downPdrOnosString(**ue) + "\n"
+            if sessions.count(self.downUeSessionOnosString(**ue)) != 1:
+                failMsg += self.downUeSessionOnosString(**ue) + "\n"
                 fail = True
-            if fars.count(self.upFarOnosString(**ue)) != 1:
-                failMsg += self.upFarOnosString(**ue) + "\n"
+            if terminations.count(self.upTerminationOnosString(**ue)) != 1:
+                failMsg += self.upTerminationOnosString(**ue) + "\n"
                 fail = True
-            if fars.count(self.downFarOnosString(ue_name, **ue)) != 1:
-                failMsg += self.downFarOnosString(ue_name, **ue) + "\n"
+            if terminations.count(self.downTerminationOnosString(**ue)) != 1:
+                failMsg += self.downTerminationOnosString(**ue) + "\n"
+                fail = True
+            if tunn_peer.count(self.gtpTunnelPeerOnosString(ue_name, **ue)) != 1:
+                failMsg += self.gtpTunnelPeerOnosString(ue_name, **ue) + "\n"
                 fail = True
         return not fail
 
-    def upPdrOnosString(self, pfcp_session_id, teid=None, up_id=None,
-                        teid_up=None, far_id_up=None, ctr_id_up=None, qfi=None,
-                        **kwargs):
-        # TODO: consider that with five_g the output might be different
-        if up_id is not None:
-            far_id_up = up_id
-            ctr_id_up = up_id
+    def upUeSessionOnosString(self, teid=None, teid_up=None, **kwargs):
         if teid is not None:
             teid_up = teid
-        if qfi is not None:
-            return "PDR{{Match(Dst={}, TEID={}) -> LoadParams(SEID={}, FAR={}, CtrIdx={}, QFI={})}}".format(
-                self.s1u_address, hex(int(teid_up)), hex(int(pfcp_session_id)),
-                far_id_up, ctr_id_up, qfi)
-        return "PDR{{Match(Dst={}, TEID={}) -> LoadParams(SEID={}, FAR={}, CtrIdx={})}}".format(
-            self.s1u_address, hex(int(teid_up)), hex(int(pfcp_session_id)),
-            far_id_up, ctr_id_up)
+        return "UESessionUL{{Match(tun_dst_addr={}, TEID={}) -> (FWD)}}".format(
+            self.s1u_address, teid_up)
 
-    def downPdrOnosString(self, pfcp_session_id, ue_address, down_id=None,
-                          far_id_down=None, ctr_id_down=None, qfi=None,
-                          **kwargs):
-        # TODO: consider that with five_g the output might be different
+    def downUeSessionOnosString(self, ue_address, down_id=None,
+                                tunn_peer_id=None,
+                                **kwargs):
         if down_id is not None:
-            far_id_down = down_id
+            tunn_peer_id = down_id
+        return "UESessionDL{{Match(ue_addr={}) -> (FWD,  tun_peer={})}}".format(
+            ue_address, tunn_peer_id)
+
+    def upTerminationOnosString(self, ue_address, up_id=None, ctr_id_up=None,
+                                qfi=None, **kwargs):
+        if up_id is not None:
+            ctr_id_up = up_id
+        return "TerminationUL{{Match(ue_addr={})->(CTR_ID={}, TC={})}}".format(
+            ue_address, ctr_id_up, qfi)  # TC == QFI
+
+    def downTerminationOnosString(self, ue_address, teid=None, down_id=None,
+                                  ctr_id_down=None, teid_down=None, qfi=None,
+                                  **kwargs):
+        if down_id is not None:
             ctr_id_down = down_id
-        if qfi is not None:
-            return "PDR{{Match(Dst={}, !GTP) -> LoadParams(SEID={}, FAR={}, CtrIdx={}, QFI={})}}".format(
-                ue_address, hex(int(pfcp_session_id)), far_id_down, ctr_id_down,
-                qfi)
-        return "PDR{{Match(Dst={}, !GTP) -> LoadParams(SEID={}, FAR={}, CtrIdx={})}}".format(
-            ue_address, hex(int(pfcp_session_id)), far_id_down, ctr_id_down)
-
-    def downFarOnosString(self, ue_name, pfcp_session_id, teid=None, down_id=None,
-                          teid_down=None, far_id_down=None, **kwargs):
-        if down_id is not None:
-            far_id_down = down_id
         if teid is not None:
             teid_down = teid
-        enb_address = self.__getEnbAddress(ue_name)
-        return "FAR{{Match(ID={}, SEID={}) -> Encap(Src={}, SPort={}, TEID={}, Dst={})}}".format(
-            far_id_down, hex(int(pfcp_session_id)), self.s1u_address, GPDU_PORT,
-            hex(int(teid_down)), enb_address)
+        return "TerminationDL{{Match(ue_addr={})->(TEID={}, CTR_ID={}, QFI={}, TC={})}}".format(
+            ue_address, teid_down, ctr_id_down, qfi, qfi)  # TC == QFI
 
-    def upFarOnosString(self, pfcp_session_id, up_id=None, far_id_up=None,
-                        **kwargs):
-        if up_id is not None:
-            far_id_up = up_id
-        return "FAR{{Match(ID={}, SEID={}) -> Forward()}}".format(
-            far_id_up, hex(int(pfcp_session_id)))
+    def gtpTunnelPeerOnosString(self, ue_name, down_id=None, tunn_peer_id=None,
+                                **kwargs):
+        if down_id is not None:
+            tunn_peer_id = down_id
+        enb_address = self.__getEnbAddress(ue_name)
+        return "GTP-Tunnel-Peer({} -> src:{}, dst:{} srcPort:{})".format(
+            tunn_peer_id, self.s1u_address, enb_address, GPDU_PORT)
 
     @staticmethod
     def __sanitizeUeData(ue):
         if "five_g" in ue and type(ue["five_g"]) != bool:
             ue["five_g"] = bool(strtobool(ue["five_g"]))
         if "qfi" in ue and ue["qfi"] == "":
-            ue["qfi"] = None
+            ue["qfi"] = 0
         return ue
 
-    def attachUe(self, ue_name, pfcp_session_id, ue_address,
+    def attachUe(self, ue_name, ue_address,
                  teid=None, up_id=None, down_id=None,
                  teid_up=None, teid_down=None,
-                 pdr_id_up=None, far_id_up=None, ctr_id_up=None,
-                 pdr_id_down=None, far_id_down=None, ctr_id_down=None,
+                 ctr_id_up=None, ctr_id_down=None,
+                 tunn_peer_id=None,
                  qfi=None, five_g=False):
         self.__programUp4Rules(ue_name,
-                               pfcp_session_id,
                                ue_address,
                                teid, up_id, down_id,
                                teid_up, teid_down,
-                               pdr_id_up, far_id_up, ctr_id_up,
-                               pdr_id_down, far_id_down, ctr_id_down,
+                               ctr_id_up, ctr_id_down,
+                               tunn_peer_id,
                                qfi, five_g, action="program")
 
-    def detachUe(self, ue_name, pfcp_session_id, ue_address,
+    def detachUe(self, ue_name, ue_address,
                  teid=None, up_id=None, down_id=None,
                  teid_up=None, teid_down=None,
-                 pdr_id_up=None, far_id_up=None, ctr_id_up=None,
-                 pdr_id_down=None, far_id_down=None, ctr_id_down=None,
+                 ctr_id_up=None, ctr_id_down=None,
+                 tunn_peer_id=None,
                  qfi=None, five_g=False):
         self.__programUp4Rules(ue_name,
-                               pfcp_session_id,
                                ue_address,
                                teid, up_id, down_id,
                                teid_up, teid_down,
-                               pdr_id_up, far_id_up, ctr_id_up,
-                               pdr_id_down, far_id_down, ctr_id_down,
+                               ctr_id_up, ctr_id_down,
+                               tunn_peer_id,
                                qfi, five_g, action="clear")
 
-    def __programUp4Rules(self, ue_name, pfcp_session_id, ue_address,
+    def __programUp4Rules(self, ue_name, ue_address,
                           teid=None, up_id=None, down_id=None,
-                          teid_up=None, teid_down=None,
-                          pdr_id_up=None, far_id_up=None, ctr_id_up=None,
-                          pdr_id_down=None, far_id_down=None, ctr_id_down=None,
-                          qfi=None, five_g=False, action="program"):
+                          teid_up=None, teid_down=None, ctr_id_up=None,
+                          ctr_id_down=None, tunn_peer_id=None,
+                          qfi=0, five_g=False, action="program"):
         if up_id is not None:
-            pdr_id_up = up_id
-            far_id_up = up_id
             ctr_id_up = up_id
         if down_id is not None:
-            pdr_id_down = down_id
-            far_id_down = down_id
+            tunn_peer_id = down_id
             ctr_id_down = down_id
         if teid is not None:
             teid_up = teid
@@ -472,100 +480,87 @@ class UP4:
         enb_address = self.__getEnbAddress(ue_name)
 
         # ========================#
-        # PDR Entries
+        # UE Session Entries
         # ========================#
 
         # Uplink
-        tableName = 'PreQosPipe.pdrs'
-        actionName = ''
+        tableName = 'PreQosPipe.sessions_uplink'
+        actionName = 'PreQosPipe.set_session_uplink'
         matchFields = {}
         actionParams = {}
-        if qfi is None:
-            actionName = 'PreQosPipe.set_pdr_attributes'
-        else:
-            actionName = 'PreQosPipe.set_pdr_attributes_qos'
-            if five_g:
-                # TODO: currently QFI_MATCH is unsupported in TNA
-                matchFields['has_qfi'] = TRUE
-                matchFields["qfi"] = str(qfi)
-            actionParams['needs_qfi_push'] = FALSE
-            actionParams['qfi'] = str(qfi)
         # Match fields
-        matchFields['src_iface'] = IFACE_ACCESS
-        matchFields['ue_addr'] = str(ue_address)
+        matchFields['n3_address'] = str(self.s1u_address)
         matchFields['teid'] = str(teid_up)
-        matchFields['tunnel_ipv4_dst'] = str(self.s1u_address)
-        # Action params
-        actionParams['id'] = str(pdr_id_up)
-        actionParams['fseid'] = str(pfcp_session_id)
-        actionParams['ctr_id'] = str(ctr_id_up)
-        actionParams['far_id'] = str(far_id_up)
-        actionParams['needs_gtpu_decap'] = TRUE
+        if five_g:
+            # TODO: currently QFI match is unsupported in TNA
+            main.log.warn("Matching on QFI is currently unsupported in TNA")
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):
             return False
 
         # Downlink
-        tableName = 'PreQosPipe.pdrs'
+        tableName = 'PreQosPipe.sessions_downlink'
+        actionName = 'PreQosPipe.set_session_downlink'
         matchFields = {}
         actionParams = {}
-        if qfi is None:
-            actionName = 'PreQosPipe.set_pdr_attributes'
-        else:
-            actionName = 'PreQosPipe.set_pdr_attributes_qos'
-            # TODO: currently QFI_PUSH is unsupported in TNA
-            actionParams['needs_qfi_push'] = TRUE if five_g else FALSE
-            actionParams['qfi'] = str(qfi)
         # Match fields
-        matchFields['src_iface'] = IFACE_CORE
-        matchFields['ue_addr'] = str(ue_address)
+        matchFields['ue_address'] = str(ue_address)
         # Action params
-        actionParams['id'] = str(pdr_id_down)
-        actionParams['fseid'] = str(pfcp_session_id)
-        actionParams['ctr_id'] = str(ctr_id_down)
-        actionParams['far_id'] = str(far_id_down)
-        actionParams['needs_gtpu_decap'] = FALSE
+        actionParams['tunnel_peer_id'] = str(tunn_peer_id)
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):
             return False
 
         # ========================#
-        # FAR Entries
+        # Terminations Entries
         # ========================#
 
         # Uplink
-        tableName = 'PreQosPipe.load_far_attributes'
-        actionName = 'PreQosPipe.load_normal_far_attributes'
+        tableName = 'PreQosPipe.terminations_uplink'
+        actionName = 'PreQosPipe.uplink_term_fwd'
         matchFields = {}
         actionParams = {}
 
         # Match fields
-        matchFields['far_id'] = str(far_id_up)
-        matchFields['session_id'] = str(pfcp_session_id)
+        matchFields['ue_address'] = str(ue_address)
         # Action params
-        actionParams['needs_dropping'] = FALSE
-        actionParams['notify_cp'] = FALSE
+        actionParams['ctr_idx'] = str(ctr_id_up)
+        # 1-1 mapping between QFI and TC
+        actionParams['tc'] = str(qfi)
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):
             return False
 
         # Downlink
-        tableName = 'PreQosPipe.load_far_attributes'
-        actionName = 'PreQosPipe.load_tunnel_far_attributes'
+        tableName = 'PreQosPipe.terminations_downlink'
+        actionName = 'PreQosPipe.downlink_term_fwd'
         matchFields = {}
         actionParams = {}
 
         # Match fields
-        matchFields['far_id'] = str(far_id_down)
-        matchFields['session_id'] = str(pfcp_session_id)
+        matchFields['ue_address'] = str(ue_address)
         # Action params
-        actionParams['needs_dropping'] = FALSE
-        actionParams['notify_cp'] = FALSE
-        actionParams['needs_buffering'] = FALSE
-        actionParams['tunnel_type'] = TUNNEL_TYPE_GPDU
+        actionParams['teid'] = str(teid_down)
+        actionParams['ctr_idx'] = str(ctr_id_down)
+        # 1-1 mapping between QFI and TC
+        actionParams['tc'] = str(qfi)
+        actionParams['qfi'] = str(qfi)
+        if not self.__add_entry(tableName, actionName, matchFields,
+                                actionParams, entries, action):
+            return False
+
+        # ========================#
+        # Tunnel Peer Entry
+        # ========================#
+        tableName = 'PreQosPipe.tunnel_peers'
+        actionName = 'PreQosPipe.load_tunnel_param'
+        matchFields = {}
+        actionParams = {}
+        # Match fields
+        matchFields['tunnel_peer_id'] = str(tunn_peer_id)
+        # Action params
         actionParams['src_addr'] = str(self.s1u_address)
         actionParams['dst_addr'] = str(enb_address)
-        actionParams['teid'] = str(teid_down)
         actionParams['sport'] = TUNNEL_SPORT
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):

@@ -34,30 +34,27 @@
         <router_mac>00:00:0A:4C:1C:46</router_mac>
         <ues>
             <ue1>
-                <pfcp_session_id>100</pfcp_session_id>
                 <ue_address>10.240.0.1</ue_address>
                 <teid>100</teid>
                 <up_id>10</up_id>
                 <down_id>11</down_id>
-                <qfi></qfi>
+                <qfi>0</qfi>
                 <five_g>False</five_g>
             </ue1>
             <ue2>
-                <pfcp_session_id>100</pfcp_session_id>
                 <ue_address>10.240.0.2</ue_address>
                 <teid>200</teid>
                 <up_id>20</up_id>
                 <down_id>21</down_id>
-                <qfi></qfi>
+                <qfi>0</qfi>
                 <five_g>False</five_g>
             </ue2>
             <ue3>
-                <pfcp_session_id>100</pfcp_session_id>
                 <ue_address>10.240.0.3</ue_address>
                 <teid>201</teid>
                 <up_id>30</up_id>
                 <down_id>31</down_id>
-                <qfi></qfi>
+                <qfi>0</qfi>
                 <five_g>False</five_g>
             </ue3>
         </ues>

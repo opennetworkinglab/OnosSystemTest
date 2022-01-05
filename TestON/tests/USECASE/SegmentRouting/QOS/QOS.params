@@ -27,16 +27,14 @@
         </enodebs>
         <ues>
             <ue1>
-                <pfcp_session_id>100</pfcp_session_id>
                 <ue_address>10.240.0.1</ue_address>
                 <teid>100</teid>
                 <up_id>10</up_id>
                 <down_id>11</down_id>
-                <!-- <qfi>0</qfi>Best Effort -->
+                <qfi>0</qfi> <!-- Best Effort -->
                 <five_g>False</five_g>
             </ue1>
             <ue2>
-                <pfcp_session_id>100</pfcp_session_id>
                 <ue_address>10.240.0.2</ue_address>
                 <teid>200</teid>
                 <up_id>20</up_id>

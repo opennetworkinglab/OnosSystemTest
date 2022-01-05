@@ -6,14 +6,14 @@ class UP4:
     def CASE1(self, main):
         main.case("Fabric UPF traffic terminated in the fabric")
         """
-        Program PDRs and FARs for UEs
-        Verify PDRs and FARs
+        Program UPF entities for UEs
+        Verify UPF entities
         Generate traffic from UE to PDN
         Verify traffic received from PDN
         Generate traffic from PDN to UE
         Verify traffic received from UE
-        Remove PDRs and FARs for UEs
-        Verify removed PDRs and FARs
+        Remove UPF entities for UEs
+        Verify removed UPF entities
         """
         try:
             from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
@@ -39,7 +39,7 @@ class UP4:
         # Get the P4RT client connected to UP4 in the first available ONOS instance
         up4.setup(main.Cluster.active(0).p4rtUp4)
 
-        main.step("Program and Verify PDRs and FARs via UP4")
+        main.step("Program and Verify UPF entities via UP4")
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
 
@@ -57,7 +57,7 @@ class UP4:
         main.step("Test downstream traffic")
         up4.testDownstreamTraffic()
 
-        main.step("Remove and Verify PDRs and FARs via UP4")
+        main.step("Remove and Verify UPF entities via UP4")
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
 
@@ -72,14 +72,14 @@ class UP4:
     def CASE2(self, main):
         main.case("BESS traffic routed")
         """
-        Program PDRs and FARs for UEs managed via UP4
-        Verify PDRs and FARs
+        Program UPF entities for UEs managed via UP4
+        Verify UPF entities
         Verify Upstream Traffic: eNB -> Fabric -> BESS (encapped)
         Verify Upstream Traffic: BESS -> Fabric -> PDN (not encapped)
         Verify Downstream Traffic: PDN -> Fabric -> BESS (not encapped)
         Verify Downstream Traffic: BESS -> Fabric -> eNB (encapped)
-        Remove PDRs and FARs for UEs managed via UP4
-        Verify removed PDRs and FARs
+        Remove UPF entities for UEs managed via UP4
+        Verify removed UPF entities
         """
         BESS_TEID = 300
         GPDU_PORT = 2152
@@ -121,7 +121,7 @@ class UP4:
         pdn_host = up4.pdn_host
         pdn_interface = up4.pdn_interface
 
-        main.step("Program and Verify PDRs and FARs for UEs via UP4")
+        main.step("Program and Verify UPF entities for UEs via UP4")
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
 
@@ -256,7 +256,7 @@ class UP4:
                                    n_packets, tot_packets))
         # ------------------------------------------------
 
-        main.step("Remove and Verify PDRs and FARs for UEs via UP4")
+        main.step("Remove and Verify UPF entities for UEs via UP4")
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
 
@@ -272,13 +272,13 @@ class UP4:
     def CASE3(self, main):
         main.case("Verify UP4 from different ONOS instances")
         """
-        Program PDRs and FARs via UP4 on first ONOS instance
+        Program UPF entitiesvia UP4 on first ONOS instance
         Repeat for all ONOS Instances:
-            Verify PDRs and FARs via P4RT
+            Verify UPF entities via P4RT
             Disconnect P4RT client
-        Verify and delete PDRs and FARs via UP4 on the third ONOS instance
+        Verify and delete UPF entities via UP4 on the third ONOS instance
         Repeat for all ONOS Instance:
-            Verify removed PDRs and FARs via P4RT
+            Verify removed UPF entities via P4RT
             Disconnect P4RT client
         """
         try:
@@ -305,7 +305,7 @@ class UP4:
         up4_2 = UP4()
         initial_flow_count = onos_cli_0.checkFlowCount()
 
-        main.step("Program and Verify PDRs and FARs via UP4 on ONOS 0")
+        main.step("Program and Verify UPF entities via UP4 on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
@@ -317,23 +317,23 @@ class UP4:
                     len(up4_0.emulated_ues) * N_FLOWS_PER_UE * n_switches)
         )
 
-        main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 1")
+        main.step("Verify UPF entities number via UP4 P4RT on ONOS 1")
         up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
         utilities.assert_equal(
             expect=True,
             actual=up4_1.verifyUesFlowNumberP4rt(),
-            onpass="Correct number of PDRs and FARs",
-            onfail="Wrong number of PDRs and FARs"
+            onpass="Correct number of UPF entities",
+            onfail="Wrong number of UPF entities"
         )
         up4_1.teardown()
 
-        main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 2")
+        main.step("Verify UPF entities number via UP4 P4RT on ONOS 2")
         up4_2.setup(main.Cluster.active(2).p4rtUp4, no_host=True)
         utilities.assert_equal(
             expect=True,
             actual=up4_2.verifyUesFlowNumberP4rt(),
-            onpass="Correct number of PDRs and FARs",
-            onfail="Wrong number of PDRs and FARs"
+            onpass="Correct number of UPF entities",
+            onfail="Wrong number of UPF entities"
         )
 
         main.step("Verify all ONOS instances have the same number of flows")
@@ -348,38 +348,38 @@ class UP4:
                 onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
         )
 
-        main.step("Remove and Verify PDRs and FARs via UP4 on ONOS 2")
+        main.step("Remove and Verify UPF entities via UP4 on ONOS 2")
         up4_2.detachUes()
         up4_2.verifyNoUesFlow(onos_cli_2)
 
         run.checkFlows(main, minFlowCount=initial_flow_count)
 
-        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 2")
+        main.step("Verify no UPF entities via UP4 P4RT on ONOS 2")
         utilities.assert_equal(
             expect=True,
             actual=up4_2.verifyNoUesFlowNumberP4rt(),
-            onpass="No PDRs and FARs",
-            onfail="Stale PDRs and FARs"
+            onpass="No UPF entities",
+            onfail="Stale UPF entities"
         )
         up4_2.teardown()
 
-        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 1")
+        main.step("Verify no UPF entities via UP4 P4RT on ONOS 1")
         up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
         utilities.assert_equal(
             expect=True,
             actual=up4_1.verifyNoUesFlowNumberP4rt(),
-            onpass="No PDRs and FARs",
-            onfail="Stale PDRs and FARs"
+            onpass="No UPF entities",
+            onfail="Stale UPF entities"
         )
         up4_1.teardown()
 
-        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 0")
+        main.step("Verify no UPF entities via UP4 P4RT on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         utilities.assert_equal(
             expect=True,
             actual=up4_0.verifyNoUesFlowNumberP4rt(),
-            onpass="No PDRs and FARs",
-            onfail="Stale PDRs and FARs"
+            onpass="No UPF entities",
+            onfail="Stale UPF entities"
         )
         up4_0.teardown()
 
@@ -401,15 +401,15 @@ class UP4:
     def CASE4(self, main):
         main.case("Verify UP4 wipe-out after ONOS reboot")
         """
-        Program PDRs/FARs
+        Program UPF entities
         Kill ONOS POD
-        Verify PDRs/FARs from other ONOS instances
-        Remove PDRs/FARs
+        Verify UPF entities from other ONOS instances
+        Remove UPF entities
         Wait/Verify ONOS is back
-        Verify no PDRs/FARs from rebooted instance
-        Re-program PDRs/FARs from rebooted instance
+        Verify no UPF entities from rebooted instance
+        Re-program UPF entities from rebooted instance
         Verify all instances have same number of flows
-        Remove PDRs/FARs (cleanup)
+        Remove UPF entities (cleanup)
         """
         try:
             from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
@@ -440,7 +440,7 @@ class UP4:
 
         initial_flow_count = onos_cli_0.checkFlowCount()
 
-        main.step("Program and Verify PDRs and FARs via UP4 on ONOS 0")
+        main.step("Program and Verify UPF entities via UP4 on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
@@ -463,25 +463,25 @@ class UP4:
 
         onosK8sNode = SRStagingTest.onosDown(main, ctrl_0, preventRestart=True)
 
-        main.step("Verify PDRs and FARs number via UP4 P4RT on ONOS 2")
+        main.step("Verify UPF entities number via UP4 P4RT on ONOS 2")
         up4_2.setup(main.Cluster.active(2).p4rtUp4, no_host=True)
         utilities.assert_equal(
             expect=True,
             actual=up4_2.verifyUesFlowNumberP4rt(),
-            onpass="Correct number of PDRs and FARs",
-            onfail="Wrong number of PDRs and FARs"
+            onpass="Correct number of UPF entities",
+            onfail="Wrong number of UPF entities"
         )
 
-        main.step("Remove and Verify PDRs and FARs via UP4 on ONOS 2")
+        main.step("Remove and Verify UPF entities via UP4 on ONOS 2")
         up4_2.detachUes()
         up4_2.verifyNoUesFlow(onos_cli_2)
 
-        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 2")
+        main.step("Verify no UPF entities via UP4 P4RT on ONOS 2")
         utilities.assert_equal(
             expect=True,
             actual=up4_2.verifyNoUesFlowNumberP4rt(),
-            onpass="No PDRs and FARs",
-            onfail="Stale PDRs and FARs"
+            onpass="No UPF entities",
+            onfail="Stale UPF entities"
         )
         up4_2.teardown()
 
@@ -513,18 +513,18 @@ class UP4:
             onfail="Wrong ONOS nodes status"
         )
 
-        main.step("Verify no PDRs and FARs via UP4 P4RT on ONOS 0")
+        main.step("Verify no UPF entities via UP4 P4RT on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         utilities.assert_equal(
             expect=True,
             actual=up4_0.verifyNoUesFlowNumberP4rt(),
-            onpass="No PDRs and FARs",
-            onfail="Stale PDRs and FARs"
+            onpass="No UPF entities",
+            onfail="Stale UPF entities"
         )
 
         run.checkFlows(main, minFlowCount=initial_flow_count)
 
-        main.step("Re-program PDRs and FARs via UP4 on ONOS 0 after restart")
+        main.step("Re-program UPF entities via UP4 on ONOS 0 after restart")
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
         up4_0.teardown()
@@ -535,7 +535,7 @@ class UP4:
                     len(up4_0.emulated_ues) * N_FLOWS_PER_UE * n_switches)
         )
 
-        main.step("Verify PDRs and FARs via UP4 on ONOS 1")
+        main.step("Verify UPF entities via UP4 on ONOS 1")
         up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
         up4_1.verifyUp4Flow(onos_cli_1)
 
@@ -551,7 +551,7 @@ class UP4:
                 onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
         )
 
-        main.step("Cleanup PDRs and FARs via UP4 on ONOS 1")
+        main.step("Cleanup UPF entities via UP4 on ONOS 1")
         up4_1.detachUes()
         up4_1.verifyNoUesFlow(onos_cli_1)
         up4_1.teardown()
@@ -564,14 +564,14 @@ class UP4:
     def CASE5(self, main):
         main.case("UP4 Data Plane Failure Test")
         """
-        Program PDRs/FARs
+        Program UPF entities
         Kill one switch
         Set label on switch K8S node to prevent K8S to redeploy stratum
         Verify that traffic from eNodebs that are connected to that switch fails
         Verify that traffic from other eNodeBs is being forwarded
         Wait for the switch to be up again
         Check flows
-        Remove PDRs/FARs (cleanup)
+        Remove UPF entities (cleanup)
         """
         try:
             from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
@@ -607,7 +607,7 @@ class UP4:
 
         initial_flow_count = onos_cli.checkFlowCount()
 
-        main.step("Program and Verify PDRs and FARs via UP4")
+        main.step("Program and Verify UPF entities via UP4")
         up4.setup(main.Cluster.active(0).p4rtUp4)
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
@@ -738,7 +738,7 @@ class UP4:
         main.step("Test upstream traffic AFTER switch reboot")
         up4.testUpstreamTraffic()
 
-        main.step("Cleanup PDRs and FARs via UP4")
+        main.step("Cleanup UPF entities via UP4")
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
         up4.teardown()

@@ -3074,22 +3074,26 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def addStaticRoute( self, subnet, intf):
+    def sendOnosCliCommand( self, cmd, params=[] ):
         """
-        Adds a static route to onos.
+        Handles sending an arbitrary command to the ONOS cli and parsing standard errors
         Params:
-            subnet: The subnet reaching through this route
-            intf: The interface this route is reachable through
+            cmd: The command to be sent in the onos cli
+            params: Sending the parameters within the command we send in the cli
         """
         try:
-            cmdStr = "route-add " + subnet + " " + intf
+            if not isinstance(params, list):
+              params=[params]
+            cmdStr = cmd + " " + ' '.join(params)
             handle = self.sendline( cmdStr )
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
+            # Check for error in cli response
+            assert "Error executing command" not in handle, handle
             return handle
         except AssertionError:
             main.log.exception( "" )
-            return None
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -3097,6 +3101,27 @@ class OnosCliDriver( CLI ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
+
+    def blackholeStaticRoute( self, subnet, addBlackhole=True ):
+        """
+        Manage black hole routes in onos.
+        Params:
+            subnet: The subnet to be blocked through this route
+            addBlackhole: Boolean set to declare if we are adding or removing the blackhole route
+        """
+        if addBlackhole:
+            addedBlackholeIP = self.sendOnosCliCommand('sr-blackhole add', subnet)
+        else:
+            removedBlackholeIP = self.sendOnosCliCommand('sr-blackhole remove', subnet)
+        blackHoleList = self.sendOnosCliCommand('sr-blackhole list')
+        if subnet in blackHoleList:
+            exists = True
+        else:
+            exists = False
+        if (addBlackhole and exists) or (not addBlackhole and not exists):
+            return main.TRUE
+        else:
+            return main.FALSE
 
     def checkGroupAddedCount( self, deviceId, expectedGroupCount=0, core=False, comparison=0):
         """

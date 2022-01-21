@@ -16,6 +16,7 @@ GPDU_PORT = 2152
 
 N_FLOWS_PER_UE = 5
 
+DEFAULT_APP_ID = 0
 
 class UP4:
     """
@@ -464,7 +465,8 @@ class UP4:
                           teid=None, up_id=None, down_id=None,
                           teid_up=None, teid_down=None, ctr_id_up=None,
                           ctr_id_down=None, tunn_peer_id=None,
-                          qfi=0, five_g=False, action="program"):
+                          qfi=0, five_g=False, app_id=DEFAULT_APP_ID,
+                          action="program"):
         if up_id is not None:
             ctr_id_up = up_id
         if down_id is not None:
@@ -523,6 +525,7 @@ class UP4:
 
         # Match fields
         matchFields['ue_address'] = str(ue_address)
+        matchFields['app_id'] = str(app_id)
         # Action params
         actionParams['ctr_idx'] = str(ctr_id_up)
         # 1-1 mapping between QFI and TC
@@ -539,6 +542,7 @@ class UP4:
 
         # Match fields
         matchFields['ue_address'] = str(ue_address)
+        matchFields['app_id'] = str(app_id)
         # Action params
         actionParams['teid'] = str(teid_down)
         actionParams['ctr_idx'] = str(ctr_id_down)

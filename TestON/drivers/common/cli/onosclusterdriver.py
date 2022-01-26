@@ -28,6 +28,7 @@ the System Testing Plans and Results wiki page at <https://wiki.onosproject.org/
 or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 
 """
+from distutils.util import strtobool
 import pexpect
 import os
 from drivers.common.clidriver import CLI
@@ -68,10 +69,13 @@ class Controller():
         if hasattr( self.p4rtUp4, name ):
             main.log.debug( "%s: Using UP4 driver's attribute for '%s'" % ( self.name, name ) )
             return getattr( self.p4rtUp4, name )
+        if hasattr( self.mock_smf, name ):
+            main.log.debug( "%s: Using mock smf driver's attribute for '%s'" % ( self.name, name ) )
+            return getattr( self.mock_smf, name )
         raise AttributeError( "Could not find the attribute %s in %r or it's component handles" % ( name, self ) )
 
     def __init__( self, name, ipAddress, CLI=None, REST=None, Bench=None, pos=None,
-                  userName=None, server=None, k8s=None, p4rtUp4=None, dockerPrompt=None ):
+                  userName=None, server=None, k8s=None, p4rtUp4=None, mock_smf=None, dockerPrompt=None ):
         # TODO: validate these arguments
         self.name = str( name )
         self.ipAddress = ipAddress
@@ -85,6 +89,7 @@ class Controller():
         self.server = server
         self.k8s = k8s
         self.p4rtUp4 = p4rtUp4
+        self.mock_smf = mock_smf
         self.dockerPrompt = dockerPrompt
 
 class OnosClusterDriver( CLI ):
@@ -106,6 +111,7 @@ class OnosClusterDriver( CLI ):
         self.nodePass = None
         self.nodes = []
         self.up4Port = None
+        self.mock_smf = None
         super( OnosClusterDriver, self ).__init__()
 
     def connect( self, **connectargs ):
@@ -153,6 +159,8 @@ class OnosClusterDriver( CLI ):
                 elif key == "up4_port":
                     # Defining up4_port triggers the creation of the P4RuntimeCliDriver component
                     self.up4Port = self.options[ key ]
+                elif key == "mock_smf":
+                    self.mock_smf = strtobool( self.options[ key ] )
 
             self.home = self.checkOptions( self.home, "~/onos" )
             self.karafUser = self.checkOptions( self.karafUser, self.user_name )
@@ -169,6 +177,7 @@ class OnosClusterDriver( CLI ):
             self.maxNodes = int( self.checkOptions( self.maxNodes, 100 ) )
             self.kubeConfig = self.checkOptions( self.kubeConfig, None )
             self.up4Port = self.checkOptions( self.up4Port, None )
+            self.mock_smf = self.checkOptions( self.mock_smf, None )
 
             self.name = self.options[ 'name' ]
 
@@ -266,7 +275,7 @@ class OnosClusterDriver( CLI ):
                             elif self.up4Port and port == int( self.up4Port ):
                                 node.p4rtUp4.p4rtPort = localPort
                         # Set kubeconfig for all components
-                        for shell in [ node.CLI, node.Bench, node.k8s, node.p4rtUp4  ]:
+                        for shell in [ node.CLI, node.Bench, node.k8s, node.p4rtUp4, node.mock_smf  ]:
                             if shell:
                                 shell.setEnv( "KUBECONFIG", value=kubectl.kubeConfig )
                         main.log.info( "Setting up port forward for pod %s: [ %s ]" % ( self.podNames[ index ], portsList ) )
@@ -529,6 +538,49 @@ class OnosClusterDriver( CLI ):
             main.log.error( name + " component already exists!" )
             main.cleanAndExit()
 
+    def setMockSMFOptions( self, name, ipAddress ):
+        """
+        Parse the cluster options to create a mock smf component with the given name
+
+        Arguments:
+            name - The name of the P4RuntimeCLI component
+            ipAddress - The ip address of the ONOS instance
+        """
+        main.componentDictionary[name] = main.componentDictionary[self.name].copy()
+        main.componentDictionary[name]['type'] = "MockSMFDriver"
+        main.componentDictionary[name]['host'] = ipAddress
+        main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+
+    def createMockSMFComponent( self, name, ipAddress ):
+        """
+        Creates a new mock smf component. This will be connected to the node
+        ONOS is running on.
+
+        Arguments:
+            name - The string of the name of this component. The new component
+                   will be assigned to main.<name> .
+                   In addition, main.<name>.name = str( name )
+            ipAddress - The ip address of the server
+        """
+        try:
+            # look to see if this component already exists
+            getattr( main, name )
+        except AttributeError:
+            # namespace is clear, creating component
+            self.setMockSMFOptions( name, ipAddress )
+            return main.componentInit( name )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+        else:
+            # namespace is not clear!
+            main.log.error( name + " component already exists!" )
+            main.cleanAndExit()
+
     def createComponents( self, prefix='', createServer=True ):
         """
         Creates a CLI and REST component for each nodes in the cluster
@@ -540,6 +592,7 @@ class OnosClusterDriver( CLI ):
         serverPrefix = prefix + "server"
         k8sPrefix = prefix + "k8s"
         up4Prefix = prefix + "up4cl"
+        smfPrefix = prefix + "smf"
         for i in xrange( 1, self.maxNodes + 1 ):
             cliName = cliPrefix + str( i  )
             restName = restPrefix + str( i )
@@ -549,6 +602,8 @@ class OnosClusterDriver( CLI ):
                 k8sName = k8sPrefix + str( i )
             if self.up4Port:
                 up4Name = up4Prefix + str( i )
+            if self.mock_smf:
+                smfName = smfPrefix + str( i )
 
             # Unfortunately this means we need to have a cell set beofre running TestON,
             # Even if it is just the entire possible cluster size
@@ -560,9 +615,11 @@ class OnosClusterDriver( CLI ):
             server = self.createServerComponent( serverName, ip ) if createServer else None
             k8s = self.createServerComponent( k8sName, ip ) if self.kubeConfig else None
             p4rtUp4 = self.createP4rtCLIComponent( up4Name, ip ) if self.up4Port else None
+            smf = self.createMockSMFComponent( smfName, ip ) if self.mock_smf else None
+            self.mock_smf = smf
             if self.kubeConfig:
                 k8s.kubeConfig = self.kubeConfig
                 k8s.podName = None
             self.nodes.append( Controller( prefix + str( i ), ip, cli, rest, bench, i - 1,
                                            self.user_name, server=server, k8s=k8s,
-                                           p4rtUp4=p4rtUp4, dockerPrompt=self.dockerPrompt ) )
+                                           p4rtUp4=p4rtUp4, mock_smf=smf, dockerPrompt=self.dockerPrompt ) )

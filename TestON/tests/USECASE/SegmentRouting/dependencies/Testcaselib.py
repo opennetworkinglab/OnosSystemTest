@@ -571,7 +571,7 @@ class Testcaselib:
             count = main.Cluster.active( 0 ).CLI.checkFlowCount()
         utilities.assertEquals(
                 expect=True,
-                actual=( count >= minFlowCount ),
+                actual=( int( count ) >= int( minFlowCount ) ),
                 onpass="Flow count looks correct; found %s, expecting at least %s" % ( count, minFlowCount ),
                 onfail="Flow count looks wrong; found %s, expecting at least %s" % ( count, minFlowCount ) )
 
@@ -1210,7 +1210,7 @@ class Testcaselib:
         time.sleep( sleep )
 
     @staticmethod
-    def cleanup( main, copyKarafLog=True, removeHostComponent=False ):
+    def cleanup( main, copyKarafLog=False, removeHostComponent=False ):
         """
         Stop Onos-cluster.
         Stops Mininet

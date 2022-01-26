@@ -1,5 +1,7 @@
 from distutils.util import strtobool
+import ipaddress as ip
 import copy
+import re
 
 FALSE = '0'
 TRUE = '1'
@@ -15,6 +17,7 @@ DEFAULT_PDN_PORT = 800
 GPDU_PORT = 2152
 
 DEFAULT_APP_ID = 0
+DEFAULT_APP_NAME = "Default"
 DEFAULT_SESSION_METER_IDX = 0
 DEFAULT_APP_METER_IDX = 0
 
@@ -69,23 +72,33 @@ class UP4:
         self.pdn_interface = None
         self.router_mac = None
         self.emulated_ues = {}
-        self.app_filters = {}
+        self.DEFAULT_APP = {DEFAULT_APP_NAME: {'ip_prefix': None, 'ip_proto': None, 'port_range': None,
+                            'app_id': DEFAULT_APP_ID, 'action': 'allow' } }
+        self.app_filters = self.DEFAULT_APP
         self.up4_client = None
+        self.mock_smf = None
         self.no_host = False
         self.slice_id = None
+        self.next_seid = 1
 
-    def setup(self, p4rt_client, no_host=False):
+    def setup(self, p4rt_client, mock_smf=None, no_host=False, pfcpAddress=None, pfcpPort=8805, app_filters=True):
         """
-        Set up P4RT and scapy on eNB and PDN hosts
+        Set up P4RT and scapy on eNB and PDN hosts. If mock_smf is not None, will also connect
+        to the pfcp agent using a mock smf and the test will use this to create ue sessions instead of P4RT
         :param p4rt_client: a P4RuntimeCliDriver component
+        :param mock_smf: The optional mocksmfdriver component to use
         :param no_host: True if you don't want to start scapy on the hosts
+        :param pfcpAddress: Address of the PFCP agent to connect to when using mock smf
+        :param pfcpPort: Port of the PFCP agent to connect to when using mock smf
+        :param app_filters: If True, will add app_filters defined in the params file, else use the default application filter
         :return:
         """
         self.s1u_address = main.params["UP4"]["s1u_address"]
         self.emulated_ues = main.params["UP4"]['ues']
-        self.app_filters = main.params["UP4"]['app_filters']
+        self.app_filters = main.params["UP4"]['app_filters'] if app_filters else self.DEFAULT_APP
         self.slice_id = main.params["UP4"]['slice_id']
         self.up4_client = p4rt_client
+        self.mock_smf = mock_smf
         self.no_host = no_host
 
         # Optional Parameters
@@ -106,7 +119,15 @@ class UP4:
             if app_filter.get('slice_id', None) is None:
                 app_filter['slice_id'] = self.slice_id
         # Start components
-        self.up4_client.startP4RtClient()
+        if self.up4_client:
+            self.up4_client.startP4RtClient()
+        if self.mock_smf:
+            if not pfcpAddress:
+                pfcpAddress = self.mock_smf.kubectlGetServiceIP( "pfcp-agent" )
+            self.mock_smf.startSMF()
+            self.mock_smf.configure(self.s1u_address, pfcpAddress, pfcpPort)
+            # TODO Start pcap on mock_smf host
+            self.mock_smf.associate()
         if not self.no_host:
             if self.enodebs is not None:
                 for enb in self.enodebs.values():
@@ -119,7 +140,11 @@ class UP4:
         #  them here
 
     def teardown(self):
-        self.up4_client.stopP4RtClient()
+        if self.up4_client:
+            self.up4_client.stopP4RtClient()
+        if self.mock_smf:
+            self.mock_smf.disassociate()
+            self.mock_smf.stop()
         if not self.no_host:
             if self.enodebs is not None:
                 for enb in self.enodebs.values():
@@ -128,18 +153,37 @@ class UP4:
                 self.pdn_host.stopScapy()
 
     def attachUes(self):
-        for app_filter in self.app_filters.values():
-            self.insertAppFilter(**app_filter)
-        for (name, ue) in self.emulated_ues.items():
-            ue = UP4.__sanitizeUeData(ue)
-            self.attachUe(name, **ue)
+        filter_desc = []
+        for app_name, app_filter in sorted(self.app_filters.items(), key=lambda (k, v): int(v.get('priority', 0))):
+            if self.mock_smf:
+                if app_name != DEFAULT_APP_NAME:
+                    filter_desc.append(self.__pfcpSDFString(**app_filter))
+                    self.app_filters[app_name]['app_id'] = None
+                    self.app_filters[app_name]['priority'] = None
+
+            else:
+                self.insertAppFilter(**app_filter)
+        for (ue_name, ue) in self.emulated_ues.items():
+            ue = UP4.__sanitizeUeData(ue, smf=True if self.mock_smf else False)
+            if self.mock_smf:
+                if not ue.get("seid"):
+                    ue["seid"] = self.next_seid
+                    self.next_seid = self.next_seid + 1
+                    self.emulated_ues[ue_name]["seid"] = ue["seid"]
+                self.smfAttachUe(ue_name, sdf=filter_desc[-1:], **ue) # TODO: pass whole filter list once multi app support is fixed
+            else:
+                self.attachUe(ue_name, **ue)
 
     def detachUes(self):
-        for app_filter in self.app_filters.values():
-            self.removeAppFilter(**app_filter)
-        for (name, ue) in self.emulated_ues.items():
-            ue = UP4.__sanitizeUeData(ue)
-            self.detachUe(name, **ue)
+        if not self.mock_smf:
+            for app_filter in self.app_filters.values():
+                self.removeAppFilter(**app_filter)
+        for (ue_name, ue) in self.emulated_ues.items():
+            ue = UP4.__sanitizeUeData(ue, smf=True if self.mock_smf else False)
+            if self.mock_smf:
+                self.smfDetachUe(ue_name, **ue)
+            else:
+                self.detachUe(ue_name, **ue)
 
     def __pickPortFromRange(self, range):
         if range is None or len(range) == 0:
@@ -157,9 +201,13 @@ class UP4:
         else:
             enodebs = [self.enodebs[enb] for enb in enb_names]
 
-        app_filter = self.app_filters[app_filter_name]
-        pdn_port = self.__pickPortFromRange(app_filter.get("port_range", None))
-        app_filter_should_drop = app_filter["action"] != "allow"
+        port_range = None
+        app_filter_should_drop = False
+        if app_filter_name and app_filter_name != DEFAULT_APP_NAME:
+            app_filter = self.app_filters[app_filter_name]
+            port_range = app_filter.get("port_range", None)
+            app_filter_should_drop = app_filter["action"] != "allow"
+        pdn_port = self.__pickPortFromRange(port_range)
 
         pkt_filter_upstream = ""
         ues = []
@@ -239,9 +287,13 @@ class UP4:
         else:
             enodebs = [self.enodebs[enb] for enb in enb_names]
 
-        app_filter = self.app_filters[app_filter_name]
-        pdn_port = self.__pickPortFromRange(app_filter.get("port_range", None))
-        app_filter_should_drop = app_filter["action"] != "allow"
+        port_range = None
+        app_filter_should_drop = False
+        if app_filter_name and app_filter_name != DEFAULT_APP_NAME:
+            app_filter = self.app_filters[app_filter_name]
+            port_range = app_filter.get("port_range", None)
+            app_filter_should_drop = app_filter["action"] != "allow"
+        pdn_port = self.__pickPortFromRange(port_range)
 
         pkt_filter_downstream = "ip and udp src port %d and udp dst port %d and src host %s" % (
             GPDU_PORT, GPDU_PORT, self.s1u_address)
@@ -447,50 +499,56 @@ class UP4:
         fail = False
         for app_filter in self.app_filters.values():
             if not UP4.__defaultApp(**app_filter):
-                if applications.count(self.appFilterOnosString(**app_filter)) != 1:
+                if len(re.findall(self.appFilterOnosString(**app_filter), applications)) != 1:
                     failMsg.append(self.appFilterOnosString(**app_filter))
                     fail = True
         for (ue_name, ue) in self.emulated_ues.items():
-            if sessions.count(self.upUeSessionOnosString(**ue)) != 1:
+            if len(re.findall(self.upUeSessionOnosString(**ue), sessions)) != 1:
                 failMsg.append(self.upUeSessionOnosString(**ue))
                 fail = True
-            if sessions.count(self.downUeSessionOnosString(**ue)) != 1:
+            if len(re.findall(self.downUeSessionOnosString(**ue), sessions)) != 1:
                 failMsg.append(self.downUeSessionOnosString(**ue))
                 fail = True
             for app_filter in self.app_filters.values():
-                if terminations.count(self.upTerminationOnosString(app_filter=app_filter, **ue)) != 1:
+                if len(re.findall(self.upTerminationOnosString(app_filter=app_filter, **ue), terminations)) != 1:
                     failMsg.append(self.upTerminationOnosString(app_filter=app_filter, **ue))
                     fail = True
-                if terminations.count(self.downTerminationOnosString(app_filter=app_filter, **ue)) != 1:
+                if len(re.findall(self.downTerminationOnosString(app_filter=app_filter, **ue), terminations)) != 1:
                     failMsg.append(self.downTerminationOnosString(app_filter=app_filter, **ue))
                     fail = True
-            if tunn_peer.count(self.gtpTunnelPeerOnosString(ue_name, **ue)) != 1:
+            if len(re.findall(self.gtpTunnelPeerOnosString(ue_name, **ue), tunn_peer)) != 1:
                 failMsg.append(self.gtpTunnelPeerOnosString(ue_name, **ue))
                 fail = True
         return not fail
 
-    def appFilterOnosString(self, app_id, priority, slice_id=None, ip_proto=None, ip_prefix=None, port_range=None, **kwargs):
+    def appFilterOnosString(self, app_id=None, priority=None, slice_id=None, ip_proto=None, ip_prefix=None, port_range=None, **kwargs):
+        if app_id is None:
+            app_id = "\d+"
+        if priority is None:
+            priority = "\d+"
         if slice_id is None:
             slice_id = self.slice_id
         matches = []
         if ip_prefix:
             matches.append("ip_prefix=%s" % ip_prefix)
         if port_range:
-            matches.append("l4_port_range=[%s]" % port_range)
+            matches.append("l4_port_range=\[%s\]" % port_range)
         if ip_proto:
             matches.append("ip_proto=%s" % ip_proto)
         matches.append("slice_id=%s" % slice_id)
 
-        return "UpfApplication(priority=%s, Match(%s) -> Action(app_id=%s))" % (
+        return "UpfApplication\(priority=%s, Match\(%s\) -> Action\(app_id=%s\)\)" % (
             priority,
             ", ".join(matches),
             app_id
         )
 
     def upUeSessionOnosString(self, teid=None, teid_up=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX, **kwargs):
-        if teid is not None:
+        if teid_up is None and teid is not None:
             teid_up = teid
-        return "UpfSessionUL(Match(tun_dst_addr={}, teid={}) -> Action(FWD, session_meter_idx={}))".format(
+        if sess_meter_idx is None:
+            sess_meter_idx = "\d+"
+        return "UpfSessionUL\(Match\(tun_dst_addr={}, teid={}\) -> Action\(FWD, session_meter_idx={}\)\)".format(
             self.s1u_address, teid_up, sess_meter_idx)
 
     def downUeSessionOnosString(self, ue_address, down_id=None,
@@ -498,19 +556,32 @@ class UP4:
                                 **kwargs):
         if down_id is not None:
             tunn_peer_id = down_id
-        return "UpfSessionDL(Match(ue_addr={}) -> Action(FWD,  tun_peer={}, session_meter_idx={}))".format(
+        if tunn_peer_id is None:
+            tunn_peer_id = "\d+"
+        if sess_meter_idx is None:
+            sess_meter_idx = "\d+"
+        return "UpfSessionDL\(Match\(ue_addr={}\) -> Action\(FWD,  tun_peer={}, session_meter_idx={}\)\)".format(
             ue_address, tunn_peer_id, sess_meter_idx)
 
     def upTerminationOnosString(self, ue_address, app_filter, up_id=None,
                                 ctr_id_up=None, tc=None, app_meter_idx=DEFAULT_APP_METER_IDX, **kwargs):
         if up_id is not None:
             ctr_id_up = up_id
-        if app_filter["action"] == "allow":
-            return "UpfTerminationUL(Match(ue_addr={}, app_id={}) -> Action(FWD, ctr_id={}, tc={}, app_meter_idx={}))".format(
-                ue_address, app_filter["app_id"], ctr_id_up, tc, app_meter_idx)
+        if ctr_id_up is None:
+            ctr_id_up = "\d+"
+        if tc is None or int(tc) == 0:
+            tc = "(?:0|null)"
+        if app_meter_idx is None:
+            app_meter_idx = "\d+"
+        app_id = app_filter["app_id"]
+        if app_id is None:
+            app_id = "\d+"
+        if app_filter["action"] == "deny":
+            return "UpfTerminationUL\(Match\(ue_addr={}, app_id={}\) -> Action\(DROP, ctr_id={}, tc=null, app_meter_idx=0\)\)".format(
+                ue_address, app_id, ctr_id_up)
         else:
-            return "UpfTerminationUL(Match(ue_addr={}, app_id={}) -> Action(DROP, ctr_id={}, tc=null, app_meter_idx=0))".format(
-                ue_address, app_filter["app_id"], ctr_id_up)
+            return "UpfTerminationUL\(Match\(ue_addr={}, app_id={}\) -> Action\(FWD, ctr_id={}, tc={}, app_meter_idx={}\)\)".format(
+                ue_address, app_id, ctr_id_up, tc, app_meter_idx)
 
     def downTerminationOnosString(self, ue_address, app_filter, teid=None,
                                   down_id=None, ctr_id_down=None, teid_down=None,
@@ -518,31 +589,43 @@ class UP4:
                                   **kwargs):
         if down_id is not None:
             ctr_id_down = down_id
-        if teid is not None:
+        if ctr_id_down is None:
+            ctr_id_down = "\d+"
+        if teid_down is None and teid is not None:
             teid_down = int(teid) + 1
-        if tc is None:
-            tc="null"
-        if app_filter["action"] == "allow":
-            return "UpfTerminationDL(Match(ue_addr={}, app_id={}) -> Action(FWD, teid={}, ctr_id={}, qfi={}, tc={}, app_meter_idx={}))".format(
-                ue_address, app_filter["app_id"], teid_down, ctr_id_down, tc, tc, app_meter_idx)
+        if tc is None or int(tc) == 0:
+            tc = "(?:0|null)"
+        if app_meter_idx is None:
+            app_meter_idx = "\d+"
+        app_id = app_filter["app_id"]
+        if app_id is None:
+            app_id = "\d+"
+        if app_filter["action"] == "deny":
+            return "UpfTerminationDL\(Match\(ue_addr={}, app_id={}\) -> Action\(DROP, teid=null, ctr_id={}, qfi=null, tc=null, app_meter_idx=0\)\)".format(
+                ue_address, app_id, ctr_id_down)
         else:
-            return "UpfTerminationDL(Match(ue_addr={}, app_id={}) -> Action(DROP, teid=null, ctr_id={}, qfi=null, tc=null, app_meter_idx=0))".format(
-                ue_address, app_filter["app_id"], ctr_id_down)
+            return "UpfTerminationDL\(Match\(ue_addr={}, app_id={}\) -> Action\(FWD, teid={}, ctr_id={}, qfi={}, tc={}, app_meter_idx={}\)\)".format(
+                ue_address, app_id, teid_down, ctr_id_down, tc, tc, app_meter_idx)
 
     def gtpTunnelPeerOnosString(self, ue_name, down_id=None, tunn_peer_id=None,
                                 **kwargs):
         if down_id is not None:
             tunn_peer_id = down_id
+        if tunn_peer_id is None:
+            tunn_peer_id = "\d+"
         enb_address = self.__getEnbAddress(ue_name)
-        return "UpfGtpTunnelPeer(tunn_peer_id={} -> src={}, dst={} src_port={})".format(
+        return "UpfGtpTunnelPeer\(tunn_peer_id={} -> src={}, dst={} src_port={}\)".format(
             tunn_peer_id, self.s1u_address, enb_address, GPDU_PORT)
 
     @staticmethod
-    def __sanitizeUeData(ue):
+    def __sanitizeUeData(ue, smf=False):
         if "five_g" in ue and type(ue["five_g"]) != bool:
             ue["five_g"] = bool(strtobool(ue["five_g"]))
         if "tc" in ue and ue["tc"] == "":
             ue["tc"] = 0
+        if smf:
+            ue["up_id"] = None
+            ue["down_id"] = None
         return ue
 
     def insertAppFilter(self, **kwargs):
@@ -553,12 +636,46 @@ class UP4:
         if not UP4.__defaultApp(**kwargs):
             self.__programAppFilter(op="clear", **kwargs)
 
+    def smfAttachUe(self, ue_name, ue_address, prefix_len=31, seid=1, teid=None, sdf=[], **kwargs):
+        enb_addr = None
+        for enb_name, enb in self.enodebs.items():
+            if ue_name in enb["ues"]:
+                enb_addr = enb["enb_address"]
+                break
+        assert enb_addr, "Unknown eNodeB address"
+        ue_address = str(ip.ip_address(unicode(ue_address)) - 1)
+        base = seid
+
+        create = self.mock_smf.create(ue_pool="%s/%s" % (ue_address, prefix_len),
+                                      gnb_addr=enb_addr,
+                                      base_id=base,
+                                      sdf=sdf)
+        modify = self.mock_smf.modify(ue_pool="%s/%s" % (ue_address, prefix_len),
+                                      gnb_addr=enb_addr,
+                                      base_id=seid)
+        self.emulated_ues[ue_name]['seid'] = base
+        self.emulated_ues[ue_name]['teid'] = base
+        self.emulated_ues[ue_name]['sess_meter_idx'] = None
+        self.emulated_ues[ue_name]['app_meter_idx'] = None
+        return create and modify
+
+    def smfDetachUe(self, ue_name, ue_address, prefix_len=31, seid=1, teid=None, **kwargs):
+        enb_addr = None
+        for enb_name, enb in self.enodebs.items():
+            if ue_name in enb["ues"]:
+                enb_addr = enb["enb_address"]
+                break
+        assert enb_addr, "Unknown eNodeB address"
+        ue_address = str( ip.ip_address( unicode( ue_address ) ) - 1 )
+
+        return self.mock_smf.delete( base_id=seid )
+
     def attachUe(self, ue_name, ue_address,
                  teid=None, up_id=None, down_id=None,
                  teid_up=None, teid_down=None,
                  ctr_id_up=None, ctr_id_down=None,
                  tunn_peer_id=None,
-                 tc=None, five_g=False):
+                 tc=None, five_g=False, **kwargs):
         self.__programUeRules(ue_name,
                               ue_address,
                               teid, up_id, down_id,
@@ -572,7 +689,7 @@ class UP4:
                  teid_up=None, teid_down=None,
                  ctr_id_up=None, ctr_id_down=None,
                  tunn_peer_id=None,
-                 tc=None, five_g=False):
+                 tc=None, five_g=False, **kwargs):
         self.__programUeRules(ue_name,
                               ue_address,
                               teid, up_id, down_id,
@@ -607,6 +724,26 @@ class UP4:
             main.log.info("Application entry added successfully.")
         elif op == "clear":
             self.__clear_entries(entries)
+
+    def __pfcpSDFString(self, ip_prefix=None, ip_proto=None, port_range=None,
+                        action="allow", **kwargs):
+        if ip_proto is None or str(ip_proto) == "255":
+            protoString = "ip"
+        elif str(ip_proto) == "6":
+            descList.append("tcp")
+        elif str(ip_proto) == "17":
+            protoString = "udp"
+        else:
+            #  TODO: is there a python library for this? Can we just pass the number?
+            raise NotImplemented
+        if port_range is None:
+            port_range = "any"
+        if ip_prefix is None:
+            ip_prefix = "any"
+        return "--app-filter '%s:%s:%s:%s'" % ( protoString,
+                                                ip_prefix,
+                                                port_range.replace("..","-"),
+                                                action )
 
     def __programUeRules(self, ue_name, ue_address,
                          teid=None, up_id=None, down_id=None,

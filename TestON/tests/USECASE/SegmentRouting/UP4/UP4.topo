@@ -24,6 +24,7 @@
                 <onos_home>~/onos/</onos_home>  # defines where onos home is on the target cell machine. Defaults to entry in "home" if empty.
                 <nodes> 3 </nodes>  # number of nodes in the cluster
                 <up4_port>51001</up4_port> # Port where the UP4 P4Runtime server is listening
+                <mock_smf>False</mock_smf>
             </COMPONENTS>
         </ONOScell>
 

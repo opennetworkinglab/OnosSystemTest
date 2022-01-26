@@ -32,10 +32,16 @@ class UP4:
 
         main.step("Start scapy and p4rt client")
         # Use the first available ONOS instance CLI
-        onos_cli = main.Cluster.active(0).CLI
+        node = main.Cluster.active(0)
+        onos_cli = node.CLI
+        kubeconfig = node.k8s.kubeConfig
+        namespace = main.params['kubernetes']['namespace']
         up4 = UP4()
-        # Get the P4RT client connected to UP4 in the first available ONOS instance
-        up4.setup(main.Cluster.active(0).p4rtUp4)
+        nodeIP = node.Bench.kubectlCmd("get node %s --output=jsonpath='{.metadata.annotations.rke\.cattle\.io/external-ip}{\"\\n\"}'" % node.Bench.kubectlGetPodNode("pfcp-agent-0", kubeconfig, namespace))
+        # Connect P4RT and the mock smf if configured
+        up4.setup(node.p4rtUp4, mock_smf=node.mock_smf,
+                  pfcpAddress=nodeIP,
+                  pfcpPort=node.Bench.kubectlGetNodePort("pfcp-agent", kubeconfig, namespace))
 
         main.step("Program and Verify UPF entities via UP4")
         up4.attachUes()
@@ -696,4 +702,81 @@ class UP4:
 
         # Teardown
         run.cleanup(main)
+
+    def CASE11(self, main):
+        main.case("Fabric UPF traffic terminated in the fabric using pfcpsim to generate UE sessions")
+        """
+        Program UPF entities for UEs
+        Verify UPF entities
+        Generate traffic from UE to PDN
+        Verify traffic received from PDN
+        Generate traffic from PDN to UE
+        Verify traffic received from UE
+        Remove UPF entities for UEs
+        Verify removed UPF entities
+        """
+        try:
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
+            from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
+                Testcaselib as run
+        except ImportError as e:
+            main.log.error("Import not found. Exiting the test")
+            main.log.error(e)
+            main.cleanAndExit()
+        n_switches = int(main.params["TOPO"]["switchNum"])
+
+        run.initTest(main)
+        main.log.info(main.Cluster.numCtrls)
+        main.Cluster.setRunningNode(3)
+        run.installOnos(main, skipPackage=True, cliSleep=5)
+
+        main.step("Start scapy and p4rt client")
+        # Use the first available ONOS instance CLI
+        node = main.Cluster.active(0)
+        onos_cli = node.CLI
+        kubeconfig = node.k8s.kubeConfig
+        namespace = main.params['kubernetes']['namespace']
+
+        # Use pfcpctl instead of pr4untime to add ue sessions
+        smf = main.ONOScell.createMockSMFComponent( "pfcpsim", node.ip_address )
+        main.ONOScell.mock_smf = True
+        node.mock_smf = smf
+
+        up4 = UP4()
+        nodeIP = node.Bench.kubectlCmd("get node %s --output=jsonpath='{.metadata.annotations.rke\.cattle\.io/external-ip}{\"\\n\"}'" % node.Bench.kubectlGetPodNode("pfcp-agent-0", kubeconfig, namespace))
+
+        # Connect P4RT and the mock smf if configured
+        up4.setup(node.p4rtUp4, mock_smf=node.mock_smf,
+                  pfcpAddress=nodeIP,
+                  pfcpPort=node.Bench.kubectlGetNodePort("pfcp-agent", kubeconfig, namespace))
+        app_filters = up4.app_filters
+        app_filters.update( up4.DEFAULT_APP)
+        for name, app in app_filters.iteritems():
+            up4.app_filters = { name: app }
+            main.step("Program and Verify UPF entities via pfcp for app: %s" % name)
+            up4.attachUes()
+            up4.verifyUp4Flow(onos_cli)
+
+            # ------- Test Upstream traffic (enb->pdn)
+            for app_filter_name in up4.app_filters:
+                main.step("Test upstream traffic %s" % app_filter_name)
+                up4.testUpstreamTraffic(app_filter_name=app_filter_name)
+
+            # ------- Test Downstream traffic (pdn->enb)
+            for app_filter_name in up4.app_filters:
+                main.step("Test downstream traffic %s" % app_filter_name)
+                up4.testDownstreamTraffic(app_filter_name=app_filter_name)
+
+            main.step("Remove and Verify UPF entities via pfcp for app: %s" % name)
+            up4.detachUes()
+            up4.verifyNoUesFlow(onos_cli)
+
+            # hack to make sure next iteration uses different seids
+            for ue_name in up4.emulated_ues:
+                up4.emulated_ues[ue_name]["seid"] = None
+        main.step("Stop scapy and p4rt client")
+        up4.teardown()
+
+        run.cleanup(main)
+
 

@@ -125,7 +125,7 @@ class P4RuntimeCliDriver(CLI):
             self.preDisconnect = self.stopP4RtClient
         except pexpect.TIMEOUT:
             main.log.exception(self.name + ": Command timed out")
-            return main.FALSE
+            main.cleanAndExit()
         except pexpect.EOF:
             main.log.exception(self.name + ": connection closed.")
             main.cleanAndExit()

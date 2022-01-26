@@ -156,7 +156,7 @@ class CLI( Component ):
 
     def disconnect( self ):
         result = self.preDisconnect()
-        result = super( CLI, self ).disconnect( self )
+        result = super( CLI, self ).disconnect( )
         result = main.TRUE
 
     def Prompt( self ):
@@ -1220,6 +1220,49 @@ class CLI( Component ):
             main.log.exception( self.name + ": Uncaught exception!" )
             return None
 
+    def kubectlCmd( self, cmd, kubeconfig=None, namespace=None ):
+        """
+        Run an arbitrary command using kubectl
+        Arguments:
+        - cmd: Command string to send to kubectl
+        Optional Arguments:
+        - kubeconfig: The path to a kubeconfig file
+        - namespace: The namespace to search in
+        Returns a string of the node name or None
+        """
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( self.prompt )
+            main.log.debug( self.handle.before + self.handle.after )
+            cmdStr = "kubectl %s %s %s" % (
+                        "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                        "-n %s" % namespace if namespace else "",
+                        cmd )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            i = self.handle.expect( [ "not found", "error", "The connection to the server", self.prompt ] )
+            if i == 3:
+                output = self.handle.before
+                main.log.debug( self.name + ": " + output )
+                output = output.splitlines()
+                main.log.warn( output )
+                return output[1] if len( output ) == 3 else None
+            else:
+                main.log.error( self.name + ": Error executing command" )
+                main.log.debug( self.name + ": " + self.handle.before + str( self.handle.after ) )
+                return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return None
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return None
+
     def sternLogs( self, podString, dstPath, kubeconfig=None, namespace=None, since='1h', wait=60 ):
         """
         Use stern to get the logs from a pod
@@ -1425,7 +1468,7 @@ class CLI( Component ):
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-            return main.FALSE
+            return self.checkPortForward( podName, portsList, kubeconfig, namespace )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
@@ -1459,6 +1502,7 @@ class CLI( Component ):
                 main.log.warn( "%s: port-forwarding session to %s closed, attempting to reestablish." % ( self.name, podName ) )
                 return self.kubectlPortForward( podName, portsList, kubeconfig, namespace )
             elif i == 1:
+                main.log.debug( "%s: We seem to still be in port-forwarding session" % self.name )
                 # Still in a command, port-forward is probably still active
                 return main.TRUE
         except pexpect.EOF:
@@ -1664,6 +1708,58 @@ class CLI( Component ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             return main.FALSE
+
+    def kubectlGetServiceIP( self, serviceName, kubeconfig=None, namespace=None, timeout=240 ):
+        try:
+            cmdStr = "kubectl %s %s get service %s " \
+                     "--output=jsonpath='{.spec.clusterIP}{\"\\n\"}'" % (
+                "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                "-n %s" % namespace if namespace else "",
+                serviceName )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            self.handle.expect( self.prompt, timeout=timeout )
+            output = self.handle.before
+            clusterIP = output.splitlines()
+            main.log.debug( repr( clusterIP ) )
+            return clusterIP[-2]
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return None
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return None
+
+    def kubectlGetNodePort( self, serviceName, kubeconfig=None, namespace=None, timeout=240 ):
+        try:
+            cmdStr = "kubectl %s %s get service %s " \
+                     "--output=jsonpath='{.spec.ports[*].nodePort}{\"\\n\"}'" % (
+                "--kubeconfig %s" % kubeconfig if kubeconfig else "",
+                "-n %s" % namespace if namespace else "",
+                serviceName )
+            main.log.info( self.name + ": sending: " + repr( cmdStr ) )
+            self.handle.sendline( cmdStr )
+            self.handle.expect( self.prompt, timeout=timeout )
+            output = self.handle.before
+            clusterIP = output.splitlines()
+            main.log.debug( repr( clusterIP ) )
+            return clusterIP[-2]
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return None
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            return None
 
     def clearBuffer(self):
         i = 0

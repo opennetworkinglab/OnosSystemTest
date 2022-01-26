@@ -34,7 +34,8 @@ ENV PACKAGES \
     openssh-server \
     curl \
     supervisor \
-    git
+    git \
+    iproute2
 ADD requirements.txt /
 
 COPY --from=trex-builder /output /

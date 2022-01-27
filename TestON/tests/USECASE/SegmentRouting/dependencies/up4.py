@@ -389,7 +389,7 @@ class UP4:
     def upUeSessionOnosString(self, teid=None, teid_up=None, **kwargs):
         if teid is not None:
             teid_up = teid
-        return "UESessionUL{{Match(tun_dst_addr={}, TEID={}) -> (FWD)}}".format(
+        return "UpfSessionUL(Match(tun_dst_addr={}, teid={}) -> Action(FWD))".format(
             self.s1u_address, teid_up)
 
     def downUeSessionOnosString(self, ue_address, down_id=None,
@@ -397,32 +397,32 @@ class UP4:
                                 **kwargs):
         if down_id is not None:
             tunn_peer_id = down_id
-        return "UESessionDL{{Match(ue_addr={}) -> (FWD,  tun_peer={})}}".format(
+        return "UpfSessionDL(Match(ue_addr={}) -> Action(FWD,  tun_peer={}))".format(
             ue_address, tunn_peer_id)
 
-    def upTerminationOnosString(self, ue_address, up_id=None, ctr_id_up=None,
-                                tc=None, **kwargs):
+    def upTerminationOnosString(self, ue_address, up_id=None,  app_id=DEFAULT_APP_ID,
+                                ctr_id_up=None, tc=None, **kwargs):
         if up_id is not None:
             ctr_id_up = up_id
-        return "TerminationUL{{Match(ue_addr={})->(CTR_ID={}, TC={})}}".format(
-            ue_address, ctr_id_up, tc)
+        return "UpfTerminationUL(Match(ue_addr={}, app_id={}) -> Action(FWD, ctr_id={}, tc={}))".format(
+            ue_address, app_id, ctr_id_up, tc)
 
-    def downTerminationOnosString(self, ue_address, teid=None, down_id=None,
-                                  ctr_id_down=None, teid_down=None, tc=None,
-                                  **kwargs):
+    def downTerminationOnosString(self, ue_address, teid=None, app_id=DEFAULT_APP_ID,
+                                  down_id=None, ctr_id_down=None, teid_down=None,
+                                  tc=None, **kwargs):
         if down_id is not None:
             ctr_id_down = down_id
         if teid is not None:
             teid_down = teid
-        return "TerminationDL{{Match(ue_addr={})->(TEID={}, CTR_ID={}, QFI={}, TC={})}}".format(
-            ue_address, teid_down, ctr_id_down, tc, tc)
+        return "UpfTerminationDL(Match(ue_addr={}, app_id={}) -> Action(FWD, teid={}, ctr_id={}, qfi={}, tc={}))".format(
+            ue_address, app_id, teid_down, ctr_id_down, tc, tc)
 
     def gtpTunnelPeerOnosString(self, ue_name, down_id=None, tunn_peer_id=None,
                                 **kwargs):
         if down_id is not None:
             tunn_peer_id = down_id
         enb_address = self.__getEnbAddress(ue_name)
-        return "GTP-Tunnel-Peer({} -> src:{}, dst:{} srcPort:{})".format(
+        return "UpfGtpTunnelPeer(tunn_peer_id={} -> src={}, dst={} src_port={})".format(
             tunn_peer_id, self.s1u_address, enb_address, GPDU_PORT)
 
     @staticmethod

@@ -14,6 +14,7 @@
         <appName>onos-classic</appName>
         <namespace>tost</namespace>
     </kubernetes>
+    <use_stern>True</use_stern>
 
     <UP4>
         <s1u_address>10.32.11.126</s1u_address>

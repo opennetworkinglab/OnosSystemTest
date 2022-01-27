@@ -24,6 +24,7 @@ import json
 import urllib
 import re
 import pexpect
+from distutils.util import strtobool
 from core import utilities
 
 
@@ -775,8 +776,6 @@ class Testcaselib:
                     utilities.assert_equals( expect=expect, actual=pa,
                                              onpass="IP connectivity successfully tested",
                                              onfail="IP connectivity failed" )
-            if pa != expect:
-                Testcaselib.saveOnosDiagnostics( main )
             if skipOnFail and pa != expect:
                 Testcaselib.cleanup( main, copyKarafLog=False )
                 main.skipCase()
@@ -839,7 +838,6 @@ class Testcaselib:
                                                  onpass="IP connectivity successfully tested",
                                                  onfail="IP connectivity failed" )
                         if pa != expect:
-                            Testcaselib.saveOnosDiagnostics( main )
                             if skipOnFail:
                                 Testcaselib.cleanup( main, copyKarafLog=False )
                                 main.skipCase()
@@ -1241,7 +1239,11 @@ class Testcaselib:
             main.Network.disconnectFromNet()
 
         if copyKarafLog:
-            main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=True, includeCaseDesc=False )
+            useStern = strtobool( main.params.get( "use_stern", "False" ) )
+            main.utils.copyKarafLog( "CASE%d" % main.CurrentTestCaseNumber, before=False,
+                                     includeCaseDesc=False, useStern=useStern )
+
+        Testcaselib.saveOnosDiagsIfFailure( main )
 
         if not main.persistentSetup:
             for ctrl in main.Cluster.active():
@@ -1520,7 +1522,6 @@ class Testcaselib:
                                  onpass="Verify ONOS host IP succeded",
                                  onfail="Verify ONOS host IP failed" )
         if not ipResult and skipOnFail:
-            Testcaselib.saveOnosDiagnostics( main )
             Testcaselib.cleanup( main, copyKarafLog=False )
             main.skipCase()
 
@@ -1625,7 +1626,6 @@ class Testcaselib:
                                  onpass="Verify traffic to {}: Pass".format( dstIp ),
                                  onfail="Verify traffic to {}: Fail".format( dstIp ) )
         if skipOnFail and result != main.TRUE:
-            Testcaselib.saveOnosDiagnostics( main )
             Testcaselib.cleanup( main, copyKarafLog=False )
             main.skipCase()
 
@@ -1682,7 +1682,6 @@ class Testcaselib:
                                  onpass="Verify {} multicast traffic: Pass".format( routeName ),
                                  onfail="Verify {} multicast traffic: Fail".format( routeName ) )
         if skipOnFail and result != main.TRUE:
-            Testcaselib.saveOnosDiagnostics( main )
             Testcaselib.cleanup( main, copyKarafLog=False )
             main.skipCase()
 
@@ -1705,7 +1704,6 @@ class Testcaselib:
                                  onpass="{}: Pass".format( stepMsg ),
                                  onfail="{}: Fail".format( stepMsg ) )
         if not pingResult and skipOnFail:
-            Testcaselib.saveOnosDiagnostics( main )
             Testcaselib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
             main.skipCase()
 

@@ -106,7 +106,6 @@ def setupTest( main, test_idx, onosNodes=-1, ipv4=True, ipv6=True,
             # Run the test with physical devices
             lib.connectToPhysicalNetwork( main )
 
-        # lib.saveOnosDiagnostics( main )
         # wait some time for onos to install the rules!
         main.log.info( "Waiting %i seconds for ONOS to program the dataplane" % float( main.params[ "timers" ][ "dhcpSleep" ] ))
         time.sleep( float( main.params[ 'timers' ][ 'dhcpSleep' ] ) )

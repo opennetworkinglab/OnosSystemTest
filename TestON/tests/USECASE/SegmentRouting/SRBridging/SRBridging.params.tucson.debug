@@ -32,6 +32,7 @@
         <appName>onos-classic</appName>
         <namespace>tost</namespace>
     </kubernetes>
+    <use_stern>True</use_stern>
 
     <ENV>
         <cellName>productionCell</cellName>

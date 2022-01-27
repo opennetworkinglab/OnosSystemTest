@@ -1231,7 +1231,8 @@ class CLI( Component ):
         - namespace: The namespace to search in
         - since: Return logs newer than a relative duration like 5s, 2m, or 3h. Defaults to 1h
         - wait: How long to wait, in seconds, before killing the process. Stern does not currently
-                support a way to exit if cought up to present time. Defaults to 60 seconds
+                support a way to exit if caught up to present time. If negative, leaves the stern
+                process running, tailing the logs and returns main.TRUE. Defaults to 60 seconds
         Returns main.TRUE or
             main.FALSE on Error
         """
@@ -1246,10 +1247,17 @@ class CLI( Component ):
             main.log.info( self.name + ": sending: " + repr( cmdStr ) )
             self.handle.sendline( cmdStr )
             if int( wait ) >= 0:
-                time.sleep( int( wait ) )
-                self.handle.send( '\x03' )  # CTRL-C
-                i = self.handle.expect( [ "not found", "Error: ", "The connection to the server", self.prompt ] )
+                i = self.handle.expect( [ "not found",
+                                          "Error: ",
+                                          "The connection to the server",
+                                          self.prompt,
+                                          pexpect.TIMEOUT ], timeout=int( wait ) )
                 if i == 3:
+                    main.log.debug( self.name + ": " + self.handle.before )
+                    return main.TRUE
+                if i == 4:
+                    self.handle.send( '\x03' )  # CTRL-C
+                    self.handle.expect( self.prompt, timeout=5 )
                     main.log.debug( self.name + ": " + self.handle.before )
                     return main.TRUE
                 else:

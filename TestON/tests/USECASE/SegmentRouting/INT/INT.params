@@ -3,6 +3,7 @@
 <PARAMS>
     <testcases>1,2,3,4</testcases>
     <routerMac>00:00:0A:4C:1C:46</routerMac>
+    <use_stern>True</use_stern>
     <TREX>
         <flows>
             <RESET_QUEUE_REPORT_FILTER>

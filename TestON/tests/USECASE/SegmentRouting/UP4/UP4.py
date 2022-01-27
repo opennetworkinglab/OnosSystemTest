@@ -66,7 +66,6 @@ class UP4:
         main.step("Stop scapy and p4rt client")
         up4.teardown()
 
-        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)
 
     def CASE2(self, main):
@@ -266,7 +265,6 @@ class UP4:
         up4.teardown()
         bess_host.stopScapy()
 
-        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)
 
     def CASE3(self, main):
@@ -395,7 +393,6 @@ class UP4:
                 onos_0_flow_count, onos_1_flow_count, onos_2_flow_count)
         )
 
-        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)
 
     def CASE4(self, main):
@@ -558,7 +555,6 @@ class UP4:
 
         run.checkFlows(main, minFlowCount=initial_flow_count)
 
-        run.saveOnosDiagsIfFailure(main)
         run.cleanup(main)
 
     def CASE5(self, main):

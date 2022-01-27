@@ -3,6 +3,8 @@
 
 import os
 from tests.dependencies.Network import Network
+from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
+    Testcaselib as run
 
 class IntTest:
 
@@ -23,6 +25,7 @@ class IntTest:
                 hostHandle.startScapy()
 
     def cleanUp(self, main):
+        run.saveOnosDiagsIfFailure(main)
         for host in self.hosts:
             if self.scapy:
                 hostHandle = getattr(main, host)

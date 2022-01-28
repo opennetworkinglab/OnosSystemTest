@@ -50,8 +50,8 @@ class UP4:
                 <teid>200</teid>
                 <up_id>20</up_id>
                 <down_id>21</down_id>
-                <!-- QFI == TC, QFI = 0 means BEST EFFORT -->
-                <qfi>2</qfi>
+                <!-- TC 0 means BEST EFFORT -->
+                <tc>2</tc>
                 <five_g>False</five_g>
             </ue2>
         </ues>
@@ -401,21 +401,21 @@ class UP4:
             ue_address, tunn_peer_id)
 
     def upTerminationOnosString(self, ue_address, up_id=None, ctr_id_up=None,
-                                qfi=None, **kwargs):
+                                tc=None, **kwargs):
         if up_id is not None:
             ctr_id_up = up_id
         return "TerminationUL{{Match(ue_addr={})->(CTR_ID={}, TC={})}}".format(
-            ue_address, ctr_id_up, qfi)  # TC == QFI
+            ue_address, ctr_id_up, tc)
 
     def downTerminationOnosString(self, ue_address, teid=None, down_id=None,
-                                  ctr_id_down=None, teid_down=None, qfi=None,
+                                  ctr_id_down=None, teid_down=None, tc=None,
                                   **kwargs):
         if down_id is not None:
             ctr_id_down = down_id
         if teid is not None:
             teid_down = teid
         return "TerminationDL{{Match(ue_addr={})->(TEID={}, CTR_ID={}, QFI={}, TC={})}}".format(
-            ue_address, teid_down, ctr_id_down, qfi, qfi)  # TC == QFI
+            ue_address, teid_down, ctr_id_down, tc, tc)
 
     def gtpTunnelPeerOnosString(self, ue_name, down_id=None, tunn_peer_id=None,
                                 **kwargs):
@@ -429,8 +429,8 @@ class UP4:
     def __sanitizeUeData(ue):
         if "five_g" in ue and type(ue["five_g"]) != bool:
             ue["five_g"] = bool(strtobool(ue["five_g"]))
-        if "qfi" in ue and ue["qfi"] == "":
-            ue["qfi"] = 0
+        if "tc" in ue and ue["tc"] == "":
+            ue["tc"] = 0
         return ue
 
     def attachUe(self, ue_name, ue_address,
@@ -438,34 +438,34 @@ class UP4:
                  teid_up=None, teid_down=None,
                  ctr_id_up=None, ctr_id_down=None,
                  tunn_peer_id=None,
-                 qfi=None, five_g=False):
+                 tc=None, five_g=False):
         self.__programUp4Rules(ue_name,
                                ue_address,
                                teid, up_id, down_id,
                                teid_up, teid_down,
                                ctr_id_up, ctr_id_down,
                                tunn_peer_id,
-                               qfi, five_g, action="program")
+                               tc, five_g, action="program")
 
     def detachUe(self, ue_name, ue_address,
                  teid=None, up_id=None, down_id=None,
                  teid_up=None, teid_down=None,
                  ctr_id_up=None, ctr_id_down=None,
                  tunn_peer_id=None,
-                 qfi=None, five_g=False):
+                 tc=None, five_g=False):
         self.__programUp4Rules(ue_name,
                                ue_address,
                                teid, up_id, down_id,
                                teid_up, teid_down,
                                ctr_id_up, ctr_id_down,
                                tunn_peer_id,
-                               qfi, five_g, action="clear")
+                               tc, five_g, action="clear")
 
     def __programUp4Rules(self, ue_name, ue_address,
                           teid=None, up_id=None, down_id=None,
                           teid_up=None, teid_down=None, ctr_id_up=None,
                           ctr_id_down=None, tunn_peer_id=None,
-                          qfi=0, five_g=False, app_id=DEFAULT_APP_ID,
+                          tc=0, five_g=False, app_id=DEFAULT_APP_ID,
                           action="program"):
         if up_id is not None:
             ctr_id_up = up_id
@@ -528,8 +528,7 @@ class UP4:
         matchFields['app_id'] = str(app_id)
         # Action params
         actionParams['ctr_idx'] = str(ctr_id_up)
-        # 1-1 mapping between QFI and TC
-        actionParams['tc'] = str(qfi)
+        actionParams['tc'] = str(tc)
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):
             return False
@@ -547,8 +546,8 @@ class UP4:
         actionParams['teid'] = str(teid_down)
         actionParams['ctr_idx'] = str(ctr_id_down)
         # 1-1 mapping between QFI and TC
-        actionParams['tc'] = str(qfi)
-        actionParams['qfi'] = str(qfi)
+        actionParams['tc'] = str(tc)
+        actionParams['qfi'] = str(tc)
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):
             return False

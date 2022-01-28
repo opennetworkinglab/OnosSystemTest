@@ -27,69 +27,68 @@ class QOSNonMobileTest:
 
             original_flows_number = onos_cli.checkFlowCount()
 
-            main.step("Add and verify Slices and Traffic Classes")
-            added_slices = True
-            new_flows = 0  # one for every new TC in SLICE and 1 for every Flow Classifier
+            main.step("Verify slices and traffic Classes")
+
+            slices_onos = onos_rest.getSlices(debug=True)
+
+            # Sanity check for the API, at least the default slice should be there.
+            utilities.assert_equal(
+                expect=True,
+                actual={"SliceId": 0} in json.loads(slices_onos),
+                onpass="Default slice verified in slicing service",
+                onfail="Error in verifying default slice in slicing service"
+            )
+
             for slice_name in main.params["SLICING"]["slices"]:
                 slice = main.params["SLICING"]["slices"][slice_name]
                 if "slice_id" not in slice:
                     continue
                 slice_id = int(slice["slice_id"])
-                onos_rest.addSlice(slice_id=slice_id, debug=True)
-                slices_onos = onos_rest.getSlices(debug=True)
-                # Verify the slice has been added
-                added_slices = added_slices and \
-                               {"SliceId": slice_id} in json.loads(slices_onos)
+                utilities.assert_equal(
+                    expect=True,
+                    actual={"SliceId": slice_id} in json.loads(slices_onos),
+                    onpass="Verified presence of slice %s in slicing service" % slice_id,
+                    onfail="Slice %s not found in slicing service" % slice_id
+                )
 
-                tcs = []
-                for tc in slice.get("traffic_classes", "").split(","):
-                    onos_rest.addTrafficClassToSlice(slice_id=slice_id,
-                                                     traffic_class=tc,
-                                                     debug=True)
-                    tcs.append({"TrafficClass": tc})
-                    new_flows += 1
+                tcs = slice.get("traffic_classes", "").split(",")
+
                 tcs_onos = onos_rest.getTrafficClasses(slice_id=slice_id,
                                                        debug=True)
-                # Verify the TC has been added to the slice
-                added_slices = added_slices and \
-                               sorted(json.loads(tcs_onos)) == sorted(tcs)
-            utilities.assert_equal(
-                expect=True,
-                actual=added_slices,
-                onpass="Slices and Traffic Classes installed in slicing service",
-                onfail="Error in installing Slices and Traffic Classes in slicing service"
-            )
+                for tc in tcs:
+                    utilities.assert_equal(
+                        expect=True,
+                        actual={"TrafficClass": tc} in json.loads(tcs_onos),
+                        onpass="Verified presence of TC %s for slice %s in slicing service" % (tc, slice_id),
+                        onfail="TC %s not found for slice %s in slicing service" % (tc, slice_id)
+                    )
 
-            main.step("Add and verify slicing traffic classifier")
-            flows_in_slicing = True
-            for slicing_cfg_name in main.params["SLICING"]["traffic_classification"]:
+            main.step("Add and verify traffic classifier flows")
+            new_flows = 0
+            for flow_name in main.params["SLICING"]["traffic_classification"]:
                 new_flows += 1
-                slicing_config = main.params["SLICING"]["traffic_classification"][
-                    slicing_cfg_name]
+                flow_config = main.params["SLICING"]["traffic_classification"][
+                    flow_name]
 
-                traffic_selector = self.__cleanupTrafficSelector(slicing_config.get("traffic_selector", []))
+                traffic_selector = self.__cleanupTrafficSelector(flow_config.get("traffic_selector", []))
                 onos_rest.addSlicingClassifierFlow(
-                    slice_id=int(slicing_config.get("slice_id", "0")),
-                    traffic_class=slicing_config.get("traffic_class",
-                                                     "BEST_EFFORT"),
+                    slice_id=int(flow_config.get("slice_id")),
+                    traffic_class=flow_config.get("traffic_class"),
                     traffic_selector=traffic_selector,
                     debug=True
                 )
-                # Verify classifier flows
+
                 onos_flows = json.loads(onos_rest.getSlicingClassifierFlow(
-                    slice_id=int(slicing_config.get("slice_id", "0")),
-                    traffic_class=slicing_config.get("traffic_class",
-                                                     "BEST_EFFORT"),
+                    slice_id=int(flow_config.get("slice_id")),
+                    traffic_class=flow_config.get("traffic_class"),
                     debug=True
                 ))
-                flows_in_slicing = flows_in_slicing and traffic_selector in onos_flows
-
-            utilities.assert_equal(
-                expect=True,
-                actual=flows_in_slicing,
-                onpass="Traffic Classifier Flows installed in slicing service",
-                onfail="Error in installing Classifier Flows in slicing service"
-            )
+                utilities.assert_equal(
+                    expect=True,
+                    actual=traffic_selector in onos_flows,
+                    onpass="Classifier flow %s installed" % flow_name,
+                    onfail="Classifier flow %s not found after insert" % flow_name
+                )
 
             run.checkFlows(
                 main,
@@ -116,62 +115,29 @@ class QOSNonMobileTest:
                     main.step("{}: Assert 99.9 Percentile Latency".format(flow))
                     trex.assert99_9PercentileLatency(flow)
 
-            main.step("Remove and verify slicing traffic classifier")
-            no_flows_in_slicing = True
-            for slicing_cfg_name in main.params["SLICING"]["traffic_classification"]:
-                slicing_config = main.params["SLICING"]["traffic_classification"][
-                    slicing_cfg_name]
+            main.step("Remove and verify traffic classifier flows")
+            for flow_name in main.params["SLICING"]["traffic_classification"]:
+                flow_config = main.params["SLICING"]["traffic_classification"][
+                    flow_name]
 
-                traffic_selector = self.__cleanupTrafficSelector(slicing_config.get("traffic_selector", []))
+                traffic_selector = self.__cleanupTrafficSelector(flow_config.get("traffic_selector", []))
                 onos_rest.removeSlicingClassifierFlow(
-                    slice_id=int(slicing_config.get("slice_id", "0")),
-                    traffic_class=slicing_config.get("traffic_class",
-                                                     "BEST_EFFORT"),
+                    slice_id=int(flow_config.get("slice_id")),
+                    traffic_class=flow_config.get("traffic_class"),
                     traffic_selector=traffic_selector,
                     debug=True
                 )
-                flow = onos_rest.getSlicingClassifierFlow(
-                    slice_id=int(slicing_config.get("slice_id", "0")),
-                    traffic_class=slicing_config.get("traffic_class",
-                                                     "BEST_EFFORT"),
+                onos_flow = onos_rest.getSlicingClassifierFlow(
+                    slice_id=int(flow_config.get("slice_id")),
+                    traffic_class=flow_config.get("traffic_class"),
                     debug=True
                 )
-                no_flows_in_slicing = no_flows_in_slicing and flow == "[]"
-
-            utilities.assert_equal(
-                expect=True,
-                actual=no_flows_in_slicing,
-                onpass="Traffic Classifier Flows removed in slicing service",
-                onfail="Error in removing Classifier Flows in slicing service"
-            )
-
-            main.step("Remove and verify Slices and Traffic Classes")
-            removed_slices = []
-            for slice_name in main.params["SLICING"]["slices"]:
-                slice = main.params["SLICING"]["slices"][slice_name]
-                if "slice_id" not in slice:
-                    continue
-                slice_id = int(slice["slice_id"])
-                for tc in slice.get("traffic_classes", "").split(","):
-                    # BEST_EFFORT must be removed as last, or we can leave it,
-                    # it will be removed when removing the slice
-                    if tc != "BEST_EFFORT":
-                        onos_rest.removeTrafficClassToSlice(slice_id=slice_id,
-                                                            traffic_class=tc,
-                                                            debug=True)
-                # Do not try to remove the Default Slice!
-                if slice_id != 0:
-                    onos_rest.removeSlice(slice_id=slice_id, debug=True)
-                    removed_slices.append(slice_id)
-
-            slices_onos = json.loads(onos_rest.getSlices(debug=True))
-            utilities.assert_equal(
-                expect=True,
-                actual=not any([{"SliceId": slice_id} in slices_onos for slice_id in
-                                removed_slices]),
-                onpass="Slices and Traffic Classes removed from slicing service",
-                onfail="Error in removing Slices and Traffic Classes from slicing service"
-            )
+                utilities.assert_equal(
+                    expect="[]",
+                    actual=onos_flow,
+                    onpass="Classifier flow %s removed from slicing service" % flow_name,
+                    onfail="Unable to remove classifier flow %s from slicing service" % flow_name
+                )
 
             run.checkFlows(main, minFlowCount=original_flows_number)
         finally:

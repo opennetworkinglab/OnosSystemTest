@@ -32,7 +32,8 @@
                 <teid>100</teid>
                 <up_id>10</up_id>
                 <down_id>11</down_id>
-                <qfi>0</qfi> <!-- Best Effort -->
+                // TODO: we should pass also the slice_id
+                <tc>0</tc> <!-- Best Effort -->
                 <five_g>False</five_g>
             </ue1>
             <ue2>
@@ -40,7 +41,7 @@
                 <teid>200</teid>
                 <up_id>20</up_id>
                 <down_id>21</down_id>
-                <qfi>2</qfi> <!-- Real Time -->
+                <tc>2</tc> <!-- Real Time -->
                 <five_g>False</five_g>
             </ue2>
         </ues>

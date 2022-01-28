@@ -39,7 +39,7 @@
                 <teid>100</teid>
                 <up_id>10</up_id>
                 <down_id>11</down_id>
-                <qfi>0</qfi>
+                <tc>0</tc>
                 <five_g>False</five_g>
             </ue1>
             <ue2>
@@ -47,7 +47,7 @@
                 <teid>200</teid>
                 <up_id>20</up_id>
                 <down_id>21</down_id>
-                <qfi>0</qfi>
+                <tc>0</tc>
                 <five_g>False</five_g>
             </ue2>
             <ue3>
@@ -55,7 +55,7 @@
                 <teid>201</teid>
                 <up_id>30</up_id>
                 <down_id>31</down_id>
-                <qfi>0</qfi>
+                <tc>0</tc>
                 <five_g>False</five_g>
             </ue3>
         </ues>

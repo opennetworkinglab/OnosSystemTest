@@ -2425,12 +2425,6 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
-    def addSlice( self, slice_id, ip="DEFAULT", port="DEFAULT", debug=False ):
-        self.__slices( slice_id, ip, port, debug, method="POST" )
-
-    def removeSlice( self, slice_id, ip="DEFAULT", port="DEFAULT", debug=False ):
-        self.__slices( slice_id, ip, port, debug, method="DELETE" )
-
     def getTrafficClasses( self, slice_id, ip="DEFAULT", port="DEFAULT", debug=False ):
         try:
             if ip == "DEFAULT":
@@ -2460,14 +2454,6 @@ class OnosRestDriver( Controller ):
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
-
-    def addTrafficClassToSlice( self, slice_id, traffic_class,
-                                ip="DEFAULT", port="DEFAULT", debug=False ):
-        self.__trafficClass( slice_id, traffic_class, ip, port, debug, method="POST" )
-
-    def removeTrafficClassToSlice( self, slice_id, traffic_class,
-                                   ip="DEFAULT", port="DEFAULT", debug=False ):
-        self.__trafficClass( slice_id, traffic_class, ip, port, debug, method="DELETE" )
 
     def addSlicingClassifierFlow( self, slice_id, traffic_class, traffic_selector,
                                   ip="DEFAULT", port="DEFAULT", debug=False ):

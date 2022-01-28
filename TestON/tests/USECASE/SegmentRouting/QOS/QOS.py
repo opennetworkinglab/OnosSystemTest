@@ -6,7 +6,7 @@ class QOS:
     def CASE1(self, main):
         main.case("Leaf Edge with Mobile Traffic Classification")
         # Leaf-Edge-Mobile
-        # Attach 2 UEs with different QFI
+        # Attach 2 UEs with different TC
         # Generate traffic with Trex for the two UEs
         # --> no packet drop on RT flow, reasonable latency on RT flow
         try:
@@ -26,7 +26,7 @@ class QOS:
     def CASE2(self, main):
         main.case("Leaf Pair Link with Mobile Traffic Classification")
         # Leaf Infra Mobile Traffic
-        # Attach 2 UEs with different QFI
+        # Attach 2 UEs with different TC
         # Generate traffic with TRex from UEs towards PDN, generating congestion
         # on the 40Gbps pair link
         # --> no packet drop on RT flow, reasonable latency on RT flow

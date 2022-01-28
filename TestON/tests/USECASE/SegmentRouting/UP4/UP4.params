@@ -78,7 +78,7 @@
         <bess_host>Compute2</bess_host>
     </BESS_UPF>
 
-    <UP4_delete_pod>onos-tost-onos-classic-0</UP4_delete_pod>
+    <UP4_delete_pod>sdfabric-onos-classic-0</UP4_delete_pod>
 
     <TOPO>
         <switchNum>2</switchNum>

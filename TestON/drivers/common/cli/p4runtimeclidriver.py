@@ -383,7 +383,7 @@ class P4RuntimeCliDriver(CLI):
                 # clear buffer
                 if debug:
                     main.log.warn("%s expect loop iteration" % i)
-                self.handle.expect(self.p4rtShPrompt, timeout=5)
+                self.handle.expect(self.p4rtShPrompt, timeout=2)
                 response += self.cleanOutput(self.handle.before, debug)
             except pexpect.TIMEOUT:
                 return response

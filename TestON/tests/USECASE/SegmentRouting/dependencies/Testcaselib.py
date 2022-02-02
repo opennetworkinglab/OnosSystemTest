@@ -793,6 +793,41 @@ class Testcaselib:
                                         cliPort=main.Cluster.active(0).CLI.karafPort )
 
     @staticmethod
+    def getFabricIntfIp( main, hostIp, hostsJson=None, netcfgJson=None ):
+        '''
+        Get the fabric interface IP of a given host
+        '''
+        # NOTE: We pass in json instead of loading them here since finding all host's gateway ips
+        #       would require 2 rest calls per host
+        if not hostsJson:
+            hostsJson = json.loads( main.Cluster.active( 0 ).hosts() )
+        if not netcfgJson:
+            netcfgJson = json.loads( main.Cluster.active( 0 ).getNetCfg( subjectClass='ports') )
+        ips = []
+        fabricIntfIp = None
+        for obj in hostsJson:
+            if hostIp in obj['ipAddresses']:
+                for location in obj['locations']:
+                    main.log.debug( location )
+                    did = location['elementId'].encode( 'utf-8' )
+                    port = location['port'].encode( 'utf-8' )
+                    m = re.search( '\((\d+)\)', port )
+                    if m:
+                        port = m.group(1)
+                    portId = "%s/%s" % ( did, port )
+                    # Lookup ip assigned to this network port
+                    ips.extend( [ x.encode( 'utf-8' ) for x in netcfgJson[ portId ][ 'interfaces' ][0][ 'ips' ] ] )
+        ips = set( ips )
+        ipRE = r'(\d+\.\d+\.\d+\.\d+)/\d+|([\w,:]*)/\d+'
+        for ip in ips:
+            ipMatch = re.search( ipRE, ip )
+            if ipMatch:
+                fabricIntfIp = ipMatch.group(1)
+                main.log.debug( "Found %s as gateway ip for %s" % ( fabricIntfIp, hostIp ) )
+                # FIXME: How to chose the correct one if there are multiple? look at subnets
+        return fabricIntfIp
+
+    @staticmethod
     def pingAllFabricIntfs( main, srcList, tag="", dumpFlows=True, skipOnFail=False ):
         '''
         Verify connectivity between hosts and their fabric interfaces
@@ -801,8 +836,7 @@ class Testcaselib:
         if tag == "":
             tag = 'CASE%d' % main.CurrentTestCaseNumber
         expect = main.TRUE
-        import json
-        import re
+
         hostsJson = json.loads( main.Cluster.active( 0 ).hosts() )
         netcfgJson = json.loads( main.Cluster.active( 0 ).getNetCfg( subjectClass='ports') )
         for hostname in srcList:
@@ -813,34 +847,15 @@ class Testcaselib:
                 #Get host location, check netcfg for that port's ip
                 hostIp = hostComponent.getIPAddress( iface=srcIface )
                 main.log.warn( "Looking for %s" % hostIp )
-                ips = []
-                for obj in hostsJson:
-                    if hostIp in obj['ipAddresses']:
-                        for location in obj['locations']:
-                            main.log.debug( location )
-                            did = location['elementId'].encode( 'utf-8' )
-                            port = location['port'].encode( 'utf-8' )
-                            m = re.search( '\((\d+)\)', port )
-                            if m:
-                                port = m.group(1)
-                            portId = "%s/%s" % ( did, port )
-                            # Lookup ip assigned to this network port
-                            ips.extend( [ x.encode( 'utf-8' ) for x in netcfgJson[ portId ][ 'interfaces' ][0][ 'ips' ] ] )
-                ips = set( ips )
-                ipRE = r'(\d+\.\d+\.\d+\.\d+)/\d+|([\w,:]*)/\d+'
-                for ip in ips:
-                    ipMatch = re.search( ipRE, ip )
-                    if ipMatch:
-                        fabricIntfIp = ipMatch.group(1)
-                        main.log.debug( "Found %s as gateway ip for %s" % ( fabricIntfIp, hostname ) )
-                        pa = hostComponent.ping( fabricIntfIp, interface=srcIface )
-                        utilities.assert_equals( expect=expect, actual=pa,
-                                                 onpass="IP connectivity successfully tested",
-                                                 onfail="IP connectivity failed" )
-                        if pa != expect:
-                            if skipOnFail:
-                                Testcaselib.cleanup( main, copyKarafLog=False )
-                                main.skipCase()
+                fabricIntfIp = Testcaselib.getFabricIntfIp( main, hostIp, hostsJson, netcfgJson )
+                pa = hostComponent.ping( fabricIntfIp, interface=srcIface )
+                utilities.assert_equals( expect=expect, actual=pa,
+                                         onpass="IP connectivity successfully tested",
+                                         onfail="IP connectivity failed" )
+                if pa != expect:
+                    if skipOnFail:
+                        Testcaselib.cleanup( main, copyKarafLog=False )
+                        main.skipCase()
             except ValueError:
                 main.log.exception( "Could not get gateway ip for %s" % hostname )
 

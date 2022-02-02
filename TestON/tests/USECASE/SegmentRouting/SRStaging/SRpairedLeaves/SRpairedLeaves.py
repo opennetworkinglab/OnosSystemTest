@@ -582,6 +582,7 @@ class SRpairedLeaves:
         """
         try:
             from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import SRStagingTest
+            from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as run
             import json
             import re
         except ImportError:
@@ -615,30 +616,9 @@ class SRpairedLeaves:
         # Add route in host to outside host via gateway ip
         srcIface = srcComponent.interfaces[0].get( 'name' )
         srcIp = srcComponent.getIPAddress( iface=srcIface )
-        hostsJson = json.loads( main.Cluster.active( 0 ).hosts() )
-        netcfgJson = json.loads( main.Cluster.active( 0 ).getNetCfg( subjectClass='ports') )
-        ips = []
-        fabricIntfIp = None
-        for obj in hostsJson:
-            if srcIp in obj['ipAddresses']:
-                for location in obj['locations']:
-                    main.log.debug( location )
-                    did = location['elementId'].encode( 'utf-8' )
-                    port = location['port'].encode( 'utf-8' )
-                    m = re.search( '\((\d+)\)', port )
-                    if m:
-                        port = m.group(1)
-                    portId = "%s/%s" % ( did, port )
-                    # Lookup ip assigned to this network port
-                    ips.extend( [ x.encode( 'utf-8' ) for x in netcfgJson[ portId ][ 'interfaces' ][0][ 'ips' ] ] )
-        ips = set( ips )
-        ipRE = r'(\d+\.\d+\.\d+\.\d+)/\d+|([\w,:]*)/\d+'
-        for ip in ips:
-            ipMatch = re.search( ipRE, ip )
-            if ipMatch:
-                fabricIntfIp = ipMatch.group(1)
-                main.log.debug( "Found %s as gateway ip for %s" % ( fabricIntfIp, srcComponent.shortName ) )
-                # FIXME: How to chose the correct one if there are multiple? look at subnets
+
+        fabricIntfIp = run.getFabricIntfIp( main, srcIp )
+
         addResult = srcComponent.addRouteToHost( route, fabricIntfIp, srcIface, sudoRequired=True, purgeOnDisconnect=True )
         failMsg = "Failed to add static route to host"
         utilities.assert_equals( expect=main.TRUE, actual=addResult,

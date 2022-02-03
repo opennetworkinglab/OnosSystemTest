@@ -568,7 +568,8 @@ class TrexClientDriver(Controller):
             # Assume whole the bucket experienced the range_end latency.
             all_latencies += [range_end] * val
         q = [50, 75, 90, 99, 99.9, 99.99, 99.999]
-        percentiles = np.percentile(all_latencies, q)
+        # Prevent exception if we have no latency histogram
+        percentiles = np.percentile(all_latencies, q) if len(all_latencies) > 0 else [sys.maxint] * len(q)
 
         ret = LatencyStats(
             pg_id=pg_id,

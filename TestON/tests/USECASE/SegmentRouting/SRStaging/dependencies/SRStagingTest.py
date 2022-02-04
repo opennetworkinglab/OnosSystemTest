@@ -1128,6 +1128,8 @@ class SRStagingTest:
             utilities.assert_equals( expect=main.TRUE, actual=deleted,
                                      onpass="Successfully deleted switch pod",
                                      onfail="Failed to delete switch pod" )
+            # Try to fix ssh connection issue on reconnect
+            controller.k8s.exitFromProcess()
             return k8sNode
         except SkipCase:
             raise

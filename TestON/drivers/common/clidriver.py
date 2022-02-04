@@ -1393,12 +1393,15 @@ class CLI( Component ):
                         "-n %s" % namespace if namespace else "",
                         podName,
                         portsList )
+
+            self.clearBuffer()
             main.log.info( self.name + ": sending: " + repr( cmdStr ) )
             self.handle.sendline( cmdStr )
             self.handle.expect( "pod/%s" % podName )
             output = self.handle.before + self.handle.after
             i = self.handle.expect( [ "not found", "error", "closed/timedout",
-                                      self.prompt, "The connection to the server", "Forwarding from" ] )
+                                      self.prompt, "The connection to the server",
+                                      "Forwarding from", pexpect.TIMEOUT ] )
             output += self.handle.before + str( self.handle.after )
             # NOTE: This won't clear the buffer entirely, and each time the port forward
             #       is used, another line will be added to the buffer. We need to make
@@ -1409,6 +1412,8 @@ class CLI( Component ):
                 self.preDisconnect = self.exitFromProcess
                 self.portForwardList = portsList
                 return main.TRUE
+            elif i == 6:
+                return self.checkPortForward( podName, portsList, kubeconfig, namespace )
             else:
                 main.log.error( self.name + ": Error executing command" )
                 main.log.debug( self.name + ": " + output )
@@ -1442,6 +1447,7 @@ class CLI( Component ):
 
         """
         try:
+            main.log.debug( "%s: Checking port-forward session to %s" % ( self.name, podName ) )
             if not portsList:
                 portsList = self.portForwardList
             self.handle.sendline( "" )
@@ -1450,6 +1456,7 @@ class CLI( Component ):
             main.log.debug( "%s: %s" % ( self.name, output ) )
             if i == 0:
                 # We are not currently in a port-forwarding session, try to re-establish.
+                main.log.warn( "%s: port-forwarding session to %s closed, attempting to reestablish." % ( self.name, podName ) )
                 return self.kubectlPortForward( podName, portsList, kubeconfig, namespace )
             elif i == 1:
                 # Still in a command, port-forward is probably still active

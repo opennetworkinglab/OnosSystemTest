@@ -41,20 +41,28 @@
                 <slice_id>1</slice_id>
                 <traffic_class>BEST_EFFORT</traffic_class>
                 <traffic_selector>
-                    <criteria1>
+                    <ipProto>
+                        <type>IP_PROTO</type>
+                        <protocol>17</protocol>
+                    </ipProto>
+                    <udpDst>
                         <type>UDP_DST</type>
                         <udpPort>100</udpPort>
-                    </criteria1>
+                    </udpDst>
                 </traffic_selector>
             </slice_1_be>
             <slice_1_rt>
                 <slice_id>1</slice_id>
                 <traffic_class>REAL_TIME</traffic_class>
                 <traffic_selector>
-                    <criteria1>
+                    <ipProto>
+                        <type>IP_PROTO</type>
+                        <protocol>17</protocol>
+                    </ipProto>
+                    <udpDst>
                         <type>UDP_DST</type>
                         <udpPort>200</udpPort>
-                    </criteria1>
+                    </udpDst>
                 </traffic_selector>
             </slice_1_rt>
         </traffic_classification>

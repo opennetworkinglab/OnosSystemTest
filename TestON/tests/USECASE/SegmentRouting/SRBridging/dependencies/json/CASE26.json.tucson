@@ -1,6 +1,6 @@
 {
 "ports":{
-        "device:leaf1/56":{
+        "device:leaf1/9":{
             "interfaces":[
                 {
                     "ips":[
@@ -12,7 +12,7 @@
                 }
             ]
         },
-        "device:leaf2/56":{
+        "device:leaf2/9":{
             "interfaces":[
                 {
                     "ips":[
@@ -24,7 +24,7 @@
                 }
             ]
         },
-        "device:leaf1/40": {
+        "device:leaf1/11": {
             "interfaces": [
               {
                 "ips": [
@@ -36,7 +36,7 @@
               }
             ]
           },
-          "device:leaf2/40": {
+          "device:leaf2/11": {
             "interfaces": [
               {
                 "ips": [

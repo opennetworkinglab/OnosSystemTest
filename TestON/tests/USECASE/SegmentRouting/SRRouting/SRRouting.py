@@ -1,4 +1,3 @@
-
 class SRRouting:
 
     def __init__( self ):
@@ -1662,3 +1661,165 @@ class SRRouting:
         # Bring down/up internal router-2
         verifyRouterFailure( main, "bgp2", [ "rh5v4" ], [ "rh11v6", "rh5v6" ] )
         lib.cleanup( main, copyKarafLog=False, removeHostComponent=True )
+
+    def CASE701( self, main ):
+        """
+        Add and remove a blackhole route
+        - Set up an imaginary subnet reachable via a next hop host using a static route
+        - Ping from any host to an imaginary IP in this subnet
+        - Setup a subset of the imaginary subnet that we want to blackhole (add a blackhole route)
+        - Try to Ping from the host again, but it should fail
+        - Revert the subset (remove the blackhole IP)
+        - Try to Ping again, this time it should work
+        """
+        from tests.USECASE.SegmentRouting.SRRouting.dependencies.SRRoutingTest import *
+        from tests.USECASE.SegmentRouting.dependencies.Testcaselib import Testcaselib as lib
+        main.case( "Add and remove a blackhole-route" )
+        setupTest( main, test_idx=701, onosNodes=3, ipv6=False, external=False )
+        verify( main, ipv6=False, external=False, disconnected=False )
+
+        dstIp = "50.0.1.1"
+        baseIP = "50.0.0.0"
+        blackholeIp = "50.0.0.1"
+        blackholeIpRoute = "%s/24" % blackholeIp
+        route = "%s/16" % baseIP
+        blackholeRoute = "%s/24" % baseIP
+        srcComponent = getattr( main, 'Compute2' )
+        nextHopComponent = getattr( main, 'ManagmentServer' ) # add dstIP to the params file
+        nextHopIface = nextHopComponent.interfaces[0].get( 'name' )
+        nextHopIp = nextHopComponent.getIPAddress( iface=nextHopIface )
+        srcComponentIface = srcComponent.interfaces[0].get( 'name' )
+        srcComponentIP = srcComponent.getIPAddress( iface=srcComponentIface )
+        fabricInterfaceIP = lib.getFabricIntfIp( main, srcComponentIP )
+        main.step( "Adding a static route in onos")
+        """
+        Try this on the host:
+        ip route add 50.0.0.0/16 via <fabric interface ip>
+        and this in ONOS:
+        route-add 50.0.0.0/16 via <nextHopComponent fabric ip>
+        """
+        routeResult=main.Cluster.active( 0 ).routeAdd( route, nextHopIp )
+        main.log.debug(routeResult)
+        utilities.assert_not_equals( expect=None, actual=routeResult,
+                                     onpass="Route added in onos",
+                                     onfail="Failed to add route in onos" )
+        main.log.debug( main.Cluster.active( 0 ).routes() )
+        nextHopComponent.startScapy( ifaceName=nextHopIface )
+
+        main.step( "Adding a static route in the host" )
+        routeResult=srcComponent.addRouteToHost( route, fabricInterfaceIP )
+        utilities.assert_equals( expect=main.TRUE, actual=routeResult,
+                                     onpass="Route added in the host",
+                                     onfail="Failed to add route in the host" )
+        main.log.debug( main.Compute2.getRoutes() )
+
+        main.step("Capturing ping to dstIP after adding the static routes")
+        nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + dstIp )
+        srcComponent.ping( dstIp )
+        packetFound=nextHopComponent.checkFilter()
+        if packetFound is main.FALSE:
+            main.log.debug( nextHopComponent.killFilter() )
+        utilities.assert_equals( expect=main.TRUE, actual=packetFound,
+                                    onpass="Packet has reached dstIP",
+                                    onfail="Failed to reach dstIP" )
+        main.log.debug( nextHopComponent.readPackets() )
+
+        main.step("Capturing ping to blackholeIP after adding the static routes")
+        nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + blackholeIp )
+        srcComponent.ping( blackholeIp )
+        packetFound=nextHopComponent.checkFilter()
+        if packetFound is main.FALSE:
+            main.log.debug( nextHopComponent.killFilter() )
+        utilities.assert_equals( expect=main.TRUE, actual=packetFound,
+                                    onpass="Packet has reached blackholeIP",
+                                    onfail="Failed to reach blackholeIP" )
+        main.log.debug( nextHopComponent.readPackets() )
+
+        main.step( "Adding a blackhole route")
+        blackholeRouteResult=main.Cluster.active( 0 ).blackholeStaticRoute( subnet=blackholeRoute, addBlackhole=True )
+        utilities.assert_equals( expect=main.TRUE, actual=blackholeRouteResult,
+                                     onpass="Blackhole route added",
+                                     onfail="Failed to add blackhole route" )
+
+        main.step("Capturing ping to blackholeIP after adding the blackhole route")
+        nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + blackholeIp )
+        srcComponent.ping( blackholeIp )
+        blackholePacket=nextHopComponent.checkFilter()
+        if blackholePacket is main.FALSE:
+            main.log.debug( nextHopComponent.killFilter() )
+        utilities.assert_equals( expect=main.FALSE, actual=blackholePacket,
+                                     onpass="Packet has not reached blackholeIP",
+                                     onfail="Packet has reached blackholeIP" )
+
+        main.step("Capturing ping to dstIP after adding the blackhole route")
+        nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + dstIp )
+        srcComponent.ping( dstIp )
+        packetFound=nextHopComponent.checkFilter()
+        if packetFound is main.FALSE:
+            main.log.debug( nextHopComponent.killFilter() )
+        utilities.assert_equals( expect=main.TRUE, actual=packetFound,
+                                     onpass="Packet has reached dstIP",
+                                     onfail="Failed to reach dstIP" )
+        main.log.debug( nextHopComponent.readPackets() )
+
+        main.step( "Removing the blackhole route" )
+        blackholeList = main.Cluster.active( 0 ).blackholeStaticRoute( subnet=blackholeRoute, addBlackhole=False)
+        utilities.assert_equals( expect=main.TRUE, actual=blackholeList,
+                                     onpass="Blackhole route has been removed",
+                                     onfail="Failed to remove the blackhole route" )
+
+        main.step("Capturing ping to dstIP after removing the blackhole route")
+        nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + dstIp )
+        srcComponent.ping( dstIp )
+        packetFound=nextHopComponent.checkFilter()
+        if packetFound is main.FALSE:
+            main.log.debug( nextHopComponent.killFilter() )
+        utilities.assert_equals( expect=main.TRUE, actual=packetFound,
+                                     onpass="Packet has reached dstIP",
+                                     onfail="Failed to reach dstIP" )
+
+        main.step("Capturing ping to blackholeIP after removing the blackhole route")
+        nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + blackholeIp )
+        srcComponent.ping( blackholeIp )
+        packetFound=nextHopComponent.checkFilter()
+        if packetFound is main.FALSE:
+            main.log.debug( nextHopComponent.killFilter() )
+        utilities.assert_equals( expect=main.TRUE, actual=packetFound,
+                                     onpass="Packet has reached blackholeIP",
+                                     onfail="Packet failed to reach blackholeIP" )
+        main.log.debug( nextHopComponent.checkFilter() )
+
+        main.log.debug( nextHopComponent.readPackets() )
+        main.step("Checking if the route is present in the host")
+        routeRemoved = srcComponent.deleteRoute( route, fabricInterfaceIP )
+        utilities.assert_equals( expect=main.TRUE, actual=routeRemoved,
+                                     onpass="Route is not present in the host",
+                                     onfail="Route is still present in the host" )
+
+        main.step( "Checking if the route is removed from onos" )
+        routeRemoved = main.Cluster.active( 0 ).routeRemove( route, nextHopIp )
+        utilities.assert_not_equals( expect=None, actual=routeRemoved,
+                                     onpass="Route removed from onos",
+                                     onfail="Failed to remove route from onos" )
+
+        main.step("Capturing ping to dstIP after removing the static route")
+        nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + dstIp )
+        srcComponent.ping( dstIp )
+        packetFound=nextHopComponent.checkFilter()
+        if packetFound is main.FALSE:
+            main.log.debug( nextHopComponent.killFilter() )
+        utilities.assert_equals( expect=main.FALSE, actual=packetFound,
+                                    onpass="Packet has failed to reach dstIP",
+                                    onfail="Packet has reached dstIP" )
+        main.log.debug( nextHopComponent.readPackets() )
+
+        main.step("Capturing ping to blackholeIP after removing the static route")
+        nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + blackholeIp )
+        srcComponent.ping( blackholeIp )
+        packetFound=nextHopComponent.checkFilter()
+        if packetFound is main.FALSE:
+            main.log.debug( nextHopComponent.killFilter() )
+        utilities.assert_equals( expect=main.FALSE, actual=packetFound,
+                                     onpass="Packet has failed to reach blackholeIP",
+                                     onfail="Packet reached blackholeIP" )
+        main.log.debug( nextHopComponent.checkFilter() )

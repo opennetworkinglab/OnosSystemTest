@@ -525,7 +525,7 @@ class Testcaselib:
         """
         Adds an ONOS static route with the use route-add command.
         """
-        routeResult = main.Cluster.active( 0 ).addStaticRoute(subnet, intf)
+        routeResult = main.Cluster.active( 0 ).routeAdd(subnet, intf)
 
     @staticmethod
     def checkGroupsForBuckets( main, deviceId, subnetDict, routingTable=30 ):
@@ -762,7 +762,7 @@ class Testcaselib:
                                     expectedResult = ping["vlans"].get(str(result["vlan"]))
                         if expectedResult is None:
                             expectedRresult = expect
-                        if expectedResult.lower() == "true":
+                        elif expectedResult.lower() == "true":
                             expectedResult = main.TRUE
                         else:
                             expectedResult = main.FALSE

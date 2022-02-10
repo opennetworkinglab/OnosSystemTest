@@ -92,15 +92,15 @@
     </TOPO>
     <CASE101Links>
         <Stage1>
-            <leaf1>260</leaf1>
+            <leaf1>1</leaf1>
         </Stage1>
         <Stage2>
-            <leaf1>40,56,260,264</leaf1>
+            <leaf1>11,9,1,32</leaf1>
         </Stage2>
         <Stage3>
             <expect>False</expect>
-            <leaf2>40,56,136,144</leaf2>
-            <leaf1>40,56,260,264</leaf1>
+            <leaf2>11,9,32,29</leaf2>
+            <leaf1>11,9,1,32</leaf1>
         </Stage3>
     </CASE101Links>
     <CASE104Links>
@@ -108,12 +108,12 @@
             <leaf1>260</leaf1>
         </Stage1>
         <Stage2>
-            <leaf1>40,56,260,264</leaf1>
+            <leaf1>11,9,1,32</leaf1>
         </Stage2>
         <Stage3>
             <expect>False</expect>
-            <leaf2>40,56,136,144</leaf2>
-            <leaf1>40,56,260,264</leaf1>
+            <leaf2>11,9,32,29</leaf2>
+            <leaf1>11,9,1,32</leaf1>
         </Stage3>
     </CASE104Links>
     <ALARM>

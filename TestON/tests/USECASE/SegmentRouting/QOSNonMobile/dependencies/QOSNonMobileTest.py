@@ -70,7 +70,7 @@ class QOSNonMobileTest:
                 flow_config = main.params["SLICING"]["traffic_classification"][
                     flow_name]
 
-                traffic_selector = self.__cleanupTrafficSelector(flow_config.get("traffic_selector", []))
+                traffic_selector = self.__normalizeTrafficSelector(flow_config.get("traffic_selector"))
                 onos_rest.addSlicingClassifierFlow(
                     slice_id=int(flow_config.get("slice_id")),
                     traffic_class=flow_config.get("traffic_class"),
@@ -78,14 +78,14 @@ class QOSNonMobileTest:
                     debug=True
                 )
 
-                onos_flows = json.loads(onos_rest.getSlicingClassifierFlow(
+                actual_selectors = json.loads(onos_rest.getSlicingClassifierFlows(
                     slice_id=int(flow_config.get("slice_id")),
                     traffic_class=flow_config.get("traffic_class"),
                     debug=True
                 ))
                 utilities.assert_equal(
                     expect=True,
-                    actual=traffic_selector in onos_flows,
+                    actual=self.__containsTrafficSelector(actual_selectors, traffic_selector),
                     onpass="Classifier flow %s installed" % flow_name,
                     onfail="Classifier flow %s not found after insert" % flow_name
                 )
@@ -120,21 +120,21 @@ class QOSNonMobileTest:
                 flow_config = main.params["SLICING"]["traffic_classification"][
                     flow_name]
 
-                traffic_selector = self.__cleanupTrafficSelector(flow_config.get("traffic_selector", []))
+                traffic_selector = self.__normalizeTrafficSelector(flow_config.get("traffic_selector"))
                 onos_rest.removeSlicingClassifierFlow(
                     slice_id=int(flow_config.get("slice_id")),
                     traffic_class=flow_config.get("traffic_class"),
                     traffic_selector=traffic_selector,
                     debug=True
                 )
-                onos_flow = onos_rest.getSlicingClassifierFlow(
+                actual_selectors = json.loads(onos_rest.getSlicingClassifierFlows(
                     slice_id=int(flow_config.get("slice_id")),
                     traffic_class=flow_config.get("traffic_class"),
                     debug=True
-                )
+                ))
                 utilities.assert_equal(
-                    expect="[]",
-                    actual=onos_flow,
+                    expect=False,
+                    actual=self.__containsTrafficSelector(actual_selectors, traffic_selector),
                     onpass="Classifier flow %s removed from slicing service" % flow_name,
                     onfail="Unable to remove classifier flow %s from slicing service" % flow_name
                 )
@@ -145,14 +145,32 @@ class QOSNonMobileTest:
             trex.teardown()
             run.cleanup(main)
 
-    def __cleanupTrafficSelector(self, traffic_selector):
+    def __normalizeTrafficSelector(self, traffic_selector):
         ts = {
-            "criteria": [traffic_selector[criteria] for criteria in
+            "criteria": [traffic_selector[criterion] for criterion in
                          traffic_selector]}
-        # Cleanup the traffic selector, by converting into integer the
-        # required fields, conversion is required for checking the result
-        # from ONOS
-        for criteria in ts["criteria"]:
-            if "udpPort" in criteria:
-                criteria["udpPort"] = int(criteria["udpPort"])
+        # Converts the required fields into integer, required to compare them
+        # with the API result from ONOS.
+        for criterion in ts["criteria"]:
+            if "udpPort" in criterion:
+                criterion["udpPort"] = int(criterion["udpPort"])
+            elif "protocol" in criterion:
+                criterion["protocol"] = int(criterion["protocol"])
         return ts
+
+    def __containsTrafficSelector(self, actual_selectors, expected_selector):
+        # actual_selectors = [{"criteria":[{"type":"IP_PROTO","protocol":17},{"type":"UDP_DST","udpPort":200}]}]
+        expected_criteria = expected_selector["criteria"]
+        for actual_selector in actual_selectors:
+            actual_criteria = actual_selector["criteria"]
+            if len(actual_criteria) != len(expected_criteria):
+                continue
+            for actual_criterion in actual_criteria:
+                # actual_criterion = {"type":"IP_PROTO","protocol":17}
+                if actual_criterion not in expected_criteria:
+                    # Next selector
+                    break
+            else:
+                # We found all criteria in this selector.
+                return True
+        return False

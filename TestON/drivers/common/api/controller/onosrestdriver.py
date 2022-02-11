@@ -123,11 +123,37 @@ class OnosRestDriver( Controller ):
             self.log( "Sending %s to %s with %s\n" % ( method.upper(),
                                                        path,
                                                        self.pprint( data ) ) )
-            response = requests.request( method.upper(),
-                                         path,
-                                         params=query,
-                                         data=data,
-                                         auth=auth )
+            try:
+                response = requests.request( method.upper(),
+                                             path,
+                                             params=query,
+                                             data=data,
+                                             auth=auth )
+            except requests.ConnectionError as e:
+                # FIXME: This isn't really the correct place for this, but it works for now
+                # Check if port-forward session is still up first
+                if hasattr( main, "Cluster"):
+                    main.log.warn( self.name + ": Error sending request, checking port-forwarding status" )
+                    ctrl = None
+                    for c in main.Cluster.controllers:
+                        if c.REST is self:
+                            ctrl = c
+                            break
+                    if not ctrl:
+                        main.log.warn( self.name + ": Could not find this node in Cluster. Can't check port-forward status" )
+                        raise
+                    elif ctrl.k8s:
+                        ctrl.k8s.checkPortForward( ctrl.k8s.podName,
+                                                   kubeconfig=ctrl.k8s.kubeConfig,
+                                                   namespace=main.params[ 'kubernetes' ][ 'namespace' ] )
+                        main.log.debug( self.name + ": Resending message" )
+                        response = requests.request( method.upper(),
+                                                     path,
+                                                     params=query,
+                                                     data=data,
+                                                     auth=auth )
+                else:
+                    raise
             self.log( "Received %s code with body: %s\n" % ( response.status_code,
                                                              self.pprint( response.text.encode( 'utf8' ) ) ) )
             if debug:

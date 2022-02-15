@@ -17,6 +17,9 @@ GPDU_PORT = 2152
 N_FLOWS_PER_UE = 5
 
 DEFAULT_APP_ID = 0
+DEFAULT_SESSION_METER_IDX = 0
+DEFAULT_APP_METER_IDX = 0
+
 
 class UP4:
     """
@@ -386,36 +389,37 @@ class UP4:
                 fail = True
         return not fail
 
-    def upUeSessionOnosString(self, teid=None, teid_up=None, **kwargs):
+    def upUeSessionOnosString(self, teid=None, teid_up=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX, **kwargs):
         if teid is not None:
             teid_up = teid
-        return "UpfSessionUL(Match(tun_dst_addr={}, teid={}) -> Action(FWD))".format(
-            self.s1u_address, teid_up)
+        return "UpfSessionUL(Match(tun_dst_addr={}, teid={}) -> Action(FWD, session_meter_idx={}))".format(
+            self.s1u_address, teid_up, sess_meter_idx)
 
     def downUeSessionOnosString(self, ue_address, down_id=None,
-                                tunn_peer_id=None,
+                                tunn_peer_id=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX
                                 **kwargs):
         if down_id is not None:
             tunn_peer_id = down_id
-        return "UpfSessionDL(Match(ue_addr={}) -> Action(FWD,  tun_peer={}))".format(
-            ue_address, tunn_peer_id)
+        return "UpfSessionDL(Match(ue_addr={}) -> Action(FWD,  tun_peer={}, session_meter_idx={}))".format(
+            ue_address, tunn_peer_id, sess_meter_idx)
 
-    def upTerminationOnosString(self, ue_address, up_id=None,  app_id=DEFAULT_APP_ID,
-                                ctr_id_up=None, tc=None, **kwargs):
+    def upTerminationOnosString(self, ue_address, up_id=None, app_id=DEFAULT_APP_ID,
+                                ctr_id_up=None, tc=None, app_meter_idx=DEFAULT_APP_METER_IDX, **kwargs):
         if up_id is not None:
             ctr_id_up = up_id
-        return "UpfTerminationUL(Match(ue_addr={}, app_id={}) -> Action(FWD, ctr_id={}, tc={}))".format(
-            ue_address, app_id, ctr_id_up, tc)
+        return "UpfTerminationUL(Match(ue_addr={}, app_id={}) -> Action(FWD, ctr_id={}, tc={}, app_meter_idx={}))".format(
+            ue_address, app_id, ctr_id_up, tc, app_meter_idx)
 
     def downTerminationOnosString(self, ue_address, teid=None, app_id=DEFAULT_APP_ID,
                                   down_id=None, ctr_id_down=None, teid_down=None,
-                                  tc=None, **kwargs):
+                                  tc=None, app_meter_idx=DEFAULT_APP_METER_IDX,
+                                  **kwargs):
         if down_id is not None:
             ctr_id_down = down_id
         if teid is not None:
             teid_down = teid
-        return "UpfTerminationDL(Match(ue_addr={}, app_id={}) -> Action(FWD, teid={}, ctr_id={}, qfi={}, tc={}))".format(
-            ue_address, app_id, teid_down, ctr_id_down, tc, tc)
+        return "UpfTerminationDL(Match(ue_addr={}, app_id={}) -> Action(FWD, teid={}, ctr_id={}, qfi={}, tc={}, app_meter_idx={}))".format(
+            ue_address, app_id, teid_down, ctr_id_down, tc, tc, app_meter_idx)
 
     def gtpTunnelPeerOnosString(self, ue_name, down_id=None, tunn_peer_id=None,
                                 **kwargs):
@@ -489,10 +493,11 @@ class UP4:
         tableName = 'PreQosPipe.sessions_uplink'
         actionName = 'PreQosPipe.set_session_uplink'
         matchFields = {}
-        actionParams = {}
         # Match fields
         matchFields['n3_address'] = str(self.s1u_address)
         matchFields['teid'] = str(teid_up)
+        # Action params
+        actionParams["session_meter_idx"] = str(DEFAULT_SESSION_METER_IDX)
         if five_g:
             # TODO: currently QFI match is unsupported in TNA
             main.log.warn("Matching on QFI is currently unsupported in TNA")
@@ -509,6 +514,7 @@ class UP4:
         matchFields['ue_address'] = str(ue_address)
         # Action params
         actionParams['tunnel_peer_id'] = str(tunn_peer_id)
+        actionParams["session_meter_idx"] = str(DEFAULT_SESSION_METER_IDX)
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):
             return False
@@ -529,6 +535,7 @@ class UP4:
         # Action params
         actionParams['ctr_idx'] = str(ctr_id_up)
         actionParams['tc'] = str(tc)
+        actionParams['app_meter_idx'] = str(DEFAULT_APP_METER_IDX)
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):
             return False
@@ -548,6 +555,7 @@ class UP4:
         # 1-1 mapping between QFI and TC
         actionParams['tc'] = str(tc)
         actionParams['qfi'] = str(tc)
+        actionParams['app_meter_idx'] = str(DEFAULT_APP_METER_IDX)
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, action):
             return False

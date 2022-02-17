@@ -11,7 +11,7 @@ TUNNEL_SPORT = '2152'
 TUNNEL_TYPE_GPDU = '3'
 
 UE_PORT = 400
-PDN_PORT = 800
+DEFAULT_PDN_PORT = 800
 GPDU_PORT = 2152
 
 N_FLOWS_PER_UE = 5
@@ -70,6 +70,7 @@ class UP4:
         self.pdn_interface = None
         self.router_mac = None
         self.emulated_ues = {}
+        self.app_filters = {}
         self.up4_client = None
         self.no_host = False
 
@@ -82,6 +83,7 @@ class UP4:
         """
         self.s1u_address = main.params["UP4"]["s1u_address"]
         self.emulated_ues = main.params["UP4"]['ues']
+        self.app_filters = main.params["UP4"]['app_filters']
         self.up4_client = p4rt_client
         self.no_host = no_host
 
@@ -119,25 +121,39 @@ class UP4:
                 self.pdn_host.stopScapy()
 
     def attachUes(self):
+        for app_filter in self.app_filters.values():
+            self.insertAppFilter(**app_filter)
         for (name, ue) in self.emulated_ues.items():
             ue = UP4.__sanitizeUeData(ue)
             self.attachUe(name, **ue)
 
     def detachUes(self):
+        for app_filter in self.app_filters.values():
+            self.removeAppFilter(**app_filter)
         for (name, ue) in self.emulated_ues.items():
             ue = UP4.__sanitizeUeData(ue)
             self.detachUe(name, **ue)
 
-    def testUpstreamTraffic(self, enb_names=None, shouldFail=False):
+    def __pickPortFromRange(self, range):
+        if range is None or len(range) == 0:
+            return DEFAULT_PDN_PORT
+        # First port in range
+        return int(range.split('..')[0])
+
+    def testUpstreamTraffic(self, enb_names=None, app_filter_name=None, shouldFail=False):
         if self.enodebs is None or self.pdn_host is None:
             main.log.error(
                 "Need eNodeB and PDN host params to generate scapy traffic")
             return
-        # Scapy filter needs to start before sending traffic
         if enb_names is None or enb_names == []:
             enodebs = self.enodebs.values()
         else:
             enodebs = [self.enodebs[enb] for enb in enb_names]
+
+        app_filter = self.app_filters[app_filter_name]
+        pdn_port = self.__pickPortFromRange(app_filter.get("port_range", None))
+        app_filter_should_drop = app_filter["action"] != "allow"
+
         pkt_filter_upstream = ""
         ues = []
         for enb in enodebs:
@@ -149,7 +165,7 @@ class UP4:
                         pkt_filter_upstream += " or "
                     pkt_filter_upstream += "src host " + ue["ue_address"]
         pkt_filter_upstream = "ip and udp dst port %s and (%s) and dst host %s" % \
-                              (PDN_PORT, pkt_filter_upstream,
+                              (pdn_port, pkt_filter_upstream,
                                self.pdn_interface["ips"][0])
         main.log.info("Start listening on %s intf %s" %
                       (self.pdn_host.name, self.pdn_interface["name"]))
@@ -171,30 +187,42 @@ class UP4:
                                    src_ip_inner=ue["ue_address"],
                                    dst_ip_inner=self.pdn_interface["ips"][0],
                                    src_udp_inner=UE_PORT,
-                                   dst_udp_inner=PDN_PORT,
+                                   dst_udp_inner=pdn_port,
                                    teid=int(ue["teid"]))
                 enb["host"].sendPacket(iface=enb["interface"])
 
         packets = UP4.checkFilterAndGetPackets(self.pdn_host)
+        if app_filter_should_drop:
+            expected_pkt_count = 0
+        else:
+            # We expect exactly 1 packet per UE.
+            expected_pkt_count = len(ues)
+        actual_pkt_count = packets.count('Ether')
         fail = False
-        if len(ues) != packets.count('Ether'):
+        if expected_pkt_count != actual_pkt_count:
             fail = True
-            msg = "Failed to capture packets in PDN.\n" + str(packets)
+            msg = "Received %d packets (expected %d)\n%s\n" % (
+                actual_pkt_count, expected_pkt_count, str(packets)
+            )
         else:
-            msg = "Correctly captured packet in PDN. "
-        # We expect exactly 1 packet per UE
-        pktsFiltered = [packets.count("src=" + ue["ue_address"]) for ue in ues]
-        if pktsFiltered.count(1) != len(pktsFiltered):
-            fail = True
-            msg += "\nError on the number of packets per UE in downstream.\n" + str(
-                packets)
-        else:
-            msg += "\nOne packet per UE in upstream. "
+            msg = "Received %d packets (expected %d)\n" % (
+                actual_pkt_count, expected_pkt_count
+            )
 
+        if expected_pkt_count > 0:
+            # Make sure the captured packets are from the expected UE addresses.
+            for ue in ues:
+                ue_pkt_count = packets.count("src=" + ue["ue_address"])
+                if ue_pkt_count != 1:
+                    fail = True
+                msg += "Received %d packet(s) from UE %s (expected 1)\n" % (
+                    ue_pkt_count, ue["ue_address"]
+                )
         utilities.assert_equal(
-            expect=shouldFail, actual=fail, onpass=msg, onfail=msg)
+            expect=shouldFail, actual=fail, onpass=msg, onfail=msg
+        )
 
-    def testDownstreamTraffic(self, enb_names=None, shouldFail=False):
+    def testDownstreamTraffic(self, enb_names=None, app_filter_name=None, shouldFail=False):
         if self.enodebs is None or self.pdn_host is None:
             main.log.error(
                 "Need eNodeB and PDN host params to generate scapy traffic")
@@ -203,6 +231,11 @@ class UP4:
             enodebs = self.enodebs.values()
         else:
             enodebs = [self.enodebs[enb] for enb in enb_names]
+
+        app_filter = self.app_filters[app_filter_name]
+        pdn_port = self.__pickPortFromRange(app_filter.get("port_range", None))
+        app_filter_should_drop = app_filter["action"] != "allow"
+
         pkt_filter_downstream = "ip and udp src port %d and udp dst port %d and src host %s" % (
             GPDU_PORT, GPDU_PORT, self.s1u_address)
         ues = []
@@ -226,7 +259,7 @@ class UP4:
                                dst_eth=self.router_mac,
                                src_ip=self.pdn_interface["ips"][0],
                                dst_ip=ue["ue_address"],
-                               src_udp=PDN_PORT,
+                               src_udp=pdn_port,
                                dst_udp=UE_PORT)
             self.pdn_host.sendPacket(iface=self.pdn_interface["name"])
         packets = ""
@@ -236,28 +269,54 @@ class UP4:
         # The BPF filter might capture non-GTP packets because we can't filter
         # GTP header in BPF. For this reason, check that the captured packets
         # are from the expected tunnels.
-        # TODO: check inner UDP and IP fields as well
+        # TODO: check inner IP fields as well
         # FIXME: with newer scapy TEID becomes teid (required for Scapy 2.4.5)
-        pktsFiltered = [packets.count("TEID=" + hex(int(ue["teid"])) + "L ")
-                        for ue in ues]
-        main.log.info("PACKETS: " + str(packets))
-        main.log.info("PKTs Filtered: " + str(pktsFiltered))
+        downlink_teids = [int(ue["teid"]) + 1 for ue in ues]
+        # Number of GTP packets from expected TEID per UEs
+        gtp_pkts = [
+            packets.count("TEID=" + hex(teid) + "L ") for teid in downlink_teids
+        ]
+        # Number of packets from the expected PDN port
+        app_pkts = packets.count("UDP  sport=" + str(pdn_port))
+        if app_filter_should_drop:
+            expected_pkt_count = 0
+        else:
+            # We expect exactly 1 packet per UE.
+            expected_pkt_count = len(ues)
+
         fail = False
-        if len(ues) != sum(pktsFiltered):
+        if expected_pkt_count != sum(gtp_pkts):
             fail = True
-            msg = "Failed to capture packets in eNodeB.\n" + str(packets)
+            msg = "Received %d packets (expected %d) from TEIDs %s\n%s\n" % (
+                sum(gtp_pkts), expected_pkt_count, downlink_teids, str(packets)
+            )
         else:
-            msg = "Correctly captured packets in eNodeB. "
-        # We expect exactly 1 packet per UE
-        if pktsFiltered.count(1) != len(pktsFiltered):
+            msg = "Received %d packets (expected %d) from TEIDs %s\n" % (
+                sum(gtp_pkts), expected_pkt_count, downlink_teids
+            )
+        if expected_pkt_count != app_pkts:
             fail = True
-            msg += "\nError on the number of packets per GTP TEID in downstream.\n" + str(
-                packets)
+            msg += "Received %d packets (expected %d) from PDN port %s\n%s\n" % (
+                sum(gtp_pkts), expected_pkt_count, pdn_port, str(packets)
+            )
         else:
-            msg += "\nOne packet per GTP TEID in downstream. "
+            msg += "Received %d packets (expected %d) from PDN port %s\n" % (
+                sum(gtp_pkts), expected_pkt_count, pdn_port
+            )
+        if expected_pkt_count > 0:
+            if gtp_pkts.count(1) != len(gtp_pkts):
+                fail = True
+                msg += "Received %s packet(s) per UE (expected %s)\n%s\n" % (
+                    gtp_pkts, [1] * len(gtp_pkts), packets
+                )
+            else:
+                msg += "Received %s packet(s) per UE (expected %s)\n" % (
+                    gtp_pkts, [1] * len(gtp_pkts)
+                )
 
         utilities.assert_equal(
-            expect=shouldFail, actual=fail, onpass=msg, onfail=msg)
+            expect=shouldFail, actual=fail, onpass=msg, onfail=msg
+        )
 
     def readUeSessionsNumber(self):
         """
@@ -291,9 +350,8 @@ class UP4:
         :return: True if the number of UE sessions and terminations is expected,
         False otherwise
         """
-        nUeSessions = self.readUeSessionsNumber()
-        nTerminations = self.readTerminationsNumber()
-        return nUeSessions == nTerminations == len(self.emulated_ues) * 2
+        return self.readUeSessionsNumber() == len(self.emulated_ues) * 2 and \
+               self.readTerminationsNumber() == len(self.emulated_ues) * 2 * len(self.app_filters)
 
     def verifyNoUesFlowNumberP4rt(self, preInstalledUes=0):
         """
@@ -303,7 +361,8 @@ class UP4:
          are still programmed
         :return:
         """
-        return self.readUeSessionsNumber() == self.readTerminationsNumber() == preInstalledUes * 2
+        return self.readUeSessionsNumber() == preInstalledUes * 2 and \
+               self.readTerminationsNumber() == preInstalledUes * 2 * len(self.app_filters)
 
     def verifyNoUesFlow(self, onosCli, retries=10):
         """
@@ -346,7 +405,7 @@ class UP4:
         :param onosCli: An instance of a OnosCliDriver
         :param retries: Number of retries
         """
-        failString = ""
+        failString = []
         retValue = utilities.retry(f=self.__internalVerifyUp4Flow,
                                    retValue=False,
                                    args=[onosCli, failString],
@@ -357,10 +416,18 @@ class UP4:
             actual=retValue,
             onpass="Correct UE session, terminations and GTP tunnel peers in ONOS",
             onfail="Wrong UE session, terminations and GTP tunnel peers in ONOS. " +
-                   "Missing:\n" + failString
+                   "Missing:\n" + '\n'.join(failString)
         )
 
-    def __internalVerifyUp4Flow(self, onosCli, failMsg=""):
+    def __internalVerifyUp4Flow(self, onosCli, failMsg=[]):
+        # Need to pass a list, so it's an object and we can use failMsg to
+        # return a string values from this method.
+
+        # Cleanup failMsg if any remaining from previous runs
+        del failMsg[:]
+        applications = onosCli.sendline(cmdStr="up4:read-entities -f",
+                                        showResponse=True,
+                                        noExit=True, expectJson=False)
         sessions = onosCli.sendline(cmdStr="up4:read-entities -s",
                                     showResponse=True,
                                     noExit=True, expectJson=False)
@@ -371,23 +438,39 @@ class UP4:
                                      showResponse=True,
                                      noExit=True, expectJson=False)
         fail = False
+        for app_filter in self.app_filters.values():
+            if not UP4.__defaultApp(**app_filter):
+                if applications.count(self.appFilterOnosString(**app_filter)) != 1:
+                    failMsg.append(self.appFilterOnosString(**app_filter))
+                    fail = True
         for (ue_name, ue) in self.emulated_ues.items():
             if sessions.count(self.upUeSessionOnosString(**ue)) != 1:
-                failMsg += self.upUeSessionOnosString(**ue) + "\n"
+                failMsg.append(self.upUeSessionOnosString(**ue))
                 fail = True
             if sessions.count(self.downUeSessionOnosString(**ue)) != 1:
-                failMsg += self.downUeSessionOnosString(**ue) + "\n"
+                failMsg.append(self.downUeSessionOnosString(**ue))
                 fail = True
-            if terminations.count(self.upTerminationOnosString(**ue)) != 1:
-                failMsg += self.upTerminationOnosString(**ue) + "\n"
-                fail = True
-            if terminations.count(self.downTerminationOnosString(**ue)) != 1:
-                failMsg += self.downTerminationOnosString(**ue) + "\n"
-                fail = True
+            for app_filter in self.app_filters.values():
+                if terminations.count(self.upTerminationOnosString(app_filter=app_filter, **ue)) != 1:
+                    failMsg.append(self.upTerminationOnosString(app_filter=app_filter, **ue))
+                    fail = True
+                if terminations.count(self.downTerminationOnosString(app_filter=app_filter, **ue)) != 1:
+                    failMsg.append(self.downTerminationOnosString(app_filter=app_filter, **ue))
+                    fail = True
             if tunn_peer.count(self.gtpTunnelPeerOnosString(ue_name, **ue)) != 1:
-                failMsg += self.gtpTunnelPeerOnosString(ue_name, **ue) + "\n"
+                failMsg.append(self.gtpTunnelPeerOnosString(ue_name, **ue))
                 fail = True
         return not fail
+
+    def appFilterOnosString(self, app_id, priority, ip_proto, ip_prefix, port_range, **kwargs):
+        return "UpfApplication(priority=%s, Match(%s%s%s%s) -> Action(app_id=%s))" % (
+            priority,
+            ("ip_prefix=%s, " % ip_prefix) if ip_prefix else "",
+            ("l4_port_range=[%s], " % port_range) if port_range else "",
+            ("ip_proto=%s, " % ip_proto) if ip_proto else "",
+            "slice_id=0",
+            app_id
+        )
 
     def upUeSessionOnosString(self, teid=None, teid_up=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX, **kwargs):
         if teid is not None:
@@ -396,30 +479,40 @@ class UP4:
             self.s1u_address, teid_up, sess_meter_idx)
 
     def downUeSessionOnosString(self, ue_address, down_id=None,
-                                tunn_peer_id=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX
+                                tunn_peer_id=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX,
                                 **kwargs):
         if down_id is not None:
             tunn_peer_id = down_id
         return "UpfSessionDL(Match(ue_addr={}) -> Action(FWD,  tun_peer={}, session_meter_idx={}))".format(
             ue_address, tunn_peer_id, sess_meter_idx)
 
-    def upTerminationOnosString(self, ue_address, up_id=None, app_id=DEFAULT_APP_ID,
+    def upTerminationOnosString(self, ue_address, app_filter, up_id=None,
                                 ctr_id_up=None, tc=None, app_meter_idx=DEFAULT_APP_METER_IDX, **kwargs):
         if up_id is not None:
             ctr_id_up = up_id
-        return "UpfTerminationUL(Match(ue_addr={}, app_id={}) -> Action(FWD, ctr_id={}, tc={}, app_meter_idx={}))".format(
-            ue_address, app_id, ctr_id_up, tc, app_meter_idx)
+        if app_filter["action"] == "allow":
+            return "UpfTerminationUL(Match(ue_addr={}, app_id={}) -> Action(FWD, ctr_id={}, tc={}, app_meter_idx={}))".format(
+                ue_address, app_filter["app_id"], ctr_id_up, tc, app_meter_idx)
+        else:
+            return "UpfTerminationUL(Match(ue_addr={}, app_id={}) -> Action(DROP, ctr_id={}, tc=null, app_meter_idx=0))".format(
+                ue_address, app_filter["app_id"], ctr_id_up)
 
-    def downTerminationOnosString(self, ue_address, teid=None, app_id=DEFAULT_APP_ID,
+    def downTerminationOnosString(self, ue_address, app_filter, teid=None,
                                   down_id=None, ctr_id_down=None, teid_down=None,
                                   tc=None, app_meter_idx=DEFAULT_APP_METER_IDX,
                                   **kwargs):
         if down_id is not None:
             ctr_id_down = down_id
         if teid is not None:
-            teid_down = teid
-        return "UpfTerminationDL(Match(ue_addr={}, app_id={}) -> Action(FWD, teid={}, ctr_id={}, qfi={}, tc={}, app_meter_idx={}))".format(
-            ue_address, app_id, teid_down, ctr_id_down, tc, tc, app_meter_idx)
+            teid_down = int(teid) + 1
+        if tc is None:
+            tc="null"
+        if app_filter["action"] == "allow":
+            return "UpfTerminationDL(Match(ue_addr={}, app_id={}) -> Action(FWD, teid={}, ctr_id={}, qfi={}, tc={}, app_meter_idx={}))".format(
+                ue_address, app_filter["app_id"], teid_down, ctr_id_down, tc, tc, app_meter_idx)
+        else:
+            return "UpfTerminationDL(Match(ue_addr={}, app_id={}) -> Action(DROP, teid=null, ctr_id={}, qfi=null, tc=null, app_meter_idx=0))".format(
+                ue_address, app_filter["app_id"], ctr_id_down)
 
     def gtpTunnelPeerOnosString(self, ue_name, down_id=None, tunn_peer_id=None,
                                 **kwargs):
@@ -437,19 +530,27 @@ class UP4:
             ue["tc"] = 0
         return ue
 
+    def insertAppFilter(self, **kwargs):
+        if not UP4.__defaultApp(**kwargs):
+            self.__programAppFilter(op="program", **kwargs)
+
+    def removeAppFilter(self, **kwargs):
+        if not UP4.__defaultApp(**kwargs):
+            self.__programAppFilter(op="clear", **kwargs)
+
     def attachUe(self, ue_name, ue_address,
                  teid=None, up_id=None, down_id=None,
                  teid_up=None, teid_down=None,
                  ctr_id_up=None, ctr_id_down=None,
                  tunn_peer_id=None,
                  tc=None, five_g=False):
-        self.__programUp4Rules(ue_name,
-                               ue_address,
-                               teid, up_id, down_id,
-                               teid_up, teid_down,
-                               ctr_id_up, ctr_id_down,
-                               tunn_peer_id,
-                               tc, five_g, action="program")
+        self.__programUeRules(ue_name,
+                              ue_address,
+                              teid, up_id, down_id,
+                              teid_up, teid_down,
+                              ctr_id_up, ctr_id_down,
+                              tunn_peer_id,
+                              tc, five_g, op="program")
 
     def detachUe(self, ue_name, ue_address,
                  teid=None, up_id=None, down_id=None,
@@ -457,20 +558,45 @@ class UP4:
                  ctr_id_up=None, ctr_id_down=None,
                  tunn_peer_id=None,
                  tc=None, five_g=False):
-        self.__programUp4Rules(ue_name,
-                               ue_address,
-                               teid, up_id, down_id,
-                               teid_up, teid_down,
-                               ctr_id_up, ctr_id_down,
-                               tunn_peer_id,
-                               tc, five_g, action="clear")
+        self.__programUeRules(ue_name,
+                              ue_address,
+                              teid, up_id, down_id,
+                              teid_up, teid_down,
+                              ctr_id_up, ctr_id_down,
+                              tunn_peer_id,
+                              tc, five_g, op="clear")
 
-    def __programUp4Rules(self, ue_name, ue_address,
-                          teid=None, up_id=None, down_id=None,
-                          teid_up=None, teid_down=None, ctr_id_up=None,
-                          ctr_id_down=None, tunn_peer_id=None,
-                          tc=0, five_g=False, app_id=DEFAULT_APP_ID,
-                          action="program"):
+    def __programAppFilter(self, app_id, ip_prefix=None, ip_proto=None,
+                           port_range=None, priority=0, op="program", **kwargs):
+
+        entries = []
+
+        tableName = 'PreQosPipe.applications'
+        actionName = 'PreQosPipe.set_app_id'
+        actionParams = {'app_id': str(app_id)}
+        matchFields = {}
+        if ip_prefix:
+            matchFields['app_ip_addr'] = str(ip_prefix)
+        if ip_proto:
+            matchFields['app_ip_proto'] = str(ip_proto)
+        if port_range:
+            matchFields['app_l4_port'] = str(port_range)
+
+        if not self.__add_entry(tableName, actionName, matchFields,
+                                actionParams, entries, op, priority):
+            return False
+
+        if op == "program":
+            main.log.info("Application entry added successfully.")
+        elif op == "clear":
+            self.__clear_entries(entries)
+
+    def __programUeRules(self, ue_name, ue_address,
+                         teid=None, up_id=None, down_id=None,
+                         teid_up=None, teid_down=None, ctr_id_up=None,
+                         ctr_id_down=None, tunn_peer_id=None,
+                         tc=0, five_g=False,
+                         op="program"):
         if up_id is not None:
             ctr_id_up = up_id
         if down_id is not None:
@@ -478,7 +604,7 @@ class UP4:
             ctr_id_down = down_id
         if teid is not None:
             teid_up = teid
-            teid_down = teid
+            teid_down = int(teid) + 1
 
         entries = []
 
@@ -493,6 +619,7 @@ class UP4:
         tableName = 'PreQosPipe.sessions_uplink'
         actionName = 'PreQosPipe.set_session_uplink'
         matchFields = {}
+        actionParams = {}
         # Match fields
         matchFields['n3_address'] = str(self.s1u_address)
         matchFields['teid'] = str(teid_up)
@@ -502,7 +629,7 @@ class UP4:
             # TODO: currently QFI match is unsupported in TNA
             main.log.warn("Matching on QFI is currently unsupported in TNA")
         if not self.__add_entry(tableName, actionName, matchFields,
-                                actionParams, entries, action):
+                                actionParams, entries, op):
             return False
 
         # Downlink
@@ -516,49 +643,63 @@ class UP4:
         actionParams['tunnel_peer_id'] = str(tunn_peer_id)
         actionParams["session_meter_idx"] = str(DEFAULT_SESSION_METER_IDX)
         if not self.__add_entry(tableName, actionName, matchFields,
-                                actionParams, entries, action):
+                                actionParams, entries, op):
             return False
 
         # ========================#
         # Terminations Entries
         # ========================#
 
-        # Uplink
-        tableName = 'PreQosPipe.terminations_uplink'
-        actionName = 'PreQosPipe.uplink_term_fwd'
-        matchFields = {}
-        actionParams = {}
+        # Insert one termination entry per app filtering rule,
 
-        # Match fields
-        matchFields['ue_address'] = str(ue_address)
-        matchFields['app_id'] = str(app_id)
-        # Action params
-        actionParams['ctr_idx'] = str(ctr_id_up)
-        actionParams['tc'] = str(tc)
-        actionParams['app_meter_idx'] = str(DEFAULT_APP_METER_IDX)
-        if not self.__add_entry(tableName, actionName, matchFields,
-                                actionParams, entries, action):
-            return False
+        # Uplink
+        for f in self.app_filters.values():
+            tableName = 'PreQosPipe.terminations_uplink'
+            matchFields = {}
+            actionParams = {}
+
+            # Match fields
+            matchFields['ue_address'] = str(ue_address)
+            matchFields['app_id'] = str(f["app_id"])
+
+            # Action params
+            if f['action'] == 'allow':
+                actionName = 'PreQosPipe.uplink_term_fwd'
+                actionParams['app_meter_idx'] = str(DEFAULT_APP_METER_IDX)
+                actionParams['tc'] = str(tc)
+            else:
+                actionName = 'PreQosPipe.uplink_term_drop'
+            actionParams['ctr_idx'] = str(ctr_id_up)
+            if not self.__add_entry(
+                    tableName, actionName, matchFields, actionParams, entries, op
+            ):
+                return False
 
         # Downlink
-        tableName = 'PreQosPipe.terminations_downlink'
-        actionName = 'PreQosPipe.downlink_term_fwd'
-        matchFields = {}
-        actionParams = {}
+        for f in self.app_filters.values():
+            tableName = 'PreQosPipe.terminations_downlink'
+            matchFields = {}
+            actionParams = {}
 
-        # Match fields
-        matchFields['ue_address'] = str(ue_address)
-        matchFields['app_id'] = str(app_id)
-        # Action params
-        actionParams['teid'] = str(teid_down)
-        actionParams['ctr_idx'] = str(ctr_id_down)
-        # 1-1 mapping between QFI and TC
-        actionParams['tc'] = str(tc)
-        actionParams['qfi'] = str(tc)
-        actionParams['app_meter_idx'] = str(DEFAULT_APP_METER_IDX)
-        if not self.__add_entry(tableName, actionName, matchFields,
-                                actionParams, entries, action):
-            return False
+            # Match fields
+            matchFields['ue_address'] = str(ue_address)
+            matchFields['app_id'] = str(f["app_id"])
+
+            # Action params
+            if f['action'] == 'allow':
+                actionName = 'PreQosPipe.downlink_term_fwd'
+                actionParams['teid'] = str(teid_down)
+                # 1-1 mapping between QFI and TC
+                actionParams['tc'] = str(tc)
+                actionParams['qfi'] = str(tc)
+                actionParams['app_meter_idx'] = str(DEFAULT_APP_METER_IDX)
+            else:
+                actionName = 'PreQosPipe.downlink_term_drop'
+            actionParams['ctr_idx'] = str(ctr_id_down)
+
+            if not self.__add_entry(tableName, actionName, matchFields,
+                                    actionParams, entries, op):
+                return False
 
         # ========================#
         # Tunnel Peer Entry
@@ -574,28 +715,31 @@ class UP4:
         actionParams['dst_addr'] = str(enb_address)
         actionParams['sport'] = TUNNEL_SPORT
         if not self.__add_entry(tableName, actionName, matchFields,
-                                actionParams, entries, action):
+                                actionParams, entries, op):
             return False
-        if action == "program":
+        if op == "program":
             main.log.info("All entries added successfully.")
-        elif action == "clear":
+        elif op == "clear":
             self.__clear_entries(entries)
 
     def __add_entry(self, tableName, actionName, matchFields, actionParams,
-                    entries, action):
-        if action == "program":
+                    entries, op, priority=0):
+        if op == "program":
             self.up4_client.buildP4RtTableEntry(
                 tableName=tableName, actionName=actionName,
-                actionParams=actionParams, matchFields=matchFields)
+                actionParams=actionParams, matchFields=matchFields, priority=priority)
             if self.up4_client.pushTableEntry(debug=True) == main.TRUE:
                 main.log.info("*** Entry added.")
             else:
                 main.log.error("Error during table insertion")
                 self.__clear_entries(entries)
                 return False
-        entries.append({"tableName": tableName, "actionName": actionName,
-                        "matchFields": matchFields,
-                        "actionParams": actionParams})
+        entries.append({
+            "tableName": tableName, "actionName": actionName,
+            "matchFields": matchFields,
+            "actionParams": actionParams,
+            "priority": priority
+        })
         return True
 
     def __clear_entries(self, entries):
@@ -646,3 +790,10 @@ class UP4:
             kill = host.killFilter()
             main.log.debug(kill)
         return ""
+
+    @staticmethod
+    def __defaultApp(ip_prefix=None, ip_proto=None, port_range=None, **kwargs):
+        if ip_prefix is None and ip_proto is None and port_range is None:
+            return True
+        return False
+

@@ -45,6 +45,13 @@
                 <five_g>False</five_g>
             </ue2>
         </ues>
+        <app_filters>
+            <allowPort>
+                <app_id>0</app_id>
+                <!-- Default ALLOW -->
+                <action>allow</action>
+            </allowPort>
+        </app_filters>
     </UP4>
 
     <TREX>

@@ -235,19 +235,22 @@ class P4RuntimeCliDriver(CLI):
             main.cleanAndExit()
 
     def buildP4RtTableEntry(self, tableName, actionName, actionParams={},
-                            matchFields={}):
+                            matchFields={}, priority=0):
         """
         Build a Table Entry
         :param tableName: The name of table
         :param actionName: The name of the action
         :param actionParams: A dictionary containing name and values for the action parameters
         :param matchFields: A dictionary containing name and values for the match fields
+        :param priority: for ternary match entries
         :return: main.TRUE or main.FALSE on error
         """
         # TODO: improve error checking when creating the table entry, add
         #  params, and match fields.
         try:
-            main.log.debug(self.name + ": Building P4RT Table Entry")
+            main.log.debug("%s: Building P4RT Table Entry "
+                           "(table=%s, match=%s, priority=%s, action=%s, params=%s)" % (
+                self.name, tableName, matchFields, priority, actionName, actionParams))
             cmd = 'te = table_entry["%s"](action="%s"); ' % (
                 tableName, actionName)
 
@@ -258,6 +261,9 @@ class P4RuntimeCliDriver(CLI):
             # Match Fields
             for name, value in matchFields.items():
                 cmd += 'te.match["%s"]="%s";' % (name, str(value))
+
+            if priority:
+                cmd += 'te.priority=%s;' % priority
 
             response = self.__clearSendAndExpect(cmd)
             if "Unknown action" in response:

@@ -50,12 +50,14 @@ class UP4:
         )
 
         # ------- Test Upstream traffic (enb->pdn)
-        main.step("Test upstream traffic")
-        up4.testUpstreamTraffic()
+        for app_filter_name in up4.app_filters:
+            main.step("Test upstream traffic %s" % app_filter_name)
+            up4.testUpstreamTraffic(app_filter_name=app_filter_name)
 
         # ------- Test Downstream traffic (pdn->enb)
-        main.step("Test downstream traffic")
-        up4.testDownstreamTraffic()
+        for app_filter_name in up4.app_filters:
+            main.step("Test downstream traffic %s" % app_filter_name)
+            up4.testDownstreamTraffic(app_filter_name=app_filter_name)
 
         main.step("Remove and Verify UPF entities via UP4")
         up4.detachUes()
@@ -673,17 +675,26 @@ class UP4:
             enodebs_fail = main.params["UP4"]["UP4_dataplane_fail"]["enodebs_fail"].split(",")
             enodebs_no_fail = list(set(up4.enodebs.keys()) - set(enodebs_fail))
 
-            # ------- Test Upstream traffic (enbs->pdn)
-            main.step("Test upstream traffic FAIL")
-            up4.testUpstreamTraffic(enb_names=enodebs_fail, shouldFail=True)
-            main.step("Test upstream traffic NO FAIL")
-            up4.testUpstreamTraffic(enb_names=enodebs_no_fail, shouldFail=False)
 
-            # ------- Test Downstream traffic (pdn->enbs)
-            main.step("Test downstream traffic FAIL")
-            up4.testDownstreamTraffic(enb_names=enodebs_fail, shouldFail=True)
-            main.step("Test downstream traffic NO FAIL")
-            up4.testDownstreamTraffic(enb_names=enodebs_no_fail, shouldFail=False)
+            for app_filter_name in up4.app_filters:
+                # Failure only when we forward traffic, when dropping we should
+                # still see traffic being dropped.
+                if up4.app_filters["action"] == "allow":
+                    main.step("Test upstream traffic FAIL %s" % app_filter_name)
+                    up4.testUpstreamTraffic(enb_names=enodebs_fail, app_filter_name=app_filter_name, shouldFail=True)
+                    main.step("Test downstream traffic FAIL %s" % app_filter_name)
+                    up4.testDownstreamTraffic(enb_names=enodebs_fail, app_filter_name=app_filter_name, shouldFail=True)
+                else:
+                    main.step("Test upstream traffic FAIL %s" % app_filter_name)
+                    up4.testUpstreamTraffic(enb_names=enodebs_fail, app_filter_name=app_filter_name)
+                    main.step("Test downstream traffic FAIL %s" % app_filter_name)
+                    up4.testDownstreamTraffic(enb_names=enodebs_fail, app_filter_name=app_filter_name)
+
+                main.step("Test upstream traffic NO FAIL %s" % app_filter_name)
+                up4.testUpstreamTraffic(enb_names=enodebs_no_fail, app_filter_name=app_filter_name)
+                main.step("Test downstream traffic NO FAIL %s" % app_filter_name)
+                up4.testDownstreamTraffic(enb_names=enodebs_no_fail, app_filter_name=app_filter_name)
+
         except Exception as e:
             main.log.error("Unhandled exception!")
             main.log.error(e)
@@ -731,8 +742,9 @@ class UP4:
                 onfail="Switch is not available in ONOS, may influence subsequent tests!"
             )
 
-        main.step("Test upstream traffic AFTER switch reboot")
-        up4.testUpstreamTraffic()
+        for app_filter_name in up4.app_filters:
+            main.step("Test upstream traffic AFTER switch reboot %s" % app_filter_name)
+            up4.testUpstreamTraffic(app_filter_name=app_filter_name)
 
         main.step("Cleanup UPF entities via UP4")
         up4.detachUes()

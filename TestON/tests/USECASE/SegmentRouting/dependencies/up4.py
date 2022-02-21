@@ -396,7 +396,7 @@ class UP4:
             self.s1u_address, teid_up, sess_meter_idx)
 
     def downUeSessionOnosString(self, ue_address, down_id=None,
-                                tunn_peer_id=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX
+                                tunn_peer_id=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX,
                                 **kwargs):
         if down_id is not None:
             tunn_peer_id = down_id

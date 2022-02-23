@@ -23,8 +23,8 @@ class INT:
         dstIfaceName = main.h2.interfaces[0]["name"]
         srcMac = main.h1.getMac(srcIfaceName)
         dstMac = main.h2.getMac(dstIfaceName)
-        srcIp = main.h1.getIp(srcIfaceName)
-        dstIp = main.h2.getIp(dstIfaceName)
+        srcIp = main.h1.interfaces[0]['ips'][0]
+        dstIp = main.h2.interfaces[0]['ips'][0]
         srcPort = 2000
         dstPort = 8888
 
@@ -88,8 +88,8 @@ class INT:
         dstIfaceName = main.h2.interfaces[0]["name"]
         srcMac = main.h1.getMac(srcIfaceName)
         dstMac = main.h2.getMac(dstIfaceName)
-        srcIp = main.h1.getIp(srcIfaceName)
-        dstIp = main.h2.getIp(dstIfaceName)
+        srcIp = main.h1.interfaces[0]['ips'][0]
+        dstIp = main.h2.interfaces[0]['ips'][0]
         srcPort = 2000
         dstPort = 8888
 
@@ -167,11 +167,10 @@ class INT:
 
         main.step("Setting up hosts and variables")
         srcIfaceName = main.h1.interfaces[0]["name"]
-        dstIfaceName = main.h3.interfaces[0]["name"]
         srcMac = main.h1.getMac(srcIfaceName)
         dstMac = main.params.get("routerMac", "00:00:00:00:00:00")
-        srcIp = main.h1.getIp(srcIfaceName)
-        dstIp = main.h3.getIp(dstIfaceName)
+        srcIp = main.h1.interfaces[0]['ips'][0]
+        dstIp = main.h2.interfaces[0]['ips'][0]
         srcPort = 3000
         dstPort = 8888
 
@@ -277,7 +276,7 @@ class INT:
         queueAnomalies = utilities.retry(
             f=getQueueAnomaly,
             retValue=[[]],
-            attempts=120,
+            attempts=30,
         )
 
         # We should get at least two congestion records

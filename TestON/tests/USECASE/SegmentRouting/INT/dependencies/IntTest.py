@@ -9,7 +9,7 @@ from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
 class IntTest:
 
     def __init__(self, scapy=False):
-        self.hosts = ["h1", "h2", "h3"]
+        self.hosts = ["h1", "h2"]
         self.scapy = scapy
 
     def setUpTest(self, main):

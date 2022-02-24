@@ -32,114 +32,119 @@
                 <ue_address>10.240.0.1</ue_address>
                 <teid>100</teid>
                 <up_id>10</up_id>
-                <down_id>11</down_id>
-                <tc>0</tc> <!-- Best Effort -->
+                <down_id>20</down_id>
+                <tc>3</tc>
                 <five_g>False</five_g>
+                <max_bps>200000000</max_bps>
             </ue1>
             <ue2>
                 <ue_address>10.240.0.2</ue_address>
                 <teid>200</teid>
-                <up_id>20</up_id>
-                <down_id>21</down_id>
-                <tc>2</tc> <!-- Real Time -->
+                <up_id>30</up_id>
+                <down_id>40</down_id>
+                <tc>3</tc>
                 <five_g>False</five_g>
+                <max_bps>200000000</max_bps>
             </ue2>
         </ues>
         <app_filters>
             <allowPort>
-                <app_id>0</app_id>
-                <!-- Default ALLOW -->
+                <app_id>1</app_id>
+                <ip_prefix>10.32.11.125/32</ip_prefix>
+                <ip_proto>17</ip_proto>
+                <port_range>80..80</port_range>
+                <priority>20</priority>
                 <action>allow</action>
+                <max_bps>100000000</max_bps>
             </allowPort>
+            <allowAll>
+                <app_id>0</app_id>
+                <action>allow</action>
+            </allowAll>
         </app_filters>
     </UP4>
 
     <TREX>
         <port_stats>0,2,3</port_stats> <!-- TRex port 0 = PDN, TRex port 2 = eNodeB, TRex port 3 = second eNB -->
         <flows>
-            <BE1_FROM_UE>
-                <name>Best Effort 1</name>
-                <l1_bps>25000000000</l1_bps>
+            <UE1>
+                <name>UE1: Conformant Session</name>
+                <l1_bps>200000000</l1_bps>
                 <trex_port>2</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>
                     <ip_src>10.240.0.1</ip_src>
                     <ip_dst>10.32.11.125</ip_dst>
+                    <udp_dport>81</udp_dport>
                     <eth_src>40:A6:B7:22:AB:20</eth_src>
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
                     <gtp_teid>100</gtp_teid>
                     <s1u_addr>10.32.11.126</s1u_addr>
                     <enb_addr>10.32.11.124</enb_addr>
                 </packet>
-            </BE1_FROM_UE>
-            <BE2_FROM_UE>
-                <name>Best Effort 2</name>
-                <l1_bps>25000000000</l1_bps>
-                <trex_port>3</trex_port>
-                <packet>
-                    <pktlen>1400</pktlen>
-                    <ip_src>10.240.0.1</ip_src>
-                    <ip_dst>10.32.11.125</ip_dst>
-                    <eth_src>40:A6:B7:22:AB:21</eth_src>
-                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
-                    <gtp_teid>100</gtp_teid>
-                    <s1u_addr>10.32.11.126</s1u_addr>
-                    <enb_addr>10.32.11.123</enb_addr>
-                </packet>
-            </BE2_FROM_UE>
-            <RT_FROM_UE>
-                <name>Real Time</name>
-                <l1_bps>22000000</l1_bps> <!-- Smaller than the smaller RT max BW -->
-                <trex_port>3</trex_port>
+                <latency_stats>true</latency_stats>
+                <flow_id>20</flow_id>
+                <expected_max_dropped>0</expected_max_dropped>
+                <expected_rx_bps>200000000</expected_rx_bps>
+            </UE1>
+            <UE2>
+                <name>UE2: Non-Conformant Session</name>
+                <l1_bps>300000000</l1_bps>
+                <trex_port>2</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>
                     <ip_src>10.240.0.2</ip_src>
                     <ip_dst>10.32.11.125</ip_dst>
-                    <eth_src>40:A6:B7:22:AB:21</eth_src>
+                    <udp_dport>81</udp_dport>
+                    <eth_src>40:A6:B7:22:AB:20</eth_src>
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
                     <gtp_teid>200</gtp_teid>
                     <s1u_addr>10.32.11.126</s1u_addr>
-                    <enb_addr>10.32.11.123</enb_addr>
+                    <enb_addr>10.32.11.124</enb_addr>
                 </packet>
                 <latency_stats>true</latency_stats>
-                <flow_id>10</flow_id>
-                <delay>50000</delay>
-                <expected_max_dropped>0</expected_max_dropped>
-                <expected_max_latency>1500</expected_max_latency>
-                <!-- Verify the 90th percentile instead of 99.9th because of latency introduced by TRex SW Mode -->
-                <expected_90_percentile_latency>200</expected_90_percentile_latency>
-            </RT_FROM_UE>
-
-            <BE_FROM_PDN>
-                <name>Best Effort</name>
-                <l1_bps>2000000000</l1_bps>
-                <trex_port>0</trex_port>
+                <flow_id>21</flow_id>
+                <expected_rx_bps>200000000</expected_rx_bps>
+            </UE2>
+            <APP1>
+                <name>APP1: Conformant Application</name>
+                <l1_bps>100000000</l1_bps>
+                <trex_port>2</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>
-                    <ip_src>10.32.11.125</ip_src>
-                    <ip_dst>10.240.0.1</ip_dst>
-                    <eth_src>40:A6:B7:22:AB:40</eth_src>
+                    <ip_src>10.240.0.1</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <udp_dport>80</udp_dport>
+                    <eth_src>40:A6:B7:22:AB:20</eth_src>
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
-                </packet>
-            </BE_FROM_PDN>
-            <RT_FROM_PDN>
-                <name>Real Time</name>
-                <l1_bps>22000000</l1_bps> <!-- Smaller than the smaller RT max BW -->
-                <trex_port>0</trex_port>
-                <packet>
-                    <pktlen>1400</pktlen>
-                    <ip_src>10.32.11.125</ip_src>
-                    <ip_dst>10.240.0.2</ip_dst>
-                    <eth_src>40:A6:B7:22:AB:40</eth_src>
-                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <gtp_teid>100</gtp_teid>
+                    <s1u_addr>10.32.11.126</s1u_addr>
+                    <enb_addr>10.32.11.124</enb_addr>
                 </packet>
                 <latency_stats>true</latency_stats>
-                <flow_id>10</flow_id> <!-- Mandatory when latency_stats=true -->
-                <delay>50000</delay> <!-- wait 50 ms till start to let queues fill up -->
-                <expected_min_received>1</expected_min_received>
+                <flow_id>30</flow_id>
                 <expected_max_dropped>0</expected_max_dropped>
-                <expected_99_9_percentile_latency>100</expected_99_9_percentile_latency>
-            </RT_FROM_PDN>
+                <expected_rx_bps>100000000</expected_rx_bps>
+            </APP1>
+            <APP2>
+                <name>APP2: Non-Conformant Application</name>
+                <l1_bps>200000000</l1_bps>
+                <trex_port>2</trex_port>
+                <packet>
+                    <pktlen>1400</pktlen>
+                    <ip_src>10.240.0.2</ip_src>
+                    <ip_dst>10.32.11.125</ip_dst>
+                    <udp_dport>80</udp_dport>
+                    <eth_src>40:A6:B7:22:AB:20</eth_src>
+                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <gtp_teid>200</gtp_teid>
+                    <s1u_addr>10.32.11.126</s1u_addr>
+                    <enb_addr>10.32.11.124</enb_addr>
+                </packet>
+                <latency_stats>true</latency_stats>
+                <flow_id>31</flow_id>
+                <expected_rx_bps>100000000</expected_rx_bps>
+            </APP2>
         </flows>
     </TREX>
 
@@ -159,7 +164,7 @@
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,t3,up4</cellApps>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,up4</cellApps>
     </ENV>
 
     <DEPENDENCY>

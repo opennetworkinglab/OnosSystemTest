@@ -1,0 +1,4 @@
+{
+  "flows": ["APP1", "APP2"],
+  "duration": 10
+}

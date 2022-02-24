@@ -121,48 +121,79 @@ class Trex:
                 avg_tx, avg_rx)
         )
 
+    def assertRxRate(self, flow_name, duration, delta=0.05):
+        if not self.isFlowStats(flow_name):
+            main.log.info("No flow stats for flow {}".format(flow_name))
+            utilities.assert_equals(
+                expect=True,
+                actual=False,
+                onpass="",
+                onfail="No Flow stats for requested flow: {}".format(flow_name))
+            return
+        expected_rx_rate_bps = int(
+            self.traffic_flows[flow_name].get("expected_rx_bps", "0"))
+        flow_label = self.traffic_flows[flow_name].get("name", flow_name)
+        flow_id = self.traffic_flows[flow_name]["flow_id"]
+        flow_stats = self.trex_client.getFlowStats(flow_id)
+        actual_rx_rate_bps = (flow_stats.rx_bytes * 8) / duration
+        rates_within_delta = abs((actual_rx_rate_bps/expected_rx_rate_bps) - 1) <= delta
+        utilities.assert_equals(
+            expect=True,
+            actual=rates_within_delta,
+            onpass="Traffic Flow {}: Expected rate ({}) within delta ({}) to actual rate ({})".format(
+                flow_label, expected_rx_rate_bps, delta, actual_rx_rate_bps),
+            onfail="Traffic Flow {}: Expected rate ({}) outside delta ({}) to actual rate ({})".format(
+                flow_label, expected_rx_rate_bps, delta, actual_rx_rate_bps)
+        )
+
     def assertRxPackets(self, flow_name):
         if not self.isFlowStats(flow_name):
             main.log.info("No flow stats for flow {}".format(flow_name))
         expected_min_received = int(
             self.traffic_flows[flow_name].get("expected_min_received", "1"))
+        flow_label = self.traffic_flows[flow_name].get("name", flow_name)
         flow_id = self.traffic_flows[flow_name]["flow_id"]
         flow_stats = self.trex_client.getFlowStats(flow_id)
         utilities.assert_equals(
             expect=True,
             actual=flow_stats.rx_packets >= expected_min_received,
-            onpass="Traffic Flow {}: Received traffic".format(flow_name),
-            onfail="Traffic Flow {}: No traffic received".format(flow_name))
+            onpass="Traffic Flow {}: Received traffic".format(flow_label),
+            onfail="Traffic Flow {}: No traffic received".format(flow_label))
 
     def assertDroppedPacket(self, flow_name):
         if not self.isFlowStats(flow_name):
             main.log.info("No flow stats for flow {}".format(flow_name))
         expected_max_dropped = int(
             self.traffic_flows[flow_name].get("expected_max_dropped", "0"))
-        latency_stats = self.__getLatencyStats(flow_name)
+        flow_label = self.traffic_flows[flow_name].get("name", flow_name)
+        flow_id = self.traffic_flows[flow_name]["flow_id"]
+        flow_stats = self.trex_client.getFlowStats(flow_id)
+        actual_dropped = flow_stats.tx_packets - flow_stats.rx_packets
         utilities.assert_equals(
             expect=True,
-            actual=latency_stats.dropped <= expected_max_dropped,
-            onpass="Traffic Flow {}: {} packets dropped, below threshold ({})".format(
-                flow_name, latency_stats.dropped,
-                expected_max_dropped),
-            onfail="Traffic Flow {}: {} packets dropped, above threshold ({})".format(
-                flow_name, latency_stats.dropped,
-                expected_max_dropped))
+            actual=actual_dropped <= expected_max_dropped,
+            onpass="Traffic Flow {}: {} packets dropped, below threshold={}".format(
+                flow_label, actual_dropped, expected_max_dropped
+            ),
+            onfail="Traffic Flow {}: {} packets dropped, above threshold={}".format(
+                flow_label, actual_dropped, expected_max_dropped
+            )
+        )
 
     def assertMaxLatency(self, flow_name):
         if not self.isFlowStats(flow_name):
             main.log.info("No flow stats for flow {}".format(flow_name))
         expected_max_latency = int(
             self.traffic_flows[flow_name].get("expected_max_latency", "0"))
+        flow_label = self.traffic_flows[flow_name].get("name", flow_name)
         latency_stats = self.__getLatencyStats(flow_name)
         utilities.assert_equals(
             expect=True,
             actual=latency_stats.total_max <= expected_max_latency,
             onpass="Traffic Flow {}: Maximum latency below threshold".format(
-                flow_name),
+                flow_label),
             onfail="Traffic Flow {}: Maximum latency is too high {}".format(
-                flow_name, latency_stats.total_max))
+                flow_label, latency_stats.total_max))
 
     def assert99_9PercentileLatency(self, flow_name):
         if not self.isFlowStats(flow_name):
@@ -174,14 +205,15 @@ class Trex:
         expected_99_9_percentile_latency = int(
             self.traffic_flows[flow_name].get(
                 "expected_99_9_percentile_latency", "0"))
+        flow_label = self.traffic_flows[flow_name].get("name", flow_name)
         latency_stats = self.__getLatencyStats(flow_name)
         utilities.assert_equals(
             expect=True,
             actual=latency_stats.percentile_99_9 <= expected_99_9_percentile_latency,
             onpass="Traffic Flow {}: 99.9th percentile latency below threshold".format(
-                flow_name),
+                flow_label),
             onfail="Traffic Flow {}: 99.9th percentile latency is too high {}".format(
-                flow_name, latency_stats.percentile_99_9))
+                flow_label, latency_stats.percentile_99_9))
 
     def assert90PercentileLatency(self, flow_name):
         if not self.isFlowStats(flow_name):
@@ -193,14 +225,15 @@ class Trex:
         expected_90_percentile_latency = int(
             self.traffic_flows[flow_name].get(
                 "expected_90_percentile_latency", "0"))
+        flow_label = self.traffic_flows[flow_name].get("name", flow_name)
         latency_stats = self.__getLatencyStats(flow_name)
         utilities.assert_equals(
             expect=True,
             actual=latency_stats.percentile_90 <= expected_90_percentile_latency,
             onpass="Traffic Flow {}: 90th percentile latency below threshold".format(
-                flow_name),
+                flow_label),
             onfail="Traffic Flow {}: 90th percentile latency is too high {}".format(
-                flow_name, latency_stats.percentile_90))
+                flow_label, latency_stats.percentile_90))
 
     def logPortStats(self):
         main.log.debug(self.port_stats)

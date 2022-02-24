@@ -59,6 +59,7 @@ class UP4:
                 <!-- TC 0 means BEST EFFORT -->
                 <tc>2</tc>
                 <five_g>False</five_g>
+                <max_bps>200000000</max_bps>
             </ue2>
         </ues>
         <switch_to_kill>Leaf2</switch_to_kill> # Component name of the switch to kill in CASE 5
@@ -137,9 +138,6 @@ class UP4:
                                            enableGtp=True)
             if self.pdn_host is not None:
                 self.pdn_host.startScapy(ifaceName=self.pdn_interface["name"])
-        # TODO: configure interfaces table. Currently, we rely on netcfg or
-        #  PFCP agent to push interface entries, but we should explicitly push
-        #  them here
 
     def startMockSmfPcap(self, smfComponent, pcapIface="eth0"):
         compName = "smf-pcap"
@@ -563,19 +561,29 @@ class UP4:
             app_id
         )
 
-    def upUeSessionOnosString(self, teid=None, teid_up=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX, **kwargs):
+    def upUeSessionOnosString(self, teid=None, teid_up=None, up_id=None,
+                              sess_meter_idx=None, max_bps=None, **kwargs):
         if teid_up is None and teid is not None:
             teid_up = teid
+        if up_id is not None:
+            if max_bps is not None:
+                sess_meter_idx = up_id
+            else:
+                sess_meter_idx = DEFAULT_SESSION_METER_IDX
         if sess_meter_idx is None:
             sess_meter_idx = "\d+"
         return "UpfSessionUL\(Match\(tun_dst_addr={}, teid={}\) -> Action\(FWD, session_meter_idx={}\)\)".format(
             self.s1u_address, teid_up, sess_meter_idx)
 
     def downUeSessionOnosString(self, ue_address, down_id=None,
-                                tunn_peer_id=None, sess_meter_idx=DEFAULT_SESSION_METER_IDX,
+                                tunn_peer_id=None, sess_meter_idx=None, max_bps=None,
                                 **kwargs):
         if down_id is not None:
             tunn_peer_id = down_id
+            if max_bps is not None:
+                sess_meter_idx = down_id
+            else:
+                sess_meter_idx = DEFAULT_SESSION_METER_IDX
         if tunn_peer_id is None:
             tunn_peer_id = "\d+"
         if sess_meter_idx is None:
@@ -584,9 +592,13 @@ class UP4:
             ue_address, tunn_peer_id, sess_meter_idx)
 
     def upTerminationOnosString(self, ue_address, app_filter, up_id=None,
-                                ctr_id_up=None, tc=None, app_meter_idx=DEFAULT_APP_METER_IDX, **kwargs):
+                                ctr_id_up=None, tc=None, app_meter_idx=None, **kwargs):
         if up_id is not None:
             ctr_id_up = up_id
+            if "max_bps" in app_filter:
+                app_meter_idx = int(up_id) + int(app_filter["app_id"])
+            else:
+                app_meter_idx = DEFAULT_APP_METER_IDX
         if ctr_id_up is None:
             ctr_id_up = "\d+"
         if tc is None or int(tc) == 0:
@@ -605,7 +617,7 @@ class UP4:
 
     def downTerminationOnosString(self, ue_address, app_filter, teid=None,
                                   down_id=None, ctr_id_down=None, teid_down=None,
-                                  tc=None, app_meter_idx=DEFAULT_APP_METER_IDX,
+                                  tc=None, app_meter_idx=None,
                                   **kwargs):
         if down_id is not None:
             ctr_id_down = down_id
@@ -613,6 +625,10 @@ class UP4:
             ctr_id_down = "\d+"
         if teid_down is None and teid is not None:
             teid_down = int(teid) + 1
+            if "max_bps" in app_filter:
+                app_meter_idx = int(down_id) + int(app_filter["app_id"])
+            else:
+                app_meter_idx = DEFAULT_APP_METER_IDX
         if tc is None or int(tc) == 0:
             tc = "(?:0|null)"
         if app_meter_idx is None:
@@ -643,6 +659,11 @@ class UP4:
             ue["five_g"] = bool(strtobool(ue["five_g"]))
         if "tc" in ue and ue["tc"] == "":
             ue["tc"] = 0
+        if "max_bps" in ue:
+            if ue["max_bps"] == "" or ue["max_bps"] is None:
+                ue["max_bps"] = None
+            else:
+                ue["max_bps"] = int(ue["max_bps"])
         if smf:
             ue["up_id"] = None
             ue["down_id"] = None
@@ -695,28 +716,34 @@ class UP4:
                  teid_up=None, teid_down=None,
                  ctr_id_up=None, ctr_id_down=None,
                  tunn_peer_id=None,
-                 tc=None, five_g=False, **kwargs):
+                 tc=None, five_g=False, max_bps=None,
+                 sess_meter_idx_up=None, sess_meter_idx_down=None, **kwargs):
         self.__programUeRules(ue_name,
                               ue_address,
                               teid, up_id, down_id,
                               teid_up, teid_down,
                               ctr_id_up, ctr_id_down,
                               tunn_peer_id,
-                              tc, five_g, op="program")
+                              tc, five_g, max_bps,
+                              sess_meter_idx_up, sess_meter_idx_down,
+                              op="program")
 
     def detachUe(self, ue_name, ue_address,
                  teid=None, up_id=None, down_id=None,
                  teid_up=None, teid_down=None,
                  ctr_id_up=None, ctr_id_down=None,
                  tunn_peer_id=None,
-                 tc=None, five_g=False, **kwargs):
+                 tc=None, five_g=False, max_bps=None,
+                 sess_meter_idx_up=None, sess_meter_idx_down=None, **kwargs):
         self.__programUeRules(ue_name,
                               ue_address,
                               teid, up_id, down_id,
                               teid_up, teid_down,
                               ctr_id_up, ctr_id_down,
                               tunn_peer_id,
-                              tc, five_g, op="clear")
+                              tc, five_g, max_bps,
+                              sess_meter_idx_up, sess_meter_idx_down,
+                              op="clear")
 
     def __programAppFilter(self, app_id, slice_id, ip_prefix=None, ip_proto=None,
                            port_range=None, priority=0, op="program", **kwargs):
@@ -769,13 +796,21 @@ class UP4:
                          teid=None, up_id=None, down_id=None,
                          teid_up=None, teid_down=None, ctr_id_up=None,
                          ctr_id_down=None, tunn_peer_id=None,
-                         tc=0, five_g=False,
+                         tc=0, five_g=False, max_bps=None,
+                         sess_meter_idx_up=None, sess_meter_idx_down=None,
                          op="program"):
+        if max_bps is None:
+            sess_meter_idx_up = DEFAULT_SESSION_METER_IDX
+            sess_meter_idx_down = DEFAULT_SESSION_METER_IDX
         if up_id is not None:
             ctr_id_up = up_id
+            if max_bps is not None:
+                sess_meter_idx_up = int(up_id)
         if down_id is not None:
             tunn_peer_id = down_id
             ctr_id_down = down_id
+            if max_bps is not None:
+                sess_meter_idx_down = int(down_id)
         if teid is not None:
             teid_up = teid
             teid_down = int(teid) + 1
@@ -784,6 +819,25 @@ class UP4:
 
         # Retrieve eNobeB address from eNodeB list
         enb_address = self.__getEnbAddress(ue_name)
+
+        # ========================#
+        # Session Meters
+        # ========================#
+        if max_bps is not None:
+            if not self.__mod_meter(
+                    'PreQosPipe.session_meter',
+                    sess_meter_idx_up,
+                    max_bps,
+                    op
+            ):
+                return False
+            if not self.__mod_meter(
+                    'PreQosPipe.session_meter',
+                    sess_meter_idx_down,
+                    max_bps,
+                    op
+            ):
+                return False
 
         # ========================#
         # UE Session Entries
@@ -798,7 +852,7 @@ class UP4:
         matchFields['n3_address'] = str(self.s1u_address)
         matchFields['teid'] = str(teid_up)
         # Action params
-        actionParams["session_meter_idx"] = str(DEFAULT_SESSION_METER_IDX)
+        actionParams["session_meter_idx"] = str(sess_meter_idx_up)
         if five_g:
             # TODO: currently QFI match is unsupported in TNA
             main.log.warn("Matching on QFI is currently unsupported in TNA")
@@ -815,7 +869,7 @@ class UP4:
         matchFields['ue_address'] = str(ue_address)
         # Action params
         actionParams['tunnel_peer_id'] = str(tunn_peer_id)
-        actionParams["session_meter_idx"] = str(DEFAULT_SESSION_METER_IDX)
+        actionParams["session_meter_idx"] = str(sess_meter_idx_down)
         if not self.__add_entry(tableName, actionName, matchFields,
                                 actionParams, entries, op):
             return False
@@ -828,6 +882,17 @@ class UP4:
 
         # Uplink
         for f in self.app_filters.values():
+            if "max_bps" in f:
+                app_meter_idx_up = sess_meter_idx_up + int(f['app_id'])
+                if not self.__mod_meter(
+                        'PreQosPipe.app_meter',
+                        app_meter_idx_up,
+                        int(f["max_bps"]),
+                        op
+                ):
+                    return False
+            else:
+                app_meter_idx_up = DEFAULT_APP_METER_IDX
             tableName = 'PreQosPipe.terminations_uplink'
             matchFields = {}
             actionParams = {}
@@ -839,7 +904,7 @@ class UP4:
             # Action params
             if f['action'] == 'allow':
                 actionName = 'PreQosPipe.uplink_term_fwd'
-                actionParams['app_meter_idx'] = str(DEFAULT_APP_METER_IDX)
+                actionParams['app_meter_idx'] = str(app_meter_idx_up)
                 actionParams['tc'] = str(tc)
             else:
                 actionName = 'PreQosPipe.uplink_term_drop'
@@ -851,6 +916,17 @@ class UP4:
 
         # Downlink
         for f in self.app_filters.values():
+            if "max_bps" in f:
+                app_meter_idx_down = sess_meter_idx_down + int(f['app_id'])
+                if not self.__mod_meter(
+                        'PreQosPipe.app_meter',
+                        app_meter_idx_down,
+                        int(f["max_bps"]),
+                        op
+                ):
+                    return False
+            else:
+                app_meter_idx_down = DEFAULT_APP_METER_IDX
             tableName = 'PreQosPipe.terminations_downlink'
             matchFields = {}
             actionParams = {}
@@ -866,7 +942,7 @@ class UP4:
                 # 1-1 mapping between QFI and TC
                 actionParams['tc'] = str(tc)
                 actionParams['qfi'] = str(tc)
-                actionParams['app_meter_idx'] = str(DEFAULT_APP_METER_IDX)
+                actionParams['app_meter_idx'] = str(app_meter_idx_down)
             else:
                 actionName = 'PreQosPipe.downlink_term_drop'
             actionParams['ctr_idx'] = str(ctr_id_down)
@@ -914,6 +990,28 @@ class UP4:
             "actionParams": actionParams,
             "priority": priority
         })
+        return True
+
+    def __mod_meter(self, name, index, max_bps, op):
+        cir = 0
+        cburst = 0
+        pir = max_bps // 8
+        # TRex/DPDK can generate burst of 32 packets, considering MTU=1500, 32x1500B=48KB
+        # Burst must be greater than 48KB
+        pburst = 100000
+        if op == "program":
+            self.up4_client.buildP4RtMeterEntry(
+                meterName=name, index=index, cir=cir, cburst=cburst, pir=pir,
+                pburst=pburst
+            )
+        else:
+            # in case of "clear" don't specify bands to clear meters
+            self.up4_client.buildP4RtMeterEntry(meterName=name, index=index)
+        if self.up4_client.modifyMeterEntry(debug=True) == main.TRUE:
+            main.log.info("*** Meter modified.")
+        else:
+            main.log.error("Error during meter modification")
+            return False
         return True
 
     def __clear_entries(self, entries):

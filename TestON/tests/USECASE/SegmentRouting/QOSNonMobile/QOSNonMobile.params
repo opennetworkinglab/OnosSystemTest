@@ -101,7 +101,7 @@
             </RT_TO_ENB>
             <BE_1_TO_PDN>
                 <name>Best Effort 1</name>
-                <l1_bps>40000000000</l1_bps>
+                <l1_bps>25000000000</l1_bps>
                 <trex_port>2</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>

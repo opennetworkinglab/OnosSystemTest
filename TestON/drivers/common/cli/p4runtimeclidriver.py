@@ -234,6 +234,46 @@ class P4RuntimeCliDriver(CLI):
             main.log.exception(self.name + ": Uncaught exception!")
             main.cleanAndExit()
 
+    def modifyMeterEntry(self, meterEntry=None, debug=True):
+        """
+        Modify a meter entry with either the given meter entry or use the saved
+        meter entry in the variable 'me'.
+
+        Example of a valid tableEntry string:
+        me = meter_entry["FabricIngress.upf.app_meter"]; me.cir = 1; me.cburst=1; me.pir=1; me.pburst=1; # nopep8
+
+        :param meterEntry: the string meter entry, if None it uses the meter
+            entry saved in the 'me' variable
+        :param debug: True to enable debug logging, False otherwise
+        :return: main.TRUE or main.FALSE on error
+        """
+        try:
+            main.log.debug(self.name + ": Pushing Meter Entry")
+            if debug:
+                self.handle.sendline("me")
+                self.handle.expect(self.p4rtShPrompt)
+            pushCmd = ""
+            if meterEntry:
+                pushCmd = meterEntry + ";"
+            pushCmd += "me.modify()"
+            response = self.__clearSendAndExpect(pushCmd)
+            if "Traceback" in response or "Error" in response or "INVALID_ARGUMENT" in response:
+                # TODO: other possibile errors?
+                # NameError...
+                main.log.error(
+                    self.name + ": Error in modifying meter entry: " + response)
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception(self.name + ": Command timed out")
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception(self.name + ": connection closed.")
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
+            main.cleanAndExit()
+
     def buildP4RtTableEntry(self, tableName, actionName, actionParams={},
                             matchFields={}, priority=0):
         """
@@ -250,7 +290,8 @@ class P4RuntimeCliDriver(CLI):
         try:
             main.log.debug("%s: Building P4RT Table Entry "
                            "(table=%s, match=%s, priority=%s, action=%s, params=%s)" % (
-                self.name, tableName, matchFields, priority, actionName, actionParams))
+                               self.name, tableName, matchFields, priority,
+                               actionName, actionParams))
             cmd = 'te = table_entry["%s"](action="%s"); ' % (
                 tableName, actionName)
 
@@ -302,6 +343,48 @@ class P4RuntimeCliDriver(CLI):
             main.log.exception(self.name + ": Uncaught exception!")
             main.cleanAndExit()
 
+    def buildP4RtMeterEntry(self, meterName, index, cir=None, cburst=None, pir=None,
+                            pburst=None):
+        # TODO: improve error checking
+        try:
+            main.log.debug(
+                "%s: Building P4RT Meter Entry (meter=%s, index=%d, cir=%s, "
+                "cburst=%s, pir=%s, pburst=%s)" % (
+                    self.name, meterName, index, str(cir), str(cburst), str(pir), str(pburst)
+                )
+            )
+            cmd = 'me = meter_entry["%s"]; ' % meterName
+            cmd += 'me.index=%d; ' % index
+            if cir is not None:
+                cmd += 'me.cir=%d; ' % cir
+            if cburst is not None:
+                cmd += 'me.cburst=%d; ' % cburst
+            if pir is not None:
+                cmd += 'me.pir=%d; ' % pir
+            if pburst is not None:
+                cmd += 'me.pburst=%d; ' % pburst
+
+            response = self.__clearSendAndExpect(cmd)
+            if "meter" in response and "does not exist" in response:
+                main.log.error("Unknown meter: " + response)
+                return main.FALSE
+            if "UNIMPLEMENTED" in response:
+                main.log.error("Error in creating the meter entry: " + response)
+                return main.FALSE
+            if "Traceback" in response:
+                main.log.error("Error in creating the meter entry: " + response)
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception(self.name + ": Command timed out")
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception(self.name + ": connection closed.")
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception(self.name + ": Uncaught exception!")
+            main.cleanAndExit()
+
     def readNumberTableEntries(self, tableName):
         """
         Read table entries and return the number of entries present in a table.
@@ -310,7 +393,8 @@ class P4RuntimeCliDriver(CLI):
         :return: Number of entries,
         """
         try:
-            main.log.debug(self.name + ": Reading table entries from " + tableName)
+            main.log.debug(
+                self.name + ": Reading table entries from " + tableName)
             cmd = 'table_entry["%s"].read(lambda te: print(te))' % tableName
             response = self.__clearSendAndExpect(cmd, clearBufferAfter=True)
             # Every table entries starts with "table_id: [P4RT obj ID] ("[tableName]")"

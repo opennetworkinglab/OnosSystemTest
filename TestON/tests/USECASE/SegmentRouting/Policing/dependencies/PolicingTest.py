@@ -5,9 +5,9 @@ from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
 import json
 
 
-class QOSTest:
+class PolicingTest:
 
-    def runTest(self, main, test_idx, n_switches):
+    def runTest(self, main, test_idx):
         run.initTest(main)
         main.log.info(main.Cluster.numCtrls)
         main.Cluster.setRunningNode(3)
@@ -36,28 +36,18 @@ class QOSTest:
             for flow in testCfg["flows"]:
                 trex.createFlow(flow)
             results = trex.sendAndReceiveTraffic(testCfg["duration"])
-            main.step("Verify congestion")
-            trex.verifyCongestion(
-                results,
-                multiplier=float(testCfg.get("multiplier", "1"))
-            )
 
             main.step("Log port and flow stats")
             trex.logPortStats()
             for flow in testCfg["flows"]:
                 trex.logFlowStats(flow)
 
-            # Assert Flow Stats
             for flow in testCfg["flows"]:
                 if trex.isFlowStats(flow):
                     main.step("{}: Assert RX Packets".format(flow))
                     trex.assertRxPackets(flow)
-                    main.step("{}: Assert Dropped Packets".format(flow))
-                    trex.assertDroppedPacket(flow)
-                    main.step("{}: Assert 90 Percentile Latency".format(flow))
-                    trex.assert90PercentileLatency(flow)
-                    main.step("{}: Assert 99.9 Percentile Latency".format(flow))
-                    trex.assert99_9PercentileLatency(flow)
+                    # Assert received traffic is similar to expected for that flow
+                    trex.assertRxRate(flow, results["duration"][-1])
         finally:
             main.step("Remove UPF entities via UP4")
             up4.detachUes()

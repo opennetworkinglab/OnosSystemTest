@@ -18,6 +18,8 @@ def simple_gtp_udp_packet(
         eth_src=None,
         ip_src="192.168.0.1",
         ip_dst="192.168.0.2",
+        udp_sport=1234,
+        udp_dport=80,
         s1u_addr="100.0.0.1",
         enb_addr="192.168.101.1",
         ip_ttl=64,
@@ -30,7 +32,8 @@ def simple_gtp_udp_packet(
     if ext_psc_type is not None:
         pktlen = pktlen - GTPU_OPTIONS_HDR_BYTES - GTPU_EXT_PSC_BYTES
     pkt = simple_udp_packet(eth_src=eth_src, eth_dst=eth_dst, ip_src=ip_src,
-                            ip_dst=ip_dst, pktlen=pktlen)
+                            ip_dst=ip_dst, udp_sport=udp_sport, udp_dport=udp_dport,
+                            pktlen=pktlen)
     gtp_pkt = pkt_add_gtp(
         pkt,
         out_ipv4_src=enb_addr,

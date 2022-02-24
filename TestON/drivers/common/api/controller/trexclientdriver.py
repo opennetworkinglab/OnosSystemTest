@@ -8,6 +8,7 @@ or the System Testing Guide page at <https://wiki.onosproject.org/x/WYQg>
 """
 import time
 import os
+import copy
 import sys
 import importlib
 import collections
@@ -92,6 +93,7 @@ class TrexClientDriver(Controller):
         self.trex_client = None
         self.trex_daemon_client = None
         self.trex_library_python_path = None
+        self.gen_traffic_per_port = {}
         super(TrexClientDriver, self).__init__()
 
     def connect(self, **connectargs):
@@ -172,8 +174,7 @@ class TrexClientDriver(Controller):
         # incoming packets if the destination mac is not the port mac address.
         self.trex_client.set_port_attr(self.trex_client.get_all_ports(),
                                        promiscuous=True)
-        # Reset the used sender ports
-        self.all_sender_port = set()
+        self.gen_traffic_per_port = {}
         self.stats = None
         return True
 
@@ -227,7 +228,9 @@ class TrexClientDriver(Controller):
                 percentage=percentage,
                 l1_bps=l1_bps)
         self.trex_client.add_streams(traffic_stream, ports=trex_port)
-        self.all_sender_port.add(trex_port)
+        gen_traffic = self.gen_traffic_per_port.get(trex_port, 0)
+        gen_traffic += l1_bps
+        self.gen_traffic_per_port[trex_port] = gen_traffic
         return True
 
     def startAndWaitTraffic(self, duration=10, ports=[]):
@@ -242,16 +245,18 @@ class TrexClientDriver(Controller):
             main.log.error(
                 "Cannot start traffic, first connect the TRex client")
             return False
-        main.log.info("Start sending traffic for %d seconds" % duration)
-        self.trex_client.start(list(self.all_sender_port), mult="1",
+        # Reset stats from previous run
+        self.stats = None
+        main.step("Sending traffic for %d seconds" % duration)
+        self.trex_client.start(self.gen_traffic_per_port.keys(), mult="1",
                                duration=duration)
         main.log.info("Waiting until all traffic is sent..")
-        result = self.__monitor_port_stats(ports)
-        self.trex_client.wait_on_traffic(ports=list(self.all_sender_port),
+        result = self.__monitor_port_stats({p: self.gen_traffic_per_port.get(p, None) for p in ports})
+        self.trex_client.wait_on_traffic(ports=self.gen_traffic_per_port.keys(),
                                          rx_delay_ms=100)
         main.log.info("...traffic sent!")
         # Reset sender port so we can run other tests with the same TRex client
-        self.all_sender_port = set()
+        self.gen_traffic_per_port = {}
         main.log.info("Getting stats")
         self.stats = self.trex_client.get_stats()
         return result
@@ -357,43 +362,53 @@ class TrexClientDriver(Controller):
     M = 1000 * K
     G = 1000 * M
 
-    def __monitor_port_stats(self, ports, time_interval=1):
+    def __monitor_port_stats(self, target_tx_per_port, num_samples=4,
+                             ramp_up_timeout=5, time_interval=1, min_tx_bps_margin=0.95):
         """
-        List some port stats continuously while traffic is active
+        List some port stats continuously while traffic is active and verify that
+        the generated amount traffic is the expected one
 
-        :param ports: List of ports ids to monitor
+        :param target_tx_per_port: Traffic to be generated per port
         :param time_interval: Interval between read
+        :param num_samples: Number of samples of statistics from each monitored ports
+        :param ramp_up_timeout: how many seconds to wait before TRex can reach the target TX rate
         :return: Statistics read while traffic is active, or empty result if no
-                 ports provided.
+                 target_tx_per_port provided.
         """
+
+        ports = target_tx_per_port.keys()
+        local_gen_traffic_per_port = copy.deepcopy(target_tx_per_port)
         results = {
             port_id: {"rx_bps": [], "tx_bps": [], "rx_pps": [], "tx_pps": []}
             for port_id in ports
         }
         results["duration"] = []
 
-        if not ports:
+        if len(ports) == 0:
             return results
 
+        start_time = time.time()
         prev = {
             port_id: {
                 "opackets": 0,
                 "ipackets": 0,
                 "obytes": 0,
                 "ibytes": 0,
-                "time": time.time(),
+                "time": start_time,
             }
             for port_id in ports
         }
 
-        s_time = time.time()
+        time.sleep(time_interval)
         while self.trex_client.is_traffic_active():
             stats = self.trex_client.get_stats(ports=ports)
+            sample_time = time.time()
+            elapsed = sample_time - start_time
             if not stats:
                 break
 
             main.log.debug(
-                "\nTRAFFIC RUNNING {:.2f} SEC".format(time.time() - s_time))
+                "\nTRAFFIC RUNNING {:.2f} SEC".format(elapsed))
             main.log.debug(
                 "{:^4} | {:<10} | {:<10} | {:<10} | {:<10} |".format(
                     "Port", "RX bps", "TX bps", "RX pps", "TX pps"
@@ -402,21 +417,21 @@ class TrexClientDriver(Controller):
             main.log.debug(
                 "----------------------------------------------------------")
 
-            for port in ports:
-                opackets = stats[port]["opackets"]
-                ipackets = stats[port]["ipackets"]
-                obytes = stats[port]["obytes"]
-                ibytes = stats[port]["ibytes"]
-                time_diff = time.time() - prev[port]["time"]
+            for (tx_port, target_tx_rate) in local_gen_traffic_per_port.items():
+                opackets = stats[tx_port]["opackets"]
+                ipackets = stats[tx_port]["ipackets"]
+                obytes = stats[tx_port]["obytes"]
+                ibytes = stats[tx_port]["ibytes"]
+                time_diff = sample_time - prev[tx_port]["time"]
 
-                rx_bps = 8 * (ibytes - prev[port]["ibytes"]) / time_diff
-                tx_bps = 8 * (obytes - prev[port]["obytes"]) / time_diff
-                rx_pps = ipackets - prev[port]["ipackets"] / time_diff
-                tx_pps = opackets - prev[port]["opackets"] / time_diff
+                rx_bps = 8 * (ibytes - prev[tx_port]["ibytes"]) / time_diff
+                tx_bps = 8 * (obytes - prev[tx_port]["obytes"]) / time_diff
+                rx_pps = ipackets - prev[tx_port]["ipackets"] / time_diff
+                tx_pps = opackets - prev[tx_port]["opackets"] / time_diff
 
                 main.log.debug(
                     "{:^4} | {:<10} | {:<10} | {:<10} | {:<10} |".format(
-                        port,
+                        tx_port,
                         TrexClientDriver.__to_readable(rx_bps, "bps"),
                         TrexClientDriver.__to_readable(tx_bps, "bps"),
                         TrexClientDriver.__to_readable(rx_pps, "pps"),
@@ -424,21 +439,56 @@ class TrexClientDriver(Controller):
                     )
                 )
 
-                results["duration"].append(time.time() - s_time)
-                results[port]["rx_bps"].append(rx_bps)
-                results[port]["tx_bps"].append(tx_bps)
-                results[port]["rx_pps"].append(rx_pps)
-                results[port]["tx_pps"].append(tx_pps)
+                results["duration"].append(sample_time - start_time)
+                results[tx_port]["rx_bps"].append(rx_bps)
+                results[tx_port]["tx_bps"].append(tx_bps)
+                results[tx_port]["rx_pps"].append(rx_pps)
+                results[tx_port]["tx_pps"].append(tx_pps)
 
-                prev[port]["opackets"] = opackets
-                prev[port]["ipackets"] = ipackets
-                prev[port]["obytes"] = obytes
-                prev[port]["ibytes"] = ibytes
-                prev[port]["time"] = time.time()
+                prev[tx_port]["opackets"] = opackets
+                prev[tx_port]["ipackets"] = ipackets
+                prev[tx_port]["obytes"] = obytes
+                prev[tx_port]["ibytes"] = ibytes
+                prev[tx_port]["time"] = sample_time
+
+                if target_tx_rate is not None:
+                    if tx_bps < (target_tx_rate * min_tx_bps_margin):
+                        if elapsed > ramp_up_timeout:
+                            self.trex_client.stop(ports=ports)
+                            utilities.assert_equal(
+                                expect=True, actual=False,
+                                onpass="Should never reach this",
+                                onfail="TX port ({}) did not reach or sustain min sending rate ({})".format(
+                                    tx_port, target_tx_rate)
+                            )
+                            return {}
+                        else:
+                            results[tx_port]["rx_bps"].pop()
+                            results[tx_port]["tx_bps"].pop()
+                            results[tx_port]["rx_pps"].pop()
+                            results[tx_port]["tx_pps"].pop()
+
+                    if len(results[tx_port]["tx_bps"]) == num_samples:
+                        # Stop monitoring ports for which we have enough samples
+                        del local_gen_traffic_per_port[tx_port]
+
+            if len(local_gen_traffic_per_port) == 0:
+                # Enough samples for all ports
+                utilities.assert_equal(
+                    expect=True, actual=True,
+                    onpass="Enough samples have been generated",
+                    onfail="Should never reach this"
+                )
+                return results
 
             time.sleep(time_interval)
             main.log.debug("")
 
+        utilities.assert_equal(
+            expect=True, actual=True,
+            onpass="Traffic sent correctly",
+            onfail="Should never reach this"
+        )
         return results
 
     @staticmethod

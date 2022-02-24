@@ -7,28 +7,26 @@ import json
 class QOSNonMobileTest:
 
     def runTest(self, main, test_idx, n_switches):
+        run.initTest(main)
+        main.log.info(main.Cluster.numCtrls)
+        main.Cluster.setRunningNode(3)
+        run.installOnos(main, skipPackage=True, cliSleep=5)
+
+        # Use the first available ONOS instance CLI
+        onos_rest = main.Cluster.active(0).REST
+        onos_cli = main.Cluster.active(0).CLI
+
+        trex = Trex()
+        trex.setup(main.TRexClient)
         try:
-            run.initTest(main)
-            main.log.info(main.Cluster.numCtrls)
-            main.Cluster.setRunningNode(3)
-            run.installOnos(main, skipPackage=True, cliSleep=5)
-
-            # Use the first available ONOS instance CLI
-            onos_rest = main.Cluster.active(0).REST
-            onos_cli = main.Cluster.active(0).CLI
-
             # Load traffic config for the current test case
             cfgFile = "%s/tests/CASE_%d.json" % (main.configPath, test_idx)
             with open(cfgFile) as cfg:
                 testCfg = json.load(cfg)
 
-            trex = Trex()
-            trex.setup(main.TRexClient)
-
             original_flows_number = onos_cli.checkFlowCount()
 
             main.step("Verify slices and traffic Classes")
-
             slices_onos = onos_rest.getSlices(debug=True)
 
             # Sanity check for the API, at least the default slice should be there.
@@ -95,10 +93,10 @@ class QOSNonMobileTest:
                 minFlowCount=original_flows_number + (new_flows * n_switches)
             )
 
-            main.step("Send traffic with TRex")
             for flow in testCfg["flows"]:
                 trex.createFlow(flow)
             results = trex.sendAndReceiveTraffic(testCfg["duration"])
+            main.step("Verify congestion")
             trex.verifyCongestion(results)
 
             trex.logPortStats()

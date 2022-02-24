@@ -52,13 +52,33 @@
             </ue2>
             <ue3>
                 <ue_address>10.240.0.3</ue_address>
-                <teid>201</teid>
+                <teid>250</teid>
                 <up_id>30</up_id>
                 <down_id>31</down_id>
                 <tc>0</tc>
                 <five_g>False</five_g>
             </ue3>
         </ues>
+        <app_filters>
+            <allowPort>
+                <app_id>1</app_id>
+                <!-- Should be the same as pdn_host -->
+                <!-- MgmtServer -->
+                <ip_prefix>10.32.11.1/32</ip_prefix>
+                <ip_proto>17</ip_proto>
+                <port_range>80..80</port_range>
+                <priority>20</priority>
+                <action>allow</action>
+            </allowPort>
+            <denyHost>
+                <app_id>2</app_id>
+                <ip_prefix>10.32.11.1/32</ip_prefix>
+                <ip_proto></ip_proto>
+                <port_range></port_range>
+                <priority>10</priority>
+                <action>deny</action>
+            </denyHost>
+        </app_filters>
         <UP4_dataplane_fail>
             <switch_to_kill>Leaf2</switch_to_kill> <!-- Component name of the switch to kill in CASE 5 -->
             <k8s_switch_node>leaf2</k8s_switch_node>

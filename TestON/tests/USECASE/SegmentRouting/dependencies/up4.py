@@ -45,6 +45,7 @@ class UP4:
         <enodeb_host>Compute3</enodeb_host>
         <router_mac>00:00:0A:4C:1C:46</router_mac> # Needed to verify connectivity with scapy
         <s1u_address>10.32.11.126</s1u_address>
+        <slice_id>1</slice_id> # Mobile SLICE ID, used when pushing application filtering entries
         <ues>
             <ue2>
                 <ue_address>10.240.0.2</ue_address>
@@ -71,6 +72,7 @@ class UP4:
         self.app_filters = {}
         self.up4_client = None
         self.no_host = False
+        self.slice_id = None
 
     def setup(self, p4rt_client, no_host=False):
         """
@@ -82,6 +84,7 @@ class UP4:
         self.s1u_address = main.params["UP4"]["s1u_address"]
         self.emulated_ues = main.params["UP4"]['ues']
         self.app_filters = main.params["UP4"]['app_filters']
+        self.slice_id = main.params["UP4"]['slice_id']
         self.up4_client = p4rt_client
         self.no_host = no_host
 
@@ -108,6 +111,9 @@ class UP4:
                                            enableGtp=True)
             if self.pdn_host is not None:
                 self.pdn_host.startScapy(ifaceName=self.pdn_interface["name"])
+        # TODO: configure interfaces table. Currently, we rely on netcfg or
+        #  PFCP agent to push interface entries, but we should explicitly push
+        #  them here
 
     def teardown(self):
         self.up4_client.stopP4RtClient()
@@ -460,13 +466,13 @@ class UP4:
                 fail = True
         return not fail
 
-    def appFilterOnosString(self, app_id, priority, ip_proto, ip_prefix, port_range, **kwargs):
+    def appFilterOnosString(self, app_id, priority, ip_proto, ip_prefix, port_range, slice_id, **kwargs):
         return "UpfApplication(priority=%s, Match(%s%s%s%s) -> Action(app_id=%s))" % (
             priority,
             ("ip_prefix=%s, " % ip_prefix) if ip_prefix else "",
             ("l4_port_range=[%s], " % port_range) if port_range else "",
             ("ip_proto=%s, " % ip_proto) if ip_proto else "",
-            "slice_id=0",
+            "slice_id=s" % slice_id,
             app_id
         )
 
@@ -572,7 +578,9 @@ class UP4:
         tableName = 'PreQosPipe.applications'
         actionName = 'PreQosPipe.set_app_id'
         actionParams = {'app_id': str(app_id)}
-        matchFields = {}
+        matchFields = {
+            'slice_id': str(self.slice_id)
+        }
         if ip_prefix:
             matchFields['app_ip_addr'] = str(ip_prefix)
         if ip_proto:

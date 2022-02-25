@@ -1,7 +1,7 @@
 from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
     Testcaselib as run
 from tests.USECASE.SegmentRouting.dependencies.trex import Trex
-from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, N_FLOWS_PER_UE
+from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
 import json
 
 
@@ -16,7 +16,6 @@ class QOSTest:
         main.step("Start P4rt client and setup TRex")
         # Use the first available ONOS instance CLI
         onos_cli = main.Cluster.active(0).CLI
-        initial_flow_count = onos_cli.checkFlowCount()
         up4 = UP4()
         trex = Trex()
         # Get the P4RT client connected to UP4 in the first available ONOS instance
@@ -26,12 +25,6 @@ class QOSTest:
         main.step("Program UPF entities via UP4")
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
-
-        run.checkFlows(
-            main,
-            minFlowCount=initial_flow_count + (
-                        len(up4.emulated_ues) * N_FLOWS_PER_UE * n_switches)
-        )
 
         # Load traffic config for the current test case
         main.step("Load test JSON config")
@@ -68,8 +61,6 @@ class QOSTest:
         main.step("Remove UPF entities via UP4")
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
-
-        run.checkFlows(main, minFlowCount=initial_flow_count)
 
         main.step("Teardown")
         trex.teardown()

@@ -19,26 +19,22 @@
     <SLICING>
         <slices>
             <!-- Should match slices defined in netcfg-->
-            <slice0>
+            <default>
                 <slice_id>0</slice_id>
                 <traffic_classes>BEST_EFFORT,REAL_TIME</traffic_classes>
-            </slice0>
-            <slice1>
+            </default>
+            <mobile_slice>
                 <slice_id>1</slice_id>
-                <traffic_classes>BEST_EFFORT,CONTROL,REAL_TIME,ELASTIC</traffic_classes>
-            </slice1>
-            <slice2>
+                <traffic_classes>BEST_EFFORT,ELASTIC</traffic_classes>
+            </mobile_slice>
+            <non_mobile_slice>
                 <slice_id>2</slice_id>
-                <traffic_classes>BEST_EFFORT,REAL_TIME,ELASTIC</traffic_classes>
-            </slice2>
-            <slice3>
-                <slice_id>3</slice_id>
                 <traffic_classes>BEST_EFFORT,REAL_TIME</traffic_classes>
-            </slice3>
+            </non_mobile_slice>
         </slices>
         <traffic_classification>
-            <slice_1_be>
-                <slice_id>1</slice_id>
+            <non_mobile_be>
+                <slice_id>2</slice_id>
                 <traffic_class>BEST_EFFORT</traffic_class>
                 <traffic_selector>
                     <ipProto>
@@ -50,9 +46,9 @@
                         <udpPort>100</udpPort>
                     </udpDst>
                 </traffic_selector>
-            </slice_1_be>
-            <slice_1_rt>
-                <slice_id>1</slice_id>
+            </non_mobile_be>
+            <non_mobile_rt>
+                <slice_id>2</slice_id>
                 <traffic_class>REAL_TIME</traffic_class>
                 <traffic_selector>
                     <ipProto>
@@ -64,7 +60,7 @@
                         <udpPort>200</udpPort>
                     </udpDst>
                 </traffic_selector>
-            </slice_1_rt>
+            </non_mobile_rt>
         </traffic_classification>
     </SLICING>
 

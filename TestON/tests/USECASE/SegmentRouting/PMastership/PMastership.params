@@ -1,0 +1,65 @@
+<PARAMS>
+    <testcases>1</testcases>
+
+    <GRAPH>
+        <nodeCluster>pairedleaves</nodeCluster>
+        <builds>20</builds>
+        <jobName>PMastership</jobName>
+    </GRAPH>
+
+    <persistent_setup>True</persistent_setup>
+
+    <kubernetes>
+        <appName>onos-classic</appName>
+        <namespace>tost</namespace>
+    </kubernetes>
+    <use_stern>True</use_stern>
+
+    <PMastership>
+
+        <PMastership_dataplane_fail>
+            <switch_to_kill>Leaf2</switch_to_kill> <!-- Component name of the switch to kill in CASE 5 -->
+            <k8s_switch_node>leaf2</k8s_switch_node>
+            <k8s_label>node-role.aetherproject.org</k8s_label>
+            <k8s_label_value_test>switch-test</k8s_label_value_test>
+            <k8s_label_value_normal>switch</k8s_label_value_normal>
+        </PMastership_dataplane_fail>
+
+    </PMastership>
+
+    <TOPO>
+        <switchNum>2</switchNum>
+        <linkNum>2</linkNum>
+    </TOPO>
+
+    <ONOS_Logging>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.omecproject.up4>TRACE</org.omecproject.up4>
+    </ONOS_Logging>
+    <ONOS_Logging_Reset>
+        <org.onosproject.segmentrouting>DEBUG</org.onosproject.segmentrouting>
+        <org.omecproject.up4>INFO</org.omecproject.up4>
+    </ONOS_Logging_Reset>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers,fpm,lldpprovider,hostprovider,netcfghostprovider,drivers.bmv2,org.opencord.fabric-tofino,pipelines.fabric,org.stratumproject.fabric-tna,drivers.barefoot,segmentrouting,up4</cellApps>
+    </ENV>
+
+    <DEPENDENCY>
+        <useCommonConf>False</useCommonConf>
+        <useCommonTopo>True</useCommonTopo>
+        <useBmv2>True</useBmv2>
+        <bmv2SwitchType>stratum</bmv2SwitchType>
+        <switchPrefix></switchPrefix>
+        <stratumRoot>~/stratum</stratumRoot>
+        <topology>trellis_fabric.py</topology>
+        <lib></lib>
+    </DEPENDENCY>
+
+    <SCALE>
+        <size>3</size>
+        <max>3</max>
+    </SCALE>
+
+</PARAMS>

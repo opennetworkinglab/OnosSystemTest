@@ -2676,16 +2676,25 @@ class OnosCliDriver( CLI ):
             else:
                 main.cleanAndExit()
 
-    def flows( self, state="any", jsonFormat=True, timeout=60, noExit=False, noCore=False, device=""):
+    def flows( self, state="any", jsonFormat=True, timeout=60, noExit=False, noCore=False, device="" ):
+        return self.dataPlaneEntities( entity="flows", state=state, jsonFormat=jsonFormat,
+            timeout=timeout, noExit=noExit, noCore=noCore, device=device )
+
+    def groups( self, state="any", jsonFormat=True, timeout=60, noExit=False, noCore=False, device="" ):
+        return self.dataPlaneEntities( entity="groups", state=state, jsonFormat=jsonFormat,
+            timeout=timeout, noExit=noExit, noCore=noCore, device=device )
+
+    def dataPlaneEntities( self, entity="flows", state="any", jsonFormat=True,
+        timeout=60, noExit=False, noCore=False, device="" ):
         """
         Optional:
             * jsonFormat: enable output formatting in json
             * noCore: suppress core flows
         Description:
-            Obtain flows currently installed
+            Obtain dataplaneEntities currently installed
         """
         try:
-            cmdStr = "flows"
+            cmdStr = entity
             if jsonFormat:
                 cmdStr += " -j"
             if noCore:
@@ -2696,7 +2705,7 @@ class OnosCliDriver( CLI ):
             assert handle is not None, "Error in sendline"
             assert "Command not found:" not in handle, handle
             if re.search( "Error:", handle ):
-                main.log.error( self.name + ": flows() response: " +
+                main.log.error( self.name + ": " + entity + "() response: " +
                                 str( handle ) )
             return handle
         except AssertionError:
@@ -2782,6 +2791,68 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanAndExit()
 
+    def checkGroupCount( self, min=0, timeout=60 ):
+        count = self.getTotalGroupsNum( timeout=timeout )
+        count = int( count ) if count else 0
+        main.log.debug( "found {} groups".format( count ) )
+        return count if ( count >= min ) else False
+
+    def checkGroupsState( self, isPENDING=True, timeout=60, noExit=False ):
+        """
+        Description:
+            Check the if all the current groups are in ADDED state
+            We check PENDING_ADD, PENDING_REMOVE, REMOVED, and FAILED groups,
+            if the count of those states is 0, which means all current groups
+            are in ADDED state, and return main.TRUE otherwise return main.FALSE
+        Optional:
+            * isPENDING:  whether the PENDING_ADD is also a correct status
+        Return:
+            returnValue - Returns main.TRUE only if all groups are in
+                          ADDED state or PENDING_ADD if the isPENDING
+                          parameter is set true, return main.FALSE otherwise.
+        """
+        try:
+            states = [ "PENDING_ADD", "PENDING_ADD_RETRY", "PENDING_DELETE", "PENDING_UPDATE", "WAITING_AUDIT_COMPLETE" ]
+            checkedStates = []
+            statesCount = [ 0, 0, 0, 0, 0 ]
+            for s in states:
+                rawGroups = self.groups( state=s, timeout = timeout )
+                if rawGroups:
+                    # if we didn't get groups or groups function return None, we should return
+                    # main.Flase
+                    checkedStates.append( json.loads( rawGroups ) )
+                else:
+                    return main.FALSE
+            for i in range( len( states ) ):
+                statesCount[ i ] += int( len(checkedStates[i]) )
+                main.log.info( states[ i ] + " groups: " + str( statesCount[ i ] ) )
+
+            # We want to count PENDING_ADD if isPENDING is true
+            if isPENDING:
+                if statesCount[ 2 ] + statesCount[ 3 ] + statesCount[ 4 ] > 0:
+                    return main.FALSE
+            else:
+                if statesCount[ 0 ] + statesCount[ 1 ] + statesCount[ 2 ] + statesCount[ 3 ] + statesCount[ 4 ] > 0:
+                    return main.FALSE
+            return main.TRUE
+        except ( TypeError, ValueError ):
+            main.log.exception( "{}: Object not as expected: {!r}".format( self.name, rawGroups ) )
+            return None
+
+        except AssertionError:
+            main.log.exception( "" )
+            return None
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": ONOS timeout" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanAndExit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanAndExit()
+
     def pushTestIntents( self, ingress, egress, batchSize, offset="",
                          options="", timeout=10, background = False, noExit=False, getResponse=False ):
         """
@@ -2843,31 +2914,37 @@ class OnosCliDriver( CLI ):
             main.cleanAndExit()
 
     def getTotalFlowsNum( self, timeout=60, noExit=False ):
+        return self.getTotalEntitiesNum( entity="flows", timeout=60, noExit=False )
+
+    def getTotalGroupsNum( self, timeout=60, noExit=False ):
+        return self.getTotalEntitiesNum( entity="groups", timeout=60, noExit=False )
+
+    def getTotalEntitiesNum( self, entity="flows", timeout=60, noExit=False ):
         """
         Description:
-            Get the number of ADDED flows.
+            Get the number of ADDED entities.
         Return:
-            The number of ADDED flows
+            The number of ADDED entities
             Or return None if any exceptions
         """
 
         try:
-            # get total added flows number
-            cmd = "flows -c added"
-            rawFlows = self.sendline( cmd, timeout=timeout, noExit=noExit )
-            if rawFlows:
-                rawFlows = rawFlows.split( "\n" )
-                totalFlows = 0
-                for l in rawFlows:
-                    totalFlows += int( l.split( "Count=" )[ 1 ] )
+            # get total added entities number
+            cmd = entity + " -c added"
+            rawEntities = self.sendline( cmd, timeout=timeout, noExit=noExit )
+            if rawEntities:
+                rawEntities = rawEntities.split( "\n" )
+                totalEntities = 0
+                for l in rawEntities:
+                    totalEntities += int( l.split( "Count=" )[ 1 ] )
             else:
                 main.log.warn( "Response not as expected!" )
                 return None
-            return totalFlows
+            return totalEntities
 
         except IndexError:
             main.log.exception( "{}: Object not as expected!".format( self.name ) )
-            main.log.debug( "rawFlows: {}".format( rawFlows ) )
+            main.log.debug( "rawEntities: {}".format( rawEntities ) )
             return None
         except ( TypeError, ValueError ):
             main.log.exception( "{}: Object not as expected!".format( self.name ) )

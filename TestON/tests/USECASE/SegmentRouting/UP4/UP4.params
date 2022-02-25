@@ -33,6 +33,7 @@
         </enodebs>
         <s1u_address>10.32.11.126</s1u_address>
         <router_mac>00:00:0A:4C:1C:46</router_mac>
+        <slice_id>1</slice_id>
         <ues>
             <ue1>
                 <ue_address>10.240.0.1</ue_address>

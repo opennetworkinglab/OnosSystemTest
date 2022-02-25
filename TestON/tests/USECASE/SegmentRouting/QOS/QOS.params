@@ -18,6 +18,7 @@
 
     <UP4>
         <s1u_address>10.32.11.126</s1u_address>
+        <slice_id>1</slice_id>
         <enodebs>
             <enodeb_1>
                 <host>TRexClient</host>
@@ -32,7 +33,6 @@
                 <teid>100</teid>
                 <up_id>10</up_id>
                 <down_id>11</down_id>
-                // TODO: we should pass also the slice_id
                 <tc>0</tc> <!-- Best Effort -->
                 <five_g>False</five_g>
             </ue1>

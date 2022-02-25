@@ -14,6 +14,7 @@ THIS_DIR="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
 TEST_ON_DIR="$(cd ${THIS_DIR}/.. && pwd)"
 CONTAINER_FS="${THIS_DIR}/fs"
 DI_UTIL_REPO="git@github.com:opennetworkinglab/bf-di-scripts.git"
+ENV="macos"
 
 mkdir -p "${CONTAINER_FS}/tmp"
 rm -rf "${CONTAINER_FS}/tmp/additional-py-pkgs.txt"
@@ -30,7 +31,10 @@ for op in $@; do
             git clone "${DI_UTIL_REPO}" "${CONTAINER_FS}/tmp/bf-di-scripts"
             echo "/tmp/bf-di-scripts/4/utility" > "${CONTAINER_FS}/tmp/additional-py-pkgs.txt"
         ;;
+        '--li' )
+            ENV="linux"
+        ;;
     esac
 done
 
-docker build -t teston -f "${THIS_DIR}/Dockerfile" "${TEST_ON_DIR}"
+docker build -t teston -f "${THIS_DIR}/Dockerfile" "${TEST_ON_DIR}" --build-arg ENV=$ENV

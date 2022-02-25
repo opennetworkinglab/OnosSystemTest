@@ -55,6 +55,10 @@ RUN apt update && \
     chsh -s /bin/bash jenkins && \
     echo jenkins:jenkins | chpasswd
 
+ARG ENV
+
+RUN if [ "$ENV" = "linux" ] ; then groupmod --gid 1001 jenkins && usermod --uid 1001 jenkins ; fi
+
 RUN curl -sS --fail "https://repo1.maven.org/maven2/org/onosproject/onos-releases/2.5.4/onos-admin-2.5.4.tar.gz" | tar zx && \
     mv onos-admin-2.5.4/* /usr/local/bin/ && \
     rm -r onos-admin-2.5.4

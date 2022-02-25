@@ -16,8 +16,7 @@ class UP4:
         Verify removed UPF entities
         """
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
-                N_FLOWS_PER_UE
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
         except ImportError as e:
@@ -34,7 +33,6 @@ class UP4:
         main.step("Start scapy and p4rt client")
         # Use the first available ONOS instance CLI
         onos_cli = main.Cluster.active(0).CLI
-        initial_flow_count = onos_cli.checkFlowCount()
         up4 = UP4()
         # Get the P4RT client connected to UP4 in the first available ONOS instance
         up4.setup(main.Cluster.active(0).p4rtUp4)
@@ -42,12 +40,6 @@ class UP4:
         main.step("Program and Verify UPF entities via UP4")
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
-
-        run.checkFlows(
-            main,
-            minFlowCount=initial_flow_count + (
-                    len(up4.emulated_ues) * N_FLOWS_PER_UE * n_switches)
-        )
 
         # ------- Test Upstream traffic (enb->pdn)
         for app_filter_name in up4.app_filters:
@@ -62,8 +54,6 @@ class UP4:
         main.step("Remove and Verify UPF entities via UP4")
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
-
-        run.checkFlows(main, minFlowCount=initial_flow_count)
 
         main.step("Stop scapy and p4rt client")
         up4.teardown()
@@ -87,8 +77,7 @@ class UP4:
         UE_PORT = 400
         PDN_PORT = 800
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
-                N_FLOWS_PER_UE
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
         except ImportError as e:
@@ -105,7 +94,6 @@ class UP4:
         main.step("Start scapy and p4rt client + Scapy on BESS Host")
         # Use the first available ONOS instance CLI
         onos_cli = main.Cluster.active(0).CLI
-        initial_flow_count = onos_cli.checkFlowCount()
         up4 = UP4()
         # Get the P4RT client connected to UP4 in the first available ONOS instance
         up4.setup(main.Cluster.active(0).p4rtUp4)
@@ -125,12 +113,6 @@ class UP4:
         main.step("Program and Verify UPF entities for UEs via UP4")
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
-
-        run.checkFlows(
-            main,
-            minFlowCount=initial_flow_count + (
-                    len(up4.emulated_ues) * N_FLOWS_PER_UE * n_switches)
-        )
 
         # ------------------- UPSTREAM -------------------
         # ------- eNB -> fabric -> BESS (encapped)
@@ -261,8 +243,6 @@ class UP4:
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
 
-        run.checkFlows(main, minFlowCount=initial_flow_count)
-
         main.step("Stop scapy and p4rt client")
         up4.teardown()
         bess_host.stopScapy()
@@ -282,8 +262,7 @@ class UP4:
             Disconnect P4RT client
         """
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
-                N_FLOWS_PER_UE
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
         except ImportError as e:
@@ -303,19 +282,12 @@ class UP4:
         up4_0 = UP4()
         up4_1 = UP4()
         up4_2 = UP4()
-        initial_flow_count = onos_cli_0.checkFlowCount()
 
         main.step("Program and Verify UPF entities via UP4 on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
         up4_0.teardown()
-
-        run.checkFlows(
-            main,
-            minFlowCount=initial_flow_count + (
-                    len(up4_0.emulated_ues) * N_FLOWS_PER_UE * n_switches)
-        )
 
         main.step("Verify UPF entities number via UP4 P4RT on ONOS 1")
         up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
@@ -351,8 +323,6 @@ class UP4:
         main.step("Remove and Verify UPF entities via UP4 on ONOS 2")
         up4_2.detachUes()
         up4_2.verifyNoUesFlow(onos_cli_2)
-
-        run.checkFlows(main, minFlowCount=initial_flow_count)
 
         main.step("Verify no UPF entities via UP4 P4RT on ONOS 2")
         utilities.assert_equal(
@@ -411,8 +381,7 @@ class UP4:
         Remove UPF entities (cleanup)
         """
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
-                N_FLOWS_PER_UE
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
             from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import \
@@ -437,19 +406,11 @@ class UP4:
         up4_1 = UP4()
         up4_2 = UP4()
 
-        initial_flow_count = onos_cli_0.checkFlowCount()
-
         main.step("Program and Verify UPF entities via UP4 on ONOS 0")
         up4_0.setup(main.Cluster.active(0).p4rtUp4, no_host=True)
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
         up4_0.teardown()
-
-        run.checkFlows(
-            main,
-            minFlowCount=initial_flow_count + (
-                    len(up4_0.emulated_ues) * N_FLOWS_PER_UE * n_switches)
-        )
 
         onosPod = main.params["UP4_delete_pod"]
 
@@ -521,18 +482,10 @@ class UP4:
             onfail="Stale UPF entities"
         )
 
-        run.checkFlows(main, minFlowCount=initial_flow_count)
-
         main.step("Re-program UPF entities via UP4 on ONOS 0 after restart")
         up4_0.attachUes()
         up4_0.verifyUp4Flow(onos_cli_0)
         up4_0.teardown()
-
-        run.checkFlows(
-            main,
-            minFlowCount=initial_flow_count + (
-                    len(up4_0.emulated_ues) * N_FLOWS_PER_UE * n_switches)
-        )
 
         main.step("Verify UPF entities via UP4 on ONOS 1")
         up4_1.setup(main.Cluster.active(1).p4rtUp4, no_host=True)
@@ -555,8 +508,6 @@ class UP4:
         up4_1.verifyNoUesFlow(onos_cli_1)
         up4_1.teardown()
 
-        run.checkFlows(main, minFlowCount=initial_flow_count)
-
         run.cleanup(main)
 
     def CASE5(self, main):
@@ -572,8 +523,7 @@ class UP4:
         Remove UPF entities (cleanup)
         """
         try:
-            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4, \
-                N_FLOWS_PER_UE
+            from tests.USECASE.SegmentRouting.dependencies.up4 import UP4
             from tests.USECASE.SegmentRouting.dependencies.Testcaselib import \
                 Testcaselib as run
             from tests.USECASE.SegmentRouting.SRStaging.dependencies.SRStagingTest import \
@@ -603,17 +553,10 @@ class UP4:
 
         up4 = UP4()
 
-        initial_flow_count = onos_cli.checkFlowCount()
-
         main.step("Program and Verify UPF entities via UP4")
         up4.setup(main.Cluster.active(0).p4rtUp4)
         up4.attachUes()
         up4.verifyUp4Flow(onos_cli)
-
-        run.checkFlows(
-            main,
-            minFlowCount=initial_flow_count+(len(up4.emulated_ues)*4*n_switches)
-        )
 
         main.step("Set label to switch k8s node and kill switch")
         # K8s node name correspond to the switch name in lowercase
@@ -750,8 +693,6 @@ class UP4:
         up4.detachUes()
         up4.verifyNoUesFlow(onos_cli)
         up4.teardown()
-
-        run.checkFlows(main, minFlowCount=initial_flow_count)
 
         # Teardown
         run.cleanup(main)

@@ -102,6 +102,9 @@ class UP4:
             self.pdn_interface = self.pdn_host.interfaces[0]
         self.router_mac = main.params["UP4"].get("router_mac", None)
 
+        for app_filter in self.app_filters.values():
+            if app_filter.get('slice_id', None) is None:
+                app_filter['slice_id'] = self.slice_id
         # Start components
         self.up4_client.startP4RtClient()
         if not self.no_host:
@@ -419,7 +422,7 @@ class UP4:
             expect=True,
             actual=retValue,
             onpass="Correct UE session, terminations and GTP tunnel peers in ONOS",
-            onfail="Wrong UE session, terminations and GTP tunnel peers in ONOS. " +
+            onfail="Wrong Application Filters, UE sessions, terminations and/or GTP tunnel peers in ONOS. " +
                    "Missing:\n" + '\n'.join(failString)
         )
 
@@ -466,13 +469,21 @@ class UP4:
                 fail = True
         return not fail
 
-    def appFilterOnosString(self, app_id, priority, ip_proto, ip_prefix, port_range, slice_id, **kwargs):
-        return "UpfApplication(priority=%s, Match(%s%s%s%s) -> Action(app_id=%s))" % (
+    def appFilterOnosString(self, app_id, priority, slice_id=None, ip_proto=None, ip_prefix=None, port_range=None, **kwargs):
+        if slice_id is None:
+            slice_id = self.slice_id
+        matches = []
+        if ip_prefix:
+            matches.append("ip_prefix=%s" % ip_prefix)
+        if port_range:
+            matches.append("l4_port_range=[%s]" % port_range)
+        if ip_proto:
+            matches.append("ip_proto=%s" % ip_proto)
+        matches.append("slice_id=%s" % slice_id)
+
+        return "UpfApplication(priority=%s, Match(%s) -> Action(app_id=%s))" % (
             priority,
-            ("ip_prefix=%s, " % ip_prefix) if ip_prefix else "",
-            ("l4_port_range=[%s], " % port_range) if port_range else "",
-            ("ip_proto=%s, " % ip_proto) if ip_proto else "",
-            "slice_id=s" % slice_id,
+            ", ".join(matches),
             app_id
         )
 
@@ -570,7 +581,7 @@ class UP4:
                               tunn_peer_id,
                               tc, five_g, op="clear")
 
-    def __programAppFilter(self, app_id, ip_prefix=None, ip_proto=None,
+    def __programAppFilter(self, app_id, slice_id, ip_prefix=None, ip_proto=None,
                            port_range=None, priority=0, op="program", **kwargs):
 
         entries = []
@@ -579,7 +590,7 @@ class UP4:
         actionName = 'PreQosPipe.set_app_id'
         actionParams = {'app_id': str(app_id)}
         matchFields = {
-            'slice_id': str(self.slice_id)
+            'slice_id': str(slice_id)
         }
         if ip_prefix:
             matchFields['app_ip_addr'] = str(ip_prefix)

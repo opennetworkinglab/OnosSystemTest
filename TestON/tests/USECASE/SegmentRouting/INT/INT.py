@@ -20,9 +20,8 @@ class INT:
 
         main.step("Setting up hosts and variables")
         srcIfaceName = main.h1.interfaces[0]["name"]
-        dstIfaceName = main.h2.interfaces[0]["name"]
         srcMac = main.h1.getMac(srcIfaceName)
-        dstMac = main.h2.getMac(dstIfaceName)
+        dstMac = main.params.get("routerMac", "00:00:00:00:00:00")
         srcIp = main.h1.interfaces[0]['ips'][0]
         dstIp = main.h2.interfaces[0]['ips'][0]
         srcPort = 2000
@@ -87,7 +86,7 @@ class INT:
         srcIfaceName = main.h1.interfaces[0]["name"]
         dstIfaceName = main.h2.interfaces[0]["name"]
         srcMac = main.h1.getMac(srcIfaceName)
-        dstMac = main.h2.getMac(dstIfaceName)
+        dstMac = main.params.get("routerMac", "00:00:00:00:00:00")
         srcIp = main.h1.interfaces[0]['ips'][0]
         dstIp = main.h2.interfaces[0]['ips'][0]
         srcPort = 2000

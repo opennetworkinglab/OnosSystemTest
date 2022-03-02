@@ -25,7 +25,7 @@
             </default>
             <mobile_slice>
                 <slice_id>1</slice_id>
-                <traffic_classes>BEST_EFFORT,ELASTIC</traffic_classes>
+                <traffic_classes>BEST_EFFORT,REAL_TIME,ELASTIC</traffic_classes>
             </mobile_slice>
             <non_mobile_slice>
                 <slice_id>2</slice_id>

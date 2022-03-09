@@ -2,6 +2,7 @@ from distutils.util import strtobool
 import ipaddress as ip
 import copy
 import re
+import pexpect
 
 FALSE = '0'
 TRUE = '1'
@@ -124,6 +125,7 @@ class UP4:
         if self.mock_smf:
             if not pfcpAddress:
                 pfcpAddress = self.mock_smf.kubectlGetServiceIP( "pfcp-agent" )
+            self.startMockSmfPcap(self.mock_smf)
             self.mock_smf.startSMF()
             self.mock_smf.configure(self.s1u_address, pfcpAddress, pfcpPort)
             # TODO Start pcap on mock_smf host
@@ -138,6 +140,24 @@ class UP4:
         # TODO: configure interfaces table. Currently, we rely on netcfg or
         #  PFCP agent to push interface entries, but we should explicitly push
         #  them here
+
+    def startMockSmfPcap(self, smfComponent, pcapIface="eth0"):
+        compName = "smf-pcap"
+        # Create another component/bash session for tshark
+        main.Network.copyComponent(smfComponent.name, compName)
+        pcap = getattr(main, compName)
+        pcapFile = "%s/CASE%s-%s" % (main.logdir, main.CurrentTestCaseNumber, compName)
+        commands = ['touch %s.pcap' % pcapFile,
+                    'chmod o=rw %s.pcap' % pcapFile]
+        for command in commands:
+            pcap.handle.sendline(command)
+            pcap.handle.expect(pcap.prompt)
+            main.log.debug("%s: %s" % (pcap.name, str(pcap.handle.before)))
+        pcap.handle.sendline("sudo /usr/bin/tshark -i %s -w %s.pcap &> %s.log" % (pcapIface, pcapFile, pcapFile))
+        i = pcap.handle.expect(["password", pexpect.TIMEOUT], timeout=5)
+        if i == 0:
+            pcap.handle.sendline(pcap.pwd if pcap.pwd else "jenkins")
+        pcap.preDisconnect = pcap.exitFromProcess
 
     def teardown(self):
         if self.up4_client:

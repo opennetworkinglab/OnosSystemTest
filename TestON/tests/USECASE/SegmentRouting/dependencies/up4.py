@@ -188,7 +188,7 @@ class UP4:
                     ue["seid"] = self.next_seid
                     self.next_seid = self.next_seid + 1
                     self.emulated_ues[ue_name]["seid"] = ue["seid"]
-                self.smfAttachUe(ue_name, sdf=filter_desc[-1:], **ue) # TODO: pass whole filter list once multi app support is fixed
+                self.smfAttachUe(ue_name, sdf=filter_desc, **ue)
             else:
                 self.attachUe(ue_name, **ue)
 
@@ -772,7 +772,7 @@ class UP4:
         elif op == "clear":
             self.__clear_entries(entries)
 
-    def __pfcpSDFString(self, ip_prefix=None, ip_proto=None, port_range=None,
+    def __pfcpSDFString(self, ip_prefix=None, ip_proto=None, port_range=None, priority=0,
                         action="allow", **kwargs):
         if ip_proto is None or str(ip_proto) == "255":
             protoString = "ip"
@@ -783,14 +783,16 @@ class UP4:
         else:
             #  TODO: is there a python library for this? Can we just pass the number?
             raise NotImplemented
+        precedence = (1<<32) - priority # MAX_UINT32 - priority
         if port_range is None:
             port_range = "any"
         if ip_prefix is None:
             ip_prefix = "any"
-        return "--app-filter '%s:%s:%s:%s'" % ( protoString,
+        return "--app-filter '%s:%s:%s:%s:%s'" % ( protoString,
                                                 ip_prefix,
                                                 port_range.replace("..","-"),
-                                                action )
+                                                action,
+                                                precedence )
 
     def __programUeRules(self, ue_name, ue_address,
                          teid=None, up_id=None, down_id=None,

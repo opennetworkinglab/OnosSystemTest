@@ -1248,7 +1248,8 @@ class SRBridging:
 
     def CASE56( self, main ):
         """
-        Tests connectivity between two untagged hosts with different vlan id
+        Tests connectivity between two untagged hosts with different vlan id,
+        hosts should not be able to ping each other.
         (Ports are configured as vlan-untagged 10 and 20, respectively)
 
         Sets up 3 ONOS instances

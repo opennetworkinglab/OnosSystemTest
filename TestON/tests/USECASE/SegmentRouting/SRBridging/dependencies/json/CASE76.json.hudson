@@ -1,0 +1,76 @@
+{
+  "ports": {
+    "device:leaf1/16": {
+      "interfaces": [
+        {
+          "ips": [
+            "10.32.11.126/25",
+            "10.32.11.254/26"
+          ],
+          "vlan-tagged": [111, 113, 120],
+          "name": "leaf1-pair"
+        }
+      ]
+    },
+    "device:leaf2/16": {
+      "interfaces": [
+        {
+          "ips": [
+            "10.32.11.126/25",
+            "10.32.11.254/26"
+          ],
+          "vlan-tagged": [111, 113, 120],
+          "name": "leaf2-pair"
+        }
+      ]
+    },
+    "device:leaf1/100": {
+      "interfaces": [
+        {
+          "ips": [
+            "10.32.11.126/25"
+          ],
+          "vlan-untagged": 111,
+          "name": "host-1-1"
+        }
+      ]
+    },
+    "device:leaf1/101": {
+      "interfaces": [
+        {
+          "ips": [
+            "10.32.11.126/25"
+          ],
+          "vlan-tagged": [
+            120
+          ],
+          "name": "host-2-1"
+        }
+      ]
+    },
+    "device:leaf2/100": {
+      "interfaces": [
+        {
+          "ips": [
+            "10.32.11.126/25"
+          ],
+          "vlan-untagged": 111,
+          "name": "host-1-2"
+        }
+      ]
+    },
+    "device:leaf2/101": {
+      "interfaces": [
+        {
+          "ips": [
+            "10.32.11.126/25"
+          ],
+          "vlan-tagged": [
+            120
+          ],
+          "name": "host-2-2"
+        }
+      ]
+    }
+  }
+}

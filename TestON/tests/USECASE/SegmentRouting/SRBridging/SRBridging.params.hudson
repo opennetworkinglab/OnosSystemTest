@@ -2,7 +2,7 @@
     <testcases>6,16,26,36,46,56,66,76</testcases>
 
     <GRAPH>
-        <nodeCluster>pairedleaves</nodeCluster>
+        <nodeCluster>ci1-sdfabric</nodeCluster>
         <builds>20</builds>
         <jobName>SRBridging-tofino</jobName>
         <branch>master</branch>
@@ -24,7 +24,7 @@
         <lib>routinglib.py,trellislib.py,stratum.py</lib>
     </DEPENDENCY>
 
-    <jsonFileSuffix>.tucson</jsonFileSuffix>
+    <jsonFileSuffix>.hudson</jsonFileSuffix>
 
     <persistent_setup>True</persistent_setup>
 
@@ -65,8 +65,8 @@
     </CTRL>
 
     <timers>
-        <LinkDiscovery>12</LinkDiscovery>
-        <SwitchDiscovery>12</SwitchDiscovery>
+        <LinkDiscovery>1</LinkDiscovery>
+        <SwitchDiscovery>2</SwitchDiscovery>
         <TrafficDiscovery>10</TrafficDiscovery>
     </timers>
 

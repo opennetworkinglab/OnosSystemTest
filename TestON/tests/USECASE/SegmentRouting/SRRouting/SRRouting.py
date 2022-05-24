@@ -1684,8 +1684,8 @@ class SRRouting:
         blackholeIpRoute = "%s/24" % blackholeIp
         route = "%s/16" % baseIP
         blackholeRoute = "%s/24" % baseIP
-        srcComponent = getattr( main, 'Compute2' )
-        nextHopComponent = getattr( main, 'ManagmentServer' ) # add dstIP to the params file
+        srcComponent = getattr( main, 'Host2' )
+        nextHopComponent = getattr( main, 'Host1' ) # add dstIP to the params file
         nextHopIface = nextHopComponent.interfaces[0].get( 'name' )
         nextHopIp = nextHopComponent.getIPAddress( iface=nextHopIface )
         srcComponentIface = srcComponent.interfaces[0].get( 'name' )
@@ -1711,7 +1711,7 @@ class SRRouting:
         utilities.assert_equals( expect=main.TRUE, actual=routeResult,
                                      onpass="Route added in the host",
                                      onfail="Failed to add route in the host" )
-        main.log.debug( main.Compute2.getRoutes() )
+        main.log.debug( main.Host2.getRoutes() )
 
         main.step("Capturing ping to dstIP after adding the static routes")
         nextHopComponent.startFilter( ifaceName=nextHopIface, sniffCount=1, pktFilter="icmp and host " + dstIp )

@@ -1,8 +1,9 @@
 <PARAMS>
-    <testcases>1,2,101,102,103,104,301</testcases>
+    <!-- Disable case 301 for now since it requires additional settings for upstream router. -->
+    <testcases>1,2,101,102,103,104</testcases>
 
     <GRAPH>
-        <nodeCluster>pairedleaves</nodeCluster>
+        <nodeCluster>ci1-sdfabric</nodeCluster>
         <builds>20</builds>
         <jobName>SRpairedLeaves</jobName>
         <branch>master</branch>
@@ -34,18 +35,16 @@
     </kubernetes>
 
     <PERF>
-        <traffic_host>Compute1 Compute2</traffic_host>
-        <pcap_host>Compute3</pcap_host>
+        <traffic_host>Host1 Host2</traffic_host>
+        <pcap_host>Host3</pcap_host>
         <pcap_cmd_arguments>-t e -F pcap -s 100 </pcap_cmd_arguments>
         <iterations>1</iterations>
         <topo>
             <leaf1>
-                <ports>176 180 184 188</ports>
-                <note>eNB</note>
+                <ports>100 101</ports>
             </leaf1>
             <leaf2>
-                <ports>260 268 276 284</ports>
-                <note>upstream</note>
+                <ports>100 101</ports>
             </leaf2>
         </topo>
     </PERF>

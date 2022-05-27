@@ -35,7 +35,7 @@ class SRpairedLeaves:
                               description="%s tests on the %s pod" % ( descPrefix, pod ) )
         switches = int( main.params[ 'TOPO' ][ 'switchNum' ] )
         links = int( main.params[ 'TOPO' ][ 'linkNum' ] )
-        hosts = [ 'h1', 'h2', 'h3', 'mgmt' ]
+        hosts = [ 'h1', 'h2', 'h3']
         run.verifyTopology( main, switches, links, main.Cluster.numCtrls )
         run.verifyPing( main, hosts, hosts )
         main.funcs.cleanup( main )
@@ -64,7 +64,7 @@ class SRpairedLeaves:
                               topology='0x2',
                               onosNodes=3,
                               description="%s tests on the %s pod" % ( descPrefix, pod ) )
-        hosts = [ 'h1', 'h2', 'h3', 'mgmt' ]
+        hosts = [ 'h1', 'h2', 'h3' ]
         run.pingAllFabricIntfs( main, hosts, dumpFlows=False )
         main.funcs.cleanup( main )
 
@@ -93,8 +93,8 @@ class SRpairedLeaves:
                               topology='0x2',
                               onosNodes=3,
                               description="%s tests on the %s pod" % ( descPrefix, pod ) )
-        srcComponent = getattr( main, 'Compute1' )
-        dstComponent = getattr( main, 'Compute2' )
+        srcComponent = getattr( main, 'Host1' )
+        dstComponent = getattr( main, 'Host2' )
 
         targets = main.funcs.getHostConnections( main, srcComponent )
         shortDesc = descPrefix + "-Failure"
@@ -135,8 +135,8 @@ class SRpairedLeaves:
                               topology='0x2',
                               onosNodes=3,
                               description="%s tests on the %s pod" % ( descPrefix, pod ) )
-        srcComponent = getattr( main, 'Compute2' )
-        dstComponent = getattr( main, 'Compute1' )
+        srcComponent = getattr( main, 'Host2' )
+        dstComponent = getattr( main, 'Host1' )
 
         targets = main.funcs.getHostConnections( main, dstComponent )
         shortDesc = descPrefix + "-Failure"
@@ -177,8 +177,8 @@ class SRpairedLeaves:
                               topology='0x2',
                               onosNodes=3,
                               description="%s tests on the %s pod" % ( descPrefix, pod ) )
-        srcComponent = getattr( main, 'Compute1' )
-        dstComponent = getattr( main, 'Compute3' )
+        srcComponent = getattr( main, 'Host1' )
+        dstComponent = getattr( main, 'Host3' )
 
         targets = main.funcs.getHostConnections( main, srcComponent )
         shortDesc = descPrefix + "-Failure"
@@ -219,8 +219,8 @@ class SRpairedLeaves:
                               topology='0x2',
                               onosNodes=3,
                               description="%s tests on the %s pod" % ( descPrefix, pod ) )
-        srcComponent = getattr( main, 'Compute3' )
-        dstComponent = getattr( main, 'Compute1' )
+        srcComponent = getattr( main, 'Host3' )
+        dstComponent = getattr( main, 'Host1' )
 
         targets = main.funcs.getHostConnections( main, dstComponent )
         shortDesc = descPrefix + "-Failure"
@@ -610,7 +610,7 @@ class SRpairedLeaves:
         route-add 8.8.8.8/32 via <mgmt server fabric ip
         """
 
-        srcComponent = getattr( main, 'Compute1' )
+        srcComponent = getattr( main, 'Host1' )
         nextHopComponent = getattr( main, 'ManagmentServer' )
 
         # Add route in host to outside host via gateway ip

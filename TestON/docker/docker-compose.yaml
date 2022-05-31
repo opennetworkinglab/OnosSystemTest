@@ -1,0 +1,7 @@
+services:
+  teston-node:
+    image: teston
+    volumes:
+      - type: bind
+        source: "../"
+        target: "/home/jenkins/teston"

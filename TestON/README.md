@@ -75,7 +75,7 @@ By default, an user `jenkins` will be creted with password `jenkins`.
 To build the container image:
 
 ```bash
-./docker/build.sh [--wk] [--di]
+./docker/build.sh [--wk] [--di] [--jenkins jenkins-url jenkins-node]
 ```
 
 To include user's SSH keys, use `--wk` option.
@@ -84,14 +84,30 @@ To include DeepInsight API utility, add `--di` option.
 For some tests, you need to include config files such as Kubernetes POD config.
 You can copy them to the `docker/fs/` directory before building it.
 
-A new container image called `teston` will be created after build.
+To add Jenkins support, use `--jenkins` option with the Jenkins URL and node name, for example:
+
+```text
+./build.sh --jenkins jenkins.myproject.org compute-node-1
+```
+
+You also need to place `secret.txt` with Jenkins secret under `docker/fs/home/jenkins/` directory.
+
+A new container image called `teston:latest` will be created after build.
 
 Use the following command to start the container:
 
 ```bash
-./docker/start.sh
+docker compose up -d
 ```
 
-This command will start a container with name `teston` and listen on TCP port `2222` that allows users to connect it via ssh.
+To attach to the test on shell:
 
-The command will also start a bash shell with user `jenkins`. Exit this shell to stop the container.
+```bash
+docker compose exec -it teston-node bash
+```
+
+To stop the container:
+
+```bash
+docker compose down
+```

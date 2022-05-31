@@ -1,4 +1,5 @@
 fs/home/jenkins/*
 !fs/home/jenkins/.ipython
+!fs/home/jenkins/jenkins_agent.sh
 fs/usr/local
 fs/tmp

@@ -5,6 +5,10 @@ ARG TREX_VER=3b19ddcf67e33934f268b09d3364cd87275d48db
 ARG TREX_EXT_LIBS=/external_libs
 ARG TREX_LIBS=/trex_python
 ARG KUBECTL=v1.22.1
+ARG ONOS_VER=2.5.4
+ARG RANCHER_VER=2.6.5
+ARG GO_VER=1.18.2
+ARG TFMASK_VER=0.7.0
 
 # Install TRex deps
 FROM alpine:3.12.1 as trex-builder
@@ -26,6 +30,13 @@ ARG TREX_EXT_LIBS
 ARG TREX_LIBS
 ARG SCAPY_VER
 ARG KUBECTL
+ARG JENKINS_URL
+ARG JENKINS_NODE
+ARG ONOS_VER
+ARG RANCHER_VER
+ARG GO_VER
+ARG TFMASK_VER
+ENV DEBIAN_FRONTEND=noninteractive
 ENV PACKAGES \
     python \
     python3 \
@@ -35,7 +46,11 @@ ENV PACKAGES \
     curl \
     supervisor \
     git \
-    iproute2
+    iproute2 \
+    openjdk-11-jre \
+    software-properties-common \
+    git-crypt \
+    gnupg-agent
 ADD requirements.txt /
 
 COPY --from=trex-builder /output /
@@ -60,9 +75,23 @@ ARG ENV
 
 RUN if [ "$ENV" = "linux" ] ; then groupmod --gid 1001 jenkins && usermod --uid 1001 jenkins ; fi
 
-RUN curl -sS --fail "https://repo1.maven.org/maven2/org/onosproject/onos-releases/2.5.4/onos-admin-2.5.4.tar.gz" | tar zx && \
-    mv onos-admin-2.5.4/* /usr/local/bin/ && \
-    rm -r onos-admin-2.5.4
+RUN curl -sS --fail "https://repo1.maven.org/maven2/org/onosproject/onos-releases/${ONOS_VER}/onos-admin-${ONOS_VER}.tar.gz" | tar zx && \
+    mv onos-admin-${ONOS_VER}/* /usr/local/bin/ && \
+    rm -r onos-admin-${ONOS_VER}
+
+RUN curl -L -sS --fail "https://github.com/rancher/cli/releases/download/v${RANCHER_VER}/rancher-linux-amd64-v${RANCHER_VER}.tar.gz" | tar zx && \
+    mv rancher-v${RANCHER_VER}/rancher /usr/local/bin && \
+    rm -r rancher-v${RANCHER_VER}
+
+RUN cd /usr/local && curl -L -sS --fail https://go.dev/dl/go${GO_VER}.linux-amd64.tar.gz | tar zx
+ENV PATH=$PATH:/usr/local/go/bin
+
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
+    apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
+    apt-get update && apt-get install terraform
+
+RUN curl -Lo /usr/local/bin/tfmask https://github.com/cloudposse/tfmask/releases/download/${TFMASK_VER}/tfmask_linux_amd64 && \
+    chmod +x /usr/local/bin/tfmask
 
 ENV PYTHONPATH=${TREX_EXT_LIBS}:${TREX_LIBS}
 # TODO: should we parametrize those?
@@ -71,7 +100,10 @@ ENV OC2=localhost
 ENV OC3=localhost
 ADD docker/fs /
 RUN chown -R jenkins.jenkins /home/jenkins && \
-    python -m pip install -r /tmp/additional-py-pkgs.txt
+    python -m pip install -r /tmp/additional-py-pkgs.txt && \
+    chmod 1777 /tmp
+ENV JENKINS_URL=${JENKINS_URL}
+ENV JENKINS_NODE=${JENKINS_NODE}
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 

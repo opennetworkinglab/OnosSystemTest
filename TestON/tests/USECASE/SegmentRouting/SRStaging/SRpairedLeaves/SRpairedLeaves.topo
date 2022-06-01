@@ -9,7 +9,7 @@
             <jump_host></jump_host>
             <home>~</home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
             <COMPONENTS>
-                <kubeConfig>~/.kube/01-ci1-sdfabric.yaml</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
+                <kubeConfig>~/.kube/ci1-sdfabric</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
                 <useDocker>True</useDocker>  # Whether to use docker for ONOS nodes
                 <docker_prompt>\$</docker_prompt>
                 <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'

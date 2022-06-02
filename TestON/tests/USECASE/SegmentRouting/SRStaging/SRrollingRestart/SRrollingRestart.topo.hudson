@@ -9,7 +9,7 @@
             <jump_host></jump_host>
             <home>~/onos</home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
             <COMPONENTS>
-                <kubeConfig>~/.kube/dev-pairedleaves-tucson</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
+                <kubeConfig>~/.kube/ci1-sdfabric</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
                 <useDocker>True</useDocker>  # Whether to use docker for ONOS nodes
                 <docker_prompt>\$</docker_prompt>
                 <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
@@ -27,7 +27,7 @@
         </ONOScell>
 
         <Leaf1>
-            <host>10.76.28.70</host>
+            <host>10.70.10.94</host>
             <user>root</user>
             <password>onl</password>
             <type>StratumOSSwitchDriver</type>
@@ -45,7 +45,7 @@
         </Leaf1>
 
         <Leaf2>
-            <host>10.76.28.71</host>
+            <host>10.70.10.95</host>
             <user>root</user>
             <password>onl</password>
             <type>StratumOSSwitchDriver</type>
@@ -62,9 +62,9 @@
             </COMPONENTS>
         </Leaf2>
 
-        <Compute1>
-            <host>10.76.28.74</host>
-            <user>jenkins</user>
+        <Host1>
+            <host>10.70.10.105</host>
+            <user>sdfab</user>
             <password></password>
             <type>HostDriver</type>
             <connect_order>6</connect_order>
@@ -73,27 +73,19 @@
                 <mac></mac>
                 <inband>false</inband>
                 <dhcp>True</dhcp>
-                <ip>10.32.11.2</ip>
+                <ip>10.32.11.1</ip>
                 <shortName>h1</shortName>
                 <port1></port1>
                 <link1></link1>
-                <ifaceName>pairbond</ifaceName>
-                <routes>
-                    <route1>
-                        <network></network>
-                        <netmask></netmask>
-                        <gw></gw>
-                        <interface></interface>
-                    </route1>
-                </routes>
+                <ifaceName>bond0</ifaceName>
                 <sudo_required>true</sudo_required>
                 <scapy_path>/usr/bin/scapy</scapy_path>
             </COMPONENTS>
-        </Compute1>
+        </Host1>
 
-        <Compute2>
-            <host>10.76.28.72</host>
-            <user>jenkins</user>
+        <Host2>
+            <host>10.70.10.106</host>
+            <user>sdfab</user>
             <password></password>
             <type>HostDriver</type>
             <connect_order>7</connect_order>
@@ -102,27 +94,19 @@
                 <mac></mac>
                 <inband>false</inband>
                 <dhcp>True</dhcp>
-                <ip>10.32.11.3</ip>
+                <ip>10.32.11.2</ip>
                 <shortName>h2</shortName>
                 <port1></port1>
                 <link1></link1>
-                <ifaceName>pairbond</ifaceName>
-                <routes>
-                    <route1>
-                        <network></network>
-                        <netmask></netmask>
-                        <gw></gw>
-                        <interface></interface>
-                    </route1>
-                </routes>
+                <ifaceName>bond0</ifaceName>
                 <sudo_required>true</sudo_required>
                 <scapy_path>/usr/bin/scapy</scapy_path>
             </COMPONENTS>
-        </Compute2>
+        </Host2>
 
-        <Compute3>
-            <host>10.76.28.68</host>
-            <user>jenkins</user>
+        <Host3>
+            <host>10.70.10.107</host>
+            <user>sdfab</user>
             <password></password>
             <type>HostDriver</type>
             <connect_order>8</connect_order>
@@ -131,55 +115,18 @@
                 <mac></mac>
                 <inband>false</inband>
                 <dhcp>True</dhcp>
-                <ip>10.32.11.194</ip>
+                <ip>10.32.11.193</ip>
                 <shortName>h3</shortName>
                 <port1></port1>
                 <link1></link1>
-                <ifaceName>eno2</ifaceName>
-                <routes>
-                    <route1>
-                        <network></network>
-                        <netmask></netmask>
-                        <gw></gw>
-                        <interface></interface>
-                    </route1>
-                </routes>
+                <ifaceName>ens17</ifaceName>
                 <sudo_required>true</sudo_required>
                 <scapy_path>/usr/bin/scapy</scapy_path>
             </COMPONENTS>
-        </Compute3>
-
-        <ManagmentServer>
-            <host>10.76.28.66</host>
-            <user>jenkins</user>
-            <password></password>
-            <type>HostDriver</type>
-            <connect_order>1</connect_order>
-            <COMPONENTS>
-                <mac></mac>
-                <inband>false</inband>
-                <dhcp>True</dhcp>
-                <ip>10.32.11.1</ip>
-                <shortName>mgmt</shortName>
-                <port1></port1>
-                <link1></link1>
-                <ifaceName>pairbond</ifaceName>
-                <routes>
-                    <route1>
-                        <network></network>
-                        <netmask></netmask>
-                        <gw></gw>
-                        <interface></interface>
-                    </route1>
-                </routes>
-                <sudo_required>true</sudo_required>
-                <scapy_path>/usr/bin/scapy</scapy_path>
-
-            </COMPONENTS>
-        </ManagmentServer>
+        </Host3>
 
         <NetworkBench>
-            <host>10.76.28.66</host>
+            <host>localhost</host>
             <user>jenkins</user>
             <password></password>
             <type>NetworkDriver</type>

@@ -31,7 +31,7 @@ class SRrollingRestart:
                               description="%s tests on the %s pod" % ( descPrefix, pod ) )
         switches = int( main.params[ 'TOPO' ][ 'switchNum' ] )
         links = int( main.params[ 'TOPO' ][ 'linkNum' ] )
-        hosts = [ 'h1', 'h2', 'h3', 'mgmt' ]
+        hosts = [ 'h1', 'h2', 'h3' ]
 
         clusterSize = main.Cluster.numCtrls
         restartRounds = int( main.params.get( 'restartRounds', 1 ) )

@@ -2,7 +2,7 @@
     <testcases>1</testcases>
 
     <GRAPH>
-        <nodeCluster>pairedleaves</nodeCluster>
+        <nodeCluster>ci1-sdfabric</nodeCluster>
         <builds>20</builds>
         <jobName>PMastership</jobName>
     </GRAPH>
@@ -19,7 +19,7 @@
 
         <PMastership_dataplane_fail>
             <switch_to_kill>Leaf2</switch_to_kill> <!-- Component name of the switch to kill in CASE 5 -->
-            <k8s_switch_node>leaf2</k8s_switch_node>
+            <k8s_switch_node>sdfab-c1-leaf2</k8s_switch_node>
             <k8s_label>node-role.aetherproject.org</k8s_label>
             <k8s_label_value_test>switch-test</k8s_label_value_test>
             <k8s_label_value_normal>switch</k8s_label_value_normal>

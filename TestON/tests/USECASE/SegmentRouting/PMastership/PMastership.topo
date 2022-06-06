@@ -9,7 +9,7 @@
             <jump_host></jump_host>
             <home>~/onos</home>   # defines where onos home is on the build machine. Defaults to "~/onos/" if empty.
             <COMPONENTS>
-                <kubeConfig>~/.kube/dev-pairedleaves-tucson</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
+                <kubeConfig>~/.kube/ci1-sdfabric</kubeConfig>  # If set, will attempt to use this file for setting up port-forwarding
                 <useDocker>True</useDocker>  # Whether to use docker for ONOS nodes
                 <docker_prompt>\$</docker_prompt>
                 <cluster_name></cluster_name>  # Used as a prefix for cluster components. Defaults to 'ONOS'
@@ -28,7 +28,7 @@
         </ONOScell>
 
         <Leaf2>
-            <host>10.76.28.71</host>
+            <host>10.70.10.95</host>
             <user>root</user>
             <password>onl</password>
             <type>StratumOSSwitchDriver</type>
@@ -44,7 +44,7 @@
 
         <!--  This component is not needed, but required to use the Testcaselib  -->
         <NetworkBench>
-            <host>10.76.28.66</host>
+            <host>localhost</host>
             <user>jenkins</user>
             <password></password>
             <type>NetworkDriver</type>

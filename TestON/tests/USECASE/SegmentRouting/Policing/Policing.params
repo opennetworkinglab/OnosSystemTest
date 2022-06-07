@@ -2,7 +2,7 @@
     <testcases>1,2</testcases>
 
     <GRAPH>
-        <nodeCluster>pairedleaves</nodeCluster>
+        <nodeCluster>ci1-sdfabric</nodeCluster>
         <builds>20</builds>
         <jobName>QOS</jobName>
         <branch>master</branch>
@@ -22,8 +22,8 @@
         <enodebs>
             <enodeb_1>
                 <host>TRexClient</host>
-                <enb_address>10.32.11.124</enb_address>
-                <interface>pairbond</interface> <!-- useless for this test, we use TRex to generate traffic -->
+                <enb_address>10.32.11.123</enb_address>
+                <interface>bond0</interface> <!-- useless for this test, we use TRex to generate traffic -->
                 <ues>ue1,ue2</ues>
             </enodeb_1>
         </enodebs>
@@ -65,7 +65,12 @@
     </UP4>
 
     <TREX>
-        <port_stats>0,2,3</port_stats> <!-- TRex port 0 = PDN, TRex port 2 = eNodeB, TRex port 3 = second eNB -->
+        <!--
+            TRex port 0 = PDN (10.32.11.125)
+            TRex port 2 = eNodeB (10.32.11.123)
+            TRex port 3 = second eNB (10.32.11.122)
+        -->
+        <port_stats>0,2,3</port_stats>
         <flows>
             <UE1>
                 <name>UE1: Conformant Session</name>
@@ -80,7 +85,7 @@
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
                     <gtp_teid>100</gtp_teid>
                     <s1u_addr>10.32.11.126</s1u_addr>
-                    <enb_addr>10.32.11.124</enb_addr>
+                    <enb_addr>10.32.11.123</enb_addr>
                 </packet>
                 <latency_stats>true</latency_stats>
                 <flow_id>20</flow_id>
@@ -100,7 +105,7 @@
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
                     <gtp_teid>200</gtp_teid>
                     <s1u_addr>10.32.11.126</s1u_addr>
-                    <enb_addr>10.32.11.124</enb_addr>
+                    <enb_addr>10.32.11.123</enb_addr>
                 </packet>
                 <latency_stats>true</latency_stats>
                 <flow_id>21</flow_id>
@@ -119,7 +124,7 @@
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
                     <gtp_teid>100</gtp_teid>
                     <s1u_addr>10.32.11.126</s1u_addr>
-                    <enb_addr>10.32.11.124</enb_addr>
+                    <enb_addr>10.32.11.123</enb_addr>
                 </packet>
                 <latency_stats>true</latency_stats>
                 <flow_id>30</flow_id>
@@ -139,7 +144,7 @@
                     <eth_dst>00:00:0A:4C:1C:46</eth_dst>
                     <gtp_teid>200</gtp_teid>
                     <s1u_addr>10.32.11.126</s1u_addr>
-                    <enb_addr>10.32.11.124</enb_addr>
+                    <enb_addr>10.32.11.123</enb_addr>
                 </packet>
                 <latency_stats>true</latency_stats>
                 <flow_id>31</flow_id>

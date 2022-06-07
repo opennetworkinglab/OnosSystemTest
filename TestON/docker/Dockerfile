@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Copyright 2021-present Open Networking Foundation.
 # SPDX-License-Identifier: Apache-2.0
 ARG SCAPY_VER=2.4.5
-ARG TREX_VER=3b19ddcf67e33934f268b09d3364cd87275d48db
+ARG TREX_VER=3532cf99daf6dd3a1a284d0f1c388f1773eadc8a
 ARG TREX_EXT_LIBS=/external_libs
 ARG TREX_LIBS=/trex_python
 ARG KUBECTL=v1.22.1
@@ -50,7 +50,8 @@ ENV PACKAGES \
     openjdk-11-jre \
     software-properties-common \
     git-crypt \
-    gnupg-agent
+    gnupg-agent \
+    sudo
 ADD requirements.txt /
 
 COPY --from=trex-builder /output /
@@ -66,7 +67,7 @@ RUN apt update && \
     cd ${TREX_EXT_LIBS}/scapy-${SCAPY_VER} && python setup.py install && \
     mkdir -p /var/run/sshd && \
     mkdir -p /var/log/supervisor && \
-    useradd -m jenkins && \
+    useradd -m jenkins -G sudo && \
     chmod 777 /tmp && \
     chsh -s /bin/bash jenkins && \
     echo jenkins:jenkins | chpasswd
@@ -91,7 +92,9 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
     apt-get update && apt-get install terraform
 
 RUN curl -Lo /usr/local/bin/tfmask https://github.com/cloudposse/tfmask/releases/download/${TFMASK_VER}/tfmask_linux_amd64 && \
-    chmod +x /usr/local/bin/tfmask
+    chmod +x /usr/local/bin/tfmask 
+RUN ln -s /trex_python /home/jenkins/trex_python
+RUN echo '%jenkins ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 ENV PYTHONPATH=${TREX_EXT_LIBS}:${TREX_LIBS}
 # TODO: should we parametrize those?

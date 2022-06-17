@@ -3,7 +3,7 @@ autopep8==1.1
 configobj==4.7.2
 epydoc==3.0.1
 flake8==2.4.1
-numpy==1.9.1
+numpy==1.21.0
 pep8==1.5.7
 pep8-naming==0.3.3
 pexpect==3.2

@@ -2,7 +2,7 @@
     <testcases>1,2</testcases>
 
     <GRAPH>
-        <nodeCluster>pairedleaves</nodeCluster>
+        <nodeCluster>sdfabric-ci1</nodeCluster>
         <builds>20</builds>
         <jobName>QOS</jobName>
         <branch>master</branch>
@@ -74,9 +74,9 @@
                 <packet>
                     <pktlen>1400</pktlen>
                     <ip_src>10.32.11.125</ip_src>
-                    <ip_dst>10.32.11.124</ip_dst>
+                    <ip_dst>10.32.11.123</ip_dst>
                     <eth_src>40:A6:B7:22:AB:40</eth_src>
-                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <eth_dst>40:A6:B7:22:AB:20</eth_dst>
                     <udp_dport>100</udp_dport>
                 </packet>
             </BE_TO_ENB>
@@ -87,9 +87,9 @@
                 <packet>
                     <pktlen>1400</pktlen>
                     <ip_src>10.32.11.125</ip_src>
-                    <ip_dst>10.32.11.124</ip_dst>
+                    <ip_dst>10.32.11.123</ip_dst>
                     <eth_src>40:A6:B7:22:AB:40</eth_src>
-                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <eth_dst>40:A6:B7:22:AB:20</eth_dst>
                     <udp_dport>200</udp_dport>
                 </packet>
                 <latency_stats>true</latency_stats>
@@ -105,10 +105,10 @@
                 <trex_port>2</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>
-                    <ip_src>10.32.11.124</ip_src>
+                    <ip_src>10.32.11.123</ip_src>
                     <ip_dst>10.32.11.125</ip_dst>
                     <eth_src>40:A6:B7:22:AB:20</eth_src>
-                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <eth_dst>40:A6:B7:22:AB:40</eth_dst>
                     <udp_dport>100</udp_dport>
                 </packet>
             </BE_1_TO_PDN>
@@ -118,10 +118,10 @@
                 <trex_port>3</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>
-                    <ip_src>10.32.11.123</ip_src>
+                    <ip_src>10.32.11.122</ip_src>
                     <ip_dst>10.32.11.125</ip_dst>
                     <eth_src>40:A6:B7:22:AB:21</eth_src>
-                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <eth_dst>40:A6:B7:22:AB:40</eth_dst>
                     <udp_dport>100</udp_dport>
                 </packet>
             </BE_2_TO_PDN>
@@ -131,10 +131,10 @@
                 <trex_port>3</trex_port>
                 <packet>
                     <pktlen>1400</pktlen>
-                    <ip_src>10.32.11.123</ip_src>
+                    <ip_src>10.32.11.122</ip_src>
                     <ip_dst>10.32.11.125</ip_dst>
                     <eth_src>40:A6:B7:22:AB:21</eth_src>
-                    <eth_dst>00:00:0A:4C:1C:46</eth_dst>
+                    <eth_dst>40:A6:B7:22:AB:40</eth_dst>
                     <udp_dport>200</udp_dport>
                 </packet>
                 <latency_stats>true</latency_stats>

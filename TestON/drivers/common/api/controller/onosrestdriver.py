@@ -1645,7 +1645,7 @@ class OnosRestDriver( Controller ):
                     b = json.dumps( a )
                     return b
                 elif response[ 0 ] == 404:
-                    main.log.error( "Requested configuration doesn't exist: " +
+                    main.log.error( "Requested configuration doesn't exist: %s: %s" %
                                     ( response[ 0 ], response[ 1 ] ) )
                     return {}
                 else:
